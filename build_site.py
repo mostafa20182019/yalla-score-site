@@ -110,6 +110,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     img = image or (SITE_BASE + "/assets/logo.png")
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
+    va = " is-active" if active == "videos" else ""
     ads_head = (f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" crossorigin="anonymous"></script>'
                 if ADSENSE_CLIENT else "")
     t = f"""<!doctype html>
@@ -144,6 +145,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   <nav class="site-nav"><div class="wrap nav-in">
     <a href="/" class="navtab{ha}"><span class="ico">⌂</span> الرئيسية | Home</a>
     <a href="/matches.html" class="navtab{ma}"><span class="ico">☰</span> المباريات | Matches</a>
+    <a href="/videos.html" class="navtab{va}"><span class="ico">▶</span> فيديوهات | Videos</a>
   </div></nav>
 </header>
 <main class="wrap">
@@ -155,7 +157,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/matches.html">المباريات</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -166,6 +168,21 @@ def jsonld(obj):
 
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
+
+def video_facade(v):
+    """A lightweight YouTube 'facade': thumbnail + play button; the real iframe
+    is injected by VIDEO_JS only when the visitor clicks (keeps the page fast)."""
+    vid = esc(v.get("video_id") or "")
+    title = esc(v.get("title") or "")
+    date = esc(v.get("pub_date") or "")
+    thumb = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
+    meta = f'<p class="meta">{date}</p>' if date else ""
+    return (f'<div class="vcard" data-yt="{vid}">'
+            f'<button type="button" class="vthumb" aria-label="تشغيل الفيديو: {title}">'
+            f'<img src="{thumb}" alt="{title}" loading="lazy" '
+            f'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\')">'
+            f'<span class="vplay" aria-hidden="true">▶</span></button>'
+            f'<div class="vb"><h3>{title}</h3>{meta}</div></div>')
 
 # ---------------------------------------------------------------- build
 def build():
@@ -189,6 +206,7 @@ def build():
     articles = load("articles.json")
     matches = load("matches.json")
     headlines = load("headlines.json")
+    videos = load("videos.json")
 
     # ---- assets: css + logo ----
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
@@ -232,6 +250,15 @@ def build():
   <div class="card-b"><h3>{esc(a['title'])}</h3>
   <p class="meta">{esc(a.get('author'))} · {esc(a.get('pub_date'))}</p></div></a>""")
         parts.append('</div>')
+    # latest videos teaser (full library lives on /videos.html)
+    if videos:
+        parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
+                     '<a class="see-all" href="/videos.html">كل الفيديوهات ←</a></div>')
+        parts.append('<div class="vstrip">')
+        for v in videos[:3]:
+            parts.append(video_facade(v))
+        parts.append('</div>')
+        parts.append(VIDEO_JS)
     # external headlines (aggregated; each links out to its source)
     if headlines:
         parts.append('<h2 class="page-h">عناوين من مصادر أخرى</h2><div class="hgrid">')
@@ -337,6 +364,23 @@ def build():
     pv.append(foot())
     write("privacy.html", "".join(pv))
     urls.append("/privacy.html")
+
+    # ---- videos page (curated football videos; edit data/videos.json) ----
+    vp = [head(f"فيديوهات كرة القدم — {SITE_NAME}",
+               "أحدث فيديوهات وأهداف وملخصات كرة القدم بالعربية على يلا سكور.",
+               SITE_BASE + "/videos.html", active="videos")]
+    vp.append('<h1 class="page-h">فيديوهات</h1>')
+    if videos:
+        vp.append('<div class="vgrid">')
+        for v in videos:
+            vp.append(video_facade(v))
+        vp.append('</div>')
+        vp.append(VIDEO_JS)
+    else:
+        vp.append('<p class="empty-note">الفيديوهات قريبًا — تابعونا.</p>')
+    vp.append(foot())
+    write("videos.html", "".join(vp))
+    urls.append("/videos.html")
 
     # ---- robots + sitemap ----
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE}/sitemap.xml\n")
@@ -481,6 +525,24 @@ a{color:inherit}
 .hcard .reltime-wrap{white-space:nowrap}
 .hcard .go{position:absolute;top:12px;inset-inline-end:12px;font-size:.9rem;color:var(--green);opacity:0;transform:translateY(-3px);transition:opacity .14s,transform .14s}
 .hcard:hover .go{opacity:1;transform:translateY(0)}
+/* videos */
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.see-all{color:var(--green-d);font-weight:800;text-decoration:none;font-size:.85rem;white-space:nowrap}
+.see-all:hover{text-decoration:underline}
+.vstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+@media(max-width:640px){.vstrip{grid-template-columns:1fr}}
+.vcard{background:var(--card);border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;box-shadow:0 3px 10px rgba(15,23,42,.08);transition:transform .16s,box-shadow .16s}
+.vcard:hover{transform:translateY(-4px);box-shadow:0 16px 30px rgba(15,23,42,.16)}
+.vthumb{display:block;width:100%;padding:0;border:0;cursor:pointer;position:relative;aspect-ratio:16/9;background:#000;overflow:hidden}
+.vthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.vthumb.noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
+.vplay{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:56px;height:56px;border-radius:50%;background:rgba(225,29,72,.92);color:#fff;font-size:1.35rem;display:flex;align-items:center;justify-content:center;padding-left:4px;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .14s,background .14s}
+.vthumb:hover .vplay{transform:translate(-50%,-50%) scale(1.08);background:#e11d48}
+.vframe{width:100%;aspect-ratio:16/9;border:0;display:block;background:#000}
+.vb{padding:12px 14px}
+.vb h3{margin:0 0 6px;font-size:.95rem;font-weight:800;line-height:1.5;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty-note{color:var(--muted);font-weight:700;padding:20px 0}
 /* footer */
 .site-foot{background:#0b1220;color:#cbd5e1;margin-top:30px;padding:22px 0}
 .site-foot p{margin:2px 0}.credit{font-size:.78rem;color:#94a3b8}
@@ -563,6 +625,24 @@ REL_JS = """<script>
   document.querySelectorAll('time.reltime').forEach(function(el){
     var t=rel(el.getAttribute('datetime'));
     if(t) el.textContent=t;
+  });
+})();
+</script>"""
+
+VIDEO_JS = """<script>
+(function(){
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest('.vthumb'); if(!btn) return;
+    var card=btn.closest('.vcard'); if(!card) return;
+    var id=card.getAttribute('data-yt'); if(!id) return;
+    var h3=card.querySelector('h3');
+    var f=document.createElement('iframe');
+    f.className='vframe';
+    f.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';
+    f.title=h3?h3.textContent:'video';
+    f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    f.setAttribute('allowfullscreen','');
+    btn.replaceWith(f);
   });
 })();
 </script>"""
