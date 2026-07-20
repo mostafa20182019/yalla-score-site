@@ -241,9 +241,11 @@ def build():
             when = rel_ar(iso) if iso else (h.get("pub_date") or "")
             timeel = (f'<time class="reltime" datetime="{esc(iso)}">{esc(when)}</time>'
                       if iso else esc(when))
+            src = esc(h.get('source') or '')
             parts.append(f"""<a class="hcard" href="{esc(h.get('link'))}" target="_blank" rel="noopener nofollow">
+  <span class="go" aria-hidden="true">↗</span>
   <h3>{esc(t)}</h3>
-  <p class="meta"><span class="hsrc">{esc(h.get('source'))}</span> · {timeel}</p></a>""")
+  <p class="meta"><span class="hsrc">{src}</span><span class="reltime-wrap">{timeel}</span></p></a>""")
         parts.append('</div>')
         parts.append(REL_JS)
     # (matches are NOT shown on the home page - they live on /matches.html)
@@ -466,12 +468,19 @@ a{color:inherit}
 .ad-placeholder small{color:#c3cddb;font-weight:700}
 @media(max-width:900px){.home-cols{grid-template-columns:1fr}.home-side{display:none}}
 /* external headlines - 3 per row */
-.hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-@media(max-width:560px){.hgrid{grid-template-columns:1fr}}
-.hcard{display:block;background:#fff;border:1px solid #e6ebf1;border-inline-start:4px solid var(--green);border-radius:10px;padding:12px 14px;text-decoration:none;box-shadow:0 1px 3px rgba(15,23,42,.05);transition:transform .12s,box-shadow .12s}
-.hcard:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(15,23,42,.12);border-inline-start-color:var(--green-d)}
-.hcard h3{margin:0 0 6px;font-size:.9rem;font-weight:800;line-height:1.5;color:var(--ink)}
-.hsrc{color:var(--green-d);font-weight:800}
+.hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+@media(max-width:760px){.hgrid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:520px){.hgrid{grid-template-columns:1fr}}
+.hcard{position:relative;display:flex;flex-direction:column;min-height:128px;background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:16px 16px 14px;text-decoration:none;overflow:hidden;box-shadow:0 1px 3px rgba(15,23,42,.05);transition:transform .14s,box-shadow .14s,border-color .14s}
+.hcard::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:4px;background:linear-gradient(var(--green),var(--green-d));opacity:.85;transition:width .14s}
+.hcard:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(15,23,42,.13);border-color:#d7e4d9}
+.hcard:hover::before{width:6px}
+.hcard h3{margin:0 0 10px;font-size:.95rem;font-weight:800;line-height:1.55;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hcard .meta{margin:auto 0 0;display:flex;align-items:center;gap:8px;font-size:.75rem;color:#94a3b8;flex-wrap:wrap}
+.hsrc{background:#eef6ef;color:var(--green-d);font-weight:800;font-size:.72rem;padding:3px 9px;border-radius:999px;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.hcard .reltime-wrap{white-space:nowrap}
+.hcard .go{position:absolute;top:12px;inset-inline-end:12px;font-size:.9rem;color:var(--green);opacity:0;transform:translateY(-3px);transition:opacity .14s,transform .14s}
+.hcard:hover .go{opacity:1;transform:translateY(0)}
 /* footer */
 .site-foot{background:#0b1220;color:#cbd5e1;margin-top:30px;padding:22px 0}
 .site-foot p{margin:2px 0}.credit{font-size:.78rem;color:#94a3b8}
