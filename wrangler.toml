@@ -1,0 +1,9 @@
+# Cloudflare deploy config for the Yalla Score static site.
+# `wrangler deploy` (run from this folder) uploads ./dist to the existing
+# Cloudflare Workers project so the public URL stays the same.
+name = "old-credit-e926"
+compatibility_date = "2025-06-01"
+preview_urls = false
+
+[assets]
+directory = "./dist"
