@@ -3,6 +3,8 @@ name: Publish Yalla Score
 # Runs on GitHub's servers (free, no PC needed). Fetches latest news + matches,
 # rebuilds the static site, and deploys it to Cloudflare.
 on:
+  push:
+    branches: [ main ]           # deploy on every push (also forces GitHub to register the workflow)
   schedule:
     - cron: "5,35 * * * *"      # twice an hour (GitHub cron can be delayed a bit)
   workflow_dispatch: {}          # allows a manual run from the Actions tab
