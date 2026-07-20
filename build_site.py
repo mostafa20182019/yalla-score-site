@@ -213,25 +213,30 @@ def build():
     # two-column home: main content on the RIGHT, empty reserved column on the LEFT
     parts.append('<div class="home-cols"><div class="home-main">')
     parts.append('<h1 class="page-h">أخبارنا</h1>')
+    # "أخبارنا" as a magazine split: big featured (right) + vertical side list (left)
     if feat:
         img = feat.get("image_url")
-        style = f' style="background-image:url(\'{esc(img)}\')"' if img else ' class="noimg"'
-        parts.append(f"""<a class="feat" href="/a/{feat['article_id']}.html">
-  <div class="feat-img"{style}></div>
+        fstyle = f' style="background-image:url(\'{esc(img)}\')"' if img else ' class="noimg"'
+        feat_html = f"""<a class="feat" href="/a/{feat['article_id']}.html">
+  <div class="feat-img"{fstyle}></div>
   <div class="feat-body">
     <h2>{esc(feat['title'])}</h2>
     <p>{esc(feat.get('summary'))}</p>
-  </div></a>""")
-    if rest:
-        parts.append('<div class="grid">')
-        for a in rest:
-            img = a.get("image_url")
-            thumb = f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>' if img else '<div class="card-img noimg">⚽</div>'
-            parts.append(f"""<a class="card" href="/a/{a['article_id']}.html">
-  {thumb}
-  <div class="card-b"><h3>{esc(a['title'])}</h3>
+    <span class="feat-meta">{esc(feat.get('author') or SITE_NAME)} · {esc(feat.get('pub_date'))}</span>
+  </div></a>"""
+        if rest:
+            side = ['<div class="mag-side">']
+            for a in rest:
+                img = a.get("image_url")
+                mstyle = f' style="background-image:url(\'{esc(img)}\')"' if img else ' class="noimg"'
+                side.append(f"""<a class="mrow" href="/a/{a['article_id']}.html">
+  <div class="mrow-img"{mstyle}></div>
+  <div class="mrow-b"><h3>{esc(a['title'])}</h3>
   <p class="meta">{esc(a.get('author'))} · {esc(a.get('pub_date'))}</p></div></a>""")
-        parts.append('</div>')
+            side.append('</div>')
+            parts.append('<div class="mag">' + feat_html + ''.join(side) + '</div>')
+        else:
+            parts.append(feat_html)
     # external headlines (aggregated; each links out to its source)
     if headlines:
         parts.append('<h2 class="page-h">عناوين من مصادر أخرى</h2><div class="hgrid">')
@@ -414,6 +419,18 @@ a{color:inherit}
 .feat-body{position:absolute;inset-inline:0;bottom:0;padding:22px 26px;z-index:2}
 .feat-body h2{margin:0 0 8px;font-size:1.55rem;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.5)}
 .feat-body p{margin:0;opacity:.94}
+.feat-meta{display:block;margin-top:10px;font-size:.82rem;font-weight:700;color:#cfe6d6}
+/* magazine split: featured (right) + side list (left) */
+.mag{display:grid;grid-template-columns:1.7fr 1fr;gap:16px;align-items:stretch;margin-bottom:16px}
+.mag .feat{height:auto;min-height:360px;margin-bottom:0}
+.mag .feat-body p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mag-side{display:flex;flex-direction:column;justify-content:space-between;gap:12px}
+.mrow{display:grid;grid-template-columns:96px 1fr;gap:12px;background:var(--card);border:1px solid #e6ebf1;border-radius:12px;padding:10px;align-items:center;text-decoration:none;box-shadow:0 2px 8px rgba(15,23,42,.06);transition:transform .14s,box-shadow .14s}
+.mrow:hover{transform:translateY(-2px);box-shadow:0 10px 20px rgba(15,23,42,.13)}
+.mrow-img{width:96px;height:72px;flex:0 0 auto;border-radius:9px;background-color:#e6ebf1;background-size:cover;background-position:center}
+.mrow-img.noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
+.mrow-b h3{margin:0 0 5px;font-size:.9rem;font-weight:800;line-height:1.45;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:760px){.mag{grid-template-columns:1fr}.mag .feat{min-height:260px}}
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:15px}
 .card{display:block;background:var(--card);border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;text-decoration:none;box-shadow:0 3px 10px rgba(15,23,42,.08);transition:transform .16s,box-shadow .16s}
