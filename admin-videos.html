@@ -1,0 +1,299 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>إدارة فيديوهات يلا سكور</title>
+<style>
+:root{--green:#1a7f37;--green-d:#0f5e28;--ink:#0f172a;--muted:#64748b;--line:#e6ebf1;--bg:#eef2f6;--red:#e11d48}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+.head{background:linear-gradient(90deg,var(--green-d),var(--green));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.head h1{margin:0;font-size:1.15rem;font-weight:900}
+.head .tag{font-size:.75rem;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:999px}
+.wrap{max-width:900px;margin:0 auto;padding:18px 16px 60px}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 16px;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+.box h2{margin:0 0 10px;font-size:1rem;font-weight:900;color:var(--green-d)}
+label{display:block;font-size:.8rem;font-weight:800;color:var(--muted);margin:10px 0 4px}
+input[type=text],input[type=password],input[type=date]{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;font-size:.9rem}
+input:focus{outline:2px solid var(--green);border-color:var(--green)}
+button{font:inherit;font-weight:800;border:0;border-radius:9px;padding:9px 16px;cursor:pointer}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:var(--green-d)}
+.btn-o{background:#fff;color:var(--green-d);border:1.5px solid var(--green)}
+.btn-r{background:#fff;color:var(--red);border:1.5px solid #fbcfe0}
+.btn-sm{padding:5px 10px;font-size:.78rem;border-radius:7px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1;min-width:220px}
+.status{margin-top:10px;padding:10px 14px;border-radius:9px;font-size:.85rem;font-weight:700;display:none}
+.status.ok{display:block;background:#e8f6ec;color:#0f5e28}
+.status.err{display:block;background:#fdecef;color:#9f1239}
+.status.info{display:block;background:#eff6ff;color:#1d4ed8}
+.vitem{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px;margin:0 0 9px;background:#fff}
+.vitem img{width:110px;height:66px;object-fit:cover;border-radius:7px;background:#0a3d1c}
+.vitem h3{margin:0 0 3px;font-size:.87rem;font-weight:800}
+.vitem .m{font-size:.72rem;color:var(--muted);font-weight:700}
+.badge{display:inline-block;font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;margin-inline-start:6px}
+.badge.yt{background:#fdecef;color:#b91c1c}.badge.dm{background:#eff6ff;color:#1d4ed8}
+.acts{display:flex;flex-direction:column;gap:4px}
+.acts .row2{display:flex;gap:4px}
+#preview{margin-top:12px;display:none}
+#preview iframe{width:100%;max-width:480px;aspect-ratio:16/9;border:0;border-radius:10px;background:#000}
+.hint{font-size:.75rem;color:var(--muted);margin:6px 0 0}
+.hint a{color:var(--green-d)}
+details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.85rem}
+.steps{font-size:.8rem;color:#334155;padding-inline-start:18px}
+.steps li{margin:4px 0}
+#saveBar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--green);padding:12px 18px;display:none;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(15,23,42,.08)}
+.dirty-note{font-size:.8rem;font-weight:800;color:#b45309}
+</style>
+</head>
+<body>
+<header class="head">
+  <h1>⚽ إدارة فيديوهات يلا سكور</h1>
+  <span class="tag">صفحة محلية — لا تُنشر على الموقع</span>
+</header>
+<div class="wrap">
+
+  <!-- ============ settings ============ -->
+  <div class="box">
+    <details id="setBox">
+      <summary>⚙️ الإعدادات (توكن GitHub) — أول مرة بس</summary>
+      <label>GitHub Fine-grained Token (صلاحية Contents: Read&Write على yalla-score-site فقط)</label>
+      <div class="row">
+        <input type="password" id="tok" class="grow" placeholder="github_pat_...">
+        <button class="btn-g" onclick="saveTok()">حفظ التوكن</button>
+      </div>
+      <p class="hint">إزاي تعمل توكن: افتح
+        <a href="https://github.com/settings/personal-access-tokens/new" target="_blank">github.com/settings/personal-access-tokens/new</a>
+      </p>
+      <ol class="steps">
+        <li>Token name: <b>yalla-videos</b> — Expiration: سنة</li>
+        <li>Repository access → <b>Only select repositories</b> → اختار <b>yalla-score-site</b></li>
+        <li>Permissions → Repository permissions → <b>Contents → Read and write</b></li>
+        <li>Generate token → انسخه والصقه هنا → حفظ التوكن</li>
+      </ol>
+      <p class="hint">التوكن بيتخزن في متصفحك أنت بس (localStorage) — مبيتبعتش لأي حد غير GitHub.</p>
+    </details>
+    <div id="setStatus" class="status"></div>
+  </div>
+
+  <!-- ============ add ============ -->
+  <div class="box">
+    <h2>➕ إضافة فيديو</h2>
+    <label>لينك الفيديو (YouTube أو Dailymotion)</label>
+    <div class="row">
+      <input type="text" id="url" class="grow" placeholder="https://www.youtube.com/watch?v=... أو https://www.dailymotion.com/video/...">
+      <button class="btn-o" onclick="checkVideo()">فحص ومعاينة</button>
+    </div>
+    <div id="chkStatus" class="status"></div>
+    <div id="preview"></div>
+    <div id="addForm" style="display:none">
+      <label>العنوان (بالعربي)</label>
+      <input type="text" id="vtitle" placeholder="ملخص المباراة ...">
+      <label>التاريخ</label>
+      <input type="date" id="vdate">
+      <div class="row" style="margin-top:12px">
+        <button class="btn-g" id="addBtn" onclick="addVideo()">أضِف للقائمة</button>
+        <span class="hint">بعد الإضافة اضغط «حفظ ونشر» تحت</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ list ============ -->
+  <div class="box">
+    <h2>📋 الفيديوهات الحالية <span id="cnt" class="badge yt" style="background:#eef6ef;color:#0f5e28"></span></h2>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn-o btn-sm" onclick="loadList()">🔄 إعادة تحميل من GitHub</button>
+      <span class="hint">أول ٣ فيديوهات بيظهروا في الصفحة الرئيسية</span>
+    </div>
+    <div id="list"><p class="hint">… جاري التحميل (لو أول مرة: افتح الإعدادات فوق وحط التوكن)</p></div>
+    <div id="listStatus" class="status"></div>
+  </div>
+</div>
+
+<!-- ============ save bar ============ -->
+<div id="saveBar">
+  <span class="dirty-note">⚠️ فيه تغييرات لسه متنشرتش</span>
+  <button class="btn-g" id="saveBtn" onclick="publish()">💾 حفظ ونشر على الموقع</button>
+  <button class="btn-r btn-sm" onclick="discard()">تجاهل التغييرات</button>
+  <span id="pubStatus" class="hint"></span>
+</div>
+
+<script>
+var OWNER="mostafa20182019", REPO="yalla-score-site", BRANCH="main", PATH="data/videos.json";
+var API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
+var SITE="https://old-credit-e926.mustafa-abdelsalam95.workers.dev";
+var items=[], fileSha=null, dirty=false, checked=null;
+
+function tok(){ return localStorage.getItem("ys_gh_token")||""; }
+function saveTok(){
+  var v=document.getElementById("tok").value.trim();
+  if(!v){ return show("setStatus","err","اكتب التوكن الأول"); }
+  localStorage.setItem("ys_gh_token", v);
+  show("setStatus","ok","اتحفظ ✓ — بحمّل القائمة...");
+  document.getElementById("setBox").open=false;
+  loadList();
+}
+function show(id,cls,msg){
+  var el=document.getElementById(id);
+  el.className="status "+cls; el.innerHTML=msg;
+}
+function hide(id){ document.getElementById(id).className="status"; }
+
+/* ---------- utf8-safe base64 ---------- */
+function b64enc(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64dec(b64){ return decodeURIComponent(escape(atob(b64.replace(/\n/g,"")))); }
+
+/* ---------- load ---------- */
+function loadList(){
+  if(!tok()){ document.getElementById("setBox").open=true;
+    return show("listStatus","info","محتاج توكن GitHub الأول — افتح الإعدادات فوق."); }
+  hide("listStatus");
+  fetch(API+"?ref="+BRANCH,{headers:{Authorization:"Bearer "+tok(),Accept:"application/vnd.github+json"}})
+  .then(function(r){ if(!r.ok) throw new Error("GitHub رفض ("+r.status+") — اتأكد من التوكن وصلاحياته"); return r.json(); })
+  .then(function(j){
+    fileSha=j.sha;
+    var doc=JSON.parse(b64dec(j.content));
+    items=(doc.results&&doc.results[0]&&doc.results[0].items)||[];
+    dirty=false; render();
+    show("listStatus","ok","اتحمّلت آخر نسخة من GitHub ✓");
+    setTimeout(function(){hide("listStatus");},2500);
+  })
+  .catch(function(e){ show("listStatus","err",e.message); });
+}
+
+/* ---------- render ---------- */
+function thumbOf(v){
+  return (v.source==="dailymotion")
+    ? "https://www.dailymotion.com/thumbnail/video/"+v.video_id
+    : "https://i.ytimg.com/vi/"+v.video_id+"/hqdefault.jpg";
+}
+function render(){
+  var L=document.getElementById("list"); L.innerHTML="";
+  document.getElementById("cnt").textContent=items.length+" فيديو";
+  if(!items.length){ L.innerHTML='<p class="hint">مفيش فيديوهات — ضيف من فوق.</p>'; }
+  items.forEach(function(v,i){
+    var d=document.createElement("div"); d.className="vitem";
+    var src=v.source==="dailymotion"?'<span class="badge dm">Dailymotion</span>':'<span class="badge yt">YouTube</span>';
+    d.innerHTML='<img src="'+thumbOf(v)+'" alt="">'+
+      '<div><h3>'+esc(v.title||"(بدون عنوان)")+src+'</h3>'+
+      '<div class="m">'+esc(v.video_id)+' · '+esc(v.pub_date||"")+(i<3?' · <b style="color:#0f5e28">في الرئيسية</b>':'')+'</div></div>'+
+      '<div class="acts"><div class="row2">'+
+      '<button class="btn-o btn-sm" '+(i===0?'disabled':'')+' onclick="move('+i+',-1)">⬆</button>'+
+      '<button class="btn-o btn-sm" '+(i===items.length-1?'disabled':'')+' onclick="move('+i+',1)">⬇</button></div>'+
+      '<button class="btn-r btn-sm" onclick="del('+i+')">🗑 حذف</button></div>';
+    L.appendChild(d);
+  });
+  document.getElementById("saveBar").style.display = dirty ? "flex" : "none";
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+function move(i,d){ var t=items[i]; items[i]=items[i+d]; items[i+d]=t; dirty=true; render(); }
+function del(i){ if(confirm("حذف «"+(items[i].title||items[i].video_id)+"»؟")){ items.splice(i,1); dirty=true; render(); } }
+function discard(){ if(confirm("تجاهل كل التغييرات وترجع لآخر نسخة منشورة؟")) loadList(); }
+
+/* ---------- parse url ---------- */
+function parseUrl(u){
+  u=(u||"").trim();
+  var m;
+  if((m=u.match(/(?:youtube\.com\/(?:watch\?[^#]*v=|shorts\/|embed\/)|youtu\.be\/)([A-Za-z0-9_-]{6,20})/)))
+    return {source:"youtube", id:m[1]};
+  if((m=u.match(/(?:dailymotion\.com\/(?:video|embed\/video)\/|dai\.ly\/)([a-zA-Z0-9]+)/)))
+    return {source:"dailymotion", id:m[1]};
+  if((m=u.match(/^[A-Za-z0-9_-]{8,15}$/))) return {source:"youtube", id:u}; // bare id
+  return null;
+}
+
+/* ---------- check & preview ---------- */
+function checkVideo(){
+  checked=null;
+  document.getElementById("addForm").style.display="none";
+  document.getElementById("preview").style.display="none";
+  var p=parseUrl(document.getElementById("url").value);
+  if(!p) return show("chkStatus","err","اللينك ده مش YouTube ولا Dailymotion — اتأكد منه");
+  show("chkStatus","info","… بفحص الفيديو");
+  if(p.source==="dailymotion"){
+    fetch("https://api.dailymotion.com/video/"+p.id+"?fields=allow_embed,status,title")
+    .then(function(r){return r.json();})
+    .then(function(j){
+      if(j.error) return show("chkStatus","err","Dailymotion مش لاقي الفيديو ده");
+      if(j.allow_embed!==true || j.status!=="published")
+        return show("chkStatus","err","❌ الفيديو ده مقفول التضمين — مينفعش يشتغل جوّه الموقع");
+      okPreview(p, j.title||"");
+      show("chkStatus","ok","✓ مسموح تضمينه رسميًا (Dailymotion API) — شغّل المعاينة للتأكد ثم كمّل");
+    })
+    .catch(function(){ show("chkStatus","err","فشل الاتصال بـ Dailymotion API"); });
+  } else {
+    // YouTube: no keyless authoritative API -> live preview is the test
+    fetch("https://noembed.com/embed?url=https://www.youtube.com/watch?v="+p.id)
+      .then(function(r){return r.json();})
+      .then(function(j){ okPreview(p, (j&&j.title)||""); })
+      .catch(function(){ okPreview(p, ""); });
+    show("chkStatus","info","▶ شغّل المعاينة تحت: لو الفيديو <b>اشتغل</b> يبقى تمام — لو ظهر "+
+      "«Video unavailable» يبقى مقفول التضمين ومتضيفوش");
+  }
+}
+function okPreview(p, title){
+  checked=p;
+  var pv=document.getElementById("preview");
+  var src=(p.source==="dailymotion")
+    ? "https://www.dailymotion.com/embed/video/"+p.id
+    : "https://www.youtube-nocookie.com/embed/"+p.id;
+  pv.innerHTML='<iframe src="'+src+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  pv.style.display="block";
+  var f=document.getElementById("addForm"); f.style.display="block";
+  if(title && !document.getElementById("vtitle").value) document.getElementById("vtitle").value=title;
+  if(!document.getElementById("vdate").value)
+    document.getElementById("vdate").value=new Date().toISOString().slice(0,10);
+}
+function addVideo(){
+  if(!checked) return;
+  var t=document.getElementById("vtitle").value.trim();
+  if(!t) return show("chkStatus","err","اكتب عنوان بالعربي الأول");
+  var it={video_id:checked.id, title:t, pub_date:document.getElementById("vdate").value||""};
+  if(checked.source==="dailymotion") it.source="dailymotion";
+  if(items.some(function(v){return v.video_id===it.video_id;}))
+    return show("chkStatus","err","الفيديو ده موجود في القائمة أصلاً");
+  items.unshift(it);            // newest first -> appears on home
+  dirty=true; checked=null;
+  document.getElementById("url").value="";
+  document.getElementById("vtitle").value="";
+  document.getElementById("addForm").style.display="none";
+  document.getElementById("preview").style.display="none";
+  show("chkStatus","ok","اتضاف للقائمة ✓ — اضغط «حفظ ونشر» تحت عشان ينزل الموقع");
+  render();
+}
+
+/* ---------- publish ---------- */
+function publish(){
+  if(!tok()) return show("listStatus","err","محتاج توكن — افتح الإعدادات");
+  var btn=document.getElementById("saveBtn"); btn.disabled=true;
+  document.getElementById("pubStatus").textContent="… بحفظ على GitHub";
+  var body={ results:[{ items:items }] };
+  var payload={
+    message:"Update videos via admin page ("+items.length+" items)",
+    content:b64enc(JSON.stringify(body, null, 0)),
+    branch:BRANCH, sha:fileSha
+  };
+  fetch(API,{method:"PUT",
+    headers:{Authorization:"Bearer "+tok(),Accept:"application/vnd.github+json","Content-Type":"application/json"},
+    body:JSON.stringify(payload)})
+  .then(function(r){ if(!r.ok) return r.json().then(function(j){throw new Error("GitHub رفض الحفظ ("+r.status+"): "+(j.message||""));}); return r.json(); })
+  .then(function(j){
+    fileSha=j.content.sha; dirty=false; btn.disabled=false; render();
+    show("listStatus","ok","🎉 اتحفظ! GitHub Actions بينشر دلوقتي — الموقع هيتحدث خلال ~دقيقة.<br>"+
+      '<a href="https://github.com/'+OWNER+'/'+REPO+'/actions" target="_blank">تابع النشر</a> · '+
+      '<a href="'+SITE+'/videos.html" target="_blank">افتح صفحة الفيديوهات</a>');
+    document.getElementById("pubStatus").textContent="";
+  })
+  .catch(function(e){ btn.disabled=false;
+    document.getElementById("pubStatus").textContent="";
+    show("listStatus","err",e.message+"<br>لو المشكلة استمرت اعمل «إعادة تحميل من GitHub» وحاول تاني."); });
+}
+
+/* ---------- boot ---------- */
+if(tok()) loadList(); else { document.getElementById("setBox").open=true;
+  document.getElementById("list").innerHTML='<p class="hint">حط توكن GitHub في الإعدادات فوق وهتظهر القائمة هنا.</p>'; }
+</script>
+</body>
+</html>
