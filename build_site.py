@@ -145,9 +145,9 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   </div>
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
-    <a href="/" class="navtab{ha}"><span class="ico">⌂</span> الرئيسية | Home</a>
-    <a href="/matches.html" class="navtab{ma}"><span class="ico">☰</span> المباريات | Matches</a>
-    <a href="/videos.html" class="navtab{va}"><span class="ico">▶</span> فيديوهات | Videos</a>
+    <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية | Home</a>
+    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات | Matches</a>
+    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات | Videos</a>
   </div></nav>
 </header>
 <main class="wrap">
@@ -545,7 +545,9 @@ a{color:inherit}
 .navtab{display:inline-flex;align-items:center;gap:7px;padding:0 18px;color:rgba(255,255,255,.85);text-decoration:none;font-weight:800;font-size:.95rem;border-bottom:3px solid transparent;transition:background .12s,color .12s}
 .navtab:hover{background:rgba(255,255,255,.10);color:#fff}
 .navtab.is-active{color:#fff;border-bottom-color:#fff;background:rgba(255,255,255,.08)}
-.navtab .ico{font-size:1.05rem;opacity:.9}
+.navtab .ico{font-size:1.1rem;display:inline-block;transition:transform .18s}
+.navtab:hover .ico{transform:scale(1.25) rotate(-8deg)}
+.navtab.is-active .ico{transform:scale(1.1)}
 .page-h{color:var(--green-d);font-weight:900;margin:22px 0 12px}
 /* featured */
 .feat{display:block;position:relative;height:340px;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;box-shadow:0 14px 34px rgba(15,23,42,.24);margin-bottom:16px;background:linear-gradient(135deg,var(--green-d),#072012)}
