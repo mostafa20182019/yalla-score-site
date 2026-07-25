@@ -159,7 +159,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -243,6 +243,19 @@ def make_ticker(matches):
 
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
+
+def headline_card(h):
+    """One external-headline card (home teaser + /headlines.html page)."""
+    t = strip_src(h.get("title"), h.get("source"))
+    iso = h.get("pub_iso") or ""
+    when = rel_ar(iso) if iso else (h.get("pub_date") or "")
+    timeel = (f'<time class="reltime" datetime="{esc(iso)}">{esc(when)}</time>'
+              if iso else esc(when))
+    src = esc(h.get('source') or '')
+    return (f'<a class="hcard" href="{esc(h.get("link"))}" target="_blank" rel="noopener nofollow">'
+            f'<span class="go" aria-hidden="true">↗</span>'
+            f'<h3>{esc(t)}</h3>'
+            f'<p class="meta"><span class="hsrc">{src}</span><span class="reltime-wrap">{timeel}</span></p></a>')
 
 def news_card(a):
     """One article card (used by the home shelf and the /news.html archive)."""
@@ -354,20 +367,13 @@ def build():
             parts.append(video_facade(v))
         parts.append('</div>')
         parts.append(VIDEO_JS)
-    # external headlines (aggregated; each links out to its source)
+    # external headlines teaser (9 = 3 rows; the full list lives on /headlines.html)
     if headlines:
-        parts.append('<h2 class="page-h">عناوين من مصادر أخرى</h2><div class="hgrid">')
-        for h in headlines:
-            t = strip_src(h.get("title"), h.get("source"))
-            iso = h.get("pub_iso") or ""
-            when = rel_ar(iso) if iso else (h.get("pub_date") or "")
-            timeel = (f'<time class="reltime" datetime="{esc(iso)}">{esc(when)}</time>'
-                      if iso else esc(when))
-            src = esc(h.get('source') or '')
-            parts.append(f"""<a class="hcard" href="{esc(h.get('link'))}" target="_blank" rel="noopener nofollow">
-  <span class="go" aria-hidden="true">↗</span>
-  <h3>{esc(t)}</h3>
-  <p class="meta"><span class="hsrc">{src}</span><span class="reltime-wrap">{timeel}</span></p></a>""")
+        parts.append('<div class="sec-h"><h2 class="page-h">عناوين من مصادر أخرى</h2>'
+                     '<a class="see-all" href="/headlines.html">كل العناوين ←</a></div>')
+        parts.append('<div class="hgrid">')
+        for h in headlines[:9]:
+            parts.append(headline_card(h))
         parts.append('</div>')
         parts.append(REL_JS)
     # (matches are NOT shown on the home page - they live on /matches.html)
@@ -475,6 +481,23 @@ def build():
     np_.append(foot())
     write("news.html", "".join(np_))
     urls.append("/news.html")
+
+    # ---- headlines page (full aggregated list; home shows only 9) ----
+    hp = [head(f"عناوين الصحف — {SITE_NAME}",
+               "آخر عناوين كرة القدم من الصحف والمواقع الإخبارية — تتحدث تلقائيًا على مدار الساعة.",
+               SITE_BASE + "/headlines.html", active="home")]
+    hp.append('<h1 class="page-h">عناوين الصحف</h1>')
+    if headlines:
+        hp.append('<div class="hgrid">')
+        for h in headlines:
+            hp.append(headline_card(h))
+        hp.append('</div>')
+        hp.append(REL_JS)
+    else:
+        hp.append('<p class="empty-note">لا توجد عناوين حاليًا.</p>')
+    hp.append(foot())
+    write("headlines.html", "".join(hp))
+    urls.append("/headlines.html")
 
     # ---- videos page (curated football videos; edit data/videos.json) ----
     vp = [head(f"فيديوهات كرة القدم — {SITE_NAME}",

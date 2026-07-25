@@ -101,7 +101,7 @@ def fetch_news():
                       "pub_date": pub_date, "pub_iso": pub_iso})
     items.sort(key=lambda x: x.get("pub_iso") or "", reverse=True)
     items = _dedup_stories(items)   # one card per story, not per outlet
-    return items[:30]
+    return items[:60]               # home shows 9; /headlines.html shows all
 
 # --------------------------------------------------------------- matches
 def _norm_status(s):
