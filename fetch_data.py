@@ -41,6 +41,39 @@ def _unescape(s):
     return html.unescape(s).strip()
 
 # ------------------------------------------------------------------ news
+_AR_TRANS = str.maketrans({"أ": "ا", "إ": "ا", "آ": "ا", "ة": "ه", "ى": "ي",
+                           "ؤ": "و", "ئ": "ي"})
+
+def _title_tokens(title, source):
+    """Normalized word set of a headline (for near-duplicate detection)."""
+    t = (title or "").strip()
+    if source and t.endswith(" - " + source):          # drop the " - المصدر" suffix
+        t = t[: -(len(source) + 3)]
+    t = t.translate(_AR_TRANS)
+    t = re.sub(r"[ً-ْ]", "", t)              # tashkeel
+    t = re.sub(r"[^\wء-ي ]+", " ", t)        # punctuation -> space
+    return {w for w in t.split() if len(w) >= 3}
+
+def _same_story(a, b):
+    """Same story from another outlet: high Jaccard overlap, OR one headline
+    (near-)contained in the other (short rewrites of the same news)."""
+    if not a or not b:
+        return False
+    inter = len(a & b)
+    if inter / (len(a) + len(b) - inter) >= 0.5:
+        return True
+    return inter / min(len(a), len(b)) >= 0.7
+
+def _dedup_stories(items):
+    kept, seen = [], []
+    for it in items:                                    # items arrive newest-first
+        tok = _title_tokens(it.get("title"), it.get("source"))
+        if any(_same_story(tok, s) for s in seen):
+            continue
+        kept.append(it)
+        seen.append(tok)
+    return kept
+
 def fetch_news():
     q = urllib.parse.quote("كرة القدم")
     url = f"https://news.google.com/rss/search?q={q}&hl=ar&gl=EG&ceid=EG:ar"
@@ -67,6 +100,7 @@ def fetch_news():
         items.append({"title": title, "link": link, "source": tag("source"),
                       "pub_date": pub_date, "pub_iso": pub_iso})
     items.sort(key=lambda x: x.get("pub_iso") or "", reverse=True)
+    items = _dedup_stories(items)   # one card per story, not per outlet
     return items[:30]
 
 # --------------------------------------------------------------- matches
