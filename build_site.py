@@ -145,9 +145,9 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   </div>
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
-    <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية | Home</a>
-    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات | Matches</a>
-    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات | Videos</a>
+    <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية<span class="nav-en"> | Home</span></a>
+    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>
   </div></nav>
 </header>
 <main class="wrap">
@@ -592,7 +592,7 @@ a{color:inherit}
 /* second row: navigation tabs (like the app) */
 .site-nav{position:relative;z-index:1;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12)}
 .nav-in{display:flex;align-items:stretch;height:46px}
-.navtab{display:inline-flex;align-items:center;gap:7px;padding:0 18px;color:rgba(255,255,255,.85);text-decoration:none;font-weight:800;font-size:.95rem;border-bottom:3px solid transparent;transition:background .12s,color .12s}
+.navtab{display:inline-flex;align-items:center;gap:7px;padding:0 18px;color:rgba(255,255,255,.85);text-decoration:none;font-weight:800;font-size:.95rem;border-bottom:3px solid transparent;transition:background .12s,color .12s;white-space:nowrap}
 .navtab:hover{background:rgba(255,255,255,.10);color:#fff}
 .navtab.is-active{color:#fff;border-bottom-color:#fff;background:rgba(255,255,255,.08)}
 .navtab .ico{font-size:1.1rem;display:inline-block;transition:transform .18s}
@@ -742,7 +742,8 @@ LEGENDS_CSS = """
   box-shadow:0 6px 16px rgba(0,0,0,.4)}
 /* live-scores ticker */
 .ticker{display:block;background:#06170d;overflow:hidden;text-decoration:none;
-  border-top:1px solid rgba(255,255,255,.07)}
+  border-top:1px solid rgba(255,255,255,.07);
+  position:relative;clip-path:inset(0)}  /* WebKit: animated transform escapes overflow:hidden */
 .tk-track{display:inline-flex;width:max-content;align-items:center;gap:30px;
   padding:6px 0;animation:tkmove 45s linear infinite}
 .ticker:hover .tk-track{animation-play-state:paused}
@@ -758,9 +759,12 @@ LEGENDS_CSS = """
 @keyframes tkmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
 @keyframes tkpulse{0%,100%{opacity:1}50%{opacity:.2}}
 @media(max-width:720px){
+  .head-in{height:60px}
   .legends{margin-inline-start:10px;justify-content:flex-start}
   .lg-track{gap:8px}
   .legends img{width:42px;height:42px;border-width:1.5px}
+  .nav-en{display:none}
+  .navtab{padding:0 14px}
 }
 @media(prefers-reduced-motion:reduce){.lg-track,.tk-track{animation:none}}
 """
