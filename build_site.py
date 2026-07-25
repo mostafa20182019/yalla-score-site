@@ -172,9 +172,37 @@ def jsonld(obj):
 # (site rebuilds every 30 min, so it stays fresh). Set by build().
 TICKER_HTML = ""
 
+# Big clubs for the ticker's padding pool (substring match on football-data
+# team names). World Cup matches always count as "big".
+BIG_TEAMS = ["Real Madrid", "FC Barcelona", "Atlético", "Manchester City",
+             "Manchester United", "Liverpool", "Arsenal", "Chelsea", "Tottenham",
+             "Bayern", "Dortmund", "Paris Saint-Germain", "Juventus",
+             "Internazionale", "AC Milan", "Napoli", "Marseille"]
+
+def _is_big(m):
+    if "World Cup" in (m.get("competition") or ""):
+        return True
+    ha = (m.get("home") or "") + "|" + (m.get("away") or "")
+    return any(t in ha for t in BIG_TEAMS)
+
+def _tk_date(kick):
+    """Short Arabic date chip for non-today items: أمس / غدًا / dd/mm."""
+    try:
+        d = datetime.date.fromisoformat(kick)
+        t = datetime.date.fromisoformat(REF_TODAY)
+    except Exception:
+        return kick or ""
+    delta = (d - t).days
+    if delta == -1:
+        return "أمس"
+    if delta == 1:
+        return "غدًا"
+    return f"{d.day:02d}/{d.month:02d}"
+
 def make_ticker(matches):
-    """Header ticker: LIVE first, then today's, then padding with the nearest
-    finished + upcoming matches. Returns "" when there's nothing to show."""
+    """Header ticker: LIVE first, then ALL of today's matches; on quiet days
+    pad with BIG-club matches only (nearest finished + next upcoming), each
+    carrying a short date chip. Returns "" when there's nothing to show."""
     if not matches:
         return ""
     live = [m for m in matches if (m.get("status") or "") == "LIVE"]
@@ -182,7 +210,7 @@ def make_ticker(matches):
               if m.get("kickoff") == REF_TODAY and (m.get("status") or "") != "LIVE"]
     pool = live + todays
     if len(pool) < 4:
-        rest = [m for m in matches if m not in pool]
+        rest = [m for m in matches if m not in pool and _is_big(m)]
         fin = sorted((m for m in rest if m.get("status") == "FINISHED"),
                      key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""),
                      reverse=True)
@@ -206,7 +234,9 @@ def make_ticker(matches):
             mid = f'<b class="tk-s">{sc(m.get("home_score"))}-{sc(m.get("away_score"))}</b>'
         else:
             mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
-        its.append(f'<span class="tk-item">{hb}{esc(m.get("home"))} {mid} {esc(m.get("away"))}{ab}</span>')
+        day = ("" if m.get("kickoff") == REF_TODAY or st == "LIVE"
+               else f'<span class="tk-d">{esc(_tk_date(m.get("kickoff")))}</span>')
+        its.append(f'<span class="tk-item">{day}{hb}{esc(m.get("home"))} {mid} {esc(m.get("away"))}{ab}</span>')
     seq = "".join(its)
     return ('<a class="ticker" href="/matches.html" aria-label="نتائج المباريات — اضغط للتفاصيل">'
             f'<div class="tk-track">{seq}{seq}</div></a>')
@@ -664,6 +694,8 @@ LEGENDS_CSS = """
 .tk-b{width:16px;height:16px;object-fit:contain}
 .tk-s{color:#fff;background:rgba(255,255,255,.14);padding:1px 8px;border-radius:6px}
 .tk-t{color:#8fe4a9;font-weight:800}
+.tk-d{color:#9fb8a8;font-size:.68rem;font-weight:800;border:1px solid rgba(255,255,255,.18);
+  padding:0 6px;border-radius:5px}
 .tk-dot{width:7px;height:7px;border-radius:50%;background:#ff4d6d;
   animation:tkpulse 1.2s ease-in-out infinite}
 @keyframes tkmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
