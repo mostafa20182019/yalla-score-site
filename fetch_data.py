@@ -12,7 +12,7 @@ Env:
   FD_TOKEN  - football-data.org API token (for matches). If missing, matches
               are left as-is (keeps the last matches.json).
 """
-import json, os, re, html, urllib.request, urllib.parse
+import json, os, re, html, time, urllib.request, urllib.parse
 from datetime import datetime, timezone, timedelta
 from email.utils import parsedate_to_datetime
 from zoneinfo import ZoneInfo
@@ -24,13 +24,21 @@ CAIRO = ZoneInfo("Africa/Cairo")
 UA = "Mozilla/5.0 (YallaScore static-site builder)"
 FD_COMPS = ["WC", "PL", "PD", "SA", "BL1", "FL1"]  # World Cup, PL, La Liga, Serie A, Bundesliga, Ligue 1
 
-def http_get(url, headers=None, timeout=40):
+def http_get(url, headers=None, timeout=40, retries=2):
     h = {"User-Agent": UA}
     if headers:
         h.update(headers)
     req = urllib.request.Request(url, headers=h)
-    with urllib.request.urlopen(req, timeout=timeout) as r:
-        return r.read().decode("utf-8", "replace")
+    last = None
+    for attempt in range(retries + 1):
+        try:
+            with urllib.request.urlopen(req, timeout=timeout) as r:
+                return r.read().decode("utf-8", "replace")
+        except Exception as e:
+            last = e
+            if attempt < retries:
+                time.sleep(5 * (attempt + 1))
+    raise last
 
 def write_items(name, items):
     with open(os.path.join(DATA, name), "w", encoding="utf-8") as f:
@@ -167,10 +175,21 @@ def fetch_matches():
 
 if __name__ == "__main__":
     os.makedirs(DATA, exist_ok=True)
-    news = fetch_news()
-    write_items("headlines.json", news)
-    print(f"headlines: {len(news)}")
-    matches = fetch_matches()
+    # a transient upstream failure must NOT kill the whole deploy -
+    # keep the last committed data file and continue.
+    try:
+        news = fetch_news()
+    except Exception as e:
+        print(f"  ! news fetch failed ({e}) - keeping existing headlines.json")
+        news = None
+    if news:
+        write_items("headlines.json", news)
+        print(f"headlines: {len(news)}")
+    try:
+        matches = fetch_matches()
+    except Exception as e:
+        print(f"  ! matches fetch failed ({e}) - keeping existing matches.json")
+        matches = None
     if matches is not None:
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
