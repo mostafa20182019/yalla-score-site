@@ -661,8 +661,8 @@ LEGENDS = [
   "https://commons.wikimedia.org/wiki/Special:FilePath/Zinedine_Zidane_by_Tasnim_01.jpg",
   "https://commons.wikimedia.org/wiki/Special:FilePath/Rivaldo_bunyodkor_2010.jpg",
   "https://upload.wikimedia.org/wikipedia/commons/c/c1/Lionel_Messi_20180626.jpg",
-  "https://upload.wikimedia.org/wikipedia/commons/d/df/Lamine_Yamal_in_2025_%28cropped2%29.jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Erling_Haaland_2023_(cropped_square).jpg",
+  "https://commons.wikimedia.org/wiki/Special:FilePath/Lamine_Yamal_France_v_Spain_7.24.26-142_(cropped).jpg?width=200",
+  "https://commons.wikimedia.org/wiki/Special:FilePath/Erling_Haaland_2023_(cropped-v2).jpg?width=200",
   "https://commons.wikimedia.org/wiki/Special:FilePath/Francesco_Totti_Vicario_(crop).jpg",
   "https://commons.wikimedia.org/wiki/Special:FilePath/Alessandro_Del_Piero_2008_cropped.jpg",
   "https://commons.wikimedia.org/wiki/Special:FilePath/Andrea_Pirlo_NYCFC.JPG",
@@ -681,6 +681,7 @@ LEGENDS_CSS = """
   animation:lgmove 70s linear infinite}
 .legends:hover .lg-track{animation-play-state:paused}
 .legends img{width:42px;height:42px;border-radius:9px;object-fit:cover;
+  object-position:50% 22%;
   border:1.5px solid rgba(255,255,255,.28);filter:saturate(.95);
   transition:transform .15s,border-color .15s}
 .legends img:hover{transform:scale(1.15);border-color:#fff}
