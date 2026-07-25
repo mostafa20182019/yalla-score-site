@@ -141,7 +141,9 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <header class="site-head">
   <div class="wrap head-in">
     <a class="brand" href="/"><span class="ball">⚽</span> {esc(SITE_NAME)}</a>
+    <div class="legends" aria-hidden="true"><div class="lg-track">{LEGENDS_HTML}</div></div>
   </div>
+  {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
     <a href="/" class="navtab{ha}"><span class="ico">⌂</span> الرئيسية | Home</a>
     <a href="/matches.html" class="navtab{ma}"><span class="ico">☰</span> المباريات | Matches</a>
@@ -165,6 +167,49 @@ def foot():
 
 def jsonld(obj):
     return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False) + '</script>'
+
+# Live-scores ticker in the header. Built once per build from matches.json
+# (site rebuilds every 30 min, so it stays fresh). Set by build().
+TICKER_HTML = ""
+
+def make_ticker(matches):
+    """Header ticker: LIVE first, then today's, then padding with the nearest
+    finished + upcoming matches. Returns "" when there's nothing to show."""
+    if not matches:
+        return ""
+    live = [m for m in matches if (m.get("status") or "") == "LIVE"]
+    todays = [m for m in matches
+              if m.get("kickoff") == REF_TODAY and (m.get("status") or "") != "LIVE"]
+    pool = live + todays
+    if len(pool) < 4:
+        rest = [m for m in matches if m not in pool]
+        fin = sorted((m for m in rest if m.get("status") == "FINISHED"),
+                     key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""),
+                     reverse=True)
+        up = sorted((m for m in rest if m.get("status") == "UPCOMING"),
+                    key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+        pool += fin[:6] + up[:6]
+    pool = pool[:14]
+    if not pool:
+        return ""
+    sc = lambda v: "-" if v is None else v
+    its = []
+    for m in pool:
+        st = m.get("status")
+        hb = (f'<img class="tk-b" src="{esc(m.get("home_badge"))}" alt="" loading="lazy">'
+              if m.get("home_badge") else "")
+        ab = (f'<img class="tk-b" src="{esc(m.get("away_badge"))}" alt="" loading="lazy">'
+              if m.get("away_badge") else "")
+        if st == "LIVE":
+            mid = f'<b class="tk-s">{sc(m.get("home_score"))}-{sc(m.get("away_score"))}</b><span class="tk-dot"></span>'
+        elif st == "FINISHED":
+            mid = f'<b class="tk-s">{sc(m.get("home_score"))}-{sc(m.get("away_score"))}</b>'
+        else:
+            mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
+        its.append(f'<span class="tk-item">{hb}{esc(m.get("home"))} {mid} {esc(m.get("away"))}{ab}</span>')
+    seq = "".join(its)
+    return ('<a class="ticker" href="/matches.html" aria-label="نتائج المباريات — اضغط للتفاصيل">'
+            f'<div class="tk-track">{seq}{seq}</div></a>')
 
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
@@ -213,6 +258,9 @@ def build():
     matches = load("matches.json")
     headlines = load("headlines.json")
     videos = load("videos.json")
+
+    global TICKER_HTML
+    TICKER_HTML = make_ticker(matches)
 
     # ---- assets: css + logo ----
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
@@ -588,19 +636,41 @@ LEGENDS = [
   "https://commons.wikimedia.org/wiki/Special:FilePath/Andrea_Pirlo_NYCFC.JPG",
   "https://commons.wikimedia.org/wiki/Special:FilePath/Gianluigi_Buffon_(31784615942)_(cropped).jpg",
 ]
-def _legends_css():
-    w = 46
-    imgs  = ",".join("url('%s')" % u for u in LEGENDS)
-    sizes = ",".join(["%dpx 52px" % w] * len(LEGENDS))
-    poss  = ",".join("left %dpx top 0" % (i * w) for i in range(len(LEGENDS)))
-    return ("\n.site-head{overflow:hidden}.head-in{position:relative;z-index:1}\n"
-            ".site-head::after{content:'';position:absolute;top:2px;height:52px;left:0;right:0;"
-            "pointer-events:none;z-index:0;opacity:.5;background-repeat:no-repeat;"
-            "background-image:%s;background-size:%s;background-position:%s;"
-            "-webkit-mask-image:linear-gradient(to right,transparent,#000 5%%,#000 95%%,transparent);"
-            "mask-image:linear-gradient(to right,transparent,#000 5%%,#000 95%%,transparent)}\n"
-            "@media(max-width:720px){.site-head::after{display:none}}\n" % (imgs, sizes, poss))
-LEGENDS_CSS = _legends_css()
+# Real <img> tiles (uniform crop, full color) on a slow marquee, instead of the
+# old squished ::after background hack.
+LEGENDS_HTML = ("".join(f'<img src="{u}" alt="" loading="lazy">' for u in LEGENDS)) * 2
+
+LEGENDS_CSS = """
+/* legends strip: clean tiles + slow crawl (pause on hover) */
+.legends{flex:1;min-width:0;margin-inline-start:20px;overflow:hidden;
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent);
+  mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent)}
+.lg-track{display:inline-flex;width:max-content;align-items:center;gap:7px;
+  animation:lgmove 70s linear infinite}
+.legends:hover .lg-track{animation-play-state:paused}
+.legends img{width:42px;height:42px;border-radius:9px;object-fit:cover;
+  border:1.5px solid rgba(255,255,255,.28);filter:saturate(.95);
+  transition:transform .15s,border-color .15s}
+.legends img:hover{transform:scale(1.15);border-color:#fff}
+@keyframes lgmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
+/* live-scores ticker */
+.ticker{display:block;background:#06170d;overflow:hidden;text-decoration:none;
+  border-top:1px solid rgba(255,255,255,.07)}
+.tk-track{display:inline-flex;width:max-content;align-items:center;gap:30px;
+  padding:6px 0;animation:tkmove 45s linear infinite}
+.ticker:hover .tk-track{animation-play-state:paused}
+.tk-item{display:inline-flex;align-items:center;gap:6px;color:#dbe7de;
+  font-size:.78rem;font-weight:700;white-space:nowrap}
+.tk-b{width:16px;height:16px;object-fit:contain}
+.tk-s{color:#fff;background:rgba(255,255,255,.14);padding:1px 8px;border-radius:6px}
+.tk-t{color:#8fe4a9;font-weight:800}
+.tk-dot{width:7px;height:7px;border-radius:50%;background:#ff4d6d;
+  animation:tkpulse 1.2s ease-in-out infinite}
+@keyframes tkmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
+@keyframes tkpulse{0%,100%{opacity:1}50%{opacity:.2}}
+@media(max-width:720px){.legends{display:none}}
+@media(prefers-reduced-motion:reduce){.lg-track,.tk-track{animation:none}}
+"""
 
 # progressive-enhancement: show one day at a time with prev/next (like the live app).
 # Without JS, every day-section stays visible (crawlable).
