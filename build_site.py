@@ -587,7 +587,7 @@ body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg
 .wrap{max-width:1600px;margin:0 auto;padding:0 20px}
 a{color:inherit}
 .site-head{background:linear-gradient(90deg,var(--green-d),var(--green));box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
-.head-in{display:flex;align-items:center;height:68px}
+.head-in{display:flex;align-items:center;height:78px}
 .brand{color:#fff;font-weight:900;font-size:1.3rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 /* second row: navigation tabs (like the app) */
 .site-nav{position:relative;z-index:1;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12)}
@@ -733,7 +733,7 @@ LEGENDS_CSS = """
   justify-content:center;overflow-x:auto;scrollbar-width:none}
 .legends::-webkit-scrollbar{display:none}
 .lg-track{display:inline-flex;align-items:center;gap:14px}
-.legends img{width:54px;height:54px;border-radius:50%;object-fit:cover;
+.legends img{width:62px;height:62px;border-radius:50%;object-fit:cover;
   object-position:50% 22%;flex:0 0 auto;
   border:2px solid rgba(255,255,255,.45);
   box-shadow:0 2px 8px rgba(0,0,0,.25);
@@ -760,7 +760,7 @@ LEGENDS_CSS = """
 @media(max-width:720px){
   .legends{margin-inline-start:10px;justify-content:flex-start}
   .lg-track{gap:8px}
-  .legends img{width:38px;height:38px;border-width:1.5px}
+  .legends img{width:42px;height:42px;border-width:1.5px}
 }
 @media(prefers-reduced-motion:reduce){.lg-track,.tk-track{animation:none}}
 """
