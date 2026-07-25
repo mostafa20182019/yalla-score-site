@@ -587,7 +587,7 @@ body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg
 .wrap{max-width:1600px;margin:0 auto;padding:0 20px}
 a{color:inherit}
 .site-head{background:linear-gradient(90deg,var(--green-d),var(--green));box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
-.head-in{display:flex;align-items:center;height:56px}
+.head-in{display:flex;align-items:center;height:68px}
 .brand{color:#fff;font-weight:900;font-size:1.3rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 /* second row: navigation tabs (like the app) */
 .site-nav{position:relative;z-index:1;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12)}
@@ -711,43 +711,35 @@ a{color:inherit}
 """
 
 # ---- legends header strip (free CC / public-domain photos, same as the app) ----
+# 8 hand-picked legends (name for tooltip/alt, 200px Wikimedia thumb).
+# Every photo was visually reviewed 2026-07-25 — face-centered, good quality.
 LEGENDS = [
-  "https://upload.wikimedia.org/wikipedia/commons/4/4a/Mohamed_Salah_2018.jpg",
-  "https://upload.wikimedia.org/wikipedia/commons/1/19/Mohamed_Abotrika.jpg",
-  "https://upload.wikimedia.org/wikipedia/commons/f/f6/Mahmoud_El-Khatib_%281977%29.jpg",
-  "https://upload.wikimedia.org/wikipedia/commons/7/70/Hassan_Shehata_Egypt_%281981%29.jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Hazem_Emam.png",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Steven_Gerrard.jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Frank_Lampard_(cropped).jpg",
-  "https://upload.wikimedia.org/wikipedia/commons/8/8c/Cristiano_Ronaldo_2018.jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Zinedine_Zidane_by_Tasnim_01.jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Rivaldo_bunyodkor_2010.jpg",
-  "https://upload.wikimedia.org/wikipedia/commons/c/c1/Lionel_Messi_20180626.jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Lamine_Yamal_France_v_Spain_7.24.26-142_(cropped).jpg?width=200",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Erling_Haaland_2023_(cropped-v2).jpg?width=200",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Francesco_Totti_Vicario_(crop).jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Alessandro_Del_Piero_2008_cropped.jpg",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Andrea_Pirlo_NYCFC.JPG",
-  "https://commons.wikimedia.org/wiki/Special:FilePath/Gianluigi_Buffon_(31784615942)_(cropped).jpg",
+  ("محمد صلاح",         "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_Salah_2018.jpg?width=200"),
+  ("محمد أبو تريكة",    "https://commons.wikimedia.org/wiki/Special:FilePath/Aboutrika2011.jpg?width=200"),
+  ("محمود الخطيب",      "https://commons.wikimedia.org/wiki/Special:FilePath/Mahmoud_El-Khatib_(1977).jpg?width=200"),
+  ("حازم إمام",         "https://commons.wikimedia.org/wiki/Special:FilePath/Hazem_Emam.png?width=200"),
+  ("ليونيل ميسي",       "https://commons.wikimedia.org/wiki/Special:FilePath/Lionel_Messi_20180626.jpg?width=200"),
+  ("كريستيانو رونالدو", "https://commons.wikimedia.org/wiki/Special:FilePath/Cristiano_Ronaldo_2018_(cropped).jpg?width=200"),
+  ("زين الدين زيدان",   "https://commons.wikimedia.org/wiki/Special:FilePath/Zinedine_Zidane_by_Tasnim_01.jpg?width=200"),
+  ("لامين يامال",       "https://commons.wikimedia.org/wiki/Special:FilePath/Lamine_Yamal_France_v_Spain_7.24.26-142_(cropped).jpg?width=200"),
 ]
-# Real <img> tiles (uniform crop, full color) on a slow marquee, instead of the
-# old squished ::after background hack.
-LEGENDS_HTML = ("".join(f'<img src="{u}" alt="" loading="lazy">' for u in LEGENDS)) * 2
+# 8 big static tiles (no marquee): name tooltip via title/alt.
+LEGENDS_HTML = "".join(
+    f'<img src="{u}" alt="{n}" title="{n}" loading="lazy">' for n, u in LEGENDS)
 
 LEGENDS_CSS = """
-/* legends strip: clean tiles + slow crawl (pause on hover) */
-.legends{flex:1;min-width:0;margin-inline-start:20px;overflow:hidden;
-  -webkit-mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent);
-  mask-image:linear-gradient(to right,transparent,#000 6%,#000 94%,transparent)}
-.lg-track{display:inline-flex;width:max-content;align-items:center;gap:7px;
-  animation:lgmove 70s linear infinite}
-.legends:hover .lg-track{animation-play-state:paused}
-.legends img{width:42px;height:42px;border-radius:9px;object-fit:cover;
-  object-position:50% 22%;
-  border:1.5px solid rgba(255,255,255,.28);filter:saturate(.95);
-  transition:transform .15s,border-color .15s}
-.legends img:hover{transform:scale(1.15);border-color:#fff}
-@keyframes lgmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
+/* legends strip: 8 big face circles, static, name on hover */
+.legends{flex:1;min-width:0;margin-inline-start:20px;display:flex;
+  justify-content:center;overflow-x:auto;scrollbar-width:none}
+.legends::-webkit-scrollbar{display:none}
+.lg-track{display:inline-flex;align-items:center;gap:14px}
+.legends img{width:54px;height:54px;border-radius:50%;object-fit:cover;
+  object-position:50% 22%;flex:0 0 auto;
+  border:2px solid rgba(255,255,255,.45);
+  box-shadow:0 2px 8px rgba(0,0,0,.25);
+  transition:transform .16s,border-color .16s,box-shadow .16s}
+.legends img:hover{transform:scale(1.22);border-color:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.4)}
 /* live-scores ticker */
 .ticker{display:block;background:#06170d;overflow:hidden;text-decoration:none;
   border-top:1px solid rgba(255,255,255,.07)}
@@ -766,8 +758,9 @@ LEGENDS_CSS = """
 @keyframes tkmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
 @keyframes tkpulse{0%,100%{opacity:1}50%{opacity:.2}}
 @media(max-width:720px){
-  .legends{margin-inline-start:10px}
-  .legends img{width:32px;height:32px;border-radius:7px;border-width:1px}
+  .legends{margin-inline-start:10px;justify-content:flex-start}
+  .lg-track{gap:8px}
+  .legends img{width:38px;height:38px;border-width:1.5px}
 }
 @media(prefers-reduced-motion:reduce){.lg-track,.tk-track{animation:none}}
 """
