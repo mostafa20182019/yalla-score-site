@@ -229,8 +229,12 @@ function checkVideo(){
       .then(function(r){return r.json();})
       .then(function(j){ okPreview(p, (j&&j.title)||""); })
       .catch(function(){ okPreview(p, ""); });
+    var fileWarn = (location.protocol==="file:")
+      ? "<br>⚠️ إنت فاتح الصفحة كملف مباشر — يوتيوب هيرفض المعاينة بـ <b>Error 153</b> حتى لو الفيديو سليم. "+
+        "افتح الصفحة عن طريق <b>admin.cmd</b> (دبل-كليك) وجرّب تاني."
+      : "";
     show("chkStatus","info","▶ شغّل المعاينة تحت: لو الفيديو <b>اشتغل</b> يبقى تمام — لو ظهر "+
-      "«Video unavailable» يبقى مقفول التضمين ومتضيفوش");
+      "«Video unavailable» يبقى مقفول التضمين ومتضيفوش"+fileWarn);
   }
 }
 function okPreview(p, title){
