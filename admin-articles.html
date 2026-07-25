@@ -1,0 +1,293 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>إدارة أخبار يلا سكور</title>
+<style>
+:root{--green:#1a7f37;--green-d:#0f5e28;--ink:#0f172a;--muted:#64748b;--line:#e6ebf1;--bg:#eef2f6;--red:#e11d48}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+.head{background:linear-gradient(90deg,var(--green-d),var(--green));color:#fff;padding:14px 20px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.head h1{margin:0;font-size:1.15rem;font-weight:900}
+.head .tag{font-size:.75rem;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:999px}
+.wrap{max-width:900px;margin:0 auto;padding:18px 16px 80px}
+.box{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin:0 0 16px;box-shadow:0 2px 8px rgba(15,23,42,.06)}
+.box h2{margin:0 0 10px;font-size:1rem;font-weight:900;color:var(--green-d)}
+label{display:block;font-size:.8rem;font-weight:800;color:var(--muted);margin:10px 0 4px}
+input[type=text],input[type=password],input[type=date],textarea{width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;font-size:.9rem}
+textarea{min-height:180px;resize:vertical;line-height:1.8}
+input:focus,textarea:focus{outline:2px solid var(--green);border-color:var(--green)}
+button{font:inherit;font-weight:800;border:0;border-radius:9px;padding:9px 16px;cursor:pointer}
+.btn-g{background:var(--green);color:#fff}.btn-g:hover{background:var(--green-d)}
+.btn-o{background:#fff;color:var(--green-d);border:1.5px solid var(--green)}
+.btn-r{background:#fff;color:var(--red);border:1.5px solid #fbcfe0}
+.btn-sm{padding:5px 10px;font-size:.78rem;border-radius:7px}
+button:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+.grow{flex:1;min-width:220px}
+.status{margin-top:10px;padding:10px 14px;border-radius:9px;font-size:.85rem;font-weight:700;display:none}
+.status.ok{display:block;background:#e8f6ec;color:#0f5e28}
+.status.err{display:block;background:#fdecef;color:#9f1239}
+.status.info{display:block;background:#eff6ff;color:#1d4ed8}
+.aitem{display:grid;grid-template-columns:110px 1fr auto;gap:12px;align-items:center;border:1px solid var(--line);border-radius:11px;padding:9px;margin:0 0 9px;background:#fff}
+.aitem .th{width:110px;height:66px;border-radius:7px;background:linear-gradient(135deg,var(--green),#0a3d1c);background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5);font-size:1.4rem}
+.aitem h3{margin:0 0 3px;font-size:.87rem;font-weight:800}
+.aitem .m{font-size:.72rem;color:var(--muted);font-weight:700}
+.badge{display:inline-block;font-size:.66rem;font-weight:800;padding:2px 8px;border-radius:999px;background:#eef6ef;color:#0f5e28;margin-inline-start:6px}
+.acts{display:flex;flex-direction:column;gap:4px}
+.acts .row2{display:flex;gap:4px}
+#imgPrev{display:none;margin-top:8px;max-width:320px;max-height:180px;border-radius:9px;object-fit:cover}
+#bodyPrev{display:none;margin-top:10px;border:1px dashed #cbd5e1;border-radius:9px;padding:12px 16px;background:#fafcff}
+#bodyPrev h4{margin:0 0 6px;font-size:.78rem;color:var(--muted)}
+.hint{font-size:.75rem;color:var(--muted);margin:6px 0 0}
+.hint a{color:var(--green-d)}
+details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.85rem}
+#saveBar{position:sticky;bottom:0;background:#fff;border-top:2px solid var(--green);padding:12px 18px;display:none;align-items:center;gap:12px;flex-wrap:wrap;box-shadow:0 -4px 14px rgba(15,23,42,.08)}
+.dirty-note{font-size:.8rem;font-weight:800;color:#b45309}
+#formTitle b{color:var(--green-d)}
+</style>
+</head>
+<body>
+<header class="head">
+  <h1>📰 إدارة أخبار يلا سكور</h1>
+  <span class="tag">صفحة محلية — لا تُنشر على الموقع</span>
+</header>
+<div class="wrap">
+
+  <!-- ============ settings ============ -->
+  <div class="box">
+    <details id="setBox">
+      <summary>⚙️ الإعدادات (توكن GitHub) — نفس توكن صفحة الفيديوهات</summary>
+      <label>GitHub Fine-grained Token</label>
+      <div class="row">
+        <input type="password" id="tok" class="grow" placeholder="github_pat_...">
+        <button class="btn-g" onclick="saveTok()">حفظ التوكن</button>
+      </div>
+      <p class="hint">لو حفظت التوكن قبل كده في صفحة الفيديوهات على نفس المتصفح، هيشتغل هنا تلقائيًا.</p>
+    </details>
+    <div id="setStatus" class="status"></div>
+  </div>
+
+  <!-- ============ form ============ -->
+  <div class="box">
+    <h2 id="formTitle">➕ خبر جديد</h2>
+    <label>العنوان *</label>
+    <input type="text" id="ftitle" placeholder="عنوان الخبر ...">
+    <label>المقدمة (سطر واحد يظهر تحت العنوان وفي الكروت)</label>
+    <input type="text" id="fsummary" placeholder="ملخص قصير للخبر ...">
+    <label>رابط الصورة (اختياري — استخدم صور مجانية: Unsplash / Wikimedia)</label>
+    <div class="row">
+      <input type="text" id="fimg" class="grow" dir="ltr" placeholder="https://images.unsplash.com/...">
+      <button class="btn-o btn-sm" onclick="prevImg()">معاينة الصورة</button>
+    </div>
+    <img id="imgPrev" alt="">
+    <label>نص الخبر * <span style="font-weight:400">(اكتب فقرات عادية وافصل بينها بسطر فاضي — بتتحول تلقائيًا. ولو عارف HTML اكتبه مباشرة)</span></label>
+    <textarea id="fbody" placeholder="الفقرة الأولى ...&#10;&#10;الفقرة الثانية ..."></textarea>
+    <div class="row" style="margin-top:6px">
+      <button class="btn-o btn-sm" onclick="prevBody()">👁 معاينة النص</button>
+    </div>
+    <div id="bodyPrev"><h4>معاينة:</h4><div id="bodyPrevIn"></div></div>
+    <div class="row">
+      <div class="grow"><label>الكاتب</label><input type="text" id="fauthor" value="فريق التحرير"></div>
+      <div class="grow"><label>التاريخ</label><input type="date" id="fdate"></div>
+    </div>
+    <div class="row" style="margin-top:14px">
+      <button class="btn-g" id="formBtn" onclick="submitForm()">أضِف للقائمة</button>
+      <button class="btn-r btn-sm" id="cancelEdit" style="display:none" onclick="resetForm()">إلغاء التعديل</button>
+      <span class="hint">الخبر الجديد بيتحط الأول = الخبر الرئيسي في الصفحة</span>
+    </div>
+    <div id="formStatus" class="status"></div>
+  </div>
+
+  <!-- ============ list ============ -->
+  <div class="box">
+    <h2>📋 الأخبار الحالية <span id="cnt" class="badge"></span></h2>
+    <div class="row" style="margin-bottom:10px">
+      <button class="btn-o btn-sm" onclick="loadList()">🔄 إعادة تحميل من GitHub</button>
+      <span class="hint">أول خبر في القائمة هو الخبر الرئيسي الكبير (الهيرو)</span>
+    </div>
+    <div id="list"><p class="hint">… جاري التحميل</p></div>
+    <div id="listStatus" class="status"></div>
+  </div>
+</div>
+
+<!-- ============ save bar ============ -->
+<div id="saveBar">
+  <span class="dirty-note">⚠️ فيه تغييرات لسه متنشرتش</span>
+  <button class="btn-g" id="saveBtn" onclick="publish()">💾 حفظ ونشر على الموقع</button>
+  <button class="btn-r btn-sm" onclick="discard()">تجاهل التغييرات</button>
+  <span id="pubStatus" class="hint"></span>
+</div>
+
+<script>
+var OWNER="mostafa20182019", REPO="yalla-score-site", BRANCH="main", PATH="data/articles.json";
+var API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
+var SITE="https://old-credit-e926.mustafa-abdelsalam95.workers.dev";
+var items=[], fileSha=null, dirty=false, editIdx=null;
+
+function tok(){ return localStorage.getItem("ys_gh_token")||""; }
+function saveTok(){
+  var v=document.getElementById("tok").value.trim();
+  if(!v){ return show("setStatus","err","اكتب التوكن الأول"); }
+  localStorage.setItem("ys_gh_token", v);
+  show("setStatus","ok","اتحفظ ✓ — بحمّل القائمة...");
+  document.getElementById("setBox").open=false;
+  loadList();
+}
+function show(id,cls,msg){ var el=document.getElementById(id); el.className="status "+cls; el.innerHTML=msg; }
+function hide(id){ document.getElementById(id).className="status"; }
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];}); }
+
+/* ---------- utf8-safe base64 ---------- */
+function b64enc(str){ return btoa(unescape(encodeURIComponent(str))); }
+function b64dec(b64){ return decodeURIComponent(escape(atob(b64.replace(/\n/g,"")))); }
+
+/* ---------- load ---------- */
+function loadList(){
+  if(!tok()){ document.getElementById("setBox").open=true;
+    return show("listStatus","info","محتاج توكن GitHub — افتح الإعدادات فوق."); }
+  hide("listStatus");
+  fetch(API+"?ref="+BRANCH,{headers:{Authorization:"Bearer "+tok(),Accept:"application/vnd.github+json"}})
+  .then(function(r){ if(!r.ok) throw new Error("GitHub رفض ("+r.status+") — اتأكد من التوكن"); return r.json(); })
+  .then(function(j){
+    fileSha=j.sha;
+    var doc=JSON.parse(b64dec(j.content));
+    items=(doc.results&&doc.results[0]&&doc.results[0].items)||[];
+    dirty=false; resetForm(); render();
+    show("listStatus","ok","اتحمّلت آخر نسخة من GitHub ✓");
+    setTimeout(function(){hide("listStatus");},2500);
+  })
+  .catch(function(e){ show("listStatus","err",e.message); });
+}
+
+/* ---------- render ---------- */
+function render(){
+  var L=document.getElementById("list"); L.innerHTML="";
+  document.getElementById("cnt").textContent=items.length+" خبر";
+  if(!items.length) L.innerHTML='<p class="hint">مفيش أخبار.</p>';
+  items.forEach(function(a,i){
+    var d=document.createElement("div"); d.className="aitem";
+    var th=a.image_url?'<div class="th" style="background-image:url(\''+esc(a.image_url)+'\')"></div>':'<div class="th">⚽</div>';
+    d.innerHTML=th+
+      '<div><h3>'+esc(a.title||"(بدون عنوان)")+(i===0?'<span class="badge">⭐ الخبر الرئيسي</span>':'')+'</h3>'+
+      '<div class="m">#'+esc(a.article_id)+' · '+esc(a.pub_date||"")+' · '+esc(a.author||"")+'</div></div>'+
+      '<div class="acts"><div class="row2">'+
+      '<button class="btn-o btn-sm" '+(i===0?'disabled':'')+' onclick="move('+i+',-1)">⬆</button>'+
+      '<button class="btn-o btn-sm" '+(i===items.length-1?'disabled':'')+' onclick="move('+i+',1)">⬇</button></div>'+
+      '<div class="row2"><button class="btn-o btn-sm" onclick="editArt('+i+')">✏ تعديل</button>'+
+      '<button class="btn-r btn-sm" onclick="del('+i+')">🗑</button></div></div>';
+    L.appendChild(d);
+  });
+  document.getElementById("saveBar").style.display = dirty ? "flex" : "none";
+}
+function move(i,d){ var t=items[i]; items[i]=items[i+d]; items[i+d]=t; dirty=true; render(); }
+function del(i){ if(confirm("حذف «"+(items[i].title||"")+"»؟ (هيتشال من الموقع مع النشر)")){ items.splice(i,1); if(editIdx===i) resetForm(); dirty=true; render(); } }
+function discard(){ if(confirm("تجاهل كل التغييرات وترجع لآخر نسخة منشورة؟")) loadList(); }
+
+/* ---------- form ---------- */
+function prevImg(){
+  var u=document.getElementById("fimg").value.trim();
+  var im=document.getElementById("imgPrev");
+  if(!u){ im.style.display="none"; return; }
+  im.src=u; im.style.display="block";
+  im.onerror=function(){ im.style.display="none"; show("formStatus","err","الصورة مش بتفتح من الرابط ده"); };
+  im.onload=function(){ hide("formStatus"); };
+}
+function bodyToHtml(txt){
+  txt=(txt||"").trim();
+  if(!txt) return "";
+  if(/<[a-z][\s\S]*>/i.test(txt)) return txt;          // already HTML
+  return txt.split(/\n\s*\n/).map(function(p){
+    return "<p>"+esc(p.trim()).replace(/\n/g,"<br>")+"</p>";
+  }).join("\n");
+}
+function prevBody(){
+  var pv=document.getElementById("bodyPrev");
+  document.getElementById("bodyPrevIn").innerHTML=bodyToHtml(document.getElementById("fbody").value);
+  pv.style.display="block";
+}
+function editArt(i){
+  var a=items[i]; editIdx=i;
+  document.getElementById("formTitle").innerHTML='✏ تعديل: <b>'+esc(a.title||"")+'</b>';
+  document.getElementById("ftitle").value=a.title||"";
+  document.getElementById("fsummary").value=a.summary||"";
+  document.getElementById("fimg").value=a.image_url||"";
+  document.getElementById("fbody").value=a.body||"";
+  document.getElementById("fauthor").value=a.author||"فريق التحرير";
+  document.getElementById("fdate").value=a.pub_date||"";
+  document.getElementById("formBtn").textContent="حفظ التعديل";
+  document.getElementById("cancelEdit").style.display="inline-block";
+  prevImg(); window.scrollTo({top:0,behavior:"smooth"});
+}
+function resetForm(){
+  editIdx=null;
+  document.getElementById("formTitle").textContent="➕ خبر جديد";
+  ["ftitle","fsummary","fimg","fbody"].forEach(function(id){document.getElementById(id).value="";});
+  document.getElementById("fauthor").value="فريق التحرير";
+  document.getElementById("fdate").value=new Date().toISOString().slice(0,10);
+  document.getElementById("formBtn").textContent="أضِف للقائمة";
+  document.getElementById("cancelEdit").style.display="none";
+  document.getElementById("imgPrev").style.display="none";
+  document.getElementById("bodyPrev").style.display="none";
+  hide("formStatus");
+}
+function submitForm(){
+  var t=document.getElementById("ftitle").value.trim();
+  var b=document.getElementById("fbody").value.trim();
+  if(!t) return show("formStatus","err","العنوان مطلوب");
+  if(!b) return show("formStatus","err","نص الخبر مطلوب");
+  var art={
+    article_id: editIdx!==null ? items[editIdx].article_id : nextId(),
+    title:t,
+    summary:document.getElementById("fsummary").value.trim(),
+    body:bodyToHtml(b),
+    image_url:document.getElementById("fimg").value.trim()||null,
+    author:document.getElementById("fauthor").value.trim()||"فريق التحرير",
+    pub_date:document.getElementById("fdate").value||new Date().toISOString().slice(0,10)
+  };
+  if(editIdx!==null){ items[editIdx]=art; show("formStatus","ok","اتعدّل ✓ — اضغط «حفظ ونشر» تحت"); }
+  else { items.unshift(art); show("formStatus","ok","اتضاف كخبر رئيسي ✓ — اضغط «حفظ ونشر» تحت"); }
+  dirty=true; var keep=document.getElementById("formStatus").outerHTML;
+  resetForm();
+  document.getElementById("formStatus").outerHTML=keep;
+  render();
+}
+function nextId(){
+  var mx=0; items.forEach(function(a){ var n=parseInt(a.article_id,10); if(n>mx) mx=n; });
+  return mx+1;
+}
+
+/* ---------- publish ---------- */
+function publish(){
+  if(!tok()) return show("listStatus","err","محتاج توكن — افتح الإعدادات");
+  var btn=document.getElementById("saveBtn"); btn.disabled=true;
+  document.getElementById("pubStatus").textContent="… بحفظ على GitHub";
+  var payload={
+    message:"Update articles via admin page ("+items.length+" items)",
+    content:b64enc(JSON.stringify({results:[{items:items}]}, null, 0)),
+    branch:BRANCH, sha:fileSha
+  };
+  fetch(API,{method:"PUT",
+    headers:{Authorization:"Bearer "+tok(),Accept:"application/vnd.github+json","Content-Type":"application/json"},
+    body:JSON.stringify(payload)})
+  .then(function(r){ if(!r.ok) return r.json().then(function(j){throw new Error("GitHub رفض الحفظ ("+r.status+"): "+(j.message||""));}); return r.json(); })
+  .then(function(j){
+    fileSha=j.content.sha; dirty=false; btn.disabled=false; render();
+    show("listStatus","ok","🎉 اتحفظ! GitHub Actions بينشر دلوقتي — الموقع هيتحدث خلال ~دقيقة.<br>"+
+      '<a href="https://github.com/'+OWNER+'/'+REPO+'/actions" target="_blank">تابع النشر</a> · '+
+      '<a href="'+SITE+'/" target="_blank">افتح الموقع</a>');
+    document.getElementById("pubStatus").textContent="";
+  })
+  .catch(function(e){ btn.disabled=false;
+    document.getElementById("pubStatus").textContent="";
+    show("listStatus","err",e.message+"<br>لو استمرت اعمل «إعادة تحميل من GitHub» وحاول تاني."); });
+}
+
+/* ---------- boot ---------- */
+document.getElementById("fdate").value=new Date().toISOString().slice(0,10);
+if(tok()) loadList(); else { document.getElementById("setBox").open=true;
+  document.getElementById("list").innerHTML='<p class="hint">حط توكن GitHub في الإعدادات فوق.</p>'; }
+</script>
+</body>
+</html>
