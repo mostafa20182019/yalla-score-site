@@ -159,7 +159,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -244,6 +244,15 @@ def make_ticker(matches):
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
 
+def news_card(a):
+    """One article card (used by the home shelf and the /news.html archive)."""
+    img = a.get("image_url")
+    thumb = (f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>'
+             if img else '<div class="card-img noimg">⚽</div>')
+    return (f'<a class="card" href="/a/{a["article_id"]}.html">{thumb}'
+            f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
+            f'<p class="meta">{esc(a.get("author"))} · {esc(a.get("pub_date"))}</p></div></a>')
+
 def video_facade(v):
     """A lightweight video 'facade': thumbnail + play button; the real iframe
     is injected by VIDEO_JS only when the visitor clicks (keeps the page fast).
@@ -325,15 +334,17 @@ def build():
     <p>{esc(feat.get('summary'))}</p>
   </div></a>""")
     if rest:
-        parts.append('<div class="grid">')
-        for a in rest:
-            img = a.get("image_url")
-            thumb = f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>' if img else '<div class="card-img noimg">⚽</div>'
-            parts.append(f"""<a class="card" href="/a/{a['article_id']}.html">
-  {thumb}
-  <div class="card-b"><h3>{esc(a['title'])}</h3>
-  <p class="meta">{esc(a.get('author'))} · {esc(a.get('pub_date'))}</p></div></a>""")
-        parts.append('</div>')
+        # horizontal shelf (newest 12); the full archive lives on /news.html
+        parts.append('<div class="sec-h"><h2 class="page-h">المزيد من الأخبار</h2>'
+                     '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
+        parts.append('<div class="shelf-wrap">'
+                     '<button type="button" class="sh-btn sh-l" aria-label="التالي">‹</button>'
+                     '<div class="shelf" id="newsShelf">')
+        for a in rest[:12]:
+            parts.append(news_card(a))
+        parts.append('</div>'
+                     '<button type="button" class="sh-btn sh-r" aria-label="السابق">›</button></div>')
+        parts.append(SHELF_JS)
     # latest videos teaser (full library lives on /videos.html)
     if videos:
         parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
@@ -448,6 +459,22 @@ def build():
     pv.append(foot())
     write("privacy.html", "".join(pv))
     urls.append("/privacy.html")
+
+    # ---- news archive (ALL articles; the home page shows hero + shelf only) ----
+    np_ = [head(f"كل الأخبار — {SITE_NAME}",
+                "أرشيف أخبار كرة القدم على يلا سكور — كل المقالات والتقارير.",
+                SITE_BASE + "/news.html", active="home")]
+    np_.append('<h1 class="page-h">كل الأخبار</h1>')
+    if articles:
+        np_.append('<div class="grid">')
+        for a in articles:
+            np_.append(news_card(a))
+        np_.append('</div>')
+    else:
+        np_.append('<p class="empty-note">لا توجد أخبار بعد.</p>')
+    np_.append(foot())
+    write("news.html", "".join(np_))
+    urls.append("/news.html")
 
     # ---- videos page (curated football videos; edit data/videos.json) ----
     vp = [head(f"فيديوهات كرة القدم — {SITE_NAME}",
@@ -624,6 +651,18 @@ a{color:inherit}
 .hcard .reltime-wrap{white-space:nowrap}
 .hcard .go{position:absolute;top:12px;inset-inline-end:12px;font-size:.9rem;color:var(--green);opacity:0;transform:translateY(-3px);transition:opacity .14s,transform .14s}
 .hcard:hover .go{opacity:1;transform:translateY(0)}
+/* news shelf (horizontal, scroll-snap, arrows) */
+.shelf-wrap{position:relative}
+.shelf{display:flex;gap:15px;overflow-x:auto;
+  scrollbar-width:none;padding:2px 2px 6px}
+.shelf::-webkit-scrollbar{display:none}
+.shelf .card{flex:0 0 250px}
+.sh-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:38px;height:38px;
+  border:0;border-radius:50%;background:var(--green);color:#fff;font-size:1.35rem;font-weight:900;
+  line-height:1;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.28);opacity:.94}
+.sh-btn:hover{background:var(--green-d)}
+.sh-l{left:-13px}.sh-r{right:-13px}
+@media(max-width:760px){.sh-btn{display:none}}
 /* videos */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .see-all{color:var(--green-d);font-weight:800;text-decoration:none;font-size:.85rem;white-space:nowrap}
@@ -753,6 +792,28 @@ REL_JS = """<script>
     var t=rel(el.getAttribute('datetime'));
     if(t) el.textContent=t;
   });
+})();
+</script>"""
+
+SHELF_JS = """<script>
+(function(){
+  var sh=document.getElementById('newsShelf'); if(!sh) return;
+  function step(){ var c=sh.querySelector('.card'); return c ? c.offsetWidth + 15 : 265; }
+  /* rAF glide: Chromium's smooth scrollBy mis-clamps negative (RTL) targets */
+  function glide(delta){
+    var start=sh.scrollLeft, min=-(sh.scrollWidth-sh.clientWidth), max=0;
+    var target=Math.min(max, Math.max(min, start+delta));
+    var t0=performance.now();
+    function f(t){
+      var k=Math.min(1,(t-t0)/300); k=1-Math.pow(1-k,3);
+      sh.scrollLeft=start+(target-start)*k;
+      if(k<1) requestAnimationFrame(f);
+    }
+    requestAnimationFrame(f);
+  }
+  var l=document.querySelector('.sh-l'), r=document.querySelector('.sh-r');
+  if(l) l.addEventListener('click',function(){ glide(-step()); });
+  if(r) r.addEventListener('click',function(){ glide( step()); });
 })();
 </script>"""
 
