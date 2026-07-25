@@ -406,6 +406,19 @@ def build():
                 shutil.copy(src, os.path.join(DIST, fn))
                 print("  + root file:", fn)
 
+    # ---- uploaded media (article images added via the admin page) ----
+    media = os.path.join(HERE, "media")
+    if os.path.isdir(media):
+        os.makedirs(os.path.join(DIST, "media"), exist_ok=True)
+        n = 0
+        for fn in os.listdir(media):
+            src = os.path.join(media, fn)
+            if os.path.isfile(src):
+                shutil.copy(src, os.path.join(DIST, "media", fn))
+                n += 1
+        if n:
+            print(f"  + media files: {n}")
+
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 

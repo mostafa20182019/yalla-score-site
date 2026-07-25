@@ -76,11 +76,14 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
     <input type="text" id="ftitle" placeholder="عنوان الخبر ...">
     <label>المقدمة (سطر واحد يظهر تحت العنوان وفي الكروت)</label>
     <input type="text" id="fsummary" placeholder="ملخص قصير للخبر ...">
-    <label>رابط الصورة (اختياري — استخدم صور مجانية: Unsplash / Wikimedia)</label>
+    <label>صورة الخبر (اختياري): الصق رابط صورة مجانية، أو ارفع صورة من جهازك</label>
     <div class="row">
       <input type="text" id="fimg" class="grow" dir="ltr" placeholder="https://images.unsplash.com/...">
       <button class="btn-o btn-sm" onclick="prevImg()">معاينة الصورة</button>
+      <button class="btn-o btn-sm" onclick="document.getElementById('fupload').click()">📁 ارفع من جهازك</button>
+      <input type="file" id="fupload" accept="image/*" style="display:none" onchange="uploadImage(this)">
     </div>
+    <div id="upStatus" class="status"></div>
     <img id="imgPrev" alt="">
     <label>نص الخبر * <span style="font-weight:400">(اكتب فقرات عادية وافصل بينها بسطر فاضي — بتتحول تلقائيًا. ولو عارف HTML اكتبه مباشرة)</span></label>
     <textarea id="fbody" placeholder="الفقرة الأولى ...&#10;&#10;الفقرة الثانية ..."></textarea>
@@ -193,6 +196,47 @@ function prevImg(){
   im.src=u; im.style.display="block";
   im.onerror=function(){ im.style.display="none"; show("formStatus","err","الصورة مش بتفتح من الرابط ده"); };
   im.onload=function(){ hide("formStatus"); };
+}
+function uploadImage(inp){
+  var f=inp.files && inp.files[0];
+  inp.value="";
+  if(!f) return;
+  if(!tok()){ document.getElementById("setBox").open=true;
+    return show("upStatus","err","محتاج توكن GitHub الأول — افتح الإعدادات فوق."); }
+  if(!/^image\//.test(f.type)) return show("upStatus","err","اختار ملف صورة (JPG / PNG / WebP)");
+  show("upStatus","info","… بجهّز الصورة (تصغير وضغط)");
+  var rd=new FileReader();
+  rd.onload=function(){
+    var img=new Image();
+    img.onload=function(){
+      var MAXW=1600, w=img.width, h=img.height;
+      if(w>MAXW){ h=Math.round(h*MAXW/w); w=MAXW; }
+      var cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+      cv.getContext("2d").drawImage(img,0,0,w,h);
+      var dataUrl=cv.toDataURL("image/jpeg",0.85);
+      var b64=dataUrl.split(",")[1];
+      var kb=Math.round(b64.length*3/4/1024);
+      var d=new Date(), pad=function(n){return (n<10?"0":"")+n;};
+      var name="img-"+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+"-"+
+               pad(d.getHours())+pad(d.getMinutes())+pad(d.getSeconds())+".jpg";
+      show("upStatus","info","… برفع الصورة على GitHub ("+kb+" KB)");
+      fetch("https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/media/"+name,{
+        method:"PUT",
+        headers:{Authorization:"Bearer "+tok(),Accept:"application/vnd.github+json","Content-Type":"application/json"},
+        body:JSON.stringify({message:"Upload article image "+name,content:b64,branch:BRANCH})})
+      .then(function(r){ if(!r.ok) return r.json().then(function(j){throw new Error("GitHub رفض الرفع ("+r.status+"): "+(j.message||""));}); return r.json(); })
+      .then(function(){
+        document.getElementById("fimg").value=SITE+"/media/"+name;
+        var im=document.getElementById("imgPrev");
+        im.onerror=null; im.onload=null; im.src=dataUrl; im.style.display="block";
+        show("upStatus","ok","✓ اترفعت — الرابط اتحط في الخانة. (بتبقى متاحة على الموقع مع أول نشر — خلال دقيقة)");
+      })
+      .catch(function(e){ show("upStatus","err",e.message); });
+    };
+    img.onerror=function(){ show("upStatus","err","الملف ده مش صورة صالحة"); };
+    img.src=rd.result;
+  };
+  rd.readAsDataURL(f);
 }
 function bodyToHtml(txt){
   txt=(txt||"").trim();
