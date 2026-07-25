@@ -170,14 +170,20 @@ def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
 
 def video_facade(v):
-    """A lightweight YouTube 'facade': thumbnail + play button; the real iframe
-    is injected by VIDEO_JS only when the visitor clicks (keeps the page fast)."""
+    """A lightweight video 'facade': thumbnail + play button; the real iframe
+    is injected by VIDEO_JS only when the visitor clicks (keeps the page fast).
+    Supports source = "youtube" (default) | "dailymotion"."""
     vid = esc(v.get("video_id") or "")
+    src = (v.get("source") or "youtube").lower()
     title = esc(v.get("title") or "")
     date = esc(v.get("pub_date") or "")
-    thumb = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
+    if src == "dailymotion":
+        thumb = f"https://www.dailymotion.com/thumbnail/video/{vid}"
+    else:
+        src = "youtube"
+        thumb = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
     meta = f'<p class="meta">{date}</p>' if date else ""
-    return (f'<div class="vcard" data-yt="{vid}">'
+    return (f'<div class="vcard" data-vid="{vid}" data-src="{src}">'
             f'<button type="button" class="vthumb" aria-label="تشغيل الفيديو: {title}">'
             f'<img src="{thumb}" alt="{title}" loading="lazy" '
             f'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\')">'
@@ -634,11 +640,14 @@ VIDEO_JS = """<script>
   document.addEventListener('click',function(e){
     var btn=e.target.closest('.vthumb'); if(!btn) return;
     var card=btn.closest('.vcard'); if(!card) return;
-    var id=card.getAttribute('data-yt'); if(!id) return;
+    var id=card.getAttribute('data-vid'); if(!id) return;
+    var src=card.getAttribute('data-src')||'youtube';
     var h3=card.querySelector('h3');
     var f=document.createElement('iframe');
     f.className='vframe';
-    f.src='https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';
+    f.src = (src==='dailymotion')
+      ? 'https://www.dailymotion.com/embed/video/'+id+'?autoplay=1'
+      : 'https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';
     f.title=h3?h3.textContent:'video';
     f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
     f.setAttribute('allowfullscreen','');
