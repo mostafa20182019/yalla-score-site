@@ -700,7 +700,10 @@ LEGENDS_CSS = """
   animation:tkpulse 1.2s ease-in-out infinite}
 @keyframes tkmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
 @keyframes tkpulse{0%,100%{opacity:1}50%{opacity:.2}}
-@media(max-width:720px){.legends{display:none}}
+@media(max-width:720px){
+  .legends{margin-inline-start:10px}
+  .legends img{width:32px;height:32px;border-radius:7px;border-width:1px}
+}
 @media(prefers-reduced-motion:reduce){.lg-track,.tk-track{animation:none}}
 """
 
