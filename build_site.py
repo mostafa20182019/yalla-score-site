@@ -140,7 +140,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <body>
 <header class="site-head">
   <div class="wrap head-in">
-    <a class="brand" href="/"><span class="ball">⚽</span> {esc(SITE_NAME)}</a>
+    <a class="brand" href="/"><span class="ball">⚽</span> {esc(SITE_NAME)}<span class="beta">بث تجريبي</span></a>
     <div class="legends" aria-hidden="true"><div class="lg-track">{LEGENDS_HTML}</div></div>
   </div>
   {TICKER_HTML}
@@ -589,6 +589,7 @@ a{color:inherit}
 .site-head{background:linear-gradient(90deg,var(--green-d),var(--green));box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
 .head-in{display:flex;align-items:center;height:78px}
 .brand{color:#fff;font-weight:900;font-size:1.3rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.beta{font-size:.62rem;font-weight:800;color:#ffe08a;border:1px solid rgba(255,224,138,.55);background:rgba(0,0,0,.18);padding:2px 9px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 /* second row: navigation tabs (like the app) */
 .site-nav{position:relative;z-index:1;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12)}
 .nav-in{display:flex;align-items:stretch;height:46px}
