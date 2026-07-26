@@ -221,16 +221,10 @@ def fetch_standings():
     hdr = {"X-Auth-Token": FD_TOKEN}
     out = []
     got_any = False
-    # the season we WANT to show (starts in year Y): Jul-Dec -> this year,
-    # Jan-Jun -> last year. The free tier only serves the "current" season and
-    # ignores a ?season= filter, so instead we read the season year FROM each
-    # response and drop leagues football-data still points at last season
-    # (their default table is last season's FINAL table -> looks wrong pre-season).
-    now = datetime.now(CAIRO)
-    want = now.year if now.month >= 7 else now.year - 1
+    today = datetime.now(CAIRO).strftime("%Y-%m-%d")
     # fetch_matches just burned ~8 of the 10-req/min budget; let the window clear
     # before the standings batch, then space each call out.
-    print(f"  … waiting 60s for the rate-limit window before standings (want season {want})")
+    print("  … waiting 60s for the rate-limit window before standings")
     time.sleep(60)
     for i, comp in enumerate(FD_TABLE_COMPS):
         if i:
@@ -242,24 +236,21 @@ def fetch_standings():
             print(f"  ! standings {comp} failed: {e}")
             continue
         got_any = True
-        # which season did we actually get?
-        sy = None
-        fs = (j.get("filters") or {}).get("season")
-        if fs and str(fs)[:4].isdigit():
-            sy = int(str(fs)[:4])
-        if sy is None:
-            sd = (j.get("season") or {}).get("startDate") or ""
-            if sd[:4].isdigit():
-                sy = int(sd[:4])
-        if sy is not None and sy < want:
-            print(f"  ! standings {comp}: still last season ({sy}) - skipping")
-            continue
         table = None
         for s in j.get("standings", []):
             if s.get("type") == "TOTAL":
                 table = s.get("table")
                 break
         if not table:
+            continue
+        # football-data keeps serving LAST season's FINAL table under the new
+        # season id until kickoff. Drop it: season hasn't started yet AND the
+        # table already shows played games -> it's stale last-season data.
+        start = (j.get("season") or {}).get("startDate") or ""
+        started = bool(start) and start[:10] <= today
+        maxplayed = max((r.get("playedGames") or 0) for r in table)
+        if (not started) and maxplayed > 0:
+            print(f"  ! standings {comp}: pre-season stale table ({maxplayed} played) - skip")
             continue
         name = (j.get("competition") or {}).get("name") or comp
         rows = []
