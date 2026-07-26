@@ -531,16 +531,6 @@ def build():
                 p.append(fixture_mini(m))
         p.append('</div>')
     p.append('<div id="mpDefault">')
-    if articles:
-        p.append('<h2 class="mp-h">أحدث الأخبار</h2><div class="mp-news">')
-        for a in articles[:4]:
-            img = a.get("image_url")
-            th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
-                  if img else '<span class="mn-th noimg">⚽</span>')
-            p.append(f'<a class="mn-item" href="/a/{a["article_id"]}.html">{th}'
-                     f'<span class="mn-b"><span class="mn-t">{esc(a["title"])}</span>'
-                     f'<span class="mn-d">{esc(a.get("pub_date"))}</span></span></a>')
-        p.append('</div>')
     p.append(f'<div class="mp-ad">{adsense_slot()}</div>')
     p.append('</div>')  # /mpDefault
     p.append('</aside>')
