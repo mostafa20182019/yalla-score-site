@@ -479,8 +479,6 @@ def build():
 
     # --- right rail (RTL start): leagues filter ---
     p.append('<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">')
-    p.append('<button type="button" class="lg-item is-active" data-comp="">'
-             '<span class="lg-ico">⚽</span> المباريات</button>')
     for c in comp_order:
         p.append(f'<button type="button" class="lg-item" data-comp="{esc(c)}">'
                  f'{comp_icon(c)} {esc(comp_label(c))}</button>')
@@ -1076,16 +1074,26 @@ MATCHES_JS = """<script>
   prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
   next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
   var tables=[].slice.call(document.querySelectorAll('.ltable'));
-  function showTable(){
-    tables.forEach(function(t){ t.hidden = !filter || t.getAttribute('data-comp')!==filter; });
-  }
   var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
-  lgItems.forEach(function(b){ b.addEventListener('click',function(){
+  function reset(){                 /* all-matches view (default / top nav tab) */
+    filter='';
+    lgItems.forEach(function(x){ x.classList.remove('is-active'); });
+    tables.forEach(function(t){ t.hidden=true; });
+    nav.hidden=false; wrap.style.display='';
+    applyFilter(sections[idx]);
+  }
+  function selectLeague(b){
     filter=b.getAttribute('data-comp')||'';
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
-    applyFilter(sections[idx]);
-    showTable();
-  }); });
+    var table=tables.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
+    tables.forEach(function(t){ t.hidden = t!==table; });
+    if(table){ nav.hidden=true; wrap.style.display='none'; }      /* table only */
+    else { nav.hidden=false; wrap.style.display=''; applyFilter(sections[idx]); }  /* no table (WC) -> its matches */
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  lgItems.forEach(function(b){ b.addEventListener('click',function(){ selectLeague(b); }); });
+  var mTab=document.querySelector('a.navtab[href="/matches.html"]');
+  if(mTab) mTab.addEventListener('click',function(e){ e.preventDefault(); reset(); window.scrollTo({top:0,behavior:'smooth'}); });
   show(idx);
 })();
 </script>"""
