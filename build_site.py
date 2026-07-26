@@ -337,6 +337,7 @@ def build():
     matches = load("matches.json")
     headlines = load("headlines.json")
     videos = load("videos.json")
+    standings = load("standings.json")   # [{competition, table:[...]}]
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
     reels = load("reels.json")
     seen_r = {r.get("video_id") for r in reels}
@@ -485,8 +486,11 @@ def build():
                  f'<span class="lg-ico">{comp_emoji(c)}</span> {esc(c)}</button>')
     p.append('</div></aside>')
 
-    # --- center: day navigator + days ---
+    # --- center: league tables (hidden) + day navigator + days ---
+    st_by_comp = {s.get("competition"): s.get("table") for s in standings if s.get("table")}
     p.append('<div class="mp-main">')
+    for comp, table in st_by_comp.items():
+        p.append(standings_table(comp, table))
     p.append('<div id="daynav" class="daynav" hidden>'
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
              '<span id="dayLabel" class="dn-label"></span>'
@@ -665,6 +669,30 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
+def standings_table(comp, rows):
+    """League standings table (FotMob-style). Hidden until its league is picked."""
+    def cell(v):
+        return "0" if v is None else esc(str(v))
+    body = []
+    for r in rows:
+        crest = (f'<img src="{esc(r.get("crest"))}" alt="" loading="lazy">'
+                 if r.get("crest") else "")
+        body.append(
+            f'<tr><td class="lt-pos">{cell(r.get("pos"))}</td>'
+            f'<td class="lt-team">{crest}<bdi>{esc(r.get("team"))}</bdi></td>'
+            f'<td>{cell(r.get("played"))}</td><td>{cell(r.get("won"))}</td>'
+            f'<td>{cell(r.get("draw"))}</td><td>{cell(r.get("lost"))}</td>'
+            f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
+            f'<td>{cell(r.get("gd"))}</td><td class="lt-pts">{cell(r.get("pts"))}</td></tr>')
+    return (f'<div class="ltable" data-comp="{esc(comp)}" hidden>'
+            f'<div class="lt-head"><span class="lg-ico">{comp_emoji(comp)}</span> جدول ترتيب {esc(comp)}</div>'
+            f'<div class="lt-scroll"><table class="lt"><thead><tr>'
+            f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
+            f'<th title="لعب">لعب</th><th title="فاز">ف</th><th title="تعادل">ت</th>'
+            f'<th title="خسر">خ</th><th title="له">له</th><th title="عليه">عليه</th>'
+            f'<th title="الفارق">+/-</th><th class="lt-pts">نقاط</th></tr></thead>'
+            f'<tbody>{"".join(body)}</tbody></table></div></div>')
+
 def comp_emoji(name):
     n = (name or "").lower()
     if "world cup" in n or "مونديال" in n or "كأس العالم" in n: return "🏆"
@@ -776,6 +804,19 @@ a{color:inherit}
 .mn-t{font-size:.8rem;font-weight:800;color:var(--ink);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .mn-d{font-size:.7rem;color:var(--muted);font-weight:700;margin-top:2px}
 .mp-ad .ad-placeholder,.mp-ad .ad-unit{position:static;min-height:250px}
+/* league standings table */
+.ltable{background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.lt-head{display:flex;align-items:center;gap:8px;font-weight:900;color:var(--green-d);padding:12px 14px;border-bottom:1px solid #eef2f6}
+.lt-scroll{overflow-x:auto}
+.lt{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
+.lt th,.lt td{padding:9px 6px;text-align:center;white-space:nowrap}
+.lt thead th{color:var(--muted);font-weight:800;font-size:.72rem;border-bottom:1px solid #eef2f6}
+.lt tbody tr{border-bottom:1px solid #f1f5f9}
+.lt tbody tr:hover{background:#f8fafc}
+.lt .lt-pos{width:26px;color:var(--muted);font-weight:800}
+.lt .lt-team{text-align:start;display:flex;align-items:center;gap:8px;font-weight:800;min-width:150px}
+.lt .lt-team img{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
+.lt .lt-pts{font-weight:900;color:var(--green-d)}
 @media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
 @media(max-width:760px){
   .mpage{grid-template-columns:1fr;gap:10px}
@@ -1011,11 +1052,16 @@ MATCHES_JS = """<script>
   }
   prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
   next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
+  var tables=[].slice.call(document.querySelectorAll('.ltable'));
+  function showTable(){
+    tables.forEach(function(t){ t.hidden = !filter || t.getAttribute('data-comp')!==filter; });
+  }
   var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
   lgItems.forEach(function(b){ b.addEventListener('click',function(){
     filter=b.getAttribute('data-comp')||'';
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
     applyFilter(sections[idx]);
+    showTable();
   }); });
   show(idx);
 })();

@@ -210,6 +210,44 @@ def fetch_matches():
     out.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
     return out[:60]
 
+# -------------------------------------------------------------- standings
+# league tables for the 5 domestic leagues (World Cup has groups, not a table)
+FD_TABLE_COMPS = ["PL", "PD", "SA", "BL1", "FL1"]
+
+def fetch_standings():
+    if not FD_TOKEN:
+        print("  ! FD_TOKEN not set - skipping standings")
+        return None
+    hdr = {"X-Auth-Token": FD_TOKEN}
+    out = []
+    for comp in FD_TABLE_COMPS:
+        try:
+            j = json.loads(http_get(
+                f"https://api.football-data.org/v4/competitions/{comp}/standings", hdr))
+        except Exception as e:
+            print(f"  ! standings {comp} failed: {e}")
+            continue
+        table = None
+        for s in j.get("standings", []):
+            if s.get("type") == "TOTAL":
+                table = s.get("table")
+                break
+        if not table:
+            continue
+        name = (j.get("competition") or {}).get("name") or comp
+        rows = []
+        for r in table:
+            t = r.get("team") or {}
+            rows.append({
+                "pos": r.get("position"), "team": t.get("name"), "crest": t.get("crest"),
+                "played": r.get("playedGames"), "won": r.get("won"),
+                "draw": r.get("draw"), "lost": r.get("lost"),
+                "gf": r.get("goalsFor"), "ga": r.get("goalsAgainst"),
+                "gd": r.get("goalDifference"), "pts": r.get("points"),
+            })
+        out.append({"competition": name, "table": rows})
+    return out
+
 if __name__ == "__main__":
     os.makedirs(DATA, exist_ok=True)
     # a transient upstream failure must NOT kill the whole deploy -
@@ -238,3 +276,11 @@ if __name__ == "__main__":
     if reels_auto is not None:
         write_items("reels_auto.json", reels_auto)
         print(f"reels (auto): {len(reels_auto)}")
+    try:
+        standings = fetch_standings()
+    except Exception as e:
+        print(f"  ! standings fetch failed ({e}) - keeping existing standings.json")
+        standings = None
+    if standings:
+        write_items("standings.json", standings)
+        print(f"standings: {len(standings)} leagues")
