@@ -236,7 +236,7 @@ def make_ticker(matches):
             mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
         day = ("" if m.get("kickoff") == REF_TODAY or st == "LIVE"
                else f'<span class="tk-d">{esc(_tk_date(m.get("kickoff")))}</span>')
-        its.append(f'<span class="tk-item">{day}{hb}{esc(m.get("home"))} {mid} {esc(m.get("away"))}{ab}</span>')
+        its.append(f'<span class="tk-item">{day}{hb}<bdi>{esc(m.get("home"))}</bdi> {mid} <bdi>{esc(m.get("away"))}</bdi>{ab}</span>')
     seq = "".join(its)
     return ('<a class="ticker" href="/matches.html" aria-label="نتائج المباريات — اضغط للتفاصيل">'
             f'<div class="tk-track">{seq}{seq}</div></a>')
@@ -566,9 +566,9 @@ def match_row(m, show_time=False, show_comp=True):
         comp = f'<div class="mcomp">{esc(m.get("competition"))}{(" · " + esc(m.get("channel"))) if m.get("channel") else ""}</div>'
     return f"""<div class="mrow mrow-{badge[1]}">
   <span class="pill pill-{badge[1]}">{badge[0]}</span>
-  <div class="team">{crest(m.get('home_badge'))}<span>{esc(m.get('home'))}</span></div>
+  <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(m.get('home'))}</bdi></span></div>
   <div class="mid">{mid}</div>
-  <div class="team">{crest(m.get('away_badge'))}<span>{esc(m.get('away'))}</span></div>
+  <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(m.get('away'))}</bdi></span></div>
   {comp}
 </div>"""
 
@@ -632,7 +632,7 @@ a{color:inherit}
 .foot-links a:hover{color:#fff}
 /* matches */
 .mlist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.mrow{display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away" "comp comp comp comp";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--up);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.mrow{display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--up);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
 .mrow-live{border-inline-start-color:var(--live)}.mrow-fin{border-inline-start-color:var(--fin)}
 .pill{grid-area:pill;color:#fff;background:var(--up);border-radius:999px;padding:2px 12px;font-size:.68rem;font-weight:900}
 .pill-live{background:var(--live)}.pill-fin{background:var(--fin)}
@@ -643,7 +643,18 @@ a{color:inherit}
 .team .ph{font-size:1.4rem}
 .mid{grid-area:mid;text-align:center;min-width:74px}
 .score{font-size:1.5rem;font-weight:900}.ko{font-weight:800;color:var(--green-d)}
-.mcomp{grid-area:comp;color:var(--muted);font-size:.78rem;font-weight:700;text-align:center;border-top:1px solid #eef2f6;padding-top:8px}
+.mcomp{grid-column:1/-1;color:var(--muted);font-size:.78rem;font-weight:700;text-align:center;border-top:1px solid #eef2f6;padding-top:8px}
+/* mobile: symmetric stacked teams (crest above name), pill pinned top corner */
+@media(max-width:560px){
+  .mrow{grid-template-columns:1fr auto 1fr;grid-template-areas:"home mid away";position:relative;padding:30px 10px 12px}
+  .pill{position:absolute;top:8px;inset-inline-start:10px;grid-area:auto}
+  .team,.team:first-of-type,.team:last-of-type{grid-area:auto;flex-direction:column;justify-content:flex-start;text-align:center;gap:4px;font-size:.78rem;line-height:1.35}
+  .team:first-of-type{grid-area:home}
+  .team:last-of-type{grid-area:away}
+  .team img{width:30px;height:30px}
+  .mid{min-width:56px}
+  .score{font-size:1.2rem}
+}
 /* matches per-day navigator */
 .daynav{display:flex;align-items:center;justify-content:space-between;gap:12px;max-width:820px;margin:6px auto 14px;background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:6px 10px;box-shadow:0 2px 8px rgba(15,23,42,.06);position:sticky;top:112px;z-index:5}
 .dn-arrow{flex:0 0 auto;width:40px;height:40px;border:0;border-radius:50%;background:var(--green);color:#fff;font-size:1.5rem;font-weight:900;line-height:1;cursor:pointer}
