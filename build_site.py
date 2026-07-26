@@ -463,10 +463,30 @@ def build():
     for m in matches:
         daymap.setdefault(m.get("kickoff") or "", []).append(m)
     sorted_days = sorted(k for k in daymap.keys() if k)
+    # distinct competitions across the feed (for the leagues sidebar)
+    comp_order = []
+    for m in matches:
+        c = m.get("competition") or ""
+        if c and c not in comp_order:
+            comp_order.append(c)
+
     p = [head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
               "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
               SITE_BASE + "/matches.html", active="matches")]
     p.append('<h1 class="page-h">المباريات</h1>')
+    p.append('<div class="mpage">')
+
+    # --- right rail (RTL start): leagues filter ---
+    p.append('<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">')
+    p.append('<button type="button" class="lg-item is-active" data-comp="">'
+             '<span class="lg-ico">⚽</span> كل المباريات</button>')
+    for c in comp_order:
+        p.append(f'<button type="button" class="lg-item" data-comp="{esc(c)}">'
+                 f'<span class="lg-ico">{comp_emoji(c)}</span> {esc(c)}</button>')
+    p.append('</div></aside>')
+
+    # --- center: day navigator + days ---
+    p.append('<div class="mp-main">')
     p.append('<div id="daynav" class="daynav" hidden>'
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
              '<span id="dayLabel" class="dn-label"></span>'
@@ -478,14 +498,33 @@ def build():
         for m in daymap[d]:
             comps.setdefault(m.get("competition") or "", []).append(m)
         for comp, ms in comps.items():
+            p.append(f'<div class="comp" data-comp="{esc(comp)}">')
             if comp:
                 p.append(f'<div class="comp-h">{esc(comp)}</div>')
             p.append('<div class="mlist">')
             for m in ms:
                 p.append(match_row(m, show_time=True, show_comp=False))
-            p.append('</div>')
+            p.append('</div></div>')
+        p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
         p.append('</section>')
-    p.append('</div>')
+    p.append('</div></div>')  # /days /mp-main
+
+    # --- left rail (RTL end): latest news + ad ---
+    p.append('<aside class="mp-side mp-extra">')
+    if articles:
+        p.append('<h2 class="mp-h">أحدث الأخبار</h2><div class="mp-news">')
+        for a in articles[:4]:
+            img = a.get("image_url")
+            th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                  if img else '<span class="mn-th noimg">⚽</span>')
+            p.append(f'<a class="mn-item" href="/a/{a["article_id"]}.html">{th}'
+                     f'<span class="mn-b"><span class="mn-t">{esc(a["title"])}</span>'
+                     f'<span class="mn-d">{esc(a.get("pub_date"))}</span></span></a>')
+        p.append('</div>')
+    p.append(f'<div class="mp-ad">{adsense_slot()}</div>')
+    p.append('</aside>')
+
+    p.append('</div>')  # /mpage
     p.append(MATCHES_JS)
     p.append(foot())
     write("matches.html", "".join(p))
@@ -626,6 +665,17 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
+def comp_emoji(name):
+    n = (name or "").lower()
+    if "world cup" in n or "مونديال" in n or "كأس العالم" in n: return "🏆"
+    if "premier" in n: return "🦁"
+    if "primera" in n or "laliga" in n or "la liga" in n: return "🇪🇸"
+    if "serie a" in n: return "🇮🇹"
+    if "bundesliga" in n: return "🇩🇪"
+    if "ligue 1" in n: return "🇫🇷"
+    if "champions" in n: return "⭐"
+    return "⚽"
+
 def match_row(m, show_time=False, show_comp=True):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
@@ -707,7 +757,34 @@ a{color:inherit}
 .legal{max-width:820px}.legal a{color:var(--green-d);font-weight:700}
 .foot-links{margin:6px 0}.foot-links a{color:#cbd5e1;text-decoration:none;font-weight:700}
 .foot-links a:hover{color:#fff}
-/* matches */
+/* matches — FotMob-style 3 columns: leagues | matches | extra */
+.mpage{display:grid;grid-template-columns:240px minmax(0,1fr) 300px;gap:18px;align-items:start}
+.mp-main{min-width:0}
+.mp-side{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:12px;box-shadow:0 1px 3px rgba(15,23,42,.05);position:sticky;top:120px}
+.mp-h{margin:2px 0 10px;font-size:.95rem;font-weight:900;color:var(--green-d)}
+.lg-list{display:flex;flex-direction:column;gap:2px}
+.lg-item{display:flex;align-items:center;gap:9px;width:100%;text-align:start;background:transparent;border:0;border-radius:9px;padding:9px 10px;font:inherit;font-weight:800;font-size:.86rem;color:var(--ink);cursor:pointer;transition:background .12s}
+.lg-item:hover{background:#f1f5f9}
+.lg-item.is-active{background:#eef6ef;color:var(--green-d)}
+.lg-ico{font-size:1.05rem;width:22px;text-align:center;flex:0 0 auto}
+.no-comp{color:var(--muted);font-weight:700;text-align:center;padding:26px 0}
+.mp-news{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
+.mn-item{display:flex;gap:9px;align-items:center;text-decoration:none}
+.mn-th{width:58px;height:44px;border-radius:8px;background-size:cover;background-position:center;flex:0 0 auto;background-color:#e6ebf1;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:1.1rem}
+.mn-th.noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
+.mn-b{display:flex;flex-direction:column;min-width:0}
+.mn-t{font-size:.8rem;font-weight:800;color:var(--ink);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mn-d{font-size:.7rem;color:var(--muted);font-weight:700;margin-top:2px}
+.mp-ad .ad-placeholder,.mp-ad .ad-unit{position:static;min-height:250px}
+@media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
+@media(max-width:760px){
+  .mpage{grid-template-columns:1fr;gap:10px}
+  .mp-leagues{position:static;padding:8px 10px}
+  .mp-leagues .mp-h{display:none}
+  .lg-list{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:6px}
+  .lg-list::-webkit-scrollbar{display:none}
+  .lg-item{white-space:nowrap;flex:0 0 auto;padding:7px 12px;border:1px solid #e6ebf1;border-radius:999px}
+}
 .mlist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .mrow{display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--up);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
 .mrow-live{border-inline-start-color:var(--live)}.mrow-fin{border-inline-start-color:var(--fin)}
@@ -916,14 +993,30 @@ MATCHES_JS = """<script>
   var label=document.getElementById('dayLabel');
   var prev=document.getElementById('prevDay'), next=document.getElementById('nextDay');
   sections.forEach(function(s){ var h=s.querySelector('.day-h'); if(h) h.style.display='none'; });
+  var filter='';   /* competition name; '' = all */
+  function applyFilter(sec){
+    var any=false;
+    [].slice.call(sec.querySelectorAll('.comp')).forEach(function(c){
+      var vis=!filter||c.getAttribute('data-comp')===filter;
+      c.style.display=vis?'':'none'; if(vis) any=true;
+    });
+    var note=sec.querySelector('.no-comp'); if(note) note.hidden=any;
+  }
   function show(i){
     idx=i;
     sections.forEach(function(s,j){ s.style.display=(j===idx)?'block':'none'; });
     label.textContent=sections[idx].querySelector('.day-h').textContent;
     prev.disabled=(idx<=0); next.disabled=(idx>=sections.length-1);
+    applyFilter(sections[idx]);
   }
   prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
   next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
+  var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
+  lgItems.forEach(function(b){ b.addEventListener('click',function(){
+    filter=b.getAttribute('data-comp')||'';
+    lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
+    applyFilter(sections[idx]);
+  }); });
   show(idx);
 })();
 </script>"""
