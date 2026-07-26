@@ -489,6 +489,7 @@ def build():
     p.append('<div class="mp-main">')
     for comp, table in st_by_comp.items():
         p.append(standings_table(comp, table))
+    p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no table)
     p.append('<div id="daynav" class="daynav" hidden>'
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
              '<span id="dayLabel" class="dn-label"></span>'
@@ -841,6 +842,7 @@ a{color:inherit}
 .lt .lt-team{text-align:start;display:flex;align-items:center;gap:8px;font-weight:800;min-width:150px}
 .lt .lt-team img{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
 .lt .lt-pts{font-weight:900;color:var(--green-d)}
+.no-table{min-height:240px}
 @media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
 @media(max-width:760px){
   .mpage{grid-template-columns:1fr;gap:10px}
@@ -1080,11 +1082,13 @@ MATCHES_JS = """<script>
   var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
   /* the daynav has CSS display:flex which overrides the [hidden] attribute,
      so toggle it via inline style.display instead */
+  var noTable=document.getElementById('noTable');
   function matchesShown(on){ nav.style.display = on ? '' : 'none'; wrap.style.display = on ? '' : 'none'; }
   function reset(){                 /* all-matches view (default / top nav tab) */
     filter='';
     lgItems.forEach(function(x){ x.classList.remove('is-active'); });
     tables.forEach(function(t){ t.hidden=true; });
+    if(noTable) noTable.hidden=true;
     matchesShown(true);
     applyFilter(sections[idx]);
   }
@@ -1093,8 +1097,8 @@ MATCHES_JS = """<script>
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
     var table=tables.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
     tables.forEach(function(t){ t.hidden = t!==table; });
-    if(table){ matchesShown(false); }                             /* table only */
-    else { matchesShown(true); applyFilter(sections[idx]); }      /* no table (WC) -> its matches */
+    matchesShown(false);                              /* never show fixtures under a league */
+    if(noTable) noTable.hidden = !!table;             /* no table -> empty placeholder */
     window.scrollTo({top:0,behavior:'smooth'});
   }
   lgItems.forEach(function(b){ b.addEventListener('click',function(){ selectLeague(b); }); });
