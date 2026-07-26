@@ -268,19 +268,22 @@ def news_card(a):
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
             f'<p class="meta">{esc(a.get("author"))} · {esc(a.get("pub_date"))}</p></div></a>')
 
-def reel_card(r):
-    """Vertical 9:16 short (YouTube Shorts). Same click-to-play facade as
-    videos (VIDEO_JS handles any .vcard); .reel switches the aspect ratio."""
+def reel_slide(r, first=False):
+    """One full-height slide of the TikTok-style vertical feed: tap to play
+    (VIDEO_JS facade), swipe up for the next (CSS scroll-snap)."""
     vid = esc(r.get("video_id") or "")
     title = esc(r.get("title") or "")
     thumb = f"https://i.ytimg.com/vi/{vid}/oar2.jpg"          # vertical thumb
     fallback = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"  # crop if missing
-    return (f'<div class="vcard reel" data-vid="{vid}" data-src="youtube">'
+    hint = '<div class="swipe-hint">اسحب لفوق للريل التالي ⬆</div>' if first else ""
+    return (f'<section class="rslide">'
+            f'<div class="vcard reel rstage" data-vid="{vid}" data-src="youtube">'
             f'<button type="button" class="vthumb" aria-label="تشغيل: {title}">'
             f'<img src="{thumb}" alt="{title}" loading="lazy" '
             f'onerror="this.onerror=null;this.src=\'{fallback}\'">'
             f'<span class="vplay" aria-hidden="true">▶</span></button>'
-            f'<div class="vb"><h3>{title}</h3></div></div>')
+            f'<div class="rtitle">{title}</div>{hint}'
+            f'</div></section>')
 
 def video_facade(v):
     """A lightweight video 'facade': thumbnail + play button; the real iframe
@@ -390,15 +393,18 @@ def build():
             parts.append(video_facade(v))
         parts.append('</div>')
         parts.append(VIDEO_JS)
-    # reels teaser (vertical shorts; full feed lives on /reels.html)
+    # reels teaser: ONE banner -> the swipe feed on /reels.html
     if reels:
-        parts.append('<div class="sec-h"><h2 class="page-h">⚡ ريلز</h2>'
-                     '<a class="see-all" href="/reels.html">كل الريلز ←</a></div>')
-        parts.append('<div class="rstrip">')
-        for r in reels[:6]:
-            parts.append(reel_card(r))
-        parts.append('</div>')
-        parts.append(VIDEO_JS)
+        r0 = reels[0]
+        rthumb = f"https://i.ytimg.com/vi/{esc(r0.get('video_id'))}/oar2.jpg"
+        rfb = f"https://i.ytimg.com/vi/{esc(r0.get('video_id'))}/hqdefault.jpg"
+        parts.append(f"""<a class="reels-banner" href="/reels.html">
+  <img src="{rthumb}" alt="" loading="lazy" onerror="this.onerror=null;this.src='{rfb}'">
+  <div class="rb-body">
+    <h2>⚡ ريلز يلا سكور</h2>
+    <p>مقاطع قصيرة ممتعة — اضغط للمشاهدة، واسحب لفوق تجيب اللي بعده</p>
+    <span class="rb-cta">شاهد الآن ▶</span>
+  </div></a>""")
     # external headlines teaser (9 = 3 rows; the full list lives on /headlines.html)
     if headlines:
         parts.append('<div class="sec-h"><h2 class="page-h">عناوين من مصادر أخرى</h2>'
@@ -537,11 +543,16 @@ def build():
                SITE_BASE + "/reels.html", active="reels")]
     rp.append('<h1 class="page-h">⚡ ريلز</h1>')
     if reels:
-        rp.append('<div class="rgrid">')
-        for r in reels:
-            rp.append(reel_card(r))
+        rp.append('<div class="rwrap"><div class="rfeed" id="rfeed">')
+        for i, r in enumerate(reels):
+            rp.append(reel_slide(r, first=(i == 0)))
+        rp.append('</div>')
+        rp.append('<div class="rarrows">'
+                  '<button type="button" id="rUp" aria-label="الريل السابق">⬆</button>'
+                  '<button type="button" id="rDn" aria-label="الريل التالي">⬇</button></div>')
         rp.append('</div>')
         rp.append(VIDEO_JS)
+        rp.append(REELS_FEED_JS)
     else:
         rp.append('<p class="empty-note">الريلز قريبًا — تابعونا.</p>')
     rp.append(foot())
@@ -766,16 +777,43 @@ a{color:inherit}
 .vb{padding:12px 14px}
 .vb h3{margin:0 0 6px;font-size:.95rem;font-weight:800;line-height:1.5;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .empty-note{color:var(--muted);font-weight:700;padding:20px 0}
-/* reels: vertical 9:16 shorts */
-.rstrip{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px}
-.rstrip::-webkit-scrollbar{display:none}
-.rstrip .reel{flex:0 0 168px}
-.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
-.reel .vthumb{aspect-ratio:9/16}
-.reel .vframe{aspect-ratio:9/16}
-.reel .vplay{width:46px;height:46px;font-size:1.1rem}
-.reel .vb{padding:9px 11px}
-.reel .vb h3{font-size:.8rem;line-height:1.45}
+/* reels: TikTok-style vertical swipe feed (one reel per screen) */
+.reels-banner{display:flex;align-items:center;gap:16px;margin:6px 0 4px;padding:14px 16px;
+  border-radius:16px;text-decoration:none;color:#fff;
+  background:linear-gradient(135deg,var(--green-d),#06170d);
+  box-shadow:0 8px 22px rgba(6,23,13,.35);transition:transform .15s,box-shadow .15s}
+.reels-banner:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(6,23,13,.45)}
+.reels-banner img{width:92px;aspect-ratio:9/16;object-fit:cover;border-radius:12px;
+  border:2px solid rgba(255,255,255,.35);flex:0 0 auto}
+.rb-body h2{margin:0 0 4px;font-size:1.15rem;font-weight:900}
+.rb-body p{margin:0 0 10px;font-size:.85rem;color:#cfe6d6}
+.rb-cta{display:inline-block;background:#e11d48;color:#fff;font-weight:800;font-size:.82rem;
+  padding:6px 16px;border-radius:999px}
+.rwrap{position:relative;max-width:430px;margin:0 auto}
+.rfeed{height:calc(100dvh - 205px);min-height:460px;overflow-y:auto;
+  scroll-snap-type:y mandatory;scrollbar-width:none;background:#000;border-radius:18px}
+.rfeed::-webkit-scrollbar{display:none}
+.rslide{height:100%;scroll-snap-align:start;scroll-snap-stop:always;
+  display:flex;align-items:center;justify-content:center}
+.rstage{position:relative;height:100%;width:100%;background:#000;overflow:hidden}
+.rstage .vthumb{width:100%;height:100%;padding:0;border:0;cursor:pointer;background:#000;display:block;position:relative}
+.rstage .vthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.rstage .vframe{width:100%;height:100%;border:0;display:block;background:#000}
+.rtitle{position:absolute;bottom:0;inset-inline:0;padding:38px 16px 14px;z-index:2;pointer-events:none;
+  color:#fff;font-weight:800;font-size:.92rem;line-height:1.5;
+  background:linear-gradient(to top,rgba(0,0,0,.8),transparent)}
+.swipe-hint{position:absolute;top:12px;inset-inline:0;text-align:center;z-index:2;pointer-events:none;
+  color:#fff;font-weight:800;font-size:.78rem;text-shadow:0 1px 6px rgba(0,0,0,.7);
+  animation:hintbob 1.6s ease-in-out 3}
+@keyframes hintbob{0%,100%{transform:translateY(0);opacity:.95}50%{transform:translateY(-7px);opacity:.6}}
+.rarrows{position:absolute;top:50%;inset-inline-end:-58px;transform:translateY(-50%);
+  display:flex;flex-direction:column;gap:10px}
+.rarrows button{width:44px;height:44px;border:0;border-radius:50%;background:var(--green);
+  color:#fff;font-size:1.15rem;font-weight:900;cursor:pointer;box-shadow:0 4px 12px rgba(15,23,42,.3)}
+.rarrows button:hover{background:var(--green-d)}
+@media(max-width:560px){.rfeed{height:calc(100dvh - 165px)}}
+@media(hover:none){.rarrows{display:none}}
+@media(max-width:560px){.rarrows{display:none}}
 /* footer */
 .site-foot{background:#0b1220;color:#cbd5e1;margin-top:30px;padding:22px 0}
 .site-foot p{margin:2px 0}.credit{font-size:.78rem;color:#94a3b8}
@@ -906,6 +944,57 @@ SHELF_JS = """<script>
   var l=document.querySelector('.sh-l'), r=document.querySelector('.sh-r');
   if(l) l.addEventListener('click',function(){ glide(-step()); });
   if(r) r.addEventListener('click',function(){ glide( step()); });
+})();
+</script>"""
+
+REELS_FEED_JS = """<script>
+(function(){
+  var feed=document.getElementById('rfeed'); if(!feed) return;
+  var slides=[].slice.call(feed.querySelectorAll('.rslide'));
+  slides.forEach(function(s){ s.__facade = s.querySelector('.rstage').innerHTML; });
+  /* leaving the screen kills the player (stops the sound), restoring the tap-to-play cover */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){
+      var st=en.target.querySelector('.rstage');
+      if(!en.isIntersecting && st.querySelector('iframe'))
+        st.innerHTML = en.target.__facade;
+    });
+  },{root:feed,threshold:.4});
+  slides.forEach(function(s){ io.observe(s); });
+  /* guaranteed single-player: tapping any reel kills every other player first
+     (capture phase = runs before the generic play handler) */
+  feed.addEventListener('click',function(e){
+    if(!e.target.closest('.vthumb')) return;
+    var cur=e.target.closest('.rslide');
+    slides.forEach(function(s){
+      if(s!==cur){
+        var st=s.querySelector('.rstage');
+        if(st.querySelector('iframe')) st.innerHTML=s.__facade;
+      }
+    });
+  },true);
+  /* desktop arrows */
+  function idx(){ return Math.round(feed.scrollTop / feed.clientHeight); }
+  function go(i){ i=Math.max(0,Math.min(slides.length-1,i));
+    feed.scrollTo({top:i*feed.clientHeight,behavior:'smooth'}); }
+  /* belt-and-braces: on scroll, kill every player except the current slide's
+     (IntersectionObserver can be flaky in some webviews) */
+  var st_;
+  feed.addEventListener('scroll',function(){
+    clearTimeout(st_);
+    st_=setTimeout(function(){
+      var i=idx();
+      slides.forEach(function(s,j){
+        if(j!==i){
+          var st=s.querySelector('.rstage');
+          if(st.querySelector('iframe')) st.innerHTML=s.__facade;
+        }
+      });
+    },350);
+  });
+  var up=document.getElementById('rUp'), dn=document.getElementById('rDn');
+  if(up) up.addEventListener('click',function(){ go(idx()-1); });
+  if(dn) dn.addEventListener('click',function(){ go(idx()+1); });
 })();
 </script>"""
 
