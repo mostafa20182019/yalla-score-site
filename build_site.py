@@ -512,8 +512,25 @@ def build():
         p.append('</section>')
     p.append('</div></div>')  # /days /mp-main
 
-    # --- left rail (RTL end): latest news + ad ---
+    # --- left rail (RTL end): per-league fixtures (shown on select) OR news+ad ---
+    # group fixtures by competition -> day
+    comp_fix = {}
+    for d in sorted_days:
+        for m in daymap[d]:
+            comp_fix.setdefault(m.get("competition") or "", {}).setdefault(d, []).append(m)
     p.append('<aside class="mp-side mp-extra">')
+    for c in comp_order:
+        days_c = comp_fix.get(c) or {}
+        if not days_c:
+            continue
+        p.append(f'<div class="lg-fix" data-comp="{esc(c)}" hidden>'
+                 f'<div class="fx-head">{comp_icon(c)} مباريات {esc(comp_label(c))}</div>')
+        for d in sorted(days_c.keys()):
+            p.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
+            for m in days_c[d]:
+                p.append(fixture_mini(m))
+        p.append('</div>')
+    p.append('<div id="mpDefault">')
     if articles:
         p.append('<h2 class="mp-h">أحدث الأخبار</h2><div class="mp-news">')
         for a in articles[:4]:
@@ -525,6 +542,7 @@ def build():
                      f'<span class="mn-d">{esc(a.get("pub_date"))}</span></span></a>')
         p.append('</div>')
     p.append(f'<div class="mp-ad">{adsense_slot()}</div>')
+    p.append('</div>')  # /mpDefault
     p.append('</aside>')
 
     p.append('</div>')  # /mpage
@@ -723,6 +741,22 @@ def comp_emoji(name):
     if "champions" in n: return "⭐"
     return "⚽"
 
+def fixture_mini(m):
+    """Compact fixture row for the league side panel (FotMob-style)."""
+    st = (m.get("status") or "").upper()
+    def cr(u):
+        return f'<img src="{esc(u)}" alt="" loading="lazy">' if u else '<span class="fx-ph">⚽</span>'
+    if st in ("FINISHED", "LIVE"):
+        h = "" if m.get("home_score") is None else m.get("home_score")
+        a = "" if m.get("away_score") is None else m.get("away_score")
+        mid = f'<b class="fx-sc">{h}-{a}</b>'
+    else:
+        mid = f'<span class="fx-time">{esc(m.get("koff_time") or "")}</span>'
+    return (f'<div class="fx">'
+            f'<span class="fx-home"><bdi>{esc(m.get("home"))}</bdi>{cr(m.get("home_badge"))}</span>'
+            f'{mid}'
+            f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(m.get("away"))}</bdi></span></div>')
+
 def match_row(m, show_time=False, show_comp=True):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
@@ -843,6 +877,18 @@ a{color:inherit}
 .lt .lt-team img{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
 .lt .lt-pts{font-weight:900;color:var(--green-d)}
 .no-table{min-height:240px}
+/* league fixtures side panel (FotMob-style) */
+.fx-head{display:flex;align-items:center;gap:8px;font-weight:900;color:var(--green-d);font-size:.92rem;margin:0 0 8px}
+.fx-day{font-size:.72rem;font-weight:800;color:var(--muted);background:#f1f5f9;border-radius:7px;padding:5px 9px;margin:10px 0 6px}
+.fx{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:7px 2px;border-bottom:1px solid #f1f5f9;font-size:.78rem;font-weight:700}
+.fx-home{display:flex;align-items:center;justify-content:flex-end;gap:6px;text-align:end;min-width:0}
+.fx-away{display:flex;align-items:center;gap:6px;min-width:0}
+.fx-home bdi,.fx-away bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fx img{width:20px;height:20px;object-fit:contain;flex:0 0 auto}
+.fx-ph{font-size:.9rem}
+.fx-time{color:var(--green-d);font-weight:800;white-space:nowrap}
+.fx-sc{font-weight:900;white-space:nowrap}
+@media(max-width:1080px){.mpage.league-view .mp-extra{display:block}}
 @media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
 @media(max-width:760px){
   .mpage{grid-template-columns:1fr;gap:10px}
@@ -1083,12 +1129,18 @@ MATCHES_JS = """<script>
   /* the daynav has CSS display:flex which overrides the [hidden] attribute,
      so toggle it via inline style.display instead */
   var noTable=document.getElementById('noTable');
+  var mpDefault=document.getElementById('mpDefault');
+  var fixPanels=[].slice.call(document.querySelectorAll('.lg-fix'));
+  var mpage=document.querySelector('.mpage');
   function matchesShown(on){ nav.style.display = on ? '' : 'none'; wrap.style.display = on ? '' : 'none'; }
   function reset(){                 /* all-matches view (default / top nav tab) */
     filter='';
     lgItems.forEach(function(x){ x.classList.remove('is-active'); });
     tables.forEach(function(t){ t.hidden=true; });
+    fixPanels.forEach(function(f){ f.hidden=true; });
     if(noTable) noTable.hidden=true;
+    if(mpDefault) mpDefault.hidden=false;
+    if(mpage) mpage.classList.remove('league-view');
     matchesShown(true);
     applyFilter(sections[idx]);
   }
@@ -1097,8 +1149,13 @@ MATCHES_JS = """<script>
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
     var table=tables.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
     tables.forEach(function(t){ t.hidden = t!==table; });
-    matchesShown(false);                              /* never show fixtures under a league */
+    matchesShown(false);                              /* never show fixtures in the centre */
     if(noTable) noTable.hidden = !!table;             /* no table -> empty placeholder */
+    /* left rail: this league's fixtures instead of news */
+    var fx=fixPanels.filter(function(f){return f.getAttribute('data-comp')===filter;})[0];
+    fixPanels.forEach(function(f){ f.hidden = f!==fx; });
+    if(mpDefault) mpDefault.hidden = !!fx;            /* has fixtures -> hide news */
+    if(mpage) mpage.classList.add('league-view');
     window.scrollTo({top:0,behavior:'smooth'});
   }
   lgItems.forEach(function(b){ b.addEventListener('click',function(){ selectLeague(b); }); });
