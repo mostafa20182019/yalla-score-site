@@ -736,8 +736,11 @@ def match_row(m, show_time=False, show_comp=True):
     comp = ""
     if show_comp:
         comp = f'<div class="mcomp">{esc(m.get("competition"))}{(" · " + esc(m.get("channel"))) if m.get("channel") else ""}</div>'
+    # only LIVE / FINISHED get a status pill (upcoming shows its time instead)
+    pill = (f'<span class="pill pill-{badge[1]}">{esc(badge[0])}</span>'
+            if st in ("LIVE", "FINISHED") else "")
     return f"""<div class="mrow mrow-{badge[1]}">
-  <span class="pill pill-{badge[1]}">{badge[0]}</span>
+  {pill}
   <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(m.get('home'))}</bdi></span></div>
   <div class="mid">{mid}</div>
   <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(m.get('away'))}</bdi></span></div>
@@ -848,7 +851,7 @@ a{color:inherit}
   .lg-item{white-space:nowrap;flex:0 0 auto;padding:7px 12px;border:1px solid #e6ebf1;border-radius:999px}
 }
 .mlist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.mrow{display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--up);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.mrow{display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--green);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
 .mrow-live{border-inline-start-color:var(--live)}.mrow-fin{border-inline-start-color:var(--fin)}
 .pill{grid-area:pill;color:#fff;background:var(--up);border-radius:999px;padding:2px 12px;font-size:.68rem;font-weight:900}
 .pill-live{background:var(--live)}.pill-fin{background:var(--fin)}
