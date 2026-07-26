@@ -220,7 +220,13 @@ def fetch_standings():
         return None
     hdr = {"X-Auth-Token": FD_TOKEN}
     out = []
-    for comp in FD_TABLE_COMPS:
+    # fetch_matches just burned ~8 of the 10-req/min budget; let the window clear
+    # before the standings batch, then space each call out.
+    print("  … waiting 60s for the rate-limit window before standings")
+    time.sleep(60)
+    for i, comp in enumerate(FD_TABLE_COMPS):
+        if i:
+            time.sleep(7)
         try:
             j = json.loads(http_get(
                 f"https://api.football-data.org/v4/competitions/{comp}/standings", hdr))
