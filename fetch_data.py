@@ -220,24 +220,39 @@ def fetch_standings():
         return None
     hdr = {"X-Auth-Token": FD_TOKEN}
     out = []
-    # explicitly request the CURRENT football season (starts in year Y):
-    # Jul-Dec -> Y = this year; Jan-Jun -> Y = last year. Otherwise football-data
-    # returns whatever it considers "current", which during the off-season can
-    # still be last season's final table for some leagues.
+    got_any = False
+    # the season we WANT to show (starts in year Y): Jul-Dec -> this year,
+    # Jan-Jun -> last year. The free tier only serves the "current" season and
+    # ignores a ?season= filter, so instead we read the season year FROM each
+    # response and drop leagues football-data still points at last season
+    # (their default table is last season's FINAL table -> looks wrong pre-season).
     now = datetime.now(CAIRO)
-    season = now.year if now.month >= 7 else now.year - 1
+    want = now.year if now.month >= 7 else now.year - 1
     # fetch_matches just burned ~8 of the 10-req/min budget; let the window clear
     # before the standings batch, then space each call out.
-    print(f"  … waiting 60s for the rate-limit window before standings (season {season})")
+    print(f"  … waiting 60s for the rate-limit window before standings (want season {want})")
     time.sleep(60)
     for i, comp in enumerate(FD_TABLE_COMPS):
         if i:
             time.sleep(7)
         try:
             j = json.loads(http_get(
-                f"https://api.football-data.org/v4/competitions/{comp}/standings?season={season}", hdr))
+                f"https://api.football-data.org/v4/competitions/{comp}/standings", hdr))
         except Exception as e:
             print(f"  ! standings {comp} failed: {e}")
+            continue
+        got_any = True
+        # which season did we actually get?
+        sy = None
+        fs = (j.get("filters") or {}).get("season")
+        if fs and str(fs)[:4].isdigit():
+            sy = int(str(fs)[:4])
+        if sy is None:
+            sd = (j.get("season") or {}).get("startDate") or ""
+            if sd[:4].isdigit():
+                sy = int(sd[:4])
+        if sy is not None and sy < want:
+            print(f"  ! standings {comp}: still last season ({sy}) - skipping")
             continue
         table = None
         for s in j.get("standings", []):
@@ -258,7 +273,9 @@ def fetch_standings():
                 "gd": r.get("goalDifference"), "pts": r.get("points"),
             })
         out.append({"competition": name, "table": rows})
-    return out
+    # any real response -> write the filtered result (even if empty, to clear
+    # stale tables). ALL calls failed (network) -> None -> keep the last file.
+    return out if got_any else None
 
 if __name__ == "__main__":
     os.makedirs(DATA, exist_ok=True)
@@ -293,6 +310,6 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! standings fetch failed ({e}) - keeping existing standings.json")
         standings = None
-    if standings:
+    if standings is not None:   # empty list is valid -> clears last-season tables
         write_items("standings.json", standings)
         print(f"standings: {len(standings)} leagues")
