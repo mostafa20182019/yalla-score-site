@@ -1075,11 +1075,14 @@ MATCHES_JS = """<script>
   next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
   var tables=[].slice.call(document.querySelectorAll('.ltable'));
   var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
+  /* the daynav has CSS display:flex which overrides the [hidden] attribute,
+     so toggle it via inline style.display instead */
+  function matchesShown(on){ nav.style.display = on ? '' : 'none'; wrap.style.display = on ? '' : 'none'; }
   function reset(){                 /* all-matches view (default / top nav tab) */
     filter='';
     lgItems.forEach(function(x){ x.classList.remove('is-active'); });
     tables.forEach(function(t){ t.hidden=true; });
-    nav.hidden=false; wrap.style.display='';
+    matchesShown(true);
     applyFilter(sections[idx]);
   }
   function selectLeague(b){
@@ -1087,8 +1090,8 @@ MATCHES_JS = """<script>
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
     var table=tables.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
     tables.forEach(function(t){ t.hidden = t!==table; });
-    if(table){ nav.hidden=true; wrap.style.display='none'; }      /* table only */
-    else { nav.hidden=false; wrap.style.display=''; applyFilter(sections[idx]); }  /* no table (WC) -> its matches */
+    if(table){ matchesShown(false); }                             /* table only */
+    else { matchesShown(true); applyFilter(sections[idx]); }      /* no table (WC) -> its matches */
     window.scrollTo({top:0,behavior:'smooth'});
   }
   lgItems.forEach(function(b){ b.addEventListener('click',function(){ selectLeague(b); }); });
