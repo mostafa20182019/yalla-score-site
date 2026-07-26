@@ -802,6 +802,10 @@ a{color:inherit}
 .rtitle{position:absolute;bottom:0;inset-inline:0;padding:38px 16px 14px;z-index:2;pointer-events:none;
   color:#fff;font-weight:800;font-size:.92rem;line-height:1.5;
   background:linear-gradient(to top,rgba(0,0,0,.8),transparent)}
+.sndbtn{position:absolute;top:10px;inset-inline-start:10px;z-index:3;width:44px;height:44px;
+  border:0;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;font-size:1.15rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
+.sndbtn:hover{background:rgba(0,0,0,.75)}
 .swipe-hint{position:absolute;top:12px;inset-inline:0;text-align:center;z-index:2;pointer-events:none;
   color:#fff;font-weight:800;font-size:.78rem;text-shadow:0 1px 6px rgba(0,0,0,.7);
   animation:hintbob 1.6s ease-in-out 3}
@@ -952,49 +956,76 @@ REELS_FEED_JS = """<script>
   var feed=document.getElementById('rfeed'); if(!feed) return;
   var slides=[].slice.call(feed.querySelectorAll('.rslide'));
   slides.forEach(function(s){ s.__facade = s.querySelector('.rstage').innerHTML; });
-  /* leaving the screen kills the player (stops the sound), restoring the tap-to-play cover */
-  var io=new IntersectionObserver(function(es){
-    es.forEach(function(en){
-      var st=en.target.querySelector('.rstage');
-      if(!en.isIntersecting && st.querySelector('iframe'))
-        st.innerHTML = en.target.__facade;
+  var userSound = localStorage.getItem('ys_reels_sound')==='1';
+
+  function pm(f,func,args){ try{
+    f.contentWindow.postMessage(JSON.stringify({event:'command',func:func,args:args||[]}),'*');
+  }catch(e){} }
+  function unmute(f){ pm(f,'unMute'); pm(f,'setVolume',[100]); }
+
+  function soundBtn(st,f){
+    var b=document.createElement('button');
+    b.className='sndbtn'; b.type='button';
+    b.textContent = userSound ? '\\uD83D\\uDD0A' : '\\uD83D\\uDD07';
+    b.setAttribute('aria-label','\\u0627\\u0644\\u0635\\u0648\\u062a');
+    b.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      userSound=!userSound;
+      localStorage.setItem('ys_reels_sound',userSound?'1':'0');
+      if(userSound){ unmute(f); b.textContent='\\uD83D\\uDD0A'; }
+      else{ pm(f,'mute'); b.textContent='\\uD83D\\uDD07'; }
     });
-  },{root:feed,threshold:.4});
-  slides.forEach(function(s){ io.observe(s); });
-  /* guaranteed single-player: tapping any reel kills every other player first
-     (capture phase = runs before the generic play handler) */
-  feed.addEventListener('click',function(e){
-    if(!e.target.closest('.vthumb')) return;
-    var cur=e.target.closest('.rslide');
-    slides.forEach(function(s){
-      if(s!==cur){
-        var st=s.querySelector('.rstage');
-        if(st.querySelector('iframe')) st.innerHTML=s.__facade;
-      }
+    st.appendChild(b);
+  }
+
+  /* autoplay (muted - browser policy) the reel of slide i; kill all others */
+  function activate(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach(function(s,j){
+      var st=s.querySelector('.rstage');
+      if(j!==i){ if(st.querySelector('iframe')) st.innerHTML=s.__facade; return; }
+      if(st.querySelector('iframe')) return;              // already playing
+      var btn=st.querySelector('.vthumb'); if(!btn) return;
+      var id=st.getAttribute('data-vid');
+      var f=document.createElement('iframe');
+      f.className='vframe';
+      f.src='https://www.youtube-nocookie.com/embed/'+id+
+            '?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&loop=1&playlist='+id;
+      f.title='reel';
+      f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      f.setAttribute('allowfullscreen','');
+      btn.replaceWith(f);
+      soundBtn(st,f);
+      if(userSound) setTimeout(function(){ unmute(f); },800);
     });
-  },true);
-  /* desktop arrows */
+  }
+
   function idx(){ return Math.round(feed.scrollTop / feed.clientHeight); }
-  function go(i){ i=Math.max(0,Math.min(slides.length-1,i));
-    feed.scrollTo({top:i*feed.clientHeight,behavior:'smooth'}); }
-  /* belt-and-braces: on scroll, kill every player except the current slide's
-     (IntersectionObserver can be flaky in some webviews) */
+  function go(i){ feed.scrollTo({top:Math.max(0,Math.min(slides.length-1,i))*feed.clientHeight,behavior:'smooth'}); }
+
+  /* swipe/scroll -> activate the reel you landed on */
   var st_;
   feed.addEventListener('scroll',function(){
-    clearTimeout(st_);
-    st_=setTimeout(function(){
-      var i=idx();
-      slides.forEach(function(s,j){
-        if(j!==i){
-          var st=s.querySelector('.rstage');
-          if(st.querySelector('iframe')) st.innerHTML=s.__facade;
-        }
-      });
-    },350);
+    clearTimeout(st_); st_=setTimeout(function(){ activate(idx()); },300);
   });
+  /* backup trigger in browsers where the scroll event is throttled */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){ if(en.isIntersecting) activate(slides.indexOf(en.target)); });
+  },{root:feed,threshold:.6});
+  slides.forEach(function(s){ io.observe(s); });
+  /* manual tap on a facade (autoplay blocked?) - play THAT slide with sound */
+  feed.addEventListener('click',function(e){
+    var btn=e.target.closest('.vthumb'); if(!btn) return;
+    e.stopPropagation();
+    userSound=true; localStorage.setItem('ys_reels_sound','1');
+    activate(slides.indexOf(e.target.closest('.rslide')));
+  },true);
+  /* desktop arrows */
   var up=document.getElementById('rUp'), dn=document.getElementById('rDn');
   if(up) up.addEventListener('click',function(){ go(idx()-1); });
   if(dn) dn.addEventListener('click',function(){ go(idx()+1); });
+  /* start: first reel plays by itself */
+  activate(0);
 })();
 </script>"""
 
