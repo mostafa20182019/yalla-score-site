@@ -96,6 +96,15 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
       <input type="text" id="vtitle" placeholder="ملخص المباراة ...">
       <label>التاريخ</label>
       <input type="date" id="vdate">
+      <div id="catRow">
+        <label>القسم / البطولة</label>
+        <select id="vcat" style="width:100%;padding:9px 12px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;font-size:.9rem">
+          <option value="misc">⚽ متنوعات كروية</option>
+          <option value="wc">🏆 كأس العالم 2026</option>
+          <option value="epl">🦁 الدوري الإنجليزي 2026-2027</option>
+          <option value="laliga">🇪🇸 الدوري الإسباني 2026-2027</option>
+        </select>
+      </div>
       <div class="row" style="margin-top:12px">
         <button class="btn-g" id="addBtn" onclick="addVideo()">أضِف للقائمة</button>
         <span class="hint">بعد الإضافة اضغط «حفظ ونشر» تحت</span>
@@ -145,6 +154,7 @@ function applyModeUI(){
   document.getElementById("mReel").className = "btn-sm "+(reel?"btn-g":"btn-o");
   if(reel){
     document.getElementById("url").placeholder="https://www.youtube.com/shorts/... (شورتس يوتيوب)";
+    document.getElementById("catRow").style.display="none";   // categories are videos-only
   }
 }
 applyModeUI();
@@ -205,8 +215,10 @@ function render(){
   items.forEach(function(v,i){
     var d=document.createElement("div"); d.className="vitem";
     var src=v.source==="dailymotion"?'<span class="badge dm">Dailymotion</span>':'<span class="badge yt">YouTube</span>';
+    var CATL={wc:"🏆 كأس العالم",epl:"🦁 الدوري الإنجليزي",laliga:"🇪🇸 الدوري الإسباني"};
+    var cat=(MODE!=="reels")?'<span class="badge" style="background:#eef6ef;color:#0f5e28">'+(CATL[v.cat]||"⚽ متنوعات")+'</span>':'';
     d.innerHTML='<img src="'+thumbOf(v)+'" alt="">'+
-      '<div><h3>'+esc(v.title||"(بدون عنوان)")+src+'</h3>'+
+      '<div><h3>'+esc(v.title||"(بدون عنوان)")+src+cat+'</h3>'+
       '<div class="m">'+esc(v.video_id)+' · '+esc(v.pub_date||"")+(i<homeN?' · <b style="color:#0f5e28">في الرئيسية</b>':'')+'</div></div>'+
       '<div class="acts"><div class="row2">'+
       '<button class="btn-o btn-sm" '+(i===0?'disabled':'')+' onclick="move('+i+',-1)">⬆</button>'+
@@ -288,6 +300,10 @@ function addVideo(){
   if(!t) return show("chkStatus","err","اكتب عنوان بالعربي الأول");
   var it={video_id:checked.id, title:t, pub_date:document.getElementById("vdate").value||""};
   if(checked.source==="dailymotion") it.source="dailymotion";
+  if(MODE!=="reels"){
+    var c=document.getElementById("vcat").value;
+    if(c && c!=="misc") it.cat=c;      // misc is the default -> keep json clean
+  }
   if(items.some(function(v){return v.video_id===it.video_id;}))
     return show("chkStatus","err","الفيديو ده موجود في القائمة أصلاً");
   items.unshift(it);            // newest first -> appears on home

@@ -285,6 +285,14 @@ def reel_slide(r, first=False):
             f'<div class="rtitle">{title}</div>{hint}'
             f'</div></section>')
 
+# fixed section order on /videos.html; a section with no videos is not rendered
+VIDEO_CATS = [
+    ("wc",     "🏆 فيديوهات كأس العالم 2026"),
+    ("epl",    "🦁 فيديوهات الدوري الإنجليزي 2026-2027"),
+    ("laliga", "🇪🇸 فيديوهات الدوري الإسباني 2026-2027"),
+    ("misc",   "⚽ متنوعات كروية"),
+]
+
 def video_facade(v):
     """A lightweight video 'facade': thumbnail + play button; the real iframe
     is injected by VIDEO_JS only when the visitor clicks (keeps the page fast).
@@ -559,16 +567,24 @@ def build():
     write("reels.html", "".join(rp))
     urls.append("/reels.html")
 
-    # ---- videos page (curated football videos; edit data/videos.json) ----
+    # ---- videos page: grouped by competition (empty sections auto-hide) ----
+    # item.cat: "wc" | "epl" | "laliga" | absent -> "misc"
     vp = [head(f"فيديوهات كرة القدم — {SITE_NAME}",
-               "أحدث فيديوهات وأهداف وملخصات كرة القدم بالعربية على يلا سكور.",
+               "فيديوهات كأس العالم 2026 والدوري الإنجليزي والدوري الإسباني على يلا سكور.",
                SITE_BASE + "/videos.html", active="videos")]
     vp.append('<h1 class="page-h">فيديوهات</h1>')
     if videos:
-        vp.append('<div class="vgrid">')
+        by_cat = {}
         for v in videos:
-            vp.append(video_facade(v))
-        vp.append('</div>')
+            by_cat.setdefault((v.get("cat") or "misc"), []).append(v)
+        for key, label in VIDEO_CATS:
+            vs = by_cat.get(key)
+            if not vs:
+                continue
+            vp.append(f'<h2 class="page-h vcat-h">{label}</h2><div class="vgrid">')
+            for v in vs:
+                vp.append(video_facade(v))
+            vp.append('</div>')
         vp.append(VIDEO_JS)
     else:
         vp.append('<p class="empty-note">الفيديوهات قريبًا — تابعونا.</p>')
@@ -764,7 +780,8 @@ a{color:inherit}
 .see-all{color:var(--green-d);font-weight:800;text-decoration:none;font-size:.85rem;white-space:nowrap}
 .see-all:hover{text-decoration:underline}
 .vstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:8px}
+.vcat-h{font-size:1.05rem;border-inline-start:5px solid var(--green);padding-inline-start:10px;margin-top:26px}
 @media(max-width:640px){.vstrip{grid-template-columns:1fr}}
 .vcard{background:var(--card);border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;box-shadow:0 3px 10px rgba(15,23,42,.08);transition:transform .16s,box-shadow .16s}
 .vcard:hover{transform:translateY(-4px);box-shadow:0 16px 30px rgba(15,23,42,.16)}
