@@ -480,10 +480,10 @@ def build():
     # --- right rail (RTL start): leagues filter ---
     p.append('<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">')
     p.append('<button type="button" class="lg-item is-active" data-comp="">'
-             '<span class="lg-ico">⚽</span> كل المباريات</button>')
+             '<span class="lg-ico">⚽</span> المباريات</button>')
     for c in comp_order:
         p.append(f'<button type="button" class="lg-item" data-comp="{esc(c)}">'
-                 f'<span class="lg-ico">{comp_emoji(c)}</span> {esc(c)}</button>')
+                 f'{comp_icon(c)} {esc(comp_label(c))}</button>')
     p.append('</div></aside>')
 
     # --- center: league tables (hidden) + day navigator + days ---
@@ -504,7 +504,7 @@ def build():
         for comp, ms in comps.items():
             p.append(f'<div class="comp" data-comp="{esc(comp)}">')
             if comp:
-                p.append(f'<div class="comp-h">{esc(comp)}</div>')
+                p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
             p.append('<div class="mlist">')
             for m in ms:
                 p.append(match_row(m, show_time=True, show_comp=False))
@@ -685,13 +685,33 @@ def standings_table(comp, rows):
             f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
             f'<td>{cell(r.get("gd"))}</td><td class="lt-pts">{cell(r.get("pts"))}</td></tr>')
     return (f'<div class="ltable" data-comp="{esc(comp)}" hidden>'
-            f'<div class="lt-head"><span class="lg-ico">{comp_emoji(comp)}</span> جدول ترتيب {esc(comp)}</div>'
+            f'<div class="lt-head">{comp_icon(comp)} جدول ترتيب {esc(comp_label(comp))}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
             f'<th title="لعب">لعب</th><th title="فاز">ف</th><th title="تعادل">ت</th>'
             f'<th title="خسر">خ</th><th title="له">له</th><th title="عليه">عليه</th>'
             f'<th title="الفارق">+/-</th><th class="lt-pts">نقاط</th></tr></thead>'
             f'<tbody>{"".join(body)}</tbody></table></div></div>')
+
+# official competition emblems (same host as the team crests already used)
+COMP_LOGO = {
+    "Premier League":   "https://crests.football-data.org/PL.png",
+    "Primera Division": "https://crests.football-data.org/PD.png",
+    "Serie A":          "https://crests.football-data.org/SA.png",
+    "Bundesliga":       "https://crests.football-data.org/BL1.png",
+    "Ligue 1":          "https://crests.football-data.org/FL1.png",
+}
+# friendlier display names (data-comp keeps the raw API name for filtering)
+COMP_LABEL = {"Primera Division": "La Liga"}
+
+def comp_label(name):
+    return COMP_LABEL.get(name, name or "")
+
+def comp_icon(name):
+    url = COMP_LOGO.get(name)
+    if url:
+        return f'<img class="lg-logo" src="{esc(url)}" alt="" loading="lazy">'
+    return f'<span class="lg-ico">{comp_emoji(name)}</span>'
 
 def comp_emoji(name):
     n = (name or "").lower()
@@ -795,6 +815,9 @@ a{color:inherit}
 .lg-item:hover{background:#f1f5f9}
 .lg-item.is-active{background:#eef6ef;color:var(--green-d)}
 .lg-ico{font-size:1.05rem;width:22px;text-align:center;flex:0 0 auto}
+.lg-logo{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
+.lt-head .lg-logo{width:24px;height:24px}
+.comp-h .lg-logo,.comp-h .lg-ico{width:20px;height:20px;font-size:1rem;vertical-align:-5px;margin-inline-end:5px}
 .no-comp{color:var(--muted);font-weight:700;text-align:center;padding:26px 0}
 .mp-news{display:flex;flex-direction:column;gap:9px;margin-bottom:14px}
 .mn-item{display:flex;gap:9px;align-items:center;text-decoration:none}
