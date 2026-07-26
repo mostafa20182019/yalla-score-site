@@ -220,16 +220,22 @@ def fetch_standings():
         return None
     hdr = {"X-Auth-Token": FD_TOKEN}
     out = []
+    # explicitly request the CURRENT football season (starts in year Y):
+    # Jul-Dec -> Y = this year; Jan-Jun -> Y = last year. Otherwise football-data
+    # returns whatever it considers "current", which during the off-season can
+    # still be last season's final table for some leagues.
+    now = datetime.now(CAIRO)
+    season = now.year if now.month >= 7 else now.year - 1
     # fetch_matches just burned ~8 of the 10-req/min budget; let the window clear
     # before the standings batch, then space each call out.
-    print("  … waiting 60s for the rate-limit window before standings")
+    print(f"  … waiting 60s for the rate-limit window before standings (season {season})")
     time.sleep(60)
     for i, comp in enumerate(FD_TABLE_COMPS):
         if i:
             time.sleep(7)
         try:
             j = json.loads(http_get(
-                f"https://api.football-data.org/v4/competitions/{comp}/standings", hdr))
+                f"https://api.football-data.org/v4/competitions/{comp}/standings?season={season}", hdr))
         except Exception as e:
             print(f"  ! standings {comp} failed: {e}")
             continue
