@@ -50,8 +50,11 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
 </head>
 <body>
 <header class="head">
-  <h1>⚽ إدارة فيديوهات يلا سكور</h1>
+  <h1 id="pageTitle">⚽ إدارة فيديوهات يلا سكور</h1>
   <span class="tag">صفحة محلية — لا تُنشر على الموقع</span>
+  <span style="flex:1"></span>
+  <button class="btn-sm" id="mVid" onclick="setMode('videos')" style="border-radius:999px">🎬 فيديوهات</button>
+  <button class="btn-sm" id="mReel" onclick="setMode('reels')" style="border-radius:999px">⚡ ريلز</button>
 </header>
 <div class="wrap">
 
@@ -121,10 +124,30 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
 </div>
 
 <script>
-var OWNER="mostafa20182019", REPO="yalla-score-site", BRANCH="main", PATH="data/videos.json";
+var OWNER="mostafa20182019", REPO="yalla-score-site", BRANCH="main";
+var MODE = localStorage.getItem("ys_admin_mode")==="reels" ? "reels" : "videos";
+var PATH = MODE==="reels" ? "data/reels.json" : "data/videos.json";
 var API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
 var SITE="https://old-credit-e926.mustafa-abdelsalam95.workers.dev";
 var items=[], fileSha=null, dirty=false, checked=null;
+
+function setMode(m){
+  if(m===MODE) return;
+  if(dirty && !confirm("فيه تغييرات لسه متنشرتش — هتضيع لو غيّرت الوضع. أكمل؟")) return;
+  localStorage.setItem("ys_admin_mode", m);
+  location.reload();
+}
+function applyModeUI(){
+  var reel = MODE==="reels";
+  document.getElementById("pageTitle").textContent = reel ? "⚡ إدارة ريلز يلا سكور" : "⚽ إدارة فيديوهات يلا سكور";
+  document.title = reel ? "إدارة ريلز يلا سكور" : "إدارة فيديوهات يلا سكور";
+  document.getElementById("mVid").className  = "btn-sm "+(reel?"btn-o":"btn-g");
+  document.getElementById("mReel").className = "btn-sm "+(reel?"btn-g":"btn-o");
+  if(reel){
+    document.getElementById("url").placeholder="https://www.youtube.com/shorts/... (شورتس يوتيوب)";
+  }
+}
+applyModeUI();
 
 function tok(){ return localStorage.getItem("ys_gh_token")||""; }
 function saveTok(){
@@ -151,8 +174,13 @@ function loadList(){
     return show("listStatus","info","محتاج توكن GitHub الأول — افتح الإعدادات فوق."); }
   hide("listStatus");
   fetch(API+"?ref="+BRANCH,{headers:{Authorization:"Bearer "+tok(),Accept:"application/vnd.github+json"}})
-  .then(function(r){ if(!r.ok) throw new Error("GitHub رفض ("+r.status+") — اتأكد من التوكن وصلاحياته"); return r.json(); })
+  .then(function(r){
+    if(r.status===404) return null;   // file not created yet -> start empty
+    if(!r.ok) throw new Error("GitHub رفض ("+r.status+") — اتأكد من التوكن وصلاحياته");
+    return r.json(); })
   .then(function(j){
+    if(j===null){ fileSha=null; items=[]; dirty=false; render();
+      show("listStatus","info","الملف لسه متعملش — أول «حفظ ونشر» هينشئه."); return; }
     fileSha=j.sha;
     var doc=JSON.parse(b64dec(j.content));
     items=(doc.results&&doc.results[0]&&doc.results[0].items)||[];
@@ -171,14 +199,15 @@ function thumbOf(v){
 }
 function render(){
   var L=document.getElementById("list"); L.innerHTML="";
-  document.getElementById("cnt").textContent=items.length+" فيديو";
-  if(!items.length){ L.innerHTML='<p class="hint">مفيش فيديوهات — ضيف من فوق.</p>'; }
+  var homeN = MODE==="reels" ? 6 : 3;
+  document.getElementById("cnt").textContent=items.length+(MODE==="reels"?" ريلز":" فيديو");
+  if(!items.length){ L.innerHTML='<p class="hint">القائمة فاضية — ضيف من فوق.</p>'; }
   items.forEach(function(v,i){
     var d=document.createElement("div"); d.className="vitem";
     var src=v.source==="dailymotion"?'<span class="badge dm">Dailymotion</span>':'<span class="badge yt">YouTube</span>';
     d.innerHTML='<img src="'+thumbOf(v)+'" alt="">'+
       '<div><h3>'+esc(v.title||"(بدون عنوان)")+src+'</h3>'+
-      '<div class="m">'+esc(v.video_id)+' · '+esc(v.pub_date||"")+(i<3?' · <b style="color:#0f5e28">في الرئيسية</b>':'')+'</div></div>'+
+      '<div class="m">'+esc(v.video_id)+' · '+esc(v.pub_date||"")+(i<homeN?' · <b style="color:#0f5e28">في الرئيسية</b>':'')+'</div></div>'+
       '<div class="acts"><div class="row2">'+
       '<button class="btn-o btn-sm" '+(i===0?'disabled':'')+' onclick="move('+i+',-1)">⬆</button>'+
       '<button class="btn-o btn-sm" '+(i===items.length-1?'disabled':'')+' onclick="move('+i+',1)">⬇</button></div>'+
@@ -211,6 +240,8 @@ function checkVideo(){
   document.getElementById("preview").style.display="none";
   var p=parseUrl(document.getElementById("url").value);
   if(!p) return show("chkStatus","err","اللينك ده مش YouTube ولا Dailymotion — اتأكد منه");
+  if(MODE==="reels" && p.source!=="youtube")
+    return show("chkStatus","err","الريلز بتدعم شورتس يوتيوب بس — الصق لينك youtube.com/shorts/...");
   show("chkStatus","info","… بفحص الفيديو");
   if(p.source==="dailymotion"){
     fetch("https://api.dailymotion.com/video/"+p.id+"?fields=allow_embed,status,title")
@@ -243,7 +274,8 @@ function okPreview(p, title){
   var src=(p.source==="dailymotion")
     ? "https://www.dailymotion.com/embed/video/"+p.id
     : "https://www.youtube-nocookie.com/embed/"+p.id;
-  pv.innerHTML='<iframe src="'+src+'" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
+  var ratio = MODE==="reels" ? 'style="aspect-ratio:9/16;max-width:270px"' : '';
+  pv.innerHTML='<iframe src="'+src+'" '+ratio+' allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>';
   pv.style.display="block";
   var f=document.getElementById("addForm"); f.style.display="block";
   if(title && !document.getElementById("vtitle").value) document.getElementById("vtitle").value=title;
@@ -275,10 +307,11 @@ function publish(){
   document.getElementById("pubStatus").textContent="… بحفظ على GitHub";
   var body={ results:[{ items:items }] };
   var payload={
-    message:"Update videos via admin page ("+items.length+" items)",
+    message:"Update "+MODE+" via admin page ("+items.length+" items)",
     content:b64enc(JSON.stringify(body, null, 0)),
-    branch:BRANCH, sha:fileSha
+    branch:BRANCH
   };
+  if(fileSha) payload.sha=fileSha;   // absent -> first save creates the file
   fetch(API,{method:"PUT",
     headers:{Authorization:"Bearer "+tok(),Accept:"application/vnd.github+json","Content-Type":"application/json"},
     body:JSON.stringify(payload)})
@@ -287,7 +320,7 @@ function publish(){
     fileSha=j.content.sha; dirty=false; btn.disabled=false; render();
     show("listStatus","ok","🎉 اتحفظ! GitHub Actions بينشر دلوقتي — الموقع هيتحدث خلال ~دقيقة.<br>"+
       '<a href="https://github.com/'+OWNER+'/'+REPO+'/actions" target="_blank">تابع النشر</a> · '+
-      '<a href="'+SITE+'/videos.html" target="_blank">افتح صفحة الفيديوهات</a>');
+      '<a href="'+SITE+(MODE==="reels"?'/reels.html':'/videos.html')+'" target="_blank">افتح الصفحة على الموقع</a>');
     document.getElementById("pubStatus").textContent="";
   })
   .catch(function(e){ btn.disabled=false;

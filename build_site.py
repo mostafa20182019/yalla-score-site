@@ -111,6 +111,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
     va = " is-active" if active == "videos" else ""
+    ra = " is-active" if active == "reels" else ""
     ads_head = (f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" crossorigin="anonymous"></script>'
                 if ADSENSE_CLIENT else "")
     t = f"""<!doctype html>
@@ -148,6 +149,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية<span class="nav-en"> | Home</span></a>
     <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
     <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>
+    <a href="/reels.html" class="navtab{ra}"><span class="ico">⚡</span> ريلز<span class="nav-en"> | Reels</span></a>
   </div></nav>
 </header>
 <main class="wrap">
@@ -159,7 +161,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/reels.html">ريلز</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -266,6 +268,20 @@ def news_card(a):
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
             f'<p class="meta">{esc(a.get("author"))} · {esc(a.get("pub_date"))}</p></div></a>')
 
+def reel_card(r):
+    """Vertical 9:16 short (YouTube Shorts). Same click-to-play facade as
+    videos (VIDEO_JS handles any .vcard); .reel switches the aspect ratio."""
+    vid = esc(r.get("video_id") or "")
+    title = esc(r.get("title") or "")
+    thumb = f"https://i.ytimg.com/vi/{vid}/oar2.jpg"          # vertical thumb
+    fallback = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"  # crop if missing
+    return (f'<div class="vcard reel" data-vid="{vid}" data-src="youtube">'
+            f'<button type="button" class="vthumb" aria-label="تشغيل: {title}">'
+            f'<img src="{thumb}" alt="{title}" loading="lazy" '
+            f'onerror="this.onerror=null;this.src=\'{fallback}\'">'
+            f'<span class="vplay" aria-hidden="true">▶</span></button>'
+            f'<div class="vb"><h3>{title}</h3></div></div>')
+
 def video_facade(v):
     """A lightweight video 'facade': thumbnail + play button; the real iframe
     is injected by VIDEO_JS only when the visitor clicks (keeps the page fast).
@@ -310,6 +326,13 @@ def build():
     matches = load("matches.json")
     headlines = load("headlines.json")
     videos = load("videos.json")
+    # reels: hand-picked first, then auto-pulled channel uploads (deduped)
+    reels = load("reels.json")
+    seen_r = {r.get("video_id") for r in reels}
+    for r in load("reels_auto.json"):
+        if r.get("video_id") not in seen_r:
+            reels.append(r)
+            seen_r.add(r.get("video_id"))
 
     global TICKER_HTML
     TICKER_HTML = make_ticker(matches)
@@ -365,6 +388,15 @@ def build():
         parts.append('<div class="vstrip">')
         for v in videos[:3]:
             parts.append(video_facade(v))
+        parts.append('</div>')
+        parts.append(VIDEO_JS)
+    # reels teaser (vertical shorts; full feed lives on /reels.html)
+    if reels:
+        parts.append('<div class="sec-h"><h2 class="page-h">⚡ ريلز</h2>'
+                     '<a class="see-all" href="/reels.html">كل الريلز ←</a></div>')
+        parts.append('<div class="rstrip">')
+        for r in reels[:6]:
+            parts.append(reel_card(r))
         parts.append('</div>')
         parts.append(VIDEO_JS)
     # external headlines teaser (9 = 3 rows; the full list lives on /headlines.html)
@@ -499,6 +531,23 @@ def build():
     write("headlines.html", "".join(hp))
     urls.append("/headlines.html")
 
+    # ---- reels page (vertical shorts; data/reels.json + reels_auto.json) ----
+    rp = [head(f"ريلز كرة القدم — {SITE_NAME}",
+               "ريلز كرة القدم — مقاطع قصيرة: مهارات وأهداف ولقطات ممتعة بالفيديو.",
+               SITE_BASE + "/reels.html", active="reels")]
+    rp.append('<h1 class="page-h">⚡ ريلز</h1>')
+    if reels:
+        rp.append('<div class="rgrid">')
+        for r in reels:
+            rp.append(reel_card(r))
+        rp.append('</div>')
+        rp.append(VIDEO_JS)
+    else:
+        rp.append('<p class="empty-note">الريلز قريبًا — تابعونا.</p>')
+    rp.append(foot())
+    write("reels.html", "".join(rp))
+    urls.append("/reels.html")
+
     # ---- videos page (curated football videos; edit data/videos.json) ----
     vp = [head(f"فيديوهات كرة القدم — {SITE_NAME}",
                "أحدث فيديوهات وأهداف وملخصات كرة القدم بالعربية على يلا سكور.",
@@ -592,7 +641,8 @@ a{color:inherit}
 .beta{font-size:.62rem;font-weight:800;color:#ffe08a;border:1px solid rgba(255,224,138,.55);background:rgba(0,0,0,.18);padding:2px 9px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 /* second row: navigation tabs (like the app) */
 .site-nav{position:relative;z-index:1;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12)}
-.nav-in{display:flex;align-items:stretch;height:46px}
+.nav-in{display:flex;align-items:stretch;height:46px;overflow-x:auto;scrollbar-width:none}
+.nav-in::-webkit-scrollbar{display:none}
 .navtab{display:inline-flex;align-items:center;gap:7px;padding:0 18px;color:rgba(255,255,255,.85);text-decoration:none;font-weight:800;font-size:.95rem;border-bottom:3px solid transparent;transition:background .12s,color .12s;white-space:nowrap}
 .navtab:hover{background:rgba(255,255,255,.10);color:#fff}
 .navtab.is-active{color:#fff;border-bottom-color:#fff;background:rgba(255,255,255,.08)}
@@ -716,6 +766,16 @@ a{color:inherit}
 .vb{padding:12px 14px}
 .vb h3{margin:0 0 6px;font-size:.95rem;font-weight:800;line-height:1.5;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .empty-note{color:var(--muted);font-weight:700;padding:20px 0}
+/* reels: vertical 9:16 shorts */
+.rstrip{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;padding:2px 2px 6px}
+.rstrip::-webkit-scrollbar{display:none}
+.rstrip .reel{flex:0 0 168px}
+.rgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:14px}
+.reel .vthumb{aspect-ratio:9/16}
+.reel .vframe{aspect-ratio:9/16}
+.reel .vplay{width:46px;height:46px;font-size:1.1rem}
+.reel .vb{padding:9px 11px}
+.reel .vb h3{font-size:.8rem;line-height:1.45}
 /* footer */
 .site-foot{background:#0b1220;color:#cbd5e1;margin-top:30px;padding:22px 0}
 .site-foot p{margin:2px 0}.credit{font-size:.78rem;color:#94a3b8}
@@ -851,6 +911,7 @@ SHELF_JS = """<script>
 
 VIDEO_JS = """<script>
 (function(){
+  if(window.__yv) return; window.__yv=1;  // idempotent (page may include twice)
   document.addEventListener('click',function(e){
     var btn=e.target.closest('.vthumb'); if(!btn) return;
     var card=btn.closest('.vcard'); if(!card) return;

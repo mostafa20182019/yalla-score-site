@@ -111,6 +111,43 @@ def fetch_news():
     items = _dedup_stories(items)   # one card per story, not per outlet
     return items[:60]               # home shows 9; /headlines.html shows all
 
+# ----------------------------------------------------------------- reels
+# Auto-pull the newest uploads of chosen SHORTS-ONLY channels into
+# data/reels_auto.json (merged after the hand-picked data/reels.json).
+# Empty list = feature off (nothing is written). Add channel ids like:
+#   REEL_CHANNELS = ["UCxxxxxxxxxxxxxxxxxxxxxx", ...]
+# NOTE: pick channels that post ONLY vertical shorts - the RSS feed can't
+# tell a short from a long video.
+REEL_CHANNELS = []
+REELS_PER_CHANNEL = 4
+
+def fetch_reels_auto():
+    if not REEL_CHANNELS:
+        return None
+    out = []
+    for ch in REEL_CHANNELS:
+        try:
+            xml = http_get(f"https://www.youtube.com/feeds/videos.xml?channel_id={ch}")
+        except Exception as e:
+            print(f"  ! reels RSS failed ({ch}): {e}")
+            continue
+        n = 0
+        for m in re.finditer(r"<entry>(.*?)</entry>", xml, re.S):
+            block = m.group(1)
+            vid = re.search(r"<yt:videoId>([^<]+)</yt:videoId>", block)
+            tit = re.search(r"<title>([^<]*)</title>", block)
+            pub = re.search(r"<published>(\d{4}-\d{2}-\d{2})", block)
+            if not vid:
+                continue
+            out.append({"video_id": _unescape(vid.group(1)),
+                        "title": _unescape(tit.group(1)) if tit else "",
+                        "pub_date": pub.group(1) if pub else ""})
+            n += 1
+            if n >= REELS_PER_CHANNEL:
+                break
+    out.sort(key=lambda x: x.get("pub_date") or "", reverse=True)
+    return out
+
 # --------------------------------------------------------------- matches
 def _norm_status(s):
     s = (s or "").upper()
@@ -193,3 +230,11 @@ if __name__ == "__main__":
     if matches is not None:
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
+    try:
+        reels_auto = fetch_reels_auto()
+    except Exception as e:
+        print(f"  ! reels fetch failed ({e}) - keeping existing reels_auto.json")
+        reels_auto = None
+    if reels_auto is not None:
+        write_items("reels_auto.json", reels_auto)
+        print(f"reels (auto): {len(reels_auto)}")
