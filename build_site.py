@@ -11,7 +11,7 @@ Pages) - no credit card needed. Google indexes static HTML very well.
 IMPORTANT: set SITE_BASE to your final public URL before the last build,
 so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 """
-import json, os, html, shutil, datetime
+import json, os, html, shutil, datetime, hashlib
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://old-credit-e926.mustafa-abdelsalam95.workers.dev"  # Cloudflare Workers static
@@ -135,7 +135,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="{esc(img)}">
 <link rel="icon" href="/assets/logo.png">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/style.css?v={CSS_VER}">
 {ads_head}
 </head>
 <body>
@@ -173,6 +173,7 @@ def jsonld(obj):
 # Live-scores ticker in the header. Built once per build from matches.json
 # (site rebuilds every 30 min, so it stays fresh). Set by build().
 TICKER_HTML = ""
+CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash in build()
 
 # Big clubs for the ticker's padding pool (substring match on football-data
 # team names). World Cup matches always count as "big".
@@ -350,8 +351,11 @@ def build():
     TICKER_HTML = make_ticker(matches)
 
     # ---- assets: css + logo ----
+    global CSS_VER
+    _css = CSS + "\n" + LEGENDS_CSS
+    CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
-        f.write(CSS + "\n" + LEGENDS_CSS)
+        f.write(_css)
     for _logo in (os.path.join(HERE, "assets-src", "logo.png"),
                   os.path.join(HERE, "..", "shared-components", "static-files", "icons", "app-icon-192.png")):
         if os.path.exists(_logo):
@@ -903,13 +907,15 @@ a{color:inherit}
 .mcomp{grid-column:1/-1;color:var(--muted);font-size:.78rem;font-weight:700;text-align:center;border-top:1px solid #eef2f6;padding-top:8px}
 /* mobile: symmetric stacked teams (crest above name), pill pinned top corner */
 @media(max-width:560px){
-  .mrow{grid-template-columns:1fr auto 1fr;grid-template-areas:"home mid away";position:relative;padding:30px 10px 12px}
+  .mrow{grid-template-columns:1fr auto 1fr;grid-template-areas:"home mid away";position:relative;padding:12px 8px}
+  .mrow:has(.pill){padding-top:30px}                 /* room for the corner badge only when present */
   .pill{position:absolute;top:8px;inset-inline-start:10px;grid-area:auto}
-  .team,.team:first-of-type,.team:last-of-type{grid-area:auto;flex-direction:column;justify-content:flex-start;text-align:center;gap:4px;font-size:.78rem;line-height:1.35}
+  .team,.team:first-of-type,.team:last-of-type{grid-area:auto;flex-direction:column;justify-content:flex-start;text-align:center;gap:4px;font-size:.76rem;line-height:1.35;min-width:0}
   .team:first-of-type{grid-area:home}
   .team:last-of-type{grid-area:away}
+  .team>span{min-width:0;max-width:100%;overflow-wrap:anywhere}   /* long names wrap, never overflow */
   .team img{width:30px;height:30px}
-  .mid{min-width:56px}
+  .mid{min-width:52px}
   .score{font-size:1.2rem}
 }
 /* matches per-day navigator */
