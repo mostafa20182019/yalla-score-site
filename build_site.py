@@ -192,6 +192,9 @@ def _crest_name(url):
             break
     return hashlib.md5(url.encode("utf-8")).hexdigest()[:16] + ext
 
+_CREST_FAILS = [0]       # give up quickly when the crest host is unreachable
+_CREST_FAIL_LIMIT = 3
+
 def local_crest(url):
     """Return a site-local path for a remote crest (downloading it if needed).
     Falls back to the original URL when the download isn't possible."""
@@ -202,12 +205,15 @@ def local_crest(url):
     name = _crest_name(url)
     cached = os.path.join(CRESTS_CACHE, name)
     if not os.path.exists(cached):
+        if _CREST_FAILS[0] >= _CREST_FAIL_LIMIT:
+            _CREST_MAP[url] = url            # host looks down; stop hammering it
+            return url
         try:
             import urllib.request, ssl
             os.makedirs(CRESTS_CACHE, exist_ok=True)
             req = urllib.request.Request(url, headers={"User-Agent": "yalla-score/1.0"})
             try:
-                with urllib.request.urlopen(req, timeout=20) as r:
+                with urllib.request.urlopen(req, timeout=8) as r:
                     data = r.read()
             except Exception:
                 # some crest hosts ship a broken cert chain; we're only fetching
@@ -216,14 +222,18 @@ def local_crest(url):
                 ctx = ssl.create_default_context()
                 ctx.check_hostname = False
                 ctx.verify_mode = ssl.CERT_NONE
-                with urllib.request.urlopen(req, timeout=20, context=ctx) as r:
+                with urllib.request.urlopen(req, timeout=8, context=ctx) as r:
                     data = r.read()
             if not data:
                 raise ValueError("empty")
             with open(cached, "wb") as f:
                 f.write(data)
         except Exception as e:
-            print(f"  ! crest download failed ({url}): {e}")
+            _CREST_FAILS[0] += 1
+            if _CREST_FAILS[0] <= _CREST_FAIL_LIMIT:
+                print(f"  ! crest download failed ({url}): {e}")
+                if _CREST_FAILS[0] == _CREST_FAIL_LIMIT:
+                    print("  ! crest host unreachable - using remote URLs for the rest")
             _CREST_MAP[url] = url            # keep remote url as fallback
             return url
     _CREST_MAP[url] = "/assets/crests/" + name
@@ -543,10 +553,11 @@ def build():
     p.append('</div></aside>')
 
     # --- center: league tables (hidden) + day navigator + days ---
-    st_by_comp = {s.get("competition"): s.get("table") for s in standings if s.get("table")}
+    st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
     p.append('<div class="mp-main">')
-    for comp, table in st_by_comp.items():
-        p.append(standings_table(comp, table))
+    for comp, st in st_by_comp.items():
+        p.append(standings_table(comp, st.get("table"),
+                                 past=st.get("past"), season_label=st.get("season_label")))
     p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no table)
     p.append('<div id="daynav" class="daynav" hidden>'
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
@@ -749,8 +760,10 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
-def standings_table(comp, rows):
-    """League standings table (FotMob-style). Hidden until its league is picked."""
+def standings_table(comp, rows, past=False, season_label=""):
+    """League standings table (FotMob-style). Hidden until its league is picked.
+    `past` = the new season hasn't kicked off yet, so this is last season's
+    final table; it gets a clear badge instead of being hidden."""
     def cell(v):
         return "0" if v is None else esc(str(v))
     body = []
@@ -764,8 +777,10 @@ def standings_table(comp, rows):
             f'<td>{cell(r.get("draw"))}</td><td>{cell(r.get("lost"))}</td>'
             f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
             f'<td>{cell(r.get("gd"))}</td><td class="lt-pts">{cell(r.get("pts"))}</td></tr>')
+    badge = (f'<span class="lt-past">الموسم الماضي{(" " + esc(season_label)) if season_label else ""}</span>'
+             if past else "")
     return (f'<div class="ltable" data-comp="{esc(comp)}" hidden>'
-            f'<div class="lt-head">{comp_icon(comp)} جدول ترتيب {esc(comp_label(comp))}</div>'
+            f'<div class="lt-head">{comp_icon(comp)} جدول ترتيب {esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
             f'<th title="لعب">لعب</th><th title="فاز">ف</th><th title="تعادل">ت</th>'
@@ -940,6 +955,7 @@ a{color:inherit}
 .lt .lt-team{text-align:start;display:flex;align-items:center;gap:8px;font-weight:800;min-width:150px}
 .lt .lt-team img{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
 .lt .lt-pts{font-weight:900;color:var(--green-d)}
+.lt-past{margin-inline-start:auto;background:#fef3c7;color:#92400e;font-size:.68rem;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap}
 .no-table{min-height:240px}
 /* league fixtures side panel (FotMob-style) */
 .fx-head{display:flex;align-items:center;gap:8px;font-weight:900;color:var(--green-d);font-size:.92rem;margin:0 0 8px}

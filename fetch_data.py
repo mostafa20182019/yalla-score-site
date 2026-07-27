@@ -243,15 +243,21 @@ def fetch_standings():
                 break
         if not table:
             continue
-        # football-data keeps serving LAST season's FINAL table under the new
-        # season id until kickoff. Drop it: season hasn't started yet AND the
-        # table already shows played games -> it's stale last-season data.
+        # Before kickoff football-data still serves LAST season's FINAL table
+        # under the new season id. Show it (more useful than an empty table),
+        # but label it as last season so nobody mistakes it for the new one.
         start = (j.get("season") or {}).get("startDate") or ""
         started = bool(start) and start[:10] <= today
         maxplayed = max((r.get("playedGames") or 0) for r in table)
-        if (not started) and maxplayed > 0:
-            print(f"  ! standings {comp}: pre-season stale table ({maxplayed} played) - skip")
-            continue
+        past = (not started) and maxplayed > 0
+        season_label = ""
+        if past:
+            try:
+                y = int(start[:4])
+                season_label = f"{y-1}/{y}"      # e.g. season starting 2026 -> last = 2025/2026
+            except Exception:
+                season_label = "الموسم الماضي"
+            print(f"  · standings {comp}: showing last season ({season_label})")
         name = (j.get("competition") or {}).get("name") or comp
         rows = []
         for r in table:
@@ -263,9 +269,10 @@ def fetch_standings():
                 "gf": r.get("goalsFor"), "ga": r.get("goalsAgainst"),
                 "gd": r.get("goalDifference"), "pts": r.get("points"),
             })
-        out.append({"competition": name, "table": rows})
-    # any real response -> write the filtered result (even if empty, to clear
-    # stale tables). ALL calls failed (network) -> None -> keep the last file.
+        out.append({"competition": name, "table": rows,
+                    "past": past, "season_label": season_label})
+    # any real response -> write the result. ALL calls failed (network) ->
+    # None -> keep the last file.
     return out if got_any else None
 
 if __name__ == "__main__":
