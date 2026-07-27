@@ -175,6 +175,60 @@ def jsonld(obj):
 TICKER_HTML = ""
 CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash in build()
 
+# ---- crest mirroring ---------------------------------------------------
+# football-data's crest host has had TLS/outage problems (2026-07-27: broken
+# certificate chain -> every badge vanished). Mirror each crest into
+# assets/crests/ once and serve it from our own domain; keep a cache next to
+# the sources so rebuilds don't re-download, and fall back to the remote URL
+# if a download ever fails.
+CRESTS_CACHE = os.path.join(HERE, "assets-src", "crests")
+_CREST_MAP = {}          # remote url -> "/assets/crests/<file>"
+
+def _crest_name(url):
+    ext = ".png"
+    for e in (".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp"):
+        if url.lower().split("?")[0].endswith(e):
+            ext = e
+            break
+    return hashlib.md5(url.encode("utf-8")).hexdigest()[:16] + ext
+
+def local_crest(url):
+    """Return a site-local path for a remote crest (downloading it if needed).
+    Falls back to the original URL when the download isn't possible."""
+    if not url or not url.startswith("http"):
+        return url
+    if url in _CREST_MAP:
+        return _CREST_MAP[url]
+    name = _crest_name(url)
+    cached = os.path.join(CRESTS_CACHE, name)
+    if not os.path.exists(cached):
+        try:
+            import urllib.request, ssl
+            os.makedirs(CRESTS_CACHE, exist_ok=True)
+            req = urllib.request.Request(url, headers={"User-Agent": "yalla-score/1.0"})
+            try:
+                with urllib.request.urlopen(req, timeout=20) as r:
+                    data = r.read()
+            except Exception:
+                # some crest hosts ship a broken cert chain; we're only fetching
+                # public logo images, so retry without verification rather than
+                # leaving the site with no badges at all
+                ctx = ssl.create_default_context()
+                ctx.check_hostname = False
+                ctx.verify_mode = ssl.CERT_NONE
+                with urllib.request.urlopen(req, timeout=20, context=ctx) as r:
+                    data = r.read()
+            if not data:
+                raise ValueError("empty")
+            with open(cached, "wb") as f:
+                f.write(data)
+        except Exception as e:
+            print(f"  ! crest download failed ({url}): {e}")
+            _CREST_MAP[url] = url            # keep remote url as fallback
+            return url
+    _CREST_MAP[url] = "/assets/crests/" + name
+    return _CREST_MAP[url]
+
 # Big clubs for the ticker's padding pool (substring match on football-data
 # team names). World Cup matches always count as "big".
 BIG_TEAMS = ["Real Madrid", "FC Barcelona", "Atlético", "Manchester City",
@@ -227,9 +281,9 @@ def make_ticker(matches):
     its = []
     for m in pool:
         st = m.get("status")
-        hb = (f'<img class="tk-b" src="{esc(m.get("home_badge"))}" alt="" loading="lazy">'
+        hb = (f'<img class="tk-b" src="{esc(local_crest(m.get("home_badge")))}" alt="" loading="lazy">'
               if m.get("home_badge") else "")
-        ab = (f'<img class="tk-b" src="{esc(m.get("away_badge"))}" alt="" loading="lazy">'
+        ab = (f'<img class="tk-b" src="{esc(local_crest(m.get("away_badge")))}" alt="" loading="lazy">'
               if m.get("away_badge") else "")
         if st == "LIVE":
             mid = f'<b class="tk-s">{sc(m.get("home_score"))}-{sc(m.get("away_score"))}</b><span class="tk-dot"></span>'
@@ -664,6 +718,21 @@ def build():
                 shutil.copy(src, os.path.join(DIST, fn))
                 print("  + root file:", fn)
 
+    # ---- mirrored crests (downloaded by local_crest during rendering) ----
+    if _CREST_MAP:
+        dest = os.path.join(DIST, "assets", "crests")
+        os.makedirs(dest, exist_ok=True)
+        n = 0
+        for local in set(_CREST_MAP.values()):
+            if not local.startswith("/assets/crests/"):
+                continue                      # remote fallback, nothing to copy
+            fn = local.rsplit("/", 1)[-1]
+            src = os.path.join(CRESTS_CACHE, fn)
+            if os.path.exists(src):
+                shutil.copy(src, os.path.join(dest, fn))
+                n += 1
+        print(f"  + crests mirrored: {n}")
+
     # ---- uploaded media (article images added via the admin page) ----
     media = os.path.join(HERE, "media")
     if os.path.isdir(media):
@@ -686,7 +755,7 @@ def standings_table(comp, rows):
         return "0" if v is None else esc(str(v))
     body = []
     for r in rows:
-        crest = (f'<img src="{esc(r.get("crest"))}" alt="" loading="lazy">'
+        crest = (f'<img src="{esc(local_crest(r.get("crest")))}" alt="" loading="lazy">'
                  if r.get("crest") else "")
         body.append(
             f'<tr><td class="lt-pos">{cell(r.get("pos"))}</td>'
@@ -721,7 +790,7 @@ def comp_label(name):
 def comp_icon(name):
     url = COMP_LOGO.get(name)
     if url:
-        return f'<img class="lg-logo" src="{esc(url)}" alt="" loading="lazy">'
+        return f'<img class="lg-logo" src="{esc(local_crest(url))}" alt="" loading="lazy">'
     return f'<span class="lg-ico">{comp_emoji(name)}</span>'
 
 def comp_emoji(name):
@@ -739,7 +808,7 @@ def fixture_mini(m):
     """Compact fixture row for the league side panel (FotMob-style)."""
     st = (m.get("status") or "").upper()
     def cr(u):
-        return f'<img src="{esc(u)}" alt="" loading="lazy">' if u else '<span class="fx-ph">⚽</span>'
+        return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="fx-ph">⚽</span>'
     if st in ("FINISHED", "LIVE"):
         h = "" if m.get("home_score") is None else m.get("home_score")
         a = "" if m.get("away_score") is None else m.get("away_score")
@@ -761,7 +830,7 @@ def match_row(m, show_time=False, show_comp=True):
         when = (m.get("koff_time") if show_time and m.get("koff_time") else m.get("kickoff"))
         mid = f'<span class="ko">{esc(when)}</span>'
     def crest(u):
-        return f'<img src="{esc(u)}" alt="" loading="lazy">' if u else '<span class="ph">⚽</span>'
+        return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="ph">⚽</span>'
     comp = ""
     if show_comp:
         comp = f'<div class="mcomp">{esc(m.get("competition"))}{(" · " + esc(m.get("channel"))) if m.get("channel") else ""}</div>'
