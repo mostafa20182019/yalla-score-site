@@ -149,6 +149,8 @@ def fetch_reels_auto():
     return out
 
 # --------------------------------------------------------------- matches
+_FIXTURES = None   # per-league full-season fixtures by round, set by fetch_matches
+
 def _norm_status(s):
     s = (s or "").upper()
     if s in ("IN_PLAY", "PAUSED"):
@@ -178,25 +180,12 @@ def fetch_matches():
     pull(f"https://api.football-data.org/v4/matches?status=FINISHED&dateFrom={frm}&dateTo={to}")
     pull("https://api.football-data.org/v4/matches?status=LIVE")
 
-    cutoff = today - timedelta(days=5)
-    out = []
-    for m in raw.values():
-        utc = m.get("utcDate")
-        if not utc:
-            continue
-        try:
-            dt = datetime.fromisoformat(utc.replace("Z", "+00:00")).astimezone(CAIRO)
-        except Exception:
-            continue
-        if dt.date() < cutoff:
-            continue
+    def to_row(m, dt):
         comp = m.get("competition") or {}
-        if (comp.get("code") or "") not in FD_COMPS:
-            continue  # keep only our 6 competitions
         ht = m.get("homeTeam") or {}
         at = m.get("awayTeam") or {}
         ft = (m.get("score") or {}).get("fullTime") or {}
-        out.append({
+        return {
             "match_id": m.get("id"),
             "competition": comp.get("name"),
             "home": ht.get("name"), "away": at.get("name"),
@@ -205,9 +194,52 @@ def fetch_matches():
             "koff_time": dt.strftime("%H:%M"),
             "status": _norm_status(m.get("status")),
             "home_score": ft.get("home"), "away_score": ft.get("away"),
+            "round": m.get("matchday"),
             "channel": None,
-        })
+        }
+
+    cutoff = today - timedelta(days=5)
+    out = []
+    # full-season fixtures grouped by league -> round (for the FotMob rounds view)
+    by_league = {}   # comp_name -> {round -> [rows]}
+    for m in raw.values():
+        utc = m.get("utcDate")
+        if not utc:
+            continue
+        try:
+            dt = datetime.fromisoformat(utc.replace("Z", "+00:00")).astimezone(CAIRO)
+        except Exception:
+            continue
+        comp = m.get("competition") or {}
+        if (comp.get("code") or "") not in FD_COMPS:
+            continue  # keep only our competitions
+        row = to_row(m, dt)
+        # rounds view: every fixture, keyed by matchday (skip if no matchday)
+        rd = m.get("matchday")
+        if rd is not None:
+            by_league.setdefault(comp.get("name"), {}).setdefault(int(rd), []).append(row)
+        # main day view: recent + upcoming only
+        if dt.date() >= cutoff:
+            out.append(row)
     out.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
+
+    # build fixtures.json structure: [{competition, current, rounds:[{round,matches}]}]
+    global _FIXTURES
+    fixtures = []
+    today_s = today.isoformat()
+    for name, rounds in by_league.items():
+        rlist = []
+        for rd in sorted(rounds.keys()):
+            ms = sorted(rounds[rd], key=lambda x: (x["kickoff"], x["koff_time"] or ""))
+            rlist.append({"round": rd, "matches": ms})
+        # "current" round = earliest round that still has a match today-or-later
+        current = rlist[0]["round"] if rlist else 1
+        for r in rlist:
+            if any(mm["kickoff"] >= today_s for mm in r["matches"]):
+                current = r["round"]
+                break
+        fixtures.append({"competition": name, "current": current, "rounds": rlist})
+    _FIXTURES = fixtures
     return out[:60]
 
 # -------------------------------------------------------------- standings
@@ -295,6 +327,10 @@ if __name__ == "__main__":
     if matches is not None:
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
+    if _FIXTURES is not None:
+        write_items("fixtures.json", _FIXTURES)
+        print(f"fixtures: {len(_FIXTURES)} leagues, "
+              f"{sum(len(l['rounds']) for l in _FIXTURES)} rounds")
     try:
         reels_auto = fetch_reels_auto()
     except Exception as e:

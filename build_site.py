@@ -403,6 +403,7 @@ def build():
     headlines = load("headlines.json")
     videos = load("videos.json")
     standings = load("standings.json")   # [{competition, table:[...]}]
+    fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
     reels = load("reels.json")
     seen_r = {r.get("video_id") for r in reels}
@@ -581,24 +582,25 @@ def build():
         p.append('</section>')
     p.append('</div></div>')  # /days /mp-main
 
-    # --- left rail (RTL end): per-league fixtures (shown on select) OR news+ad ---
-    # group fixtures by competition -> day
+    # --- left rail (RTL end): per-league fixtures BY ROUND (shown on select) ---
+    fx_by_comp = {f.get("competition"): f for f in fixtures if f.get("rounds")}
+    # fallback (leagues with no round data): day-grouped from the day view
     comp_fix = {}
     for d in sorted_days:
         for m in daymap[d]:
             comp_fix.setdefault(m.get("competition") or "", {}).setdefault(d, []).append(m)
     p.append('<aside class="mp-side mp-extra">')
     for c in comp_order:
-        days_c = comp_fix.get(c) or {}
-        if not days_c:
-            continue
-        p.append(f'<div class="lg-fix" data-comp="{esc(c)}" hidden>'
-                 f'<div class="fx-head">{comp_icon(c)} مباريات {esc(comp_label(c))}</div>')
-        for d in sorted(days_c.keys()):
-            p.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
-            for m in days_c[d]:
-                p.append(fixture_mini(m))
-        p.append('</div>')
+        if c in fx_by_comp:
+            p.append(league_rounds_panel(c, fx_by_comp[c]))
+        elif comp_fix.get(c):
+            p.append(f'<div class="lg-fix" data-comp="{esc(c)}" hidden>'
+                     f'<div class="fx-head">{comp_icon(c)} مباريات {esc(comp_label(c))}</div>')
+            for d in sorted(comp_fix[c].keys()):
+                p.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
+                for m in comp_fix[c][d]:
+                    p.append(fixture_mini(m))
+            p.append('</div>')
     p.append('<div id="mpDefault">')
     p.append(f'<div class="mp-ad">{adsense_slot()}</div>')
     p.append('</div>')  # /mpDefault
@@ -606,6 +608,7 @@ def build():
 
     p.append('</div>')  # /mpage
     p.append(MATCHES_JS)
+    p.append(ROUNDS_JS)
     p.append(foot())
     write("matches.html", "".join(p))
 
@@ -835,6 +838,32 @@ def fixture_mini(m):
             f'{mid}'
             f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(m.get("away"))}</bdi></span></div>')
 
+def league_rounds_panel(comp, fx):
+    """FotMob-style rounds panel: a ‹ round › navigator + every round of the
+    season, each round's matches grouped by day. JS shows one round at a time."""
+    from collections import OrderedDict
+    rounds = fx.get("rounds") or []
+    current = fx.get("current") or (rounds[0]["round"] if rounds else 1)
+    parts = [f'<div class="lg-fix rounds-panel" data-comp="{esc(comp)}" data-current="{current}" hidden>',
+             f'<div class="fx-head">{comp_icon(comp)} {esc(comp_label(comp))}</div>',
+             '<div class="rnav">'
+             '<button type="button" class="rn-prev" aria-label="الجولة السابقة">‹</button>'
+             '<span class="rn-label"></span>'
+             '<button type="button" class="rn-next" aria-label="الجولة التالية">›</button></div>',
+             '<div class="rounds">']
+    for r in rounds:
+        parts.append(f'<div class="round" data-round="{r["round"]}" data-label="الجولة {r["round"]}" hidden>')
+        days = OrderedDict()
+        for m in r.get("matches", []):
+            days.setdefault(m.get("kickoff") or "", []).append(m)
+        for d in sorted(days.keys()):
+            parts.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
+            for m in days[d]:
+                parts.append(fixture_mini(m))
+        parts.append('</div>')
+    parts.append('</div></div>')
+    return "".join(parts)
+
 def match_row(m, show_time=False, show_comp=True):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
@@ -968,6 +997,14 @@ a{color:inherit}
 .fx-ph{font-size:.9rem}
 .fx-time{color:var(--green-d);font-weight:800;white-space:nowrap}
 .fx-sc{font-weight:900;white-space:nowrap}
+/* rounds navigator */
+.rnav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 10px;
+  background:#f1f5f9;border-radius:999px;padding:4px 6px}
+.rnav .rn-label{flex:1;text-align:center;font-weight:900;font-size:.82rem;color:var(--green-d)}
+.rn-prev,.rn-next{flex:0 0 auto;width:30px;height:30px;border:0;border-radius:50%;background:var(--green);
+  color:#fff;font-size:1.1rem;font-weight:900;line-height:1;cursor:pointer}
+.rn-prev:hover,.rn-next:hover{background:var(--green-d)}
+.rn-prev:disabled,.rn-next:disabled{opacity:.35;cursor:default}
 @media(max-width:1080px){.mpage.league-view .mp-extra{display:block}}
 @media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
 @media(max-width:760px){
@@ -1177,6 +1214,29 @@ LEGENDS_CSS = """
 
 # progressive-enhancement: show one day at a time with prev/next (like the live app).
 # Without JS, every day-section stays visible (crawlable).
+ROUNDS_JS = """<script>
+(function(){
+  [].slice.call(document.querySelectorAll('.rounds-panel')).forEach(function(panel){
+    var rounds=[].slice.call(panel.querySelectorAll('.round'));
+    if(!rounds.length) return;
+    var label=panel.querySelector('.rn-label');
+    var prev=panel.querySelector('.rn-prev'), next=panel.querySelector('.rn-next');
+    var cur=panel.getAttribute('data-current');
+    var idx=0;
+    for(var i=0;i<rounds.length;i++){ if(rounds[i].getAttribute('data-round')===cur){ idx=i; break; } }
+    function show(i){
+      idx=Math.max(0,Math.min(rounds.length-1,i));
+      rounds.forEach(function(r,j){ r.hidden = j!==idx; });
+      label.textContent=rounds[idx].getAttribute('data-label');
+      prev.disabled=(idx<=0); next.disabled=(idx>=rounds.length-1);
+    }
+    prev.addEventListener('click',function(){ show(idx-1); });
+    next.addEventListener('click',function(){ show(idx+1); });
+    show(idx);
+  });
+})();
+</script>"""
+
 MATCHES_JS = """<script>
 (function(){
   var wrap=document.getElementById('days'); if(!wrap) return;
