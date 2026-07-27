@@ -539,7 +539,7 @@ def build():
     p.append('<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">')
     for c in comp_order:
         p.append(f'<button type="button" class="lg-item" data-comp="{esc(c)}">'
-                 f'{comp_icon(c)} {esc(comp_label(c))}</button>')
+                 f'{comp_icon(c)} <span class="lg-name">{esc(comp_label(c))}</span></button>')
     p.append('</div></aside>')
 
     # --- center: league tables (hidden) + day navigator + days ---
@@ -958,9 +958,12 @@ a{color:inherit}
   .mpage{grid-template-columns:minmax(0,1fr);gap:10px}
   .mp-leagues{position:static;padding:8px 10px}
   .mp-leagues .mp-h{display:none}
-  .lg-list{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:6px}
-  .lg-list::-webkit-scrollbar{display:none}
-  .lg-item{white-space:nowrap;flex:0 0 auto;padding:7px 12px;border:1px solid #e6ebf1;border-radius:999px}
+  /* all leagues visible at once (3 per row) - no hidden horizontal scroll */
+  .lg-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+  .lg-item{justify-content:center;gap:5px;padding:8px 4px;border:1px solid #e6ebf1;border-radius:10px;
+    font-size:.74rem;line-height:1.25;text-align:center;min-width:0}
+  .lg-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+  .lg-logo,.lg-ico{width:18px;height:18px;font-size:.95rem}
 }
 .mlist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
 .mrow{display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--green);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
