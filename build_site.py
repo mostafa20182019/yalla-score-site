@@ -527,7 +527,11 @@ def build():
         p.append(f'<h1>{esc(a["title"])}</h1>')
         p.append(f'<p class="a-meta">{esc(a.get("author"))} · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time></p>')
         if img:
-            p.append(f'<img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager">')
+            p.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager">')
+            cr = a.get("image_credit")
+            if cr:
+                p.append(f'<figcaption class="a-credit">{esc(cr)}</figcaption>')
+            p.append('</figure>')
         if a.get("summary"):
             p.append(f'<p class="lead">{esc(a["summary"])}</p>')
         p.append(f'<div class="a-body">{a.get("body") or ""}</div>')
@@ -953,7 +957,9 @@ a{color:inherit}
 .article{background:#fff;border-radius:16px;padding:24px 28px;box-shadow:0 6px 22px rgba(15,23,42,.10);margin-bottom:24px}
 .article h1{font-size:1.7rem;font-weight:900;line-height:1.3;margin:.2em 0 .3em}
 .a-meta{color:var(--muted);font-weight:700;font-size:.85rem;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
-.a-img{width:100%;max-height:400px;object-fit:cover;border-radius:14px;margin:14px 0}
+.a-fig{margin:14px 0}
+.a-img{width:100%;max-height:400px;object-fit:cover;border-radius:14px;display:block}
+.a-credit{color:var(--muted);font-size:.72rem;font-weight:600;margin-top:6px;text-align:center}
 .lead{font-size:1.1rem;font-weight:700;color:#334155}
 .a-body{font-size:1.06rem;line-height:1.95}.a-body p{margin:0 0 14px}
 .a-body h2{font-size:1.25rem;font-weight:900;color:var(--green-d);margin:22px 0 8px}
