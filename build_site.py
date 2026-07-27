@@ -33,6 +33,11 @@ ADSENSE_SLOT = ""
 # Optional contact email shown on the Privacy Policy page (leave "" to omit).
 CONTACT_EMAIL = ""
 
+# Feature switches. Flip to True to bring a section back (nav tab, footer link,
+# home teaser, its page, and sitemap entry all follow this flag automatically).
+SHOW_VIDEOS = False
+SHOW_REELS = False
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 DIST = os.path.join(HERE, "dist")
@@ -112,6 +117,10 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     ma = " is-active" if active == "matches" else ""
     va = " is-active" if active == "videos" else ""
     ra = " is-active" if active == "reels" else ""
+    vids_tab = (f'\n    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>'
+                if SHOW_VIDEOS else "")
+    reels_tab = (f'\n    <a href="/reels.html" class="navtab{ra}"><span class="ico">⚡</span> ريلز<span class="nav-en"> | Reels</span></a>'
+                 if SHOW_REELS else "")
     ads_head = (f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" crossorigin="anonymous"></script>'
                 if ADSENSE_CLIENT else "")
     t = f"""<!doctype html>
@@ -147,9 +156,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
     <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية<span class="nav-en"> | Home</span></a>
-    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
-    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>
-    <a href="/reels.html" class="navtab{ra}"><span class="ico">⚡</span> ريلز<span class="nav-en"> | Reels</span></a>
+    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>{vids_tab}{reels_tab}
   </div></nav>
 </header>
 <main class="wrap">
@@ -158,10 +165,12 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 
 def foot():
     year = "2026"
+    vids_link = ' · <a href="/videos.html">فيديوهات</a>' if SHOW_VIDEOS else ""
+    reels_link = ' · <a href="/reels.html">ريلز</a>' if SHOW_REELS else ""
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/videos.html">فيديوهات</a> · <a href="/reels.html">ريلز</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{vids_link}{reels_link} · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -463,7 +472,7 @@ def build():
                      '<button type="button" class="sh-btn sh-r" aria-label="السابق">›</button></div>')
         parts.append(SHELF_JS)
     # latest videos teaser (full library lives on /videos.html)
-    if videos:
+    if videos and SHOW_VIDEOS:
         parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
                      '<a class="see-all" href="/videos.html">كل الفيديوهات ←</a></div>')
         parts.append('<div class="vstrip">')
@@ -472,7 +481,7 @@ def build():
         parts.append('</div>')
         parts.append(VIDEO_JS)
     # reels teaser: ONE banner -> the swipe feed on /reels.html
-    if reels:
+    if reels and SHOW_REELS:
         r0 = reels[0]
         rthumb = f"https://i.ytimg.com/vi/{esc(r0.get('video_id'))}/oar2.jpg"
         rfb = f"https://i.ytimg.com/vi/{esc(r0.get('video_id'))}/hqdefault.jpg"
@@ -686,8 +695,9 @@ def build():
     else:
         rp.append('<p class="empty-note">الريلز قريبًا — تابعونا.</p>')
     rp.append(foot())
-    write("reels.html", "".join(rp))
-    urls.append("/reels.html")
+    if SHOW_REELS:
+        write("reels.html", "".join(rp))
+        urls.append("/reels.html")
 
     # ---- videos page: grouped by competition (empty sections auto-hide) ----
     # item.cat: "wc" | "epl" | "laliga" | absent -> "misc"
@@ -711,8 +721,9 @@ def build():
     else:
         vp.append('<p class="empty-note">الفيديوهات قريبًا — تابعونا.</p>')
     vp.append(foot())
-    write("videos.html", "".join(vp))
-    urls.append("/videos.html")
+    if SHOW_VIDEOS:
+        write("videos.html", "".join(vp))
+        urls.append("/videos.html")
 
     # ---- robots + sitemap ----
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE}/sitemap.xml\n")
