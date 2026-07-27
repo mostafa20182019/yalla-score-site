@@ -787,6 +787,7 @@ CSS = r""":root{
   --ink:#0f172a; --muted:#64748b; --card:#fff; --bg:#eef2f6;
 }
 *{box-sizing:border-box}
+html,body{overflow-x:hidden;max-width:100%}
 body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
 .wrap{max-width:1600px;margin:0 auto;padding:0 20px}
 a{color:inherit}
@@ -885,7 +886,7 @@ a{color:inherit}
 @media(max-width:1080px){.mpage.league-view .mp-extra{display:block}}
 @media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
 @media(max-width:760px){
-  .mpage{grid-template-columns:1fr;gap:10px}
+  .mpage{grid-template-columns:minmax(0,1fr);gap:10px}
   .mp-leagues{position:static;padding:8px 10px}
   .mp-leagues .mp-h{display:none}
   .lg-list{flex-direction:row;overflow-x:auto;scrollbar-width:none;gap:6px}
