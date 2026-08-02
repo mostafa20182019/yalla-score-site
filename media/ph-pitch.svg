@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#1d7a3c"/>
+      <stop offset="1" stop-color="#0d5226"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="225" fill="url(#g)"/>
+  <!-- mown stripes -->
+  <g fill="#ffffff" opacity="0.05">
+    <rect x="0" width="50" height="225"/><rect x="100" width="50" height="225"/>
+    <rect x="200" width="50" height="225"/><rect x="300" width="50" height="225"/>
+  </g>
+  <!-- pitch markings -->
+  <g fill="none" stroke="#ffffff" stroke-width="2.5" opacity="0.75">
+    <rect x="18" y="14" width="364" height="197" rx="2"/>
+    <line x1="200" y1="14" x2="200" y2="211"/>
+    <circle cx="200" cy="112" r="34"/>
+    <rect x="18" y="62" width="52" height="101"/>
+    <rect x="330" y="62" width="52" height="101"/>
+  </g>
+  <circle cx="200" cy="112" r="4" fill="#ffffff" opacity="0.75"/>
+</svg>

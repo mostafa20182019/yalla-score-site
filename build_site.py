@@ -38,6 +38,10 @@ CONTACT_EMAIL = ""
 SHOW_VIDEOS = False
 SHOW_REELS = False
 
+# Generic fallback thumbnails (our own SVGs in media/, no licensing worries)
+# for headline cards whose source page offers no og:image.
+PLACEHOLDER_IMGS = ["/media/ph-pitch.svg", "/media/ph-ball.svg"]
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 DIST = os.path.join(HERE, "dist")
@@ -330,11 +334,14 @@ def headline_card(h):
     src = esc(h.get('source') or '')
     img = h.get("image") or ""
     # Publisher thumbnail, hotlinked from the source's own CDN (aggregator
-    # style — we never copy the file). If it fails to load, the card just
-    # collapses back to the text-only look.
+    # style — we never copy the file). No image (or a broken one) falls back
+    # to one of our own generic pitch/ball SVGs, picked deterministically so
+    # neighbouring cards alternate.
+    ph = PLACEHOLDER_IMGS[int(hashlib.md5((h.get("link") or t).encode("utf-8")).hexdigest(), 16) % len(PLACEHOLDER_IMGS)]
     thumb = (f'<span class="himg"><img src="{esc(img)}" alt="" loading="lazy" '
              f'referrerpolicy="no-referrer" '
-             f'onerror="this.parentNode.removeChild(this);"></span>' if img else '')
+             f'onerror="this.onerror=null;this.src=\'{ph}\';"></span>' if img else
+             f'<span class="himg"><img src="{ph}" alt="" loading="lazy"></span>')
     return (f'<a class="hcard" href="{esc(h.get("source_url") or h.get("link"))}" target="_blank" rel="noopener nofollow">'
             f'<span class="go" aria-hidden="true">↗</span>{thumb}'
             f'<h3>{esc(t)}</h3>'
