@@ -22,7 +22,7 @@ DATA = os.path.join(HERE, "data")
 FD_TOKEN = os.environ.get("FD_TOKEN", "").strip()
 CAIRO = ZoneInfo("Africa/Cairo")
 UA = "Mozilla/5.0 (YallaScore static-site builder)"
-FD_COMPS = ["WC", "PL", "PD", "SA", "BL1", "FL1"]  # World Cup, PL, La Liga, Serie A, Bundesliga, Ligue 1
+FD_COMPS = ["WC", "CL", "PL", "PD", "SA", "BL1", "FL1"]  # World Cup, UCL, PL, La Liga, Serie A, Bundesliga, Ligue 1
 
 def http_get(url, headers=None, timeout=40, retries=2):
     h = {"User-Agent": UA}
@@ -319,8 +319,9 @@ def fetch_matches():
     return out[:60]
 
 # -------------------------------------------------------------- standings
-# league tables for the 5 domestic leagues (World Cup has groups, not a table)
-FD_TABLE_COMPS = ["PL", "PD", "SA", "BL1", "FL1"]
+# league tables for the domestic leagues + UCL league phase
+# (World Cup has groups, not a table)
+FD_TABLE_COMPS = ["PL", "PD", "SA", "BL1", "FL1", "CL"]
 
 def fetch_standings():
     if not FD_TOKEN:
@@ -403,6 +404,143 @@ def fetch_standings():
     # None -> keep the last file.
     return out if got_any else None
 
+# ------------------------------------------- Egyptian Premier League (TSDB)
+# football-data.org's free tier has no Egyptian league, so it comes from
+# TheSportsDB (free key "3"). Entirely best-effort: any failure just means
+# the Egyptian league is absent this run, FD data is untouched.
+TSDB = "https://www.thesportsdb.com/api/v1/json/3"
+EGY_NAME = "Egyptian Premier League"    # data-comp key used across the site
+
+def _tsdb(path):
+    return json.loads(http_get(f"{TSDB}/{path}", timeout=30, retries=1))
+
+def _egy_season():
+    now = datetime.now(CAIRO)
+    y = now.year if now.month >= 7 else now.year - 1
+    return f"{y}-{y+1}"
+
+def fetch_egypt(matches_out):
+    """Append Egyptian Premier League rows to matches_out, add its rounds
+    panel to _FIXTURES, and return a standings entry (or None)."""
+    lid = None
+    d = _tsdb("search_all_leagues.php?c=Egypt&s=Soccer")
+    for L in (d.get("countries") or d.get("leagues") or []):
+        nm = (L.get("strLeague") or "").lower()
+        if "premier" in nm and "egypt" in nm:
+            lid = L.get("idLeague")
+            break
+    if not lid:
+        print("  ! TheSportsDB: Egyptian Premier League not found")
+        return None
+    time.sleep(2)
+    badges, teams = {}, []
+    try:
+        for t in (_tsdb(f"lookup_all_teams.php?id={lid}").get("teams") or []):
+            teams.append(t.get("strTeam"))
+            badges[t.get("strTeam")] = t.get("strBadge") or ""
+    except Exception as e:
+        print(f"  ! TheSportsDB teams failed: {e}")
+
+    def ev_row(ev):
+        date = ev.get("dateEvent") or ""
+        tm = (ev.get("strTime") or "")[:5]
+        ts = ev.get("strTimestamp")            # UTC → convert to Cairo
+        if ts:
+            try:
+                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
+                if dt.tzinfo is None:
+                    dt = dt.replace(tzinfo=timezone.utc)
+                dt = dt.astimezone(CAIRO)
+                date, tm = dt.strftime("%Y-%m-%d"), dt.strftime("%H:%M")
+            except Exception:
+                pass
+        hs, aws = ev.get("intHomeScore"), ev.get("intAwayScore")
+        fin = hs not in (None, "") and aws not in (None, "")
+        h, a = ev.get("strHomeTeam"), ev.get("strAwayTeam")
+        rd = ev.get("intRound")
+        return {
+            "match_id": ev.get("idEvent"), "competition": EGY_NAME,
+            "home": h, "away": a,
+            "home_badge": ev.get("strHomeTeamBadge") or badges.get(h) or "",
+            "away_badge": ev.get("strAwayTeamBadge") or badges.get(a) or "",
+            "kickoff": date, "koff_time": tm,
+            "status": "FINISHED" if fin else "UPCOMING",
+            "home_score": int(hs) if fin else None,
+            "away_score": int(aws) if fin else None,
+            "round": int(rd) if rd not in (None, "", "0") else None,
+            "channel": None,
+        }
+
+    rows, seen = [], set()
+    for path in (f"eventsnextleague.php?id={lid}", f"eventspastleague.php?id={lid}"):
+        try:
+            time.sleep(2)
+            for ev in (_tsdb(path).get("events") or []):
+                r = ev_row(ev)
+                if r["match_id"] not in seen:
+                    seen.add(r["match_id"])
+                    rows.append(r)
+        except Exception as e:
+            print(f"  ! TheSportsDB {path.split('?')[0]} failed: {e}")
+
+    today = datetime.now(CAIRO).date()
+    cutoff = (today - timedelta(days=5)).isoformat()
+    day_rows = [r for r in rows if r["kickoff"] and r["kickoff"] >= cutoff]
+    matches_out.extend(day_rows)
+
+    # rounds panel
+    global _FIXTURES
+    rounds = {}
+    for r in rows:
+        if r.get("round"):
+            rounds.setdefault(r["round"], []).append(r)
+    if rounds:
+        rlist = [{"round": rd,
+                  "matches": sorted(ms, key=lambda x: (x["kickoff"], x["koff_time"] or ""))}
+                 for rd, ms in sorted(rounds.items())]
+        today_s = today.isoformat()
+        current = rlist[0]["round"]
+        for rr in rlist:
+            if any(mm["kickoff"] >= today_s for mm in rr["matches"]):
+                current = rr["round"]
+                break
+        if _FIXTURES is None:
+            _FIXTURES = []
+        _FIXTURES.append({"competition": EGY_NAME, "current": current, "rounds": rlist})
+
+    # standings: real table if the season produced one, else zeroed team list
+    season = _egy_season()
+    table = []
+    try:
+        time.sleep(2)
+        table = _tsdb(f"lookuptable.php?l={lid}&s={season}").get("table") or []
+    except Exception as e:
+        print(f"  ! TheSportsDB table failed: {e}")
+    n = lambda v: int(v or 0)
+    if table:
+        played = max(n(r.get("intPlayed")) for r in table)
+        entry = {"competition": EGY_NAME, "zeroed": played == 0,
+                 "season_label": season.replace("-", "/") if played == 0 else "",
+                 "table": [{"pos": n(r.get("intRank")) or i + 1, "team": r.get("strTeam"),
+                            "crest": r.get("strBadge") or badges.get(r.get("strTeam")) or "",
+                            "played": n(r.get("intPlayed")), "won": n(r.get("intWin")),
+                            "draw": n(r.get("intDraw")), "lost": n(r.get("intLoss")),
+                            "gf": n(r.get("intGoalsFor")), "ga": n(r.get("intGoalsAgainst")),
+                            "gd": n(r.get("intGoalDifference")), "pts": n(r.get("intPoints"))}
+                           for i, r in enumerate(table)]}
+    elif teams:
+        entry = {"competition": EGY_NAME, "zeroed": True,
+                 "season_label": season.replace("-", "/"),
+                 "table": [{"pos": i + 1, "team": t, "crest": badges.get(t) or "",
+                            "played": 0, "won": 0, "draw": 0, "lost": 0,
+                            "gf": 0, "ga": 0, "gd": 0, "pts": 0}
+                           for i, t in enumerate(sorted(teams, key=lambda x: x or ""))]}
+    else:
+        entry = None
+    print(f"  + Egyptian league: {len(day_rows)} matches, "
+          f"{len(rounds)} rounds, table: {'yes' if entry else 'no'}")
+    return entry
+
 if __name__ == "__main__":
     os.makedirs(DATA, exist_ok=True)
     # a transient upstream failure must NOT kill the whole deploy -
@@ -420,7 +558,14 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! matches fetch failed ({e}) - keeping existing matches.json")
         matches = None
+    egy_standing = None
     if matches is not None:
+        try:
+            egy_standing = fetch_egypt(matches)
+            matches.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
+            matches = matches[:90]
+        except Exception as e:
+            print(f"  ! Egyptian league fetch failed ({e})")
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
     if _FIXTURES is not None:
@@ -441,5 +586,7 @@ if __name__ == "__main__":
         print(f"  ! standings fetch failed ({e}) - keeping existing standings.json")
         standings = None
     if standings is not None:   # empty list is valid -> clears last-season tables
+        if egy_standing:
+            standings.append(egy_standing)
         write_items("standings.json", standings)
         print(f"standings: {len(standings)} leagues")

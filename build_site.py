@@ -835,9 +835,14 @@ COMP_LOGO = {
     "Serie A":          "https://crests.football-data.org/SA.png",
     "Bundesliga":       "https://crests.football-data.org/BL1.png",
     "Ligue 1":          "https://crests.football-data.org/FL1.png",
+    "UEFA Champions League": "https://crests.football-data.org/CL.png",
 }
 # friendlier display names (data-comp keeps the raw API name for filtering)
-COMP_LABEL = {"Primera Division": "La Liga"}
+COMP_LABEL = {
+    "Primera Division": "La Liga",
+    "UEFA Champions League": "دوري أبطال أوروبا",
+    "Egyptian Premier League": "الدوري المصري",
+}
 
 def comp_label(name):
     return COMP_LABEL.get(name, name or "")
@@ -851,6 +856,7 @@ def comp_icon(name):
 def comp_emoji(name):
     n = (name or "").lower()
     if "world cup" in n or "مونديال" in n or "كأس العالم" in n: return "🏆"
+    if "egypt" in n or "المصري" in n: return "🇪🇬"   # before "premier" (Egyptian Premier League)
     if "premier" in n: return "🦁"
     if "primera" in n or "laliga" in n or "la liga" in n: return "🇪🇸"
     if "serie a" in n: return "🇮🇹"
