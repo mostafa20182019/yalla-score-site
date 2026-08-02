@@ -160,15 +160,17 @@ def _attach_images(items):
         return url if url.startswith("http") else ""
 
     def decode_link(h):
-        if h["link"] in cache:
-            h["source_url"], h["image"] = cache[h["link"]]
+        cached_url, cached_img = cache.get(h["link"], ("", ""))
+        h["image"] = cached_img
+        if cached_url:                       # fully cached — done
+            h["source_url"] = cached_url
             return
+        # not cached, or cached before source_url existed — (re)decode
         try:
             r = gnewsdecoder(h["link"], interval=0)
             h["source_url"] = (r.get("decoded_url") or "") if r.get("status") else ""
         except Exception:
             h["source_url"] = ""
-        h["image"] = ""
 
     def fetch_image(h):
         if h.get("image") or not h.get("source_url"):
