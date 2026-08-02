@@ -1,9 +1,19 @@
 # Cloudflare deploy config for the Yalla Score static site.
 # `wrangler deploy` (run from this folder) uploads ./dist to the existing
 # Cloudflare Workers project so the public URL stays the same.
+#
+# worker.js adds a scheduled handler: Cloudflare cron (exact) dispatches the
+# GitHub Action every 30 min so the site data stays fresh (GitHub's own free
+# cron is best-effort and often hours late). Static requests are still served
+# straight from assets (run_worker_first defaults to false).
 name = "old-credit-e926"
+main = "worker.js"
 compatibility_date = "2025-06-01"
 preview_urls = false
 
 [assets]
 directory = "./dist"
+binding = "ASSETS"
+
+[triggers]
+crons = ["1,31 * * * *"]
