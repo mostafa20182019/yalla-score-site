@@ -496,7 +496,7 @@ def build():
         parts.append('<div class="shelf-wrap">'
                      '<button type="button" class="sh-btn sh-l" aria-label="التالي">‹</button>'
                      '<div class="shelf" id="newsShelf">')
-        for a in rest[:12]:
+        for a in rest[:4]:
             parts.append(news_card(a))
         parts.append('</div>'
                      '<button type="button" class="sh-btn sh-r" aria-label="السابق">›</button></div>')
