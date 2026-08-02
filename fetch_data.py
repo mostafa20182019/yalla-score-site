@@ -352,20 +352,40 @@ def fetch_standings():
         if not table:
             continue
         # Before kickoff football-data still serves LAST season's FINAL table
-        # under the new season id. Show it (more useful than an empty table),
-        # but label it as last season so nobody mistakes it for the new one.
+        # under the new season id. The site should show the NEW season instead:
+        # the new season's team list (incl. promoted clubs) with everything 0.
         start = (j.get("season") or {}).get("startDate") or ""
         started = bool(start) and start[:10] <= today
         maxplayed = max((r.get("playedGames") or 0) for r in table)
-        past = (not started) and maxplayed > 0
+        zeroed = (not started) and maxplayed > 0
         season_label = ""
-        if past:
+        if zeroed:
             try:
                 y = int(start[:4])
-                season_label = f"{y-1}/{y}"      # e.g. season starting 2026 -> last = 2025/2026
+                season_label = f"{y}/{y+1}"      # the season ABOUT to start
             except Exception:
-                season_label = "الموسم الماضي"
-            print(f"  · standings {comp}: showing last season ({season_label})")
+                season_label = ""
+            teams = None
+            try:
+                time.sleep(7)                    # stay inside 10 req/min
+                tj = json.loads(http_get(
+                    f"https://api.football-data.org/v4/competitions/{comp}/teams", hdr))
+                teams = tj.get("teams") or None
+            except Exception as e:
+                print(f"  ! teams {comp} failed ({e}) - zeroing last season's team list instead")
+            if teams:
+                teams.sort(key=lambda t: (t.get("name") or ""))
+                table = [{"position": i + 1, "team": t} for i, t in enumerate(teams)]
+            else:
+                # fallback: same clubs as last season, alphabetical, all zeros
+                table.sort(key=lambda r: ((r.get("team") or {}).get("name") or ""))
+                table = [{"position": i + 1, "team": r.get("team") or {}}
+                         for i, r in enumerate(table)]
+            for r in table:
+                r.update({"playedGames": 0, "won": 0, "draw": 0, "lost": 0,
+                          "goalsFor": 0, "goalsAgainst": 0,
+                          "goalDifference": 0, "points": 0})
+            print(f"  · standings {comp}: new season not started -> zeroed table ({season_label})")
         name = (j.get("competition") or {}).get("name") or comp
         rows = []
         for r in table:
@@ -378,7 +398,7 @@ def fetch_standings():
                 "gd": r.get("goalDifference"), "pts": r.get("points"),
             })
         out.append({"competition": name, "table": rows,
-                    "past": past, "season_label": season_label})
+                    "zeroed": zeroed, "season_label": season_label})
     # any real response -> write the result. ALL calls failed (network) ->
     # None -> keep the last file.
     return out if got_any else None

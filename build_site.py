@@ -585,7 +585,8 @@ def build():
     p.append('<div class="mp-main">')
     for comp, st in st_by_comp.items():
         p.append(standings_table(comp, st.get("table"),
-                                 past=st.get("past"), season_label=st.get("season_label")))
+                                 past=st.get("past"), season_label=st.get("season_label"),
+                                 zeroed=st.get("zeroed")))
     p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no table)
     p.append('<div id="daynav" class="daynav" hidden>'
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
@@ -792,10 +793,11 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
-def standings_table(comp, rows, past=False, season_label=""):
+def standings_table(comp, rows, past=False, season_label="", zeroed=False):
     """League standings table (FotMob-style). Hidden until its league is picked.
-    `past` = the new season hasn't kicked off yet, so this is last season's
-    final table; it gets a clear badge instead of being hidden."""
+    `zeroed` = the new season hasn't kicked off yet, so this is the new season's
+    team list with everything at 0; it gets a "new season" badge.
+    `past` = legacy flag (last season's final table) kept for old data files."""
     def cell(v):
         return "0" if v is None else esc(str(v))
     body = []
@@ -809,8 +811,14 @@ def standings_table(comp, rows, past=False, season_label=""):
             f'<td>{cell(r.get("draw"))}</td><td>{cell(r.get("lost"))}</td>'
             f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
             f'<td>{cell(r.get("gd"))}</td><td class="lt-pts">{cell(r.get("pts"))}</td></tr>')
-    badge = (f'<span class="lt-past">الموسم الماضي{(" " + esc(season_label)) if season_label else ""}</span>'
-             if past else "")
+    if zeroed:
+        badge = (f'<span class="lt-past">الموسم الجديد'
+                 f'{(" " + esc(season_label)) if season_label else ""} — لم ينطلق بعد</span>')
+    elif past:
+        badge = (f'<span class="lt-past">الموسم الماضي'
+                 f'{(" " + esc(season_label)) if season_label else ""}</span>')
+    else:
+        badge = ""
     return (f'<div class="ltable" data-comp="{esc(comp)}" hidden>'
             f'<div class="lt-head">{comp_icon(comp)} جدول ترتيب {esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
