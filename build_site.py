@@ -524,7 +524,7 @@ def build():
   </div></a>""")
     # external headlines teaser (15 = 5 rows; the full list lives on /headlines.html)
     if headlines:
-        parts.append('<div class="sec-h"><h2 class="page-h">عناوين من مصادر أخرى</h2>'
+        parts.append('<div class="sec-h"><h2 class="page-h">عناوين</h2>'
                      '<a class="see-all" href="/headlines.html">كل العناوين ←</a></div>')
         parts.append('<div class="hgrid">')
         for h in headlines[:15]:
