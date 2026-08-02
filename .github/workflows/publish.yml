@@ -6,7 +6,7 @@ on:
   push:
     branches: [ main ]           # deploy on every push (also forces GitHub to register the workflow)
   schedule:
-    - cron: "5,35 * * * *"      # twice an hour (GitHub cron can be delayed a bit)
+    - cron: "7,22,37,52 * * * *"  # 4x/hour on off-peak minutes (GitHub cron is best-effort and often delayed/skipped; extra slots = fresher data)
   workflow_dispatch: {}          # allows a manual run from the Actions tab
 
 permissions:
