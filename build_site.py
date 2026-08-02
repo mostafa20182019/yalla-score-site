@@ -479,7 +479,7 @@ def build():
         "inLanguage": "ar", "description": strip_tags(SITE_DESC)}))
     # two-column home: main content on the RIGHT, empty reserved column on the LEFT
     parts.append('<div class="home-cols"><div class="home-main">')
-    parts.append('<h1 class="page-h">أخبارنا</h1>')
+    parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
         img = feat.get("image_url")
         style = f' style="background-image:url(\'{esc(img)}\')"' if img else ' class="noimg"'
