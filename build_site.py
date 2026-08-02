@@ -354,7 +354,7 @@ def news_card(a):
              if img else '<div class="card-img noimg">⚽</div>')
     return (f'<a class="card" href="/a/{a["article_id"]}.html">{thumb}'
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
-            f'<p class="meta">{esc(a.get("author"))} · {esc(a.get("pub_date"))}</p></div></a>')
+            f'<p class="meta">{esc(a.get("author"))}</p></div></a>')
 
 def reel_slide(r, first=False):
     """One full-height slide of the TikTok-style vertical feed: tap to play
