@@ -29,6 +29,7 @@ BUILD_DATE = os.environ.get("BUILD_DATE", "")  # pass a date; else today isn't u
 # typically not approved) + a Privacy Policy page.
 ADSENSE_CLIENT = ""
 ADSENSE_SLOT = ""
+ADSENSE_SLOT_TOP = ""   # mobile top-banner unit id (leave empty for placeholder)
 
 # Optional contact email shown on the Privacy Policy page (leave "" to omit).
 CONTACT_EMAIL = ""
@@ -114,6 +115,20 @@ def adsense_slot():
     return ('<div class="ad-placeholder"><span>مساحة إعلانية</span>'
             '<small>Google AdSense</small></div>')
 
+def adsense_top_banner():
+    """Slim full-width banner shown on MOBILE only, right at the top of every
+    page (the classic 320x50-style slot). Real unit when configured, else a
+    placeholder so the layout can be judged before AdSense approval."""
+    if ADSENSE_CLIENT and ADSENSE_SLOT_TOP:
+        inner = ('<ins class="adsbygoogle" style="display:block;height:60px"'
+                 f' data-ad-client="{ADSENSE_CLIENT}" data-ad-slot="{ADSENSE_SLOT_TOP}"'
+                 ' data-ad-format="horizontal" data-full-width-responsive="true"></ins>'
+                 '<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>')
+    else:
+        inner = ('<div class="ad-ph-top"><span>مساحة إعلانية</span>'
+                 '<small>Google AdSense</small></div>')
+    return f'<div class="ad-top">{inner}</div>'
+
 def head(title, desc, url, image=None, og_type="website", active=""):
     desc = strip_tags(desc)[:300]
     img = image or (SITE_BASE + "/assets/logo.png")
@@ -164,6 +179,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   </div></nav>
 </header>
 <main class="wrap">
+{adsense_top_banner()}
 """
     return t
 
@@ -1114,6 +1130,14 @@ a{color:inherit}
 .home-main{min-width:0}
 .home-side{min-height:320px}
 .ad-placeholder,.ad-unit{position:sticky;top:120px}
+/* mobile-only slim top banner */
+.ad-top{display:none}
+@media(max-width:900px){
+  .ad-top{display:block;margin:10px 0 2px}
+  .ad-ph-top{min-height:56px;display:flex;align-items:center;justify-content:center;gap:10px;
+    color:#94a3b8;font-weight:800;font-size:.82rem;border:2px dashed #cbd5e1;border-radius:12px;background:#fff}
+  .ad-ph-top small{color:#c3cddb;font-weight:700}
+}
 .ad-placeholder{min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;color:#94a3b8;font-weight:800;border:2px dashed #cbd5e1;border-radius:14px;background:#fff}
 .ad-placeholder small{color:#c3cddb;font-weight:700}
 @media(max-width:900px){.home-cols{grid-template-columns:1fr}.home-side{display:none}}
