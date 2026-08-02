@@ -410,6 +410,7 @@ def fetch_standings():
 # the Egyptian league is absent this run, FD data is untouched.
 TSDB = "https://www.thesportsdb.com/api/v1/json/3"
 EGY_NAME = "Egyptian Premier League"    # data-comp key used across the site
+EGY_ENABLED = False                     # flip to True to bring the league back
 
 def _tsdb(path):
     return json.loads(http_get(f"{TSDB}/{path}", timeout=30, retries=1))
@@ -559,7 +560,7 @@ if __name__ == "__main__":
         print(f"  ! matches fetch failed ({e}) - keeping existing matches.json")
         matches = None
     egy_standing = None
-    if matches is not None:
+    if matches is not None and EGY_ENABLED:
         try:
             egy_standing = fetch_egypt(matches)
             matches.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
