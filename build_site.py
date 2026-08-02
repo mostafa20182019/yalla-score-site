@@ -335,7 +335,7 @@ def headline_card(h):
     thumb = (f'<span class="himg"><img src="{esc(img)}" alt="" loading="lazy" '
              f'referrerpolicy="no-referrer" '
              f'onerror="this.parentNode.removeChild(this);"></span>' if img else '')
-    return (f'<a class="hcard" href="{esc(h.get("link"))}" target="_blank" rel="noopener nofollow">'
+    return (f'<a class="hcard" href="{esc(h.get("source_url") or h.get("link"))}" target="_blank" rel="noopener nofollow">'
             f'<span class="go" aria-hidden="true">↗</span>{thumb}'
             f'<h3>{esc(t)}</h3>'
             f'<p class="meta"><span class="hsrc">{src}</span><span class="reltime-wrap">{timeel}</span></p></a>')

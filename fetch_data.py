@@ -118,11 +118,12 @@ def fetch_news():
 IMG_ENRICH_TOP = 24
 
 def _attach_images(items):
-    """Resolve each Google News link to the publisher page and hotlink its
+    """Resolve each Google News link to the publisher page (direct source_url,
+    so cards land straight on the outlet like Yahoo does) and hotlink its
     og:image thumbnail (aggregator-style: image stays on the publisher's CDN,
     the card links to the source). Best-effort — any failure just leaves the
-    card image-less, exactly like before. Results are cached in the previous
-    headlines.json so a link is only decoded once across runs."""
+    card image-less / on the google link, exactly like before. Results are
+    cached in the previous headlines.json so a link is only decoded once."""
     try:
         from googlenewsdecoder import gnewsdecoder
     except Exception as e:
@@ -131,13 +132,13 @@ def _attach_images(items):
     import ssl
     from concurrent.futures import ThreadPoolExecutor
 
-    # cache from the previous run: link -> image (empty string = known miss)
+    # cache from the previous run: link -> (source_url, image)
     cache = {}
     try:
         with open(os.path.join(DATA, "headlines.json"), encoding="utf-8") as f:
             for old in json.load(f)["results"][0]["items"]:
-                if "image" in old and old.get("link"):
-                    cache[old["link"]] = old["image"]
+                if old.get("link") and ("image" in old or "source_url" in old):
+                    cache[old["link"]] = (old.get("source_url", ""), old.get("image", ""))
     except Exception:
         pass
 
@@ -158,22 +159,31 @@ def _attach_images(items):
         url = html.unescape(m.group(1)).strip() if m else ""
         return url if url.startswith("http") else ""
 
-    def enrich(h):
+    def decode_link(h):
         if h["link"] in cache:
-            h["image"] = cache[h["link"]]
+            h["source_url"], h["image"] = cache[h["link"]]
             return
         try:
             r = gnewsdecoder(h["link"], interval=0)
-            src = r.get("decoded_url") if r.get("status") else ""
-            h["image"] = og_image(src) if src else ""
+            h["source_url"] = (r.get("decoded_url") or "") if r.get("status") else ""
+        except Exception:
+            h["source_url"] = ""
+        h["image"] = ""
+
+    def fetch_image(h):
+        if h.get("image") or not h.get("source_url"):
+            return
+        try:
+            h["image"] = og_image(h["source_url"])
         except Exception:
             h["image"] = ""
 
-    todo = items[:IMG_ENRICH_TOP]
     with ThreadPoolExecutor(max_workers=6) as ex:
-        list(ex.map(enrich, todo))
-    got = sum(1 for h in todo if h.get("image"))
-    print(f"  + headline images: {got}/{len(todo)}")
+        list(ex.map(decode_link, items))                 # direct link for ALL cards
+        list(ex.map(fetch_image, items[:IMG_ENRICH_TOP]))  # thumbnails for the top
+    direct = sum(1 for h in items if h.get("source_url"))
+    got = sum(1 for h in items[:IMG_ENRICH_TOP] if h.get("image"))
+    print(f"  + headline direct links: {direct}/{len(items)}, images: {got}/{min(len(items), IMG_ENRICH_TOP)}")
 
 # ----------------------------------------------------------------- reels
 # Auto-pull the newest uploads of chosen SHORTS-ONLY channels into
