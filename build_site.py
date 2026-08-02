@@ -328,8 +328,15 @@ def headline_card(h):
     timeel = (f'<time class="reltime" datetime="{esc(iso)}">{esc(when)}</time>'
               if iso else esc(when))
     src = esc(h.get('source') or '')
+    img = h.get("image") or ""
+    # Publisher thumbnail, hotlinked from the source's own CDN (aggregator
+    # style — we never copy the file). If it fails to load, the card just
+    # collapses back to the text-only look.
+    thumb = (f'<span class="himg"><img src="{esc(img)}" alt="" loading="lazy" '
+             f'referrerpolicy="no-referrer" '
+             f'onerror="this.parentNode.removeChild(this);"></span>' if img else '')
     return (f'<a class="hcard" href="{esc(h.get("link"))}" target="_blank" rel="noopener nofollow">'
-            f'<span class="go" aria-hidden="true">↗</span>'
+            f'<span class="go" aria-hidden="true">↗</span>{thumb}'
             f'<h3>{esc(t)}</h3>'
             f'<p class="meta"><span class="hsrc">{src}</span><span class="reltime-wrap">{timeel}</span></p></a>')
 
@@ -1086,6 +1093,10 @@ a{color:inherit}
 .hcard::before{content:"";position:absolute;inset-block:0;inset-inline-start:0;width:4px;background:linear-gradient(var(--green),var(--green-d));opacity:.85;transition:width .14s}
 .hcard:hover{transform:translateY(-3px);box-shadow:0 10px 22px rgba(15,23,42,.13);border-color:#d7e4d9}
 .hcard:hover::before{width:6px}
+.hcard .himg{display:block;height:130px;margin:0 0 10px;border-radius:10px;overflow:hidden;background:#eef2f6}
+.hcard .himg:empty{display:none}
+.hcard .himg img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s}
+.hcard:hover .himg img{transform:scale(1.04)}
 .hcard h3{margin:0 0 10px;font-size:.95rem;font-weight:800;line-height:1.55;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .hcard .meta{margin:auto 0 0;display:flex;align-items:center;gap:8px;font-size:.75rem;color:#94a3b8;flex-wrap:wrap}
 .hsrc{background:#eef6ef;color:var(--green-d);font-weight:800;font-size:.72rem;padding:3px 9px;border-radius:999px;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}

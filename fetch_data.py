@@ -109,7 +109,71 @@ def fetch_news():
                       "pub_date": pub_date, "pub_iso": pub_iso})
     items.sort(key=lambda x: x.get("pub_iso") or "", reverse=True)
     items = _dedup_stories(items)   # one card per story, not per outlet
-    return items[:60]               # home shows 9; /headlines.html shows all
+    items = items[:60]              # home shows 15; /headlines.html shows all
+    _attach_images(items)           # best-effort og:image per headline
+    return items
+
+# How many of the newest headlines get an image lookup each run. The home page
+# shows 15; a little margin covers dedup shifts between runs.
+IMG_ENRICH_TOP = 24
+
+def _attach_images(items):
+    """Resolve each Google News link to the publisher page and hotlink its
+    og:image thumbnail (aggregator-style: image stays on the publisher's CDN,
+    the card links to the source). Best-effort — any failure just leaves the
+    card image-less, exactly like before. Results are cached in the previous
+    headlines.json so a link is only decoded once across runs."""
+    try:
+        from googlenewsdecoder import gnewsdecoder
+    except Exception as e:
+        print(f"  ! googlenewsdecoder not available ({e}) - headline images skipped")
+        return
+    import ssl
+    from concurrent.futures import ThreadPoolExecutor
+
+    # cache from the previous run: link -> image (empty string = known miss)
+    cache = {}
+    try:
+        with open(os.path.join(DATA, "headlines.json"), encoding="utf-8") as f:
+            for old in json.load(f)["results"][0]["items"]:
+                if "image" in old and old.get("link"):
+                    cache[old["link"]] = old["image"]
+    except Exception:
+        pass
+
+    lax = ssl.create_default_context()
+    lax.check_hostname = False
+    lax.verify_mode = ssl.CERT_NONE
+
+    def og_image(page_url):
+        req = urllib.request.Request(page_url, headers={
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+        try:
+            body = urllib.request.urlopen(req, timeout=12).read(400000)
+        except Exception:
+            body = urllib.request.urlopen(req, timeout=12, context=lax).read(400000)
+        head = body.decode("utf-8", "replace")
+        m = (re.search(r"property=[\"']og:image[\"'][^>]*content=[\"']([^\"']+)", head)
+             or re.search(r"content=[\"']([^\"']+)[\"'][^>]*property=[\"']og:image", head))
+        url = html.unescape(m.group(1)).strip() if m else ""
+        return url if url.startswith("http") else ""
+
+    def enrich(h):
+        if h["link"] in cache:
+            h["image"] = cache[h["link"]]
+            return
+        try:
+            r = gnewsdecoder(h["link"], interval=0)
+            src = r.get("decoded_url") if r.get("status") else ""
+            h["image"] = og_image(src) if src else ""
+        except Exception:
+            h["image"] = ""
+
+    todo = items[:IMG_ENRICH_TOP]
+    with ThreadPoolExecutor(max_workers=6) as ex:
+        list(ex.map(enrich, todo))
+    got = sum(1 for h in todo if h.get("image"))
+    print(f"  + headline images: {got}/{len(todo)}")
 
 # ----------------------------------------------------------------- reels
 # Auto-pull the newest uploads of chosen SHORTS-ONLY channels into
