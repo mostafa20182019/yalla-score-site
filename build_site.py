@@ -560,10 +560,21 @@ def build():
     for m in matches:
         daymap.setdefault(m.get("kickoff") or "", []).append(m)
     sorted_days = sorted(k for k in daymap.keys() if k)
-    # distinct competitions across the feed (for the leagues sidebar)
+    # distinct competitions across the feed (for the leagues sidebar):
+    # every league seen in the day view, plus any league that has a standings
+    # table or a rounds panel even if it has no match in the current window
+    # (e.g. a league added before its season starts).
     comp_order = []
     for m in matches:
         c = m.get("competition") or ""
+        if c and c not in comp_order:
+            comp_order.append(c)
+    for s in standings:
+        c = s.get("competition") or ""
+        if c and s.get("table") and c not in comp_order:
+            comp_order.append(c)
+    for f in fixtures:
+        c = f.get("competition") or ""
         if c and c not in comp_order:
             comp_order.append(c)
 
