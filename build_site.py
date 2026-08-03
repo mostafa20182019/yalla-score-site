@@ -27,7 +27,7 @@ BUILD_DATE = os.environ.get("BUILD_DATE", "")  # pass a date; else today isn't u
 # While either is empty, a tidy "مساحة إعلانية" placeholder is shown instead.
 # NOTE: AdSense usually requires your OWN domain (a *.workers.dev subdomain is
 # typically not approved) + a Privacy Policy page.
-ADSENSE_CLIENT = ""
+ADSENSE_CLIENT = "ca-pub-3080285229612776"
 ADSENSE_SLOT = ""
 ADSENSE_SLOT_TOP = ""   # mobile top-banner unit id (leave empty for placeholder)
 
