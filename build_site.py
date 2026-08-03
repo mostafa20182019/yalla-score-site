@@ -14,7 +14,7 @@ so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 import json, os, html, shutil, datetime, hashlib
 
 # ---------------------------------------------------------------- config
-SITE_BASE = "https://old-credit-e926.mustafa-abdelsalam95.workers.dev"  # Cloudflare Workers static
+SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
 SITE_NAME = "يلا سكور"
 SITE_TAGLINE = "أخبار ونتائج كرة القدم"
 SITE_DESC = "يلا سكور — أخبار كرة القدم ونتائج المباريات ومواعيد البطولات بالعربية."
