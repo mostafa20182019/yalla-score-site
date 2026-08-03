@@ -992,7 +992,7 @@ a{color:inherit}
 .page-h{color:var(--green-d);font-weight:900;margin:22px 0 12px}
 /* featured */
 .feat{display:block;position:relative;height:340px;border-radius:18px;overflow:hidden;text-decoration:none;color:#fff;box-shadow:0 14px 34px rgba(15,23,42,.24);margin-bottom:16px;background:linear-gradient(135deg,var(--green-d),#072012)}
-.feat-img{position:absolute;inset:0;background-size:cover;background-position:center}
+.feat-img{position:absolute;inset:0;background-size:cover;background-position:50% 22%}
 .feat.noimg .feat-img,.feat-img.noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
 .feat::after{content:"";position:absolute;inset:0;background:linear-gradient(to top,rgba(3,18,10,.95) 8%,rgba(3,18,10,.15) 70%)}
 .feat-body{position:absolute;inset-inline:0;bottom:0;padding:22px 26px;z-index:2}
@@ -1002,7 +1002,7 @@ a{color:inherit}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:15px}
 .card{display:block;background:var(--card);border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;text-decoration:none;box-shadow:0 3px 10px rgba(15,23,42,.08);transition:transform .16s,box-shadow .16s}
 .card:hover{transform:translateY(-5px);box-shadow:0 16px 30px rgba(15,23,42,.17)}
-.card-img{height:140px;background-size:cover;background-position:center;display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:rgba(255,255,255,.35)}
+.card-img{height:140px;background-size:cover;background-position:50% 22%;display:flex;align-items:center;justify-content:center;font-size:2.4rem;color:rgba(255,255,255,.35)}
 .card-img.noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
 .card-b{padding:13px 15px}
 .card-b h3{margin:0 0 7px;font-size:1rem;font-weight:800;line-height:1.4}
@@ -1014,7 +1014,7 @@ a{color:inherit}
 .article h1{font-size:1.7rem;font-weight:900;line-height:1.3;margin:.2em 0 .3em}
 .a-meta{color:var(--muted);font-weight:700;font-size:.85rem;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
 .a-fig{margin:14px 0}
-.a-img{width:100%;max-height:400px;object-fit:cover;border-radius:14px;display:block}
+.a-img{width:100%;max-height:400px;object-fit:cover;object-position:50% 18%;border-radius:14px;display:block}
 .a-credit{color:var(--muted);font-size:.72rem;font-weight:600;margin-top:6px;text-align:center}
 .lead{font-size:1.1rem;font-weight:700;color:#334155}
 .a-body{font-size:1.06rem;line-height:1.95}.a-body p{margin:0 0 14px}
