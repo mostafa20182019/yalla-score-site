@@ -190,7 +190,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{vids_link}{reels_link} · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -689,6 +689,52 @@ def build():
     pv.append(foot())
     write("privacy.html", "".join(pv))
     urls.append("/privacy.html")
+
+    # ---- about page (من نحن) — helps AdSense/E-E-A-T review ----
+    ab = [head("من نحن — " + SITE_NAME,
+               "تعرّف على يلا سكور: موقع عربي لأخبار كرة القدم ونتائج المباريات وجداول الترتيب.",
+               SITE_BASE + "/about.html")]
+    ab.append('<article class="article legal"><h1>من نحن</h1><div class="a-body">')
+    ab.append(f'<p><b>{esc(SITE_NAME)}</b> موقع عربي متخصص في كرة القدم، يقدّم أخبار الكرة المصرية '
+              'والعالمية، ومواعيد ونتائج المباريات، وجداول ترتيب أبرز البطولات — في مكان واحد وبواجهة سريعة وبسيطة.</p>')
+    ab.append('<h2>ماذا نقدّم؟</h2><ul>'
+              '<li><b>أخبار أصلية:</b> يكتب فريق التحرير مقالات بصياغة أصلية بالكامل، بعد التحقق من الخبر '
+              'من مصدرين مستقلين على الأقل، دون نقل أو نسخ من مواقع أخرى.</li>'
+              '<li><b>عناوين من المصادر:</b> نجمع أحدث عناوين الصحف والمواقع الرياضية مع رابط مباشر إلى المصدر الأصلي '
+              'لقراءة التفاصيل كاملة على موقعه.</li>'
+              '<li><b>مباريات وترتيب:</b> مواعيد ونتائج المباريات وجداول الترتيب لأبرز الدوريات والبطولات، '
+              'تُحدَّث تلقائيًا على مدار اليوم من مصادر بيانات موثوقة.</li></ul>')
+    ab.append('<h2>معاييرنا التحريرية</h2><ul>'
+              '<li>لا ننشر خبرًا إلا بعد تأكيده من أكثر من مصدر، ونتجنّب الشائعات المتضاربة.</li>'
+              '<li>ننسب المعلومات إلى مصادرها ("بحسب تقارير صحفية") ولا نختلق تصريحات أو أرقامًا.</li>'
+              '<li>نستخدم صورًا مرخّصة للاستخدام الحر فقط (Creative Commons / الملكية العامة) مع ذكر صاحب الصورة والرخصة.</li></ul>')
+    ab.append(f'<h2>تواصل معنا</h2><p>لأي ملاحظة أو تصحيح أو استفسار، تفضّل بزيارة صفحة '
+              f'<a href="/contact.html">اتصل بنا</a>.</p>')
+    ab.append('</div></article>')
+    ab.append(foot())
+    write("about.html", "".join(ab))
+    urls.append("/about.html")
+
+    # ---- contact page (اتصل بنا) ----
+    ct = [head("اتصل بنا — " + SITE_NAME,
+               "تواصل مع فريق يلا سكور للاستفسارات والتصحيحات والإعلانات.",
+               SITE_BASE + "/contact.html")]
+    ct.append('<article class="article legal"><h1>اتصل بنا</h1><div class="a-body">')
+    ct.append('<p>يسعدنا تواصلك معنا في أي من الحالات التالية:</p><ul>'
+              '<li>تصحيح معلومة وردت في خبر منشور.</li>'
+              '<li>ملاحظات على حقوق صورة أو محتوى.</li>'
+              '<li>استفسارات الإعلانات والشراكات.</li>'
+              '<li>اقتراحات لتطوير الموقع.</li></ul>')
+    if CONTACT_EMAIL:
+        ct.append(f'<p>راسلنا على البريد الإلكتروني: '
+                  f'<a href="mailto:{esc(CONTACT_EMAIL)}"><b>{esc(CONTACT_EMAIL)}</b></a> '
+                  'وسنرد في أقرب وقت ممكن.</p>')
+    else:
+        ct.append('<p>سيتم إضافة بريد التواصل الرسمي قريبًا.</p>')
+    ct.append('</div></article>')
+    ct.append(foot())
+    write("contact.html", "".join(ct))
+    urls.append("/contact.html")
 
     # ---- news archive (ALL articles; the home page shows hero + shelf only) ----
     np_ = [head(f"كل الأخبار — {SITE_NAME}",
