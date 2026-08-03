@@ -58,3 +58,6 @@ jobs:
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # default pinned wrangler is too old for [assets].run_worker_first,
+          # which the canonical-host 301 redirect in worker.js depends on
+          wranglerVersion: "latest"
