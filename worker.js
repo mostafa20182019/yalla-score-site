@@ -8,12 +8,13 @@
 
 export default {
   async fetch(request, env) {
-    // Permanent redirect from the legacy *.workers.dev URL (and any other
-    // host) to the canonical custom domain — keeps old links, bookmarks and
-    // Google-indexed pages working after the 2026-08-03 domain move.
+    // Permanent redirect from any non-canonical host — the legacy
+    // *.workers.dev URL and the www. variant — to the bare custom domain.
+    // One canonical URL keeps old links working and avoids duplicate
+    // content in Google after the 2026-08-03 domain move.
     const url = new URL(request.url);
     const canonical = "yallascore.site";
-    if (url.hostname !== canonical && url.hostname !== "www." + canonical) {
+    if (url.hostname !== canonical) {
       url.hostname = canonical;
       return Response.redirect(url.toString(), 301);
     }
