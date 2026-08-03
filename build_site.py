@@ -32,7 +32,7 @@ ADSENSE_SLOT = ""
 ADSENSE_SLOT_TOP = ""   # mobile top-banner unit id (leave empty for placeholder)
 
 # Optional contact email shown on the Privacy Policy page (leave "" to omit).
-CONTACT_EMAIL = ""
+CONTACT_EMAIL = "yallascore.eg@gmail.com"
 
 # Feature switches. Flip to True to bring a section back (nav tab, footer link,
 # home teaser, its page, and sitemap entry all follow this flag automatically).
