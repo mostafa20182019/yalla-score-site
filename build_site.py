@@ -522,12 +522,13 @@ def build():
     <p>مقاطع قصيرة ممتعة — اضغط للمشاهدة، واسحب لفوق تجيب اللي بعده</p>
     <span class="rb-cta">شاهد الآن ▶</span>
   </div></a>""")
-    # external headlines teaser (15 = 5 rows; the full list lives on /headlines.html)
+    # external headlines teaser (24 = 8 rows, matches IMG_ENRICH_TOP so every
+    # card gets a thumbnail; the full list lives on /headlines.html)
     if headlines:
         parts.append('<div class="sec-h"><h2 class="page-h">عناوين</h2>'
                      '<a class="see-all" href="/headlines.html">كل العناوين ←</a></div>')
         parts.append('<div class="hgrid">')
-        for h in headlines[:15]:
+        for h in headlines[:24]:
             parts.append(headline_card(h))
         parts.append('</div>')
         parts.append(REL_JS)
