@@ -358,14 +358,47 @@ def fetch_standings():
         start = (j.get("season") or {}).get("startDate") or ""
         started = bool(start) and start[:10] <= today
         maxplayed = max((r.get("playedGames") or 0) for r in table)
-        zeroed = (not started) and maxplayed > 0
+        # two pre-season shapes, ONE uniform outcome (badge + alphabetical zeros):
+        #  - old_table: API still serves LAST season's final table -> rebuild
+        #    from the new season's team list
+        #  - fresh_empty: API already serves the new season, nothing played yet
+        old_table = (not started) and maxplayed > 0
+        fresh_empty = maxplayed == 0
+        if maxplayed > 0 and started:
+            # the served table may STILL be last edition's (e.g. UCL before the
+            # league-phase draw: qualifiers make the season "started" while the
+            # 36-team table is last season's). Ground truth: did any match of
+            # the MAIN stage finish this season?
+            stage = "LEAGUE_STAGE" if comp == "CL" else "REGULAR_SEASON"
+            try:
+                time.sleep(7)
+                fj = json.loads(http_get(
+                    f"https://api.football-data.org/v4/competitions/{comp}/matches"
+                    f"?status=FINISHED&stage={stage}", hdr))
+                n_fin = (fj.get("resultSet") or {}).get("count")
+                if n_fin is None:
+                    n_fin = len(fj.get("matches") or [])
+                if int(n_fin) == 0:
+                    old_table = True
+                    print(f"  · standings {comp}: table has results but no {stage} "
+                          f"match finished this season -> stale, rebuilding")
+            except Exception as e:
+                print(f"  ! finished-check {comp} failed ({e}) - keeping table as-is")
+        zeroed = old_table or fresh_empty
         season_label = ""
         if zeroed:
             try:
                 y = int(start[:4])
-                season_label = f"{y}/{y+1}"      # the season ABOUT to start
+                season_label = f"{y}/{y+1}"      # the season about to start
             except Exception:
                 season_label = ""
+        if fresh_empty:
+            # already the right clubs — just normalize to alphabetical order
+            table.sort(key=lambda r: ((r.get("team") or {}).get("name") or ""))
+            for i, r in enumerate(table):
+                r["position"] = i + 1
+            print(f"  · standings {comp}: new season, nothing played -> badge ({season_label})")
+        if old_table:
             teams = None
             try:
                 time.sleep(7)                    # stay inside 10 req/min
