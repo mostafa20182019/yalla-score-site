@@ -384,6 +384,17 @@ def fetch_standings():
                           f"match finished this season -> stale, rebuilding")
             except Exception as e:
                 print(f"  ! finished-check {comp} failed ({e}) - keeping table as-is")
+        name = (j.get("competition") or {}).get("name") or comp
+        if (not old_table) and maxplayed > 0 and _FIXTURES is not None:
+            # second stale signal: a table with results while the competition
+            # has NO fixture rounds at all this season (UCL before the draw)
+            # cannot belong to the current season.
+            has_rounds = any(f.get("competition") == name and f.get("rounds")
+                             for f in _FIXTURES)
+            if not has_rounds:
+                old_table = True
+                print(f"  · standings {comp}: results present but no fixtures "
+                      f"exist this season -> stale, rebuilding")
         zeroed = old_table or fresh_empty
         season_label = ""
         if zeroed:
@@ -420,7 +431,6 @@ def fetch_standings():
                           "goalsFor": 0, "goalsAgainst": 0,
                           "goalDifference": 0, "points": 0})
             print(f"  · standings {comp}: new season not started -> zeroed table ({season_label})")
-        name = (j.get("competition") or {}).get("name") or comp
         rows = []
         for r in table:
             t = r.get("team") or {}
