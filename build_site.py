@@ -914,7 +914,7 @@ COMP_LOGO = {
 # friendlier display names (data-comp keeps the raw API name for filtering)
 COMP_LABEL = {
     "Primera Division": "La Liga",
-    "UEFA Champions League": "دوري أبطال أوروبا",
+    "UEFA Champions League": "Champions League",
     "Egyptian Premier League": "الدوري المصري",
 }
 
