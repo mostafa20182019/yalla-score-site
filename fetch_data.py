@@ -398,11 +398,16 @@ def fetch_standings():
         zeroed = old_table or fresh_empty
         season_label = ""
         if zeroed:
+            # season start year; if the API still reports LAST season (stale
+            # UCL case) bump to the current football season (starts ~July)
+            now_c = datetime.now(CAIRO)
+            cur_y = now_c.year if now_c.month >= 7 else now_c.year - 1
             try:
                 y = int(start[:4])
-                season_label = f"{y}/{y+1}"      # the season about to start
             except Exception:
-                season_label = ""
+                y = cur_y
+            y = max(y, cur_y)
+            season_label = f"{y}/{y+1}"          # the season about to start
         if fresh_empty:
             # already the right clubs — just normalize to alphabetical order
             table.sort(key=lambda r: ((r.get("team") or {}).get("name") or ""))
