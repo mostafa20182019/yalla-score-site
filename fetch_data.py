@@ -537,11 +537,13 @@ def fetch_egypt(matches_out):
     day_rows = [r for r in rows if r["kickoff"] and r["kickoff"] >= cutoff]
     matches_out.extend(day_rows)
 
-    # rounds panel
+    # rounds panel — current season only: eventspastleague can return leftover
+    # matches from the finished season, which would render as a bogus round
+    season_start = f"{_egy_season()[:4]}-07-01"
     global _FIXTURES
     rounds = {}
     for r in rows:
-        if r.get("round"):
+        if r.get("round") and r["kickoff"] and r["kickoff"] >= season_start:
             rounds.setdefault(r["round"], []).append(r)
     if rounds:
         rlist = [{"round": rd,
