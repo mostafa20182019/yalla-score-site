@@ -12,15 +12,33 @@ on:
 permissions:
   contents: write                # needed to commit refreshed data/ back to the repo
 
+# Data-refresh runs are interchangeable - only the newest matters - so they
+# still cancel each other. A PUSH carries new content (an article), so it gets
+# its own group and is never cancelled.
+#
+# Why: with a single shared group + cancel-in-progress, a trigger fires every
+# ~15 min (Worker cron + GitHub cron), so any run slower than that window was
+# always cancelled by the next one. During the GitHub Actions outage on
+# 2026-08-06, ten consecutive runs were cancelled or failed and article 85
+# never deployed - it had to be pushed out by hand with a local wrangler.
 concurrency:
-  group: publish
-  cancel-in-progress: true
+  group: publish-${{ github.event_name == 'push' && github.sha || 'refresh' }}
+  cancel-in-progress: ${{ github.event_name != 'push' }}
 
 jobs:
   publish:
     runs-on: ubuntu-latest
+    timeout-minutes: 15          # fail fast instead of hanging and eating the whole trigger window
     steps:
+      # ref: main (not the trigger SHA) makes every run deploy the CURRENT tip
+      # of main. That makes the pipeline self-healing: whichever run completes
+      # next publishes the newest content, so a cancelled or failed article
+      # deploy is picked up automatically by the following refresh run instead
+      # of waiting for another push. It also stops a queued run from
+      # redeploying a checkout that predates the article and clobbering it.
       - uses: actions/checkout@v4
+        with:
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
@@ -29,7 +47,12 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
+      # continue-on-error: a dead upstream (Google News / football-data) or a
+      # hung fetch must not block publishing content that is already committed.
+      # fetch_data.py keeps the previous file per source on failure, so the
+      # build below still has usable data - just not newer data.
       - name: Fetch latest content (news + matches)
+        continue-on-error: true
         env:
           FD_TOKEN: ${{ secrets.FD_TOKEN }}
         run: python fetch_data.py
@@ -54,10 +77,15 @@ jobs:
       - name: Build the static site
         run: python build_site.py
 
+      # Plain npx instead of cloudflare/wrangler-action@v3: the deploy step is
+      # the one that must not fail, and every marketplace action is a download
+      # that GitHub has to resolve first ("Failed to resolve action download
+      # info" is what broke the 2026-08-06 runs). npx pulls from npm, which is
+      # a separate dependency from GitHub's action service.
+      # wrangler@4 is also new enough for [assets].run_worker_first, which the
+      # canonical-host 301 redirect in worker.js depends on - that is why the
+      # old wrangler-action needed wranglerVersion: "latest".
       - name: Deploy to Cloudflare
-        uses: cloudflare/wrangler-action@v3
-        with:
-          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          # default pinned wrangler is too old for [assets].run_worker_first,
-          # which the canonical-host 301 redirect in worker.js depends on
-          wranglerVersion: "latest"
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: npx --yes wrangler@4 deploy
