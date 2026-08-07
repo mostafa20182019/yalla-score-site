@@ -137,7 +137,7 @@ var OWNER="mostafa20182019", REPO="yalla-score-site", BRANCH="main";
 var MODE = localStorage.getItem("ys_admin_mode")==="reels" ? "reels" : "videos";
 var PATH = MODE==="reels" ? "data/reels.json" : "data/videos.json";
 var API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
-var SITE="https://old-credit-e926.mustafa-abdelsalam95.workers.dev";
+var SITE="https://yallascore.site";
 var items=[], fileSha=null, dirty=false, checked=null;
 
 function setMode(m){
