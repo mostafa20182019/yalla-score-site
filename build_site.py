@@ -1289,29 +1289,34 @@ a{color:inherit}
 # ---- legends header strip (free CC / public-domain photos, same as the app) ----
 # 8 hand-picked legends (name for tooltip/alt, 200px Wikimedia thumb).
 # Every photo was visually reviewed 2026-07-25 — face-centered, good quality.
+# (name, url, face position "x% y%", zoom) — the July-2026 NT photos are
+# half-body shots, so each avatar is hand-cropped to a tight face close-up:
+# object-position centres the face, transform:scale zooms in on it.
 LEGENDS = [
-  ("محمد صلاح",         "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_Salah_Argentina_v_Egypt_7_July_2026-161.jpg?width=200"),
-  ("إمام عاشور",        "https://commons.wikimedia.org/wiki/Special:FilePath/Emam_Ashour_Argentina_v_Egypt_7_July_2026-099.jpg?width=200"),
-  ("شيكابالا",          "https://commons.wikimedia.org/wiki/Special:FilePath/Shikabala_2024_(cropped).jpg?width=200"),
-  ("عمر مرموش",         "https://commons.wikimedia.org/wiki/Special:FilePath/Omar_Marmoush_Argentina_v_Egypt_7_July_2026-102.jpg?width=200"),
+  ("محمد صلاح",         "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_Salah_Argentina_v_Egypt_7_July_2026-161.jpg?width=200", "50% 16%", 2.0),
+  ("إمام عاشور",        "https://commons.wikimedia.org/wiki/Special:FilePath/Emam_Ashour_Argentina_v_Egypt_7_July_2026-099.jpg?width=200", "48% 14%", 2.2),
+  ("شيكابالا",          "https://commons.wikimedia.org/wiki/Special:FilePath/Shikabala_2024_(cropped).jpg?width=200", "42% 12%", 2.3),
+  ("عمر مرموش",         "https://commons.wikimedia.org/wiki/Special:FilePath/Omar_Marmoush_Argentina_v_Egypt_7_July_2026-102.jpg?width=200", "52% 15%", 1.9),
 ]
-# 8 big static tiles (no marquee): name tooltip via title/alt.
+# static face-circle tiles: name tooltip via title/alt.
 LEGENDS_HTML = "".join(
-    f'<img src="{u}" alt="{n}" title="{n}" loading="lazy">' for n, u in LEGENDS)
+    f'<span class="lg-ava"><img src="{u}" alt="{n}" title="{n}" loading="lazy"'
+    f' style="object-position:{p};transform:scale({z});transform-origin:{p}"></span>'
+    for n, u, p, z in LEGENDS)
 
 LEGENDS_CSS = """
 /* legends strip: 8 big face circles, static, name on hover */
 .legends{flex:1;min-width:0;margin-inline-start:20px;display:flex;
   justify-content:center;overflow-x:auto;scrollbar-width:none}
 .legends::-webkit-scrollbar{display:none}
-.lg-track{display:inline-flex;align-items:center;gap:14px}
-.legends img{width:62px;height:62px;border-radius:50%;object-fit:cover;
-  object-position:50% 22%;flex:0 0 auto;
-  border:2px solid rgba(255,255,255,.45);
-  box-shadow:0 2px 8px rgba(0,0,0,.25);
+.lg-track{display:inline-flex;align-items:center;gap:16px}
+.lg-ava{width:66px;height:66px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+  border:2.5px solid rgba(255,255,255,.65);
+  box-shadow:0 3px 10px rgba(0,0,0,.35);
   transition:transform .16s,border-color .16s,box-shadow .16s}
-.legends img:hover{transform:scale(1.22);border-color:#fff;
-  box-shadow:0 6px 16px rgba(0,0,0,.4)}
+.lg-ava img{width:100%;height:100%;object-fit:cover;display:block}
+.lg-ava:hover{transform:scale(1.18);border-color:#fff;
+  box-shadow:0 6px 16px rgba(0,0,0,.45)}
 /* live-scores ticker */
 .ticker{display:block;background:#06170d;overflow:hidden;text-decoration:none;
   border-top:1px solid rgba(255,255,255,.07);
@@ -1333,8 +1338,8 @@ LEGENDS_CSS = """
 @media(max-width:720px){
   .head-in{height:60px}
   .legends{margin-inline-start:10px;justify-content:flex-start}
-  .lg-track{gap:8px}
-  .legends img{width:42px;height:42px;border-width:1.5px}
+  .lg-track{gap:9px}
+  .lg-ava{width:46px;height:46px;border-width:2px}
   .nav-en{display:none}
   .navtab{padding:0 14px}
 }
