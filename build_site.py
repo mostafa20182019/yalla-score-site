@@ -1288,7 +1288,7 @@ a{color:inherit}
 # 8 hand-picked legends (name for tooltip/alt, 200px Wikimedia thumb).
 # Every photo was visually reviewed 2026-07-25 — face-centered, good quality.
 LEGENDS = [
-  ("محمد صلاح",         "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_Salah_2018.jpg?width=200"),
+  ("محمد صلاح",         "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_Salah_Argentina_v_Egypt_7_July_2026-161.jpg?width=200"),
   ("محمد أبو تريكة",    "https://commons.wikimedia.org/wiki/Special:FilePath/Aboutrika2011.jpg?width=200"),
   ("محمود الخطيب",      "https://commons.wikimedia.org/wiki/Special:FilePath/Mahmoud_El-Khatib_(1977).jpg?width=200"),
   ("حازم إمام",         "https://commons.wikimedia.org/wiki/Special:FilePath/Hazem_Emam.png?width=200"),
