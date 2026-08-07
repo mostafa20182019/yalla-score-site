@@ -452,16 +452,26 @@ def fetch_standings():
     # None -> keep the last file.
     return out if got_any else None
 
-# ------------------------------------------- Egyptian Premier League (TSDB)
-# football-data.org's free tier has no Egyptian league, so it comes from
-# TheSportsDB (free key "3"). Entirely best-effort: any failure just means
-# the Egyptian league is absent this run, FD data is untouched.
-TSDB = "https://www.thesportsdb.com/api/v1/json/3"
+# --------------------------------------- Egyptian Premier League (365scores)
+# football-data.org's free tier has no Egyptian league, and TheSportsDB's
+# data for it proved stale/wrong (2026-08: old 24-team list, no new-season
+# fixtures days after the draw). 365scores' public web API has the full
+# fixture list the day the draw happens, native Arabic team names, and
+# Cairo kickoff times. Entirely best-effort: any failure just means the
+# Egyptian league is absent this run, FD data is untouched.
+S365 = "https://webws.365scores.com/web"
+EGY_365_ID = 552                        # competition id on 365scores
 EGY_NAME = "Egyptian Premier League"    # data-comp key used across the site
 EGY_ENABLED = True                      # flip to False to drop the league again
+_EGY_Q = f"competitions={EGY_365_ID}&langId=27&timezoneName=Africa/Cairo"
 
-def _tsdb(path):
-    return json.loads(http_get(f"{TSDB}/{path}", timeout=30, retries=1))
+def _s365(path):
+    return json.loads(http_get(f"{S365}/{path}", timeout=30, retries=1))
+
+def _s365_badge(c):
+    return ("https://imagecache.365scores.com/image/upload/"
+            "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/"
+            f"v{c.get('imageVersion', 1)}/Competitors/{c.get('id')}")
 
 def _egy_season():
     now = datetime.now(CAIRO)
@@ -471,79 +481,61 @@ def _egy_season():
 def fetch_egypt(matches_out):
     """Append Egyptian Premier League rows to matches_out, add its rounds
     panel to _FIXTURES, and return a standings entry (or None)."""
-    lid = None
-    d = _tsdb("search_all_leagues.php?c=Egypt&s=Soccer")
-    for L in (d.get("countries") or d.get("leagues") or []):
-        nm = (L.get("strLeague") or "").lower()
-        if "premier" in nm and "egypt" in nm:
-            lid = L.get("idLeague")
-            break
-    if not lid:
-        print("  ! TheSportsDB: Egyptian Premier League not found")
-        return None
-    time.sleep(2)
-    badges, teams = {}, []
-    try:
-        for t in (_tsdb(f"lookup_all_teams.php?id={lid}").get("teams") or []):
-            teams.append(t.get("strTeam"))
-            badges[t.get("strTeam")] = t.get("strBadge") or ""
-    except Exception as e:
-        print(f"  ! TheSportsDB teams failed: {e}")
+    comp = (_s365(f"competitions/?{_EGY_Q}").get("competitions") or [{}])[0]
+    season_num = comp.get("currentSeasonNum")   # e.g. 74 = 2026/27
 
-    def ev_row(ev):
-        date = ev.get("dateEvent") or ""
-        tm = (ev.get("strTime") or "")[:5]
-        ts = ev.get("strTimestamp")            # UTC → convert to Cairo
-        if ts:
-            try:
-                dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-                if dt.tzinfo is None:
-                    dt = dt.replace(tzinfo=timezone.utc)
-                dt = dt.astimezone(CAIRO)
-                date, tm = dt.strftime("%Y-%m-%d"), dt.strftime("%H:%M")
-            except Exception:
-                pass
-        hs, aws = ev.get("intHomeScore"), ev.get("intAwayScore")
-        fin = hs not in (None, "") and aws not in (None, "")
-        h, a = ev.get("strHomeTeam"), ev.get("strAwayTeam")
-        rd = ev.get("intRound")
+    def game_row(g):
+        st = g.get("statusGroup")               # 2 scheduled, 3 live, 4 ended
+        status = "LIVE" if st == 3 else ("FINISHED" if st == 4 else "UPCOMING")
+        date, tm = "", ""
+        try:
+            dt = datetime.fromisoformat(g.get("startTime") or "").astimezone(CAIRO)
+            date, tm = dt.strftime("%Y-%m-%d"), dt.strftime("%H:%M")
+        except Exception:
+            s = g.get("startTime") or ""
+            date, tm = s[:10], s[11:16]
+        h, a = g.get("homeCompetitor") or {}, g.get("awayCompetitor") or {}
+        hs, aws = h.get("score"), a.get("score")
+        scored = status != "UPCOMING" and (hs or 0) >= 0 and (aws or 0) >= 0
+        rd = g.get("roundNum")
         return {
-            "match_id": ev.get("idEvent"), "competition": EGY_NAME,
-            "home": h, "away": a,
-            "home_badge": ev.get("strHomeTeamBadge") or badges.get(h) or "",
-            "away_badge": ev.get("strAwayTeamBadge") or badges.get(a) or "",
+            "match_id": g.get("id"), "competition": EGY_NAME,
+            "home": h.get("name"), "away": a.get("name"),
+            "home_badge": _s365_badge(h), "away_badge": _s365_badge(a),
             "kickoff": date, "koff_time": tm,
-            "status": "FINISHED" if fin else "UPCOMING",
-            "home_score": int(hs) if fin else None,
-            "away_score": int(aws) if fin else None,
-            "round": int(rd) if rd not in (None, "", "0") else None,
+            "status": status,
+            "home_score": int(hs) if scored else None,
+            "away_score": int(aws) if scored else None,
+            "round": int(rd) if rd else None,
             "channel": None,
         }
 
     rows, seen = [], set()
-    for path in (f"eventsnextleague.php?id={lid}", f"eventspastleague.php?id={lid}"):
+    for path in (f"games/fixtures/?{_EGY_Q}&showOdds=false",
+                 f"games/results/?{_EGY_Q}&showOdds=false"):
         try:
-            time.sleep(2)
-            for ev in (_tsdb(path).get("events") or []):
-                r = ev_row(ev)
-                if r["match_id"] not in seen:
+            time.sleep(1)
+            for g in (_s365(path).get("games") or []):
+                # results/ also returns last season's games - keep current only
+                if season_num and g.get("seasonNum") != season_num:
+                    continue
+                r = game_row(g)
+                if r["match_id"] not in seen and r["kickoff"]:
                     seen.add(r["match_id"])
                     rows.append(r)
         except Exception as e:
-            print(f"  ! TheSportsDB {path.split('?')[0]} failed: {e}")
+            print(f"  ! 365scores {path.split('?')[0]} failed: {e}")
 
     today = datetime.now(CAIRO).date()
     cutoff = (today - timedelta(days=5)).isoformat()
-    day_rows = [r for r in rows if r["kickoff"] and r["kickoff"] >= cutoff]
+    day_rows = [r for r in rows if r["kickoff"] >= cutoff or r["status"] == "LIVE"]
     matches_out.extend(day_rows)
 
-    # rounds panel — current season only: eventspastleague can return leftover
-    # matches from the finished season, which would render as a bogus round
-    season_start = f"{_egy_season()[:4]}-07-01"
+    # rounds panel
     global _FIXTURES
     rounds = {}
     for r in rows:
-        if r.get("round") and r["kickoff"] and r["kickoff"] >= season_start:
+        if r.get("round"):
             rounds.setdefault(r["round"], []).append(r)
     if rounds:
         rlist = [{"round": rd,
@@ -559,36 +551,30 @@ def fetch_egypt(matches_out):
             _FIXTURES = []
         _FIXTURES.append({"competition": EGY_NAME, "current": current, "rounds": rlist})
 
-    # standings: real table if the season produced one, else zeroed team list
-    season = _egy_season()
-    table = []
+    # standings
+    entry = None
     try:
-        time.sleep(2)
-        table = _tsdb(f"lookuptable.php?l={lid}&s={season}").get("table") or []
+        time.sleep(1)
+        srows = (_s365(f"standings/?{_EGY_Q}&live=false").get("standings")
+                 or [{}])[0].get("rows") or []
     except Exception as e:
-        print(f"  ! TheSportsDB table failed: {e}")
+        print(f"  ! 365scores standings failed: {e}")
+        srows = []
     n = lambda v: int(v or 0)
-    if table:
-        played = max(n(r.get("intPlayed")) for r in table)
+    if srows:
+        played = max(n(r.get("gamePlayed")) for r in srows)
         entry = {"competition": EGY_NAME, "zeroed": played == 0,
-                 "season_label": season.replace("-", "/") if played == 0 else "",
-                 "table": [{"pos": n(r.get("intRank")) or i + 1, "team": r.get("strTeam"),
-                            "crest": r.get("strBadge") or badges.get(r.get("strTeam")) or "",
-                            "played": n(r.get("intPlayed")), "won": n(r.get("intWin")),
-                            "draw": n(r.get("intDraw")), "lost": n(r.get("intLoss")),
-                            "gf": n(r.get("intGoalsFor")), "ga": n(r.get("intGoalsAgainst")),
-                            "gd": n(r.get("intGoalDifference")), "pts": n(r.get("intPoints"))}
-                           for i, r in enumerate(table)]}
-    elif teams:
-        entry = {"competition": EGY_NAME, "zeroed": True,
-                 "season_label": season.replace("-", "/"),
-                 "table": [{"pos": i + 1, "team": t, "crest": badges.get(t) or "",
-                            "played": 0, "won": 0, "draw": 0, "lost": 0,
-                            "gf": 0, "ga": 0, "gd": 0, "pts": 0}
-                           for i, t in enumerate(sorted(teams, key=lambda x: x or ""))]}
-    else:
-        entry = None
-    print(f"  + Egyptian league: {len(day_rows)} matches, "
+                 "season_label": _egy_season().replace("-", "/") if played == 0 else "",
+                 "table": [{"pos": n(r.get("position")) or i + 1,
+                            "team": (r.get("competitor") or {}).get("name"),
+                            "crest": _s365_badge(r.get("competitor") or {}),
+                            "played": n(r.get("gamePlayed")), "won": n(r.get("gamesWon")),
+                            "draw": n(r.get("gamesEven")), "lost": n(r.get("gamesLost")),
+                            "gf": n(r.get("for")), "ga": n(r.get("against")),
+                            "gd": n(r.get("for")) - n(r.get("against")),
+                            "pts": n(r.get("points"))}
+                           for i, r in enumerate(srows)]}
+    print(f"  + Egyptian league (365scores): {len(day_rows)} matches, "
           f"{len(rounds)} rounds, table: {'yes' if entry else 'no'}")
     return entry
 
