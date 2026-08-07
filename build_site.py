@@ -818,8 +818,10 @@ def build():
         write("videos.html", "".join(vp))
         urls.append("/videos.html")
 
-    # ---- robots + sitemap ----
+    # ---- robots + sitemap + ads.txt ----
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE}/sitemap.xml\n")
+    if ADSENSE_CLIENT:   # AdSense seller declaration (clears the ads.txt warning)
+        write("ads.txt", f"google.com, {ADSENSE_CLIENT.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n")
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for u in urls:
