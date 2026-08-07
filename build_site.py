@@ -169,7 +169,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <body>
 <header class="site-head">
   <div class="wrap head-in">
-    <a class="brand" href="/"><span class="ball">⚽</span> {esc(SITE_NAME)}<span class="beta">بث تجريبي</span></a>
+    <a class="brand" href="/"><span class="ball">⚽</span> {esc(SITE_NAME)}</a>
     <div class="legends" aria-hidden="true"><div class="lg-track">{LEGENDS_HTML}</div></div>
   </div>
   {TICKER_HTML}
