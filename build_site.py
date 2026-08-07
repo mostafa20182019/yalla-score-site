@@ -1291,7 +1291,7 @@ a{color:inherit}
 # Every photo was visually reviewed 2026-07-25 — face-centered, good quality.
 LEGENDS = [
   ("محمد صلاح",         "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_Salah_Argentina_v_Egypt_7_July_2026-161.jpg?width=200"),
-  ("محمد أبو تريكة",    "https://commons.wikimedia.org/wiki/Special:FilePath/Aboutrika2011.jpg?width=200"),
+  ("إمام عاشور",        "https://commons.wikimedia.org/wiki/Special:FilePath/Emam_Ashour_Argentina_v_Egypt_7_July_2026-099.jpg?width=200"),
   ("محمود الخطيب",      "https://commons.wikimedia.org/wiki/Special:FilePath/Mahmoud_El-Khatib_(1977).jpg?width=200"),
   ("حازم إمام",         "https://commons.wikimedia.org/wiki/Special:FilePath/Hazem_Emam.png?width=200"),
   ("ليونيل ميسي",       "https://commons.wikimedia.org/wiki/Special:FilePath/Lionel_Messi_20180626.jpg?width=200"),
