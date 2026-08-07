@@ -466,7 +466,16 @@ EGY_ENABLED = True                      # flip to False to drop the league again
 _EGY_Q = f"competitions={EGY_365_ID}&langId=27&timezoneName=Africa/Cairo"
 
 def _s365(path):
-    return json.loads(http_get(f"{S365}/{path}", timeout=30, retries=1))
+    # full browser-ish headers: webws.365scores.com sits behind Cloudflare and
+    # a bare python UA from a datacenter IP (GitHub runner) risks a 403
+    h = {"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                       "AppleWebKit/537.36 (KHTML, like Gecko) "
+                       "Chrome/126.0.0.0 Safari/537.36",
+         "Accept": "application/json, text/plain, */*",
+         "Accept-Language": "ar,en;q=0.9",
+         "Origin": "https://www.365scores.com",
+         "Referer": "https://www.365scores.com/"}
+    return json.loads(http_get(f"{S365}/{path}", headers=h, timeout=30, retries=1))
 
 def _s365_badge(c):
     return ("https://imagecache.365scores.com/image/upload/"
@@ -582,27 +591,37 @@ if __name__ == "__main__":
     os.makedirs(DATA, exist_ok=True)
     # a transient upstream failure must NOT kill the whole deploy -
     # keep the last committed data file and continue.
+    # _DBG lands in data/fetch_debug.json and is committed back by the Action,
+    # so runner-side failures are visible without access to the job logs.
+    _DBG = {}
     try:
         news = fetch_news()
+        _DBG["news"] = f"ok ({len(news)})"
     except Exception as e:
         print(f"  ! news fetch failed ({e}) - keeping existing headlines.json")
+        _DBG["news"] = f"FAIL: {e!r}"
         news = None
     if news:
         write_items("headlines.json", news)
         print(f"headlines: {len(news)}")
     try:
         matches = fetch_matches()
+        _DBG["matches"] = f"ok ({len(matches)})"
     except Exception as e:
         print(f"  ! matches fetch failed ({e}) - keeping existing matches.json")
+        _DBG["matches"] = f"FAIL: {e!r}"
         matches = None
     egy_standing = None
     if matches is not None and EGY_ENABLED:
         try:
             egy_standing = fetch_egypt(matches)
+            _DBG["egypt"] = (f"ok (table {len(egy_standing['table'])} teams)"
+                             if egy_standing else "ok (no table)")
             matches.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
             matches = matches[:90]
         except Exception as e:
             print(f"  ! Egyptian league fetch failed ({e})")
+            _DBG["egypt"] = f"FAIL: {e!r}"
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
     if _FIXTURES is not None:
@@ -619,11 +638,16 @@ if __name__ == "__main__":
         print(f"reels (auto): {len(reels_auto)}")
     try:
         standings = fetch_standings()
+        _DBG["standings"] = f"ok ({len(standings)})"
     except Exception as e:
         print(f"  ! standings fetch failed ({e}) - keeping existing standings.json")
+        _DBG["standings"] = f"FAIL: {e!r}"
         standings = None
     if standings is not None:   # empty list is valid -> clears last-season tables
         if egy_standing:
             standings.append(egy_standing)
         write_items("standings.json", standings)
         print(f"standings: {len(standings)} leagues")
+    _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
+        json.dump(_DBG, f, ensure_ascii=False, indent=1)
