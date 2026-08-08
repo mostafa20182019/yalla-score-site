@@ -473,9 +473,10 @@ def build():
         "@context": "https://schema.org", "@type": "WebSite",
         "name": SITE_NAME, "url": SITE_BASE + "/",
         "inLanguage": "ar", "description": strip_tags(SITE_DESC)}))
-    # single-column home; the ad strip (future "Top Transfers" widget, FotMob
-    # style) sits full-width ABOVE the latest-news section
-    parts.append('<div class="home-main">')
+    # two-column home (same widths as before): main content on the RIGHT,
+    # reserved empty column on the LEFT. The ad strip (future "Top Transfers"
+    # widget, FotMob style) sits ABOVE the latest-news section.
+    parts.append('<div class="home-cols"><div class="home-main">')
     parts.append(f'<div class="home-topad">{adsense_slot()}</div>')
     parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
@@ -532,6 +533,8 @@ def build():
         parts.append(REL_JS)
     # (matches are NOT shown on the home page - they live on /matches.html)
     parts.append('</div>')  # /home-main
+    parts.append('<aside class="home-side"></aside>')  # reserved empty column
+    parts.append('</div>')  # /home-cols
     parts.append(foot())
     write("index.html", "".join(parts))
 
@@ -1170,8 +1173,9 @@ a{color:inherit}
 .day{max-width:820px;margin:0 auto}
 .day-h{color:var(--green-d);font-weight:900;margin:16px 0 10px}
 .comp-h{font-weight:800;color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;margin:14px 4px 6px}
-/* single-column home; full-width ad strip (future Top-Transfers widget)
-   above the latest-news section */
+/* two-column home: main (right) + reserved empty column (left); the ad strip
+   (future Top-Transfers widget) sits above the latest-news section */
+.home-cols{display:grid;grid-template-columns:2fr 1fr;gap:22px;align-items:start}
 .home-main{min-width:0}
 .home-topad{margin:0 0 18px}
 .home-topad .ad-placeholder,.home-topad .ad-unit{position:static;min-height:130px;flex-direction:row}
@@ -1185,7 +1189,8 @@ a{color:inherit}
 }
 .ad-placeholder{min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;color:#94a3b8;font-weight:800;border:2px dashed #cbd5e1;border-radius:14px;background:#fff}
 .ad-placeholder small{color:#c3cddb;font-weight:700}
-@media(max-width:900px){.home-topad{display:none}}  /* mobile already has .ad-top */
+@media(max-width:900px){.home-cols{grid-template-columns:1fr}.home-side{display:none}
+  .home-topad{display:none}}  /* mobile already has .ad-top */
 /* external headlines - 3 per row */
 .hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:760px){.hgrid{grid-template-columns:repeat(2,1fr)}}
