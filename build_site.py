@@ -1221,7 +1221,7 @@ a{color:inherit}
    (future Top-Transfers widget) sits above the latest-news section */
 .home-cols{display:grid;grid-template-columns:2fr 1fr;gap:22px;align-items:start}
 .home-main{min-width:0}
-.home-topad{margin:0 0 18px}
+.home-topad{margin:16px 0 18px}
 .home-topad .ad-placeholder,.home-topad .ad-unit{position:static;min-height:130px;flex-direction:row}
 /* top-transfers rail (left column, FotMob style) + mobile swipe strip */
 .trf-box .sec-h{margin-bottom:8px}
