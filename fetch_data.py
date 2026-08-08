@@ -82,6 +82,21 @@ def _dedup_stories(items):
         seen.append(tok)
     return kept
 
+# Outlets blocked inside Egypt (user request 2026-08-08): their pages don't
+# open for Egyptian visitors, so a headline linking there is a dead card.
+# Matched against the RSS <source> name AND the decoded publisher domain.
+BLOCKED_SOURCE_NAMES = ("الجزيرة", "العربي الجديد", "عربي21", "عربي بوست",
+                        "TRT", "مدى مصر", "نون بوست", "ساسة بوست", "رصد")
+BLOCKED_DOMAINS = ("aljazeera.", "alaraby.", "arabi21.", "arabicpost.",
+                   "trtarabi.", "madamasr.", "noonpost.", "sasapost.", "rassd.")
+
+def _blocked_in_egypt(item):
+    src = item.get("source") or ""
+    if any(b in src for b in BLOCKED_SOURCE_NAMES):
+        return True
+    host = urllib.parse.urlparse(item.get("source_url") or "").netloc.lower()
+    return any(b in host for b in BLOCKED_DOMAINS)
+
 def fetch_news():
     q = urllib.parse.quote("كرة القدم")
     url = f"https://news.google.com/rss/search?q={q}&hl=ar&gl=EG&ceid=EG:ar"
@@ -107,10 +122,14 @@ def fetch_news():
                 pass
         items.append({"title": title, "link": link, "source": tag("source"),
                       "pub_date": pub_date, "pub_iso": pub_iso})
+    items = [it for it in items if not _blocked_in_egypt(it)]   # by source name
     items.sort(key=lambda x: x.get("pub_iso") or "", reverse=True)
     items = _dedup_stories(items)   # one card per story, not per outlet
     items = items[:60]              # home shows 15; /headlines.html shows all
     _attach_images(items)           # best-effort og:image per headline
+    # second pass: _attach_images decoded google links -> real publisher
+    # domains, so blocked outlets hiding behind a different RSS name drop here
+    items = [it for it in items if not _blocked_in_egypt(it)]
     return items
 
 # How many of the newest headlines get an image lookup each run. The home page
