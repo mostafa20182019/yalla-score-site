@@ -57,23 +57,6 @@ jobs:
           FD_TOKEN: ${{ secrets.FD_TOKEN }}
         run: python fetch_data.py
 
-      # Keep the repo copy of data/ fresh. fetch_data.py keeps the old file
-      # when a source fails, so without this step a failed fetch would fall
-      # back to whatever was last committed (once 13 days stale -> July
-      # headlines went live). Committing after every successful fetch caps
-      # the worst-case fallback at ~30 minutes. [skip ci] stops the push
-      # from re-triggering this workflow.
-      - name: Commit refreshed data back to the repo
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
-          if ! git diff --cached --quiet; then
-            git commit -m "data refresh [skip ci]"
-            git pull --rebase origin main || true
-            git push || echo "push failed (race with another commit) - deploy continues"
-          fi
-
       - name: Build the static site
         run: python build_site.py
 
@@ -89,3 +72,21 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4 deploy
+
+      # Keep the repo copy of data/ fresh (caps the failed-fetch fallback at
+      # ~30 min of staleness). This step runs AFTER build+deploy on purpose:
+      # on 2026-08-08 two parallel runs raced here, the rebase left conflict
+      # markers inside data/headlines.json, and the build that followed parsed
+      # broken JSON -> the live home page lost its headlines section. Down
+      # here, a git race can only affect this commit - never the deployed site.
+      - name: Commit refreshed data back to the repo
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/
+          if ! git diff --cached --quiet; then
+            git commit -m "data refresh [skip ci]"
+            git pull --rebase origin main || git rebase --abort || true
+            git push || echo "push failed (race with another commit) - data refresh skipped"
+          fi
