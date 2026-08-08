@@ -333,9 +333,9 @@ def make_ticker(matches):
     return ('<a class="ticker" href="/matches.html" aria-label="نتائج المباريات — اضغط للتفاصيل">'
             f'<div class="tk-track">{seq}{seq}</div></a>')
 
-def transfers_widget(ts):
-    """FotMob-style top-transfers strip (takes the ad slot's place above the
-    latest-news section whenever data/transfers.json has entries)."""
+def transfers_widget(ts, horizontal=False):
+    """FotMob-style top-transfers widget. Vertical rail (desktop left column)
+    by default; horizontal=True renders a swipeable strip for mobile."""
     its = []
     for t in ts:
         fee = (f'<span class="trf-fee">{esc(t.get("price"))}</span>'
@@ -349,8 +349,9 @@ def transfers_widget(ts):
             f'<div class="trf-mid"><b class="trf-name">{esc(t.get("player"))}</b>'
             f'<span class="trf-clubs">{fc}<bdi>{esc(t.get("from"))}</bdi> ← {tc}<bdi>{esc(t.get("to"))}</bdi></span></div>'
             f'{fee}</div>')
+    cls = "trf-row" if horizontal else "trf-col"
     return ('<div class="trf-box"><div class="sec-h"><h2 class="page-h">🔁 أبرز الانتقالات</h2></div>'
-            '<div class="trf-col">' + "".join(its) + '</div></div>')
+            f'<div class="{cls}">' + "".join(its) + '</div></div>')
 
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
@@ -520,6 +521,9 @@ def build():
         parts.append('</div>'
                      '<button type="button" class="sh-btn sh-r" aria-label="السابق">›</button></div>')
         parts.append(SHELF_JS)
+    # mobile-only transfers strip (desktop shows the left-column rail instead)
+    if transfers:
+        parts.append(f'<div class="trf-mob">{transfers_widget(transfers, horizontal=True)}</div>')
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
         parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
@@ -1201,9 +1205,13 @@ a{color:inherit}
 .home-main{min-width:0}
 .home-topad{margin:0 0 18px}
 .home-topad .ad-placeholder,.home-topad .ad-unit{position:static;min-height:130px;flex-direction:row}
-/* top-transfers rail (left column, FotMob style) */
+/* top-transfers rail (left column, FotMob style) + mobile swipe strip */
 .trf-box .sec-h{margin-bottom:8px}
 .trf-col{display:flex;flex-direction:column;gap:8px}
+.trf-mob{display:none;margin:18px 0 4px}
+.trf-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+.trf-row::-webkit-scrollbar{display:none}
+.trf-row .trf-item{flex:0 0 auto}
 .trf-item{display:flex;align-items:center;gap:9px;background:#fff;
   border:1px solid #e6ebf1;border-radius:12px;padding:8px 12px;
   box-shadow:0 1px 4px rgba(15,23,42,.05)}
@@ -1226,7 +1234,8 @@ a{color:inherit}
 .ad-placeholder{min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;color:#94a3b8;font-weight:800;border:2px dashed #cbd5e1;border-radius:14px;background:#fff}
 .ad-placeholder small{color:#c3cddb;font-weight:700}
 @media(max-width:900px){.home-cols{grid-template-columns:1fr}.home-side{display:none}
-  .home-topad{display:none}}  /* mobile already has .ad-top */
+  .home-topad{display:none}  /* mobile already has .ad-top */
+  .trf-mob{display:block}}   /* transfers strip appears on mobile instead of the rail */
 /* external headlines - 3 per row */
 .hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:760px){.hgrid{grid-template-columns:repeat(2,1fr)}}
