@@ -609,7 +609,11 @@ def fetch_egypt(matches_out):
 # ------------------------------------------- Top transfers (365scores)
 # FotMob-style "أبرز الانتقالات" widget on the home page. Confirmed moves
 # only (no rumors, no contract extensions), newest first, Arabic native.
-TRANSFER_COMPS = "552,7,11,17,25,35"   # Egypt, PL, La Liga, Serie A, Bundesliga, Ligue 1
+# Only these clubs' deals appear (user pick 2026-08-08) — 365scores
+# competitor ids, matched by id (names like "الأهلي" collide across leagues):
+# Real Madrid 131, Barcelona 132, Man United 105, Man City 110, Arsenal 104,
+# Chelsea 106, Liverpool 108, Al Ahly 8200, Zamalek 8201.
+TRANSFER_CLUBS = "131,132,105,110,104,106,108,8200,8201"
 
 def _s365_face(a):
     return ("https://imagecache.365scores.com/image/upload/"
@@ -617,7 +621,7 @@ def _s365_face(a):
             f"v{a.get('imageVersion', 1)}/Athletes/{a.get('id')}")
 
 def fetch_transfers():
-    d = _s365(f"transfers/?langId=27&appTypeId=5&competitions={TRANSFER_COMPS}")
+    d = _s365(f"transfers/?langId=27&appTypeId=5&competitors={TRANSFER_CLUBS}")
     comps = {c["id"]: c for c in d.get("competitors") or []}
     aths = {a["id"]: a for a in d.get("athletes") or []}
     out = []
@@ -638,7 +642,8 @@ def fetch_transfers():
             "from_crest": _s365_badge(o) if o.get("id") else "",
             "to": g.get("name"),
             "to_crest": _s365_badge(g),
-            "price": t.get("price") or "",
+            "price": "" if (t.get("price") or "").strip() in ("", "-")
+                     else t["price"].strip(),
             "time": (t.get("time") or "")[:10],
         })
     out.sort(key=lambda x: x["time"] or "", reverse=True)
