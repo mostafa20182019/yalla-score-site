@@ -268,18 +268,16 @@ def local_crest(url):
     _CREST_MAP[url] = "/assets/crests/" + name
     return _CREST_MAP[url]
 
-# Big clubs for the ticker's padding pool (substring match on football-data
-# team names). World Cup matches always count as "big".
-BIG_TEAMS = ["Real Madrid", "FC Barcelona", "Atlético", "Manchester City",
-             "Manchester United", "Liverpool", "Arsenal", "Chelsea", "Tottenham",
-             "Bayern", "Dortmund", "Paris Saint-Germain", "Juventus",
-             "Internazionale", "AC Milan", "Napoli", "Marseille"]
+# The header ticker shows ONLY these clubs' matches (user pick 2026-08-08).
+# Tokens are substring-matched against football-data team names, so keep them
+# unambiguous — "FC Barcelona", NOT "Barcelona" (that would also match
+# "RCD Espanyol de Barcelona").
+TICKER_TEAMS = ["Real Madrid", "FC Barcelona", "Manchester United",
+                "Manchester City", "Arsenal FC", "Liverpool FC", "Chelsea FC"]
 
-def _is_big(m):
-    if "World Cup" in (m.get("competition") or ""):
-        return True
+def _is_ticker_team(m):
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")
-    return any(t in ha for t in BIG_TEAMS)
+    return any(t in ha for t in TICKER_TEAMS)
 
 def _tk_date(kick):
     """Short Arabic date chip for non-today items: أمس / غدًا / dd/mm."""
@@ -296,24 +294,22 @@ def _tk_date(kick):
     return f"{d.day:02d}/{d.month:02d}"
 
 def make_ticker(matches):
-    """Header ticker: LIVE first, then ALL of today's matches; on quiet days
-    pad with BIG-club matches only (nearest finished + next upcoming), each
+    """Header ticker: ONLY the hand-picked TICKER_TEAMS clubs — LIVE first,
+    then today's, then next upcoming + latest finished, each non-today item
     carrying a short date chip. Returns "" when there's nothing to show."""
     if not matches:
         return ""
-    live = [m for m in matches if (m.get("status") or "") == "LIVE"]
-    todays = [m for m in matches
+    picked = [m for m in matches if _is_ticker_team(m)]
+    live = [m for m in picked if (m.get("status") or "") == "LIVE"]
+    todays = [m for m in picked
               if m.get("kickoff") == REF_TODAY and (m.get("status") or "") != "LIVE"]
-    pool = live + todays
-    if len(pool) < 4:
-        rest = [m for m in matches if m not in pool and _is_big(m)]
-        fin = sorted((m for m in rest if m.get("status") == "FINISHED"),
-                     key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""),
-                     reverse=True)
-        up = sorted((m for m in rest if m.get("status") == "UPCOMING"),
-                    key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
-        pool += fin[:6] + up[:6]
-    pool = pool[:14]
+    rest = [m for m in picked if m not in live and m not in todays]
+    fin = sorted((m for m in rest if m.get("status") == "FINISHED"),
+                 key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""),
+                 reverse=True)
+    up = sorted((m for m in rest if m.get("status") == "UPCOMING"),
+                key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    pool = (live + todays + up[:10] + fin[:6])[:14]
     if not pool:
         return ""
     sc = lambda v: "-" if v is None else v
