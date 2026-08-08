@@ -272,8 +272,12 @@ def local_crest(url):
 # Tokens are substring-matched against football-data team names, so keep them
 # unambiguous — "FC Barcelona", NOT "Barcelona" (that would also match
 # "RCD Espanyol de Barcelona").
+# Egyptian league rows come from 365scores with native Arabic names, so the
+# two Cairo giants are matched in Arabic. "الأهلي" (with hamza) does NOT
+# match "البنك الاهلي" (plain alef in the feed) - no false positive.
 TICKER_TEAMS = ["Real Madrid", "FC Barcelona", "Manchester United",
-                "Manchester City", "Arsenal FC", "Liverpool FC", "Chelsea FC"]
+                "Manchester City", "Arsenal FC", "Liverpool FC", "Chelsea FC",
+                "الأهلي", "الزمالك"]
 
 def _is_ticker_team(m):
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")
