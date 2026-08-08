@@ -632,14 +632,16 @@ def fetch_transfers():
             continue
         a = aths.get(t.get("athleteId"))
         o = comps.get(t.get("origin")) or {}
-        g = comps.get(t.get("target"))
-        if not a or not g:
+        g = comps.get(t.get("target")) or {}
+        if not a or not o.get("id") or not g.get("id"):
             continue
+        if "بدون نادي" in (o.get("name"), g.get("name")):
+            continue    # released / free agents - club-to-club moves only
         out.append({
             "player": a.get("name"),
             "img": _s365_face(a),
-            "from": o.get("name") or "بدون نادي",
-            "from_crest": _s365_badge(o) if o.get("id") else "",
+            "from": o.get("name"),
+            "from_crest": _s365_badge(o),
             "to": g.get("name"),
             "to_crest": _s365_badge(g),
             "price": "" if (t.get("price") or "").strip() in ("", "-")
