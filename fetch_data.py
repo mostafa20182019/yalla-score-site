@@ -606,6 +606,44 @@ def fetch_egypt(matches_out):
           f"{len(rounds)} rounds, table: {'yes' if entry else 'no'}")
     return entry
 
+# ------------------------------------------- Top transfers (365scores)
+# FotMob-style "أبرز الانتقالات" widget on the home page. Confirmed moves
+# only (no rumors, no contract extensions), newest first, Arabic native.
+TRANSFER_COMPS = "552,7,11,17,25,35"   # Egypt, PL, La Liga, Serie A, Bundesliga, Ligue 1
+
+def _s365_face(a):
+    return ("https://imagecache.365scores.com/image/upload/"
+            "f_png,w_64,h_64,c_limit,q_auto:eco,dpr_2,d_Athletes:default.png/"
+            f"v{a.get('imageVersion', 1)}/Athletes/{a.get('id')}")
+
+def fetch_transfers():
+    d = _s365(f"transfers/?langId=27&appTypeId=5&competitions={TRANSFER_COMPS}")
+    comps = {c["id"]: c for c in d.get("competitors") or []}
+    aths = {a["id"]: a for a in d.get("athletes") or []}
+    out = []
+    for t in d.get("transfers") or []:
+        if t.get("statusName") != "انتقالات تمت":   # confirmed only - no rumors
+            continue
+        if t.get("type") == 8:                      # contract extension, not a move
+            continue
+        a = aths.get(t.get("athleteId"))
+        o = comps.get(t.get("origin")) or {}
+        g = comps.get(t.get("target"))
+        if not a or not g:
+            continue
+        out.append({
+            "player": a.get("name"),
+            "img": _s365_face(a),
+            "from": o.get("name") or "بدون نادي",
+            "from_crest": _s365_badge(o) if o.get("id") else "",
+            "to": g.get("name"),
+            "to_crest": _s365_badge(g),
+            "price": t.get("price") or "",
+            "time": (t.get("time") or "")[:10],
+        })
+    out.sort(key=lambda x: x["time"] or "", reverse=True)
+    return out[:12]
+
 if __name__ == "__main__":
     os.makedirs(DATA, exist_ok=True)
     # a transient upstream failure must NOT kill the whole deploy -
@@ -667,6 +705,16 @@ if __name__ == "__main__":
             standings.append(egy_standing)
         write_items("standings.json", standings)
         print(f"standings: {len(standings)} leagues")
+    try:
+        transfers = fetch_transfers()
+        _DBG["transfers"] = f"ok ({len(transfers)})"
+    except Exception as e:
+        print(f"  ! transfers fetch failed ({e}) - keeping existing transfers.json")
+        _DBG["transfers"] = f"FAIL: {e!r}"
+        transfers = None
+    if transfers:
+        write_items("transfers.json", transfers)
+        print(f"transfers: {len(transfers)}")
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)
