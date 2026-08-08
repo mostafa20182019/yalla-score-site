@@ -1300,10 +1300,10 @@ LEGENDS = [
   ("محمد الشناوي",      "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_El_Shenawy_Argentina_v_Egypt_7_July_2026-015.jpg?width=200", "50% 15%", 2.1),
   ("تريزيجيه",          "https://commons.wikimedia.org/wiki/Special:FilePath/Mahmoud_Trezeguet_2021.png?width=200", "50% 20%", 1.8),
 ]
-# static face-circle tiles: gradient story-ring > white gap > clipped photo.
+# static face-circle tiles: name tooltip via title/alt.
 LEGENDS_HTML = "".join(
-    f'<span class="lg-ava"><span class="lg-clip"><img src="{u}" alt="{n}" title="{n}" loading="lazy"'
-    f' style="object-position:{p};transform:scale({z});transform-origin:{p}"></span></span>'
+    f'<span class="lg-ava"><img src="{u}" alt="{n}" title="{n}" loading="lazy"'
+    f' style="object-position:{p};transform:scale({z});transform-origin:{p}"></span>'
     for n, u, p, z in LEGENDS)
 
 LEGENDS_CSS = """
@@ -1312,14 +1312,12 @@ LEGENDS_CSS = """
   justify-content:center;overflow-x:auto;scrollbar-width:none}
 .legends::-webkit-scrollbar{display:none}
 .lg-track{display:inline-flex;align-items:center;gap:16px}
-.lg-ava{width:72px;height:72px;border-radius:50%;padding:3px;flex:0 0 auto;
-  background:conic-gradient(from 210deg,#ffd76a,#f7b733,#8ee6a8,#2fae62,#ffd76a);
+.lg-ava{width:66px;height:66px;border-radius:50%;overflow:hidden;flex:0 0 auto;
+  border:2.5px solid rgba(255,255,255,.65);
   box-shadow:0 3px 10px rgba(0,0,0,.35);
-  transition:transform .16s,box-shadow .16s}
-.lg-clip{display:block;width:100%;height:100%;border-radius:50%;overflow:hidden;
-  border:2px solid #fff}
-.lg-clip img{width:100%;height:100%;object-fit:cover;display:block}
-.lg-ava:hover{transform:scale(1.18);
+  transition:transform .16s,border-color .16s,box-shadow .16s}
+.lg-ava img{width:100%;height:100%;object-fit:cover;display:block}
+.lg-ava:hover{transform:scale(1.18);border-color:#fff;
   box-shadow:0 6px 16px rgba(0,0,0,.45)}
 /* live-scores ticker */
 .ticker{display:block;background:#06170d;overflow:hidden;text-decoration:none;
@@ -1343,8 +1341,7 @@ LEGENDS_CSS = """
   .head-in{height:60px}
   .legends{margin-inline-start:10px;justify-content:flex-start}
   .lg-track{gap:9px}
-  .lg-ava{width:50px;height:50px;padding:2px}
-  .lg-clip{border-width:1.5px}
+  .lg-ava{width:46px;height:46px;border-width:2px}
   .nav-en{display:none}
   .navtab{padding:0 14px}
 }
