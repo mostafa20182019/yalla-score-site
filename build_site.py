@@ -350,7 +350,7 @@ def transfers_widget(ts):
             f'<span class="trf-clubs">{fc}<bdi>{esc(t.get("from"))}</bdi> ← {tc}<bdi>{esc(t.get("to"))}</bdi></span></div>'
             f'{fee}</div>')
     return ('<div class="trf-box"><div class="sec-h"><h2 class="page-h">🔁 أبرز الانتقالات</h2></div>'
-            '<div class="trf-row">' + "".join(its) + '</div></div>')
+            '<div class="trf-col">' + "".join(its) + '</div></div>')
 
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
@@ -497,10 +497,7 @@ def build():
     # reserved empty column on the LEFT. The ad strip (future "Top Transfers"
     # widget, FotMob style) sits ABOVE the latest-news section.
     parts.append('<div class="home-cols"><div class="home-main">')
-    if transfers:
-        parts.append(f'<div class="home-topad has-trf">{transfers_widget(transfers)}</div>')
-    else:
-        parts.append(f'<div class="home-topad">{adsense_slot()}</div>')
+    parts.append(f'<div class="home-topad">{adsense_slot()}</div>')
     parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
         img = feat.get("image_url")
@@ -556,7 +553,9 @@ def build():
         parts.append(REL_JS)
     # (matches are NOT shown on the home page - they live on /matches.html)
     parts.append('</div>')  # /home-main
-    parts.append('<aside class="home-side"></aside>')  # reserved empty column
+    # left column: FotMob-style top-transfers rail (empty when no data)
+    side = transfers_widget(transfers) if transfers else ""
+    parts.append(f'<aside class="home-side">{side}</aside>')
     parts.append('</div>')  # /home-cols
     parts.append(foot())
     write("index.html", "".join(parts))
@@ -1202,13 +1201,13 @@ a{color:inherit}
 .home-main{min-width:0}
 .home-topad{margin:0 0 18px}
 .home-topad .ad-placeholder,.home-topad .ad-unit{position:static;min-height:130px;flex-direction:row}
-/* top-transfers strip (fills the slot when transfers.json has data) */
+/* top-transfers rail (left column, FotMob style) */
 .trf-box .sec-h{margin-bottom:8px}
-.trf-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
-.trf-row::-webkit-scrollbar{display:none}
-.trf-item{flex:0 0 auto;display:flex;align-items:center;gap:9px;background:#fff;
+.trf-col{display:flex;flex-direction:column;gap:8px}
+.trf-item{display:flex;align-items:center;gap:9px;background:#fff;
   border:1px solid #e6ebf1;border-radius:12px;padding:8px 12px;
   box-shadow:0 1px 4px rgba(15,23,42,.05)}
+.trf-item .trf-fee{margin-inline-start:auto}
 .trf-face{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#eef2f6}
 .trf-mid{display:flex;flex-direction:column;gap:2px}
 .trf-name{font-size:.8rem;font-weight:800}
@@ -1227,7 +1226,7 @@ a{color:inherit}
 .ad-placeholder{min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;color:#94a3b8;font-weight:800;border:2px dashed #cbd5e1;border-radius:14px;background:#fff}
 .ad-placeholder small{color:#c3cddb;font-weight:700}
 @media(max-width:900px){.home-cols{grid-template-columns:1fr}.home-side{display:none}
-  .home-topad:not(.has-trf){display:none}}  /* transfers show on mobile; the bare ad slot doesn't (mobile has .ad-top) */
+  .home-topad{display:none}}  /* mobile already has .ad-top */
 /* external headlines - 3 per row */
 .hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:760px){.hgrid{grid-template-columns:repeat(2,1fr)}}
