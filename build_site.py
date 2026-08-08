@@ -313,7 +313,21 @@ def make_ticker(matches):
                  reverse=True)
     up = sorted((m for m in rest if m.get("status") == "UPCOMING"),
                 key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
-    pool = (live + todays + up[:10] + fin[:6])[:14]
+
+    def one_per_team(ms):
+        """Keep only the first match per picked club (nearest upcoming /
+        latest finished) - a club must not appear once per future fixture."""
+        seen, kept = set(), []
+        for m in ms:
+            ha = (m.get("home") or "") + "|" + (m.get("away") or "")
+            teams = [t for t in TICKER_TEAMS if t in ha]
+            if teams and all(t in seen for t in teams):
+                continue
+            seen.update(teams)
+            kept.append(m)
+        return kept
+
+    pool = (live + todays + one_per_team(up)[:10] + one_per_team(fin)[:6])[:14]
     if not pool:
         return ""
     sc = lambda v: "-" if v is None else v
