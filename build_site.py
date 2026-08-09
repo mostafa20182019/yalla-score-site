@@ -643,6 +643,8 @@ def build():
               "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
               SITE_BASE + "/matches.html", active="matches")]
     p.append('<h1 class="page-h">المباريات</h1>')
+    # wide ad strip above the whole matches grid (same slot style as home)
+    p.append(f'<div class="home-topad">{adsense_slot()}</div>')
     p.append('<div class="mpage">')
 
     # --- right rail (RTL start): leagues filter ---
@@ -701,9 +703,7 @@ def build():
                 for m in comp_fix[c][d]:
                     p.append(fixture_mini(m))
             p.append('</div>')
-    p.append('<div id="mpDefault">')
-    p.append(f'<div class="mp-ad">{adsense_slot()}</div>')
-    p.append('</div>')  # /mpDefault
+    p.append('<div id="mpDefault"></div>')  # league panels swap in here
     p.append('</aside>')
 
     p.append('</div>')  # /mpage
@@ -1170,6 +1170,9 @@ a{color:inherit}
   color:#fff;font-size:1.1rem;font-weight:900;line-height:1;cursor:pointer}
 .rn-prev:hover,.rn-next:hover{background:var(--green-d)}
 .rn-prev:disabled,.rn-next:disabled{opacity:.35;cursor:default}
+/* the extra rail only has content in league-view (the ad moved to the top
+   strip) - hide the empty white card otherwise */
+.mpage:not(.league-view) .mp-extra{display:none}
 @media(max-width:1080px){.mpage.league-view .mp-extra{display:block}}
 @media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
 @media(max-width:760px){
