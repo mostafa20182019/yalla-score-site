@@ -643,8 +643,6 @@ def build():
               "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
               SITE_BASE + "/matches.html", active="matches")]
     p.append('<h1 class="page-h">المباريات</h1>')
-    # wide ad strip above the whole matches grid (same slot style as home)
-    p.append(f'<div class="home-topad">{adsense_slot()}</div>')
     p.append('<div class="mpage">')
 
     # --- right rail (RTL start): leagues filter ---
@@ -657,6 +655,8 @@ def build():
     # --- center: league tables (hidden) + day navigator + days ---
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
     p.append('<div class="mp-main">')
+    # ad strip at the top of the CENTER column - matches-list width only
+    p.append(f'<div class="home-topad">{adsense_slot()}</div>')
     for comp, st in st_by_comp.items():
         p.append(standings_table(comp, st.get("table"),
                                  past=st.get("past"), season_label=st.get("season_label"),
@@ -1226,6 +1226,7 @@ a{color:inherit}
 .home-cols{display:grid;grid-template-columns:2fr 1fr;gap:22px;align-items:start}
 .home-main{min-width:0}
 .home-topad{margin:16px 0 18px}
+.mp-main .home-topad{margin-top:0}  /* align with the rails' top on /matches */
 .home-topad .ad-placeholder,.home-topad .ad-unit{position:static;min-height:130px;flex-direction:row}
 /* top-transfers rail (left column, FotMob style) + mobile swipe strip */
 .trf-box .sec-h{margin-bottom:8px}
