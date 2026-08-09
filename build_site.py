@@ -151,6 +151,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{esc(url)}">
 <meta name="robots" content="index, follow">
+<meta name="google-site-verification" content="mMvVRBkeRXu37K-dU3QCrngUUJs9a2FfwpJNX3CHcpk">
 <meta property="og:type" content="{og_type}">
 <meta property="og:site_name" content="{esc(SITE_NAME)}">
 <meta property="og:locale" content="{LOCALE}">
