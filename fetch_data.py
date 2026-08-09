@@ -648,7 +648,21 @@ def fetch_transfers():
                      else t["price"].strip(),
             "time": (t.get("time") or "")[:10],
         })
+    def _fee(t):
+        m = re.match(r"€([\d.]+)([MK])", t.get("price") or "")
+        if not m:
+            return 0.0
+        return float(m.group(1)) * (1_000_000 if m.group(2) == "M" else 1_000)
+
+    # "أبرز" = hybrid: the last 14 days' deals sorted by fee (big money on
+    # top) so the list stays both fresh and notable; when the window is
+    # quiet (<4 deals) fall back to plain newest-first so it never empties.
     out.sort(key=lambda x: x["time"] or "", reverse=True)
+    cutoff = (datetime.now(CAIRO) - timedelta(days=14)).strftime("%Y-%m-%d")
+    recent = [t for t in out if (t["time"] or "") >= cutoff]
+    if len(recent) >= 4:
+        recent.sort(key=lambda x: (_fee(x), x["time"] or ""), reverse=True)
+        return recent[:12]
     return out[:12]
 
 if __name__ == "__main__":
