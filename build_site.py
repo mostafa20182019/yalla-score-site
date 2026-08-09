@@ -702,21 +702,26 @@ def build():
                 for m in comp_fix[c][d]:
                     p.append(fixture_mini(m))
             p.append('</div>')
-    # default rail content: Premier-League matchday atmosphere photos
-    # (Fulham v Leeds 13-09-2025, CC0 on Wikimedia Commons) - swapped for the
-    # league rounds panel when a competition is selected
-    _atmo = [
-        "Fulham_v_Leeds_United_13092025_(8).jpg",
-        "Fulham_v_Leeds_United_13092025_(4).jpg",
-        "Fulham_v_Leeds_United_13092025_(5).jpg",
-    ]
-    p.append('<div id="mpDefault"><div class="mp-atmo">'
-             '<div class="fx-head">🏟️ أجواء البريميرليج</div>')
-    for f in _atmo:
-        p.append(f'<img src="https://commons.wikimedia.org/wiki/Special:FilePath/{f}?width=600"'
-                 ' alt="أجواء الدوري الإنجليزي" loading="lazy">')
-    p.append('<small class="mp-atmo-credit">Craven Cottage — CC0, Wikimedia Commons</small>'
-             '</div></div>')
+    # default rail content: featured-article card + latest headlines -
+    # swapped for the league rounds panel when a competition is selected
+    p.append('<div id="mpDefault">')
+    if articles:
+        fa = articles[0]
+        p.append(f'<a class="mp-feat" href="/a/{fa["article_id"]}.html">')
+        if fa.get("image_url"):
+            p.append(f'<img class="mp-feat-img" src="{esc(fa["image_url"])}" alt="" loading="lazy">')
+        p.append(f'<b class="mp-feat-t">{esc(fa.get("title"))}</b>'
+                 '<span class="mp-feat-cta">اقرأ الخبر ←</span></a>')
+        p.append('<div class="mp-news">')
+        for a in articles[1:4]:
+            img = a.get("image_url")
+            th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                  if img else '<span class="mn-th noimg">⚽</span>')
+            p.append(f'<a class="mn-item" href="/a/{a["article_id"]}.html">{th}'
+                     f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span>'
+                     f'<span class="mn-d">{esc(a.get("pub_date") or "")}</span></span></a>')
+        p.append('</div>')
+    p.append('</div>')
     p.append('</aside>')
 
     p.append('</div>')  # /mpage
@@ -1183,10 +1188,12 @@ a{color:inherit}
   color:#fff;font-size:1.1rem;font-weight:900;line-height:1;cursor:pointer}
 .rn-prev:hover,.rn-next:hover{background:var(--green-d)}
 .rn-prev:disabled,.rn-next:disabled{opacity:.35;cursor:default}
-/* default rail: matchday-atmosphere photo stack */
-.mp-atmo{display:flex;flex-direction:column;gap:10px}
-.mp-atmo img{width:100%;border-radius:10px;display:block}
-.mp-atmo-credit{color:#94a3b8;font-size:.66rem;font-weight:700;text-align:center}
+/* default rail: featured-article card */
+.mp-feat{display:flex;flex-direction:column;gap:8px;text-decoration:none;margin-bottom:14px}
+.mp-feat-img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;display:block}
+.mp-feat-t{font-size:.92rem;font-weight:900;color:var(--ink);line-height:1.5}
+.mp-feat-cta{font-size:.78rem;font-weight:800;color:var(--green-d, #0f5e28)}
+.mp-feat:hover .mp-feat-t{color:#0f5e28}
 @media(max-width:1080px){.mpage.league-view .mp-extra{display:block}}
 @media(max-width:1080px){.mpage{grid-template-columns:210px minmax(0,1fr)}.mp-extra{display:none}}
 @media(max-width:760px){
