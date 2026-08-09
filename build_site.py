@@ -642,7 +642,6 @@ def build():
     p = [head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
               "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
               SITE_BASE + "/matches.html", active="matches")]
-    p.append('<h1 class="page-h">المباريات</h1>')
     p.append('<div class="mpage">')
 
     # --- right rail (RTL start): leagues filter ---
