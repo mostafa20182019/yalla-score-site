@@ -1114,7 +1114,10 @@ a{color:inherit}
 /* Egyptian fans facing the camera (CC BY-SA, WC 2018) across the header,
    dissolving into the green gradient before the brand */
 .head-crowd{position:absolute;left:0;top:0;height:78px;width:calc(100% - 300px);
-  background:url("https://commons.wikimedia.org/wiki/Special:FilePath/Egyptians_fans_FIFA_2018.jpg?width=800") left 26%/auto 230px repeat-x;
+  background:url("/media/fans-header.jpg") left center/auto 78px repeat-x;
+  /* fans-header.jpg = one wide 3473x156 band composed from four DIFFERENT
+     regions of the CC BY-SA WC-2018 crowd photo (blended seams, faces fill
+     the height) - renders 1737px @78px, no visible repeat on normal screens */
   -webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.95) 55%,transparent 97%);
   mask-image:linear-gradient(to right,rgba(0,0,0,.95) 55%,transparent 97%);
   pointer-events:none}
