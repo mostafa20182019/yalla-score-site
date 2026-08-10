@@ -268,7 +268,11 @@ def fetch_matches():
         except Exception as e:
             print(f"  ! FD call failed ({url.split('?')[0]}): {e}")
     for comp in FD_COMPS:
-        pull(f"https://api.football-data.org/v4/competitions/{comp}/matches?status=SCHEDULED")
+        # NO status filter: ?status=SCHEDULED silently dropped matches whose
+        # kickoff got officially confirmed (football-data flips them to
+        # TIMED) - La Liga rounds 1-4 vanished from the rounds panel that
+        # way (2026-08-10). Unfiltered = full season, every status.
+        pull(f"https://api.football-data.org/v4/competitions/{comp}/matches")
     today = datetime.now(CAIRO).date()
     frm = (today - timedelta(days=7)).isoformat()
     to = (today + timedelta(days=1)).isoformat()
