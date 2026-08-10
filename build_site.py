@@ -169,6 +169,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 </head>
 <body>
 <header class="site-head">
+  <div class="head-crowd" aria-hidden="true"></div>
   <div class="wrap head-in">
     <a class="brand" href="/"><span class="ball">⚽</span> {esc(SITE_NAME)}</a>
     <div class="legends" aria-hidden="true"><div class="lg-track">{LEGENDS_HTML}</div></div>
@@ -1110,7 +1111,14 @@ body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg
 .wrap{max-width:1600px;margin:0 auto;padding:0 20px}
 a{color:inherit}
 .site-head{background:linear-gradient(90deg,var(--green-d),var(--green));box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
-.head-in{display:flex;align-items:center;height:78px}
+.head-in{display:flex;align-items:center;height:78px;position:relative;z-index:1}
+/* wide crowd photo bleeding into the header's empty LEFT end (CC0, Craven
+   Cottage stands) - masked so it dissolves into the green gradient */
+.head-crowd{position:absolute;left:0;top:0;height:78px;width:min(27vw,390px);
+  background:url("https://commons.wikimedia.org/wiki/Special:FilePath/All_Whites_v_Peru_11_November_2017_(cropped).jpg?width=1000") center 100%/cover no-repeat;
+  -webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.85) 30%,transparent 88%);
+  mask-image:linear-gradient(to right,rgba(0,0,0,.85) 30%,transparent 88%);
+  pointer-events:none}
 .brand{color:#fff;font-weight:900;font-size:1.3rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 .beta{font-size:.62rem;font-weight:800;color:#ffe08a;border:1px solid rgba(255,224,138,.55);background:rgba(0,0,0,.18);padding:2px 9px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 /* second row: navigation tabs (like the app) */
@@ -1475,6 +1483,7 @@ LEGENDS_CSS = """
 @keyframes tkpulse{0%,100%{opacity:1}50%{opacity:.2}}
 @media(max-width:720px){
   .head-in{height:60px}
+  .head-crowd{display:none}  /* no empty header space on mobile */
   .legends{margin-inline-start:10px;justify-content:flex-start}
   .lg-track{gap:9px}
   .lg-ava{width:46px;height:46px;border-width:2px}
