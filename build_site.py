@@ -804,9 +804,19 @@ def build():
                 SITE_BASE + "/news.html", active="home")]
     np_.append('<h1 class="page-h">كل الأخبار</h1>')
     if articles:
-        np_.append('<div class="grid">')
+        # calm list rows (thumb + title + summary + date) - the old card grid
+        # read as scattered ("شتات") with ragged heights
+        np_.append('<div class="alist">')
         for a in articles:
-            np_.append(news_card(a))
+            img = a.get("image_url")
+            th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                  if img else '<span class="al-th noimg">⚽</span>')
+            np_.append(
+                f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
+                f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
+                f'<span class="al-s">{esc(strip_tags(a.get("summary") or ""))}</span>'
+                f'<span class="al-m">{esc(a.get("author") or "")} · {esc(a.get("pub_date") or "")}</span>'
+                f'</span></a>')
         np_.append('</div>')
     else:
         np_.append('<p class="empty-note">لا توجد أخبار بعد.</p>')
@@ -1188,6 +1198,25 @@ a{color:inherit}
   color:#fff;font-size:1.1rem;font-weight:900;line-height:1;cursor:pointer}
 .rn-prev:hover,.rn-next:hover{background:var(--green-d)}
 .rn-prev:disabled,.rn-next:disabled{opacity:.35;cursor:default}
+/* news archive: calm list rows */
+.alist{display:flex;flex-direction:column;max-width:860px}
+.al-row{display:flex;gap:14px;align-items:center;text-decoration:none;
+  padding:14px 6px;border-bottom:1px solid #e6ebf1}
+.al-row:hover{background:#f6f9f7}
+.al-th{width:150px;height:96px;border-radius:10px;flex:0 0 auto;
+  background-size:cover;background-position:center;background-color:#e6ebf1;
+  display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:1.6rem}
+.al-th.noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
+.al-b{display:flex;flex-direction:column;gap:4px;min-width:0}
+.al-t{font-size:1rem;font-weight:900;color:var(--ink);line-height:1.55}
+.al-s{font-size:.82rem;color:var(--muted);font-weight:600;line-height:1.6;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.al-m{font-size:.72rem;color:#94a3b8;font-weight:700}
+@media(max-width:560px){
+  .al-th{width:104px;height:74px}
+  .al-t{font-size:.88rem}
+  .al-s{display:none}
+}
 /* default rail: featured-article card */
 .mp-feat{display:flex;flex-direction:column;gap:8px;text-decoration:none;margin-bottom:14px}
 .mp-feat-img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:10px;display:block}
