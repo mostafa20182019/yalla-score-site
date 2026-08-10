@@ -830,9 +830,23 @@ def build():
                SITE_BASE + "/headlines.html", active="home")]
     hp.append('<h1 class="page-h">عناوين الصحف</h1>')
     if headlines:
-        hp.append('<div class="hgrid">')
+        # same calm list rows as /news.html (the card grid read as scattered)
+        hp.append('<div class="alist">')
         for h in headlines:
-            hp.append(headline_card(h))
+            t = strip_src(h.get("title"), h.get("source"))
+            iso = h.get("pub_iso") or ""
+            when = rel_ar(iso) if iso else (h.get("pub_date") or "")
+            timeel = (f'<time class="reltime" datetime="{esc(iso)}">{esc(when)}</time>'
+                      if iso else esc(when))
+            ph = PLACEHOLDER_IMGS[int(hashlib.md5((h.get("link") or t).encode("utf-8")).hexdigest(), 16) % len(PLACEHOLDER_IMGS)]
+            img = h.get("image") or ph
+            hp.append(
+                f'<a class="al-row" href="{esc(h.get("source_url") or h.get("link"))}" target="_blank" rel="noopener nofollow">'
+                f'<span class="al-th"><img src="{esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer"'
+                f' onerror="this.onerror=null;this.src=\'{ph}\'"></span>'
+                f'<span class="al-b"><b class="al-t">{esc(t)}</b>'
+                f'<span class="al-m"><span class="hsrc">{esc(h.get("source") or "")}</span> · {timeel}</span>'
+                f'</span></a>')
         hp.append('</div>')
         hp.append(REL_JS)
     else:
@@ -1207,6 +1221,7 @@ a{color:inherit}
   background-size:cover;background-position:center;background-color:#e6ebf1;
   display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.6);font-size:1.6rem}
 .al-th.noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
+.al-th img{width:100%;height:100%;object-fit:cover;border-radius:10px;display:block}
 .al-b{display:flex;flex-direction:column;gap:4px;min-width:0}
 .al-t{font-size:1rem;font-weight:900;color:var(--ink);line-height:1.55}
 .al-s{font-size:.82rem;color:var(--muted);font-weight:600;line-height:1.6;
