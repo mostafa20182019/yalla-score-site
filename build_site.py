@@ -163,7 +163,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <meta name="twitter:title" content="{esc(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="{esc(img)}">
-<link rel="icon" href="/assets/logo.png">
+<link rel="icon" type="image/png" href="/assets/favicon.png">
 <link rel="stylesheet" href="/assets/style.css?v={CSS_VER}">
 {ads_head}
 </head>
@@ -496,6 +496,9 @@ def build():
     CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
         f.write(_css)
+    _fav = os.path.join(HERE, "assets-src", "favicon.png")
+    if os.path.exists(_fav):
+        shutil.copy(_fav, os.path.join(DIST, "assets", "favicon.png"))
     for _logo in (os.path.join(HERE, "assets-src", "logo.png"),
                   os.path.join(HERE, "..", "shared-components", "static-files", "icons", "app-icon-192.png")):
         if os.path.exists(_logo):
