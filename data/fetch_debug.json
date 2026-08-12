@@ -1,8 +1,8 @@
 {
- "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
+ "news": "ok (60)",
  "matches": "ok (60)",
  "egypt": "ok (table 20 teams)",
  "standings": "ok (6)",
  "transfers": "ok (12)",
- "utc": "2026-08-12T17:50:07Z"
+ "utc": "2026-08-12T18:04:01Z"
 }
