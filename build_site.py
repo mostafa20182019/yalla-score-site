@@ -278,7 +278,7 @@ def local_crest(url):
 # match "البنك الاهلي" (plain alef in the feed) - no false positive.
 TICKER_TEAMS = ["Real Madrid", "FC Barcelona", "Manchester United",
                 "Manchester City", "Arsenal FC", "Liverpool FC", "Chelsea FC",
-                "الأهلي", "الزمالك"]
+                "الأهلي", "الزمالك", "طرابزون سبور"]
 
 def _is_ticker_team(m):
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")

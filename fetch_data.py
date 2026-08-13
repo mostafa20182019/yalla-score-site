@@ -620,8 +620,8 @@ def fetch_s365_league(matches_out, lid, comp_name):
 # Only these clubs' deals appear (user pick 2026-08-08) — 365scores
 # competitor ids, matched by id (names like "الأهلي" collide across leagues):
 # Real Madrid 131, Barcelona 132, Man United 105, Man City 110, Arsenal 104,
-# Chelsea 106, Liverpool 108, Al Ahly 8200, Zamalek 8201.
-TRANSFER_CLUBS = "131,132,105,110,104,106,108,8200,8201"
+# Chelsea 106, Liverpool 108, Al Ahly 8200, Zamalek 8201, Trabzonspor 950.
+TRANSFER_CLUBS = "131,132,105,110,104,106,108,8200,8201,950"
 
 def _s365_face(a):
     return ("https://imagecache.365scores.com/image/upload/"
@@ -643,8 +643,10 @@ def fetch_transfers():
         g = comps.get(t.get("target")) or {}
         if not a or not o.get("id") or not g.get("id"):
             continue
-        if "بدون نادي" in (o.get("name"), g.get("name")):
-            continue    # released / free agents - club-to-club moves only
+        if g.get("name") == "بدون نادي":
+            continue    # released into the void - not a signing
+        # (origin "بدون نادي" is KEPT: a free-agent ARRIVAL is a real deal -
+        #  e.g. Salah -> Trabzonspor after terminating his Liverpool contract)
         out.append({
             "player": a.get("name"),
             "img": _s365_face(a),
@@ -654,13 +656,17 @@ def fetch_transfers():
             "to_crest": _s365_badge(g),
             "price": "" if (t.get("price") or "").strip() in ("", "-")
                      else t["price"].strip(),
+            # free-agent signing INTO one of our curated clubs = notable even
+            # with no fee (ranked like a mid-size transfer below)
+            "free_in": (t.get("price") or "").strip() == "انتقال حر"
+                       and str(g.get("id")) in TRANSFER_CLUBS.split(","),
             "time": (t.get("time") or "")[:10],
         })
     def _fee(t):
         m = re.match(r"€([\d.]+)([MK])", t.get("price") or "")
-        if not m:
-            return 0.0
-        return float(m.group(1)) * (1_000_000 if m.group(2) == "M" else 1_000)
+        if m:
+            return float(m.group(1)) * (1_000_000 if m.group(2) == "M" else 1_000)
+        return 10_000_000.0 if t.get("free_in") else 0.0
 
     # "أبرز" = hybrid: the last 14 days' deals sorted by fee (big money on
     # top) so the list stays both fresh and notable; when the window is
