@@ -1,9 +1,9 @@
 {
- "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
+ "news": "ok (60)",
  "matches": "ok (60)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "standings": "ok (6)",
  "transfers": "ok (12)",
- "utc": "2026-08-13T17:18:14Z"
+ "utc": "2026-08-13T17:33:48Z"
 }
