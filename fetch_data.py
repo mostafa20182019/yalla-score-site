@@ -22,7 +22,7 @@ DATA = os.path.join(HERE, "data")
 FD_TOKEN = os.environ.get("FD_TOKEN", "").strip()
 CAIRO = ZoneInfo("Africa/Cairo")
 UA = "Mozilla/5.0 (YallaScore static-site builder)"
-FD_COMPS = ["WC", "CL", "PL", "PD", "SA", "BL1", "FL1"]  # World Cup, UCL, PL, La Liga, Serie A, Bundesliga, Ligue 1
+FD_COMPS = ["CL", "PL", "PD", "SA", "BL1", "FL1"]  # UCL, PL, La Liga, Serie A, Bundesliga, Ligue 1 (WC removed 2026-08-12: tournament over)
 
 def http_get(url, headers=None, timeout=40, retries=2):
     h = {"User-Agent": UA}
@@ -483,10 +483,13 @@ def fetch_standings():
 # Cairo kickoff times. Entirely best-effort: any failure just means the
 # Egyptian league is absent this run, FD data is untouched.
 S365 = "https://webws.365scores.com/web"
-EGY_365_ID = 552                        # competition id on 365scores
-EGY_NAME = "Egyptian Premier League"    # data-comp key used across the site
-EGY_ENABLED = True                      # flip to False to drop the league again
-_EGY_Q = f"competitions={EGY_365_ID}&langId=27&timezoneName=Africa/Cairo"
+# leagues served from 365scores (football-data's free tier lacks them):
+# (competition id, data-comp key used across the site)
+S365_LEAGUES = [
+    (552, "Egyptian Premier League"),   # الدوري المصري
+    (78,  "Turkish Super Lig"),         # الدوري التركي (Salah's Trabzonspor)
+]
+EGY_ENABLED = True                      # master switch for the 365scores leagues
 
 def _s365(path):
     # full browser-ish headers: webws.365scores.com sits behind Cloudflare and
@@ -510,10 +513,11 @@ def _egy_season():
     y = now.year if now.month >= 7 else now.year - 1
     return f"{y}-{y+1}"
 
-def fetch_egypt(matches_out):
-    """Append Egyptian Premier League rows to matches_out, add its rounds
+def fetch_s365_league(matches_out, lid, comp_name):
+    """Append one 365scores league's rows to matches_out, add its rounds
     panel to _FIXTURES, and return a standings entry (or None)."""
-    comp = (_s365(f"competitions/?{_EGY_Q}").get("competitions") or [{}])[0]
+    q = f"competitions={lid}&langId=27&timezoneName=Africa/Cairo"
+    comp = (_s365(f"competitions/?{q}").get("competitions") or [{}])[0]
     season_num = comp.get("currentSeasonNum")   # e.g. 74 = 2026/27
 
     def game_row(g):
@@ -531,7 +535,7 @@ def fetch_egypt(matches_out):
         scored = status != "UPCOMING" and (hs or 0) >= 0 and (aws or 0) >= 0
         rd = g.get("roundNum")
         return {
-            "match_id": g.get("id"), "competition": EGY_NAME,
+            "match_id": g.get("id"), "competition": comp_name,
             "home": h.get("name"), "away": a.get("name"),
             "home_badge": _s365_badge(h), "away_badge": _s365_badge(a),
             "kickoff": date, "koff_time": tm,
@@ -543,8 +547,8 @@ def fetch_egypt(matches_out):
         }
 
     rows, seen = [], set()
-    for path in (f"games/fixtures/?{_EGY_Q}&showOdds=false",
-                 f"games/results/?{_EGY_Q}&showOdds=false"):
+    for path in (f"games/fixtures/?{q}&showOdds=false",
+                 f"games/results/?{q}&showOdds=false"):
         try:
             time.sleep(1)
             for g in (_s365(path).get("games") or []):
@@ -581,13 +585,13 @@ def fetch_egypt(matches_out):
                 break
         if _FIXTURES is None:
             _FIXTURES = []
-        _FIXTURES.append({"competition": EGY_NAME, "current": current, "rounds": rlist})
+        _FIXTURES.append({"competition": comp_name, "current": current, "rounds": rlist})
 
     # standings
     entry = None
     try:
         time.sleep(1)
-        srows = (_s365(f"standings/?{_EGY_Q}&live=false").get("standings")
+        srows = (_s365(f"standings/?{q}&live=false").get("standings")
                  or [{}])[0].get("rows") or []
     except Exception as e:
         print(f"  ! 365scores standings failed: {e}")
@@ -595,7 +599,7 @@ def fetch_egypt(matches_out):
     n = lambda v: int(v or 0)
     if srows:
         played = max(n(r.get("gamePlayed")) for r in srows)
-        entry = {"competition": EGY_NAME, "zeroed": played == 0,
+        entry = {"competition": comp_name, "zeroed": played == 0,
                  "season_label": _egy_season().replace("-", "/") if played == 0 else "",
                  "table": [{"pos": n(r.get("position")) or i + 1,
                             "team": (r.get("competitor") or {}).get("name"),
@@ -606,7 +610,7 @@ def fetch_egypt(matches_out):
                             "gd": n(r.get("for")) - n(r.get("against")),
                             "pts": n(r.get("points"))}
                            for i, r in enumerate(srows)]}
-    print(f"  + Egyptian league (365scores): {len(day_rows)} matches, "
+    print(f"  + {comp_name} (365scores): {len(day_rows)} matches, "
           f"{len(rounds)} rounds, table: {'yes' if entry else 'no'}")
     return entry
 
@@ -693,17 +697,20 @@ if __name__ == "__main__":
         print(f"  ! matches fetch failed ({e}) - keeping existing matches.json")
         _DBG["matches"] = f"FAIL: {e!r}"
         matches = None
-    egy_standing = None
+    s365_standings = []
     if matches is not None and EGY_ENABLED:
-        try:
-            egy_standing = fetch_egypt(matches)
-            _DBG["egypt"] = (f"ok (table {len(egy_standing['table'])} teams)"
-                             if egy_standing else "ok (no table)")
-            matches.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
-            matches = matches[:90]
-        except Exception as e:
-            print(f"  ! Egyptian league fetch failed ({e})")
-            _DBG["egypt"] = f"FAIL: {e!r}"
+        for _lid, _lname in S365_LEAGUES:
+            try:
+                _st = fetch_s365_league(matches, _lid, _lname)
+                _DBG[_lname] = (f"ok (table {len(_st['table'])} teams)"
+                                if _st else "ok (no table)")
+                if _st:
+                    s365_standings.append(_st)
+            except Exception as e:
+                print(f"  ! {_lname} fetch failed ({e})")
+                _DBG[_lname] = f"FAIL: {e!r}"
+        matches.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
+        matches = matches[:90]
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
     if _FIXTURES is not None:
@@ -726,8 +733,7 @@ if __name__ == "__main__":
         _DBG["standings"] = f"FAIL: {e!r}"
         standings = None
     if standings is not None:   # empty list is valid -> clears last-season tables
-        if egy_standing:
-            standings.append(egy_standing)
+        standings.extend(s365_standings)
         write_items("standings.json", standings)
         print(f"standings: {len(standings)} leagues")
     try:
