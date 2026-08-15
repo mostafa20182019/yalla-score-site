@@ -676,7 +676,11 @@ def build():
         comps = OrderedDict()
         for m in daymap[d]:
             comps.setdefault(m.get("competition") or "", []).append(m)
-        for comp, ms in comps.items():
+        # same fixed league order as the sidebar
+        for comp, ms in sorted(comps.items(),
+                               key=lambda kv: (COMP_ORDER.index(kv[0])
+                                               if kv[0] in COMP_ORDER
+                                               else len(COMP_ORDER), kv[0])):
             p.append(f'<div class="comp" data-comp="{esc(comp)}">')
             if comp:
                 p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
