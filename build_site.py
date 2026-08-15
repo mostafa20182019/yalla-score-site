@@ -1008,6 +1008,7 @@ COMP_LABEL = {
     "UEFA Champions League": "Champions League",
     "Egyptian Premier League": "الدوري المصري",
     "Turkish Super Lig": "الدوري التركي",
+    "Saudi Pro League": "الدوري السعودي",
 }
 
 def comp_label(name):
@@ -1024,6 +1025,7 @@ def comp_emoji(name):
     if "world cup" in n or "مونديال" in n or "كأس العالم" in n: return "🏆"
     if "egypt" in n or "المصري" in n: return "🇪🇬"   # before "premier" (Egyptian Premier League)
     if "turk" in n or "التركي" in n: return "🇹🇷"
+    if "saudi" in n or "السعودي" in n: return "🇸🇦"
     if "premier" in n: return "🦁"
     if "primera" in n or "laliga" in n or "la liga" in n: return "🇪🇸"
     if "serie a" in n: return "🇮🇹"

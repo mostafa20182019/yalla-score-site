@@ -488,6 +488,7 @@ S365 = "https://webws.365scores.com/web"
 S365_LEAGUES = [
     (552, "Egyptian Premier League"),   # الدوري المصري
     (78,  "Turkish Super Lig"),         # الدوري التركي (Salah's Trabzonspor)
+    (649, "Saudi Pro League"),          # الدوري السعودي
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
