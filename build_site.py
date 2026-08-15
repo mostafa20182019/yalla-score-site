@@ -641,6 +641,8 @@ def build():
         c = f.get("competition") or ""
         if c and c not in comp_order:
             comp_order.append(c)
+    comp_order.sort(key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER
+                                   else len(COMP_ORDER), c))
 
     p = [head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
               "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
@@ -1004,12 +1006,20 @@ COMP_LOGO = {
 }
 # friendlier display names (data-comp keeps the raw API name for filtering)
 COMP_LABEL = {
-    "Primera Division": "La Liga",
-    "UEFA Champions League": "Champions League",
     "Egyptian Premier League": "الدوري المصري",
+    "Premier League": "الدوري الإنجليزي",
+    "Primera Division": "الدوري الإسباني",
     "Turkish Super Lig": "الدوري التركي",
     "Saudi Pro League": "الدوري السعودي",
+    "Ligue 1": "الدوري الفرنسي",
+    "Bundesliga": "الدوري الألماني",
+    "Serie A": "الدوري الإيطالي",
+    "UEFA Champions League": "دوري أبطال أوروبا",
 }
+# fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
+COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
+              "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
+              "Bundesliga", "Serie A", "UEFA Champions League"]
 
 def comp_label(name):
     return COMP_LABEL.get(name, name or "")
