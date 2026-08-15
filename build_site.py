@@ -1054,7 +1054,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False):
                  if r.get("crest") else "")
         body.append(
             f'<tr><td class="lt-pos">{cell(r.get("pos"))}</td>'
-            f'<td class="lt-team">{crest}<bdi>{esc(r.get("team"))}</bdi></td>'
+            f'<td class="lt-team">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></td>'
             f'<td>{cell(r.get("played"))}</td><td>{cell(r.get("won"))}</td>'
             f'<td>{cell(r.get("draw"))}</td><td>{cell(r.get("lost"))}</td>'
             f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
@@ -1137,9 +1137,9 @@ def fixture_mini(m):
     else:
         mid = f'<span class="fx-time">{esc(m.get("koff_time") or "")}</span>'
     return (f'<div class="fx">'
-            f'<span class="fx-home"><bdi>{esc(m.get("home"))}</bdi>{cr(m.get("home_badge"))}</span>'
+            f'<span class="fx-home"><bdi>{esc(ar_team(m.get("home")))}</bdi>{cr(m.get("home_badge"))}</span>'
             f'{mid}'
-            f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(m.get("away"))}</bdi></span></div>')
+            f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(ar_team(m.get("away")))}</bdi></span></div>')
 
 def league_rounds_panel(comp, fx):
     """FotMob-style rounds panel: a ‹ round › navigator + every round of the
@@ -1186,9 +1186,9 @@ def match_row(m, show_time=False, show_comp=True):
             if st in ("LIVE", "FINISHED") else "")
     return f"""<div class="mrow mrow-{badge[1]}">
   {pill}
-  <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(m.get('home'))}</bdi></span></div>
+  <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
-  <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(m.get('away'))}</bdi></span></div>
+  <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
   {comp}
 </div>"""
 
