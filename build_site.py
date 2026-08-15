@@ -273,16 +273,22 @@ def local_crest(url):
 # Tokens are substring-matched against football-data team names, so keep them
 # unambiguous — "FC Barcelona", NOT "Barcelona" (that would also match
 # "RCD Espanyol de Barcelona").
-# Egyptian league rows come from 365scores with native Arabic names, so the
-# two Cairo giants are matched in Arabic. "الأهلي" (with hamza) does NOT
-# match "البنك الاهلي" (plain alef in the feed) - no false positive.
-TICKER_TEAMS = ["Real Madrid", "FC Barcelona", "Manchester United",
-                "Manchester City", "Arsenal FC", "Liverpool FC", "Chelsea FC",
-                "الأهلي", "الزمالك", "طرابزون سبور"]
+# (token, competition-or-None): 365scores leagues use native Arabic names,
+# and "الأهلي" alone is AMBIGUOUS since the Saudi league joined (Saudi
+# Al-Ahli is also "الأهلي") - so Arabic tokens are scoped to their league.
+TICKER_TEAMS = [
+    ("Real Madrid", None), ("FC Barcelona", None), ("Manchester United", None),
+    ("Manchester City", None), ("Arsenal FC", None), ("Liverpool FC", None),
+    ("Chelsea FC", None),
+    ("الأهلي", "Egyptian Premier League"),
+    ("الزمالك", "Egyptian Premier League"),
+    ("طرابزون سبور", "Turkish Super Lig"),
+]
 
 def _is_ticker_team(m):
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")
-    return any(t in ha for t in TICKER_TEAMS)
+    comp = m.get("competition") or ""
+    return any(t in ha and (c is None or c == comp) for t, c in TICKER_TEAMS)
 
 def _tk_date(kick):
     """Short Arabic date chip for non-today items: أمس / غدًا / dd/mm."""
@@ -297,6 +303,75 @@ def _tk_date(kick):
     if delta == 1:
         return "غدًا"
     return f"{d.day:02d}/{d.month:02d}"
+
+# Arabic display names for football-data's Latin team names (365scores
+# leagues arrive Arabic-native). Unmapped names fall through unchanged.
+AR_TEAM = {
+    "1. FC Köln": "كولن", "1. FC Union Berlin": "يونيون برلين",
+    "1. FSV Mainz 05": "ماينز", "AC Milan": "ميلان", "AC Monza": "مونزا",
+    "ACF Fiorentina": "فيورنتينا", "AFC Ajax": "أياكس",
+    "AFC Bournemouth": "بورنموث", "AJ Auxerre": "أوكسير",
+    "AS Monaco FC": "موناكو", "AS Roma": "روما", "Angers SCO": "أنجيه",
+    "Arsenal FC": "أرسنال", "Aston Villa FC": "أستون فيلا",
+    "Atalanta BC": "أتالانتا", "Athletic Club": "أتلتيك بلباو",
+    "Bayer 04 Leverkusen": "باير ليفركوزن", "Bologna FC 1909": "بولونيا",
+    "Borussia Dortmund": "بوروسيا دورتموند",
+    "Borussia Mönchengladbach": "بوروسيا مونشنجلادباخ",
+    "Brentford FC": "برينتفورد", "Brighton & Hove Albion FC": "برايتون",
+    "CA Osasuna": "أوساسونا", "Cagliari Calcio": "كالياري",
+    "Chelsea FC": "تشيلسي", "Club Atlético de Madrid": "أتلتيكو مدريد",
+    "Club Brugge KV": "كلوب بروج", "Como 1907": "كومو",
+    "Coventry City FC": "كوفنتري سيتي", "Crystal Palace FC": "كريستال بالاس",
+    "Deportivo Alavés": "ألافيس", "ES Troyes AC": "تروا",
+    "Eintracht Frankfurt": "آينتراخت فرانكفورت", "Elche CF": "إلتشي",
+    "Everton FC": "إيفرتون", "FC Augsburg": "أوجسبورج",
+    "FC Barcelona": "برشلونة", "FC Bayern München": "بايرن ميونخ",
+    "FC Internazionale Milano": "إنتر ميلان", "FC København": "كوبنهاجن",
+    "FC Lorient": "لوريان", "FC Schalke 04": "شالكه",
+    "FK Bodø/Glimt": "بودو جليمت", "FK Kairat": "كايرات",
+    "Frosinone Calcio": "فروزينونه", "Fulham FC": "فولهام",
+    "Galatasaray SK": "جالطة سراي", "Genoa CFC": "جنوى",
+    "Getafe CF": "خيتافي", "Hamburger SV": "هامبورج",
+    "Hull City AFC": "هال سيتي", "Ipswich Town FC": "إيبسويتش تاون",
+    "Juventus FC": "يوفنتوس", "Le Havre AC": "لوهافر",
+    "Le Mans FC": "لومان", "Leeds United FC": "ليدز يونايتد",
+    "Levante UD": "ليفانتي", "Lille OSC": "ليل", "Liverpool FC": "ليفربول",
+    "Manchester City FC": "مانشستر سيتي",
+    "Manchester United FC": "مانشستر يونايتد", "Málaga CF": "مالقة",
+    "Newcastle United FC": "نيوكاسل يونايتد",
+    "Nottingham Forest FC": "نوتينجهام فورست", "OGC Nice": "نيس",
+    "Olympique Lyonnais": "ليون", "Olympique de Marseille": "مارسيليا",
+    "PAE Olympiakos SFP": "أولمبياكوس", "PSV": "آيندهوفن",
+    "Paphos FC": "بافوس", "Paris FC": "باريس إف سي",
+    "Paris Saint-Germain FC": "باريس سان جيرمان",
+    "Parma Calcio 1913": "بارما", "Qarabağ Ağdam FK": "قره باغ",
+    "RB Leipzig": "لايبزيج", "RC Celta de Vigo": "سلتا فيجو",
+    "RC Deportivo La Coruña": "ديبورتيفو لاكورونيا",
+    "RC Strasbourg Alsace": "ستراسبورج",
+    "RCD Espanyol de Barcelona": "إسبانيول",
+    "Racing Club de Lens": "لانس",
+    "Rayo Vallecano de Madrid": "رايو فاييكانو",
+    "Real Betis Balompié": "ريال بيتيس", "Real Madrid CF": "ريال مدريد",
+    "Real Racing Club de Santander": "راسينج سانتاندر",
+    "Real Sociedad de Fútbol": "ريال سوسيداد",
+    "Royale Union Saint-Gilloise": "يونيون سان جيلواز",
+    "SC Freiburg": "فرايبورج", "SC Paderborn 07": "بادربورن",
+    "SK Slavia Praha": "سلافيا براج", "SS Lazio": "لاتسيو",
+    "SSC Napoli": "نابولي", "SV 07 Elversberg": "إلفرسبرج",
+    "SV Werder Bremen": "فيردر بريمن", "Sevilla FC": "إشبيلية",
+    "Sport Lisboa e Benfica": "بنفيكا",
+    "Sporting Clube de Portugal": "سبورتينج لشبونة",
+    "Stade Brestois 29": "بريست", "Stade Rennais FC 1901": "رين",
+    "Sunderland AFC": "سندرلاند", "TSG 1899 Hoffenheim": "هوفنهايم",
+    "Torino FC": "تورينو", "Tottenham Hotspur FC": "توتنهام",
+    "Toulouse FC": "تولوز", "US Lecce": "ليتشي",
+    "US Sassuolo Calcio": "ساسولو", "Udinese Calcio": "أودينيزي",
+    "Valencia CF": "فالنسيا", "Venezia FC": "فينيسيا",
+    "VfB Stuttgart": "شتوتجارت", "Villarreal CF": "فياريال",
+}
+
+def ar_team(name):
+    return AR_TEAM.get(name or "", name or "")
 
 def make_ticker(matches):
     """Header ticker: ONLY the hand-picked TICKER_TEAMS clubs — LIVE first,
@@ -321,7 +396,9 @@ def make_ticker(matches):
         seen, kept = set(), []
         for m in ms:
             ha = (m.get("home") or "") + "|" + (m.get("away") or "")
-            teams = [t for t in TICKER_TEAMS if t in ha]
+            comp = m.get("competition") or ""
+            teams = [t for t, c in TICKER_TEAMS
+                     if t in ha and (c is None or c == comp)]
             if teams and all(t in seen for t in teams):
                 continue
             seen.update(teams)
@@ -347,7 +424,7 @@ def make_ticker(matches):
             mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
         day = ("" if m.get("kickoff") == REF_TODAY or st == "LIVE"
                else f'<span class="tk-d">{esc(_tk_date(m.get("kickoff")))}</span>')
-        its.append(f'<span class="tk-item">{day}{hb}<bdi>{esc(m.get("home"))}</bdi> {mid} <bdi>{esc(m.get("away"))}</bdi>{ab}</span>')
+        its.append(f'<span class="tk-item">{day}{hb}<bdi>{esc(ar_team(m.get("home")))}</bdi> {mid} <bdi>{esc(ar_team(m.get("away")))}</bdi>{ab}</span>')
     seq = "".join(its)
     return ('<a class="ticker" href="/matches.html" aria-label="نتائج المباريات — اضغط للتفاصيل">'
             f'<div class="tk-track">{seq}{seq}</div></a>')
