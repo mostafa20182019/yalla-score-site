@@ -18,6 +18,7 @@ async function liveScores() {
     `https://webws.365scores.com/web/games/current/?competitions=${LIVE_COMPS}` +
     `&langId=27&timezoneName=Africa/Cairo&showOdds=false`;
   const games = [];
+  let ok = false;
   try {
     const r = await fetch(upstream, {
       headers: {
@@ -30,6 +31,7 @@ async function liveScores() {
       cf: { cacheTtl: 25, cacheEverything: true },
     });
     if (r.ok) {
+      ok = true;
       const d = await r.json();
       for (const g of d.games || []) {
         const sg = g.statusGroup;            // 2 scheduled / 3 live / 4 ended
@@ -45,11 +47,12 @@ async function liveScores() {
       }
     }
   } catch (e) { /* fail-empty */ }
-  return new Response(JSON.stringify({ games, ts: Date.now() }), {
+  // an upstream failure must NOT be cached for 30s - visitors would all go
+  // quiet for minutes mid-match; mark it uncacheable instead
+  return new Response(JSON.stringify({ games, ok, ts: Date.now() }), {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      // browsers may cache 15s; the Cloudflare edge holds it 30s
-      "cache-control": "public, max-age=15, s-maxage=30",
+      "cache-control": ok ? "public, max-age=15, s-maxage=30" : "no-store",
     },
   });
 }
@@ -72,7 +75,9 @@ export default {
       const hit = await cache.match(key);
       if (hit) return hit;
       const res = await liveScores();
-      ctx.waitUntil(cache.put(key, res.clone()));
+      if ((res.headers.get("cache-control") || "").includes("s-maxage")) {
+        ctx.waitUntil(cache.put(key, res.clone()));
+      }
       return res;
     }
     return env.ASSETS.fetch(request);

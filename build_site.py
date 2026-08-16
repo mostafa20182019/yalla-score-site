@@ -482,17 +482,19 @@ LIVE_JS = r"""<script>
       else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
     }
   }
-  var timer=null;
+  var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot');
   function tick(){
-    fetch('/live.json').then(function(r){return r.json();}).then(function(d){
+    fetch('/live.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
       var gs=d.games||[],any=false;
       gs.forEach(function(g){
         var arr=map[norm(g.h)+'|'+norm(g.a)];
         if(arr){arr.forEach(function(e){paint(e,g);});}
         if(g.live)any=true;
       });
-      schedule(any?45000:300000);
-    }).catch(function(){schedule(300000);});
+      if(d.ok===false){schedule(hadLive?60000:120000);return;}
+      hadLive=any;
+      schedule(any?45000:(hadLive?60000:300000));
+    }).catch(function(){schedule(hadLive?60000:120000);});
   }
   function schedule(ms){clearTimeout(timer);timer=setTimeout(tick,ms);}
   document.addEventListener('visibilitychange',function(){
