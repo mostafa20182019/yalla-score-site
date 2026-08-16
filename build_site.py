@@ -1473,6 +1473,9 @@ a{color:inherit}
 .trf-b{width:14px;height:14px;object-fit:contain}
 .trf-fee{font-size:.7rem;font-weight:800;color:#0f5e28;background:#e8f6ec;
   padding:2px 8px;border-radius:999px;white-space:nowrap}
+/* live minute chip (painted by LIVE_JS next to a live score) */
+.lv-min{display:inline-block;font-size:.68rem;font-weight:800;color:#e11d48;
+  margin-inline-start:8px;direction:ltr;unicode-bidi:embed;vertical-align:middle}
 /* mobile-only slim top banner */
 .ad-top{display:none}
 @media(max-width:900px){
