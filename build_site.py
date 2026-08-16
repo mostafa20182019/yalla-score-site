@@ -436,12 +436,12 @@ def transfers_widget(ts, horizontal=False):
     for t in ts:
         fee = (f'<span class="trf-fee">{esc(t.get("price"))}</span>'
                if t.get("price") else "")
-        fc = (f'<img class="trf-b" src="{esc(t.get("from_crest"))}" alt="" loading="lazy">'
+        fc = (f'<img class="trf-b" src="{esc(local_crest(t.get("from_crest")))}" alt="" loading="lazy">'
               if t.get("from_crest") else "")
-        tc = (f'<img class="trf-b" src="{esc(t.get("to_crest"))}" alt="" loading="lazy">'
+        tc = (f'<img class="trf-b" src="{esc(local_crest(t.get("to_crest")))}" alt="" loading="lazy">'
               if t.get("to_crest") else "")
         its.append(
-            f'<div class="trf-item"><img class="trf-face" src="{esc(t.get("img"))}" alt="" loading="lazy"'
+            f'<div class="trf-item"><img class="trf-face" src="{esc(local_crest(t.get("img")))}" alt="" loading="lazy"'
             f" onerror=\"this.onerror=null;this.src='/media/ph-ball.svg'\">"
             f'<div class="trf-mid"><b class="trf-name">{esc(t.get("player"))}</b>'
             f'<span class="trf-clubs">{fc}<bdi>{esc(t.get("from"))}</bdi> ← {tc}<bdi>{esc(t.get("to"))}</bdi></span></div>'
