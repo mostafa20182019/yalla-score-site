@@ -609,13 +609,13 @@ def build():
     <p>{esc(feat.get('summary'))}</p>
   </div></a>""")
     if rest:
-        # horizontal shelf (newest 5); the full archive lives on /news.html
+        # horizontal shelf (newest 10); the full archive lives on /news.html
         parts.append('<div class="sec-h"><h2 class="page-h">المزيد من الأخبار</h2>'
                      '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
         parts.append('<div class="shelf-wrap">'
                      '<button type="button" class="sh-btn sh-l" aria-label="التالي">‹</button>'
                      '<div class="shelf" id="newsShelf">')
-        for a in rest[:5]:
+        for a in rest[:10]:
             parts.append(news_card(a))
         parts.append('</div>'
                      '<button type="button" class="sh-btn sh-r" aria-label="السابق">›</button></div>')
