@@ -441,7 +441,8 @@ def transfers_widget(ts, horizontal=False):
         tc = (f'<img class="trf-b" src="{esc(t.get("to_crest"))}" alt="" loading="lazy">'
               if t.get("to_crest") else "")
         its.append(
-            f'<div class="trf-item"><img class="trf-face" src="{esc(t.get("img"))}" alt="" loading="lazy">'
+            f'<div class="trf-item"><img class="trf-face" src="{esc(t.get("img"))}" alt="" loading="lazy"'
+            f" onerror=\"this.onerror=null;this.src='/media/ph-ball.svg'\">"
             f'<div class="trf-mid"><b class="trf-name">{esc(t.get("player"))}</b>'
             f'<span class="trf-clubs">{fc}<bdi>{esc(t.get("from"))}</bdi> ← {tc}<bdi>{esc(t.get("to"))}</bdi></span></div>'
             f'{fee}</div>')
