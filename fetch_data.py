@@ -313,6 +313,13 @@ def fetch_matches():
         if (comp.get("code") or "") not in FD_COMPS:
             continue  # keep only our competitions
         row = to_row(m, dt)
+        # FD's competition endpoint can lag the status while the live score
+        # is already flowing (seen 2026-08-16: kicked-off match still TIMED
+        # but carrying 1-0) - a "scheduled" match with a score whose kickoff
+        # has passed is actually LIVE
+        if (row["status"] == "UPCOMING" and row["home_score"] is not None
+                and dt <= datetime.now(CAIRO)):
+            row["status"] = "LIVE"
         # rounds view: every fixture, keyed by matchday (skip if no matchday)
         rd = m.get("matchday")
         if rd is not None:
