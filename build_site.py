@@ -195,7 +195,7 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-</body></html>"""
+</body></html>{LIVE_JS}"""
 
 def jsonld(obj):
     return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False) + '</script>'
@@ -424,7 +424,7 @@ def make_ticker(matches):
             mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
         day = ("" if m.get("kickoff") == REF_TODAY or st == "LIVE"
                else f'<span class="tk-d">{esc(_tk_date(m.get("kickoff")))}</span>')
-        its.append(f'<span class="tk-item">{day}{hb}<bdi>{esc(ar_team(m.get("home")))}</bdi> {mid} <bdi>{esc(ar_team(m.get("away")))}</bdi>{ab}</span>')
+        its.append(f'<span class="tk-item" data-lv data-h="{esc(ar_team(m.get("home")))}" data-a="{esc(ar_team(m.get("away")))}">{day}{hb}<bdi>{esc(ar_team(m.get("home")))}</bdi> <span class="tk-mid">{mid}</span> <bdi>{esc(ar_team(m.get("away")))}</bdi>{ab}</span>')
     seq = "".join(its)
     return ('<a class="ticker" href="/matches.html" aria-label="نتائج المباريات — اضغط للتفاصيل">'
             f'<div class="tk-track">{seq}{seq}</div></a>')
@@ -449,6 +449,59 @@ def transfers_widget(ts, horizontal=False):
     cls = "trf-row" if horizontal else "trf-col"
     return ('<div class="trf-box"><div class="sec-h"><h2 class="page-h">🔁 أبرز الانتقالات</h2></div>'
             f'<div class="{cls}">' + "".join(its) + '</div></div>')
+
+# Client-side live layer: polls /live.json (edge-cached 30s) and patches
+# scores/minute into the ticker + match rows IN PLACE. Matching is by
+# normalized Arabic team-name pair; anything unmatched just stays on the
+# 15-minute static refresh - the site never depends on this script.
+LIVE_JS = r"""<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll('[data-lv]'));
+  if(!els.length||!window.fetch)return;
+  function norm(s){return(s||'').replace(/[أإآ]/g,'ا')
+    .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/\s+/g,'');}
+  var map={};
+  els.forEach(function(e){
+    var k=norm(e.getAttribute('data-h'))+'|'+norm(e.getAttribute('data-a'));
+    (map[k]=map[k]||[]).push(e);
+  });
+  function paint(e,g){
+    var sc=g.hs+' - '+g.as;
+    if(e.classList.contains('tk-item')){
+      var mid=e.querySelector('.tk-mid'); if(!mid)return;
+      mid.innerHTML='<b class="tk-s">'+g.hs+'-'+g.as+'</b>'+(g.live?'<span class="tk-dot"></span>':'');
+    }else{
+      var mid=e.querySelector('.mid'); if(!mid)return;
+      mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
+      e.classList.remove('mrow-up','mrow-live','mrow-fin');
+      e.classList.add(g.live?'mrow-live':'mrow-fin');
+      var pill=e.querySelector('.pill');
+      var txt=g.live?'مباشر':'انتهت';
+      var cls=g.live?'live':'fin';
+      if(pill){pill.className='pill pill-'+cls;pill.textContent=txt;}
+      else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
+    }
+  }
+  var timer=null;
+  function tick(){
+    fetch('/live.json').then(function(r){return r.json();}).then(function(d){
+      var gs=d.games||[],any=false;
+      gs.forEach(function(g){
+        var arr=map[norm(g.h)+'|'+norm(g.a)];
+        if(arr){arr.forEach(function(e){paint(e,g);});}
+        if(g.live)any=true;
+      });
+      schedule(any?45000:300000);
+    }).catch(function(){schedule(300000);});
+  }
+  function schedule(ms){clearTimeout(timer);timer=setTimeout(tick,ms);}
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'){clearTimeout(timer);tick();}
+    else clearTimeout(timer);
+  });
+  tick();
+})();
+</script>"""
 
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
@@ -1185,7 +1238,7 @@ def match_row(m, show_time=False, show_comp=True):
     # only LIVE / FINISHED get a status pill (upcoming shows its time instead)
     pill = (f'<span class="pill pill-{badge[1]}">{esc(badge[0])}</span>'
             if st in ("LIVE", "FINISHED") else "")
-    return f"""<div class="mrow mrow-{badge[1]}">
+    return f"""<div class="mrow mrow-{badge[1]}" data-lv data-h="{esc(ar_team(m.get('home')))}" data-a="{esc(ar_team(m.get('away')))}">
   {pill}
   <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
