@@ -191,7 +191,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -939,6 +939,59 @@ def build():
     ct.append(foot())
     write("contact.html", "".join(ct))
     urls.append("/contact.html")
+
+    # ---- terms of use (شروط الاستخدام) ----
+    tm = [head("شروط الاستخدام — " + SITE_NAME,
+               "شروط استخدام موقع يلا سكور: حدود المسؤولية وقواعد استخدام المحتوى.",
+               SITE_BASE + "/terms.html")]
+    tm.append('<article class="article legal"><h1>شروط الاستخدام</h1><div class="a-body">')
+    tm.append(f'<p>باستخدامك موقع <b>{esc(SITE_NAME)}</b> فأنت توافق على الشروط التالية:</p>')
+    tm.append('<h2>طبيعة المحتوى</h2><ul>'
+              '<li>الموقع يقدّم أخبارًا ونتائج ومواعيد مباريات لأغراض إعلامية عامة.</li>'
+              '<li>نبذل جهدًا دائمًا لضمان دقة النتائج والمواعيد المعروضة، إلا أنها تصل من مصادر '
+              'بيانات خارجية وقد يطرأ عليها تأخير أو تعديل، لذا لا نضمن خلوّها من الخطأ، '
+              'ولا يتحمّل الموقع مسؤولية أي قرار يُتّخذ بناءً عليها.</li>'
+              '<li>روابط عناوين الصحف تقود إلى مواقع خارجية لا نتحكم في محتواها ولا نتحمل مسؤوليته.</li></ul>')
+    tm.append('<h2>حقوق المحتوى</h2><ul>'
+              '<li>المقالات المنشورة باسم فريق التحرير ملك للموقع؛ يُسمح بالاقتباس المختصر مع ذكر '
+              'المصدر ورابط المقال، ولا يجوز إعادة النشر الكامل دون إذن.</li>'
+              '<li>الصور المستخدمة مرخّصة للاستخدام الحر (Creative Commons / الملكية العامة) '
+              'وتُنسب لأصحابها؛ شعارات الأندية والبطولات ملك لأصحابها وتُعرض لغرض التعريف فقط.</li></ul>')
+    tm.append('<h2>الإعلانات</h2>'
+              '<p>قد يعرض الموقع إعلانات عبر Google AdSense؛ راجع <a href="/privacy.html">سياسة الخصوصية</a> '
+              'لتفاصيل ملفات تعريف الارتباط.</p>')
+    tm.append('<h2>تعديل الشروط</h2>'
+              '<p>قد نُحدّث هذه الشروط من وقت لآخر، ويُعد استمرارك في استخدام الموقع موافقةً على النسخة الأحدث.</p>')
+    tm.append('</div></article>')
+    tm.append(foot())
+    write("terms.html", "".join(tm))
+    urls.append("/terms.html")
+
+    # ---- editorial policy (السياسة التحريرية) — E-E-A-T signal ----
+    ed = [head("السياسة التحريرية — " + SITE_NAME,
+               "منهج يلا سكور التحريري: التحقق من مصادر متعددة، صياغة أصلية، صور مرخصة، وتصحيح علني للأخطاء.",
+               SITE_BASE + "/editorial.html")]
+    ed.append('<article class="article legal"><h1>السياسة التحريرية</h1><div class="a-body">')
+    ed.append('<p>نلتزم في تغطيتنا الإخبارية بمعايير ثابتة نطبّقها على كل مقال ننشره:</p>')
+    ed.append('<h2>التحقق قبل النشر</h2><ul>'
+              '<li>لا ننشر خبرًا إلا بعد تطابقه لدى <b>مصدرين مستقلين على الأقل</b>.</li>'
+              '<li>نتجنّب نشر الشائعات والتقارير المتضاربة حتى تتضح، ونميّز دائمًا بين الخبر '
+              'المؤكد والمنسوب ("بحسب تقارير صحفية").</li>'
+              '<li>لا نختلق تصريحات أو أرقامًا أو تفاصيل تعاقدية غير معلنة.</li></ul>')
+    ed.append('<h2>أصالة المحتوى</h2><ul>'
+              '<li>كل مقالاتنا تُكتب بصياغة أصلية بالكامل — الحقائق عامة، أما الصياغة فحقّ لكاتبها، '
+              'لذلك لا ننقل ولا نعيد صياغة نصوص المواقع الأخرى.</li>'
+              '<li>قسم "عناوين الصحف" تجميعي بطبيعته: يعرض العنوان ويحيل مباشرةً إلى المصدر الأصلي.</li></ul>')
+    ed.append('<h2>الصور</h2><ul>'
+              '<li>نستخدم صورًا مرخّصة للاستخدام الحر فقط، وثيقة الصلة بموضوع الخبر، '
+              'مع ذكر المصوِّر والرخصة أسفل كل صورة.</li></ul>')
+    ed.append('<h2>التصحيح</h2>'
+              '<p>إذا اكتشفنا خطأً في مقال منشور نصحّحه فور التثبت منه، ونرحّب بأي تصحيح عبر صفحة '
+              '<a href="/contact.html">اتصل بنا</a>.</p>')
+    ed.append('</div></article>')
+    ed.append(foot())
+    write("editorial.html", "".join(ed))
+    urls.append("/editorial.html")
 
     # ---- news archive (ALL articles; the home page shows hero + shelf only) ----
     np_ = [head(f"كل الأخبار — {SITE_NAME}",
