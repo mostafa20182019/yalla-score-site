@@ -555,7 +555,12 @@ def fetch_s365_league(matches_out, lid, comp_name):
         }
 
     rows, seen = [], set()
-    for path in (f"games/fixtures/?{q}&showOdds=false",
+    # current/ FIRST: a match that is IN PLAY is in NEITHER fixtures nor
+    # results (it vanished from the day view for 90 minutes - user caught
+    # it twice, 2026-08-16); listing current first also makes the live
+    # version win the match_id dedup
+    for path in (f"games/current/?{q}&showOdds=false",
+                 f"games/fixtures/?{q}&showOdds=false",
                  f"games/results/?{q}&showOdds=false"):
         try:
             time.sleep(1)
