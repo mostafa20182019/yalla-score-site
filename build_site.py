@@ -965,12 +965,21 @@ def build():
     sp.append('<h1 class="page-h">📊 إحصائيات وتحليلات</h1>')
     sp.append('<p class="hintline">أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.</p>')
     any_stats = False
+    stats_cutoff = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
     for comp in comp_order:
         fx = fx_by_comp.get(comp)
         if not fx:
             continue
         fin = _fin_ms(fx)
         if not fin:
+            continue
+        # a season that ended long ago (e.g. last season's Champions League
+        # rounds still in the feed) must not pose as current-season numbers:
+        # skip when nothing is left to play AND the last match is >30 days old
+        all_ms = [m for rd in fx.get("rounds", []) for m in rd.get("matches", [])]
+        pending = any((m.get("status") or "").upper() != "FINISHED" for m in all_ms)
+        last_day = max((m.get("kickoff") or "" for m in all_ms), default="")
+        if not pending and last_day and last_day < stats_cutoff:
             continue
         any_stats = True
         played = len(fin)
