@@ -134,6 +134,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     img = image or (SITE_BASE + "/assets/logo.png")
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
+    sa = " is-active" if active == "stats" else ""
     va = " is-active" if active == "videos" else ""
     ra = " is-active" if active == "reels" else ""
     vids_tab = (f'\n    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>'
@@ -176,7 +177,8 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
     <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية<span class="nav-en"> | Home</span></a>
-    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>{vids_tab}{reels_tab}
+    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/stats.html" class="navtab{sa}"><span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>{vids_tab}{reels_tab}
   </div></nav>
 </header>
 <main class="wrap">
@@ -191,7 +193,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/stats.html">إحصائيات</a>{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -792,6 +794,7 @@ def build():
     # --- center: league tables (hidden) + day navigator + days ---
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
     forms = team_form(fixtures)
+    elos = compute_elo(fixtures)
     p.append('<div class="mp-main">')
     # ad strip at the top of the CENTER column - matches-list width only
     p.append(f'<div class="home-topad">{adsense_slot()}</div>')
@@ -820,7 +823,9 @@ def build():
                 p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
             p.append('<div class="mlist">')
             for m in ms:
-                p.append(match_row(m, show_time=True, show_comp=False))
+                pr = (win_probs(elos.get(comp, {}), m.get("home"), m.get("away"))
+                      if (m.get("status") or "") == "UPCOMING" else None)
+                p.append(match_row(m, show_time=True, show_comp=False, probs=pr))
             p.append('</div></div>')
         p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
         p.append('</section>')
@@ -872,6 +877,137 @@ def build():
     p.append(ROUNDS_JS)
     p.append(foot())
     write("matches.html", "".join(p))
+
+    # ---- stats dashboard (/stats.html) ----
+    STAT_PAL = ["#188038", "#2563eb", "#e11d48", "#f59e0b", "#7c3aed"]
+
+    def _fin_ms(fx):
+        """(round, match) pairs for finished matches with scores, chronological."""
+        ms = []
+        for rd in fx.get("rounds", []):
+            for m in rd.get("matches", []):
+                if (m.get("status") == "FINISHED"
+                        and m.get("home_score") is not None
+                        and m.get("away_score") is not None):
+                    ms.append((rd.get("round"), m))
+        ms.sort(key=lambda t: (t[1].get("kickoff") or "", t[1].get("koff_time") or ""))
+        return ms
+
+    def _pts_race_svg(fin, top_teams):
+        """Cumulative points per round for the leading teams, inline SVG line chart."""
+        rounds = sorted({r for r, _ in fin if r is not None})
+        top_teams = [t for t in top_teams if t]
+        if len(rounds) < 2 or not top_teams:
+            return ""
+        per = {}
+        for r, m in fin:
+            if r is None:
+                continue
+            hs, aw = m["home_score"], m["away_score"]
+            d = per.setdefault(r, {})
+            d[m.get("home")] = d.get(m.get("home"), 0) + (3 if hs > aw else 1 if hs == aw else 0)
+            d[m.get("away")] = d.get(m.get("away"), 0) + (3 if aw > hs else 1 if hs == aw else 0)
+        series = {}
+        for t in top_teams:
+            c, vals = 0, []
+            for r in rounds:
+                c += per.get(r, {}).get(t, 0)
+                vals.append(c)
+            series[t] = vals
+        w, h, ml, mr, mt, mb = 680, 240, 30, 12, 12, 26
+        ymax = max(max(v) for v in series.values()) or 1
+        def x(i): return ml + (w - ml - mr) * (i / max(1, len(rounds) - 1))
+        def y(v): return mt + (h - mt - mb) * (1 - v / ymax)
+        parts = [f'<svg class="chart" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="سباق النقاط">']
+        step = max(1, ymax // 4)
+        for g in range(0, ymax + 1, step):
+            parts.append(f'<line x1="{ml}" y1="{y(g):.1f}" x2="{w - mr}" y2="{y(g):.1f}" stroke="#eef2f6"/>')
+            parts.append(f'<text x="{ml - 5}" y="{y(g) + 4:.1f}" font-size="10" fill="#94a3b8" text-anchor="end">{g}</text>')
+        for i, r in enumerate(rounds):
+            parts.append(f'<text x="{x(i):.1f}" y="{h - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">{r}</text>')
+        for k, (t, vals) in enumerate(series.items()):
+            col = STAT_PAL[k % len(STAT_PAL)]
+            pl = " ".join(f"{x(i):.1f},{y(v):.1f}" for i, v in enumerate(vals))
+            parts.append(f'<polyline points="{pl}" fill="none" stroke="{col}" stroke-width="2.5" stroke-linejoin="round"/>')
+            parts.append(f'<circle cx="{x(len(vals) - 1):.1f}" cy="{y(vals[-1]):.1f}" r="3.5" fill="{col}"/>')
+        parts.append('</svg>')
+        legend = "".join(
+            f'<span class="lgd"><i style="background:{STAT_PAL[k % len(STAT_PAL)]}"></i><bdi>{esc(ar_team(t))}</bdi></span>'
+            for k, t in enumerate(series))
+        return f'<div class="chart-wrap">{"".join(parts)}</div><div class="legend">{legend}</div>'
+
+    def _goals_svg(fin):
+        """Total goals per round, inline SVG bar chart (needs 2+ rounds —
+        a single bar just repeats the season-total tile)."""
+        rounds = sorted({r for r, _ in fin if r is not None})
+        if len(rounds) < 2:
+            return ""
+        goals = {r: 0 for r in rounds}
+        for r, m in fin:
+            if r is not None:
+                goals[r] += m["home_score"] + m["away_score"]
+        w, h, ml, mr, mt, mb = 680, 200, 30, 12, 14, 26
+        ymax = max(goals.values()) or 1
+        bw = min((w - ml - mr) / len(rounds) * 0.6, 64)
+        parts = [f'<svg class="chart" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الأهداف في كل جولة">']
+        for i, r in enumerate(rounds):
+            cx = ml + (w - ml - mr) * ((i + .5) / len(rounds))
+            bh = (h - mt - mb) * goals[r] / ymax
+            parts.append(f'<rect x="{cx - bw / 2:.1f}" y="{h - mb - bh:.1f}" width="{bw:.1f}" height="{max(bh, 1):.1f}" rx="3" fill="#188038" opacity="0.85"/>')
+            parts.append(f'<text x="{cx:.1f}" y="{h - mb - bh - 4:.1f}" font-size="10" fill="#475569" text-anchor="middle">{goals[r]}</text>')
+            parts.append(f'<text x="{cx:.1f}" y="{h - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">{r}</text>')
+        parts.append('</svg>')
+        return f'<div class="chart-wrap">{"".join(parts)}</div>'
+
+    sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
+               "لوحة إحصائيات مرئية: سباق النقاط، الأهداف في كل جولة، وأرقام الموسم لكل بطولة.",
+               SITE_BASE + "/stats.html", active="stats")]
+    sp.append('<h1 class="page-h">📊 إحصائيات وتحليلات</h1>')
+    sp.append('<p class="hintline">أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.</p>')
+    any_stats = False
+    for comp in comp_order:
+        fx = fx_by_comp.get(comp)
+        if not fx:
+            continue
+        fin = _fin_ms(fx)
+        if not fin:
+            continue
+        any_stats = True
+        played = len(fin)
+        goals = sum(m["home_score"] + m["away_score"] for _, m in fin)
+        big = max((m for _, m in fin),
+                  key=lambda m: (m["home_score"] + m["away_score"],
+                                 max(m["home_score"], m["away_score"])))
+        big_s = f'{big["home_score"]}-{big["away_score"]}'
+        big_t = (f'{ar_team(big.get("home"))} {big["home_score"]}-{big["away_score"]} '
+                 f'{ar_team(big.get("away"))}')
+        top_rows = (st_by_comp.get(comp) or {}).get("table") or []
+        top_teams = [r.get("team") for r in top_rows[:5]]
+        if not top_teams:
+            er = elos.get(comp, {})
+            top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
+        sp.append('<section class="stats-sec">')
+        sp.append(f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>')
+        sp.append('<div class="stat-tiles">'
+                  f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
+                  f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
+                  f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
+                  f'<div class="tile" title="{esc(big_t)}"><b>{big_s}</b><span>أكبر نتيجة</span></div>'
+                  '</div>')
+        race = _pts_race_svg(fin, top_teams)
+        if race:
+            sp.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
+            sp.append(race)
+        gsvg = _goals_svg(fin)
+        if gsvg:
+            sp.append('<h3 class="stats-h3">الأهداف في كل جولة</h3>')
+            sp.append(gsvg)
+        sp.append('</section>')
+    if not any_stats:
+        sp.append('<p class="hintline">لا توجد بيانات كافية بعد — تعود اللوحة للعمل مع انطلاق الجولات.</p>')
+    sp.append(foot())
+    write("stats.html", "".join(sp))
+    urls.append("/stats.html")
 
     # ---- privacy policy (required for AdSense) ----
     contact = (f'راسِلنا على <a href="mailto:{esc(CONTACT_EMAIL)}">{esc(CONTACT_EMAIL)}</a>.'
@@ -1151,6 +1287,48 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
+def compute_elo(fixtures):
+    """competition -> {team: (rating, played)} from finished matches in the
+    rounds data, chronological. Plain Elo: start 1500, K=28, home adv +70."""
+    out = {}
+    for f in fixtures:
+        comp = f.get("competition")
+        ms = []
+        for rd in f.get("rounds", []):
+            ms.extend(rd.get("matches", []))
+        ms = [m for m in ms if m.get("status") == "FINISHED"
+              and m.get("home_score") is not None and m.get("away_score") is not None]
+        ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+        r, n = {}, {}
+        for m in ms:
+            h, a = m.get("home"), m.get("away")
+            rh, ra = r.get(h, 1500.0), r.get(a, 1500.0)
+            e = 1.0 / (1 + 10 ** ((ra - (rh + 70)) / 400))
+            hs, aw = m["home_score"], m["away_score"]
+            sc = 1.0 if hs > aw else 0.5 if hs == aw else 0.0
+            r[h], r[a] = rh + 28 * (sc - e), ra + 28 * ((1 - sc) - (1 - e))
+            n[h], n[a] = n.get(h, 0) + 1, n.get(a, 0) + 1
+        out[comp] = {t: (r[t], n[t]) for t in r}
+    return out
+
+def win_probs(elo_comp, home, away):
+    """(P_home, P_draw, P_away) as ints summing to 100, or None when the
+    ratings are still too raw (fewer than 2 combined finished matches)."""
+    if not elo_comp:
+        return None
+    rh, nh = elo_comp.get(home, (1500.0, 0))
+    ra, na = elo_comp.get(away, (1500.0, 0))
+    if nh + na < 2:
+        return None
+    e = 1.0 / (1 + 10 ** ((ra - (rh + 70)) / 400))
+    # draw peaks when the sides are level (entertainment-grade model)
+    pd_ = 0.26 + 0.10 * (1 - abs(2 * e - 1))
+    ph = e * (1 - pd_)
+    pa = (1 - e) * (1 - pd_)
+    ph, pd_, pa = round(ph * 100), round(pd_ * 100), round(pa * 100)
+    ph += 100 - (ph + pd_ + pa)   # rounding drift -> home bucket
+    return ph, pd_, pa
+
 def team_form(fixtures):
     """competition -> team -> chronological 'W'/'D'/'L' list, from the rounds
     data we already carry (finished matches with scores)."""
@@ -1307,7 +1485,15 @@ def league_rounds_panel(comp, fx):
     parts.append('</div></div>')
     return "".join(parts)
 
-def match_row(m, show_time=False, show_comp=True):
+def prob_bar(p):
+    """Elo win-probability strip under an upcoming match row."""
+    ph, pd_, pa = p
+    return (f'<div class="prob" title="توقع تقديري مبني على نتائج الموسم">'
+            f'<span class="p-seg p-h" style="width:{ph}%">{ph}%</span>'
+            f'<span class="p-seg p-d" style="width:{pd_}%">{pd_}%</span>'
+            f'<span class="p-seg p-a" style="width:{pa}%">{pa}%</span></div>')
+
+def match_row(m, show_time=False, show_comp=True, probs=None):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up")}.get(st, ("", "up"))
@@ -1329,6 +1515,7 @@ def match_row(m, show_time=False, show_comp=True):
   <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
   <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
+  {prob_bar(probs) if probs else ''}
   {comp}
 </div>"""
 
@@ -1433,6 +1620,24 @@ a{color:inherit}
 .lt{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
 .lt th,.lt td{padding:9px 6px;text-align:center;white-space:nowrap}
 .lt thead th{color:var(--muted);font-weight:800;font-size:.72rem;border-bottom:1px solid #eef2f6}
+/* stats dashboard */
+.hintline{color:var(--muted);font-weight:700;font-size:.85rem;margin:-6px 0 18px}
+.stats-sec{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;margin:0 0 18px;
+  box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.stats-h3{font-size:.9rem;font-weight:900;color:var(--muted);margin:16px 0 8px}
+.stat-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.tile{background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;padding:12px;text-align:center}
+.tile b{display:block;font-size:1.05rem;color:#0f5e28}
+.tile span{font-size:.72rem;color:var(--muted);font-weight:700}
+.chart-wrap{overflow-x:auto}
+.chart{width:100%;max-width:680px;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 2px;font-size:.8rem;font-weight:800;color:#334155}
+.lgd i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:baseline}
+/* Elo win-probability strip (upcoming rows on /matches) */
+.prob{grid-column:1/-1;display:flex;height:16px;border-radius:8px;overflow:hidden;
+  margin-top:8px;font-size:.62rem;font-weight:800;color:#fff;line-height:16px;text-align:center}
+.p-h{background:#188038}.p-d{background:#94a3b8}.p-a{background:#b3261e}
+.p-seg{min-width:26px}
 /* last-5 form dots */
 .fm{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-start:3px;vertical-align:middle}
 .fm-w{background:#16a34a}.fm-d{background:#94a3b8}.fm-l{background:#e11d48}
