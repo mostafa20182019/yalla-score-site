@@ -5,6 +5,6 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "standings": "ok (6)",
- "transfers": "ok (12)",
- "utc": "2026-08-17T14:31:25Z"
+ "transfers": "FAIL: URLError(ConnectionResetError(104, 'Connection reset by peer'))",
+ "utc": "2026-08-17T14:51:08Z"
 }
