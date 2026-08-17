@@ -791,13 +791,14 @@ def build():
 
     # --- center: league tables (hidden) + day navigator + days ---
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
+    forms = team_form(fixtures)
     p.append('<div class="mp-main">')
     # ad strip at the top of the CENTER column - matches-list width only
     p.append(f'<div class="home-topad">{adsense_slot()}</div>')
     for comp, st in st_by_comp.items():
         p.append(standings_table(comp, st.get("table"),
                                  past=st.get("past"), season_label=st.get("season_label"),
-                                 zeroed=st.get("zeroed")))
+                                 zeroed=st.get("zeroed"), form_map=forms.get(comp, {})))
     p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no table)
     p.append('<div id="daynav" class="daynav" hidden>'
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
@@ -1150,7 +1151,33 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
-def standings_table(comp, rows, past=False, season_label="", zeroed=False):
+def team_form(fixtures):
+    """competition -> team -> chronological 'W'/'D'/'L' list, from the rounds
+    data we already carry (finished matches with scores)."""
+    form = {}
+    for f in fixtures:
+        comp = f.get("competition")
+        ms = []
+        for rd in f.get("rounds", []):
+            ms.extend(rd.get("matches", []))
+        ms = [m for m in ms if m.get("status") == "FINISHED"
+              and m.get("home_score") is not None and m.get("away_score") is not None]
+        ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+        d = form.setdefault(comp, {})
+        for m in ms:
+            hs, aw = m["home_score"], m["away_score"]
+            d.setdefault(m.get("home"), []).append("W" if hs > aw else "D" if hs == aw else "L")
+            d.setdefault(m.get("away"), []).append("W" if aw > hs else "D" if hs == aw else "L")
+    return form
+
+def form_dots(results):
+    """Last-5 form as colored dots (oldest -> newest)."""
+    if not results:
+        return '<span class="fm-none">—</span>'
+    return "".join(f'<span class="fm fm-{r.lower()}" title="{ {"W":"فوز","D":"تعادل","L":"خسارة"}[r] }"></span>'
+                   for r in results[-5:])
+
+def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None):
     """League standings table (FotMob-style). Hidden until its league is picked.
     `zeroed` = the new season hasn't kicked off yet, so this is the new season's
     team list with everything at 0; it gets a "new season" badge.
@@ -1161,9 +1188,12 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False):
     for r in rows:
         crest = (f'<img src="{esc(local_crest(r.get("crest")))}" alt="" loading="lazy">'
                  if r.get("crest") else "")
+        fm = form_dots((form_map or {}).get(r.get("team"), [])) if form_map is not None else ""
+        fmtd = f'<td class="lt-form">{fm}</td>' if form_map is not None else ""
         body.append(
             f'<tr><td class="lt-pos">{cell(r.get("pos"))}</td>'
             f'<td class="lt-team">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></td>'
+            f'{fmtd}'
             f'<td>{cell(r.get("played"))}</td><td>{cell(r.get("won"))}</td>'
             f'<td>{cell(r.get("draw"))}</td><td>{cell(r.get("lost"))}</td>'
             f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
@@ -1180,6 +1210,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False):
             f'<div class="lt-head">{comp_icon(comp)} جدول ترتيب {esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
+            + (f'<th class="lt-form" title="آخر 5 مباريات">آخر 5</th>' if form_map is not None else "") +
             f'<th title="لعب">لعب</th><th title="فاز">ف</th><th title="تعادل">ت</th>'
             f'<th title="خسر">خ</th><th title="له">له</th><th title="عليه">عليه</th>'
             f'<th title="الفارق">+/-</th><th class="lt-pts">نقاط</th></tr></thead>'
@@ -1402,6 +1433,11 @@ a{color:inherit}
 .lt{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
 .lt th,.lt td{padding:9px 6px;text-align:center;white-space:nowrap}
 .lt thead th{color:var(--muted);font-weight:800;font-size:.72rem;border-bottom:1px solid #eef2f6}
+/* last-5 form dots */
+.fm{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-start:3px;vertical-align:middle}
+.fm-w{background:#16a34a}.fm-d{background:#94a3b8}.fm-l{background:#e11d48}
+.fm-none{color:#cbd5e1}
+@media(max-width:560px){.lt-form{display:none}}
 .lt tbody tr{border-bottom:1px solid #f1f5f9}
 .lt tbody tr:hover{background:#f8fafc}
 .lt .lt-pos{width:26px;color:var(--muted);font-weight:800}
