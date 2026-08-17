@@ -1637,7 +1637,12 @@ a{color:inherit}
 /* footer */
 .site-foot{background:#0b1220;color:#cbd5e1;margin-top:30px;padding:22px 0}
 .site-foot p{margin:2px 0}.credit{font-size:.78rem;color:#94a3b8}
-@media(max-width:640px){.feat{height:260px}.feat-body h2{font-size:1.2rem}.article{padding:18px}}
+@media(max-width:640px){.feat{height:300px}
+  .feat-body h2{font-size:1.15rem;line-height:1.55;
+    display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .feat-body p{font-size:.82rem;line-height:1.6;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  .article{padding:18px}}
 """
 
 # ---- legends header strip (free CC / public-domain photos, same as the app) ----
