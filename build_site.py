@@ -823,9 +823,7 @@ def build():
                 p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
             p.append('<div class="mlist">')
             for m in ms:
-                pr = (win_probs(elos.get(comp, {}), m.get("home"), m.get("away"))
-                      if (m.get("status") or "") == "UPCOMING" else None)
-                p.append(match_row(m, show_time=True, show_comp=False, probs=pr))
+                p.append(match_row(m, show_time=True, show_comp=False))
             p.append('</div></div>')
         p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
         p.append('</section>')
@@ -1320,24 +1318,6 @@ def compute_elo(fixtures):
         out[comp] = {t: (r[t], n[t]) for t in r}
     return out
 
-def win_probs(elo_comp, home, away):
-    """(P_home, P_draw, P_away) as ints summing to 100, or None when the
-    ratings are still too raw (fewer than 2 combined finished matches)."""
-    if not elo_comp:
-        return None
-    rh, nh = elo_comp.get(home, (1500.0, 0))
-    ra, na = elo_comp.get(away, (1500.0, 0))
-    if nh + na < 2:
-        return None
-    e = 1.0 / (1 + 10 ** ((ra - (rh + 70)) / 400))
-    # draw peaks when the sides are level (entertainment-grade model)
-    pd_ = 0.26 + 0.10 * (1 - abs(2 * e - 1))
-    ph = e * (1 - pd_)
-    pa = (1 - e) * (1 - pd_)
-    ph, pd_, pa = round(ph * 100), round(pd_ * 100), round(pa * 100)
-    ph += 100 - (ph + pd_ + pa)   # rounding drift -> home bucket
-    return ph, pd_, pa
-
 def team_form(fixtures):
     """competition -> team -> chronological 'W'/'D'/'L' list, from the rounds
     data we already carry (finished matches with scores)."""
@@ -1494,15 +1474,7 @@ def league_rounds_panel(comp, fx):
     parts.append('</div></div>')
     return "".join(parts)
 
-def prob_bar(p):
-    """Elo win-probability strip under an upcoming match row."""
-    ph, pd_, pa = p
-    return (f'<div class="prob" title="توقع تقديري مبني على نتائج الموسم">'
-            f'<span class="p-seg p-h" style="width:{ph}%">{ph}%</span>'
-            f'<span class="p-seg p-d" style="width:{pd_}%">{pd_}%</span>'
-            f'<span class="p-seg p-a" style="width:{pa}%">{pa}%</span></div>')
-
-def match_row(m, show_time=False, show_comp=True, probs=None):
+def match_row(m, show_time=False, show_comp=True):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up")}.get(st, ("", "up"))
@@ -1524,7 +1496,6 @@ def match_row(m, show_time=False, show_comp=True, probs=None):
   <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
   <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
-  {prob_bar(probs) if probs else ''}
   {comp}
 </div>"""
 
@@ -1642,11 +1613,6 @@ a{color:inherit}
 .chart{width:100%;max-width:680px;height:auto;display:block}
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 2px;font-size:.8rem;font-weight:800;color:#334155}
 .lgd i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-inline-end:5px;vertical-align:baseline}
-/* Elo win-probability strip (upcoming rows on /matches) */
-.prob{grid-column:1/-1;display:flex;height:16px;border-radius:8px;overflow:hidden;
-  margin-top:8px;font-size:.62rem;font-weight:800;color:#fff;line-height:16px;text-align:center}
-.p-h{background:#188038}.p-d{background:#94a3b8}.p-a{background:#b3261e}
-.p-seg{min-width:26px}
 /* last-5 form dots */
 .fm{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-start:3px;vertical-align:middle}
 .fm-w{background:#16a34a}.fm-d{background:#94a3b8}.fm-l{background:#e11d48}
