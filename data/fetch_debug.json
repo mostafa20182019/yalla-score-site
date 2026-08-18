@@ -1,10 +1,31 @@
 {
- "news": "ok (55)",
+ "news": "ok (59)",
  "matches": "ok (60)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "standings": "ok (6)",
  "transfers": "ok (12)",
- "utc": "2026-08-18T10:33:37Z"
+ "s365_scorers_probe": {
+  "stats/?appTypeId=5&langId=27&competitions=552": {
+   "top_keys": [
+    "stats",
+    "sports",
+    "countries",
+    "competitions",
+    "competitors"
+   ],
+   "bytes": 185705,
+   "sample": "{\"stats\": {\"athletesStats\": [{\"id\": 1, \"name\": \"الأهداف\", \"competitionId\": 552, \"rows\": [{\"position\": 0, \"secondaryStatName\": \"ضربات الجزاء المسجلة: 4\", \"entity\": {\"id\": 52852, \"name\": \"احمد ياسر ريان\", \"shortName\": \"ريان\", \"createdAt\": \"2017-06-16T19:33:53.07\", \"nameForURL\": \"ahmed-yasser-rayan\", \"countryId\": 131, \"competitorId\": 50527, \"competitionId\": 0, \"positionName\": \"المهاجم الصريح\", \"positionShortName\": \"المهاجم الصريح\", \"imageVersion\": 13}, \"stats\": [{\"typeId\": 1, \"value\": \"13\"}, {\"typeId\": 10, \"value\": \"4\"}]}, {\"position\": 0, \"secondaryStatName\": \"ضربات الجزاء المسجلة: 3\", \"entity\": {\"id\": 39109, \"name\": \"محمود تريزيجيه\", \"shortName\": \"تريزيجيه\", \"nameForURL\": \"mahmoud-trezeguet\", \"countryId\": 131, \"competitorId\": 8200, \"competitionId\": 0, \"positionName\": \"مهاجم أيسر\", \"positionShortName\": \"مهاجم أيسر\", \"imageVersion\": 45}, \"stats\": [{\"typeId\": 1, \"value\": \"11\"}, {\"typeId\": 10, \"value\": \"3\"}]}, {\"position\": 0, \"secondaryStatName\": \"ضربات الجزاء المسجلة: 5\", \"entity\": {\"id\": 218420, \"name\": \"علي سليمان\", \"shortName\": \"سليمان\", \"createdAt\": \"2019-09-05T15:14:36.98\", \"nameForURL\": \"ali-sulieman\", \"countryId\": 68, \"competitorId\": 8303, \"competitionId\": 0, \"positionName\": \"مهاجم أيسر\", \"positionShortName\": \"مهاجم أيسر\", \"imageVersion\": 5}, \"stats\": [{\"typeId\": 1, \"value\": \"11\"}, {\"typeId\": 10, \"value\": \"5\"}]}, {\"position\": 0, \"secondaryStatName\": \"ضربات الجزاء المسجلة: 2\", \"entity\": {\"id\": 79876, \"name\": \"أسامة فيصل\", \"shortName\": \"فيصل\", \"createdAt\": \"2020-08-18T18:31:16.647\", \"nameForURL\": \"osama-faisal\", \"countryId\": 131, \"competitorId\": 50527, \"competitionId\": 0, \"positionName\": \"المهاجم الصريح\", \"positionShortName\": \"المهاجم الصريح\", \"imageVersion\": 24}, \"stats\": [{\"typeId\": 1, \"value\": \"10\"}, {\"typeId\": 10, \"value\": \"2\"}]}, {\"position\": 0, \"secondaryStatName\""
+  },
+  "stats/?appTypeId=5&langId=27&competition=552": {
+   "top_keys": [],
+   "bytes": 2,
+   "sample": "{}"
+  },
+  "competitions/statistics/?appTypeId=5&langId=27&competitions=552": "FAIL: <HTTPError 404: 'Not Found'>",
+  "statistics/?appTypeId=5&langId=27&competitions=552": "FAIL: <HTTPError 404: 'Not Found'>",
+  "competitions/stats/?appTypeId=5&langId=27&competitions=552": "FAIL: <HTTPError 404: 'Not Found'>"
+ },
+ "utc": "2026-08-18T10:45:45Z"
 }
