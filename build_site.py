@@ -115,6 +115,13 @@ def adsense_slot():
     return ('<div class="ad-placeholder"><span>مساحة إعلانية</span>'
             '<small>Google AdSense</small></div>')
 
+def page_head_ad(title_html, hint=""):
+    """Page title on the start side, a leaderboard ad on the end side (the free
+    left half in RTL). Desktop only - phones already get .ad-top above the page."""
+    hint_html = f'<p class="hintline">{hint}</p>' if hint else ""
+    return (f'<div class="page-head"><div class="page-head-t">{title_html}{hint_html}</div>'
+            f'<div class="head-ad">{adsense_slot()}</div></div>')
+
 def adsense_top_banner():
     """Slim full-width banner shown on MOBILE only, right at the top of every
     page (the classic 320x50-style slot). Real unit when configured, else a
@@ -966,8 +973,9 @@ def build():
     sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
                "لوحة إحصائيات مرئية: سباق النقاط، الأهداف في كل جولة، وأرقام الموسم لكل بطولة.",
                SITE_BASE + "/stats.html", active="stats")]
-    sp.append('<h1 class="page-h">📊 إحصائيات وتحليلات</h1>')
-    sp.append('<p class="hintline">أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.</p>')
+    sp.append(page_head_ad(
+        '<h1 class="page-h">📊 إحصائيات وتحليلات</h1>',
+        'أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.'))
     # season totals per competition, so the player charts can be checked against
     # the season they claim to describe (see chart_is_current)
     comp_goals, comp_maxp = {}, {}
@@ -1846,7 +1854,9 @@ a{color:inherit}
 .cl-pts{font-size:.76rem;font-weight:700;color:var(--ink)}
 .cl-soon{font-size:.72rem;color:var(--muted);font-weight:700}
 .cl-form{display:inline-flex;gap:3px;margin-inline-start:auto}
-.cl-sc{font-size:.72rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* the next-fixture line carries a rival name + date + time: let it wrap
+   instead of clipping the kickoff time mid-digit in a ~205px card */
+.cl-sc{font-size:.72rem;color:var(--muted);font-weight:700;line-height:1.45}
 .cl-sc b{color:var(--ink)}
 @media(max-width:760px){
   /* 10 stacked cards would bury the league stats - same swipe strip the
@@ -2030,6 +2040,18 @@ a{color:inherit}
   .ad-ph-top{min-height:56px;display:flex;align-items:center;justify-content:center;gap:10px;
     color:#94a3b8;font-weight:800;font-size:.82rem;border:2px dashed #cbd5e1;border-radius:12px;background:#fff}
   .ad-ph-top small{color:#c3cddb;font-weight:700}
+}
+/* page title + leaderboard ad beside it (desktop) */
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:20px}
+.page-head-t{min-width:0}
+.page-head .page-h,.page-head .hintline{margin:0}
+.page-head .hintline{margin-top:4px}
+/* never let the leaderboard squeeze the title below half the row */
+.head-ad{flex:0 1 728px;max-width:min(728px,55%);min-width:0}
+.head-ad .ad-placeholder,.head-ad .ad-unit{min-height:90px;flex-direction:row;gap:10px;position:static}
+@media(max-width:900px){
+  .page-head{display:block}
+  .head-ad{display:none}   /* mobile shows .ad-top above the page instead */
 }
 .ad-placeholder{min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;color:#94a3b8;font-weight:800;border:2px dashed #cbd5e1;border-radius:14px;background:#fff}
 .ad-placeholder small{color:#c3cddb;font-weight:700}
