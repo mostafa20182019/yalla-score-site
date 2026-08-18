@@ -291,6 +291,7 @@ TICKER_TEAMS = [
     ("Chelsea FC", None),
     ("الأهلي", "Egyptian Premier League"),
     ("الزمالك", "Egyptian Premier League"),
+    ("بيراميدز", "Egyptian Premier League"),
     ("طرابزون سبور", "Turkish Super Lig"),
 ]
 
