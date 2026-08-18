@@ -657,16 +657,36 @@ S365_SCORER_COMPS = [
     (35, "Ligue 1"), (572, "UEFA Champions League"),
 ]
 
-def _s365_scorer_rows(j, want):
-    """Parse a stats response -> {competition_id: [scorer, ...]}."""
+# the response carries several athlete charts per competition; these are the
+# two we render. cat_id is 365scores' category id (1 = goals, confirmed by the
+# probe), names = the Arabic titles to fall back on when the id differs.
+S365_CHARTS = [
+    ("goals",   1,    ("الأهداف",)),
+    ("assists", None, ("التمريرات الحاسمة", "صناعة الأهداف",
+                       "التمريرات المفتاحية", "الأسيست")),
+]
+
+def s365_chart_names(j):
+    """{competition_id: [category title, ...]} - so a renamed/missing chart is
+    visible in data/fetch_debug.json instead of failing silently."""
+    seen = {}
+    for cat in ((j.get("stats") or {}).get("athletesStats") or []):
+        seen.setdefault(cat.get("competitionId"), []).append(
+            f'{cat.get("id")}:{cat.get("name")}')
+    return seen
+
+def _s365_stat_rows(j, want, cat_id=1, cat_names=("الأهداف",)):
+    """Parse one athlete chart -> {competition_id: [row, ...]}."""
     clubs = {c.get("id"): c for c in (j.get("competitors") or [])}
     out = {}
     for cat in ((j.get("stats") or {}).get("athletesStats") or []):
         cid = cat.get("competitionId")
         if cid not in want:
             continue
-        if cat.get("id") != 1 and "الأهداف" not in (cat.get("name") or ""):
-            continue                      # not the goals category
+        nm = cat.get("name") or ""
+        if not ((cat_id is not None and cat.get("id") == cat_id)
+                or any(n in nm for n in cat_names)):
+            continue                      # not the chart we want
         rows = []
         for r in (cat.get("rows") or []):
             e = r.get("entity") or {}
@@ -683,7 +703,7 @@ def _s365_scorer_rows(j, want):
             club = clubs.get(e.get("competitorId")) or {}
             rows.append({"name": e["name"], "team": club.get("name") or "",
                          "crest": _s365_badge(club) if club.get("id") else "",
-                         "photo": _s365_face(e), "goals": goals,
+                         "photo": _s365_face(e), "value": goals, "goals": goals,
                          "played": 0})    # the feed carries no matches-played
             if len(rows) >= SCORERS_TOP:
                 break
@@ -691,28 +711,39 @@ def _s365_scorer_rows(j, want):
             out[cid] = rows
     return out
 
-def fetch_scorers():
-    """Top scorers per league. One combined request, per-league fallback."""
+def fetch_player_charts():
+    """Top scorers + top assisters per league, from ONE response per request.
+    Returns ({chart_key: [{competition, scorers|assists}]}, chart_names)."""
     want = {lid: name for lid, name in S365_SCORER_COMPS}
-    ids = ",".join(str(i) for i in want)
-    got = {}
+    charts = {key: {} for key, _, _ in S365_CHARTS}
+    names = {}
+
+    def harvest(j, subset):
+        names.update(s365_chart_names(j))
+        for key, cid, titles in S365_CHARTS:
+            charts[key].update(_s365_stat_rows(j, subset, cid, titles))
+
     try:
-        got = _s365_scorer_rows(
-            _s365(f"stats/?appTypeId=5&langId=27&competitions={ids}"), want)
+        ids = ",".join(str(i) for i in want)
+        harvest(_s365(f"stats/?appTypeId=5&langId=27&competitions={ids}"), want)
     except Exception as e:
-        print(f"  ! scorers combined call failed ({e}) - falling back per league")
-    missing = [i for i in want if i not in got]
+        print(f"  ! player charts combined call failed ({e}) - per league")
+    # goals decides coverage: a league missing from it got no usable response
+    missing = [i for i in want if i not in charts["goals"]]
     if missing and len(missing) < len(want):
-        print(f"  · scorers: combined call covered "
+        print(f"  · player charts: combined call covered "
               f"{len(want) - len(missing)}/{len(want)} leagues")
-    for lid in missing:                   # one call each for whatever is absent
+    for lid in missing:
         try:
-            got.update(_s365_scorer_rows(
-                _s365(f"stats/?appTypeId=5&langId=27&competitions={lid}"), {lid: want[lid]}))
+            harvest(_s365(f"stats/?appTypeId=5&langId=27&competitions={lid}"),
+                    {lid: want[lid]})
         except Exception as e:
-            print(f"  ! scorers {want[lid]} failed: {e}")
-    return [{"competition": want[lid], "scorers": rows}
-            for lid, rows in got.items() if rows]
+            print(f"  ! player charts {want[lid]} failed: {e}")
+    field = {"goals": "scorers", "assists": "assists"}
+    out = {key: [{"competition": want[lid], field[key]: rows}
+                 for lid, rows in got.items() if rows]
+           for key, got in charts.items()}
+    return out, names
 
 TRANSFER_CLUBS = "131,132,105,110,104,106,108,8200,8201,950"
 
@@ -846,16 +877,19 @@ if __name__ == "__main__":
         write_items("transfers.json", transfers)
         print(f"transfers: {len(transfers)}")
     try:
-        scorers = fetch_scorers()
-        _DBG["scorers"] = "ok (" + ", ".join(
-            f"{s['competition']}:{len(s['scorers'])}" for s in scorers) + ")"
+        charts, chart_names = fetch_player_charts()
+        for key, field, fname in (("goals", "scorers", "scorers.json"),
+                                  ("assists", "assists", "assists.json")):
+            rows = charts[key]
+            _DBG[key] = "ok (" + ", ".join(
+                f"{r['competition']}:{len(r[field])}" for r in rows) + ")"
+            if rows:
+                write_items(fname, rows)
+                print(f"{key}: {len(rows)} leagues")
+        _DBG["s365_charts"] = chart_names
     except Exception as e:
-        print(f"  ! scorers fetch failed ({e}) - keeping existing scorers.json")
-        _DBG["scorers"] = f"FAIL: {e!r}"
-        scorers = None
-    if scorers is not None:
-        write_items("scorers.json", scorers)
-        print(f"scorers: {len(scorers)} leagues")
+        print(f"  ! player charts failed ({e}) - keeping existing files")
+        _DBG["goals"] = _DBG["assists"] = f"FAIL: {e!r}"
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)

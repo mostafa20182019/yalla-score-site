@@ -613,6 +613,7 @@ def build():
     videos = load("videos.json")
     standings = load("standings.json")   # [{competition, table:[...]}]
     scorers = load("scorers.json")       # [{competition, scorers:[{name,team,goals,...}]}]
+    assists = load("assists.json")       # same shape, key "assists"
     transfers = load("transfers.json")   # top-transfers widget (home)
     fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
@@ -796,6 +797,8 @@ def build():
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
     sc_by_comp = {s.get("competition"): (s.get("scorers") or [])
                   for s in scorers if s.get("scorers")}
+    as_by_comp = {s.get("competition"): (s.get("assists") or [])
+                  for s in assists if s.get("assists")}
     forms = team_form(fixtures)
     elos = compute_elo(fixtures)
     p.append('<div class="mp-main">')
@@ -965,6 +968,20 @@ def build():
                SITE_BASE + "/stats.html", active="stats")]
     sp.append('<h1 class="page-h">📊 إحصائيات وتحليلات</h1>')
     sp.append('<p class="hintline">أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.</p>')
+    # season totals per competition, so the player charts can be checked against
+    # the season they claim to describe (see chart_is_current)
+    comp_goals, comp_maxp = {}, {}
+    for _c, _fx in fx_by_comp.items():
+        _f = _fin_ms(_fx)
+        comp_goals[_c] = sum(m["home_score"] + m["away_score"] for _, m in _f)
+        _tbl = (st_by_comp.get(_c) or {}).get("table") or []
+        comp_maxp[_c] = (max((r.get("played") or 0) for r in _tbl) if _tbl
+                         else max((r or 0 for r, _ in _f), default=0))
+    sc_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
+             for c, rows in sc_by_comp.items()}
+    as_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
+             for c, rows in as_by_comp.items()}
+    sp.append(clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches))
     any_stats = False
     stats_cutoff = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
     for comp in comp_order:
@@ -1016,16 +1033,9 @@ def build():
             top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
         sp.append('<section class="stats-sec">')
         sp.append(f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>')
-        # top scorers — the 365scores stats feed keeps serving LAST season's
-        # list until a new season produces goals, and such a list always
-        # overshoots this season's own totals: more goals than the whole
-        # competition has scored, or more appearances than the busiest team.
-        sc = sc_by_comp.get(comp) or []
-        max_played = max((r.get("played") or 0) for r in top_rows) if top_rows else                      max((r or 0 for r, _ in fin), default=0)
-        if sc and (sum(x.get("goals") or 0 for x in sc) > goals
-                   or (max_played
-                       and max((x.get("played") or 0) for x in sc) > max_played)):
-            sc = []
+        # player charts, only when they describe THIS season (chart_is_current)
+        sc = sc_by_comp.get(comp) or [] if sc_ok.get(comp) else []
+        asst = as_by_comp.get(comp) or [] if as_ok.get(comp) else []
         sc_tile = ""
         if sc:
             lead = sc[0]
@@ -1043,9 +1053,19 @@ def build():
                   f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
                   f'{sc_tile}'
                   '</div>')
-        if sc:
-            sp.append('<h3 class="stats-h3">⚽ ترتيب الهدافين</h3>')
-            sp.append(scorers_list(sc))
+        pcts = league_pcts(fin)
+        if pcts:
+            sp.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
+            sp.append(pcts)
+        if sc or asst:
+            sp.append('<div class="chart-cols">')
+            if sc:
+                sp.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
+                          + scorers_list(sc, "أهداف") + '</div>')
+            if asst:
+                sp.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
+                          + scorers_list(asst, "صناعة") + '</div>')
+            sp.append('</div>')
         race = _pts_race_svg(fin, top_teams)
         if race:
             sp.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
@@ -1527,14 +1547,117 @@ def _scorer_face(sc):
     cls = "sc-face" if sc.get("photo") else ""
     return f'<img class="{cls}" src="{esc(local_crest(u))}" alt="" loading="lazy">'
 
-def scorers_list(sc):
-    """Top-scorers table: rank, player (+club), goals — plus a matches column
-    only when the feed actually carries appearances (365scores does not)."""
+def chart_is_current(rows, season_goals, max_played):
+    """The 365scores charts keep serving LAST season's list until a new season
+    produces numbers. Such a list always overshoots the season it claims to
+    describe: more goals than the whole competition scored, or more
+    appearances than the busiest team has played."""
+    if not rows:
+        return False
+    if sum(_pval(x) for x in rows) > (season_goals or 0):
+        return False
+    if max_played and max((x.get("played") or 0) for x in rows) > max_played:
+        return False
+    return True
+
+def league_pcts(fin):
+    """Share-of-matches figures for one competition (from finished matches)."""
+    n = len(fin)
+    if not n:
+        return ""
+    over = sum(1 for _, m in fin if m["home_score"] + m["away_score"] >= 3)
+    draws = sum(1 for _, m in fin if m["home_score"] == m["away_score"])
+    homes = sum(1 for _, m in fin if m["home_score"] > m["away_score"])
+    clean = sum(1 for _, m in fin if min(m["home_score"], m["away_score"]) == 0)
+    cells = [("3 أهداف أو أكثر", over), ("تعادلات", draws),
+             ("فوز أصحاب الأرض", homes), ("شباك نظيفة", clean)]
+    out = ['<div class="pct-grid">']
+    for label, cnt in cells:
+        pc = round(cnt * 100 / n)
+        out.append(f'<div class="pct" title="{cnt} من {n} مباراة">'
+                   f'<span class="pct-l">{label}</span><b>{pc}%</b>'
+                   f'<span class="pct-bar"><i style="width:{pc}%"></i></span>'
+                   f'<span class="pct-s">{cnt} من {n}</span></div>')
+    out.append('</div>')
+    return "".join(out)
+
+def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches):
+    """The curated clubs (TICKER_TEAMS) at a glance: position, points, last 5,
+    and the club's own top scorer — or its next match while the season hasn't
+    given it any of those yet. Skips a club we can't find in any table."""
+    upcoming = sorted((m for m in matches
+                       if (m.get("status") or "").upper() == "UPCOMING"),
+                      key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    cards = []
+    for token, only_comp in TICKER_TEAMS:
+        found = None
+        for comp, st in st_by_comp.items():
+            if only_comp and comp != only_comp:
+                continue
+            for r in st["table"]:
+                if token in (r.get("team") or ""):
+                    found = (comp, r)
+                    break
+            if found:
+                break
+        if not found:
+            continue
+        comp, row = found
+        name = ar_team(row.get("team"))
+        max_played = max((x.get("played") or 0) for x in st_by_comp[comp]["table"])
+        crest = (f'<img src="{esc(local_crest(row.get("crest")))}" alt="" loading="lazy">'
+                 if row.get("crest") else '<span class="ph">⚽</span>')
+        res = (forms.get(comp) or {}).get(row.get("team")) or []
+        if row.get("played"):
+            rank = (f'<span class="cl-pos">#{esc(str(row.get("pos")))}</span>'
+                    f'<span class="cl-pts">{row.get("pts")} نقطة</span>')
+        elif max_played:
+            rank = '<span class="cl-soon">لم يلعب بعد</span>'
+        else:
+            rank = '<span class="cl-soon">الموسم لم ينطلق</span>'
+        form = f'<span class="cl-form">{form_dots(res)}</span>' if res else ""
+        top = ""
+        if sc_ok.get(comp):
+            best = next((x for x in sc_by_comp.get(comp, []) if x.get("team") == name), None)
+            if best:
+                top = (f'<span class="cl-sc">هدافه: <b>{esc(best.get("name"))}</b>'
+                       f' · {_pval(best)}</span>')
+        if not top and not row.get("played"):
+            # nothing played yet -> the next fixture is the useful line
+            nxt = next((m for m in upcoming
+                        if (not only_comp or (m.get("competition") or "") == only_comp)
+                        and (token in (m.get("home") or "")
+                             or token in (m.get("away") or ""))), None)
+            if nxt:
+                rival = (nxt.get("away") if token in (nxt.get("home") or "")
+                         else nxt.get("home"))
+                when = _tk_date(nxt.get("kickoff"))
+                top = (f'<span class="cl-sc">القادمة: <b><bdi>{esc(ar_team(rival))}</bdi></b>'
+                       f' · {esc(when)}'
+                       + (f' {esc(nxt.get("koff_time"))}' if nxt.get("koff_time") else "")
+                       + '</span>')
+        cards.append(f'<a class="cl-card" href="/matches.html">'
+                     f'<span class="cl-top">{crest}<span class="cl-n"><bdi>{esc(name)}</bdi></span></span>'
+                     f'<span class="cl-lg">{esc(comp_label(comp))}</span>'
+                     f'<span class="cl-row">{rank}{form}</span>{top}</a>')
+    if not cards:
+        return ""
+    return ('<section class="stats-sec"><h2 class="lt-head">⭐ أبرز الأندية</h2>'
+            f'<div class="cl-grid">{"".join(cards)}</div></section>')
+
+def _pval(x):
+    """Chart value — "value" is the current key, "goals" the original one."""
+    v = x.get("value")
+    return (x.get("goals") or 0) if v is None else v
+
+def scorers_list(sc, unit="أهداف"):
+    """Chart table: rank, player (+club), value — plus a matches column only
+    when the feed actually carries appearances (365scores does not)."""
     has_m = any((x.get("played") or 0) for x in sc)
     m_hd = "<span>مباريات</span>" if has_m else ""
     rows = [f'<div class="sc-list{"" if has_m else " sc-nom"}">'
             f'<div class="sc-hd"><span></span><span>اللاعب</span>'
-            f'{m_hd}<span>أهداف</span></div>']
+            f'{m_hd}<span>{esc(unit)}</span></div>']
     for i, x in enumerate(sc, 1):
         club = (f'<span class="sc-club"><bdi>{esc(x.get("team"))}</bdi></span>'
                 if x.get("team") else "")
@@ -1542,7 +1665,7 @@ def scorers_list(sc):
         rows.append(f'<div class="sc-row"><span class="sc-n">{i}</span>'
                     f'<span class="sc-p">{_scorer_face(x)}'
                     f'<span class="sc-nm"><bdi>{esc(x.get("name"))}</bdi>{club}</span></span>'
-                    f'{m_cell}<b class="sc-g">{x.get("goals")}</b></div>')
+                    f'{m_cell}<b class="sc-g">{_pval(x)}</b></div>')
     rows.append('</div>')
     return "".join(rows)
 
@@ -1694,6 +1817,44 @@ a{color:inherit}
 .tile-sc .tile-ms .tm{max-width:100%}
 .tile-sc .tile-ms .tm bdi{white-space:normal;overflow:visible;text-overflow:clip}
 .sc-face{border-radius:50%;background:#eef2f6}
+/* two charts side by side on wide screens, stacked on a phone */
+.chart-cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;align-items:start}
+.chart-cols .stats-h3{margin-top:0}
+/* a 320px min column would overflow a phone-width container - stack instead */
+@media(max-width:760px){.chart-cols{grid-template-columns:1fr}}
+/* league percentages */
+.pct-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+@media(max-width:560px){.pct-grid{grid-template-columns:repeat(2,1fr);gap:8px}
+  .pct{padding:9px 10px}}
+.pct{background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;padding:10px 12px}
+.pct-l{display:block;font-size:.72rem;color:var(--muted);font-weight:700}
+.pct b{display:block;font-size:1.05rem;color:#0f5e28;margin:2px 0 5px}
+.pct-bar{display:block;height:5px;border-radius:3px;background:#e6edf3;overflow:hidden}
+.pct-bar i{display:block;height:100%;background:var(--green);border-radius:3px}
+.pct-s{display:block;margin-top:5px;font-size:.66rem;color:var(--muted);font-weight:700}
+/* curated clubs panel */
+.cl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
+.cl-card{display:flex;flex-direction:column;gap:6px;text-decoration:none;background:#f8fafc;
+         border:1px solid #eef2f6;border-radius:12px;padding:11px 12px;transition:box-shadow .15s,transform .15s}
+.cl-card:hover{box-shadow:0 4px 14px rgba(15,23,42,.10);transform:translateY(-1px)}
+.cl-top{display:flex;align-items:center;gap:8px;min-width:0}
+.cl-top img{width:28px;height:28px;object-fit:contain;flex:0 0 auto}
+.cl-n{font-weight:800;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-lg{font-size:.68rem;color:var(--muted);font-weight:700}
+.cl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.cl-pos{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 7px;font-size:.74rem;font-weight:800}
+.cl-pts{font-size:.76rem;font-weight:700;color:var(--ink)}
+.cl-soon{font-size:.72rem;color:var(--muted);font-weight:700}
+.cl-form{display:inline-flex;gap:3px;margin-inline-start:auto}
+.cl-sc{font-size:.72rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cl-sc b{color:var(--ink)}
+@media(max-width:760px){
+  /* 10 stacked cards would bury the league stats - same swipe strip the
+     transfers rail and the news shelf use on a phone */
+  .cl-grid{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
+  .cl-grid::-webkit-scrollbar{display:none}
+  .cl-card{flex:0 0 208px}
+}
 .sc-list{border:1px solid #eef2f6;border-radius:11px;overflow:hidden}
 .sc-hd,.sc-row{display:grid;grid-template-columns:30px 1fr 62px 48px;align-items:center;gap:6px;padding:7px 10px}
 .sc-nom .sc-hd,.sc-nom .sc-row{grid-template-columns:30px 1fr 48px}
