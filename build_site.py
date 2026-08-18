@@ -1016,16 +1016,20 @@ def build():
             top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
         sp.append('<section class="stats-sec">')
         sp.append(f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>')
-        # top scorers — hidden when the feed still carries LAST season's list
-        # (a player can never have played more matches than the busiest team)
+        # top scorers — the 365scores stats feed keeps serving LAST season's
+        # list until a new season produces goals, and such a list always
+        # overshoots this season's own totals: more goals than the whole
+        # competition has scored, or more appearances than the busiest team.
         sc = sc_by_comp.get(comp) or []
         max_played = max((r.get("played") or 0) for r in top_rows) if top_rows else                      max((r or 0 for r, _ in fin), default=0)
-        if sc and max_played and max((x.get("played") or 0) for x in sc) > max_played:
+        if sc and (sum(x.get("goals") or 0 for x in sc) > goals
+                   or (max_played
+                       and max((x.get("played") or 0) for x in sc) > max_played)):
             sc = []
         sc_tile = ""
         if sc:
             lead = sc[0]
-            sc_tile = (f'<div class="tile tile-res" title="{esc(lead.get("name"))}'
+            sc_tile = (f'<div class="tile tile-sc" title="{esc(lead.get("name"))}'
                        f' - {esc(lead.get("team"))}"><b>{lead.get("goals")}</b>'
                        f'<span>هداف الدوري</span>'
                        f'<div class="tile-ms">{_scorer_face(lead)}'
@@ -1524,17 +1528,21 @@ def _scorer_face(sc):
     return f'<img class="{cls}" src="{esc(local_crest(u))}" alt="" loading="lazy">'
 
 def scorers_list(sc):
-    """Top-scorers table: rank, player (+club), matches played, goals."""
-    rows = ['<div class="sc-list"><div class="sc-hd"><span></span><span>اللاعب</span>'
-            '<span>مباريات</span><span>أهداف</span></div>']
+    """Top-scorers table: rank, player (+club), goals — plus a matches column
+    only when the feed actually carries appearances (365scores does not)."""
+    has_m = any((x.get("played") or 0) for x in sc)
+    m_hd = "<span>مباريات</span>" if has_m else ""
+    rows = [f'<div class="sc-list{"" if has_m else " sc-nom"}">'
+            f'<div class="sc-hd"><span></span><span>اللاعب</span>'
+            f'{m_hd}<span>أهداف</span></div>']
     for i, x in enumerate(sc, 1):
         club = (f'<span class="sc-club"><bdi>{esc(x.get("team"))}</bdi></span>'
                 if x.get("team") else "")
+        m_cell = f'<span class="sc-m">{x.get("played")}</span>' if has_m else ""
         rows.append(f'<div class="sc-row"><span class="sc-n">{i}</span>'
                     f'<span class="sc-p">{_scorer_face(x)}'
                     f'<span class="sc-nm"><bdi>{esc(x.get("name"))}</bdi>{club}</span></span>'
-                    f'<span class="sc-m">{x.get("played") or "-"}</span>'
-                    f'<b class="sc-g">{x.get("goals")}</b></div>')
+                    f'{m_cell}<b class="sc-g">{x.get("goals")}</b></div>')
     rows.append('</div>')
     return "".join(rows)
 
@@ -1681,9 +1689,14 @@ a{color:inherit}
 .tile-ms .ph{font-size:.8rem;flex:0 0 auto}
 .tile-ms i{font-style:normal;color:var(--muted);font-size:.72rem;flex:0 0 auto}
 .tile-when{margin-top:4px;font-size:.68rem;color:var(--muted);font-weight:700}
+.tile-sc .tile-ms{gap:5px}
+/* one narrow column, so let a long Arabic name wrap instead of truncating */
+.tile-sc .tile-ms .tm{max-width:100%}
+.tile-sc .tile-ms .tm bdi{white-space:normal;overflow:visible;text-overflow:clip}
 .sc-face{border-radius:50%;background:#eef2f6}
 .sc-list{border:1px solid #eef2f6;border-radius:11px;overflow:hidden}
 .sc-hd,.sc-row{display:grid;grid-template-columns:30px 1fr 62px 48px;align-items:center;gap:6px;padding:7px 10px}
+.sc-nom .sc-hd,.sc-nom .sc-row{grid-template-columns:30px 1fr 48px}
 .sc-hd{background:#f8fafc;font-size:.7rem;color:var(--muted);font-weight:800}
 .sc-hd span:nth-child(3),.sc-hd span:nth-child(4){text-align:center}
 .sc-row{border-top:1px solid #f1f5f9;font-size:.84rem}
@@ -1698,8 +1711,8 @@ a{color:inherit}
 .sc-g{text-align:center;color:var(--green-d);font-size:.95rem}
 @media(max-width:560px){
   /* drop the matches column - the name needs the room on a phone */
-  .sc-hd,.sc-row{grid-template-columns:24px 1fr 40px;padding:7px 8px}
-  .sc-m,.sc-hd span:nth-child(3){display:none}
+  .sc-hd,.sc-row,.sc-nom .sc-hd,.sc-nom .sc-row{grid-template-columns:24px 1fr 40px;padding:7px 8px}
+  .sc-m,.sc-list:not(.sc-nom) .sc-hd span:nth-child(3){display:none}
   .sc-p img{width:24px;height:24px}
 }
 @media(max-width:560px){
@@ -1708,7 +1721,7 @@ a{color:inherit}
   .tile{padding:10px 6px}
   .tile b{font-size:.98rem}
   .tile span{font-size:.64rem}
-  .tile-res{grid-column:1/-1}
+  .tile-res,.tile-sc{grid-column:1/-1}
   .tile-ms .tm{font-size:.74rem}
 }
 .chart-wrap{overflow-x:auto}

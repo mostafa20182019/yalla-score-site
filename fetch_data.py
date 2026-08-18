@@ -635,33 +635,84 @@ def fetch_s365_league(matches_out, lid, comp_name):
 # Real Madrid 131, Barcelona 132, Man United 105, Man City 110, Arsenal 104,
 # Chelsea 106, Liverpool 108, Al Ahly 8200, Zamalek 8201, Trabzonspor 950.
 # ---------------------------------------------------------------- top scorers
-# 365scores is the source (Arabic player names for EVERY league, incl. the
-# Egyptian/Turkish/Saudi ones football-data's free tier doesn't carry). The exact
-# endpoint can't be probed from the office network (webws.365scores.com is
-# DNS-blocked there), so this discovery pass runs on the GitHub runner and
-# reports what it found through data/fetch_debug.json.
-SCORER_PROBE = True                     # flip to False once the endpoint is wired
+# 365scores is the source: Arabic player names for EVERY league, including the
+# Egyptian/Turkish/Saudi ones football-data's free tier doesn't carry.
+# Endpoint (found by probing on the runner - the host is DNS-blocked on the
+# office network): stats/?appTypeId=5&langId=27&competitions=<ids>
+#   {"stats":{"athletesStats":[{"id":1,"name":"الأهداف","competitionId":552,
+#      "rows":[{"entity":{"id":,"name":,"competitorId":,"imageVersion":},
+#               "stats":[{"typeId":1,"value":"13"},{"typeId":10,...}]}]}]},
+#    "competitors":[...]}   <- lookup array for the club names
+# Category id 1 = goals; typeId 1 = the goal count; typeId 10 = penalties.
+# NOTE the feed carries LAST season's list until a new season produces goals,
+# so build_site sanity-checks the totals before rendering anything.
+SCORERS_TOP = 5
 
-def probe_s365_scorers(lid=552):
-    """Try the candidate stats endpoints, report status + response shape."""
+# competition id -> the name matches/standings/fixtures already use, so
+# build_site can key scorers by competition like every other section
+S365_SCORER_COMPS = [
+    (552, "Egyptian Premier League"), (78, "Turkish Super Lig"),
+    (649, "Saudi Pro League"), (7, "Premier League"),
+    (11, "Primera Division"), (17, "Serie A"), (25, "Bundesliga"),
+    (35, "Ligue 1"), (572, "UEFA Champions League"),
+]
+
+def _s365_scorer_rows(j, want):
+    """Parse a stats response -> {competition_id: [scorer, ...]}."""
+    clubs = {c.get("id"): c for c in (j.get("competitors") or [])}
     out = {}
-    cands = [
-        f"stats/?appTypeId=5&langId=27&competitions={lid}",
-        f"stats/?appTypeId=5&langId=27&competition={lid}",
-        f"competitions/statistics/?appTypeId=5&langId=27&competitions={lid}",
-        f"statistics/?appTypeId=5&langId=27&competitions={lid}",
-        f"competitions/stats/?appTypeId=5&langId=27&competitions={lid}",
-    ]
-    for path in cands:
-        try:
-            j = _s365(path)
-        except Exception as e:
-            out[path] = f"FAIL: {e!r}"[:140]
+    for cat in ((j.get("stats") or {}).get("athletesStats") or []):
+        cid = cat.get("competitionId")
+        if cid not in want:
             continue
-        blob = json.dumps(j, ensure_ascii=False)
-        out[path] = {"top_keys": list(j)[:14], "bytes": len(blob),
-                     "sample": blob[:1800]}
+        if cat.get("id") != 1 and "الأهداف" not in (cat.get("name") or ""):
+            continue                      # not the goals category
+        rows = []
+        for r in (cat.get("rows") or []):
+            e = r.get("entity") or {}
+            val = next((st.get("value") for st in (r.get("stats") or [])
+                        if st.get("typeId") == 1), None)
+            if val is None and r.get("stats"):
+                val = (r["stats"][0] or {}).get("value")
+            try:
+                goals = int(float(val))
+            except (TypeError, ValueError):
+                continue
+            if goals <= 0 or not e.get("name"):
+                continue
+            club = clubs.get(e.get("competitorId")) or {}
+            rows.append({"name": e["name"], "team": club.get("name") or "",
+                         "crest": _s365_badge(club) if club.get("id") else "",
+                         "photo": _s365_face(e), "goals": goals,
+                         "played": 0})    # the feed carries no matches-played
+            if len(rows) >= SCORERS_TOP:
+                break
+        if rows:
+            out[cid] = rows
     return out
+
+def fetch_scorers():
+    """Top scorers per league. One combined request, per-league fallback."""
+    want = {lid: name for lid, name in S365_SCORER_COMPS}
+    ids = ",".join(str(i) for i in want)
+    got = {}
+    try:
+        got = _s365_scorer_rows(
+            _s365(f"stats/?appTypeId=5&langId=27&competitions={ids}"), want)
+    except Exception as e:
+        print(f"  ! scorers combined call failed ({e}) - falling back per league")
+    missing = [i for i in want if i not in got]
+    if missing and len(missing) < len(want):
+        print(f"  · scorers: combined call covered "
+              f"{len(want) - len(missing)}/{len(want)} leagues")
+    for lid in missing:                   # one call each for whatever is absent
+        try:
+            got.update(_s365_scorer_rows(
+                _s365(f"stats/?appTypeId=5&langId=27&competitions={lid}"), {lid: want[lid]}))
+        except Exception as e:
+            print(f"  ! scorers {want[lid]} failed: {e}")
+    return [{"competition": want[lid], "scorers": rows}
+            for lid, rows in got.items() if rows]
 
 TRANSFER_CLUBS = "131,132,105,110,104,106,108,8200,8201,950"
 
@@ -794,11 +845,17 @@ if __name__ == "__main__":
     if transfers:
         write_items("transfers.json", transfers)
         print(f"transfers: {len(transfers)}")
-    if SCORER_PROBE:
-        try:
-            _DBG["s365_scorers_probe"] = probe_s365_scorers()
-        except Exception as e:
-            _DBG["s365_scorers_probe"] = f"FAIL: {e!r}"
+    try:
+        scorers = fetch_scorers()
+        _DBG["scorers"] = "ok (" + ", ".join(
+            f"{s['competition']}:{len(s['scorers'])}" for s in scorers) + ")"
+    except Exception as e:
+        print(f"  ! scorers fetch failed ({e}) - keeping existing scorers.json")
+        _DBG["scorers"] = f"FAIL: {e!r}"
+        scorers = None
+    if scorers is not None:
+        write_items("scorers.json", scorers)
+        print(f"scorers: {len(scorers)} leagues")
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)
