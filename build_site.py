@@ -992,7 +992,7 @@ def build():
              for c, rows in sc_by_comp.items()}
     as_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
              for c, rows in as_by_comp.items()}
-    sp.append(clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches))
+    sp.append(clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures))
     any_stats = False
     stats_cutoff = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
     for comp in comp_order:
@@ -1592,11 +1592,18 @@ def league_pcts(fin):
     out.append('</div>')
     return "".join(out)
 
-def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches):
+def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
     """The curated clubs (TICKER_TEAMS) at a glance: position, points, last 5,
     and the club's own top scorer — or its next match while the season hasn't
-    given it any of those yet. Skips a club we can't find in any table."""
-    upcoming = sorted((m for m in matches
+    given it any of those yet. Skips a club we can't find in any table.
+    The next-match pool is matches ∪ the fixtures rounds: matches.json is
+    capped at 90 rows, and a club whose opener falls past the cap (Chelsea's
+    24/08 game did) would otherwise show no fixture at all."""
+    pool = list(matches)
+    for fx in fixtures:
+        for rd in fx.get("rounds", []):
+            pool.extend(rd.get("matches", []))
+    upcoming = sorted((m for m in pool
                        if (m.get("status") or "").upper() == "UPCOMING"),
                       key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
     cards = []
