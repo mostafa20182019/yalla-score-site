@@ -4,7 +4,7 @@
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
- "standings": "ok (6)",
+ "standings": "ok (5)",
  "transfers": "ok (12)",
  "s365_scorers_probe": {
   "stats/?appTypeId=5&langId=27&competitions=552": {
@@ -27,5 +27,5 @@
   "statistics/?appTypeId=5&langId=27&competitions=552": "FAIL: <HTTPError 404: 'Not Found'>",
   "competitions/stats/?appTypeId=5&langId=27&competitions=552": "FAIL: <HTTPError 404: 'Not Found'>"
  },
- "utc": "2026-08-18T10:48:52Z"
+ "utc": "2026-08-18T10:54:10Z"
 }
