@@ -656,6 +656,10 @@ def _goal_rows(game, fallback_home_id):
         nm = (et.get("name") or "") if isinstance(et, dict) else str(et)
         if "هدف" not in nm:
             continue
+        # a goal DISALLOWED by VAR is still named "هدف ..." — it must not be
+        # listed (it inflated counts vs the scoreboard in 3 games on 18-08)
+        if "ملغ" in nm or "ألغي" in nm or "الغي" in nm:
+            continue
         cid = ev.get("competitorId")
         if cid is None:                     # some payloads carry num 1/2 instead
             cid = home_id if ev.get("num") == 1 else -1
@@ -696,7 +700,10 @@ def _goal_rows(game, fallback_home_id):
             if g["tag"] == "عكسية":
                 g["side"] = "a" if g["side"] == "h" else "h"
         if counts() != (hs, as_):
-            return [], f"count-mismatch {counts()} vs {hs}-{as_}"
+            # name every counted event so the next mismatch diagnoses itself
+            evs = "/".join(f'{g["side"]}:{g.get("tag") or "g"}@{g.get("minute")}'
+                           for g in goals)
+            return [], f"count-mismatch {counts()} vs {hs}-{as_} [{evs}]"
     return goals, "ok"
 
 def fetch_goal_events():
