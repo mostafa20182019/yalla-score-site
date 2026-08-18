@@ -4,7 +4,7 @@
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
- "standings": "ok (5)",
+ "standings": "ok (6)",
  "transfers": "ok (12)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -172,15 +172,11 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (12 games)",
+ "goal_events": "ok (15 games)",
  "goal_events_dbg": {
   "candidates": 15,
   "detail_fails": 0,
-  "skipped": [
-   "4750522:count-mismatch (2, 2) vs 2-1",
-   "4763772:count-mismatch (3, 0) vs 2-0",
-   "4763771:count-mismatch (3, 1) vs 3-0"
-  ],
+  "skipped": [],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -212,5 +208,5 @@
    "member0": "{\"competitorId\": 962, \"id\": 554847, \"athleteId\": 38344, \"name\": \"أندرياس جيانيوتيس\", \"shortName\": \"جيانيوتيس\", \"jerseyNumber\": 1, \"nameForURL\": \"andreas-gianniotis\", \"imageVersion\": 30, \"createdAt\": \"2014-09-21T14:57:03.77\"}"
   }
  },
- "utc": "2026-08-18T13:04:21Z"
+ "utc": "2026-08-18T13:15:29Z"
 }
