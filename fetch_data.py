@@ -660,20 +660,26 @@ S365_SCORER_COMPS = [
 # the response carries several athlete charts per competition; these are the
 # two we render. cat_id is 365scores' category id (1 = goals, confirmed by the
 # probe), names = the Arabic titles to fall back on when the id differs.
+# ids are stable across leagues (verified on all 9 via fetch_debug):
+#   1 الأهداف · 2 أهداف متوقعة · 3 صناعة · 4 صناعة أهداف متوقعة
+#   5 أهداف + صناعة · 11/12 بطاقات · 13 شباك نظيفة …
+# Titles are matched EXACTLY, never as a substring: "صناعة" appears inside
+# "صناعة أهداف متوقعة" (expected assists) too, and a later match would win.
 S365_CHARTS = [
-    ("goals",   1,    ("الأهداف",)),
-    ("assists", None, ("التمريرات الحاسمة", "صناعة الأهداف",
-                       "التمريرات المفتاحية", "الأسيست")),
+    ("goals",   1, ("الأهداف",)),
+    ("assists", 3, ("صناعة",)),
 ]
 
 def s365_chart_names(j):
-    """{competition_id: [category title, ...]} - so a renamed/missing chart is
-    visible in data/fetch_debug.json instead of failing silently."""
-    seen = {}
+    """The available charts as "id:title" - reported in data/fetch_debug.json so
+    a renamed or missing chart is visible instead of failing silently. The list
+    is identical for every league, so one competition's copy is enough."""
     for cat in ((j.get("stats") or {}).get("athletesStats") or []):
-        seen.setdefault(cat.get("competitionId"), []).append(
-            f'{cat.get("id")}:{cat.get("name")}')
-    return seen
+        cid = cat.get("competitionId")
+        return {cid: [f'{c.get("id")}:{c.get("name")}'
+                      for c in ((j.get("stats") or {}).get("athletesStats") or [])
+                      if c.get("competitionId") == cid]}
+    return {}
 
 def _s365_stat_rows(j, want, cat_id=1, cat_names=("الأهداف",)):
     """Parse one athlete chart -> {competition_id: [row, ...]}."""
@@ -683,9 +689,9 @@ def _s365_stat_rows(j, want, cat_id=1, cat_names=("الأهداف",)):
         cid = cat.get("competitionId")
         if cid not in want:
             continue
-        nm = cat.get("name") or ""
+        nm = (cat.get("name") or "").strip()
         if not ((cat_id is not None and cat.get("id") == cat_id)
-                or any(n in nm for n in cat_names)):
+                or nm in cat_names):
             continue                      # not the chart we want
         rows = []
         for r in (cat.get("rows") or []):
