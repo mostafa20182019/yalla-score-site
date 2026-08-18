@@ -988,6 +988,24 @@ def build():
         big_s = f'{big["home_score"]}-{big["away_score"]}'
         big_t = (f'{ar_team(big.get("home"))} {big["home_score"]}-{big["away_score"]} '
                  f'{ar_team(big.get("away"))}')
+        # who played it: same home-first order as every match row on the site
+        def _tile_side(name, badge):
+            img = (f'<img src="{esc(local_crest(badge))}" alt="" loading="lazy">'
+                   if badge else '<span class="ph">⚽</span>')
+            return f'<span class="tm">{img}<bdi>{esc(ar_team(name))}</bdi></span>'
+        big_ms = (f'<div class="tile-ms">{_tile_side(big.get("home"), big.get("home_badge"))}'
+                  f'<i>×</i>{_tile_side(big.get("away"), big.get("away_badge"))}</div>')
+        big_bits = []
+        if big.get("round") is not None:
+            big_bits.append(f'الجولة {esc(str(big["round"]))}')
+        if big.get("kickoff"):
+            try:
+                _d = datetime.date.fromisoformat(big["kickoff"])
+                big_bits.append(f'{_d.day:02d}/{_d.month:02d}/{_d.year}')
+            except Exception:
+                pass
+        big_when = (f'<div class="tile-when">{" · ".join(big_bits)}</div>'
+                    if big_bits else "")
         top_rows = (st_by_comp.get(comp) or {}).get("table") or []
         top_teams = [r.get("team") for r in top_rows[:5]]
         if not top_teams:
@@ -999,7 +1017,8 @@ def build():
                   f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
                   f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
                   f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
-                  f'<div class="tile" title="{esc(big_t)}"><b>{big_s}</b><span>أكبر نتيجة</span></div>'
+                  f'<div class="tile tile-res" title="{esc(big_t)}"><b>{big_s}</b>'
+                  f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
                   '</div>')
         race = _pts_race_svg(fin, top_teams)
         if race:
@@ -1609,6 +1628,23 @@ a{color:inherit}
 .tile{background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;padding:12px;text-align:center}
 .tile b{display:block;font-size:1.05rem;color:#0f5e28}
 .tile span{font-size:.72rem;color:var(--muted);font-weight:700}
+.tile-res{grid-column:span 2}
+.tile-ms{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:7px}
+.tile-ms .tm{display:inline-flex;align-items:center;gap:4px;min-width:0;font-size:.78rem;font-weight:700}
+.tile-ms .tm bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tile-ms img{width:18px;height:18px;object-fit:contain;flex:0 0 auto}
+.tile-ms .ph{font-size:.8rem;flex:0 0 auto}
+.tile-ms i{font-style:normal;color:var(--muted);font-size:.72rem;flex:0 0 auto}
+.tile-when{margin-top:4px;font-size:.68rem;color:var(--muted);font-weight:700}
+@media(max-width:560px){
+  /* 3 short number tiles in one row, the result tile full-width below it */
+  .stat-tiles{grid-template-columns:repeat(3,1fr);gap:8px}
+  .tile{padding:10px 6px}
+  .tile b{font-size:.98rem}
+  .tile span{font-size:.64rem}
+  .tile-res{grid-column:1/-1}
+  .tile-ms .tm{font-size:.74rem}
+}
 .chart-wrap{overflow-x:auto}
 .chart{width:100%;max-width:680px;height:auto;display:block}
 .legend{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 2px;font-size:.8rem;font-weight:800;color:#334155}
