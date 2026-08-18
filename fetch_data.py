@@ -634,6 +634,35 @@ def fetch_s365_league(matches_out, lid, comp_name):
 # competitor ids, matched by id (names like "الأهلي" collide across leagues):
 # Real Madrid 131, Barcelona 132, Man United 105, Man City 110, Arsenal 104,
 # Chelsea 106, Liverpool 108, Al Ahly 8200, Zamalek 8201, Trabzonspor 950.
+# ---------------------------------------------------------------- top scorers
+# 365scores is the source (Arabic player names for EVERY league, incl. the
+# Egyptian/Turkish/Saudi ones football-data's free tier doesn't carry). The exact
+# endpoint can't be probed from the office network (webws.365scores.com is
+# DNS-blocked there), so this discovery pass runs on the GitHub runner and
+# reports what it found through data/fetch_debug.json.
+SCORER_PROBE = True                     # flip to False once the endpoint is wired
+
+def probe_s365_scorers(lid=552):
+    """Try the candidate stats endpoints, report status + response shape."""
+    out = {}
+    cands = [
+        f"stats/?appTypeId=5&langId=27&competitions={lid}",
+        f"stats/?appTypeId=5&langId=27&competition={lid}",
+        f"competitions/statistics/?appTypeId=5&langId=27&competitions={lid}",
+        f"statistics/?appTypeId=5&langId=27&competitions={lid}",
+        f"competitions/stats/?appTypeId=5&langId=27&competitions={lid}",
+    ]
+    for path in cands:
+        try:
+            j = _s365(path)
+        except Exception as e:
+            out[path] = f"FAIL: {e!r}"[:140]
+            continue
+        blob = json.dumps(j, ensure_ascii=False)
+        out[path] = {"top_keys": list(j)[:14], "bytes": len(blob),
+                     "sample": blob[:1800]}
+    return out
+
 TRANSFER_CLUBS = "131,132,105,110,104,106,108,8200,8201,950"
 
 def _s365_face(a):
@@ -765,6 +794,11 @@ if __name__ == "__main__":
     if transfers:
         write_items("transfers.json", transfers)
         print(f"transfers: {len(transfers)}")
+    if SCORER_PROBE:
+        try:
+            _DBG["s365_scorers_probe"] = probe_s365_scorers()
+        except Exception as e:
+            _DBG["s365_scorers_probe"] = f"FAIL: {e!r}"
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)

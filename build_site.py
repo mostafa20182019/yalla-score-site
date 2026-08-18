@@ -612,6 +612,7 @@ def build():
     headlines = load("headlines.json")
     videos = load("videos.json")
     standings = load("standings.json")   # [{competition, table:[...]}]
+    scorers = load("scorers.json")       # [{competition, scorers:[{name,team,goals,...}]}]
     transfers = load("transfers.json")   # top-transfers widget (home)
     fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
@@ -793,6 +794,8 @@ def build():
 
     # --- center: league tables (hidden) + day navigator + days ---
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
+    sc_by_comp = {s.get("competition"): (s.get("scorers") or [])
+                  for s in scorers if s.get("scorers")}
     forms = team_form(fixtures)
     elos = compute_elo(fixtures)
     p.append('<div class="mp-main">')
@@ -1013,13 +1016,32 @@ def build():
             top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
         sp.append('<section class="stats-sec">')
         sp.append(f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>')
+        # top scorers — hidden when the feed still carries LAST season's list
+        # (a player can never have played more matches than the busiest team)
+        sc = sc_by_comp.get(comp) or []
+        max_played = max((r.get("played") or 0) for r in top_rows) if top_rows else                      max((r or 0 for r, _ in fin), default=0)
+        if sc and max_played and max((x.get("played") or 0) for x in sc) > max_played:
+            sc = []
+        sc_tile = ""
+        if sc:
+            lead = sc[0]
+            sc_tile = (f'<div class="tile tile-res" title="{esc(lead.get("name"))}'
+                       f' - {esc(lead.get("team"))}"><b>{lead.get("goals")}</b>'
+                       f'<span>هداف الدوري</span>'
+                       f'<div class="tile-ms">{_scorer_face(lead)}'
+                       f'<span class="tm"><bdi>{esc(lead.get("name"))}</bdi></span></div>'
+                       f'<div class="tile-when">{esc(lead.get("team"))}</div></div>')
         sp.append('<div class="stat-tiles">'
                   f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
                   f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
                   f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
                   f'<div class="tile tile-res" title="{esc(big_t)}"><b>{big_s}</b>'
                   f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
+                  f'{sc_tile}'
                   '</div>')
+        if sc:
+            sp.append('<h3 class="stats-h3">⚽ ترتيب الهدافين</h3>')
+            sp.append(scorers_list(sc))
         race = _pts_race_svg(fin, top_teams)
         if race:
             sp.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
@@ -1493,6 +1515,29 @@ def league_rounds_panel(comp, fx):
     parts.append('</div></div>')
     return "".join(parts)
 
+def _scorer_face(sc):
+    """Player photo when the feed has one, else the club crest, else a ball."""
+    u = sc.get("photo") or sc.get("crest") or ""
+    if not u:
+        return '<span class="ph">⚽</span>'
+    cls = "sc-face" if sc.get("photo") else ""
+    return f'<img class="{cls}" src="{esc(local_crest(u))}" alt="" loading="lazy">'
+
+def scorers_list(sc):
+    """Top-scorers table: rank, player (+club), matches played, goals."""
+    rows = ['<div class="sc-list"><div class="sc-hd"><span></span><span>اللاعب</span>'
+            '<span>مباريات</span><span>أهداف</span></div>']
+    for i, x in enumerate(sc, 1):
+        club = (f'<span class="sc-club"><bdi>{esc(x.get("team"))}</bdi></span>'
+                if x.get("team") else "")
+        rows.append(f'<div class="sc-row"><span class="sc-n">{i}</span>'
+                    f'<span class="sc-p">{_scorer_face(x)}'
+                    f'<span class="sc-nm"><bdi>{esc(x.get("name"))}</bdi>{club}</span></span>'
+                    f'<span class="sc-m">{x.get("played") or "-"}</span>'
+                    f'<b class="sc-g">{x.get("goals")}</b></div>')
+    rows.append('</div>')
+    return "".join(rows)
+
 def match_row(m, show_time=False, show_comp=True):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
@@ -1636,6 +1681,27 @@ a{color:inherit}
 .tile-ms .ph{font-size:.8rem;flex:0 0 auto}
 .tile-ms i{font-style:normal;color:var(--muted);font-size:.72rem;flex:0 0 auto}
 .tile-when{margin-top:4px;font-size:.68rem;color:var(--muted);font-weight:700}
+.sc-face{border-radius:50%;background:#eef2f6}
+.sc-list{border:1px solid #eef2f6;border-radius:11px;overflow:hidden}
+.sc-hd,.sc-row{display:grid;grid-template-columns:30px 1fr 62px 48px;align-items:center;gap:6px;padding:7px 10px}
+.sc-hd{background:#f8fafc;font-size:.7rem;color:var(--muted);font-weight:800}
+.sc-hd span:nth-child(3),.sc-hd span:nth-child(4){text-align:center}
+.sc-row{border-top:1px solid #f1f5f9;font-size:.84rem}
+.sc-row:nth-child(2){background:#f6fbf7}
+.sc-n{color:var(--muted);font-weight:800;font-size:.76rem;text-align:center}
+.sc-p{display:flex;align-items:center;gap:7px;min-width:0}
+.sc-p img{width:26px;height:26px;object-fit:cover;flex:0 0 auto}
+.sc-nm{display:flex;flex-direction:column;min-width:0;line-height:1.3}
+.sc-nm bdi{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-club{font-size:.7rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-m{text-align:center;color:var(--muted);font-weight:700;font-size:.78rem}
+.sc-g{text-align:center;color:var(--green-d);font-size:.95rem}
+@media(max-width:560px){
+  /* drop the matches column - the name needs the room on a phone */
+  .sc-hd,.sc-row{grid-template-columns:24px 1fr 40px;padding:7px 8px}
+  .sc-m,.sc-hd span:nth-child(3){display:none}
+  .sc-p img{width:24px;height:24px}
+}
 @media(max-width:560px){
   /* 3 short number tiles in one row, the result tile full-width below it */
   .stat-tiles{grid-template-columns:repeat(3,1fr);gap:8px}
