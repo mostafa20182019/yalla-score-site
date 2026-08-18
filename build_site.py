@@ -623,6 +623,8 @@ def build():
     assists = load("assists.json")       # same shape, key "assists"
     transfers = load("transfers.json")   # top-transfers widget (home)
     fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
+    goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
+    ge_idx = goal_events_index(goal_events)
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
     reels = load("reels.json")
     seen_r = {r.get("video_id") for r in reels}
@@ -836,7 +838,8 @@ def build():
                 p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
             p.append('<div class="mlist">')
             for m in ms:
-                p.append(match_row(m, show_time=True, show_comp=False))
+                p.append(match_row(m, show_time=True, show_comp=False,
+                                   goals=match_goals(ge_idx, m)))
             p.append('</div></div>')
         p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
         p.append('</section>')
@@ -1677,7 +1680,29 @@ def scorers_list(sc, unit="أهداف"):
     rows.append('</div>')
     return "".join(rows)
 
-def match_row(m, show_time=False, show_comp=True):
+def _gnorm(s):
+    """Same normalization LIVE_JS uses to pair rows with 365scores names."""
+    s = (s or "")
+    for a, b in (("أ", "ا"), ("إ", "ا"), ("آ", "ا"), ("ة", "ه"), ("ى", "ي")):
+        s = s.replace(a, b)
+    return "".join(ch for ch in s if ch not in ".'’  	")
+
+def goal_events_index(goal_events):
+    """(normalized home|away, date) -> goals. Names in the feed are 365scores
+    Arabic — the same spellings AR_TEAM maps the football-data names to."""
+    idx = {}
+    for e in goal_events:
+        if e.get("goals"):
+            idx[(f'{_gnorm(e.get("home"))}|{_gnorm(e.get("away"))}', e.get("date"))] = e["goals"]
+    return idx
+
+def match_goals(idx, m):
+    if (m.get("status") or "").upper() not in ("FINISHED", "LIVE"):
+        return None
+    key = f'{_gnorm(ar_team(m.get("home")))}|{_gnorm(ar_team(m.get("away")))}'
+    return idx.get((key, m.get("kickoff")))
+
+def match_row(m, show_time=False, show_comp=True, goals=None):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up")}.get(st, ("", "up"))
@@ -1694,12 +1719,28 @@ def match_row(m, show_time=False, show_comp=True):
     # only LIVE / FINISHED get a status pill (upcoming shows its time instead)
     pill = (f'<span class="pill pill-{badge[1]}">{esc(badge[0])}</span>'
             if st in ("LIVE", "FINISHED") else "")
+    gblock = ""
+    if goals:
+        def side_list(sd):
+            its = []
+            for g in goals:
+                if g.get("side") != sd:
+                    continue
+                mn = (f' <i class="mg-m">{esc(g["minute"])}′</i>'
+                      if g.get("minute") else "")
+                tg = f' <small>({esc(g["tag"])})</small>' if g.get("tag") else ""
+                its.append(f'<span class="mg">⚽ <bdi>{esc(g.get("player"))}</bdi>{mn}{tg}</span>')
+            return "".join(its)
+        gblock = (f'<div class="mgoals"><div class="mg-side">{side_list("h")}</div>'
+                  f'<div class="mg-gap"></div>'
+                  f'<div class="mg-side">{side_list("a")}</div></div>')
     return f"""<div class="mrow mrow-{badge[1]}" data-lv data-h="{esc(ar_team(m.get('home')))}" data-a="{esc(ar_team(m.get('away')))}">
   {pill}
   <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
   <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
   {comp}
+  {gblock}
 </div>"""
 
 def write(rel, content):
@@ -2030,6 +2071,15 @@ a{color:inherit}
 .trf-b{width:14px;height:14px;object-fit:contain}
 .trf-fee{font-size:.7rem;font-weight:800;color:#0f5e28;background:#e8f6ec;
   padding:2px 8px;border-radius:999px;white-space:nowrap}
+/* scorers under a finished/live match row (/matches day view) */
+.mgoals{grid-column:1/-1;display:grid;grid-template-columns:1fr 40px 1fr;gap:2px 6px;
+  margin-top:7px;padding-top:6px;border-top:1px dashed #e8eef4}
+.mg-side{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:center}
+.mg{font-size:.7rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.mg bdi{color:var(--ink)}
+.mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#0f5e28}
+.mg small{font-size:.62rem}
+@media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.66rem}}
 /* live minute chip (painted by LIVE_JS next to a live score) */
 .lv-min{display:inline-block;font-size:.68rem;font-weight:800;color:#e11d48;
   margin-inline-start:8px;direction:ltr;unicode-bidi:embed;vertical-align:middle}

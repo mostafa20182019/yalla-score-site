@@ -634,6 +634,125 @@ def fetch_s365_league(matches_out, lid, comp_name):
 # competitor ids, matched by id (names like "الأهلي" collide across leagues):
 # Real Madrid 131, Barcelona 132, Man United 105, Man City 110, Arsenal 104,
 # Chelsea 106, Liverpool 108, Al Ahly 8200, Zamalek 8201, Trabzonspor 950.
+# ---------------------------------------------------------------- goal events
+# Who scored, per match — 365scores game detail (Arabic player names). Shown
+# under the match rows on /matches.html. Only games that can still be on the
+# page need details: LIVE ones and FINISHED ones from the last few days, and
+# only when at least one goal was scored. The game/ endpoint shape follows the
+# other web/ endpoints; a raw sample of the first response is reported through
+# fetch_debug.json so a wrong field guess is diagnosable from the runner.
+GOAL_DAYS_BACK = 4          # matches this recent keep their scorer lines
+GOAL_DETAIL_CAP = 45        # per-run ceiling on game/ detail calls
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572"
+
+def _goal_rows(game, fallback_home_id):
+    """game detail -> (goals list, health) — tolerant of field-name drift."""
+    members = {m.get("id"): m.get("name") for m in (game.get("members") or [])}
+    home = game.get("homeCompetitor") or {}
+    home_id = home.get("id") or fallback_home_id
+    goals = []
+    for ev in (game.get("events") or []):
+        et = ev.get("eventType") or ev.get("type") or {}
+        nm = (et.get("name") or "") if isinstance(et, dict) else str(et)
+        if "هدف" not in nm:
+            continue
+        cid = ev.get("competitorId")
+        if cid is None:                     # some payloads carry num 1/2 instead
+            cid = home_id if ev.get("num") == 1 else -1
+        side = "h" if cid == home_id else "a"
+        player = members.get(ev.get("playerId"))
+        if not player and isinstance(ev.get("player"), dict):
+            player = ev["player"].get("name")
+        if not player:
+            player = ev.get("playerName")
+        if not player:
+            continue
+        minute = ""
+        try:
+            gt = int(float(ev.get("gameTime")))
+            if gt > 0:
+                add = ev.get("addedTime")
+                minute = f"{gt}+{int(add)}" if add and int(add) > 0 else str(gt)
+        except (TypeError, ValueError):
+            pass
+        tag = ""
+        sub = f'{nm} {ev.get("subTypeName") or ""}'
+        if "عكس" in sub:
+            tag = "عكسية"
+        elif "جزاء" in sub:
+            tag = "ج"
+        goals.append({"side": side, "player": player, "minute": minute, "tag": tag})
+    # sanity: per-side counts must match the scoreboard. A mismatch that own
+    # goals explain means 365scores credited them to the scorer's own team —
+    # flip those to the benefiting side. Still wrong after that -> drop the
+    # match entirely rather than publish miscredited scorers.
+    hs = int(home.get("score") or 0)
+    as_ = int((game.get("awayCompetitor") or {}).get("score") or 0)
+    def counts():
+        return (sum(1 for g in goals if g["side"] == "h"),
+                sum(1 for g in goals if g["side"] == "a"))
+    if counts() != (hs, as_):
+        for g in goals:
+            if g["tag"] == "عكسية":
+                g["side"] = "a" if g["side"] == "h" else "h"
+        if counts() != (hs, as_):
+            return [], f"count-mismatch {counts()} vs {hs}-{as_}"
+    return goals, "ok"
+
+def fetch_goal_events():
+    """[{home, away, date, goals:[{side,player,minute,tag}]}] + a debug dict."""
+    today = datetime.now(CAIRO).date()
+    cutoff = (today - timedelta(days=GOAL_DAYS_BACK)).isoformat()
+    q = f"competitions={S365_ALL_COMPS}&langId=27&timezoneName=Africa/Cairo"
+    cands = {}
+    for path in (f"games/current/?{q}&showOdds=false",
+                 f"games/results/?{q}&showOdds=false"):
+        try:
+            time.sleep(1)
+            for g in (_s365(path).get("games") or []):
+                if g.get("statusGroup") not in (3, 4):
+                    continue
+                h, a = g.get("homeCompetitor") or {}, g.get("awayCompetitor") or {}
+                if not ((h.get("score") or 0) > 0 or (a.get("score") or 0) > 0):
+                    continue                # goalless — no scorer line to show
+                try:
+                    dt = datetime.fromisoformat(g.get("startTime") or "").astimezone(CAIRO)
+                    date = dt.strftime("%Y-%m-%d")
+                except Exception:
+                    date = (g.get("startTime") or "")[:10]
+                if g.get("statusGroup") == 4 and (not date or date < cutoff):
+                    continue
+                cands[g.get("id")] = (g, date)
+        except Exception as e:
+            print(f"  ! goal-events {path.split('?')[0]} failed: {e}")
+    out, dbg = [], {"candidates": len(cands), "detail_fails": 0, "skipped": []}
+    for gid, (g0, date) in list(cands.items())[:GOAL_DETAIL_CAP]:
+        try:
+            time.sleep(0.6)
+            j = _s365(f"game/?appTypeId=5&langId=27&gameId={gid}")
+        except Exception as e:
+            dbg["detail_fails"] += 1
+            continue
+        game = j.get("game") or {}
+        if "sample" not in dbg:             # one raw sample for diagnosis
+            dbg["sample"] = {
+                "game_keys": list(game)[:24],
+                "event0": json.dumps((game.get("events") or [None])[0],
+                                     ensure_ascii=False, default=str)[:700],
+                "member0": json.dumps((game.get("members") or [None])[0],
+                                      ensure_ascii=False, default=str)[:250]}
+        goals, health = _goal_rows(game, (g0.get("homeCompetitor") or {}).get("id"))
+        if not goals:
+            if health != "ok":
+                dbg["skipped"].append(f"{gid}:{health}")
+            continue
+        h = game.get("homeCompetitor") or g0.get("homeCompetitor") or {}
+        a = game.get("awayCompetitor") or g0.get("awayCompetitor") or {}
+        out.append({"home": h.get("name"), "away": a.get("name"),
+                    "date": date, "goals": goals})
+    dbg["skipped"] = dbg["skipped"][:6]
+    return out, dbg
+
 # ---------------------------------------------------------------- top scorers
 # 365scores is the source: Arabic player names for EVERY league, including the
 # Egyptian/Turkish/Saudi ones football-data's free tier doesn't carry.
@@ -896,6 +1015,15 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! player charts failed ({e}) - keeping existing files")
         _DBG["goals"] = _DBG["assists"] = f"FAIL: {e!r}"
+    try:
+        goal_events, ge_dbg = fetch_goal_events()
+        _DBG["goal_events"] = f"ok ({len(goal_events)} games)"
+        _DBG["goal_events_dbg"] = ge_dbg
+        write_items("goal_events.json", goal_events)
+        print(f"goal events: {len(goal_events)} games")
+    except Exception as e:
+        print(f"  ! goal events failed ({e}) - keeping existing goal_events.json")
+        _DBG["goal_events"] = f"FAIL: {e!r}"
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)
