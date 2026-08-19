@@ -38,6 +38,10 @@ CONTACT_EMAIL = "yallascore.eg@gmail.com"
 # home teaser, its page, and sitemap entry all follow this flag automatically).
 SHOW_VIDEOS = False
 SHOW_REELS = False
+# stats live inside the /matches league view now (2026-08-19, user request);
+# the standalone page still builds (old links don't 404) but is unlinked,
+# out of the sitemap, and noindexed. Flip to True to bring it back.
+SHOW_STATS_PAGE = False
 
 # Generic fallback thumbnails (our own SVGs in media/, no licensing worries)
 # for headline cards whose source page offers no og:image.
@@ -142,6 +146,9 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
     sa = " is-active" if active == "stats" else ""
+    stats_tab = ('    <a href="/stats.html" class="navtab' + sa + '">'
+                 '<span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>'
+                 if SHOW_STATS_PAGE else "")
     va = " is-active" if active == "videos" else ""
     ra = " is-active" if active == "reels" else ""
     vids_tab = (f'\n    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>'
@@ -185,7 +192,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   <nav class="site-nav"><div class="wrap nav-in">
     <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية<span class="nav-en"> | Home</span></a>
     <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
-    <a href="/stats.html" class="navtab{sa}"><span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>{vids_tab}{reels_tab}
+{stats_tab}{vids_tab}{reels_tab}
   </div></nav>
 </header>
 <main class="wrap">
@@ -195,12 +202,13 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 
 def foot():
     year = "2026"
+    stats_link = ' · <a href="/stats.html">إحصائيات</a>' if SHOW_STATS_PAGE else ""
     vids_link = ' · <a href="/videos.html">فيديوهات</a>' if SHOW_VIDEOS else ""
     reels_link = ' · <a href="/reels.html">ريلز</a>' if SHOW_REELS else ""
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/stats.html">إحصائيات</a>{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -1115,8 +1123,12 @@ def build():
     if not any_stats:
         sp.append('<p class="hintline">لا توجد بيانات كافية بعد — تعود اللوحة للعمل مع انطلاق الجولات.</p>')
     sp.append(foot())
-    write("stats.html", "".join(sp))
-    urls.append("/stats.html")
+    html_out = "".join(sp)
+    if not SHOW_STATS_PAGE:
+        html_out = html_out.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+    write("stats.html", html_out)
+    if SHOW_STATS_PAGE:
+        urls.append("/stats.html")
 
     # ---- privacy policy (required for AdSense) ----
     contact = (f'راسِلنا على <a href="mailto:{esc(CONTACT_EMAIL)}">{esc(CONTACT_EMAIL)}</a>.'
