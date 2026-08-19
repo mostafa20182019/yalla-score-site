@@ -765,45 +765,7 @@ def build():
         write(f"a/{a['article_id']}.html", "".join(p))
         urls.append(f"/a/{a['article_id']}.html")
 
-    # ---- matches page (per-day navigator, like the live app) ----
-    from collections import OrderedDict
-    daymap = OrderedDict()
-    for m in matches:
-        daymap.setdefault(m.get("kickoff") or "", []).append(m)
-    sorted_days = sorted(k for k in daymap.keys() if k)
-    # distinct competitions across the feed (for the leagues sidebar):
-    # every league seen in the day view, plus any league that has a standings
-    # table or a rounds panel even if it has no match in the current window
-    # (e.g. a league added before its season starts).
-    comp_order = []
-    for m in matches:
-        c = m.get("competition") or ""
-        if c and c not in comp_order:
-            comp_order.append(c)
-    for s in standings:
-        c = s.get("competition") or ""
-        if c and s.get("table") and c not in comp_order:
-            comp_order.append(c)
-    for f in fixtures:
-        c = f.get("competition") or ""
-        if c and c not in comp_order:
-            comp_order.append(c)
-    comp_order.sort(key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER
-                                   else len(COMP_ORDER), c))
-
-    p = [head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
-              "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
-              SITE_BASE + "/matches.html", active="matches")]
-    p.append('<div class="mpage">')
-
-    # --- right rail (RTL start): leagues filter ---
-    p.append('<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">')
-    for c in comp_order:
-        p.append(f'<button type="button" class="lg-item" data-comp="{esc(c)}">'
-                 f'{comp_icon(c)} <span class="lg-name">{esc(comp_label(c))}</span></button>')
-    p.append('</div></aside>')
-
-    # --- center: league tables (hidden) + day navigator + days ---
+    # ---- shared per-league data + stats machinery (matches page + /stats) ----
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
     sc_by_comp = {s.get("competition"): (s.get("scorers") or [])
                   for s in scorers if s.get("scorers")}
@@ -811,89 +773,7 @@ def build():
                   for s in assists if s.get("assists")}
     forms = team_form(fixtures)
     elos = compute_elo(fixtures)
-    p.append('<div class="mp-main">')
-    # ad strip at the top of the CENTER column - matches-list width only
-    p.append(f'<div class="home-topad">{adsense_slot()}</div>')
-    for comp, st in st_by_comp.items():
-        p.append(standings_table(comp, st.get("table"),
-                                 past=st.get("past"), season_label=st.get("season_label"),
-                                 zeroed=st.get("zeroed"), form_map=forms.get(comp, {})))
-    p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no table)
-    p.append('<div id="daynav" class="daynav" hidden>'
-             '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
-             '<span id="dayLabel" class="dn-label"></span>'
-             '<button type="button" id="nextDay" class="dn-arrow" aria-label="اليوم التالي">›</button></div>')
-    p.append(f'<div id="days" data-today="{REF_TODAY}">')
-    for d in sorted_days:
-        p.append(f'<section class="day" data-day="{d}"><h2 class="day-h">{esc(fmt_day(d))}</h2>')
-        comps = OrderedDict()
-        for m in daymap[d]:
-            comps.setdefault(m.get("competition") or "", []).append(m)
-        # same fixed league order as the sidebar
-        for comp, ms in sorted(comps.items(),
-                               key=lambda kv: (COMP_ORDER.index(kv[0])
-                                               if kv[0] in COMP_ORDER
-                                               else len(COMP_ORDER), kv[0])):
-            p.append(f'<div class="comp" data-comp="{esc(comp)}">')
-            if comp:
-                p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
-            p.append('<div class="mlist">')
-            for m in ms:
-                p.append(match_row(m, show_time=True, show_comp=False,
-                                   goals=match_goals(ge_idx, m)))
-            p.append('</div></div>')
-        p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
-        p.append('</section>')
-    p.append('</div></div>')  # /days /mp-main
-
-    # --- left rail (RTL end): per-league fixtures BY ROUND (shown on select) ---
     fx_by_comp = {f.get("competition"): f for f in fixtures if f.get("rounds")}
-    # fallback (leagues with no round data): day-grouped from the day view
-    comp_fix = {}
-    for d in sorted_days:
-        for m in daymap[d]:
-            comp_fix.setdefault(m.get("competition") or "", {}).setdefault(d, []).append(m)
-    p.append('<aside class="mp-side mp-extra">')
-    for c in comp_order:
-        if c in fx_by_comp:
-            p.append(league_rounds_panel(c, fx_by_comp[c]))
-        elif comp_fix.get(c):
-            p.append(f'<div class="lg-fix" data-comp="{esc(c)}" hidden>'
-                     f'<div class="fx-head">{comp_icon(c)} مباريات {esc(comp_label(c))}</div>')
-            for d in sorted(comp_fix[c].keys()):
-                p.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
-                for m in comp_fix[c][d]:
-                    p.append(fixture_mini(m))
-            p.append('</div>')
-    # default rail content: featured-article card + latest headlines -
-    # swapped for the league rounds panel when a competition is selected
-    p.append('<div id="mpDefault">')
-    if articles:
-        fa = articles[0]
-        p.append(f'<a class="mp-feat" href="/a/{fa["article_id"]}.html">')
-        if fa.get("image_url"):
-            p.append(f'<img class="mp-feat-img" src="{esc(fa["image_url"])}" alt="" loading="lazy">')
-        p.append(f'<b class="mp-feat-t">{esc(fa.get("title"))}</b>'
-                 '<span class="mp-feat-cta">اقرأ الخبر ←</span></a>')
-        p.append('<div class="mp-news">')
-        for a in articles[1:4]:
-            img = a.get("image_url")
-            th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
-                  if img else '<span class="mn-th noimg">⚽</span>')
-            p.append(f'<a class="mn-item" href="/a/{a["article_id"]}.html">{th}'
-                     f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span>'
-                     f'<span class="mn-d">{esc(a.get("pub_date") or "")}</span></span></a>')
-        p.append('</div>')
-    p.append('</div>')
-    p.append('</aside>')
-
-    p.append('</div>')  # /mpage
-    p.append(MATCHES_JS)
-    p.append(ROUNDS_JS)
-    p.append(foot())
-    write("matches.html", "".join(p))
-
-    # ---- stats dashboard (/stats.html) ----
     STAT_PAL = ["#188038", "#2563eb", "#e11d48", "#f59e0b", "#7c3aed"]
 
     def _fin_ms(fx):
@@ -974,14 +854,8 @@ def build():
         parts.append('</svg>')
         return f'<div class="chart-wrap">{"".join(parts)}</div>'
 
-    sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
-               "لوحة إحصائيات مرئية: سباق النقاط، الأهداف في كل جولة، وأرقام الموسم لكل بطولة.",
-               SITE_BASE + "/stats.html", active="stats")]
-    sp.append(page_head_ad(
-        '<h1 class="page-h">📊 إحصائيات وتحليلات</h1>',
-        'أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.'))
-    # season totals per competition, so the player charts can be checked against
-    # the season they claim to describe (see chart_is_current)
+    # season totals per competition, so the player charts can be checked
+    # against the season they claim to describe (see chart_is_current)
     comp_goals, comp_maxp = {}, {}
     for _c, _fx in fx_by_comp.items():
         _f = _fin_ms(_fx)
@@ -993,16 +867,25 @@ def build():
              for c, rows in sc_by_comp.items()}
     as_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
              for c, rows in as_by_comp.items()}
-    sp.append(clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures))
-    any_stats = False
     stats_cutoff = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
-    for comp in comp_order:
+
+    def league_stats_sec(comp, heading=True):
+        """One league's full stats section (tiles, percentages, player charts,
+        points race, goals-per-round). Empty string when nothing current.
+        Shared by /stats.html and the league view on /matches.html."""
+        parts = []
         fx = fx_by_comp.get(comp)
         if not fx:
-            continue
+            return ""
         fin = _fin_ms(fx)
         if not fin:
-            continue
+            return ""
+        fx = fx_by_comp.get(comp)
+        if not fx:
+            return ""
+        fin = _fin_ms(fx)
+        if not fin:
+            return ""
         # a season that ended long ago (e.g. last season's Champions League
         # rounds still in the feed) must not pose as current-season numbers:
         # skip when nothing is left to play AND the last match is >30 days old
@@ -1010,8 +893,7 @@ def build():
         pending = any((m.get("status") or "").upper() != "FINISHED" for m in all_ms)
         last_day = max((m.get("kickoff") or "" for m in all_ms), default="")
         if not pending and last_day and last_day < stats_cutoff:
-            continue
-        any_stats = True
+            return ""
         played = len(fin)
         goals = sum(m["home_score"] + m["away_score"] for _, m in fin)
         big = max((m for _, m in fin),
@@ -1043,8 +925,9 @@ def build():
         if not top_teams:
             er = elos.get(comp, {})
             top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
-        sp.append('<section class="stats-sec">')
-        sp.append(f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>')
+        parts.append('<section class="stats-sec">')
+        if heading:
+            parts.append(f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>')
         # player charts, only when they describe THIS season (chart_is_current)
         sc = sc_by_comp.get(comp) or [] if sc_ok.get(comp) else []
         asst = as_by_comp.get(comp) or [] if as_ok.get(comp) else []
@@ -1057,7 +940,7 @@ def build():
                        f'<div class="tile-ms">{_scorer_face(lead)}'
                        f'<span class="tm"><bdi>{esc(lead.get("name"))}</bdi></span></div>'
                        f'<div class="tile-when">{esc(lead.get("team"))}</div></div>')
-        sp.append('<div class="stat-tiles">'
+        parts.append('<div class="stat-tiles">'
                   f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
                   f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
                   f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
@@ -1067,26 +950,168 @@ def build():
                   '</div>')
         pcts = league_pcts(fin)
         if pcts:
-            sp.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
-            sp.append(pcts)
+            parts.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
+            parts.append(pcts)
         if sc or asst:
-            sp.append('<div class="chart-cols">')
+            parts.append('<div class="chart-cols">')
             if sc:
-                sp.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
+                parts.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
                           + scorers_list(sc, "أهداف") + '</div>')
             if asst:
-                sp.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
+                parts.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
                           + scorers_list(asst, "صناعة") + '</div>')
-            sp.append('</div>')
+            parts.append('</div>')
         race = _pts_race_svg(fin, top_teams)
         if race:
-            sp.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
-            sp.append(race)
+            parts.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
+            parts.append(race)
         gsvg = _goals_svg(fin)
         if gsvg:
-            sp.append('<h3 class="stats-h3">الأهداف في كل جولة</h3>')
-            sp.append(gsvg)
-        sp.append('</section>')
+            parts.append('<h3 class="stats-h3">الأهداف في كل جولة</h3>')
+            parts.append(gsvg)
+        parts.append('</section>')
+        return "".join(parts)
+
+    # ---- matches page (per-day navigator, like the live app) ----
+    from collections import OrderedDict
+    daymap = OrderedDict()
+    for m in matches:
+        daymap.setdefault(m.get("kickoff") or "", []).append(m)
+    sorted_days = sorted(k for k in daymap.keys() if k)
+    # distinct competitions across the feed (for the leagues sidebar):
+    # every league seen in the day view, plus any league that has a standings
+    # table or a rounds panel even if it has no match in the current window
+    # (e.g. a league added before its season starts).
+    comp_order = []
+    for m in matches:
+        c = m.get("competition") or ""
+        if c and c not in comp_order:
+            comp_order.append(c)
+    for s in standings:
+        c = s.get("competition") or ""
+        if c and s.get("table") and c not in comp_order:
+            comp_order.append(c)
+    for f in fixtures:
+        c = f.get("competition") or ""
+        if c and c not in comp_order:
+            comp_order.append(c)
+    comp_order.sort(key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER
+                                   else len(COMP_ORDER), c))
+
+    p = [head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
+              "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
+              SITE_BASE + "/matches.html", active="matches")]
+    p.append('<div class="mpage">')
+
+    # --- right rail (RTL start): leagues filter ---
+    p.append('<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">')
+    for c in comp_order:
+        p.append(f'<button type="button" class="lg-item" data-comp="{esc(c)}">'
+                 f'{comp_icon(c)} <span class="lg-name">{esc(comp_label(c))}</span></button>')
+    p.append('</div></aside>')
+
+    # --- center: league tables (hidden) + day navigator + days ---
+    p.append('<div class="mp-main">')
+    # ad strip at the top of the CENTER column - matches-list width only
+    p.append(f'<div class="home-topad">{adsense_slot()}</div>')
+    for comp, st in st_by_comp.items():
+        p.append(standings_table(comp, st.get("table"),
+                                 past=st.get("past"), season_label=st.get("season_label"),
+                                 zeroed=st.get("zeroed"), form_map=forms.get(comp, {})))
+    # per-league stats, revealed under the table when its league is selected
+    for c in comp_order:
+        _sec = league_stats_sec(c, heading=False)
+        if _sec:
+            p.append(f'<div class="lstats" data-comp="{esc(c)}" hidden>'
+                     f'<h3 class="stats-h3 lstats-h">📊 إحصائيات البطولة</h3>{_sec}</div>')
+    p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no table)
+    p.append('<div id="daynav" class="daynav" hidden>'
+             '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
+             '<span id="dayLabel" class="dn-label"></span>'
+             '<button type="button" id="nextDay" class="dn-arrow" aria-label="اليوم التالي">›</button></div>')
+    p.append(f'<div id="days" data-today="{REF_TODAY}">')
+    for d in sorted_days:
+        p.append(f'<section class="day" data-day="{d}"><h2 class="day-h">{esc(fmt_day(d))}</h2>')
+        comps = OrderedDict()
+        for m in daymap[d]:
+            comps.setdefault(m.get("competition") or "", []).append(m)
+        # same fixed league order as the sidebar
+        for comp, ms in sorted(comps.items(),
+                               key=lambda kv: (COMP_ORDER.index(kv[0])
+                                               if kv[0] in COMP_ORDER
+                                               else len(COMP_ORDER), kv[0])):
+            p.append(f'<div class="comp" data-comp="{esc(comp)}">')
+            if comp:
+                p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
+            p.append('<div class="mlist">')
+            for m in ms:
+                p.append(match_row(m, show_time=True, show_comp=False,
+                                   goals=match_goals(ge_idx, m)))
+            p.append('</div></div>')
+        p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
+        p.append('</section>')
+    p.append('</div></div>')  # /days /mp-main
+
+    # --- left rail (RTL end): per-league fixtures BY ROUND (shown on select) ---
+    # fallback (leagues with no round data): day-grouped from the day view
+    comp_fix = {}
+    for d in sorted_days:
+        for m in daymap[d]:
+            comp_fix.setdefault(m.get("competition") or "", {}).setdefault(d, []).append(m)
+    p.append('<aside class="mp-side mp-extra">')
+    for c in comp_order:
+        if c in fx_by_comp:
+            p.append(league_rounds_panel(c, fx_by_comp[c]))
+        elif comp_fix.get(c):
+            p.append(f'<div class="lg-fix" data-comp="{esc(c)}" hidden>'
+                     f'<div class="fx-head">{comp_icon(c)} مباريات {esc(comp_label(c))}</div>')
+            for d in sorted(comp_fix[c].keys()):
+                p.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
+                for m in comp_fix[c][d]:
+                    p.append(fixture_mini(m))
+            p.append('</div>')
+    # default rail content: featured-article card + latest headlines -
+    # swapped for the league rounds panel when a competition is selected
+    p.append('<div id="mpDefault">')
+    if articles:
+        fa = articles[0]
+        p.append(f'<a class="mp-feat" href="/a/{fa["article_id"]}.html">')
+        if fa.get("image_url"):
+            p.append(f'<img class="mp-feat-img" src="{esc(fa["image_url"])}" alt="" loading="lazy">')
+        p.append(f'<b class="mp-feat-t">{esc(fa.get("title"))}</b>'
+                 '<span class="mp-feat-cta">اقرأ الخبر ←</span></a>')
+        p.append('<div class="mp-news">')
+        for a in articles[1:4]:
+            img = a.get("image_url")
+            th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                  if img else '<span class="mn-th noimg">⚽</span>')
+            p.append(f'<a class="mn-item" href="/a/{a["article_id"]}.html">{th}'
+                     f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span>'
+                     f'<span class="mn-d">{esc(a.get("pub_date") or "")}</span></span></a>')
+        p.append('</div>')
+    p.append('</div>')
+    p.append('</aside>')
+
+    p.append('</div>')  # /mpage
+    p.append(MATCHES_JS)
+    p.append(ROUNDS_JS)
+    p.append(foot())
+    write("matches.html", "".join(p))
+
+    # ---- stats dashboard (/stats.html) ----
+    sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
+               "لوحة إحصائيات مرئية: سباق النقاط، الأهداف في كل جولة، وأرقام الموسم لكل بطولة.",
+               SITE_BASE + "/stats.html", active="stats")]
+    sp.append(page_head_ad(
+        '<h1 class="page-h">📊 إحصائيات وتحليلات</h1>',
+        'أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.'))
+    sp.append(clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures))
+    any_stats = False
+    for comp in comp_order:
+        sec = league_stats_sec(comp)
+        if sec:
+            any_stats = True
+            sp.append(sec)
     if not any_stats:
         sp.append('<p class="hintline">لا توجد بيانات كافية بعد — تعود اللوحة للعمل مع انطلاق الجولات.</p>')
     sp.append(foot())
@@ -1857,6 +1882,8 @@ a{color:inherit}
 .stats-sec{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;margin:0 0 18px;
   box-shadow:0 1px 3px rgba(15,23,42,.05)}
 .stats-h3{font-size:.9rem;font-weight:900;color:var(--muted);margin:16px 0 8px}
+.lstats{margin-top:16px}
+.lstats-h{margin:0 0 10px;font-size:1rem;color:var(--ink)}
 .stat-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .tile{background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;padding:12px;text-align:center}
 .tile b{display:block;font-size:1.05rem;color:#0f5e28}
@@ -2340,6 +2367,7 @@ MATCHES_JS = """<script>
   prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
   next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
   var tables=[].slice.call(document.querySelectorAll('.ltable'));
+  var lstats=[].slice.call(document.querySelectorAll('.lstats'));
   var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
   /* the daynav has CSS display:flex which overrides the [hidden] attribute,
      so toggle it via inline style.display instead */
@@ -2352,6 +2380,7 @@ MATCHES_JS = """<script>
     filter='';
     lgItems.forEach(function(x){ x.classList.remove('is-active'); });
     tables.forEach(function(t){ t.hidden=true; });
+    lstats.forEach(function(t){ t.hidden=true; });
     fixPanels.forEach(function(f){ f.hidden=true; });
     if(noTable) noTable.hidden=true;
     if(mpDefault) mpDefault.hidden=false;
@@ -2364,8 +2393,10 @@ MATCHES_JS = """<script>
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
     var table=tables.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
     tables.forEach(function(t){ t.hidden = t!==table; });
+    var ls=lstats.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
+    lstats.forEach(function(t){ t.hidden = t!==ls; });
     matchesShown(false);                              /* never show fixtures in the centre */
-    if(noTable) noTable.hidden = !!table;             /* no table -> empty placeholder */
+    if(noTable) noTable.hidden = !!table || !!ls;     /* no table -> empty placeholder */
     /* left rail: this league's fixtures instead of news */
     var fx=fixPanels.filter(function(f){return f.getAttribute('data-comp')===filter;})[0];
     fixPanels.forEach(function(f){ f.hidden = f!==fx; });
