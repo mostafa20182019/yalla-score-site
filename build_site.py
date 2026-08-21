@@ -435,9 +435,9 @@ def make_ticker(matches):
         ab = (f'<img class="tk-b" src="{esc(local_crest(m.get("away_badge")))}" alt="" loading="lazy">'
               if m.get("away_badge") else "")
         if st == "LIVE":
-            mid = f'<b class="tk-s">{sc(m.get("home_score"))}-{sc(m.get("away_score"))}</b><span class="tk-dot"></span>'
+            mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s") + '<span class="tk-dot"></span>'
         elif st == "FINISHED":
-            mid = f'<b class="tk-s">{sc(m.get("home_score"))}-{sc(m.get("away_score"))}</b>'
+            mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s")
         else:
             mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
         day = ("" if m.get("kickoff") == REF_TODAY or st == "LIVE"
@@ -483,11 +483,15 @@ LIVE_JS = r"""<script>
     var k=norm(e.getAttribute('data-h'))+'|'+norm(e.getAttribute('data-a'));
     (map[k]=map[k]||[]).push(e);
   });
+  /* home score on the home side - see score_pill() in build_site.py */
+  function pill(cls,hs,as_){
+    return '<b class="'+cls+'"><span>'+hs+'</span><i>-</i><span>'+as_+'</span></b>';
+  }
   function paint(e,g){
     var sc=g.hs+' - '+g.as;
     if(e.classList.contains('tk-item')){
       var mid=e.querySelector('.tk-mid'); if(!mid)return;
-      mid.innerHTML='<b class="tk-s">'+g.hs+'-'+g.as+'</b>'+(g.live?'<span class="tk-dot"></span>':'');
+      mid.innerHTML=pill('tk-s',g.hs,g.as)+(g.live?'<span class="tk-dot"></span>':'');
     }else{
       var mid=e.querySelector('.mid'); if(!mid)return;
       mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
@@ -514,7 +518,7 @@ LIVE_JS = r"""<script>
     if(!hit){favBox.hidden=true;favBox.innerHTML='';return;}
     favBox.innerHTML='<span class="fv-dot"></span><span class="fv-t">مباشر الآن</span>'
       +'<span class="fv-m"><bdi>'+hit.h+'</bdi>'
-      +'<b class="fv-s">'+hit.hs+'-'+hit.as+'</b>'
+      +pill('fv-s',hit.hs,hit.as)
       +'<bdi>'+hit.a+'</bdi></span>'
       +(hit.min?'<span class="fv-min">'+hit.min+'</span>':'');
     favBox.hidden=false;
@@ -1798,6 +1802,18 @@ def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
     return ('<section class="stats-sec"><h2 class="lt-head">⭐ أبرز الأندية</h2>'
             f'<div class="cl-grid">{"".join(cards)}</div></section>')
 
+def score_pill(hs, aws, cls):
+    """A score sitting BETWEEN two team names must put the home number on the
+    home side. "1-0" as plain text is one LTR bidi run, so in an RTL row it
+    lands home-score-left = next to the AWAY team (reversed). Ordering two
+    separate elements inside an RTL flex container fixes it and stays correct
+    for two-digit scores, which a bidi-override would scramble.
+    (The .score in match rows is fine as-is: its spaces around the hyphen
+    already split it into separate runs — measured, don't "tidy" them away.)"""
+    h = "-" if hs is None else hs
+    a = "-" if aws is None else aws
+    return (f'<b class="{cls}"><span>{h}</span><i>-</i><span>{a}</span></b>')
+
 def _pval(x):
     """Chart value — "value" is the current key, "goals" the original one."""
     v = x.get("value")
@@ -2313,8 +2329,10 @@ a{color:inherit}
 .fv-t{color:var(--live);font-size:.72rem;font-weight:900;letter-spacing:.02em}
 .fv-m{display:inline-flex;align-items:center;gap:7px;min-width:0}
 .fv-m bdi{white-space:nowrap}
-.fv-s{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 8px;
-  font-size:.8rem;direction:ltr;unicode-bidi:embed}
+.fv-s,.tk-s{display:inline-flex;align-items:center;gap:1px}
+.fv-s span,.tk-s span{font-variant-numeric:tabular-nums}
+.fv-s i,.tk-s i{font-style:normal;opacity:.75}
+.fv-s{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 8px;font-size:.8rem}
 .fv-min{color:var(--live);font-size:.72rem;font-weight:900;direction:ltr;unicode-bidi:embed}
 @media(max-width:560px){
   /* a phone row is narrow: let the pill wrap its own contents rather than
