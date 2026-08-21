@@ -475,7 +475,7 @@ def transfers_widget(ts, horizontal=False):
 LIVE_JS = r"""<script>
 (function(){
   var els=[].slice.call(document.querySelectorAll('[data-lv]'));
-  if(!els.length||!window.fetch)return;
+  if((!els.length&&!document.getElementById('favLive'))||!window.fetch)return;
   function norm(s){return(s||'').replace(/[أإآ]/g,'ا')
     .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
   var map={};
@@ -500,10 +500,30 @@ LIVE_JS = r"""<script>
       else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
     }
   }
+  /* favourite-club live card next to "آخر الأخبار" (home page only) */
+  var favBox=document.getElementById('favLive');
+  var FAV=(window.__favClubs||[]).map(norm);
+  function favRender(gs){
+    if(!favBox)return;
+    var hit=null;
+    for(var i=0;i<gs.length;i++){
+      var g=gs[i];
+      if(!g.live)continue;
+      if(FAV.indexOf(norm(g.h))>-1||FAV.indexOf(norm(g.a))>-1){hit=g;break;}
+    }
+    if(!hit){favBox.hidden=true;favBox.innerHTML='';return;}
+    favBox.innerHTML='<span class="fv-dot"></span><span class="fv-t">مباشر الآن</span>'
+      +'<span class="fv-m"><bdi>'+hit.h+'</bdi>'
+      +'<b class="fv-s">'+hit.hs+'-'+hit.as+'</b>'
+      +'<bdi>'+hit.a+'</bdi></span>'
+      +(hit.min?'<span class="fv-min">'+hit.min+'</span>':'');
+    favBox.hidden=false;
+  }
   var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot');
   function tick(){
     fetch('/live.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
       var gs=d.games||[],any=false;
+      favRender(gs);
       gs.forEach(function(g){
         var arr=map[norm(g.h)+'|'+norm(g.a)];
         if(arr){arr.forEach(function(e){paint(e,g);});}
@@ -676,7 +696,11 @@ def build():
     # widget, FotMob style) sits ABOVE the latest-news section.
     parts.append('<div class="home-cols"><div class="home-main">')
     parts.append(f'<div class="home-topad">{adsense_slot()}</div>')
-    parts.append('<h1 class="page-h">آخر الأخبار</h1>')
+    # heading row: title on the start side, a LIVE card for one of the curated
+    # clubs on the end side. The card is filled by LIVE_JS in the visitor's
+    # browser — a 15-minute-old build can't know what is live right now.
+    parts.append('<div class="sec-h news-h"><h1 class="page-h">آخر الأخبار</h1>'
+                 '<a id="favLive" class="fav-live" href="/matches.html" hidden></a></div>')
     if feat:
         img = feat.get("image_url")
         style = f' style="background-image:url(\'{esc(img)}\')"' if img else ' class="noimg"'
@@ -738,6 +762,9 @@ def build():
     side = transfers_widget(transfers) if transfers else ""
     parts.append(f'<aside class="home-side">{side}</aside>')
     parts.append('</div>')  # /home-cols
+    parts.append('<script>window.__favClubs='
+                 + json.dumps(fav_club_names(standings, fixtures), ensure_ascii=False)
+                 + ';</script>')
     parts.append(foot())
     write("index.html", "".join(parts))
 
@@ -1664,6 +1691,42 @@ def league_pcts(fin):
     out.append('</div>')
     return "".join(out)
 
+def fav_club_names(standings, fixtures):
+    """The curated clubs as the ARABIC names the live feed uses — TICKER_TEAMS
+    holds football-data tokens for the European clubs, and /live.json speaks
+    365scores Arabic, so resolve each token through the real data + ar_team()
+    instead of hand-maintaining a second list."""
+    names = []
+    for token, only_comp in TICKER_TEAMS:
+        hit = None
+        for st in standings:
+            comp = st.get("competition")
+            if only_comp and comp != only_comp:
+                continue
+            for r in st.get("table") or []:
+                if token in (r.get("team") or ""):
+                    hit = r.get("team")
+                    break
+            if hit:
+                break
+        if not hit:                      # no table yet: try the fixtures feed
+            for fx in fixtures:
+                if only_comp and fx.get("competition") != only_comp:
+                    continue
+                for rd in fx.get("rounds", []):
+                    for m in rd.get("matches", []):
+                        for side in ("home", "away"):
+                            if token in (m.get(side) or ""):
+                                hit = m[side]
+                                break
+                        if hit: break
+                    if hit: break
+                if hit: break
+        nm = ar_team(hit) if hit else token
+        if nm not in names:
+            names.append(nm)
+    return names
+
 def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
     """The curated clubs (TICKER_TEAMS) at a glance: position, points, last 5,
     and the club's own top scorer — or its next match while the season hasn't
@@ -2234,6 +2297,26 @@ a{color:inherit}
 @media(max-width:760px){.sh-btn{display:none}}
 /* videos */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
+/* live card for a curated club, beside the "آخر الأخبار" heading */
+.news-h{align-items:center}
+.fav-live{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+  background:#fff5f6;border:1px solid #f6ccd2;border-radius:999px;
+  padding:6px 14px;color:var(--ink);font-weight:800;font-size:.82rem}
+.fav-live:hover{border-color:#e11d48;box-shadow:0 2px 10px rgba(225,29,72,.14)}
+.fv-dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:0 0 auto;
+  animation:fvpulse 1.4s ease-in-out infinite}
+@keyframes fvpulse{0%,100%{opacity:1}50%{opacity:.25}}
+.fv-t{color:var(--live);font-size:.72rem;font-weight:900;letter-spacing:.02em}
+.fv-m{display:inline-flex;align-items:center;gap:7px;min-width:0}
+.fv-m bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:11ch}
+.fv-s{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 8px;
+  font-size:.8rem;direction:ltr;unicode-bidi:embed}
+.fv-min{color:var(--live);font-size:.72rem;font-weight:900;direction:ltr;unicode-bidi:embed}
+@media(max-width:560px){
+  .news-h{align-items:flex-start}
+  .fav-live{font-size:.76rem;padding:5px 11px;gap:6px}
+  .fv-m bdi{max-width:8ch}
+}
 .see-all{color:var(--green-d);font-weight:800;text-decoration:none;font-size:.85rem;white-space:nowrap}
 .see-all:hover{text-decoration:underline}
 .vstrip{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
