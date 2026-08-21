@@ -1,5 +1,5 @@
 {
- "news": "ok (58)",
+ "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
  "matches": "ok (60)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
@@ -154,5 +154,5 @@
    "member0": "{\"competitorId\": 134, \"id\": 325326, \"athleteId\": 5739, \"name\": \"يان أوبلاك\", \"shortName\": \"أوبلاك\", \"jerseyNumber\": 13, \"nameForURL\": \"jan-oblak\", \"imageVersion\": 51}"
   }
  },
- "utc": "2026-08-21T06:04:10Z"
+ "utc": "2026-08-21T06:20:16Z"
 }
