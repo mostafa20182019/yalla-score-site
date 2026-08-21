@@ -2319,15 +2319,17 @@ a{color:inherit}
 /* videos */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 /* live card for a curated club — its own row directly above "آخر الأخبار" */
-.fav-live{display:inline-flex;align-items:center;gap:9px;text-decoration:none;
-  background:#fff5f6;border:1px solid #f6ccd2;border-radius:999px;
-  padding:7px 16px;margin:0 0 12px;color:var(--ink);font-weight:800;font-size:.86rem}
+/* full-width bar: status on the start side, the match centered, minute at the end */
+.fav-live{display:flex;align-items:center;justify-content:space-between;gap:10px;
+  text-decoration:none;background:#fff5f6;border:1px solid #f6ccd2;border-radius:14px;
+  padding:10px 16px;margin:0 0 12px;color:var(--ink);font-weight:800;font-size:.88rem}
 .fav-live:hover{border-color:#e11d48;box-shadow:0 2px 10px rgba(225,29,72,.14)}
 .fv-dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:0 0 auto;
   animation:fvpulse 1.4s ease-in-out infinite}
 @keyframes fvpulse{0%,100%{opacity:1}50%{opacity:.25}}
 .fv-t{color:var(--live);font-size:.72rem;font-weight:900;letter-spacing:.02em}
-.fv-m{display:inline-flex;align-items:center;gap:7px;min-width:0}
+.fv-m{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  flex:1 1 auto;min-width:0}
 .fv-m bdi{white-space:nowrap}
 .fv-s,.tk-s{display:inline-flex;align-items:center;gap:1px}
 .fv-s span,.tk-s span{font-variant-numeric:tabular-nums}
@@ -2335,10 +2337,10 @@ a{color:inherit}
 .fv-s{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 8px;font-size:.8rem}
 .fv-min{color:var(--live);font-size:.72rem;font-weight:900;direction:ltr;unicode-bidi:embed}
 @media(max-width:560px){
-  /* a phone row is narrow: let the pill wrap its own contents rather than
+  /* a phone row is narrow: let the bar wrap its own contents rather than
      clip a club name or push the page sideways */
-  .fav-live{font-size:.78rem;padding:6px 12px;gap:7px;flex-wrap:wrap;
-    border-radius:14px;max-width:100%}
+  .fav-live{font-size:.8rem;padding:9px 12px;gap:8px;flex-wrap:wrap}
+  .fv-m{gap:7px}
 }
 .see-all{color:var(--green-d);font-weight:800;text-decoration:none;font-size:.85rem;white-space:nowrap}
 .see-all:hover{text-decoration:underline}
