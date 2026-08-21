@@ -2326,6 +2326,10 @@ a{color:inherit}
   text-decoration:none;background:#fff5f6;border:1px solid #f6ccd2;border-radius:14px;
   padding:11px 18px;margin:16px 0 0;color:var(--ink);font-weight:800;font-size:.9rem}
 .fav-live:hover{border-color:#e11d48;box-shadow:0 2px 10px rgba(225,29,72,.14)}
+/* tighten the news heading under the bar — but only while the bar is actually
+   showing, so a quiet day keeps the normal breathing room. h1 only: the h2
+   section headings below must not shift with live state. */
+.fav-live:not([hidden]) + .home-cols h1.page-h{margin-top:9px}
 .fv-dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:0 0 auto;
   animation:fvpulse 1.4s ease-in-out infinite}
 @keyframes fvpulse{0%,100%{opacity:1}50%{opacity:.25}}
