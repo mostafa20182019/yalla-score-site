@@ -1,5 +1,5 @@
 {
- "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
+ "news": "ok (59)",
  "matches": "ok (60)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
@@ -118,9 +118,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (10 games)",
+ "goal_events": "ok (11 games)",
  "goal_events_dbg": {
-  "candidates": 10,
+  "candidates": 11,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -154,5 +154,5 @@
    "member0": "{\"competitorId\": 134, \"id\": 325326, \"athleteId\": 5739, \"name\": \"يان أوبلاك\", \"shortName\": \"أوبلاك\", \"jerseyNumber\": 13, \"nameForURL\": \"jan-oblak\", \"imageVersion\": 51}"
   }
  },
- "utc": "2026-08-21T19:48:29Z"
+ "utc": "2026-08-21T19:54:10Z"
 }
