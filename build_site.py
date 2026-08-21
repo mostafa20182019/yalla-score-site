@@ -1896,6 +1896,11 @@ CSS = r""":root{
   --ink:#0f172a; --muted:#64748b; --card:#fff; --bg:#eef2f6;
 }
 *{box-sizing:border-box}
+/* a class-level `display` beats the UA's [hidden]{display:none}, so an element
+   hidden via the attribute keeps rendering (the fav-live card showed as an
+   empty pill, and the daynav needed an inline-style workaround for the same
+   reason). One rule closes the whole class of bug. */
+[hidden]{display:none!important}
 html,body{overflow-x:hidden;max-width:100%}
 body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
 .wrap{max-width:1600px;margin:0 auto;padding:0 20px}
