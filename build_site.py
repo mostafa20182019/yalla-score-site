@@ -699,8 +699,8 @@ def build():
     # heading row: title on the start side, a LIVE card for one of the curated
     # clubs on the end side. The card is filled by LIVE_JS in the visitor's
     # browser — a 15-minute-old build can't know what is live right now.
-    parts.append('<div class="sec-h news-h"><h1 class="page-h">آخر الأخبار</h1>'
-                 '<a id="favLive" class="fav-live" href="/matches.html" hidden></a></div>')
+    parts.append('<a id="favLive" class="fav-live" href="/matches.html" hidden></a>')
+    parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
         img = feat.get("image_url")
         style = f' style="background-image:url(\'{esc(img)}\')"' if img else ' class="noimg"'
@@ -2302,25 +2302,25 @@ a{color:inherit}
 @media(max-width:760px){.sh-btn{display:none}}
 /* videos */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
-/* live card for a curated club, beside the "آخر الأخبار" heading */
-.news-h{align-items:center}
-.fav-live{display:inline-flex;align-items:center;gap:8px;text-decoration:none;
+/* live card for a curated club — its own row directly above "آخر الأخبار" */
+.fav-live{display:inline-flex;align-items:center;gap:9px;text-decoration:none;
   background:#fff5f6;border:1px solid #f6ccd2;border-radius:999px;
-  padding:6px 14px;color:var(--ink);font-weight:800;font-size:.82rem}
+  padding:7px 16px;margin:0 0 12px;color:var(--ink);font-weight:800;font-size:.86rem}
 .fav-live:hover{border-color:#e11d48;box-shadow:0 2px 10px rgba(225,29,72,.14)}
 .fv-dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:0 0 auto;
   animation:fvpulse 1.4s ease-in-out infinite}
 @keyframes fvpulse{0%,100%{opacity:1}50%{opacity:.25}}
 .fv-t{color:var(--live);font-size:.72rem;font-weight:900;letter-spacing:.02em}
 .fv-m{display:inline-flex;align-items:center;gap:7px;min-width:0}
-.fv-m bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:11ch}
+.fv-m bdi{white-space:nowrap}
 .fv-s{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 8px;
   font-size:.8rem;direction:ltr;unicode-bidi:embed}
 .fv-min{color:var(--live);font-size:.72rem;font-weight:900;direction:ltr;unicode-bidi:embed}
 @media(max-width:560px){
-  .news-h{align-items:flex-start}
-  .fav-live{font-size:.76rem;padding:5px 11px;gap:6px}
-  .fv-m bdi{max-width:8ch}
+  /* a phone row is narrow: let the pill wrap its own contents rather than
+     clip a club name or push the page sideways */
+  .fav-live{font-size:.78rem;padding:6px 12px;gap:7px;flex-wrap:wrap;
+    border-radius:14px;max-width:100%}
 }
 .see-all{color:var(--green-d);font-weight:800;text-decoration:none;font-size:.85rem;white-space:nowrap}
 .see-all:hover{text-decoration:underline}
