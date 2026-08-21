@@ -6,9 +6,24 @@
  "Saudi Pro League": "ok (table 18 teams)",
  "standings": "ok (6)",
  "transfers": "ok (12)",
- "goals": "ok (Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, UEFA Champions League:5)",
- "assists": "ok (Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, UEFA Champions League:5)",
+ "goals": "ok (Egyptian Premier League:1, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:2, UEFA Champions League:5)",
+ "assists": "ok (Egyptian Premier League:1, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:1, UEFA Champions League:5)",
  "s365_charts": {
+  "552": [
+   "1:الأهداف",
+   "2:أهداف متوقعة",
+   "3:صناعة",
+   "4:صناعة أهداف متوقعة",
+   "5:أهداف + صناعة",
+   "6:أهداف وتمريرات حاسمة متوقعة",
+   "7:تقييم 365",
+   "8:تدخلات ناجحة",
+   "9:إعتراضات خلال المباراة",
+   "10:بطاقات صفراء",
+   "11:شباك نظيفة",
+   "12:أهداف مستقبلة في المباراة",
+   "13:تصديات في المباراة"
+  ],
   "78": [
    "1:الأهداف",
    "2:أهداف متوقعة",
@@ -99,6 +114,24 @@
    "15:تصديات في المباراة",
    "16:تصديات لضربات الجزاء"
   ],
+  "35": [
+   "1:الأهداف",
+   "2:أهداف متوقعة",
+   "3:صناعة",
+   "4:صناعة أهداف متوقعة",
+   "5:أهداف + صناعة",
+   "6:أهداف وتمريرات حاسمة متوقعة",
+   "7:تقييم 365",
+   "8:ضربات الجزاء المسجلة",
+   "9:تدخلات ناجحة",
+   "10:إعتراضات خلال المباراة",
+   "11:بطاقات حمراء",
+   "12:بطاقات صفراء",
+   "13:شباك نظيفة",
+   "14:أهداف مستقبلة في المباراة",
+   "15:تصديات في المباراة",
+   "16:تصديات لضربات الجزاء"
+  ],
   "572": [
    "1:الأهداف",
    "2:أهداف متوقعة",
@@ -154,5 +187,5 @@
    "member0": "{\"competitorId\": 134, \"id\": 325326, \"athleteId\": 5739, \"name\": \"يان أوبلاك\", \"shortName\": \"أوبلاك\", \"jerseyNumber\": 13, \"nameForURL\": \"jan-oblak\", \"imageVersion\": 51}"
   }
  },
- "utc": "2026-08-21T20:35:02Z"
+ "utc": "2026-08-21T20:49:58Z"
 }
