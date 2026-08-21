@@ -698,12 +698,14 @@ def build():
     # two-column home (same widths as before): main content on the RIGHT,
     # reserved empty column on the LEFT. The ad strip (future "Top Transfers"
     # widget, FotMob style) sits ABOVE the latest-news section.
+    # above the two columns, so the bar spans the whole page on desktop instead
+    # of starting where the news column starts (the transfers rail is beside it)
+    parts.append('<a id="favLive" class="fav-live" href="/matches.html" hidden></a>')
     parts.append('<div class="home-cols"><div class="home-main">')
     parts.append(f'<div class="home-topad">{adsense_slot()}</div>')
     # heading row: title on the start side, a LIVE card for one of the curated
     # clubs on the end side. The card is filled by LIVE_JS in the visitor's
     # browser — a 15-minute-old build can't know what is live right now.
-    parts.append('<a id="favLive" class="fav-live" href="/matches.html" hidden></a>')
     parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
         img = feat.get("image_url")
@@ -2322,7 +2324,7 @@ a{color:inherit}
 /* full-width bar: status on the start side, the match centered, minute at the end */
 .fav-live{display:flex;align-items:center;justify-content:space-between;gap:10px;
   text-decoration:none;background:#fff5f6;border:1px solid #f6ccd2;border-radius:14px;
-  padding:10px 16px;margin:0 0 12px;color:var(--ink);font-weight:800;font-size:.88rem}
+  padding:11px 18px;margin:16px 0 0;color:var(--ink);font-weight:800;font-size:.9rem}
 .fav-live:hover{border-color:#e11d48;box-shadow:0 2px 10px rgba(225,29,72,.14)}
 .fv-dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:0 0 auto;
   animation:fvpulse 1.4s ease-in-out infinite}
