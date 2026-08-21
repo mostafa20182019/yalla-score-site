@@ -877,17 +877,18 @@ def build():
              for c, rows in as_by_comp.items()}
     stats_cutoff = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
 
-    def league_stats_sec(comp, heading=True):
-        """One league's full stats section (tiles, percentages, player charts,
-        points race, goals-per-round). Empty string when nothing current.
-        Shared by /stats.html and the league view on /matches.html."""
+    def league_stats_parts(comp):
+        """One league's stats, split into the tab panes the matches page uses:
+        {"numbers": tiles + percentages, "scorers": scorers + assists charts,
+         "trend": points race + goals per round}. Missing pieces are absent.
+        /stats.html stitches them back into one section."""
         parts = []
         fx = fx_by_comp.get(comp)
         if not fx:
-            return ""
+            return {}
         fin = _fin_ms(fx)
         if not fin:
-            return ""
+            return {}
         fx = fx_by_comp.get(comp)
         if not fx:
             return ""
@@ -901,7 +902,7 @@ def build():
         pending = any((m.get("status") or "").upper() != "FINISHED" for m in all_ms)
         last_day = max((m.get("kickoff") or "" for m in all_ms), default="")
         if not pending and last_day and last_day < stats_cutoff:
-            return ""
+            return {}
         played = len(fin)
         goals = sum(m["home_score"] + m["away_score"] for _, m in fin)
         big = max((m for _, m in fin),
@@ -933,9 +934,7 @@ def build():
         if not top_teams:
             er = elos.get(comp, {})
             top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
-        parts.append('<section class="stats-sec">')
-        if heading:
-            parts.append(f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>')
+        panes = {}
         # player charts, only when they describe THIS season (chart_is_current)
         sc = sc_by_comp.get(comp) or [] if sc_ok.get(comp) else []
         asst = as_by_comp.get(comp) or [] if as_ok.get(comp) else []
@@ -948,37 +947,51 @@ def build():
                        f'<div class="tile-ms">{_scorer_face(lead)}'
                        f'<span class="tm"><bdi>{esc(lead.get("name"))}</bdi></span></div>'
                        f'<div class="tile-when">{esc(lead.get("team"))}</div></div>')
-        parts.append('<div class="stat-tiles">'
-                  f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
-                  f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
-                  f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
-                  f'<div class="tile tile-res" title="{esc(big_t)}"><b>{big_s}</b>'
-                  f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
-                  f'{sc_tile}'
-                  '</div>')
+        num = ['<div class="stat-tiles">'
+               f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
+               f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
+               f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
+               f'<div class="tile tile-res" title="{esc(big_t)}"><b>{big_s}</b>'
+               f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
+               f'{sc_tile}'
+               '</div>']
         pcts = league_pcts(fin)
         if pcts:
-            parts.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
-            parts.append(pcts)
+            num.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
+            num.append(pcts)
+        panes["numbers"] = "".join(num)
         if sc or asst:
-            parts.append('<div class="chart-cols">')
+            chart = ['<div class="chart-cols">']
             if sc:
-                parts.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
-                          + scorers_list(sc, "أهداف") + '</div>')
+                chart.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
+                             + scorers_list(sc, "أهداف") + '</div>')
             if asst:
-                parts.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
-                          + scorers_list(asst, "صناعة") + '</div>')
-            parts.append('</div>')
+                chart.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
+                             + scorers_list(asst, "صناعة") + '</div>')
+            chart.append('</div>')
+            panes["scorers"] = "".join(chart)
+        trend = []
         race = _pts_race_svg(fin, top_teams)
         if race:
-            parts.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
-            parts.append(race)
+            trend.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
+            trend.append(race)
         gsvg = _goals_svg(fin)
         if gsvg:
-            parts.append('<h3 class="stats-h3">الأهداف في كل جولة</h3>')
-            parts.append(gsvg)
-        parts.append('</section>')
-        return "".join(parts)
+            trend.append('<h3 class="stats-h3">الأهداف في كل جولة</h3>')
+            trend.append(gsvg)
+        if trend:
+            panes["trend"] = "".join(trend)
+        return panes
+
+    def league_stats_sec(comp, heading=True):
+        """All of a league's stats as one section — used by /stats.html."""
+        panes = league_stats_parts(comp)
+        if not panes:
+            return ""
+        head_html = (f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>'
+                     if heading else "")
+        body = "".join(panes.get(k, "") for k in ("numbers", "scorers", "trend"))
+        return f'<section class="stats-sec">{head_html}{body}</section>' 
 
     # ---- matches page (per-day navigator, like the live app) ----
     from collections import OrderedDict
@@ -1022,17 +1035,36 @@ def build():
     p.append('<div class="mp-main">')
     # ad strip at the top of the CENTER column - matches-list width only
     p.append(f'<div class="home-topad">{adsense_slot()}</div>')
-    for comp, st in st_by_comp.items():
-        p.append(standings_table(comp, st.get("table"),
-                                 past=st.get("past"), season_label=st.get("season_label"),
-                                 zeroed=st.get("zeroed"), form_map=forms.get(comp, {})))
-    # per-league stats, revealed under the table when its league is selected
+    # one tabbed view per league: الترتيب · الهدافون · الأرقام · التطور · الجولات.
+    # Everything is in the DOM (so it stays indexable); JS just switches panes.
+    LEAGUE_TABS = [("table", "الترتيب"), ("scorers", "الهدافون"),
+                   ("numbers", "الأرقام"), ("trend", "التطور"),
+                   ("rounds", "الجولات")]
     for c in comp_order:
-        _sec = league_stats_sec(c, heading=False)
-        if _sec:
-            p.append(f'<div class="lstats" data-comp="{esc(c)}" hidden>'
-                     f'<h3 class="stats-h3 lstats-h">📊 إحصائيات البطولة</h3>{_sec}</div>')
-    p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no table)
+        st = st_by_comp.get(c)
+        panes = league_stats_parts(c)
+        if st and st.get("table"):
+            panes["table"] = standings_table(
+                c, st.get("table"), past=st.get("past"),
+                season_label=st.get("season_label"), zeroed=st.get("zeroed"),
+                form_map=forms.get(c, {}), embedded=True)
+        if c in fx_by_comp:
+            panes["rounds"] = league_rounds_panel(c, fx_by_comp[c], embedded=True)
+        live = [(k, lbl) for k, lbl in LEAGUE_TABS if panes.get(k)]
+        if not live:
+            continue
+        p.append(f'<div class="lview" data-comp="{esc(c)}" hidden>')
+        p.append('<div class="ltabs" role="tablist">')
+        for i, (k, lbl) in enumerate(live):
+            on = " is-on" if i == 0 else ""
+            p.append(f'<button type="button" class="ltab{on}" role="tab" '
+                     f'data-pane="{k}">{lbl}</button>')
+        p.append('</div>')
+        for i, (k, lbl) in enumerate(live):
+            hid = "" if i == 0 else " hidden"
+            p.append(f'<div class="lpane" data-pane="{k}"{hid}>{panes[k]}</div>')
+        p.append('</div>')
+    p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no data)
     p.append('<div id="daynav" class="daynav" hidden>'
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
              '<span id="dayLabel" class="dn-label"></span>'
@@ -1067,10 +1099,10 @@ def build():
         for m in daymap[d]:
             comp_fix.setdefault(m.get("competition") or "", {}).setdefault(d, []).append(m)
     p.append('<aside class="mp-side mp-extra">')
+    # leagues WITHOUT rounds data still get a rail panel (day-grouped fallback);
+    # leagues with rounds show them in the "الجولات" tab instead.
     for c in comp_order:
-        if c in fx_by_comp:
-            p.append(league_rounds_panel(c, fx_by_comp[c]))
-        elif comp_fix.get(c):
+        if c not in fx_by_comp and comp_fix.get(c):
             p.append(f'<div class="lg-fix" data-comp="{esc(c)}" hidden>'
                      f'<div class="fx-head">{comp_icon(c)} مباريات {esc(comp_label(c))}</div>')
             for d in sorted(comp_fix[c].keys()):
@@ -1458,7 +1490,8 @@ def form_dots(results):
     return "".join(f'<span class="fm fm-{r.lower()}" title="{ {"W":"فوز","D":"تعادل","L":"خسارة"}[r] }"></span>'
                    for r in results[-5:])
 
-def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None):
+def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
+                    embedded=False):
     """League standings table (FotMob-style). Hidden until its league is picked.
     `zeroed` = the new season hasn't kicked off yet, so this is the new season's
     team list with everything at 0; it gets a "new season" badge.
@@ -1487,7 +1520,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
                  f'{(" " + esc(season_label)) if season_label else ""}</span>')
     else:
         badge = ""
-    return (f'<div class="ltable" data-comp="{esc(comp)}" hidden>'
+    return (f'<div class="ltable" data-comp="{esc(comp)}"{"" if embedded else " hidden"}>'
             f'<div class="lt-head">{comp_icon(comp)} جدول ترتيب {esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
@@ -1562,13 +1595,14 @@ def fixture_mini(m):
             f'{mid}'
             f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(ar_team(m.get("away")))}</bdi></span></div>')
 
-def league_rounds_panel(comp, fx):
+def league_rounds_panel(comp, fx, embedded=False):
     """FotMob-style rounds panel: a ‹ round › navigator + every round of the
     season, each round's matches grouped by day. JS shows one round at a time."""
     from collections import OrderedDict
     rounds = fx.get("rounds") or []
     current = fx.get("current") or (rounds[0]["round"] if rounds else 1)
-    parts = [f'<div class="lg-fix rounds-panel" data-comp="{esc(comp)}" data-current="{current}" hidden>',
+    parts = [f'<div class="lg-fix rounds-panel" data-comp="{esc(comp)}" '
+             f'data-current="{current}"{"" if embedded else " hidden"}>',
              f'<div class="fx-head">{comp_icon(comp)} {esc(comp_label(comp))}</div>',
              '<div class="rnav">'
              '<button type="button" class="rn-prev" aria-label="الجولة السابقة">‹</button>'
@@ -1894,8 +1928,21 @@ a{color:inherit}
 .stats-sec{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;margin:0 0 18px;
   box-shadow:0 1px 3px rgba(15,23,42,.05)}
 .stats-h3{font-size:.9rem;font-weight:900;color:var(--muted);margin:16px 0 8px}
-.lstats{margin-top:16px}
-.lstats-h{margin:0 0 10px;font-size:1rem;color:var(--ink)}
+/* league view tabs (/matches, one league selected) */
+.ltabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;
+  margin:0 0 14px;padding-bottom:2px;border-bottom:2px solid #e6ebf1}
+.ltabs::-webkit-scrollbar{display:none}
+.ltab{flex:0 0 auto;appearance:none;background:none;border:0;cursor:pointer;
+  font-family:inherit;font-size:.86rem;font-weight:800;color:var(--muted);
+  padding:9px 14px;border-radius:9px 9px 0 0;margin-bottom:-2px;
+  border-bottom:2px solid transparent;transition:color .12s,border-color .12s}
+.ltab:hover{color:var(--ink);background:#f6f9f7}
+.ltab.is-on{color:var(--green-d);border-bottom-color:var(--green)}
+.ltab:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.lpane .stats-sec{background:none;border:0;box-shadow:none;padding:0;margin:0}
+.lpane .stats-h3:first-child{margin-top:0}
+.lpane .lg-fix{display:block}
+@media(max-width:560px){.ltab{font-size:.8rem;padding:8px 11px}}
 .stat-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .tile{background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;padding:12px;text-align:center}
 .tile b{display:block;font-size:1.05rem;color:#0f5e28}
@@ -2378,21 +2425,38 @@ MATCHES_JS = """<script>
   }
   prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
   next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
-  var tables=[].slice.call(document.querySelectorAll('.ltable'));
-  var lstats=[].slice.call(document.querySelectorAll('.lstats'));
+  var lviews=[].slice.call(document.querySelectorAll('.lview'));
   var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
+  var pane='table';                /* remembered across league switches */
+  function showPane(view,key){
+    var tabs=[].slice.call(view.querySelectorAll('.ltab'));
+    var panes=[].slice.call(view.querySelectorAll('.lpane'));
+    var has=tabs.some(function(t){return t.getAttribute('data-pane')===key;});
+    if(!has) key=tabs.length?tabs[0].getAttribute('data-pane'):'';
+    tabs.forEach(function(t){ t.classList.toggle('is-on',t.getAttribute('data-pane')===key); });
+    panes.forEach(function(x){ x.hidden = x.getAttribute('data-pane')!==key; });
+    return key;
+  }
+  lviews.forEach(function(view){
+    view.addEventListener('click',function(e){
+      var t=e.target.closest('.ltab'); if(!t) return;
+      pane=showPane(view,t.getAttribute('data-pane'));
+      if(history.replaceState) history.replaceState(null,'','#'+pane);
+    });
+  });
   /* the daynav has CSS display:flex which overrides the [hidden] attribute,
      so toggle it via inline style.display instead */
   var noTable=document.getElementById('noTable');
   var mpDefault=document.getElementById('mpDefault');
-  var fixPanels=[].slice.call(document.querySelectorAll('.lg-fix'));
+  /* RAIL panels only - the rounds panels now also live inside .lpane tabs,
+     and a bare '.lg-fix' selector would fight the tab logic for them */
+  var fixPanels=[].slice.call(document.querySelectorAll('.mp-extra .lg-fix'));
   var mpage=document.querySelector('.mpage');
   function matchesShown(on){ nav.style.display = on ? '' : 'none'; wrap.style.display = on ? '' : 'none'; }
   function reset(){                 /* all-matches view (default / top nav tab) */
     filter='';
     lgItems.forEach(function(x){ x.classList.remove('is-active'); });
-    tables.forEach(function(t){ t.hidden=true; });
-    lstats.forEach(function(t){ t.hidden=true; });
+    lviews.forEach(function(v){ v.hidden=true; });
     fixPanels.forEach(function(f){ f.hidden=true; });
     if(noTable) noTable.hidden=true;
     if(mpDefault) mpDefault.hidden=false;
@@ -2403,12 +2467,11 @@ MATCHES_JS = """<script>
   function selectLeague(b){
     filter=b.getAttribute('data-comp')||'';
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
-    var table=tables.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
-    tables.forEach(function(t){ t.hidden = t!==table; });
-    var ls=lstats.filter(function(t){return t.getAttribute('data-comp')===filter;})[0];
-    lstats.forEach(function(t){ t.hidden = t!==ls; });
+    var view=lviews.filter(function(v){return v.getAttribute('data-comp')===filter;})[0];
+    lviews.forEach(function(v){ v.hidden = v!==view; });
+    if(view) pane=showPane(view,pane);                /* keep the reader on the same tab */
     matchesShown(false);                              /* never show fixtures in the centre */
-    if(noTable) noTable.hidden = !!table || !!ls;     /* no table -> empty placeholder */
+    if(noTable) noTable.hidden = !!view;              /* nothing for this league -> placeholder */
     /* left rail: this league's fixtures instead of news */
     var fx=fixPanels.filter(function(f){return f.getAttribute('data-comp')===filter;})[0];
     fixPanels.forEach(function(f){ f.hidden = f!==fx; });
@@ -2416,6 +2479,8 @@ MATCHES_JS = """<script>
     if(mpage) mpage.classList.add('league-view');
     window.scrollTo({top:0,behavior:'smooth'});
   }
+  var h=(location.hash||'').replace('#','');
+  if(h) pane=h;                    /* deep link: /matches.html#scorers */
   lgItems.forEach(function(b){ b.addEventListener('click',function(){ selectLeague(b); }); });
   var mTab=document.querySelector('a.navtab[href="/matches.html"]');
   if(mTab) mTab.addEventListener('click',function(e){ e.preventDefault(); reset(); window.scrollTo({top:0,behavior:'smooth'}); });
