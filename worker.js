@@ -47,7 +47,7 @@ async function liveScores() {
           h: h.name || "", a: a.name || "",
           hs: Math.round(h.score), as: Math.round(a.score),
           live: sg === 3,
-          min: sg === 3 ? (ht ? "HT" : (g.gameTimeDisplay || "")) : "",
+          min: sg === 3 ? (ht ? "استراحة" : (g.gameTimeDisplay || "")) : "",
         });
       }
     }
