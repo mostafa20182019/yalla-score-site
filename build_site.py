@@ -529,16 +529,26 @@ LIVE_JS = r"""<script>
       paintGoals(e,g);
     }
   }
-  /* favourite-club live card next to "آخر الأخبار" (home page only) */
+  /* favourite-club live card next to "آخر الأخبار" (home page only).
+     Entries are {n:name, c:competitionId|null}; a scoped entry (c set) only
+     matches a game from that league — "الأهلي" is both Al Ahly Egypt AND
+     Al-Ahli Saudi in the 365scores feed, and name-only matching once put
+     the Saudi club's match in the card. */
   var favBox=document.getElementById('favLive');
-  var FAV=(window.__favClubs||[]).map(norm);
+  var FAV=(window.__favClubs||[]).map(function(e){
+    return {n:norm(e&&e.n!==undefined?e.n:e), c:(e&&e.c)||null};
+  });
   function favRender(gs){
     if(!favBox)return;
     var hit=null;
-    for(var i=0;i<gs.length;i++){
+    for(var i=0;i<gs.length&&!hit;i++){
       var g=gs[i];
       if(!g.live)continue;
-      if(FAV.indexOf(norm(g.h))>-1||FAV.indexOf(norm(g.a))>-1){hit=g;break;}
+      var nh=norm(g.h),na=norm(g.a);
+      for(var j=0;j<FAV.length;j++){
+        var f=FAV[j];
+        if((f.n===nh||f.n===na)&&(!f.c||f.c===g.c)){hit=g;break;}
+      }
     }
     if(!hit){favBox.hidden=true;favBox.innerHTML='';return;}
     favBox.innerHTML='<span class="fv-dot"></span><span class="fv-t">مباشر الآن</span>'
@@ -1921,9 +1931,22 @@ def fav_club_names(standings, fixtures):
                     if hit: break
                 if hit: break
         nm = ar_team(hit) if hit else token
-        if nm not in names:
-            names.append(nm)
+        # league scope must survive into the browser: /live.json games carry
+        # the 365scores competition id (g.c), and a scoped entry only matches
+        # inside its own league — otherwise Saudi Al-Ahli ("الأهلي" too)
+        # hijacks the favourite-club card meant for Al Ahly Egypt.
+        cid = S365_COMP_IDS.get(only_comp) if only_comp else None
+        if not any(e["n"] == nm for e in names):
+            names.append({"n": nm, "c": cid})
     return names
+
+# 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
+# must agree with LIVE_COMPS in worker.js (552,78,649,7,11,17,25,35,572).
+S365_COMP_IDS = {
+    "Egyptian Premier League": 552,
+    "Turkish Super Lig": 78,
+    "Saudi Pro League": 649,
+}
 
 def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
     """The curated clubs (TICKER_TEAMS) at a glance: position, points, last 5,

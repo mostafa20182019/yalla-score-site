@@ -108,6 +108,10 @@ async function liveScores() {
           hs: Math.round(h.score), as: Math.round(a.score),
           live: sg === 3,
           min: sg === 3 ? (ht ? "استراحة" : (g.gameTimeDisplay || "")) : "",
+          // 365scores competition id — LIVE_JS needs it to disambiguate
+          // same-name clubs across leagues (الأهلي = Al Ahly Egypt AND
+          // Al-Ahli Saudi; the favourite-club card once showed the wrong one)
+          c: g.competitionId || 0,
         });
         // scorer lines: live games (and just-ended ones the static build
         // hasn't caught yet) that actually have a goal to name
