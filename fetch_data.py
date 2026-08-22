@@ -44,6 +44,36 @@ def write_items(name, items):
     with open(os.path.join(DATA, name), "w", encoding="utf-8") as f:
         json.dump({"results": [{"items": items}]}, f, ensure_ascii=False)
 
+def read_items(name):
+    """Previous committed copy of a data file (empty list when absent/broken)."""
+    try:
+        with open(os.path.join(DATA, name), encoding="utf-8") as f:
+            return json.load(f)["results"][0]["items"]
+    except Exception:
+        return []
+
+# Every match ever seen, keyed by match_id, so build_site's per-match pages
+# (/m/<id>.html) keep existing after the match leaves matches.json's day
+# window — an indexed page must not 404 two weeks later. The freshest copy
+# of a match wins (final score/status); entries older than ARCHIVE_DAYS are
+# pruned. Persisted by the workflow's commit-back of data/.
+ARCHIVE_DAYS = 120
+
+def update_matches_archive(matches):
+    cutoff = (datetime.now(CAIRO).date()
+              - timedelta(days=ARCHIVE_DAYS)).isoformat()
+    merged = {}
+    for m in read_items("matches_archive.json"):
+        if m.get("match_id") and (m.get("kickoff") or "") >= cutoff:
+            merged[m["match_id"]] = m
+    for m in matches:
+        if m.get("match_id"):
+            merged[m["match_id"]] = m
+    out = sorted(merged.values(),
+                 key=lambda x: (x.get("kickoff") or "", x.get("koff_time") or ""))
+    write_items("matches_archive.json", out)
+    return len(out)
+
 def _unescape(s):
     s = re.sub(r"<!\[CDATA\[(.*?)\]\]>", r"\1", s or "", flags=re.S)
     return html.unescape(s).strip()
@@ -981,6 +1011,13 @@ if __name__ == "__main__":
         matches = matches[:90]
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
+        try:
+            n_arch = update_matches_archive(matches)
+            _DBG["matches_archive"] = f"ok ({n_arch})"
+            print(f"matches archive: {n_arch}")
+        except Exception as e:
+            print(f"  ! matches archive failed ({e}) - keeping existing file")
+            _DBG["matches_archive"] = f"FAIL: {e!r}"
     if _FIXTURES is not None:
         write_items("fixtures.json", _FIXTURES)
         print(f"fixtures: {len(_FIXTURES)} leagues, "

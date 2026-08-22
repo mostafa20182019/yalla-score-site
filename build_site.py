@@ -1149,7 +1149,8 @@ def build():
             p.append('<div class="mlist">')
             for m in ms:
                 p.append(match_row(m, show_time=True, show_comp=False,
-                                   goals=match_goals(ge_idx, m)))
+                                   goals=match_goals(ge_idx, m),
+                                   link=match_url(m)))
             p.append('</div></div>')
         p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
         p.append('</section>')
@@ -1200,6 +1201,114 @@ def build():
     p.append(ROUNDS_JS)
     p.append(foot())
     write("matches.html", "".join(p))
+
+    # ---- per-match pages (/m/<id>.html) ----
+    # One landing page per match (archive ∪ current window): these target the
+    # long-tail queries a single /matches.html can never rank for ("نتيجة
+    # مباراة X"، "موعد مباراة Y والقناة الناقلة"). Old pages persist through
+    # data/matches_archive.json (updated by fetch_data, committed back) so an
+    # indexed URL doesn't 404 once the match leaves the day window. Pages get
+    # the live layer for free: match_row emits data-lv, LIVE_JS ships in foot().
+    os.makedirs(os.path.join(DIST, "m"), exist_ok=True)
+    m_all = {m["match_id"]: m
+             for m in load("matches_archive.json") if m.get("match_id")}
+    for m in matches:
+        if m.get("match_id"):
+            m_all[m["match_id"]] = m      # day-window copy is always fresher
+    sm_cut = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
+    n_mp = 0
+    for mid, m in sorted(m_all.items(), key=lambda kv: kv[1].get("kickoff") or ""):
+        if not (m.get("home") and m.get("away") and m.get("kickoff")):
+            continue
+        h_ar, a_ar = ar_team(m.get("home")), ar_team(m.get("away"))
+        comp = comp_label(m.get("competition") or "")
+        st = (m.get("status") or "").upper()
+        day_txt = fmt_day(m["kickoff"])
+        hs, as_ = m.get("home_score"), m.get("away_score")
+        when = day_txt + (f" الساعة {m['koff_time']} بتوقيت القاهرة"
+                          if m.get("koff_time") else "")
+        if st == "FINISHED" and hs is not None:
+            title = f"نتيجة مباراة {h_ar} و{a_ar} {hs}-{as_} — {comp} | {SITE_NAME}"
+            desc = (f"انتهت مباراة {h_ar} و{a_ar} في {comp} يوم {day_txt} "
+                    f"بنتيجة {hs}-{as_}. مسجلو الأهداف وترتيب البطولة هنا.")
+        elif st == "LIVE":
+            title = f"مباراة {h_ar} و{a_ar} مباشر الآن — {comp} | {SITE_NAME}"
+            desc = (f"تابع الآن مباشرة مباراة {h_ar} و{a_ar} في {comp} — "
+                    "النتيجة لحظة بلحظة ومسجلو الأهداف.")
+        elif st == "POSTPONED":
+            title = f"تأجيل مباراة {h_ar} و{a_ar} — {comp} | {SITE_NAME}"
+            desc = f"تأجلت مباراة {h_ar} و{a_ar} في {comp} التي كانت مقررة يوم {day_txt}."
+        else:
+            title = f"موعد مباراة {h_ar} و{a_ar} — {comp} {m['kickoff']} | {SITE_NAME}"
+            desc = (f"موعد مباراة {h_ar} و{a_ar} في {comp}: {when}. "
+                    "النتيجة المباشرة ومسجلو الأهداف هنا فور انطلاق اللقاء.")
+        img = None
+        if m.get("home_badge"):
+            _lc = local_crest(m["home_badge"])
+            img = _lc if _lc.startswith("http") else SITE_BASE + _lc
+        murl = f"/m/{mid}.html"
+        mp = [head(title, desc, SITE_BASE + murl, image=img, active="matches")]
+        mp.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+                  f'<a href="/matches.html">المباريات</a> › {esc(comp)}</nav>')
+        mp.append(f'<h1 class="page-h">مباراة {esc(h_ar)} و{esc(a_ar)}</h1>')
+        mp.append('<div class="mlist">')
+        mp.append(match_row(m, show_time=True, show_comp=True,
+                            goals=match_goals(ge_idx, m)))
+        mp.append('</div>')
+        info = [("البطولة", comp)]
+        if m.get("round"):
+            info.append(("الجولة", str(m["round"])))
+        info.append(("التاريخ", day_txt))
+        if m.get("koff_time"):
+            info.append(("موعد الانطلاق", f"{m['koff_time']} بتوقيت القاهرة"))
+        if m.get("channel"):
+            info.append(("القناة الناقلة", str(m["channel"])))
+        state_txt = {"FINISHED": "انتهت", "LIVE": "جارية الآن",
+                     "UPCOMING": "لم تبدأ بعد", "POSTPONED": "مؤجلة"}.get(st)
+        if state_txt:
+            info.append(("الحالة", state_txt))
+        mp.append('<section class="minfo"><h2>معلومات المباراة</h2><dl class="minfo-l">')
+        for k, v in info:
+            mp.append(f'<div><dt>{esc(k)}</dt><dd>{esc(str(v))}</dd></div>')
+        mp.append('</dl></section>')
+        stc = st_by_comp.get(m.get("competition"))
+        if stc and stc.get("table"):
+            mp.append(f'<section class="minfo"><h2>ترتيب {esc(comp)}</h2>')
+            mp.append(standings_table(m.get("competition"), stc["table"],
+                                      past=stc.get("past"),
+                                      season_label=stc.get("season_label"),
+                                      zeroed=stc.get("zeroed"),
+                                      form_map=forms.get(m.get("competition"), {}),
+                                      embedded=True))
+            mp.append('</section>')
+        if articles:
+            mp.append('<section class="minfo"><h2>آخر الأخبار</h2><ul class="mp-newslist">')
+            for a in articles[:4]:
+                mp.append(f'<li><a href="/a/{a["article_id"]}.html">{esc(a["title"])}</a></li>')
+            mp.append('</ul></section>')
+        try:
+            from zoneinfo import ZoneInfo
+            start_iso = datetime.datetime.fromisoformat(
+                f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00"
+            ).replace(tzinfo=ZoneInfo("Africa/Cairo")).isoformat()
+        except Exception:
+            start_iso = m["kickoff"]
+        mp.append(jsonld({
+            "@context": "https://schema.org", "@type": "SportsEvent",
+            "name": f"{h_ar} ضد {a_ar} — {comp}",
+            "startDate": start_iso,
+            "eventStatus": ("https://schema.org/EventPostponed"
+                            if st == "POSTPONED"
+                            else "https://schema.org/EventScheduled"),
+            "homeTeam": {"@type": "SportsTeam", "name": h_ar},
+            "awayTeam": {"@type": "SportsTeam", "name": a_ar},
+        }))
+        mp.append(foot())
+        write(f"m/{mid}.html", "".join(mp))
+        n_mp += 1
+        if m["kickoff"] >= sm_cut:      # keep the sitemap focused on ±30 days
+            urls.append(murl)
+    print(f"  + match pages: {n_mp}")
 
     # ---- stats dashboard (/stats.html) ----
     sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
@@ -1490,7 +1599,23 @@ def build():
         urls.append("/videos.html")
 
     # ---- robots + sitemap + ads.txt ----
-    write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE}/sitemap.xml\n")
+    write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE}/sitemap.xml\n"
+                        f"Sitemap: {SITE_BASE}/sitemap-news.xml\n")
+    # Google-News sitemap: only articles from the last 48h belong here (News
+    # ignores older entries). An empty urlset is valid on quiet days.
+    news_cut = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
+    ns = ['<?xml version="1.0" encoding="UTF-8"?>',
+          '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
+          'xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">']
+    for a in articles:
+        if (a.get("pub_date") or "") >= news_cut:
+            ns.append(f"  <url><loc>{esc(article_url(a))}</loc><news:news>"
+                      f"<news:publication><news:name>{esc(SITE_NAME)}</news:name>"
+                      "<news:language>ar</news:language></news:publication>"
+                      f"<news:publication_date>{esc(a['pub_date'])}</news:publication_date>"
+                      f"<news:title>{esc(a['title'])}</news:title></news:news></url>")
+    ns.append("</urlset>")
+    write("sitemap-news.xml", "\n".join(ns))
     if ADSENSE_CLIENT:   # AdSense seller declaration (clears the ads.txt warning)
         write("ads.txt", f"google.com, {ADSENSE_CLIENT.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n")
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
@@ -1929,7 +2054,11 @@ def match_goals(idx, m):
     key = f'{_gnorm(ar_team(m.get("home")))}|{_gnorm(ar_team(m.get("away")))}'
     return idx.get((key, m.get("kickoff")))
 
-def match_row(m, show_time=False, show_comp=True, goals=None):
+def match_url(m):
+    """Canonical per-match page path, or None when the id is missing."""
+    return f"/m/{m['match_id']}.html" if m.get("match_id") else None
+
+def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up"), "POSTPONED": ("", "pp")}.get(st, ("", "up"))
@@ -1963,8 +2092,11 @@ def match_row(m, show_time=False, show_comp=True, goals=None):
         gblock = (f'<div class="mgoals"><div class="mg-side">{side_list("h")}</div>'
                   f'<div class="mg-gap"></div>'
                   f'<div class="mg-side">{side_list("a")}</div></div>')
+    stretch = (f'<a class="mstretch" href="{esc(link)}" '
+               f'aria-label="تفاصيل مباراة {esc(ar_team(m.get("home")))} و{esc(ar_team(m.get("away")))}"></a>'
+               if link else "")
     return f"""<div class="mrow mrow-{badge[1]}" data-lv data-h="{esc(ar_team(m.get('home')))}" data-a="{esc(ar_team(m.get('away')))}">
-  {pill}
+  {stretch}{pill}
   <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
   <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
@@ -2276,7 +2408,22 @@ a{color:inherit}
   .lg-logo,.lg-ico{width:18px;height:18px;font-size:.95rem}
 }
 .mlist{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
-.mrow{display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--green);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.mrow{position:relative;display:grid;grid-template-columns:auto 1fr auto 1fr;grid-template-areas:"pill home mid away";gap:8px 10px;align-items:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;border-inline-start:5px solid var(--green);padding:12px 16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+/* stretched link -> the whole row opens the match page (/m/<id>.html) */
+.mstretch{position:absolute;inset:0;z-index:1;border-radius:12px}
+.mrow:has(.mstretch):hover{border-color:#94a3b8;box-shadow:0 2px 8px rgba(15,23,42,.12)}
+/* per-match page (/m/<id>.html) */
+.crumbs{font-size:.8rem;color:var(--muted);margin:10px 0}
+.crumbs a{color:var(--muted)}
+.minfo{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 18px;margin:14px 0}
+.minfo h2{font-size:1.05rem;margin:0 0 10px}
+.minfo-l{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 18px;margin:0}
+.minfo-l div{display:flex;gap:6px}
+.minfo-l dt{color:var(--muted);font-weight:600;white-space:nowrap}
+.minfo-l dt::after{content:":"}
+.minfo-l dd{margin:0;font-weight:700}
+.mp-newslist{margin:0;padding-inline-start:18px}
+.mp-newslist li{margin:5px 0}
 .mrow-live{border-inline-start-color:var(--live)}.mrow-fin{border-inline-start-color:var(--fin)}
 .pill{grid-area:pill;color:#fff;background:var(--up);border-radius:999px;padding:2px 12px;font-size:.68rem;font-weight:900}
 .pill-live{background:var(--live)}.pill-fin{background:var(--fin)}
