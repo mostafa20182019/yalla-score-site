@@ -178,7 +178,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <meta name="twitter:title" content="{esc(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="{esc(img)}">
-<link rel="icon" type="image/png" href="/assets/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png">
 <link rel="stylesheet" href="/assets/style.css?v={CSS_VER}">
 {ads_head}
 </head>
@@ -700,6 +700,11 @@ def build():
     CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
         f.write(_css)
+    # /favicon.ico at the site root — the legacy fallback path some crawlers
+    # (and Google's favicon fetcher) request directly; was a 404 before
+    _ico = os.path.join(HERE, "assets-src", "favicon.ico")
+    if os.path.exists(_ico):
+        shutil.copy(_ico, os.path.join(DIST, "favicon.ico"))
     _fav = os.path.join(HERE, "assets-src", "favicon.png")
     if os.path.exists(_fav):
         shutil.copy(_fav, os.path.join(DIST, "assets", "favicon.png"))
