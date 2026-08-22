@@ -13,21 +13,75 @@
 // static site simply behaves as before (15-min refresh).
 const LIVE_COMPS = "552,78,649,7,11,17,25,35,572"; // EGY,TUR,KSA,PL,PD,SA,BL1,FL1,UCL
 
+const S365_HEADERS = {
+  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+  "Accept": "application/json, text/plain, */*",
+  "Accept-Language": "ar,en;q=0.9",
+  "Origin": "https://www.365scores.com",
+  "Referer": "https://www.365scores.com/",
+};
+
+// Live scorer lines. One game/ detail call per live match that has a goal,
+// mirroring fetch_data._goal_rows(): goal events only (VAR-disallowed ones
+// excluded), own-goal side flip, and the scoreboard-reconciliation guard —
+// a list that doesn't add up to the score is dropped (null) rather than
+// published wrong; the static 15-min build remains the fallback.
+const GOAL_DETAIL_CAP = 10;   // per cache-miss ceiling on game/ detail calls
+
+async function gameGoals(gid) {
+  try {
+    const r = await fetch(
+      `https://webws.365scores.com/web/game/?appTypeId=5&langId=27&gameId=${gid}`,
+      { headers: S365_HEADERS, cf: { cacheTtl: 20, cacheEverything: true } });
+    if (!r.ok) return null;
+    const game = (await r.json()).game || {};
+    const members = {};
+    for (const m of game.members || []) members[m.id] = m.name;
+    const home = game.homeCompetitor || {}, away = game.awayCompetitor || {};
+    const goals = [];
+    for (const ev of game.events || []) {
+      const et = ev.eventType || ev.type || {};
+      const nm = typeof et === "object" ? (et.name || "") : String(et);
+      if (!nm.includes("هدف")) continue;
+      if (nm.includes("ملغ") || nm.includes("ألغي") || nm.includes("الغي")) continue;
+      let cid = ev.competitorId;
+      if (cid == null) cid = ev.num === 1 ? home.id : -1;
+      const player = members[ev.playerId]
+        || (ev.player && ev.player.name) || ev.playerName;
+      if (!player) continue;
+      let minute = "";
+      const gt = Math.trunc(Number(ev.gameTime));
+      if (gt > 0) {
+        const add = Math.trunc(Number(ev.addedTime || 0));
+        minute = add > 0 ? `${gt}+${add}` : String(gt);
+      }
+      const sub = `${nm} ${ev.subTypeName || ""}`;
+      const tag = sub.includes("عكس") ? "عكسية" : (sub.includes("جزاء") ? "ج" : "");
+      goals.push({ s: cid === home.id ? "h" : "a", p: player, m: minute, t: tag });
+    }
+    const hs = Math.round(home.score || 0), as_ = Math.round(away.score || 0);
+    const cnt = () => [goals.filter(g => g.s === "h").length,
+                       goals.filter(g => g.s === "a").length];
+    let [ch, ca] = cnt();
+    if (ch !== hs || ca !== as_) {
+      for (const g of goals) if (g.t === "عكسية") g.s = g.s === "h" ? "a" : "h";
+      [ch, ca] = cnt();
+      if (ch !== hs || ca !== as_) return null;
+    }
+    return goals;
+  } catch (e) { return null; }
+}
+
 async function liveScores() {
   const upstream =
     `https://webws.365scores.com/web/games/current/?competitions=${LIVE_COMPS}` +
     `&langId=27&timezoneName=Africa/Cairo&showOdds=false`;
   const games = [];
+  const wantGoals = [];   // {idx, gid, live} — live/just-ended games with a goal
   let ok = false;
   try {
     const r = await fetch(upstream, {
-      headers: {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
-        "Accept": "application/json, text/plain, */*",
-        "Accept-Language": "ar,en;q=0.9",
-        "Origin": "https://www.365scores.com",
-        "Referer": "https://www.365scores.com/",
-      },
+      headers: S365_HEADERS,
       cf: { cacheTtl: 25, cacheEverything: true },
     });
     if (r.ok) {
@@ -55,8 +109,21 @@ async function liveScores() {
           live: sg === 3,
           min: sg === 3 ? (ht ? "استراحة" : (g.gameTimeDisplay || "")) : "",
         });
+        // scorer lines: live games (and just-ended ones the static build
+        // hasn't caught yet) that actually have a goal to name
+        if (g.id && (sg === 3 || g.justEnded === true)
+            && (h.score > 0 || a.score > 0)) {
+          wantGoals.push({ idx: games.length - 1, gid: g.id, live: sg === 3 });
+        }
       }
     }
+    // live matches first, then just-ended, capped — each detail call is
+    // itself edge-cached 20s so bursts collapse upstream
+    wantGoals.sort((x, y) => (y.live ? 1 : 0) - (x.live ? 1 : 0));
+    await Promise.all(wantGoals.slice(0, GOAL_DETAIL_CAP).map(async (w) => {
+      const gl = await gameGoals(w.gid);
+      if (gl && gl.length) games[w.idx].goals = gl;
+    }));
   } catch (e) { /* fail-empty */ }
   // an upstream failure must NOT be cached for 30s - visitors would all go
   // quiet for minutes mid-match; mark it uncacheable instead

@@ -490,6 +490,27 @@ LIVE_JS = r"""<script>
   function sPill(cls,hs,as_){
     return '<b class="'+cls+'"><span>'+hs+'</span><i>-</i><span>'+as_+'</span></b>';
   }
+  function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  /* live scorer lines - same markup as match_row()'s gblock so the static
+     block and the live-painted one are indistinguishable. Only ever painted
+     when the reply carries goals; an absent goals field must NOT clear an
+     existing (static) list. */
+  function paintGoals(e,g){
+    if(!g.goals||!g.goals.length)return;
+    var gh='',ga='';
+    g.goals.forEach(function(x){
+      var it='<span class="mg">⚽ <bdi>'+escH(x.p)+'</bdi>'
+        +(x.m?' <i class="mg-m">'+escH(x.m)+'′</i>':'')
+        +(x.t?' <small>('+escH(x.t)+')</small>':'')+'</span>';
+      if(x.s==='h')gh+=it;else ga+=it;
+    });
+    var inner='<div class="mg-side">'+gh+'</div><div class="mg-gap"></div>'
+      +'<div class="mg-side">'+ga+'</div>';
+    var gb=e.querySelector('.mgoals');
+    if(gb)gb.innerHTML=inner;
+    else e.insertAdjacentHTML('beforeend','<div class="mgoals">'+inner+'</div>');
+  }
   function paint(e,g){
     var sc=g.hs+' - '+g.as;
     if(e.classList.contains('tk-item')){
@@ -505,6 +526,7 @@ LIVE_JS = r"""<script>
       var cls=g.live?'live':'fin';
       if(pill){pill.className='pill pill-'+cls;pill.textContent=txt;}
       else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
+      paintGoals(e,g);
     }
   }
   /* favourite-club live card next to "آخر الأخبار" (home page only) */
