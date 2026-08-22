@@ -68,7 +68,26 @@ jobs:
       # wrangler@4 is also new enough for [assets].run_worker_first, which the
       # canonical-host 301 redirect in worker.js depends on - that is why the
       # old wrangler-action needed wranglerVersion: "latest".
+      # Stale-checkout guard: if main moved while this run was fetching and
+      # building (an article push landing mid-run), deploying now would
+      # briefly REVERT the newer content the other run already published -
+      # a reader clicking the new hero article hit a bare 404 exactly this
+      # way. Skip the deploy; the next trigger (<=15 min) builds from the
+      # newer tip. The data commit-back below still runs, so the fetched
+      # data isn't wasted.
+      - name: Skip the deploy if main moved past this checkout
+        id: tip
+        run: |
+          git fetch --quiet origin main
+          if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then
+            echo "fresh=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "fresh=false" >> "$GITHUB_OUTPUT"
+            echo "main moved $(git rev-parse --short HEAD) -> $(git rev-parse --short origin/main); skipping deploy"
+          fi
+
       - name: Deploy to Cloudflare
+        if: steps.tip.outputs.fresh == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4 deploy

@@ -1197,6 +1197,43 @@ def build():
     if SHOW_STATS_PAGE:
         urls.append("/stats.html")
 
+    # ---- 404 page (served by Cloudflare for any missing asset) ----
+    # Not in the sitemap on purpose. The auto-retry exists for one real case:
+    # an article page can 404 for a minute or two right around a deploy while
+    # the reader already holds a newer home page — the page re-checks itself
+    # and reloads the moment the URL starts resolving, so that reader never
+    # has to do anything. Bounded retries: a genuinely dead link stops
+    # polling after ~2 minutes and stays a normal 404.
+    nf = [head(f"الصفحة غير موجودة — {SITE_NAME}",
+               "الصفحة التي تبحث عنها غير موجودة.",
+               SITE_BASE + "/404.html")]
+    nf.append('<div class="nf"><div class="nf-emoji">⚽</div>')
+    nf.append('<h1 class="page-h">الصفحة غير موجودة</h1>')
+    nf.append('<p class="nf-p">يبدو أن الرابط غير صحيح أو أن الصفحة لم تعد متاحة.</p>')
+    nf.append('<p class="nf-p nf-wait" id="nfWait" hidden>لو ده خبر نُشر حالًا فهو '
+              'يتجهّز الآن — الصفحة ستفتح تلقائيًا خلال لحظات <span class="nf-spin"></span></p>')
+    nf.append('<p class="nf-links"><a class="nf-btn" href="/">الصفحة الرئيسية</a>'
+              '<a class="nf-btn nf-btn2" href="/matches.html">المباريات</a>'
+              '<a class="nf-btn nf-btn2" href="/news.html">كل الأخبار</a></p>')
+    nf.append('</div>')
+    nf.append(r"""<script>
+(function(){
+  /* auto-retry only where it can help: article pages right after a deploy */
+  if(!/^\/a\//.test(location.pathname)||!window.fetch)return;
+  var w=document.getElementById('nfWait'); if(w)w.hidden=false;
+  var tries=0;
+  function again(){
+    if(++tries>6){if(w)w.hidden=true;return;}   /* ~2 min then give up */
+    fetch(location.href,{cache:'no-store'}).then(function(r){
+      if(r.ok){location.reload();}else{setTimeout(again,20000);}
+    }).catch(function(){setTimeout(again,20000);});
+  }
+  setTimeout(again,15000);
+})();
+</script>""")
+    nf.append(foot())
+    write("404.html", "".join(nf))
+
     # ---- privacy policy (required for AdSense) ----
     contact = (f'راسِلنا على <a href="mailto:{esc(CONTACT_EMAIL)}">{esc(CONTACT_EMAIL)}</a>.'
                if CONTACT_EMAIL else 'يمكنك التواصل معنا عبر قنواتنا الرسمية.')
@@ -2011,6 +2048,21 @@ a{color:inherit}
 .lt{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
 .lt th,.lt td{padding:9px 6px;text-align:center;white-space:nowrap}
 .lt thead th{color:var(--muted);font-weight:800;font-size:.72rem;border-bottom:1px solid #eef2f6}
+/* 404 page */
+.nf{text-align:center;padding:46px 16px 30px;max-width:520px;margin:0 auto}
+.nf-emoji{font-size:3rem;margin-bottom:6px}
+.nf .page-h{margin-top:0}
+.nf-p{color:var(--muted);font-weight:700}
+.nf-wait{color:var(--green-d)}
+.nf-spin{display:inline-block;width:12px;height:12px;border:2px solid var(--green-d);
+  border-inline-start-color:transparent;border-radius:50%;vertical-align:-2px;
+  animation:nfspin .9s linear infinite}
+@keyframes nfspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion: reduce){.nf-spin{animation:none;border-inline-start-color:var(--green-d)}}
+.nf-links{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.nf-btn{background:var(--green-d);color:#fff;text-decoration:none;font-weight:800;
+  border-radius:999px;padding:9px 22px;font-size:.9rem}
+.nf-btn2{background:#fff;color:var(--green-d);border:1.5px solid var(--green-d)}
 /* stats dashboard */
 .hintline{color:var(--muted);font-weight:700;font-size:.85rem;margin:-6px 0 18px}
 .stats-sec{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;margin:0 0 18px;
