@@ -148,9 +148,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (21 games)",
+ "goal_events": "ok (24 games)",
  "goal_events_dbg": {
-  "candidates": 21,
+  "candidates": 24,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -184,5 +184,5 @@
    "member0": "{\"competitorId\": 134, \"id\": 325326, \"athleteId\": 5739, \"name\": \"يان أوبلاك\", \"shortName\": \"أوبلاك\", \"jerseyNumber\": 13, \"nameForURL\": \"jan-oblak\", \"imageVersion\": 51}"
   }
  },
- "utc": "2026-08-22T16:20:25Z"
+ "utc": "2026-08-22T16:39:16Z"
 }
