@@ -4,7 +4,7 @@
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
- "standings": "ok (5)",
+ "standings": "ok (6)",
  "transfers": "ok (12)",
  "goals": "ok (Egyptian Premier League:1, Turkish Super Lig:5, Saudi Pro League:5, Premier League:3, Primera Division:5, Bundesliga:5, Ligue 1:2, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:1, Turkish Super Lig:5, Saudi Pro League:5, Premier League:2, Primera Division:5, Bundesliga:5, Ligue 1:1, UEFA Champions League:5)",
@@ -184,5 +184,5 @@
    "member0": "{\"competitorId\": 134, \"id\": 325326, \"athleteId\": 5739, \"name\": \"يان أوبلاك\", \"shortName\": \"أوبلاك\", \"jerseyNumber\": 13, \"nameForURL\": \"jan-oblak\", \"imageVersion\": 51}"
   }
  },
- "utc": "2026-08-22T11:49:40Z"
+ "utc": "2026-08-22T11:54:07Z"
 }
