@@ -208,7 +208,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -293,6 +293,21 @@ def local_crest(url):
 # (token, competition-or-None): 365scores leagues use native Arabic names,
 # and "الأهلي" alone is AMBIGUOUS since the Saudi league joined (Saudi
 # Al-Ahli is also "الأهلي") - so Arabic tokens are scoped to their league.
+# URL slugs for the per-league standings/scorers landing pages
+# (/standings/<slug>.html, /scorers/<slug>.html). Keys must match the
+# competition names as they appear in standings.json / scorers.json.
+COMP_SLUG = {
+    "Egyptian Premier League": "egypt",
+    "Premier League": "england",
+    "Primera Division": "spain",
+    "Serie A": "italy",
+    "Bundesliga": "germany",
+    "Ligue 1": "france",
+    "Turkish Super Lig": "turkey",
+    "Saudi Pro League": "saudi",
+    "UEFA Champions League": "champions-league",
+}
+
 TICKER_TEAMS = [
     ("Real Madrid", None), ("FC Barcelona", None), ("Manchester United", None),
     ("Manchester City", None), ("Arsenal FC", None), ("Liverpool FC", None),
@@ -1283,7 +1298,10 @@ def build():
         mp.append('</dl></section>')
         stc = st_by_comp.get(m.get("competition"))
         if stc and stc.get("table"):
-            mp.append(f'<section class="minfo"><h2>ترتيب {esc(comp)}</h2>')
+            _slug = COMP_SLUG.get(m.get("competition"))
+            _h = (f'<a href="/standings/{_slug}.html">ترتيب {esc(comp)} ←</a>'
+                  if _slug else f'ترتيب {esc(comp)}')
+            mp.append(f'<section class="minfo"><h2>{_h}</h2>')
             mp.append(standings_table(m.get("competition"), stc["table"],
                                       past=stc.get("past"),
                                       season_label=stc.get("season_label"),
@@ -1319,6 +1337,85 @@ def build():
         if m["kickoff"] >= sm_cut:      # keep the sitemap focused on ±30 days
             urls.append(murl)
     print(f"  + match pages: {n_mp}")
+
+    # ---- per-league standings + top-scorers pages ----
+    # Evergreen SEO landing pages with their own URLs: "ترتيب الدوري المصري"
+    # and "هدافو الدوري المصري" are huge monthly queries that a tab inside
+    # /matches.html can never rank for. One /standings/<slug>.html per league
+    # with a table, and one /scorers/<slug>.html when the charts are current
+    # (the stale-last-season guard sc_ok/as_ok gates them, same as /matches).
+    os.makedirs(os.path.join(DIST, "standings"), exist_ok=True)
+    os.makedirs(os.path.join(DIST, "scorers"), exist_ok=True)
+    _n = datetime.date.today()
+    season = (f"{_n.year}-{_n.year + 1}" if _n.month >= 7
+              else f"{_n.year - 1}-{_n.year}")
+    n_lp = 0
+    for comp, slug in COMP_SLUG.items():
+        label = comp_label(comp)
+        st = st_by_comp.get(comp)
+        sc = sc_by_comp.get(comp) if sc_ok.get(comp) else None
+        asst = as_by_comp.get(comp) if as_ok.get(comp) else None
+        st_url, sc_url = f"/standings/{slug}.html", f"/scorers/{slug}.html"
+        up_next = [m for m in matches
+                   if m.get("competition") == comp
+                   and (m.get("status") or "").upper() in ("UPCOMING", "LIVE")][:6]
+        if st and st.get("table"):
+            sp2 = [head(f"ترتيب {label} {season} — جدول الترتيب الكامل | {SITE_NAME}",
+                        f"جدول ترتيب {label} لموسم {season} محدثًا تلقائيًا: "
+                        "النقاط والمباريات والأهداف وفارق الأهداف "
+                        "ونتائج آخر 5 مباريات لكل فريق.",
+                        SITE_BASE + st_url, active="matches")]
+            sp2.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+                       f'<a href="/matches.html">المباريات</a> › ترتيب {esc(label)}</nav>')
+            sp2.append(f'<h1 class="page-h">ترتيب {esc(label)} {esc(season)}</h1>')
+            sp2.append(f'<p class="hintline">جدول {esc(label)} الكامل — يتحدّث '
+                       'تلقائيًا بعد كل مباراة، مع نتائج آخر 5 مباريات لكل فريق.</p>')
+            sp2.append(standings_table(comp, st["table"], past=st.get("past"),
+                                       season_label=st.get("season_label"),
+                                       zeroed=st.get("zeroed"),
+                                       form_map=forms.get(comp, {}), embedded=True))
+            if sc:
+                sp2.append(f'<section class="minfo"><h2>'
+                           f'<a href="{sc_url}">هدافو {esc(label)} ←</a></h2>'
+                           + scorers_list(sc, "أهداف") + '</section>')
+            if up_next:
+                sp2.append(f'<section class="minfo"><h2>مباريات {esc(label)} القادمة</h2>'
+                           '<div class="mlist">')
+                for m in up_next:
+                    sp2.append(match_row(m, show_time=True, show_comp=False,
+                                         link=match_url(m)))
+                sp2.append('</div></section>')
+            sp2.append(foot())
+            write(f"standings/{slug}.html", "".join(sp2))
+            urls.append(st_url)
+            n_lp += 1
+        if sc or (st and st.get("table")):
+            # the page must exist whenever the league is active (the footer
+            # links to /scorers/egypt.html sitewide) — a stale-gated chart
+            # gets a placeholder, never last season's names
+            cp = [head(f"هدافو {label} {season} — ترتيب الهدافين وصناع الأهداف | {SITE_NAME}",
+                       f"قائمة هدافي {label} لموسم {season} محدثة تلقائيًا بعد كل "
+                       "جولة، مع ترتيب صناع الأهداف (التمريرات الحاسمة).",
+                       SITE_BASE + sc_url, active="matches")]
+            cp.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+                      f'<a href="/matches.html">المباريات</a> › هدافو {esc(label)}</nav>')
+            cp.append(f'<h1 class="page-h">هدافو {esc(label)} {esc(season)}</h1>')
+            cp.append('<section class="minfo"><h2>ترتيب الهدافين</h2>'
+                      + (scorers_list(sc, "أهداف") if sc else
+                         '<p class="hintline">تُحدَّث قائمة الهدافين تلقائيًا '
+                         'مع انطلاق جولات الموسم الجديد.</p>')
+                      + '</section>')
+            if asst:
+                cp.append('<section class="minfo"><h2>صناع الأهداف</h2>'
+                          + scorers_list(asst, "صناعة") + '</section>')
+            if st and st.get("table"):
+                cp.append(f'<p class="hintline">شاهد أيضًا: '
+                          f'<a href="{st_url}">جدول ترتيب {esc(label)} كاملًا</a></p>')
+            cp.append(foot())
+            write(f"scorers/{slug}.html", "".join(cp))
+            urls.append(sc_url)
+            n_lp += 1
+    print(f"  + league pages: {n_lp}")
 
     # ---- stats dashboard (/stats.html) ----
     sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
