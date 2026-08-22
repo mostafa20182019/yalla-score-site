@@ -38,11 +38,16 @@ async function liveScores() {
         if (sg !== 3 && sg !== 4) continue;  // live + finished (final score)
         const h = g.homeCompetitor || {}, a = g.awayCompetitor || {};
         if (h.score == null || h.score < 0 || a.score == null || a.score < 0) continue;
+        // half-time: 365scores keeps gameTimeDisplay at 45' and flags the
+        // break in the status texts ("استراحة" on langId 27) - show HT
+        // instead of a frozen 45 until the second half kicks off
+        const st = `${g.statusText || ""} ${g.shortStatusText || ""} ${g.gameTimeDisplay || ""}`;
+        const ht = sg === 3 && (st.includes("استراح") || /half\s*-?\s*time/i.test(st) || /\bHT\b/.test(st));
         games.push({
           h: h.name || "", a: a.name || "",
           hs: Math.round(h.score), as: Math.round(a.score),
           live: sg === 3,
-          min: sg === 3 ? (g.gameTimeDisplay || "") : "",
+          min: sg === 3 ? (ht ? "HT" : (g.gameTimeDisplay || "")) : "",
         });
       }
     }
