@@ -397,7 +397,8 @@ def make_ticker(matches):
     carrying a short date chip. Returns "" when there's nothing to show."""
     if not matches:
         return ""
-    picked = [m for m in matches if _is_ticker_team(m)]
+    picked = [m for m in matches
+              if _is_ticker_team(m) and (m.get("status") or "") != "POSTPONED"]
     live = [m for m in picked if (m.get("status") or "") == "LIVE"]
     todays = [m for m in picked
               if m.get("kickoff") == REF_TODAY and (m.get("status") or "") != "LIVE"]
@@ -1904,8 +1905,10 @@ def match_goals(idx, m):
 def match_row(m, show_time=False, show_comp=True, goals=None):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
-             "UPCOMING": ("قادمة", "up")}.get(st, ("", "up"))
-    if st == "FINISHED" or st == "LIVE":
+             "UPCOMING": ("قادمة", "up"), "POSTPONED": ("", "pp")}.get(st, ("", "up"))
+    if st == "POSTPONED":
+        mid = '<span class="ko ko-pp">مؤجلة</span>'
+    elif st == "FINISHED" or st == "LIVE":
         mid = f'<b class="score">{m.get("home_score") if m.get("home_score") is not None else ""} - {m.get("away_score") if m.get("away_score") is not None else ""}</b>'
     else:
         when = (m.get("koff_time") if show_time and m.get("koff_time") else m.get("kickoff"))
@@ -2314,6 +2317,7 @@ a{color:inherit}
 .mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#0f5e28}
 .mg small{font-size:.62rem}
 @media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.66rem}}
+.ko-pp{color:#b45309;background:#fdf3e3;border-radius:8px;padding:2px 10px;font-weight:800}
 /* live minute chip (painted by LIVE_JS next to a live score) */
 .lv-min{display:inline-block;font-size:.68rem;font-weight:800;color:#e11d48;
   margin-inline-start:8px;direction:ltr;unicode-bidi:embed;vertical-align:middle}

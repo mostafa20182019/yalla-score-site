@@ -531,6 +531,12 @@ def fetch_s365_league(matches_out, lid, comp_name):
     def game_row(g):
         st = g.get("statusGroup")               # 2 scheduled, 3 live, 4 ended
         status = "LIVE" if st == 3 else ("FINISHED" if st == 4 else "UPCOMING")
+        # a POSTPONED game arrives as statusGroup 4 with no scores (بترول
+        # اسيوط x بتروجت 22/08 rendered as "انتهت -") - ended without a
+        # result isn't finished, it never happened
+        h0, a0 = (g.get("homeCompetitor") or {}).get("score"), (g.get("awayCompetitor") or {}).get("score")
+        if status == "FINISHED" and ((h0 is None or h0 < 0) or (a0 is None or a0 < 0)):
+            status = "POSTPONED"
         date, tm = "", ""
         try:
             dt = datetime.fromisoformat(g.get("startTime") or "").astimezone(CAIRO)
