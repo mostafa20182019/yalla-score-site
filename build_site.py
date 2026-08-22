@@ -553,6 +553,12 @@ LIVE_JS = r"""<script>
   var FAV=(window.__favClubs||[]).map(function(e){
     return {n:norm(e&&e.n!==undefined?e.n:e), c:(e&&e.c)||null};
   });
+  /* build-time extras for the card: crests + the match's own page URL,
+     keyed by the normalized Arabic name pair (emitted as __favMeta) */
+  var FMETA={};
+  (function(){var raw=window.__favMeta||{};
+    for(var k in raw){var p=k.split('|');
+      if(p.length===2)FMETA[norm(p[0])+'|'+norm(p[1])]=raw[k];}})();
   function favRender(gs){
     if(!favBox)return;
     var hit=null;
@@ -566,10 +572,14 @@ LIVE_JS = r"""<script>
       }
     }
     if(!hit){favBox.hidden=true;favBox.innerHTML='';return;}
-    favBox.innerHTML='<span class="fv-dot"></span><span class="fv-t">مباشر الآن</span>'
-      +'<span class="fv-m"><bdi>'+hit.h+'</bdi>'
+    var mt=FMETA[norm(hit.h)+'|'+norm(hit.a)]||{};
+    var hc=mt.hb?'<img class="fv-c" src="'+mt.hb+'" alt="" loading="lazy">':'';
+    var ac=mt.ab?'<img class="fv-c" src="'+mt.ab+'" alt="" loading="lazy">':'';
+    favBox.href=mt.u||'/matches.html';
+    favBox.innerHTML='<span class="fv-live"><span class="fv-dot"></span><span class="fv-lt">مباشر الآن</span></span>'
+      +'<span class="fv-m">'+hc+'<bdi>'+hit.h+'</bdi>'
       +sPill('fv-s',hit.hs,hit.as)
-      +'<bdi>'+hit.a+'</bdi></span>'
+      +'<bdi>'+hit.a+'</bdi>'+ac+'</span>'
       +(hit.min?'<span class="fv-min">'+hit.min+'</span>':'');
     favBox.hidden=false;
   }
@@ -823,8 +833,19 @@ def build():
     side = transfers_widget(transfers) if transfers else ""
     parts.append(f'<aside class="home-side">{side}</aside>')
     parts.append('</div>')  # /home-cols
+    # crests + per-match page URL for the live card, curated clubs only
+    # (keyed by the Arabic name pair — LIVE_JS normalizes both sides)
+    fav_meta = {}
+    for m in matches:
+        if _is_ticker_team(m) and m.get("match_id"):
+            fav_meta[f'{ar_team(m.get("home"))}|{ar_team(m.get("away"))}'] = {
+                "hb": local_crest(m["home_badge"]) if m.get("home_badge") else "",
+                "ab": local_crest(m["away_badge"]) if m.get("away_badge") else "",
+                "u": match_url(m)}
     parts.append('<script>window.__favClubs='
                  + json.dumps(fav_club_names(standings, fixtures), ensure_ascii=False)
+                 + ';window.__favMeta='
+                 + json.dumps(fav_meta, ensure_ascii=False)
                  + ';</script>')
     parts.append(foot())
     write("index.html", "".join(parts))
@@ -2674,31 +2695,48 @@ a{color:inherit}
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 /* live card for a curated club — its own row directly above "آخر الأخبار" */
 /* full-width bar: status on the start side, the match centered, minute at the end */
-.fav-live{display:flex;align-items:center;justify-content:space-between;gap:10px;
-  text-decoration:none;background:#fff5f6;border:1px solid #f6ccd2;border-radius:14px;
-  padding:11px 18px;margin:10px 0 0;color:var(--ink);font-weight:800;font-size:.9rem}
-.fav-live:hover{border-color:#e11d48;box-shadow:0 2px 10px rgba(225,29,72,.14)}
+/* clean white card, live-red inline-start accent — same visual language as
+   .mrow-live rows; crests + a bolder score pill carry the hierarchy */
+.fav-live{display:flex;align-items:center;justify-content:space-between;gap:12px;
+  text-decoration:none;background:#fff;border:1px solid #e2e8f0;
+  border-inline-start:4px solid var(--live);border-radius:14px;
+  padding:10px 16px;margin:10px 0 0;color:var(--ink);font-weight:800;font-size:.95rem;
+  box-shadow:0 1px 3px rgba(15,23,42,.05);transition:box-shadow .15s,border-color .15s}
+.fav-live:hover{border-color:#94a3b8;border-inline-start-color:var(--live);
+  box-shadow:0 3px 12px rgba(15,23,42,.12)}
 /* tighten the news heading under the bar — but only while the bar is actually
    showing, so a quiet day keeps the normal breathing room. h1 only: the h2
    section headings below must not shift with live state. */
 .fav-live:not([hidden]) + h1.page-h{margin-top:9px}
-.fv-dot{width:8px;height:8px;border-radius:50%;background:var(--live);flex:0 0 auto;
+.fv-live{display:inline-flex;align-items:center;gap:6px;background:var(--live);
+  color:#fff;border-radius:999px;padding:3px 12px;font-size:.68rem;font-weight:900;
+  letter-spacing:.02em;flex:0 0 auto;white-space:nowrap}
+.fv-dot{width:7px;height:7px;border-radius:50%;background:#fff;flex:0 0 auto;
   animation:fvpulse 1.4s ease-in-out infinite}
 @keyframes fvpulse{0%,100%{opacity:1}50%{opacity:.25}}
-.fv-t{color:var(--live);font-size:.72rem;font-weight:900;letter-spacing:.02em}
-.fv-m{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+.fv-m{display:inline-flex;align-items:center;justify-content:center;gap:10px;
   flex:1 1 auto;min-width:0}
 .fv-m bdi{white-space:nowrap}
+.fv-c{width:26px;height:26px;object-fit:contain;flex:0 0 auto}
 .fv-s,.tk-s{display:inline-flex;align-items:center;gap:1px}
 .fv-s span,.tk-s span{font-variant-numeric:tabular-nums}
 .fv-s i,.tk-s i{font-style:normal;opacity:.75}
-.fv-s{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 8px;font-size:.8rem}
-.fv-min{color:var(--live);font-size:.72rem;font-weight:900;direction:ltr;unicode-bidi:embed}
+.fv-s{background:var(--green-d);color:#fff;border-radius:8px;padding:2px 12px;
+  font-size:.95rem;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
+.fv-min{background:#ffe4e9;color:var(--live);border-radius:999px;padding:3px 10px;
+  font-size:.72rem;font-weight:900;direction:ltr;unicode-bidi:embed;
+  flex:0 0 auto;white-space:nowrap}
 @media(max-width:560px){
   /* a phone row is narrow: let the bar wrap its own contents rather than
      clip a club name or push the page sideways */
-  .fav-live{font-size:.8rem;padding:9px 12px;gap:8px;flex-wrap:wrap}
+  .fav-live{font-size:.8rem;padding:9px 12px;gap:8px}
   .fv-m{gap:7px}
+  .fv-c{width:20px;height:20px}
+  .fv-s{font-size:.82rem;padding:1px 9px}
+  /* no room for the text chip on a phone row: the pulsing dot + the red
+     accent border + the minute chip already say "live" */
+  .fv-lt{display:none}
+  .fv-live{padding:5px}
 }
 .see-all{color:var(--green-d);font-weight:800;text-decoration:none;font-size:.85rem;white-space:nowrap}
 .see-all:hover{text-decoration:underline}
