@@ -483,15 +483,17 @@ LIVE_JS = r"""<script>
     var k=norm(e.getAttribute('data-h'))+'|'+norm(e.getAttribute('data-a'));
     (map[k]=map[k]||[]).push(e);
   });
-  /* home score on the home side - see score_pill() in build_site.py */
-  function pill(cls,hs,as_){
+  /* home score on the home side - see score_pill() in build_site.py.
+     Named sPill: paint() declares `var pill` for the status badge, and var
+     hoisting would shadow a helper called pill across the WHOLE function. */
+  function sPill(cls,hs,as_){
     return '<b class="'+cls+'"><span>'+hs+'</span><i>-</i><span>'+as_+'</span></b>';
   }
   function paint(e,g){
     var sc=g.hs+' - '+g.as;
     if(e.classList.contains('tk-item')){
       var mid=e.querySelector('.tk-mid'); if(!mid)return;
-      mid.innerHTML=pill('tk-s',g.hs,g.as)+(g.live?'<span class="tk-dot"></span>':'');
+      mid.innerHTML=sPill('tk-s',g.hs,g.as)+(g.live?'<span class="tk-dot"></span>':'');
     }else{
       var mid=e.querySelector('.mid'); if(!mid)return;
       mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
@@ -518,7 +520,7 @@ LIVE_JS = r"""<script>
     if(!hit){favBox.hidden=true;favBox.innerHTML='';return;}
     favBox.innerHTML='<span class="fv-dot"></span><span class="fv-t">مباشر الآن</span>'
       +'<span class="fv-m"><bdi>'+hit.h+'</bdi>'
-      +pill('fv-s',hit.hs,hit.as)
+      +sPill('fv-s',hit.hs,hit.as)
       +'<bdi>'+hit.a+'</bdi></span>'
       +(hit.min?'<span class="fv-min">'+hit.min+'</span>':'');
     favBox.hidden=false;
