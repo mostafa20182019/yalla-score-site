@@ -38,11 +38,17 @@ async function liveScores() {
         if (sg !== 3 && sg !== 4) continue;  // live + finished (final score)
         const h = g.homeCompetitor || {}, a = g.awayCompetitor || {};
         if (h.score == null || h.score < 0 || a.score == null || a.score < 0) continue;
-        // half-time: 365scores keeps gameTimeDisplay at 45' and flags the
-        // break in the status texts ("استراحة" on langId 27) - show HT
-        // instead of a frozen 45 until the second half kicks off
-        const st = `${g.statusText || ""} ${g.shortStatusText || ""} ${g.gameTimeDisplay || ""}`;
-        const ht = sg === 3 && (st.includes("استراح") || /half\s*-?\s*time/i.test(st) || /\bHT\b/.test(st));
+        // half-time: measured live on 2026-08-23 (Hull x Man Utd) - during
+        // the break this endpoint reports statusText AND shortStatusText as
+        // the bare word "شوط" with gameTimeDisplay frozen at 45'; in play they
+        // are "الشوط الأول/الثاني" and "1"/"2". So the break test is EXACT
+        // equality with the bare word - a substring would match every in-play
+        // status too. The استراحة/half-time/HT checks stay as tolerance for
+        // other wordings 365scores may use elsewhere.
+        const stx = (g.statusText || "").trim(), ssx = (g.shortStatusText || "").trim();
+        const st = `${stx} ${ssx} ${g.gameTimeDisplay || ""}`;
+        const ht = sg === 3 && (stx === "شوط" || ssx === "شوط"
+          || st.includes("استراح") || /half\s*-?\s*time/i.test(st) || /\bHT\b/.test(st));
         games.push({
           h: h.name || "", a: a.name || "",
           hs: Math.round(h.score), as: Math.round(a.score),
