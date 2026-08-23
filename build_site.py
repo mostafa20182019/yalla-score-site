@@ -581,28 +581,35 @@ LIVE_JS = r"""<script>
   (function(){var raw=window.__favMeta||{};
     for(var k in raw){var p=k.split('|');
       if(p.length===2)FMETA[norm(p[0])+'|'+norm(p[1])]=raw[k];}})();
+  /* ALL live curated-club matches, one card each (user rule 2026-08-23 —
+     showing only the first hit hid Al Ahly while Trabzonspor was live) */
   function favRender(gs){
     if(!favBox)return;
-    var hit=null;
-    for(var i=0;i<gs.length&&!hit;i++){
+    var hits=[];
+    for(var i=0;i<gs.length;i++){
       var g=gs[i];
       if(!g.live)continue;
       var nh=norm(g.h),na=norm(g.a);
       for(var j=0;j<FAV.length;j++){
         var f=FAV[j];
-        if((f.n===nh||f.n===na)&&(!f.c||f.c===g.c)){hit=g;break;}
+        if((f.n===nh||f.n===na)&&(!f.c||f.c===g.c)){hits.push(g);break;}
       }
     }
-    if(!hit){favBox.hidden=true;favBox.innerHTML='';return;}
-    var mt=FMETA[norm(hit.h)+'|'+norm(hit.a)]||{};
-    var hc=mt.hb?'<img class="fv-c" src="'+mt.hb+'" alt="" loading="lazy">':'';
-    var ac=mt.ab?'<img class="fv-c" src="'+mt.ab+'" alt="" loading="lazy">':'';
-    favBox.href=mt.u||'/matches.html';
-    favBox.innerHTML='<span class="fv-live"><span class="fv-dot"></span><span class="fv-lt">مباشر الآن</span></span>'
-      +'<span class="fv-m">'+hc+'<bdi>'+hit.h+'</bdi>'
-      +sPill('fv-s',hit.hs,hit.as)
-      +'<bdi>'+hit.a+'</bdi>'+ac+'</span>'
-      +(hit.min?'<span class="fv-min">'+hit.min+'</span>':'');
+    if(!hits.length){favBox.hidden=true;favBox.innerHTML='';return;}
+    var html='';
+    hits.forEach(function(hit){
+      var mt=FMETA[norm(hit.h)+'|'+norm(hit.a)]||{};
+      var hc=mt.hb?'<img class="fv-c" src="'+mt.hb+'" alt="" loading="lazy">':'';
+      var ac=mt.ab?'<img class="fv-c" src="'+mt.ab+'" alt="" loading="lazy">':'';
+      html+='<a class="fav-live" href="'+(mt.u||'/matches.html')+'">'
+        +'<span class="fv-live"><span class="fv-dot"></span><span class="fv-lt">مباشر الآن</span></span>'
+        +'<span class="fv-m">'+hc+'<bdi>'+hit.h+'</bdi>'
+        +sPill('fv-s',hit.hs,hit.as)
+        +'<bdi>'+hit.a+'</bdi>'+ac+'</span>'
+        +(hit.min?'<span class="fv-min">'+hit.min+'</span>':'');
+      html+='</a>';
+    });
+    favBox.innerHTML=html;
     favBox.hidden=false;
   }
   var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot');
@@ -795,7 +802,7 @@ def build():
     # browser — a 15-minute-old build can't know what is live right now.
     # between the ad slot and the heading — user's chosen order; the ad keeps
     # its place inside the column, so the bar takes the column's width
-    parts.append('<a id="favLive" class="fav-live" href="/matches.html" hidden></a>')
+    parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
     parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
         img = feat.get("image_url")
@@ -2722,17 +2729,18 @@ a{color:inherit}
 /* full-width bar: status on the start side, the match centered, minute at the end */
 /* clean white card, live-red inline-start accent — same visual language as
    .mrow-live rows; crests + a bolder score pill carry the hierarchy */
+.fav-wrap{display:flex;flex-direction:column;gap:8px;margin:10px 0 0}
 .fav-live{display:flex;align-items:center;justify-content:space-between;gap:12px;
   text-decoration:none;background:#fff;border:1px solid #e2e8f0;
   border-inline-start:4px solid var(--live);border-radius:14px;
-  padding:10px 16px;margin:10px 0 0;color:var(--ink);font-weight:800;font-size:.95rem;
+  padding:10px 16px;color:var(--ink);font-weight:800;font-size:.95rem;
   box-shadow:0 1px 3px rgba(15,23,42,.05);transition:box-shadow .15s,border-color .15s}
 .fav-live:hover{border-color:#94a3b8;border-inline-start-color:var(--live);
   box-shadow:0 3px 12px rgba(15,23,42,.12)}
 /* tighten the news heading under the bar — but only while the bar is actually
    showing, so a quiet day keeps the normal breathing room. h1 only: the h2
    section headings below must not shift with live state. */
-.fav-live:not([hidden]) + h1.page-h{margin-top:9px}
+.fav-wrap:not([hidden]) + h1.page-h{margin-top:9px}
 .fv-live{display:inline-flex;align-items:center;gap:6px;background:var(--live);
   color:#fff;border-radius:999px;padding:3px 12px;font-size:.68rem;font-weight:900;
   letter-spacing:.02em;flex:0 0 auto;white-space:nowrap}
