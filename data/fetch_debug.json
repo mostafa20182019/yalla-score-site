@@ -166,9 +166,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (36 games)",
+ "goal_events": "ok (35 games)",
  "goal_events_dbg": {
-  "candidates": 36,
+  "candidates": 35,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -198,9 +198,9 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 134, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 15.0, \"addedTime\": 0, \"gameTimeDisplay\": \"15'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 2993226, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 134, \"id\": 325326, \"athleteId\": 5739, \"name\": \"يان أوبلاك\", \"shortName\": \"أوبلاك\", \"jerseyNumber\": 13, \"nameForURL\": \"jan-oblak\", \"imageVersion\": 51}"
+   "event0": "{\"competitorId\": 20733, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 27.0, \"addedTime\": 0, \"gameTimeDisplay\": \"27'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 3269883, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
+   "member0": "{\"competitorId\": 20733, \"id\": 3477081, \"athleteId\": 65789, \"name\": \"أورلاندو موسكيرا\", \"shortName\": \"موسكيرا\", \"jerseyNumber\": 52, \"nameForURL\": \"orlando-mosquera\", \"imageVersion\": 18, \"createdAt\": \"2017-07-08T20:09:13.337\"}"
   }
  },
- "utc": "2026-08-22T23:53:41Z"
+ "utc": "2026-08-23T00:04:54Z"
 }
