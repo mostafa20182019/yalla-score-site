@@ -142,7 +142,13 @@ def adsense_top_banner():
 
 def head(title, desc, url, image=None, og_type="website", active=""):
     desc = strip_tags(desc)[:300]
-    img = image or (SITE_BASE + "/assets/logo.png")
+    # og:image must be a raster — Facebook/Twitter ignore SVG entirely (the
+    # homepage once inherited a placeholder SVG from the hero article and FB
+    # rendered no preview at all) — and at least 200px. The branded 1200x630
+    # banner is both the default and the SVG-placeholder replacement.
+    if not image or image.lower().endswith(".svg"):
+        image = SITE_BASE + "/assets/og-banner.png"
+    img = image
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
     sa = " is-active" if active == "stats" else ""
@@ -743,6 +749,9 @@ def build():
     _fav = os.path.join(HERE, "assets-src", "favicon.png")
     if os.path.exists(_fav):
         shutil.copy(_fav, os.path.join(DIST, "assets", "favicon.png"))
+    _ogb = os.path.join(HERE, "assets-src", "og-banner.png")
+    if os.path.exists(_ogb):
+        shutil.copy(_ogb, os.path.join(DIST, "assets", "og-banner.png"))
     for _logo in (os.path.join(HERE, "assets-src", "logo.png"),
                   os.path.join(HERE, "..", "shared-components", "static-files", "icons", "app-icon-192.png")):
         if os.path.exists(_logo):
