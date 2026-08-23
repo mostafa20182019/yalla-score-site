@@ -424,7 +424,23 @@ def make_ticker(matches):
     todays = [m for m in picked
               if m.get("kickoff") == REF_TODAY and (m.get("status") or "") != "LIVE"]
     rest = [m for m in picked if m not in live and m not in todays]
-    fin = sorted((m for m in rest if m.get("status") == "FINISHED"),
+
+    def stale(m):
+        """FINISHED match that kicked off >24h ago — user rule (2026-08-23):
+        a day-old result has no place in the ticker. Missing koff_time counts
+        from midnight (conservative: drops earlier rather than lingering)."""
+        try:
+            from zoneinfo import ZoneInfo
+            cairo = ZoneInfo("Africa/Cairo")
+            ko = datetime.datetime.fromisoformat(
+                f"{m.get('kickoff')}T{m.get('koff_time') or '00:00'}:00"
+            ).replace(tzinfo=cairo)
+            return (datetime.datetime.now(cairo) - ko).total_seconds() > 86400
+        except Exception:
+            return False
+
+    fin = sorted((m for m in rest if m.get("status") == "FINISHED"
+                  and not stale(m)),
                  key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""),
                  reverse=True)
     up = sorted((m for m in rest if m.get("status") == "UPCOMING"),
