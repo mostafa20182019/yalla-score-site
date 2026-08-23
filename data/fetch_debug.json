@@ -1,5 +1,5 @@
 {
- "news": "ok (58)",
+ "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
  "matches": "ok (60)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
@@ -202,5 +202,5 @@
    "member0": "{\"competitorId\": 20733, \"id\": 3477081, \"athleteId\": 65789, \"name\": \"أورلاندو موسكيرا\", \"shortName\": \"موسكيرا\", \"jerseyNumber\": 52, \"nameForURL\": \"orlando-mosquera\", \"imageVersion\": 18, \"createdAt\": \"2017-07-08T20:09:13.337\"}"
   }
  },
- "utc": "2026-08-23T10:20:15Z"
+ "utc": "2026-08-23T10:37:43Z"
 }
