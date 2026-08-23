@@ -473,7 +473,7 @@ def make_ticker(matches):
         ab = (f'<img class="tk-b" src="{esc(local_crest(m.get("away_badge")))}" alt="" loading="lazy">'
               if m.get("away_badge") else "")
         if st == "LIVE":
-            mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s") + '<span class="tk-dot"></span>'
+            mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s tk-live") + '<span class="tk-dot"></span>'
         elif st == "FINISHED":
             mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s")
         else:
@@ -552,7 +552,8 @@ LIVE_JS = r"""<script>
     var sc=g.hs+' - '+g.as;
     if(e.classList.contains('tk-item')){
       var mid=e.querySelector('.tk-mid'); if(!mid)return;
-      mid.innerHTML=sPill('tk-s',g.hs,g.as)+(g.live?'<span class="tk-dot"></span>':'');
+      mid.innerHTML=sPill('tk-s'+(g.live?' tk-live':''),g.hs,g.as)
+        +(g.live?'<span class="tk-dot"></span>':'');
     }else{
       var mid=e.querySelector('.mid'); if(!mid)return;
       mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
@@ -2889,10 +2890,15 @@ LEGENDS_CSS = """
 .tk-t{color:#8fe4a9;font-weight:800}
 .tk-d{color:#9fb8a8;font-size:.68rem;font-weight:800;border:1px solid rgba(255,255,255,.18);
   padding:0 6px;border-radius:5px}
-.tk-dot{width:7px;height:7px;border-radius:50%;background:#ff4d6d;
-  animation:tkpulse 1.2s ease-in-out infinite}
+/* live ticker item: red score pill + a bigger dot with an expanding radar
+   ring — «شغال مباشر دلوقتي» must read at a glance (user, 2026-08-23) */
+.tk-s.tk-live{background:var(--live);color:#fff}
+.tk-dot{width:9px;height:9px;border-radius:50%;background:#ff4d6d;
+  animation:tkpulse 1.2s ease-in-out infinite,tkring 1.2s ease-out infinite}
 @keyframes tkmove{from{transform:translateX(0)}to{transform:translateX(50%)}}
-@keyframes tkpulse{0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes tkpulse{0%,100%{opacity:1}50%{opacity:.35}}
+@keyframes tkring{from{box-shadow:0 0 0 0 rgba(255,77,109,.55)}
+  to{box-shadow:0 0 0 7px rgba(255,77,109,0)}}
 @media(max-width:720px){
   .head-in{height:60px}
   .head-crowd{height:60px;width:calc(100% - 170px)}
