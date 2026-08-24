@@ -516,11 +516,21 @@ LIVE_JS = r"""<script>
   if((!els.length&&!document.getElementById('favLive'))||!window.fetch)return;
   function norm(s){return(s||'').replace(/[أإآ]/g,'ا')
     .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
+  /* rows register under BOTH name orders: the sources can disagree on who
+     is at home (FD: PSG x Rennes vs 365scores: Rennes x PSG) — a reversed
+     hit paints with home/away swapped so the numbers stay correct. */
   var map={};
   els.forEach(function(e){
-    var k=norm(e.getAttribute('data-h'))+'|'+norm(e.getAttribute('data-a'));
-    (map[k]=map[k]||[]).push(e);
+    var h=norm(e.getAttribute('data-h')),a=norm(e.getAttribute('data-a'));
+    (map[h+'|'+a]=map[h+'|'+a]||[]).push({e:e,sw:false});
+    (map[a+'|'+h]=map[a+'|'+h]||[]).push({e:e,sw:true});
   });
+  function swap(g){
+    var gl=(g.goals||[]).map(function(x){
+      return {s:x.s==='h'?'a':'h',p:x.p,m:x.m,t:x.t};});
+    return {h:g.a,a:g.h,hs:g.as,as:g.hs,live:g.live,min:g.min,c:g.c,
+            goals:g.goals?gl:undefined};
+  }
   /* home score on the home side - see score_pill() in build_site.py.
      Named sPill: paint() declares `var pill` for the status badge, and var
      hoisting would shadow a helper called pill across the WHOLE function. */
@@ -581,7 +591,11 @@ LIVE_JS = r"""<script>
   var FMETA={};
   (function(){var raw=window.__favMeta||{};
     for(var k in raw){var p=k.split('|');
-      if(p.length===2)FMETA[norm(p[0])+'|'+norm(p[1])]=raw[k];}})();
+      if(p.length===2){
+        FMETA[norm(p[0])+'|'+norm(p[1])]=raw[k];
+        /* reversed too — same home/away source-disagreement as `map` */
+        FMETA[norm(p[1])+'|'+norm(p[0])]={hb:raw[k].ab,ab:raw[k].hb,u:raw[k].u};
+      }}})();
   /* ALL live curated-club matches, one card each (user rule 2026-08-23 —
      showing only the first hit hid Al Ahly while Trabzonspor was live) */
   function favRender(gs){
@@ -620,7 +634,7 @@ LIVE_JS = r"""<script>
       favRender(gs);
       gs.forEach(function(g){
         var arr=map[norm(g.h)+'|'+norm(g.a)];
-        if(arr){arr.forEach(function(e){paint(e,g);});}
+        if(arr){arr.forEach(function(x){paint(x.e,x.sw?swap(g):g);});}
         if(g.live)any=true;
       });
       if(d.ok===false){schedule(hadLive?60000:120000);return;}
@@ -2225,8 +2239,18 @@ def goal_events_index(goal_events):
 def match_goals(idx, m):
     if (m.get("status") or "").upper() not in ("FINISHED", "LIVE"):
         return None
-    key = f'{_gnorm(ar_team(m.get("home")))}|{_gnorm(ar_team(m.get("away")))}'
-    return idx.get((key, m.get("kickoff")))
+    h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
+    g = idx.get((f"{h}|{a}", m.get("kickoff")))
+    if g is None:
+        # the two sources can disagree on who is at home (2026-08-23:
+        # football-data said PSG x Rennes, 365scores said Rennes x PSG and
+        # the scorers silently vanished) — try the reversed pair and flip
+        # each goal's side so scorers stay under the right club
+        rg = idx.get((f"{a}|{h}", m.get("kickoff")))
+        if rg is not None:
+            g = [{**x, "side": "a" if x.get("side") == "h" else "h"}
+                 for x in rg]
+    return g
 
 def match_url(m):
     """Canonical per-match page path, or None when the id is missing."""
