@@ -170,9 +170,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (57 games)",
+ "goal_events": "ok (58 games)",
  "goal_events_dbg": {
-  "candidates": 58,
+  "candidates": 59,
   "detail_fails": 0,
   "skipped": [
    "4822351:count-mismatch (0, 0) vs 1-2 []"
@@ -204,9 +204,9 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 50, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 26.0, \"addedTime\": 0, \"gameTimeDisplay\": \"26'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 2753320, \"extraPlayers\": [39229340], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
-   "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 44, \"createdAt\": \"2015-02-22T13:37:43.157\"}"
+   "event0": "{\"competitorId\": 106, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 1.0, \"addedTime\": 0, \"gameTimeDisplay\": \"1'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 12774012, \"extraPlayers\": [49733543], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
+   "member0": "{\"competitorId\": 120, \"id\": 334784, \"athleteId\": 1812, \"name\": \"بيرنارد لينو\", \"shortName\": \"لينو\", \"jerseyNumber\": 1, \"nameForURL\": \"bernd-leno\", \"imageVersion\": 39}"
   }
  },
- "utc": "2026-08-24T18:50:18Z"
+ "utc": "2026-08-24T19:08:15Z"
 }
