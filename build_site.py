@@ -405,7 +405,7 @@ AR_TEAM = {
     "Torino FC": "تورينو", "Tottenham Hotspur FC": "توتنهام هوتسبر",
     "Toulouse FC": "تولوز", "US Lecce": "ليتشي",
     "US Sassuolo Calcio": "ساسولو", "Udinese Calcio": "أودينيزي",
-    "Valencia CF": "فالنسيا", "Venezia FC": "فينيسيا",
+    "Valencia CF": "فالنسيا", "Venezia FC": "فينيزيا",
     "VfB Stuttgart": "شتوتجارت", "Villarreal CF": "فياريال",
 }
 
