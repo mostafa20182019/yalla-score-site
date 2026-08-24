@@ -172,9 +172,11 @@
  },
  "goal_events": "ok (54 games)",
  "goal_events_dbg": {
-  "candidates": 54,
+  "candidates": 55,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4822351:count-mismatch (0, 0) vs 1-2 []"
+  ],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -206,5 +208,5 @@
    "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 44, \"createdAt\": \"2015-02-22T13:37:43.157\"}"
   }
  },
- "utc": "2026-08-24T17:35:06Z"
+ "utc": "2026-08-24T17:42:52Z"
 }
