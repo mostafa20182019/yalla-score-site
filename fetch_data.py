@@ -59,6 +59,12 @@ def read_items(name):
 # pruned. Persisted by the workflow's commit-back of data/.
 ARCHIVE_DAYS = 120
 
+# How far ahead the matches-page day view reaches. Replaced the old
+# out[:60] row cap (2026-08-24): sorted oldest-first, the cap silently cut
+# the FUTURE end — the page never showed beyond ~Friday. A date horizon
+# bounds the size without eating upcoming days.
+UPCOMING_DAYS = 14
+
 def update_matches_archive(matches):
     cutoff = (datetime.now(CAIRO).date()
               - timedelta(days=ARCHIVE_DAYS)).isoformat()
@@ -328,6 +334,7 @@ def fetch_matches():
         }
 
     cutoff = today - timedelta(days=5)
+    horizon = today + timedelta(days=UPCOMING_DAYS)
     out = []
     # full-season fixtures grouped by league -> round (for the FotMob rounds view)
     by_league = {}   # comp_name -> {round -> [rows]}
@@ -354,8 +361,10 @@ def fetch_matches():
         rd = m.get("matchday")
         if rd is not None:
             by_league.setdefault(comp.get("name"), {}).setdefault(int(rd), []).append(row)
-        # main day view: recent + upcoming only
-        if dt.date() >= cutoff:
+        # main day view: recent + a bounded upcoming window (the FD
+        # competition endpoint returns the FULL season - without the
+        # horizon the day view would carry hundreds of far-future rows)
+        if cutoff <= dt.date() <= horizon:
             out.append(row)
     out.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
 
@@ -376,7 +385,7 @@ def fetch_matches():
                 break
         fixtures.append({"competition": name, "current": current, "rounds": rlist})
     _FIXTURES = fixtures
-    return out[:60]
+    return out
 
 # -------------------------------------------------------------- standings
 # league tables for the domestic leagues + UCL league phase
@@ -591,13 +600,20 @@ def fetch_s365_league(matches_out, lid, comp_name):
         }
 
     rows, seen = [], set()
+    today = datetime.now(CAIRO).date()
+    # fixtures/ only returns the next batch (~2 rounds), which stalled the
+    # day view around Friday (2026-08-24) - the dated games/ call tops the
+    # window up to UPCOMING_DAYS ahead (365scores date params are dd/mm/yyyy)
+    rng = (f"&startDate={today.strftime('%d/%m/%Y')}"
+           f"&endDate={(today + timedelta(days=UPCOMING_DAYS)).strftime('%d/%m/%Y')}")
     # current/ FIRST: a match that is IN PLAY is in NEITHER fixtures nor
     # results (it vanished from the day view for 90 minutes - user caught
     # it twice, 2026-08-16); listing current first also makes the live
     # version win the match_id dedup
     for path in (f"games/current/?{q}&showOdds=false",
                  f"games/fixtures/?{q}&showOdds=false",
-                 f"games/results/?{q}&showOdds=false"):
+                 f"games/results/?{q}&showOdds=false",
+                 f"games/?{q}{rng}&showOdds=false"):
         try:
             time.sleep(1)
             for g in (_s365(path).get("games") or []):
@@ -611,9 +627,10 @@ def fetch_s365_league(matches_out, lid, comp_name):
         except Exception as e:
             print(f"  ! 365scores {path.split('?')[0]} failed: {e}")
 
-    today = datetime.now(CAIRO).date()
     cutoff = (today - timedelta(days=5)).isoformat()
-    day_rows = [r for r in rows if r["kickoff"] >= cutoff or r["status"] == "LIVE"]
+    horizon = (today + timedelta(days=UPCOMING_DAYS)).isoformat()
+    day_rows = [r for r in rows
+                if (cutoff <= r["kickoff"] <= horizon) or r["status"] == "LIVE"]
     matches_out.extend(day_rows)
 
     # rounds panel
