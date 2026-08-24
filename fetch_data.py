@@ -678,7 +678,11 @@ def fetch_s365_league(matches_out, lid, comp_name):
 # other web/ endpoints; a raw sample of the first response is reported through
 # fetch_debug.json so a wrong field guess is diagnosable from the runner.
 GOAL_DAYS_BACK = 4          # matches this recent keep their scorer lines
-GOAL_DETAIL_CAP = 45        # per-run ceiling on game/ detail calls
+GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
+# clubs whose scorer lines must survive the cap — checked as substrings of
+# the 365scores Arabic names, order-only (no display effect)
+GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
+                 "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
 S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572"
 
 def _goal_rows(game, fallback_home_id):
@@ -769,7 +773,14 @@ def fetch_goal_events():
         except Exception as e:
             print(f"  ! goal-events {path.split('?')[0]} failed: {e}")
     out, dbg = [], {"candidates": len(cands), "detail_fails": 0, "skipped": []}
-    for gid, (g0, date) in list(cands.items())[:GOAL_DETAIL_CAP]:
+    # cap order was feed-arrival order — a curated club could fall outside
+    # the cap while a minor game made it in. Newest first, favourites first.
+    ordered = sorted(cands.items(), key=lambda kv: kv[1][1] or "", reverse=True)
+    ordered.sort(key=lambda kv: 0 if any(
+        t in (((kv[1][0].get("homeCompetitor") or {}).get("name") or "") + "|"
+              + ((kv[1][0].get("awayCompetitor") or {}).get("name") or ""))
+        for t in GOAL_PRIORITY) else 1)
+    for gid, (g0, date) in ordered[:GOAL_DETAIL_CAP]:
         try:
             time.sleep(0.6)
             j = _s365(f"game/?appTypeId=5&langId=27&gameId={gid}")
