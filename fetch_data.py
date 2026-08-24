@@ -1036,7 +1036,9 @@ if __name__ == "__main__":
                 print(f"  ! {_lname} fetch failed ({e})")
                 _DBG[_lname] = f"FAIL: {e!r}"
         matches.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
-        matches = matches[:90]
+        # no row cap: the [today-5 .. today+UPCOMING_DAYS] horizon inside the
+        # fetchers bounds the size (an old [:90] here kept cutting the future
+        # end off the day view even after the fetch-side cap was removed)
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
         try:
