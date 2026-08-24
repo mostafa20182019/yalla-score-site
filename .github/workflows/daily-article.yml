@@ -47,6 +47,13 @@ jobs:
       - name: Install Claude Code
         run: npm install -g @anthropic-ai/claude-code
 
+      # fb_post.py posts only when the top article id CHANGES during this
+      # run, so remember it before Claude writes anything.
+      - name: Remember newest article id
+        run: |
+          PREV_ID=$(python -c "import json; items=json.load(open('data/articles.json',encoding='utf-8'))['results'][0]['items']; print(items[0]['article_id'] if items else '')")
+          echo "PREV_ARTICLE_ID=$PREV_ID" >> "$GITHUB_ENV"
+
       - name: Write today's article
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
@@ -54,6 +61,14 @@ jobs:
           claude -p "$(cat .github/prompts/daily-article.md)" \
             --model claude-sonnet-5 \
             --dangerously-skip-permissions
+
+      # Auto-post the new article to the Facebook page («يلا سكور - Yalla Score»).
+      # Inert until the FB_PAGE_TOKEN repo secret exists (fb_post.py skips
+      # silently without it) and never fails the run over a social error.
+      - name: Post new article to Facebook
+        env:
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+        run: python fb_post.py "$PREV_ARTICLE_ID"
 
       # publish.yml deploys the tip of main. A push made with GITHUB_TOKEN does
       # NOT fire its on:push trigger, so dispatch it explicitly; without this
