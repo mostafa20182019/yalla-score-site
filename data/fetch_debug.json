@@ -170,13 +170,11 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (60 games)",
+ "goal_events": "ok (61 games)",
  "goal_events_dbg": {
   "candidates": 61,
   "detail_fails": 0,
-  "skipped": [
-   "4822351:count-mismatch (0, 0) vs 1-2 []"
-  ],
+  "skipped": [],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -208,5 +206,5 @@
    "member0": "{\"competitorId\": 120, \"id\": 334784, \"athleteId\": 1812, \"name\": \"بيرنارد لينو\", \"shortName\": \"لينو\", \"jerseyNumber\": 1, \"nameForURL\": \"bernd-leno\", \"imageVersion\": 39}"
   }
  },
- "utc": "2026-08-24T20:35:36Z"
+ "utc": "2026-08-24T20:50:04Z"
 }
