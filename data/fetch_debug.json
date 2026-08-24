@@ -170,7 +170,7 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (45 games)",
+ "goal_events": "ok (53 games)",
  "goal_events_dbg": {
   "candidates": 53,
   "detail_fails": 0,
@@ -202,9 +202,9 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 7549, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 18.0, \"addedTime\": 0, \"gameTimeDisplay\": \"18'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 3359858, \"extraPlayers\": [52595731], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
-   "member0": "{\"competitorId\": 12135, \"id\": 301170, \"athleteId\": 10535, \"name\": \"ميلان بوريان\\t\", \"shortName\": \"بوريان\\t\", \"jerseyNumber\": 82, \"nameForURL\": \"milan-borjan\", \"imageVersion\": 8}"
+   "event0": "{\"competitorId\": 50, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 26.0, \"addedTime\": 0, \"gameTimeDisplay\": \"26'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 2753320, \"extraPlayers\": [39229340], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
+   "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 44, \"createdAt\": \"2015-02-22T13:37:43.157\"}"
   }
  },
- "utc": "2026-08-24T11:49:58Z"
+ "utc": "2026-08-24T12:01:00Z"
 }
