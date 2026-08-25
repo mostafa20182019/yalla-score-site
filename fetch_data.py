@@ -812,6 +812,31 @@ def fetch_goal_events():
                                      ensure_ascii=False, default=str)[:700],
                 "member0": json.dumps((game.get("members") or [None])[0],
                                       ensure_ascii=False, default=str)[:250]}
+        # probe for the match-details feature (lineups/subs/cards): dump one
+        # real card event, one substitution event and the lineups structure
+        # so the extractor is written against confirmed field names
+        if "sample_details" not in dbg:
+            evs = game.get("events") or []
+            def _evname(e):
+                et = e.get("eventType") or e.get("type") or {}
+                return (et.get("name") or "") if isinstance(et, dict) else str(et)
+            card0 = next((e for e in evs if "بطاقة" in _evname(e)), None)
+            sub0 = next((e for e in evs if "تبديل" in _evname(e)), None)
+            hc = game.get("homeCompetitor") or {}
+            lu = hc.get("lineups")
+            if card0 or sub0 or lu:
+                sd = {"event_names": sorted({_evname(e) for e in evs})[:12],
+                      "card0": json.dumps(card0, ensure_ascii=False, default=str)[:400],
+                      "sub0": json.dumps(sub0, ensure_ascii=False, default=str)[:400],
+                      "hc_keys": [k for k in hc if k not in ("name", "score")][:20]}
+                if isinstance(lu, dict):
+                    sd["lineups_keys"] = list(lu)[:12]
+                    mem = (lu.get("members") or [None])[0]
+                    sd["lineup_member0"] = json.dumps(
+                        mem, ensure_ascii=False, default=str)[:400]
+                else:
+                    sd["lineups_type"] = type(lu).__name__
+                dbg["sample_details"] = sd
         goals, health = _goal_rows(game, (g0.get("homeCompetitor") or {}).get("id"))
         if not goals:
             if health != "ok":
