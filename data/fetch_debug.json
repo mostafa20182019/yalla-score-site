@@ -1,5 +1,5 @@
 {
- "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
+ "news": "ok (60)",
  "matches": "ok (140)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
@@ -206,5 +206,5 @@
    "member0": "{\"competitorId\": 120, \"id\": 334784, \"athleteId\": 1812, \"name\": \"بيرنارد لينو\", \"shortName\": \"لينو\", \"jerseyNumber\": 1, \"nameForURL\": \"bernd-leno\", \"imageVersion\": 39}"
   }
  },
- "utc": "2026-08-25T06:35:41Z"
+ "utc": "2026-08-25T06:40:08Z"
 }
