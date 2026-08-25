@@ -6,11 +6,11 @@
     </radialGradient>
   </defs>
   <!-- ball: fills the frame, dark rim so it reads on light and dark tab bars -->
-  <g transform="translate(60,68) scale(0.97)">
+  <g transform="translate(64,64) scale(1.06)">
     <clipPath id="rim"><circle r="58"/></clipPath>
     <circle r="58" fill="url(#ball)"/>
     <g clip-path="url(#rim)">
-    <g fill="#263238">
+    <g fill="#1d7a3c">
       <polygon points="0,-22 21,-7 13,18 -13,18 -21,-7"/>
       <polygon points="0,-58 12,-51 8,-38 -8,-38 -12,-51"/>
       <polygon points="55,-18 58,-4 48,6 38,-4 44,-16"/>
@@ -18,7 +18,7 @@
       <polygon points="34,46 44,34 56,38 52,52 38,56"/>
       <polygon points="-34,46 -38,56 -52,52 -56,38 -44,34"/>
     </g>
-    <g fill="none" stroke="#263238" stroke-width="3">
+    <g fill="none" stroke="#1d7a3c" stroke-width="3">
       <line x1="0" y1="-22" x2="0" y2="-40"/>
       <line x1="21" y1="-7" x2="46" y2="-12"/>
       <line x1="-21" y1="-7" x2="-46" y2="-12"/>
@@ -26,14 +26,6 @@
       <line x1="-13" y1="18" x2="-38" y2="40"/>
     </g>
     </g>
-    <circle r="58" fill="none" stroke="#263238" stroke-width="5"/>
-  </g>
-  <!-- rocket top-right, dark outline for contrast on any tab colour -->
-  <g transform="translate(103,25) scale(2.2)" stroke="#263238" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round">
-    <path d="M0,-11 C4.5,-6.5 5.5,0.5 4,7 L-4,7 C-5.5,0.5 -4.5,-6.5 0,-11 Z" fill="#ffffff"/>
-    <circle cx="0" cy="-2" r="2.4" fill="#1d7a3c"/>
-    <path d="M-4,2 L-9,8 L-4,7 Z" fill="#ffffff"/>
-    <path d="M4,2 L9,8 L4,7 Z" fill="#ffffff"/>
-    <line x1="0" y1="7" x2="0" y2="11" fill="none"/>
+    <circle r="58" fill="none" stroke="#1d7a3c" stroke-width="5"/>
   </g>
 </svg>
