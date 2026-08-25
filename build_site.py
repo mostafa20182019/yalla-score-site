@@ -2386,10 +2386,13 @@ def match_details_html(e, flipped, h_ar, a_ar):
         parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2>')
         fh = f' <span class="lu-f" dir="ltr">{esc(lh["formation"])}</span>' if lh.get("formation") else ""
         fa = f' <span class="lu-f" dir="ltr">{esc(la["formation"])}</span>' if la.get("formation") else ""
-        parts.append(f'<div class="pt-t"><bdi>{esc(h_ar)}</bdi>{fh}</div>')
+        # labels live INSIDE the pitch corners so the same markup reads
+        # correctly in both orientations (vertical mobile / horizontal desktop)
         parts.append('<div class="pitch" dir="ltr">'
                      '<div class="pt-half"></div><div class="pt-circle"></div>'
-                     '<div class="pt-box pt-box-t"></div><div class="pt-box pt-box-b"></div>')
+                     '<div class="pt-box pt-box-t"></div><div class="pt-box pt-box-b"></div>'
+                     f'<span class="pt-lab pt-lab-h"><bdi>{esc(h_ar)}</bdi>{fh}</span>'
+                     f'<span class="pt-lab pt-lab-a"><bdi>{esc(a_ar)}</bdi>{fa}</span>')
         for chips, side_key in ((ph, "h"), (pa, "a")):
             cards, off = badges(side_key)
             for x, y, p in chips:
@@ -2413,12 +2416,10 @@ def match_details_html(e, flipped, h_ar, a_ar):
                 cap = '<span class="pp-cap">C</span>' if p.get("cap") else ""
                 nm = f'{num + " " if num else ""}{esc(_pshort(p.get("name")))}'
                 parts.append(
-                    f'<div class="pp" style="left:{x:.1f}%;top:{y:.1f}%">'
+                    f'<div class="pp" style="--xv:{x:.1f}%;--yv:{y:.1f}%">'
                     f'<span class="pp-ava">{ava}{rt}{bd}{cap}</span>'
                     f'<span class="pp-nm"><bdi>{nm}</bdi></span></div>')
-        parts.append('</div>')
-        parts.append(f'<div class="pt-t pt-t-b"><bdi>{esc(a_ar)}</bdi>{fa}</div>')
-        parts.append('</section>')
+        parts.append('</div></section>')
         return "".join(parts)
     if lh or la:
         parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2><div class="lu">')
@@ -2903,9 +2904,8 @@ a{color:inherit}
 .lu-n{flex:0 0 26px;text-align:center;background:#eef2f6;border-radius:6px;font-size:.72rem;font-weight:900;color:var(--green-d);padding:2px 0}
 .lu-p{color:var(--muted);font-size:.7em;font-weight:600;margin-inline-start:auto;white-space:nowrap}
 .lu-none{color:var(--muted);font-size:.85rem}
-/* sofascore-style pitch lineup */
-.pt-t{display:flex;align-items:center;gap:8px;font-weight:900;margin:4px 2px 8px}
-.pt-t-b{margin:8px 2px 0}
+/* sofascore-style pitch lineup — vertical on mobile, horizontal on desktop
+   (the desktop media block just swaps each player's --xv/--yv coordinates) */
 .pitch{position:relative;max-width:460px;margin:0 auto;aspect-ratio:10/16;
   border-radius:10px;overflow:hidden;
   background-image:repeating-linear-gradient(to bottom,rgba(255,255,255,.05) 0 12.5%,rgba(0,0,0,0) 12.5% 25%),linear-gradient(#2c8f4e,#237a41)}
@@ -2915,8 +2915,23 @@ a{color:inherit}
 .pt-box{position:absolute;left:50%;width:46%;height:11%;transform:translateX(-50%);
   border:2px solid rgba(255,255,255,.45)}
 .pt-box-t{top:-2px;border-top:0}.pt-box-b{bottom:-2px;border-bottom:0}
-.pp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;
-  align-items:center;gap:2px;width:76px;pointer-events:none}
+.pt-lab{position:absolute;display:flex;align-items:center;gap:6px;font-weight:900;font-size:.72rem;
+  color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);z-index:2;max-width:46%}
+.pt-lab bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pt-lab .lu-f{background:rgba(10,61,28,.75);color:#fff}
+.pt-lab-h{top:6px;left:8px}
+.pt-lab-a{bottom:6px;right:8px}
+.pp{position:absolute;left:var(--xv);top:var(--yv);transform:translate(-50%,-50%);
+  display:flex;flex-direction:column;align-items:center;gap:2px;width:76px;pointer-events:none}
+@media(min-width:760px){
+  .pitch{aspect-ratio:16/10;max-width:840px;
+    background-image:repeating-linear-gradient(to right,rgba(255,255,255,.05) 0 12.5%,rgba(0,0,0,0) 12.5% 25%),linear-gradient(#2c8f4e,#237a41)}
+  .pitch .pp{left:var(--yv);top:var(--xv)}
+  .pt-half{top:0;bottom:0;left:50%;right:auto;border-top:0;border-left:2px solid rgba(255,255,255,.45)}
+  .pt-box{width:11%;height:46%;top:50%;transform:translateY(-50%)}
+  .pt-box-t{left:-2px;right:auto;border:2px solid rgba(255,255,255,.45);border-left:0}
+  .pt-box-b{left:auto;right:-2px;bottom:auto;border:2px solid rgba(255,255,255,.45);border-right:0}
+}
 .pp-ava{position:relative;width:40px;height:40px;background:#fff;border-radius:50%;
   display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.35)}
 .pp-ava img{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:top}
