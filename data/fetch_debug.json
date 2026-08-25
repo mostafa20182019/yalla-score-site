@@ -170,9 +170,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (52 games)",
+ "goal_events": "ok (57 games)",
  "goal_events_dbg": {
-  "candidates": 52,
+  "candidates": 57,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -212,7 +212,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 106, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 5.0, \"addedTime\": 0, \"gameTimeDisplay\": \"5'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 60927957, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "null",
+   "sub0": "{\"competitorId\": 106, \"statusId\": 8, \"stageId\": 9, \"order\": 8, \"num\": 8, \"gameTime\": 65.0, \"addedTime\": 0, \"gameTimeDisplay\": \"65'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 48394475, \"extraPlayers\": [54943579], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -239,5 +239,6 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.0, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "utc": "2026-08-25T11:04:32Z"
+ "match_details": "ok (56)",
+ "utc": "2026-08-25T11:19:44Z"
 }
