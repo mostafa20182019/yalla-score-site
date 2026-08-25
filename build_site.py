@@ -762,6 +762,8 @@ def build():
     fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
     goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
     ge_idx = goal_events_index(goal_events)
+    # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
+    md_idx = match_details_index(load("match_details.json"))
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
     reels = load("reels.json")
     seen_r = {r.get("video_id") for r in reels}
@@ -1348,6 +1350,9 @@ def build():
         mp.append(match_row(m, show_time=True, show_comp=True,
                             goals=match_goals(ge_idx, m)))
         mp.append('</div>')
+        _det = match_details_for(md_idx, m)
+        if _det:
+            mp.append(match_details_html(_det[0], _det[1], h_ar, a_ar))
         info = [("البطولة", comp)]
         if m.get("round"):
             info.append(("الجولة", str(m["round"])))
@@ -2252,6 +2257,93 @@ def match_goals(idx, m):
                  for x in rg]
     return g
 
+def match_details_index(entries):
+    """Same keying as goal_events_index, but keeps the whole entry
+    (goals + cards + subs + lineups) for the /m/ match pages."""
+    idx = {}
+    for e in entries:
+        idx[(f'{_gnorm(e.get("home"))}|{_gnorm(e.get("away"))}',
+             e.get("date"))] = e
+    return idx
+
+def match_details_for(idx, m):
+    """(entry, flipped) for a FINISHED/LIVE match, else None — with the
+    same reversed-pair fallback as match_goals (sources can disagree on
+    who is at home)."""
+    if (m.get("status") or "").upper() not in ("FINISHED", "LIVE"):
+        return None
+    h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
+    e = idx.get((f"{h}|{a}", m.get("kickoff")))
+    if e is not None:
+        return e, False
+    e = idx.get((f"{a}|{h}", m.get("kickoff")))
+    if e is not None:
+        return e, True
+    return None
+
+def _min_key(mn):
+    """'45+2' -> 45.02 for chronological event sorting."""
+    try:
+        base, _, add = (mn or "").partition("+")
+        return int(base) + int(add or 0) / 100.0
+    except ValueError:
+        return 0.0
+
+def match_details_html(e, flipped, h_ar, a_ar):
+    """'أحداث المباراة' timeline (goals+cards+subs) + 'التشكيلة' section."""
+    def side(s):
+        return ("a" if s == "h" else "h") if flipped else s
+    parts = []
+    evs = []
+    for g in (e.get("goals") or []):
+        txt = f'<bdi>{esc(g["player"])}</bdi>' + (
+            f' <span class="ev-tag">({esc(g["tag"])})</span>' if g.get("tag") else "")
+        evs.append((_min_key(g.get("minute")), side(g.get("side")),
+                    g.get("minute"), "⚽", txt))
+    for c in (e.get("cards") or []):
+        ic = f'<span class="cardic {"r" if c.get("color") == "r" else "y"}"></span>'
+        evs.append((_min_key(c.get("minute")), side(c.get("side")),
+                    c.get("minute"), ic, f'<bdi>{esc(c["player"])}</bdi>'))
+    for s in (e.get("subs") or []):
+        txt = (f'<span class="sub-in">▲ <bdi>{esc(s["in"])}</bdi></span> '
+               f'<span class="sub-out">▼ <bdi>{esc(s["out"])}</bdi></span>')
+        evs.append((_min_key(s.get("minute")), side(s.get("side")),
+                    s.get("minute"), "🔁", txt))
+    evs.sort(key=lambda x: x[0])
+    if evs:
+        parts.append('<section class="minfo"><h2>أحداث المباراة</h2><div class="tl">')
+        for _, sd, mn, ic, txt in evs:
+            cell = f'{ic} {txt}'
+            mn_t = f'<span dir="ltr">{esc(mn)}′</span>' if mn else ""
+            parts.append(f'<div class="tl-r"><div class="tl-h">{cell if sd == "h" else ""}</div>'
+                         f'<div class="tl-m">{mn_t}</div>'
+                         f'<div class="tl-a">{cell if sd != "h" else ""}</div></div>')
+        parts.append('</div></section>')
+    lus = e.get("lineups") or {}
+    eh, ea = ("a", "h") if flipped else ("h", "a")
+    lh, la = lus.get(eh), lus.get(ea)
+    if lh or la:
+        parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2><div class="lu">')
+        for team_name, lu in ((h_ar, lh), (a_ar, la)):
+            parts.append('<div class="lu-t">')
+            if lu:
+                fm = (f' <span class="lu-f" dir="ltr">{esc(lu["formation"])}</span>'
+                      if lu.get("formation") else "")
+                parts.append(f'<h3><bdi>{esc(team_name)}</bdi>{fm}</h3><ol class="lu-l">')
+                for p in lu.get("xi") or []:
+                    num = (f'<span class="lu-n">{p["num"]}</span>'
+                           if p.get("num") is not None else '<span class="lu-n">·</span>')
+                    pos = (f'<span class="lu-p">{esc(p["pos"])}</span>'
+                           if p.get("pos") else "")
+                    parts.append(f'<li>{num} <bdi>{esc(p["name"])}</bdi>{pos}</li>')
+                parts.append('</ol>')
+            else:
+                parts.append(f'<h3><bdi>{esc(team_name)}</bdi></h3>'
+                             '<div class="lu-none">التشكيلة غير متاحة</div>')
+            parts.append('</div>')
+        parts.append('</div></section>')
+    return "".join(parts)
+
 def match_url(m):
     """Canonical per-match page path, or None when the id is missing."""
     return f"/m/{m['match_id']}.html" if m.get("match_id") else None
@@ -2689,6 +2781,37 @@ a{color:inherit}
 .mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#0f5e28}
 .mg small{font-size:.62rem}
 @media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.66rem}}
+/* match details: events timeline + starting lineups (/m/<id>.html) */
+.tl{display:flex;flex-direction:column}
+.tl-r{display:grid;grid-template-columns:1fr 52px 1fr;gap:6px;align-items:center;
+  font-size:.85rem;padding:5px 0;border-bottom:1px solid #f1f5f9}
+.tl-r:last-child{border-bottom:0}
+.tl-h{text-align:end;font-weight:700;min-width:0}
+.tl-a{text-align:start;font-weight:700;min-width:0}
+.tl-m{text-align:center;color:var(--muted);font-weight:900;font-size:.78rem}
+.cardic{display:inline-block;width:11px;height:15px;border-radius:2px;vertical-align:-2px}
+.cardic.y{background:#fbbf24}.cardic.r{background:#dc2626}
+.sub-in{color:#15803d;font-weight:800}
+.sub-out{color:#b91c1c;font-weight:600;font-size:.8em}
+.ev-tag{color:var(--muted);font-size:.75em}
+.lu{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.lu-t{min-width:0}
+.lu-t h3{font-size:.95rem;margin:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.lu-f{color:var(--muted);font-weight:800;font-size:.78em;background:#eef2f6;border-radius:999px;padding:2px 10px}
+.lu-l{list-style:none;margin:0;padding:0}
+.lu-l li{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:.85rem;font-weight:600;border-bottom:1px solid #f1f5f9;min-width:0}
+.lu-l li:last-child{border-bottom:0}
+.lu-l li bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.lu-n{flex:0 0 26px;text-align:center;background:#eef2f6;border-radius:6px;font-size:.72rem;font-weight:900;color:var(--green-d);padding:2px 0}
+.lu-p{color:var(--muted);font-size:.7em;font-weight:600;margin-inline-start:auto;white-space:nowrap}
+.lu-none{color:var(--muted);font-size:.85rem}
+@media(max-width:560px){
+  .lu{gap:8px}
+  .lu-l li{font-size:.72rem;gap:5px}
+  .lu-n{flex-basis:20px;font-size:.62rem}
+  .lu-p{display:none}
+  .tl-r{font-size:.72rem;grid-template-columns:1fr 38px 1fr}
+}
 .ko-pp{color:#b45309;background:#fdf3e3;border-radius:8px;padding:2px 10px;font-weight:800}
 /* live minute chip (painted by LIVE_JS next to a live score) */
 .lv-min{display:inline-block;font-size:.68rem;font-weight:800;color:#e11d48;

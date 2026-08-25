@@ -763,6 +763,113 @@ def _goal_rows(game, fallback_home_id):
             return [], f"count-mismatch {counts()} vs {hs}-{as_} [{evs}]"
     return goals, "ok"
 
+def _ev_minute(ev):
+    try:
+        gt = int(float(ev.get("gameTime")))
+        if gt > 0:
+            add = ev.get("addedTime")
+            return f"{gt}+{int(add)}" if add and int(add) > 0 else str(gt)
+    except (TypeError, ValueError):
+        pass
+    return ""
+
+def _detail_rows(game, fallback_home_id):
+    """game detail -> {cards, subs, lineups} for the /m/ match pages.
+    Field shapes confirmed via fetch_debug sample_details (2026-08-25):
+    events carry cards (eventType id 2 = صفراء, 3 = حمراء) and substitutions
+    (ENGLISH eventType name "Substitution"); each competitor has .lineups =
+    {formation, members:[{id, status: 1=Starting, position:{name: ar}}]},
+    player names/jerseys resolved through the game.members lookup."""
+    members, jersey = {}, {}
+    for m in (game.get("members") or []):
+        members[m.get("id")] = (m.get("name") or "").strip() or None
+        jersey[m.get("id")] = m.get("jerseyNumber")
+    home = game.get("homeCompetitor") or {}
+    away = game.get("awayCompetitor") or {}
+    home_id = home.get("id") or fallback_home_id
+
+    def side_of(ev):
+        cid = ev.get("competitorId")
+        if cid is None:
+            return "h" if ev.get("num") == 1 else "a"
+        return "h" if cid == home_id else "a"
+
+    cards, subs = [], []
+    for ev in (game.get("events") or []):
+        et = ev.get("eventType") or ev.get("type") or {}
+        nm = (et.get("name") or "") if isinstance(et, dict) else str(et)
+        eid = et.get("id") if isinstance(et, dict) else None
+        low = nm.lower()
+        player = members.get(ev.get("playerId"))
+        if eid in (2, 3) or "بطاقة" in nm or "card" in low:
+            if not player:
+                continue
+            red = (eid == 3 or "حمراء" in nm or "red" in low or "ثانية" in nm)
+            cards.append({"side": side_of(ev), "player": player,
+                          "minute": _ev_minute(ev),
+                          "color": "r" if red else "y"})
+        elif "تبديل" in nm or "substitution" in low:
+            extra = ev.get("extraPlayers") or []
+            other = members.get(extra[0]) if extra else None
+            if not (player and other):
+                continue
+            subs.append({"side": side_of(ev), "in": player, "out": other,
+                         "minute": _ev_minute(ev)})
+
+    lineups = {}
+    for side, comp in (("h", home), ("a", away)):
+        lu = comp.get("lineups")
+        if not isinstance(lu, dict):
+            continue
+        xi = []
+        for mm in (lu.get("members") or []):
+            if mm.get("status") != 1:          # 1 = Starting
+                continue
+            pid = mm.get("id") or mm.get("playerId") or mm.get("athleteId")
+            name = members.get(pid)
+            if not name:
+                continue
+            pos = mm.get("position") or {}
+            xi.append({"name": name, "num": jersey.get(pid),
+                       "pos": pos.get("name") if isinstance(pos, dict) else None})
+        if len(xi) == 11:                      # anything else = broken feed
+            f = lu.get("formation")
+            lineups[side] = {"formation": (f if isinstance(f, str) else
+                                           (f.get("name") if isinstance(f, dict)
+                                            else None)),
+                             "xi": xi}
+    # substitution orientation guard: the entering player can never be in the
+    # starting XI. If the parsed subs mostly violate that, the feed's
+    # playerId/extraPlayers convention is the reverse of our guess - swap all.
+    starter_names = {p["name"] for s in lineups.values() for p in s["xi"]}
+    if subs and starter_names:
+        wrong = sum(1 for s in subs
+                    if s["in"] in starter_names and s["out"] not in starter_names)
+        right = sum(1 for s in subs
+                    if s["out"] in starter_names and s["in"] not in starter_names)
+        if wrong > right:
+            for s in subs:
+                s["in"], s["out"] = s["out"], s["in"]
+    return {"cards": cards, "subs": subs, "lineups": lineups}
+
+# persistent per-match details (lineups/cards/subs) for the /m/ pages —
+# goal_events.json is a rolling window, this file accumulates so a match
+# page keeps its details after the match leaves the window
+DETAILS_KEEP_DAYS = 45
+
+def update_match_details(entries):
+    cutoff = (datetime.now(CAIRO).date()
+              - timedelta(days=DETAILS_KEEP_DAYS)).isoformat()
+    merged = {}
+    for e in read_items("match_details.json"):
+        merged[f'{e.get("date")}|{e.get("home")}|{e.get("away")}'] = e
+    for e in entries:
+        merged[f'{e.get("date")}|{e.get("home")}|{e.get("away")}'] = e
+    out = [e for e in merged.values() if (e.get("date") or "") >= cutoff]
+    out.sort(key=lambda e: e.get("date") or "")
+    write_items("match_details.json", out)
+    return len(out)
+
 def fetch_goal_events():
     """[{home, away, date, goals:[{side,player,minute,tag}]}] + a debug dict."""
     today = datetime.now(CAIRO).date()
@@ -776,9 +883,8 @@ def fetch_goal_events():
             for g in (_s365(path).get("games") or []):
                 if g.get("statusGroup") not in (3, 4):
                     continue
-                h, a = g.get("homeCompetitor") or {}, g.get("awayCompetitor") or {}
-                if not ((h.get("score") or 0) > 0 or (a.get("score") or 0) > 0):
-                    continue                # goalless — no scorer line to show
+                # goalless games stay in: no scorer line, but the /m/ page
+                # still wants their lineups/cards/subs (match-details feature)
                 try:
                     dt = datetime.fromisoformat(g.get("startTime") or "").astimezone(CAIRO)
                     date = dt.strftime("%Y-%m-%d")
@@ -821,7 +927,9 @@ def fetch_goal_events():
                 et = e.get("eventType") or e.get("type") or {}
                 return (et.get("name") or "") if isinstance(et, dict) else str(et)
             card0 = next((e for e in evs if "بطاقة" in _evname(e)), None)
-            sub0 = next((e for e in evs if "تبديل" in _evname(e)), None)
+            sub0 = next((e for e in evs
+                         if "تبديل" in _evname(e)
+                         or "substitution" in _evname(e).lower()), None)
             hc = game.get("homeCompetitor") or {}
             lu = hc.get("lineups")
             if card0 or sub0 or lu:
@@ -837,15 +945,18 @@ def fetch_goal_events():
                 else:
                     sd["lineups_type"] = type(lu).__name__
                 dbg["sample_details"] = sd
-        goals, health = _goal_rows(game, (g0.get("homeCompetitor") or {}).get("id"))
-        if not goals:
-            if health != "ok":
-                dbg["skipped"].append(f"{gid}:{health}")
+        fb_home = (g0.get("homeCompetitor") or {}).get("id")
+        goals, health = _goal_rows(game, fb_home)
+        if not goals and health != "ok":
+            dbg["skipped"].append(f"{gid}:{health}")
+        details = _detail_rows(game, fb_home)
+        if not (goals or details["cards"] or details["subs"]
+                or details["lineups"]):
             continue
         h = game.get("homeCompetitor") or g0.get("homeCompetitor") or {}
         a = game.get("awayCompetitor") or g0.get("awayCompetitor") or {}
         out.append({"home": h.get("name"), "away": a.get("name"),
-                    "date": date, "goals": goals})
+                    "date": date, "goals": goals, **details})
     dbg["skipped"] = dbg["skipped"][:6]
     return out, dbg
 
@@ -1126,6 +1237,13 @@ if __name__ == "__main__":
         _DBG["goal_events_dbg"] = ge_dbg
         write_items("goal_events.json", goal_events)
         print(f"goal events: {len(goal_events)} games")
+        try:
+            n_det = update_match_details(goal_events)
+            _DBG["match_details"] = f"ok ({n_det})"
+            print(f"match details: {n_det} games")
+        except Exception as e:
+            print(f"  ! match details failed ({e}) - keeping existing file")
+            _DBG["match_details"] = f"FAIL: {e!r}"
     except Exception as e:
         print(f"  ! goal events failed ({e}) - keeping existing goal_events.json")
         _DBG["goal_events"] = f"FAIL: {e!r}"
