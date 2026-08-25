@@ -2289,6 +2289,54 @@ def _min_key(mn):
     except ValueError:
         return 0.0
 
+def _pshort(name):
+    """Pitch-chip name: surname only when the full name is long."""
+    w = (name or "").split()
+    return name if len(name or "") <= 9 or len(w) == 1 else w[-1]
+
+def _athlete_img(p):
+    """365scores athlete headshot URL (mirrored locally via local_crest)."""
+    aid = p.get("aid")
+    if not aid:
+        return None
+    try:
+        v = f"v{int(p['iv'])}/" if p.get("iv") else ""
+    except (TypeError, ValueError):
+        v = ""
+    return ("https://imagecache.365scores.com/image/upload/"
+            "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Athletes:default.png/"
+            f"{v}Athletes/{aid}")
+
+def _pitch_rows(lu, top):
+    """[(x%, y%, player)] for one team's XI, or None when the feed has no
+    formation lines. Home (top=True) attacks downward: GK on line 1 sits
+    nearest its own goal (top edge); away is mirrored from the bottom."""
+    xi = (lu or {}).get("xi") or []
+    if sum(1 for p in xi if p.get("ln")) < 8:
+        return None
+    lines = {}
+    for p in xi:
+        lines.setdefault(p.get("ln") or 99, []).append(p)
+    rows = [lines[k] for k in sorted(lines)]
+    n = len(rows)
+    out = []
+    for i, row in enumerate(rows):
+        frac = i / (n - 1) if n > 1 else 0.0
+        y = 6 + 38 * frac if top else 94 - 38 * frac
+        row.sort(key=lambda p: (p.get("sd") if p.get("sd") is not None else 50))
+        if not top:
+            row.reverse()               # mirror left/right for the away half
+        for j, p in enumerate(row):
+            out.append(((j + 0.5) / len(row) * 100, y, p))
+    return out
+
+def _rt_class(rt):
+    try:
+        r = float(rt)
+    except (TypeError, ValueError):
+        return None
+    return "r8" if r >= 8 else "r7" if r >= 7 else "r65" if r >= 6.5 else "r6"
+
 def match_details_html(e, flipped, h_ar, a_ar):
     """'أحداث المباراة' timeline (goals+cards+subs) + 'التشكيلة' section."""
     def side(s):
@@ -2322,6 +2370,56 @@ def match_details_html(e, flipped, h_ar, a_ar):
     lus = e.get("lineups") or {}
     eh, ea = ("a", "h") if flipped else ("h", "a")
     lh, la = lus.get(eh), lus.get(ea)
+    ph, pa = _pitch_rows(lh, True), _pitch_rows(la, False)
+    if ph and pa:
+        # sofascore-style pitch: home XI in the top half, away mirrored below
+        def badges(side_key):
+            cards = {}
+            for c in e.get("cards") or []:
+                if side(c.get("side")) == side_key:
+                    cur = cards.get(c.get("player"))
+                    cards[c.get("player")] = ("r" if c.get("color") == "r"
+                                              or cur == "r" else "y")
+            off = {s.get("out") for s in e.get("subs") or []
+                   if side(s.get("side")) == side_key}
+            return cards, off
+        parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2>')
+        fh = f' <span class="lu-f" dir="ltr">{esc(lh["formation"])}</span>' if lh.get("formation") else ""
+        fa = f' <span class="lu-f" dir="ltr">{esc(la["formation"])}</span>' if la.get("formation") else ""
+        parts.append(f'<div class="pt-t"><bdi>{esc(h_ar)}</bdi>{fh}</div>')
+        parts.append('<div class="pitch" dir="ltr">'
+                     '<div class="pt-half"></div><div class="pt-circle"></div>'
+                     '<div class="pt-box pt-box-t"></div><div class="pt-box pt-box-b"></div>')
+        for chips, side_key in ((ph, "h"), (pa, "a")):
+            cards, off = badges(side_key)
+            for x, y, p in chips:
+                img = _athlete_img(p)
+                src = local_crest(img) if img else None
+                num = esc(str(p.get("num"))) if p.get("num") is not None else ""
+                ava = (f'<img src="{esc(src)}" alt="" loading="lazy" '
+                       'onerror="this.style.display=\'none\';'
+                       "this.nextElementSibling.style.display='flex'\">"
+                       f'<span class="pp-fb">{num}</span>'
+                       if src else f'<span class="pp-fb" style="display:flex">{num}</span>')
+                bd = ""
+                c = cards.get(p.get("name"))
+                if c:
+                    bd += f'<span class="pp-card {c}"></span>'
+                if p.get("name") in off:
+                    bd += '<span class="pp-sub">⇄</span>'
+                rc = _rt_class(p.get("rt"))
+                rt = (f'<span class="pp-rt {rc}">{float(p["rt"]):.1f}</span>'
+                      if rc else "")
+                cap = '<span class="pp-cap">C</span>' if p.get("cap") else ""
+                nm = f'{num + " " if num else ""}{esc(_pshort(p.get("name")))}'
+                parts.append(
+                    f'<div class="pp" style="left:{x:.1f}%;top:{y:.1f}%">'
+                    f'<span class="pp-ava">{ava}{rt}{bd}{cap}</span>'
+                    f'<span class="pp-nm"><bdi>{nm}</bdi></span></div>')
+        parts.append('</div>')
+        parts.append(f'<div class="pt-t pt-t-b"><bdi>{esc(a_ar)}</bdi>{fa}</div>')
+        parts.append('</section>')
+        return "".join(parts)
     if lh or la:
         parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2><div class="lu">')
         for team_name, lu in ((h_ar, lh), (a_ar, la)):
@@ -2805,12 +2903,48 @@ a{color:inherit}
 .lu-n{flex:0 0 26px;text-align:center;background:#eef2f6;border-radius:6px;font-size:.72rem;font-weight:900;color:var(--green-d);padding:2px 0}
 .lu-p{color:var(--muted);font-size:.7em;font-weight:600;margin-inline-start:auto;white-space:nowrap}
 .lu-none{color:var(--muted);font-size:.85rem}
+/* sofascore-style pitch lineup */
+.pt-t{display:flex;align-items:center;gap:8px;font-weight:900;margin:4px 2px 8px}
+.pt-t-b{margin:8px 2px 0}
+.pitch{position:relative;max-width:460px;margin:0 auto;aspect-ratio:10/16;
+  border-radius:10px;overflow:hidden;
+  background-image:repeating-linear-gradient(to bottom,rgba(255,255,255,.05) 0 12.5%,rgba(0,0,0,0) 12.5% 25%),linear-gradient(#2c8f4e,#237a41)}
+.pt-half{position:absolute;left:0;right:0;top:50%;border-top:2px solid rgba(255,255,255,.45)}
+.pt-circle{position:absolute;left:50%;top:50%;width:22%;aspect-ratio:1;border:2px solid rgba(255,255,255,.45);
+  border-radius:50%;transform:translate(-50%,-50%)}
+.pt-box{position:absolute;left:50%;width:46%;height:11%;transform:translateX(-50%);
+  border:2px solid rgba(255,255,255,.45)}
+.pt-box-t{top:-2px;border-top:0}.pt-box-b{bottom:-2px;border-bottom:0}
+.pp{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;
+  align-items:center;gap:2px;width:76px;pointer-events:none}
+.pp-ava{position:relative;width:40px;height:40px;background:#fff;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.pp-ava img{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:top}
+.pp-fb{display:none;width:36px;height:36px;border-radius:50%;background:#eef2f6;
+  align-items:center;justify-content:center;font-weight:900;font-size:.8rem;color:var(--green-d)}
+.pp-nm{max-width:76px;font-size:.62rem;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.pp-rt{position:absolute;top:-6px;right:-10px;font-size:.6rem;font-weight:900;color:#fff;
+  border-radius:6px;padding:1px 4px;direction:ltr}
+.pp-rt.r8{background:#0ea5e9}.pp-rt.r7{background:#16a34a}
+.pp-rt.r65{background:#ca8a04}.pp-rt.r6{background:#ea580c}
+.pp-card{position:absolute;top:-5px;left:-6px;width:9px;height:13px;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.pp-card.y{background:#fbbf24}.pp-card.r{background:#dc2626}
+.pp-sub{position:absolute;bottom:-4px;left:-8px;width:15px;height:15px;border-radius:50%;
+  background:#fff;color:#b91c1c;font-size:.62rem;font-weight:900;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.pp-cap{position:absolute;bottom:-4px;right:-6px;width:14px;height:14px;border-radius:50%;
+  background:#0f172a;color:#fff;font-size:.56rem;font-weight:900;display:flex;align-items:center;justify-content:center}
 @media(max-width:560px){
   .lu{gap:8px}
   .lu-l li{font-size:.72rem;gap:5px}
   .lu-n{flex-basis:20px;font-size:.62rem}
   .lu-p{display:none}
   .tl-r{font-size:.72rem;grid-template-columns:1fr 38px 1fr}
+  .pp{width:60px}
+  .pp-ava{width:33px;height:33px}
+  .pp-ava img,.pp-fb{width:29px;height:29px}
+  .pp-nm{max-width:60px;font-size:.56rem}
 }
 .ko-pp{color:#b45309;background:#fdf3e3;border-radius:8px;padding:2px 10px;font-weight:800}
 /* live minute chip (painted by LIVE_JS next to a live score) */

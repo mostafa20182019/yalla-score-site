@@ -780,10 +780,11 @@ def _detail_rows(game, fallback_home_id):
     (ENGLISH eventType name "Substitution"); each competitor has .lineups =
     {formation, members:[{id, status: 1=Starting, position:{name: ar}}]},
     player names/jerseys resolved through the game.members lookup."""
-    members, jersey = {}, {}
+    members, jersey, minfo = {}, {}, {}
     for m in (game.get("members") or []):
         members[m.get("id")] = (m.get("name") or "").strip() or None
         jersey[m.get("id")] = m.get("jerseyNumber")
+        minfo[m.get("id")] = m
     home = game.get("homeCompetitor") or {}
     away = game.get("awayCompetitor") or {}
     home_id = home.get("id") or fallback_home_id
@@ -830,8 +831,18 @@ def _detail_rows(game, fallback_home_id):
             if not name:
                 continue
             pos = mm.get("position") or {}
-            xi.append({"name": name, "num": jersey.get(pid),
-                       "pos": pos.get("name") if isinstance(pos, dict) else None})
+            yf = mm.get("yardFormation") or {}
+            mi = minfo.get(pid) or {}
+            p = {"name": name, "num": jersey.get(pid),
+                 "pos": pos.get("name") if isinstance(pos, dict) else None,
+                 # pitch-view fields: formation line + side, athlete photo
+                 # id/version, match rating (365scores "ranking")
+                 "ln": yf.get("line"), "sd": yf.get("fieldSide"),
+                 "aid": mi.get("athleteId"), "iv": mi.get("imageVersion"),
+                 "rt": mm.get("ranking")}
+            if mm.get("isCaptain"):
+                p["cap"] = 1
+            xi.append(p)
         if len(xi) == 11:                      # anything else = broken feed
             f = lu.get("formation")
             lineups[side] = {"formation": (f if isinstance(f, str) else
