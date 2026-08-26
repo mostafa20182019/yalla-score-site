@@ -170,9 +170,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (33 games)",
+ "goal_events": "ok (34 games)",
  "goal_events_dbg": {
-  "candidates": 33,
+  "candidates": 34,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -239,6 +239,6 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.0, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (61)",
- "utc": "2026-08-26T13:52:09Z"
+ "match_details": "ok (62)",
+ "utc": "2026-08-26T14:07:25Z"
 }
