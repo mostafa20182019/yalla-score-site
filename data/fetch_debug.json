@@ -213,7 +213,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 6.0, \"addedTime\": 0, \"gameTimeDisplay\": \"6'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 66391218, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 8201, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 5, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"45+1'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 68079355, \"extraPlayers\": [50575208], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 8201, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 5, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 68079355, \"extraPlayers\": [50575208], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "createdAt",
@@ -242,5 +242,5 @@
   }
  },
  "match_details": "ok (67)",
- "utc": "2026-08-26T21:20:28Z"
+ "utc": "2026-08-26T21:35:12Z"
 }
