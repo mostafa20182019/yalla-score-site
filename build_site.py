@@ -168,6 +168,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>try{{window.__livePromise=fetch('/live.json',{{cache:'no-store'}})}}catch(e){{}}</script>
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{esc(url)}">
@@ -628,8 +629,14 @@ LIVE_JS = r"""<script>
     favBox.hidden=false;
   }
   var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot');
+  /* the <head> starts the first /live.json request in parallel with the
+     page load (window.__livePromise) — consume it once, then fetch fresh */
+  function liveReq(){
+    var p=window.__livePromise;window.__livePromise=null;
+    return p||fetch('/live.json',{cache:'no-store'});
+  }
   function tick(){
-    fetch('/live.json',{cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+    liveReq().then(function(r){return r.json();}).then(function(d){
       var gs=d.games||[],any=false;
       favRender(gs);
       gs.forEach(function(g){
@@ -819,7 +826,32 @@ def build():
     # browser — a 15-minute-old build can't know what is live right now.
     # between the ad slot and the heading — user's chosen order; the ad keeps
     # its place inside the column, so the bar takes the column's width
-    parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
+    # build-time SEED: matches LIVE in the (≤15-min-old) build data render
+    # into the card server-side, so returning visitors see it instantly
+    # instead of waiting for the first /live.json round-trip. LIVE_JS's
+    # first tick then reconciles: fresher score/minute, or hides the card
+    # when the match ended since the build. Markup mirrors favRender().
+    seed = []
+    for m in matches:
+        if (m.get("status") or "") != "LIVE" or not _is_ticker_team(m):
+            continue
+        hb = local_crest(m["home_badge"]) if m.get("home_badge") else ""
+        ab = local_crest(m["away_badge"]) if m.get("away_badge") else ""
+        hc = f'<img class="fv-c" src="{esc(hb)}" alt="">' if hb else ""
+        ac = f'<img class="fv-c" src="{esc(ab)}" alt="">' if ab else ""
+        hs = m.get("home_score"); as_ = m.get("away_score")
+        pill = (f'<b class="fv-s"><span>{hs}</span><i>-</i><span>{as_}</span></b>'
+                if hs is not None and as_ is not None else "")
+        seed.append(
+            f'<a class="fav-live" href="{esc(match_url(m))}">'
+            '<span class="fv-live"><span class="fv-dot"></span>'
+            '<span class="fv-lt">مباشر الآن</span></span>'
+            f'<span class="fv-m">{hc}<bdi>{esc(ar_team(m.get("home")))}</bdi>'
+            f'{pill}<bdi>{esc(ar_team(m.get("away")))}</bdi>{ac}</span></a>')
+    if seed:
+        parts.append(f'<div id="favLive" class="fav-wrap">{"".join(seed)}</div>')
+    else:
+        parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
     parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
         img = feat.get("image_url")
