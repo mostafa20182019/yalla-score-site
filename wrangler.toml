@@ -22,4 +22,9 @@ run_worker_first = true
 not_found_handling = "404-page"
 
 [triggers]
-crons = ["1,16,31,46 * * * *"]   # every 15 min so live scores lag at most ~15 min on matchdays
+# cron 1: data refresh every 15 min (dispatches publish.yml)
+# cron 2: the 5 daily-article slots, Cairo 10,13,17,20,22 (dispatches
+#         daily-article.yml) — GitHub's own schedule trigger skipped the
+#         17:00 UTC slot entirely on 2026-08-26, so the exact CF cron is
+#         now the article trigger too; worker.js routes by event.cron
+crons = ["1,16,31,46 * * * *", "0 7,10,14,17,19 * * *"]

@@ -170,8 +170,12 @@ export default {
       console.log("GH_TOKEN secret not set yet; skipping workflow dispatch");
       return;
     }
+    // two crons share this handler — event.cron says which one fired:
+    // the article cron dispatches daily-article.yml, the 15-min one publish.yml
+    const workflow = event.cron === "0 7,10,14,17,19 * * *"
+      ? "daily-article.yml" : "publish.yml";
     const res = await fetch(
-      "https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/publish.yml/dispatches",
+      `https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/${workflow}/dispatches`,
       {
         method: "POST",
         headers: {
@@ -185,6 +189,6 @@ export default {
     );
     // 204 = accepted; anything else is logged for debugging (visible in
     // Cloudflare dashboard -> Worker -> Logs).
-    console.log("workflow dispatch:", res.status, res.status === 204 ? "OK" : await res.text());
+    console.log("workflow dispatch:", workflow, res.status, res.status === 204 ? "OK" : await res.text());
   },
 };
