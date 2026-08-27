@@ -170,10 +170,10 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (21 games)",
+ "goal_events": "ok (22 games)",
  "goal_events_dbg": {
   "candidates": 22,
-  "detail_fails": 1,
+  "detail_fails": 0,
   "skipped": [],
   "sample": {
    "game_keys": [
@@ -202,18 +202,15 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 6.0, \"addedTime\": 0, \"gameTimeDisplay\": \"6'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 66391218, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 50527, \"id\": 3450085, \"athleteId\": 51540, \"name\": \"عبدالعزيز البلعوطى\", \"shortName\": \"البلعوطى\", \"jerseyNumber\": 27, \"nameForURL\": \"abdelaziz-el-balouty\", \"imageVersion\": 10, \"createdAt\": \"2017-06-30T16:00:44.94\"}"
+   "event0": "{\"competitorId\": 22143, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 529327, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
+   "member0": "{\"competitorId\": 22143, \"id\": 3487215, \"athleteId\": 49592, \"name\": \"احمد الشناوي\", \"shortName\": \"الشناوي\", \"jerseyNumber\": 1, \"nameForURL\": \"ahmed-el-shenawy\", \"imageVersion\": 21, \"createdAt\": \"2017-07-12T12:22:23.343\"}"
   },
   "sample_details": {
    "event_names": [
-    "Substitution",
-    "Woodwork",
-    "بطاقة صفراء",
-    "هدف"
+    "بطاقة صفراء"
    ],
-   "card0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 6.0, \"addedTime\": 0, \"gameTimeDisplay\": \"6'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 66391218, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 8201, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 5, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 68079355, \"extraPlayers\": [50575208], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "card0": "{\"competitorId\": 22143, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 529327, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
+   "sub0": "null",
    "hc_keys": [
     "id",
     "createdAt",
@@ -238,9 +235,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.6, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"19'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (69)",
- "utc": "2026-08-27T17:05:35Z"
+ "match_details": "ok (70)",
+ "utc": "2026-08-27T17:21:38Z"
 }
