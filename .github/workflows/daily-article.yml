@@ -31,6 +31,9 @@ jobs:
   write-article:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    # secrets can't be read inside a step-level if:, so surface it as a flag here
+    env:
+      HAS_ACCT2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_2 != '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -58,14 +61,54 @@ jobs:
         run: |
           PREV_ID=$(python -c "import json; items=json.load(open('data/articles.json',encoding='utf-8'))['results'][0]['items']; print(items[0]['article_id'] if items else '')")
           echo "PREV_ARTICLE_ID=$PREV_ID" >> "$GITHUB_ENV"
+          echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
-      - name: Write today's article
+      - name: Write today's article (account 1)
+        id: acct1
+        continue-on-error: true
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           claude -p "$(cat .github/prompts/daily-article.md)" \
             --model claude-sonnet-5 \
             --dangerously-skip-permissions
+
+      # Account 1 can die at three points: before writing, mid-write (image
+      # downloaded, article not saved), or AFTER committing. Only the middle
+      # case may be retried - retrying a committed article duplicates it.
+      - name: Decide whether to retry
+        id: retry
+        if: steps.acct1.outcome == 'failure'
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$HEAD_BEFORE" ]; then
+            echo "committed=true" >> "$GITHUB_OUTPUT"
+            echo "Account 1 already committed an article - no fallback."
+          else
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+            git reset --hard HEAD
+            git clean -fd
+          fi
+
+      - name: Write today's article (account 2 fallback)
+        id: acct2
+        if: steps.acct1.outcome == 'failure' && steps.retry.outputs.committed == 'false' && env.HAS_ACCT2 == 'true'
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_2 }}
+        run: |
+          claude -p "$(cat .github/prompts/daily-article.md)" \
+            --model claude-sonnet-5 \
+            --dangerously-skip-permissions
+
+      # Both accounts out = no article this slot, but NOT a broken pipeline:
+      # the next slot retries. Stay green so the run list stays meaningful,
+      # but leave a loud marker so a REAL outage (expired token) is visible.
+      - name: Flag exhausted accounts
+        if: steps.acct1.outcome == 'failure' && steps.acct2.outcome != 'success' && steps.retry.outputs.committed != 'true'
+        run: |
+          echo "::warning::No article written - account 1 failed and the fallback did not succeed."
+          echo "### No article this run" >> "$GITHUB_STEP_SUMMARY"
+          echo "acct1=${{ steps.acct1.outcome }} / acct2=${{ steps.acct2.outcome }}" >> "$GITHUB_STEP_SUMMARY"
 
       # Auto-post the new article to the Facebook page («يلا سكور - Yalla Score»).
       # Inert until the FB_PAGE_TOKEN repo secret exists (fb_post.py skips
