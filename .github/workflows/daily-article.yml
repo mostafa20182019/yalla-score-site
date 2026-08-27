@@ -15,7 +15,16 @@ on:
     # To restore 10/day: put "0 6,8,10,12,14,15,17,18,19,20 * * *" on the
     # CF cron and offset this one accordingly.
     - cron: "30 7,10,14,17,19 * * *"
-  workflow_dispatch: {}          # manual test runs from the Actions tab
+  workflow_dispatch:              # manual test runs from the Actions tab
+    inputs:
+      account:
+        description: "Claude account to try FIRST (repo default = the PRIMARY_ACCOUNT variable)"
+        type: choice
+        default: "repo default"
+        options:
+          - "repo default"
+          - "1"
+          - "2"
 
 permissions:
   contents: write                # Claude commits the article + image
@@ -34,7 +43,16 @@ jobs:
     # secrets can't be read inside a step-level if:, so surface it as a flag here
     env:
       HAS_ACCT2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_2 != '' }}
+      # Which account goes FIRST: the Run-workflow dropdown wins, else the
+      # PRIMARY_ACCOUNT repo variable, else account 1. The other one stays the
+      # fallback, so a wrong value can never leave the run without an account.
+      PRIMARY_ACCT: ${{ (github.event.inputs.account == '1' || github.event.inputs.account == '2') && github.event.inputs.account || vars.PRIMARY_ACCOUNT || '1' }}
     steps:
+      - name: Show account choice
+        run: |
+          echo "Primary Claude account: $PRIMARY_ACCT (the other one is the fallback)"
+          echo "Primary Claude account: **$PRIMARY_ACCT**" >> "$GITHUB_STEP_SUMMARY"
+
       - uses: actions/checkout@v4
         with:
           ref: main
@@ -63,11 +81,11 @@ jobs:
           echo "PREV_ARTICLE_ID=$PREV_ID" >> "$GITHUB_ENV"
           echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
-      - name: Write today's article (account 1)
+      - name: Write today's article (primary account)
         id: acct1
         continue-on-error: true
         env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN_2 || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
           claude -p "$(cat .github/prompts/daily-article.md)" \
             --model claude-sonnet-5 \
@@ -89,12 +107,12 @@ jobs:
             git clean -fd
           fi
 
-      - name: Write today's article (account 2 fallback)
+      - name: Write today's article (fallback account)
         id: acct2
         if: steps.acct1.outcome == 'failure' && steps.retry.outputs.committed == 'false' && env.HAS_ACCT2 == 'true'
         continue-on-error: true
         env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_2 }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN || secrets.CLAUDE_CODE_OAUTH_TOKEN_2 }}
         run: |
           claude -p "$(cat .github/prompts/daily-article.md)" \
             --model claude-sonnet-5 \
@@ -106,9 +124,9 @@ jobs:
       - name: Flag exhausted accounts
         if: steps.acct1.outcome == 'failure' && steps.acct2.outcome != 'success' && steps.retry.outputs.committed != 'true'
         run: |
-          echo "::warning::No article written - account 1 failed and the fallback did not succeed."
+          echo "::warning::No article written - the primary Claude account failed and the fallback did not succeed."
           echo "### No article this run" >> "$GITHUB_STEP_SUMMARY"
-          echo "acct1=${{ steps.acct1.outcome }} / acct2=${{ steps.acct2.outcome }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "primary=$PRIMARY_ACCT | ${{ steps.acct1.outcome }} / fallback ${{ steps.acct2.outcome }}" >> "$GITHUB_STEP_SUMMARY"
 
       # Auto-post the new article to the Facebook page («يلا سكور - Yalla Score»).
       # Inert until the FB_PAGE_TOKEN repo secret exists (fb_post.py skips
