@@ -85,6 +85,8 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
     </div>
     <div id="upStatus" class="status"></div>
     <img id="imgPrev" alt="">
+    <label>حقوق الصورة (مطلوب مع أي صورة من ويكيميديا/أنسبلاش)</label>
+    <input type="text" id="fcredit" placeholder="صورة: الموضوع — تصوير المصور، رخصة CC BY 4.0 (ويكيميديا كومنز)">
     <label>نص الخبر * <span style="font-weight:400">(اكتب فقرات عادية وافصل بينها بسطر فاضي — بتتحول تلقائيًا. ولو عارف HTML اكتبه مباشرة)</span></label>
     <textarea id="fbody" placeholder="الفقرة الأولى ...&#10;&#10;الفقرة الثانية ..."></textarea>
     <div class="row" style="margin-top:6px">
@@ -257,6 +259,7 @@ function editArt(i){
   document.getElementById("ftitle").value=a.title||"";
   document.getElementById("fsummary").value=a.summary||"";
   document.getElementById("fimg").value=a.image_url||"";
+  document.getElementById("fcredit").value=a.image_credit||"";
   document.getElementById("fbody").value=a.body||"";
   document.getElementById("fauthor").value=a.author||"فريق التحرير";
   document.getElementById("fdate").value=a.pub_date||"";
@@ -267,7 +270,7 @@ function editArt(i){
 function resetForm(){
   editIdx=null;
   document.getElementById("formTitle").textContent="➕ خبر جديد";
-  ["ftitle","fsummary","fimg","fbody"].forEach(function(id){document.getElementById(id).value="";});
+  ["ftitle","fsummary","fimg","fcredit","fbody"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("fauthor").value="فريق التحرير";
   document.getElementById("fdate").value=new Date().toISOString().slice(0,10);
   document.getElementById("formBtn").textContent="أضِف للقائمة";
@@ -281,12 +284,16 @@ function submitForm(){
   var b=document.getElementById("fbody").value.trim();
   if(!t) return show("formStatus","err","العنوان مطلوب");
   if(!b) return show("formStatus","err","نص الخبر مطلوب");
+  var _img=document.getElementById("fimg").value.trim();
+  var _cr=document.getElementById("fcredit").value.trim();
+  if(_img && !_cr && !confirm("الصورة من غير سطر حقوق.\n\nلو مصدرها ويكيميديا أو أنسبلاش، النشر من غير نسب مخالف للرخصة نفسها.\n\nتكمل من غير حقوق؟")) return;
   var art={
     article_id: editIdx!==null ? items[editIdx].article_id : nextId(),
     title:t,
     summary:document.getElementById("fsummary").value.trim(),
     body:bodyToHtml(b),
     image_url:document.getElementById("fimg").value.trim()||null,
+    image_credit:document.getElementById("fcredit").value.trim()||null,
     author:document.getElementById("fauthor").value.trim()||"فريق التحرير",
     pub_date:document.getElementById("fdate").value||new Date().toISOString().slice(0,10)
   };
