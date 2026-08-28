@@ -156,7 +156,9 @@
  "goal_events_dbg": {
   "candidates": 23,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4787912:count-mismatch (1, 0) vs 2-0 [h:g@32]"
+  ],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -215,9 +217,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"9'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"orde"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.6, \"hasHighestRanking\": true, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"18'\", \"isTop\": true, \"categoryId\": 2, \"n"
   }
  },
  "match_details": "ok (79)",
- "utc": "2026-08-28T17:11:24Z"
+ "utc": "2026-08-28T17:20:05Z"
 }
