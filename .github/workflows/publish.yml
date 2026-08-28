@@ -72,9 +72,16 @@ jobs:
       # building (an article push landing mid-run), deploying now would
       # briefly REVERT the newer content the other run already published -
       # a reader clicking the new hero article hit a bare 404 exactly this
-      # way. Skip the deploy; the next trigger (<=15 min) builds from the
-      # newer tip. The data commit-back below still runs, so the fetched
-      # data isn't wasted.
+      # way. Skip the deploy; the push that moved main runs its own job and
+      # deploys the newer tip. The data commit-back below still runs, so the
+      # fetched data isn't wasted.
+      #
+      # EXCEPTION (2026-08-28): a "data refresh" commit-back carries
+      # [skip ci], so NO run follows it. Skipping for that mover strands this
+      # build until the next cron - article 266 sat saved-but-unpublished
+      # exactly this way. Our dist/ was built from data this run fetched
+      # itself, so the other run's data commit changes nothing we would ship.
+      # Deploy when the ONLY thing that moved main is data commit-backs.
       - name: Skip the deploy if main moved past this checkout
         id: tip
         run: |
@@ -82,8 +89,14 @@ jobs:
           if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then
             echo "fresh=true" >> "$GITHUB_OUTPUT"
           else
-            echo "fresh=false" >> "$GITHUB_OUTPUT"
-            echo "main moved $(git rev-parse --short HEAD) -> $(git rev-parse --short origin/main); skipping deploy"
+            CONTENT=$(git log --format=%s HEAD..origin/main                       | grep -cv '^data refresh \[skip ci\]$' || true)
+            if [ "$CONTENT" -eq 0 ]; then
+              echo "fresh=true" >> "$GITHUB_OUTPUT"
+              echo "main moved by data commit-back only - deploying (no newer run is coming)"
+            else
+              echo "fresh=false" >> "$GITHUB_OUTPUT"
+              echo "main moved $(git rev-parse --short HEAD) -> $(git rev-parse --short origin/main) with $CONTENT content commit(s); skipping deploy"
+            fi
           fi
 
       - name: Deploy to Cloudflare
