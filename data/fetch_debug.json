@@ -8,7 +8,7 @@
  "standings": "ok (5)",
  "transfers": "ok (12)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
- "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:2, Ligue 1:5, UEFA Champions League:5)",
+ "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
   "552": [
    "1:الأهداف",
@@ -123,11 +123,15 @@
    "5:أهداف + صناعة",
    "6:أهداف وتمريرات حاسمة متوقعة",
    "7:تقييم 365",
-   "8:تدخلات ناجحة",
-   "9:إعتراضات خلال المباراة",
-   "10:بطاقات صفراء",
-   "11:أهداف مستقبلة في المباراة",
-   "12:تصديات في المباراة"
+   "8:ضربات الجزاء المسجلة",
+   "9:تدخلات ناجحة",
+   "10:إعتراضات خلال المباراة",
+   "11:بطاقات حمراء",
+   "12:بطاقات صفراء",
+   "13:شباك نظيفة",
+   "14:أهداف مستقبلة في المباراة",
+   "15:تصديات في المباراة",
+   "16:تصديات لضربات الجزاء"
   ],
   "35": [
    "1:الأهداف",
@@ -238,5 +242,5 @@
   }
  },
  "match_details": "ok (109)",
- "utc": "2026-08-29T18:35:43Z"
+ "utc": "2026-08-29T18:42:42Z"
 }
