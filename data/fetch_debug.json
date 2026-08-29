@@ -1,7 +1,7 @@
 {
  "news": "ok (60)",
  "matches": "ok (147)",
- "Egyptian Premier League": "ok (table 20 teams)",
+ "Egyptian Premier League": "ok (no table)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "matches_archive": "ok (322)",
@@ -242,5 +242,5 @@
   }
  },
  "match_details": "ok (115)",
- "utc": "2026-08-29T22:50:10Z"
+ "utc": "2026-08-29T23:05:57Z"
 }
