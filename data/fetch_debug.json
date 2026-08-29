@@ -1,5 +1,5 @@
 {
- "news": "ok (59)",
+ "news": "ok (60)",
  "matches": "ok (130)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
@@ -190,19 +190,20 @@
     "gameTimeAndStatusDisplayType",
     "justEnded",
     "gameTime",
-    "addedTime",
     "gameTimeDisplay",
     "preciseGameTime",
     "hasLineups",
     "hasMissingPlayers",
     "hasFieldPositions",
-    "winDescription"
+    "winDescription",
+    "homeCompetitor"
    ],
    "event0": "{\"competitorId\": 29, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 24.0, \"addedTime\": 0, \"gameTimeDisplay\": \"24'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 49499493, \"extraPlayers\": [3211399], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
    "member0": "{\"competitorId\": 108, \"id\": 558151, \"athleteId\": 10896, \"name\": \"أليسون\", \"shortName\": \"أليسون\", \"jerseyNumber\": 1, \"nameForURL\": \"alisson\", \"imageVersion\": 61, \"createdAt\": \"2014-09-28T21:35:14.39\"}"
   },
   "sample_details": {
    "event_names": [
+    "Woodwork",
     "الهدف الغي",
     "بطاقة صفراء",
     "هدف"
@@ -236,5 +237,5 @@
   }
  },
  "match_details": "ok (88)",
- "utc": "2026-08-29T12:20:14Z"
+ "utc": "2026-08-29T12:35:32Z"
 }
