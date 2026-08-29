@@ -559,12 +559,27 @@ LIVE_JS = r"""<script>
     if(gb)gb.innerHTML=inner;
     else e.insertAdjacentHTML('beforeend','<div class="mgoals">'+inner+'</div>');
   }
+  /* replay the CSS animation on an element that may already carry the class:
+     removing it is not enough, the browser needs a reflow in between. */
+  function flash(el){
+    if(!el)return;
+    el.classList.remove('sc-pop');
+    void el.offsetWidth;
+    el.classList.add('sc-pop');
+    setTimeout(function(){el.classList.remove('sc-pop');},1500);
+  }
   function paint(e,g){
     var sc=g.hs+' - '+g.as;
+    /* a goal = the number differs from the LAST PAINTED one. data-sc is absent
+       on the first paint, so a visitor arriving mid-match never sees a flash
+       for a goal that was already on the screen when the page was built. */
+    var prev=e.getAttribute('data-sc'), popped=(prev!==null&&prev!==sc);
+    e.setAttribute('data-sc',sc);
     if(e.classList.contains('tk-item')){
       var mid=e.querySelector('.tk-mid'); if(!mid)return;
       mid.innerHTML=sPill('tk-s'+(g.live?' tk-live':''),g.hs,g.as)
         +(g.live?'<span class="tk-dot"></span>':'');
+      if(popped)flash(mid.querySelector('.tk-s'));
     }else{
       var mid=e.querySelector('.mid'); if(!mid)return;
       mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
@@ -576,6 +591,7 @@ LIVE_JS = r"""<script>
       if(pill){pill.className='pill pill-'+cls;pill.textContent=txt;}
       else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
       paintGoals(e,g);
+      if(popped)flash(mid.querySelector('.score'));
     }
   }
   /* favourite-club live card next to "آخر الأخبار" (home page only).
@@ -3244,6 +3260,21 @@ LEGENDS_CSS = """
   .navtab{padding:0 14px}
 }
 @media(prefers-reduced-motion:reduce){.lg-track,.tk-track{animation:none}}
+/* goal flash: LIVE_JS adds .sc-pop to the score element only when the number
+   actually changed between two polls - i.e. a goal just went in. Never on the
+   first paint, so a page load doesn't replay an old goal. */
+@keyframes scpop{
+  0%{transform:scale(1)}
+  22%{transform:scale(1.28);background:var(--green);color:#fff}
+  55%{transform:scale(1.05);background:var(--green);color:#fff}
+  100%{transform:scale(1)}
+}
+/* display:inline-block is load-bearing, not cosmetic: .score is a <b>, and a
+   non-replaced INLINE box ignores `transform` entirely - the scale silently
+   did nothing on match rows while working in the ticker (.tk-s is inline-flex). */
+.sc-pop{animation:scpop 1.4s ease-out;display:inline-block;border-radius:8px;padding-inline:4px}
+.tk-s.sc-pop{padding-inline:8px}
+@media(prefers-reduced-motion:reduce){.sc-pop{animation:none;outline:2px solid var(--green);outline-offset:2px}}
 """
 
 # progressive-enhancement: show one day at a time with prev/next (like the live app).
