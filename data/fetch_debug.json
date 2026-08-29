@@ -203,13 +203,14 @@
   },
   "sample_details": {
    "event_names": [
+    "Substitution",
     "Woodwork",
     "الهدف الغي",
     "بطاقة صفراء",
     "هدف"
    ],
    "card0": "{\"competitorId\": 29, \"statusId\": 6, \"stageId\": 7, \"order\": 3, \"num\": 1, \"gameTime\": 44.0, \"addedTime\": 0, \"gameTimeDisplay\": \"44'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 12851956, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "null",
+   "sub0": "{\"competitorId\": 29, \"statusId\": 8, \"stageId\": 9, \"order\": 9, \"num\": 9, \"gameTime\": 66.0, \"addedTime\": 0, \"gameTimeDisplay\": \"66'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 51429377, \"extraPlayers\": [49499493], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -233,9 +234,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.3, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"62'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 4.9, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"74'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (88)",
- "utc": "2026-08-29T12:53:42Z"
+ "utc": "2026-08-29T13:05:46Z"
 }
