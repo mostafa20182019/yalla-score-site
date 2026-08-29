@@ -397,7 +397,7 @@ AR_TEAM = {
     "Royale Union Saint-Gilloise": "يونيون سان جيلواز",
     "SC Freiburg": "فرايبورج", "SC Paderborn 07": "بادربورن",
     "SK Slavia Praha": "سلافيا براج", "SS Lazio": "لاتسيو",
-    "SSC Napoli": "نابولي", "SV 07 Elversberg": "إس في إلفيرسبيرج",
+    "SSC Napoli": "نابولي", "SV 07 Elversberg": "إلفيرسبيرغ",
     "SV Werder Bremen": "فيردر بريمن", "Sevilla FC": "إشبيلية",
     "Sport Lisboa e Benfica": "بنفيكا",
     "Sporting Clube de Portugal": "سبورتينج لشبونة",
