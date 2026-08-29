@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "matches_archive": "ok (291)",
- "standings": "ok (6)",
+ "standings": "ok (5)",
  "transfers": "ok (12)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -242,5 +242,5 @@
   }
  },
  "match_details": "ok (114)",
- "utc": "2026-08-29T18:51:20Z"
+ "utc": "2026-08-29T19:06:52Z"
 }
