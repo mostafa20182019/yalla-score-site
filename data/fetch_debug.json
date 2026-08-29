@@ -1,5 +1,5 @@
 {
- "news": "ok (60)",
+ "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
  "matches": "ok (130)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
@@ -166,11 +166,14 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (38 games)",
+ "goal_events": "ok (43 games)",
  "goal_events_dbg": {
-  "candidates": 38,
+  "candidates": 43,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4787957:count-mismatch (0, 0) vs 1-0 []",
+   "4764277:count-mismatch (0, 0) vs 1-0 []"
+  ],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -237,6 +240,6 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.2, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (99)",
- "utc": "2026-08-29T16:21:09Z"
+ "match_details": "ok (104)",
+ "utc": "2026-08-29T16:40:33Z"
 }
