@@ -628,7 +628,13 @@ LIVE_JS = r"""<script>
     favBox.innerHTML=html;
     favBox.hidden=false;
   }
-  var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot');
+  /* grace = how many more polls stay on the fast-ish 60s cadence after the
+     last LIVE sighting. Without it ONE transient "nothing live" reply (an
+     edge-cache entry built a second earlier, a match the source hasn't
+     registered yet) dropped the page straight to 5-minute polling mid-match,
+     and two in a row left a score ~10 minutes stale. */
+  var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot'),
+      grace=hadLive?3:0;
   /* the <head> starts the first /live.json request in parallel with the
      page load (window.__livePromise) — consume it once, then fetch fresh */
   function liveReq(){
@@ -645,8 +651,9 @@ LIVE_JS = r"""<script>
         if(g.live)any=true;
       });
       if(d.ok===false){schedule(hadLive?60000:120000);return;}
+      if(any)grace=3;else if(grace>0)grace--;
       hadLive=any;
-      schedule(any?45000:(hadLive?60000:300000));
+      schedule(any?45000:(grace>0?60000:300000));
     }).catch(function(){schedule(hadLive?60000:120000);});
   }
   function schedule(ms){clearTimeout(timer);timer=setTimeout(tick,ms);}
