@@ -168,7 +168,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<script>try{{window.__livePromise=fetch('/live.json',{{cache:'no-store'}})}}catch(e){{}}</script>
+<script>try{{window.__livePromise=fetch('/live.json?b='+Math.floor(Date.now()/1e4),{{cache:'no-store'}})}}catch(e){{}}</script>
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{esc(url)}">
@@ -656,10 +656,16 @@ LIVE_JS = r"""<script>
   var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot'),
       grace=hadLive?3:0;
   /* the <head> starts the first /live.json request in parallel with the
-     page load (window.__livePromise) — consume it once, then fetch fresh */
+     page load (window.__livePromise) — consume it once, then fetch fresh.
+     ?b= = 10s-bucket cache-buster: Cloudflare's zone Browser-Cache-TTL
+     rewrites our max-age to 4 HOURS, and mobile browsers/WebViews that
+     ignore fetch's no-store hint then serve an hours-old cached copy on
+     page open (user saw stale scores on open, 2026-08-30). A unique URL
+     per 10s makes the local cache unusable; the worker keys its edge cache
+     on the bare pathname, so edge caching is unaffected. */
   function liveReq(){
     var p=window.__livePromise;window.__livePromise=null;
-    return p||fetch('/live.json',{cache:'no-store'});
+    return p||fetch('/live.json?b='+Math.floor(Date.now()/1e4),{cache:'no-store'});
   }
   /* local minute clock: the worker sends each live game's numeric minute
      (gt) + half (hf) and the reply's build time (ts). The browser advances
@@ -722,6 +728,11 @@ LIVE_JS = r"""<script>
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible'){clearTimeout(timer);tick();}
     else clearTimeout(timer);
+  });
+  /* bfcache/tab-restore on mobile can bring a page back without firing
+     visibilitychange — refresh immediately on that path too */
+  window.addEventListener('pageshow',function(e){
+    if(e.persisted){clearTimeout(timer);tick();}
   });
   tick();
 })();
