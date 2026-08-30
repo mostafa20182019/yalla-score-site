@@ -38,6 +38,12 @@ CONTACT_EMAIL = "yallascore.eg@gmail.com"
 # home teaser, its page, and sitemap entry all follow this flag automatically).
 SHOW_VIDEOS = False
 SHOW_REELS = False
+# aggregated press headlines OFF for the AdSense review (2026-08-30, user
+# decision): copied titles + outbound links are the site's weakest
+# originality signal. The home slot shows a deeper grid of OUR articles
+# instead. fetch_data.py still refreshes headlines.json (editorial tasks
+# read the RSS separately) — this flag only gates the DISPLAY.
+SHOW_HEADLINES = False
 # stats live inside the /matches league view now (2026-08-19, user request);
 # the standalone page still builds (old links don't 404) but is unlinked,
 # out of the sitemap, and noindexed. Flip to True to bring it back.
@@ -210,12 +216,13 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 def foot():
     year = "2026"
     stats_link = ' · <a href="/stats.html">إحصائيات</a>' if SHOW_STATS_PAGE else ""
+    heads_link = ' · <a href="/headlines.html">عناوين الصحف</a>' if SHOW_HEADLINES else ""
     vids_link = ' · <a href="/videos.html">فيديوهات</a>' if SHOW_VIDEOS else ""
     reels_link = ' · <a href="/reels.html">ريلز</a>' if SHOW_REELS else ""
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a> · <a href="/headlines.html">عناوين الصحف</a> · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -1004,7 +1011,7 @@ def build():
   </div></a>""")
     # external headlines teaser (24 = 8 rows, matches IMG_ENRICH_TOP so every
     # card gets a thumbnail; the full list lives on /headlines.html)
-    if headlines:
+    if headlines and SHOW_HEADLINES:
         parts.append('<div class="sec-h"><h2 class="page-h">عناوين</h2>'
                      '<a class="see-all" href="/headlines.html">كل العناوين ←</a></div>')
         parts.append('<div class="hgrid">')
@@ -1012,6 +1019,15 @@ def build():
             parts.append(headline_card(h))
         parts.append('</div>')
         parts.append(REL_JS)
+    elif rest[10:]:
+        # headlines hidden (AdSense originality) — the slot shows a deeper
+        # grid of OUR articles instead: the 12 that follow the shelf's 10
+        parts.append('<div class="sec-h"><h2 class="page-h">من أخبارنا أيضًا</h2>'
+                     '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
+        parts.append('<div class="grid">')
+        for a in rest[10:22]:
+            parts.append(news_card(a))
+        parts.append('</div>')
     # (matches are NOT shown on the home page - they live on /matches.html)
     parts.append('</div>')  # /home-main
     # left column: FotMob-style top-transfers rail (empty when no data)
@@ -1834,36 +1850,37 @@ def build():
     write("news.html", "".join(np_))
     urls.append("/news.html")
 
-    # ---- headlines page (full aggregated list; home shows only 9) ----
-    hp = [head(f"عناوين الصحف — {SITE_NAME}",
-               "آخر عناوين كرة القدم من الصحف والمواقع الإخبارية — تتحدث تلقائيًا على مدار الساعة.",
-               SITE_BASE + "/headlines.html", active="home")]
-    hp.append('<h1 class="page-h">عناوين الصحف</h1>')
-    if headlines:
-        # same calm list rows as /news.html (the card grid read as scattered)
-        hp.append('<div class="alist">')
-        for h in headlines:
-            t = strip_src(h.get("title"), h.get("source"))
-            iso = h.get("pub_iso") or ""
-            when = rel_ar(iso) if iso else (h.get("pub_date") or "")
-            timeel = (f'<time class="reltime" datetime="{esc(iso)}">{esc(when)}</time>'
-                      if iso else esc(when))
-            ph = PLACEHOLDER_IMGS[int(hashlib.md5((h.get("link") or t).encode("utf-8")).hexdigest(), 16) % len(PLACEHOLDER_IMGS)]
-            img = h.get("image") or ph
-            hp.append(
-                f'<a class="al-row" href="{esc(h.get("source_url") or h.get("link"))}" target="_blank" rel="noopener nofollow">'
-                f'<span class="al-th"><img src="{esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer"'
-                f' onerror="this.onerror=null;this.src=\'{ph}\'"></span>'
-                f'<span class="al-b"><b class="al-t">{esc(t)}</b>'
-                f'<span class="al-m"><span class="hsrc">{esc(h.get("source") or "")}</span> · {timeel}</span>'
-                f'</span></a>')
-        hp.append('</div>')
-        hp.append(REL_JS)
-    else:
-        hp.append('<p class="empty-note">لا توجد عناوين حاليًا.</p>')
-    hp.append(foot())
-    write("headlines.html", "".join(hp))
-    urls.append("/headlines.html")
+    # ---- headlines page (full aggregated list; gated by SHOW_HEADLINES) ----
+    if SHOW_HEADLINES:
+        hp = [head(f"عناوين الصحف — {SITE_NAME}",
+                   "آخر عناوين كرة القدم من الصحف والمواقع الإخبارية — تتحدث تلقائيًا على مدار الساعة.",
+                   SITE_BASE + "/headlines.html", active="home")]
+        hp.append('<h1 class="page-h">عناوين الصحف</h1>')
+        if headlines:
+            # same calm list rows as /news.html (the card grid read as scattered)
+            hp.append('<div class="alist">')
+            for h in headlines:
+                t = strip_src(h.get("title"), h.get("source"))
+                iso = h.get("pub_iso") or ""
+                when = rel_ar(iso) if iso else (h.get("pub_date") or "")
+                timeel = (f'<time class="reltime" datetime="{esc(iso)}">{esc(when)}</time>'
+                          if iso else esc(when))
+                ph = PLACEHOLDER_IMGS[int(hashlib.md5((h.get("link") or t).encode("utf-8")).hexdigest(), 16) % len(PLACEHOLDER_IMGS)]
+                img = h.get("image") or ph
+                hp.append(
+                    f'<a class="al-row" href="{esc(h.get("source_url") or h.get("link"))}" target="_blank" rel="noopener nofollow">'
+                    f'<span class="al-th"><img src="{esc(img)}" alt="" loading="lazy" referrerpolicy="no-referrer"'
+                    f' onerror="this.onerror=null;this.src=\'{ph}\'"></span>'
+                    f'<span class="al-b"><b class="al-t">{esc(t)}</b>'
+                    f'<span class="al-m"><span class="hsrc">{esc(h.get("source") or "")}</span> · {timeel}</span>'
+                    f'</span></a>')
+            hp.append('</div>')
+            hp.append(REL_JS)
+        else:
+            hp.append('<p class="empty-note">لا توجد عناوين حاليًا.</p>')
+        hp.append(foot())
+        write("headlines.html", "".join(hp))
+        urls.append("/headlines.html")
 
     # ---- reels page (vertical shorts; data/reels.json + reels_auto.json) ----
     rp = [head(f"ريلز كرة القدم — {SITE_NAME}",
