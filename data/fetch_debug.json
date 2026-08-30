@@ -170,11 +170,13 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (61 games)",
+ "goal_events": "ok (62 games)",
  "goal_events_dbg": {
-  "candidates": 61,
+  "candidates": 62,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4788042:count-mismatch (0, 0) vs 1-0 []"
+  ],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -236,9 +238,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.4, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"67'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.4, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"68'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
   }
  },
- "match_details": "ok (128)",
- "utc": "2026-08-30T17:51:51Z"
+ "match_details": "ok (129)",
+ "utc": "2026-08-30T18:05:55Z"
 }
