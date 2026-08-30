@@ -98,10 +98,15 @@ async function liveScores() {
         // are "الشوط الأول/الثاني" and "1"/"2". So the break test is EXACT
         // equality with the bare word - a substring would match every in-play
         // status too. The استراحة/half-time/HT checks stay as tolerance for
-        // other wordings 365scores may use elsewhere.
+        // other wordings 365scores may use elsewhere. "نهاية الشوط الأول" is
+        // the transitional wording right after the HT whistle (user saw the
+        // break label arrive minutes late on Chelsea x Brighton 2026-08-30);
+        // the FULL phrase only - "نهاية الشوط الثاني" is the end of the match,
+        // not a break.
         const stx = (g.statusText || "").trim(), ssx = (g.shortStatusText || "").trim();
         const st = `${stx} ${ssx} ${g.gameTimeDisplay || ""}`;
         const ht = sg === 3 && (stx === "شوط" || ssx === "شوط"
+          || stx.includes("نهاية الشوط الأول") || ssx.includes("نهاية الشوط الأول")
           || st.includes("استراح") || /half\s*-?\s*time/i.test(st) || /\bHT\b/.test(st));
         games.push({
           h: h.name || "", a: a.name || "",
