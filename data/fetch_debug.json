@@ -1,6 +1,6 @@
 {
  "news": "ok (60)",
- "matches": "ok (119)",
+ "matches": "ok (147)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
@@ -236,9 +236,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.4, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"67'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.6, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"67'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
   }
  },
  "match_details": "ok (127)",
- "utc": "2026-08-30T16:37:45Z"
+ "utc": "2026-08-30T16:51:05Z"
 }
