@@ -32,7 +32,7 @@ async function gameGoals(gid) {
   try {
     const r = await fetch(
       `https://webws.365scores.com/web/game/?appTypeId=5&langId=27&gameId=${gid}`,
-      { headers: S365_HEADERS, cf: { cacheTtl: 20, cacheEverything: true } });
+      { headers: S365_HEADERS, cf: { cacheTtl: 12, cacheEverything: true } });
     if (!r.ok) return null;
     const game = (await r.json()).game || {};
     const members = {};
@@ -82,7 +82,7 @@ async function liveScores() {
   try {
     const r = await fetch(upstream, {
       headers: S365_HEADERS,
-      cf: { cacheTtl: 25, cacheEverything: true },
+      cf: { cacheTtl: 12, cacheEverything: true },
     });
     if (r.ok) {
       ok = true;
@@ -113,6 +113,11 @@ async function liveScores() {
           hs: Math.round(h.score), as: Math.round(a.score),
           live: sg === 3,
           min: sg === 3 ? (ht ? "استراحة" : (g.gameTimeDisplay || "")) : "",
+          // numeric minute + half for the client-side minute clock: LIVE_JS
+          // advances the minute locally between polls so it never stalls on
+          // the poll/cache cadence (hf: 1st or 2nd half, for the 45+/90+ cap)
+          gt: sg === 3 && !ht && g.gameTime > 0 ? g.gameTime : 0,
+          hf: sg === 3 ? (ssx === "2" ? 2 : 1) : 0,
           // 365scores competition id — LIVE_JS needs it to disambiguate
           // same-name clubs across leagues (الأهلي = Al Ahly Egypt AND
           // Al-Ahli Saudi; the favourite-club card once showed the wrong one)
@@ -139,7 +144,7 @@ async function liveScores() {
   return new Response(JSON.stringify({ games, ok, ts: Date.now() }), {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "cache-control": ok ? "public, max-age=15, s-maxage=30" : "no-store",
+      "cache-control": ok ? "public, max-age=10, s-maxage=15" : "no-store",
     },
   });
 }

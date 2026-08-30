@@ -219,7 +219,7 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-</body></html>{LIVE_JS}"""
+</body></html>{KO_SCRIPT}{LIVE_JS}"""
 
 def jsonld(obj):
     return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False) + '</script>'
@@ -228,6 +228,10 @@ def jsonld(obj):
 # (site rebuilds every 30 min, so it stays fresh). Set by build().
 TICKER_HTML = ""
 CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash in build()
+# window.__koTs = epoch-ms of nearby kickoffs (set by build(), injected in
+# foot()) — LIVE_JS uses it to wake its polling right before a match starts
+# instead of sleeping through kickoff on the idle 5-minute cadence.
+KO_SCRIPT = ""
 
 # ---- crest mirroring ---------------------------------------------------
 # football-data's crest host has had TLS/outage problems (2026-07-27: broken
@@ -507,7 +511,7 @@ def transfers_widget(ts, horizontal=False):
     return ('<div class="trf-box"><div class="sec-h"><h2 class="page-h">🔁 أبرز الانتقالات</h2></div>'
             f'<div class="{cls}">' + "".join(its) + '</div></div>')
 
-# Client-side live layer: polls /live.json (edge-cached 30s) and patches
+# Client-side live layer: polls /live.json (edge-cached 15s) and patches
 # scores/minute into the ticker + match rows IN PLACE. Matching is by
 # normalized Arabic team-name pair; anything unmatched just stays on the
 # 15-minute static refresh - the site never depends on this script.
@@ -657,21 +661,63 @@ LIVE_JS = r"""<script>
     var p=window.__livePromise;window.__livePromise=null;
     return p||fetch('/live.json',{cache:'no-store'});
   }
+  /* local minute clock: the worker sends each live game's numeric minute
+     (gt) + half (hf) and the reply's build time (ts). The browser advances
+     the minute itself between polls, so the shown minute never stalls on
+     the poll/cache cadence. Past 45/90 it shows 45+ / 90+ (convention). */
+  var last=null;
+  function calcMin(g,at){
+    if(!g.live||g.min==='استراحة'||!(g.gt>0))return;
+    var est=Math.floor(g.gt+(Date.now()-at)/60000);
+    if(g.hf===2)g.min=est>90?'90+':est+"'";
+    else g.min=est>45?'45+':est+"'";
+  }
+  function render(){
+    if(!last)return false;
+    var any=false;
+    last.gs.forEach(function(g){calcMin(g,last.at);});
+    favRender(last.gs);
+    last.gs.forEach(function(g){
+      var arr=map[norm(g.h)+'|'+norm(g.a)];
+      if(arr){arr.forEach(function(x){paint(x.e,x.sw?swap(g):g);});}
+      if(g.live)any=true;
+    });
+    return any;
+  }
+  /* kickoff-aware cadence: __koTs (build-time epochs of nearby kickoffs)
+     wakes an idle page right before a match starts instead of letting it
+     sleep through kickoff on the 5-minute cadence. */
+  var KO=window.__koTs||[];
+  function nextDelay(any){
+    if(any)return 30000;
+    if(grace>0)return 60000;
+    var now=Date.now(),wait=Infinity;
+    for(var i=0;i<KO.length;i++){
+      var dt=KO[i]-now;
+      if(dt<=120000&&dt>=-300000)return 25000; /* KO-2min .. KO+5min */
+      if(dt>120000)wait=Math.min(wait,dt-120000);
+    }
+    return wait===Infinity?300000:Math.min(300000,Math.max(25000,wait));
+  }
   function tick(){
     liveReq().then(function(r){return r.json();}).then(function(d){
-      var gs=d.games||[],any=false;
-      favRender(gs);
-      gs.forEach(function(g){
-        var arr=map[norm(g.h)+'|'+norm(g.a)];
-        if(arr){arr.forEach(function(x){paint(x.e,x.sw?swap(g):g);});}
-        if(g.live)any=true;
-      });
+      /* age = how stale the (edge-cached) reply already is, so the minute
+         baseline includes cache staleness; clamped so a wrong client clock
+         cannot warp the minute by more than 3 minutes */
+      var age=Math.max(0,Math.min(180000,Date.now()-(d.ts||Date.now())));
+      last={gs:d.games||[],at:Date.now()-age};
+      var any=render();
       if(d.ok===false){schedule(hadLive?60000:120000);return;}
       if(any)grace=3;else if(grace>0)grace--;
       hadLive=any;
-      schedule(any?45000:(grace>0?60000:300000));
+      schedule(nextDelay(any));
     }).catch(function(){schedule(hadLive?60000:120000);});
   }
+  /* re-render the local minute between polls. paint() only flashes when the
+     SCORE string changes, so this repaint can never trigger a goal flash. */
+  setInterval(function(){
+    if(hadLive&&document.visibilityState==='visible')render();
+  },20000);
   function schedule(ms){clearTimeout(timer);timer=setTimeout(tick,ms);}
   document.addEventListener('visibilitychange',function(){
     if(document.visibilityState==='visible'){clearTimeout(timer);tick();}
@@ -804,6 +850,30 @@ def build():
 
     global TICKER_HTML
     TICKER_HTML = make_ticker(matches)
+
+    # kickoff epochs for LIVE_JS's kickoff-aware polling (see KO_SCRIPT)
+    global KO_SCRIPT
+    try:
+        from zoneinfo import ZoneInfo
+        _cairo = ZoneInfo("Africa/Cairo")
+        _now = datetime.datetime.now(_cairo)
+        _kos = set()
+        for _m in matches:
+            if not (_m.get("kickoff") and _m.get("koff_time")):
+                continue
+            try:
+                _dt = datetime.datetime.fromisoformat(
+                    f"{_m['kickoff']}T{_m['koff_time']}:00").replace(tzinfo=_cairo)
+            except ValueError:
+                continue
+            _delta = (_dt - _now).total_seconds()
+            # recent past too: a match may already be live at build time
+            if -4 * 3600 <= _delta <= 36 * 3600:
+                _kos.add(int(_dt.timestamp() * 1000))
+        KO_SCRIPT = (f"<script>window.__koTs={json.dumps(sorted(_kos))}</script>"
+                     if _kos else "")
+    except Exception:
+        KO_SCRIPT = ""
 
     # ---- assets: css + logo ----
     global CSS_VER
