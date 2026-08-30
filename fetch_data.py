@@ -1153,16 +1153,24 @@ if __name__ == "__main__":
     # _DBG lands in data/fetch_debug.json and is committed back by the Action,
     # so runner-side failures are visible without access to the job logs.
     _DBG = {}
-    try:
-        news = fetch_news()
-        _DBG["news"] = f"ok ({len(news)})"
-    except Exception as e:
-        print(f"  ! news fetch failed ({e}) - keeping existing headlines.json")
-        _DBG["news"] = f"FAIL: {e!r}"
-        news = None
-    if news:
-        write_items("headlines.json", news)
-        print(f"headlines: {len(news)}")
+    # Headlines fetch OFF (2026-08-30, user decision — display is already off
+    # via SHOW_HEADLINES in build_site.py; this saves the RSS + link-decode +
+    # og:image external requests every run). Flip to True to resume; the last
+    # committed headlines.json stays in the repo untouched meanwhile.
+    FETCH_HEADLINES = False
+    if FETCH_HEADLINES:
+        try:
+            news = fetch_news()
+            _DBG["news"] = f"ok ({len(news)})"
+        except Exception as e:
+            print(f"  ! news fetch failed ({e}) - keeping existing headlines.json")
+            _DBG["news"] = f"FAIL: {e!r}"
+            news = None
+        if news:
+            write_items("headlines.json", news)
+            print(f"headlines: {len(news)}")
+    else:
+        _DBG["news"] = "skipped (FETCH_HEADLINES off)"
     try:
         matches = fetch_matches()
         _DBG["matches"] = f"ok ({len(matches)})"
