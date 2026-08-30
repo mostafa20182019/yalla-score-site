@@ -1,10 +1,10 @@
 {
  "news": "skipped (FETCH_HEADLINES off)",
- "matches": "ok (165)",
+ "matches": "ok (166)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
- "matches_archive": "ok (344)",
+ "matches_archive": "ok (349)",
  "standings": "ok (5)",
  "transfers": "ok (12)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -240,5 +240,5 @@
   }
  },
  "match_details": "ok (135)",
- "utc": "2026-08-30T20:50:12Z"
+ "utc": "2026-08-30T21:06:37Z"
 }
