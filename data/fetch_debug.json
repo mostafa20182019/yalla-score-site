@@ -207,9 +207,10 @@
   },
   "sample_details": {
    "event_names": [
+    "بطاقة صفراء",
     "هدف"
    ],
-   "card0": "null",
+   "card0": "{\"competitorId\": 106, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 1, \"gameTime\": 55.0, \"addedTime\": 0, \"gameTimeDisplay\": \"55'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 17018827, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "sub0": "null",
    "hc_keys": [
     "id",
@@ -234,9 +235,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"45'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.7, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"57'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
   }
  },
  "match_details": "ok (120)",
- "utc": "2026-08-30T14:05:10Z"
+ "utc": "2026-08-30T14:17:36Z"
 }
