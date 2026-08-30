@@ -170,11 +170,13 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (53 games)",
+ "goal_events": "ok (54 games)",
  "goal_events_dbg": {
-  "candidates": 53,
+  "candidates": 54,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4755422:count-mismatch (4, 0) vs 4-1 [h:g@29/h:g@45/h:g@48/h:g@55]"
+  ],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -239,6 +241,6 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.6, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"67'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
   }
  },
- "match_details": "ok (120)",
- "utc": "2026-08-30T14:50:30Z"
+ "match_details": "ok (121)",
+ "utc": "2026-08-30T15:05:33Z"
 }
