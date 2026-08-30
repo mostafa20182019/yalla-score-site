@@ -170,9 +170,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (48 games)",
+ "goal_events": "ok (52 games)",
  "goal_events_dbg": {
-  "candidates": 48,
+  "candidates": 52,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -202,19 +202,13 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 29, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 24.0, \"addedTime\": 0, \"gameTimeDisplay\": \"24'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 49499493, \"extraPlayers\": [3211399], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
-   "member0": "{\"competitorId\": 108, \"id\": 558151, \"athleteId\": 10896, \"name\": \"أليسون\", \"shortName\": \"أليسون\", \"jerseyNumber\": 1, \"nameForURL\": \"alisson\", \"imageVersion\": 61, \"createdAt\": \"2014-09-28T21:35:14.39\"}"
+   "event0": "null",
+   "member0": "{\"competitorId\": 106, \"id\": 17018827, \"athleteId\": 67363, \"name\": \"ويسلى فوفانا\", \"shortName\": \"فوفانا\", \"jerseyNumber\": 3, \"nameForURL\": \"wesley-fofana\", \"imageVersion\": 65, \"createdAt\": \"2019-05-05T14:13:04.97\"}"
   },
   "sample_details": {
-   "event_names": [
-    "Substitution",
-    "Woodwork",
-    "الهدف الغي",
-    "بطاقة صفراء",
-    "هدف"
-   ],
-   "card0": "{\"competitorId\": 29, \"statusId\": 6, \"stageId\": 7, \"order\": 3, \"num\": 1, \"gameTime\": 44.0, \"addedTime\": 0, \"gameTimeDisplay\": \"44'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 12851956, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 29, \"statusId\": 8, \"stageId\": 9, \"order\": 9, \"num\": 9, \"gameTime\": 66.0, \"addedTime\": 0, \"gameTimeDisplay\": \"66'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 51429377, \"extraPlayers\": [49499493], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "event_names": [],
+   "card0": "null",
+   "sub0": "null",
    "hc_keys": [
     "id",
     "countryId",
@@ -238,9 +232,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.2, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"4'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"order\""
   }
  },
- "match_details": "ok (115)",
- "utc": "2026-08-30T12:50:10Z"
+ "match_details": "ok (119)",
+ "utc": "2026-08-30T13:05:41Z"
 }
