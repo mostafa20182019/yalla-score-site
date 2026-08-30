@@ -1,5 +1,5 @@
 {
- "news": "FAIL: <HTTPError 503: 'Service Unavailable'>",
+ "news": "ok (60)",
  "matches": "ok (147)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
@@ -170,9 +170,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (54 games)",
+ "goal_events": "ok (48 games)",
  "goal_events_dbg": {
-  "candidates": 54,
+  "candidates": 48,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -242,5 +242,5 @@
   }
  },
  "match_details": "ok (115)",
- "utc": "2026-08-29T23:50:39Z"
+ "utc": "2026-08-30T00:04:59Z"
 }
