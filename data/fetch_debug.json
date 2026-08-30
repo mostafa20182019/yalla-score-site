@@ -172,11 +172,9 @@
  },
  "goal_events": "ok (60 games)",
  "goal_events_dbg": {
-  "candidates": 61,
+  "candidates": 60,
   "detail_fails": 0,
-  "skipped": [
-   "4829226:count-mismatch (0, 0) vs -1--1 []"
-  ],
+  "skipped": [],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -238,9 +236,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.4, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"68'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.6, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"67'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
   }
  },
  "match_details": "ok (127)",
- "utc": "2026-08-30T17:05:34Z"
+ "utc": "2026-08-30T17:12:57Z"
 }
