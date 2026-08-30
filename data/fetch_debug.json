@@ -172,9 +172,12 @@
  },
  "goal_events": "ok (53 games)",
  "goal_events_dbg": {
-  "candidates": 53,
+  "candidates": 54,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4742089:count-mismatch (3, 2) vs 4-2 [h:g@4/h:g@14/h:g@32/a:g@35/a:g@63]",
+   "4829113:count-mismatch (0, 0) vs -1--1 []"
+  ],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -207,11 +210,12 @@
   },
   "sample_details": {
    "event_names": [
+    "Substitution",
     "بطاقة صفراء",
     "هدف"
    ],
    "card0": "{\"competitorId\": 106, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 1, \"gameTime\": 55.0, \"addedTime\": 0, \"gameTimeDisplay\": \"55'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 17018827, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "null",
+   "sub0": "{\"competitorId\": 106, \"statusId\": 8, \"stageId\": 9, \"order\": 7, \"num\": 7, \"gameTime\": 68.0, \"addedTime\": 0, \"gameTimeDisplay\": \"68'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 399777, \"extraPlayers\": [54943579], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -235,9 +239,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.7, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"57'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 2, \"name\": \"الدفاع\", \"shortName\": \"Defender\"}, \"formation\": {\"id\": 5, \"name\": \"قلب الدفاع\", \"shortName\": \"Centre Back\"}, \"yardFormation\": {\"line\": 2, \"fieldPosition\": 4, \"fieldLine\": 25, \"fieldSide\": 75}, \"ranking\": 6.6, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"67'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\":"
   }
  },
  "match_details": "ok (120)",
- "utc": "2026-08-30T14:17:36Z"
+ "utc": "2026-08-30T14:35:36Z"
 }
