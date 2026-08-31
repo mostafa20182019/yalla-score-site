@@ -172,7 +172,7 @@
  },
  "goal_events": "ok (65 games)",
  "goal_events_dbg": {
-  "candidates": 70,
+  "candidates": 72,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -209,7 +209,6 @@
    "event_names": [
     "Substitution",
     "Woodwork",
-    "إضاعة الضّربات الجّزائيّة",
     "بطاقة صفراء",
     "هدف"
    ],
@@ -238,9 +237,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.2, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"89'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.9, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (142)",
- "utc": "2026-08-31T18:51:26Z"
+ "match_details": "ok (144)",
+ "utc": "2026-08-31T19:05:31Z"
 }
