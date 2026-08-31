@@ -202,12 +202,14 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "null",
+   "event0": "{\"competitorId\": 8302, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 66749847, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "member0": "{\"competitorId\": 8201, \"id\": 6914248, \"athleteId\": 56674, \"name\": \"المهدي سليمان\", \"shortName\": \"سليمان\", \"jerseyNumber\": 37, \"nameForURL\": \"mahdi-soliman\", \"imageVersion\": 21, \"createdAt\": \"2018-02-24T12:24:42.687\"}"
   },
   "sample_details": {
-   "event_names": [],
-   "card0": "null",
+   "event_names": [
+    "بطاقة صفراء"
+   ],
+   "card0": "{\"competitorId\": 8302, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 66749847, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "sub0": "null",
    "hc_keys": [
     "id",
@@ -232,9 +234,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"13'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"ord"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.7, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"21'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (139)",
- "utc": "2026-08-31T17:12:08Z"
+ "utc": "2026-08-31T17:20:29Z"
 }
