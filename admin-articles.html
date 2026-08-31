@@ -295,7 +295,9 @@ function submitForm(){
     image_url:document.getElementById("fimg").value.trim()||null,
     image_credit:document.getElementById("fcredit").value.trim()||null,
     author:document.getElementById("fauthor").value.trim()||"فريق التحرير",
-    pub_date:document.getElementById("fdate").value||new Date().toISOString().slice(0,10)
+    pub_date:document.getElementById("fdate").value||new Date().toISOString().slice(0,10),
+    /* powers the «منذ X» relative time on the site; kept as-is when editing */
+    pub_ts: editIdx!==null ? (items[editIdx].pub_ts||null) : new Date().toISOString()
   };
   if(editIdx!==null){ items[editIdx]=art; show("formStatus","ok","اتعدّل ✓ — اضغط «حفظ ونشر» تحت"); }
   else { items.unshift(art); show("formStatus","ok","اتضاف كخبر رئيسي ✓ — اضغط «حفظ ونشر» تحت"); }

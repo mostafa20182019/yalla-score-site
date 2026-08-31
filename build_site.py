@@ -95,6 +95,16 @@ def fmt_day(d):
     except Exception:
         return d
 
+def _ar_ago(n, one, two, few):
+    """Arabic 'منذ N <unit>' with the correct plural form (1 / 2 / 3-10 / 11+)."""
+    if n == 1:
+        return f"منذ {one}"
+    if n == 2:
+        return f"منذ {two}"
+    if 3 <= n <= 10:
+        return f"منذ {n} {few}"
+    return f"منذ {n} {one}"
+
 def rel_ar(iso):
     """Build-time Arabic 'منذ X' (JS refines it in the visitor's browser)."""
     try:
@@ -109,11 +119,21 @@ def rel_ar(iso):
         return "منذ لحظات"
     m = s // 60
     if m < 60:
-        return f"منذ {m} دقيقة"
+        return _ar_ago(m, "دقيقة", "دقيقتين", "دقائق")
     h = m // 60
     if h < 24:
-        return f"منذ {h} ساعة"
-    return f"منذ {h // 24} يوم"
+        return _ar_ago(h, "ساعة", "ساعتين", "ساعات")
+    return _ar_ago(h // 24, "يوم", "يومين", "أيام")
+
+def art_reltime(a):
+    """<time> element showing 'منذ X' for an article carrying pub_ts (full ISO
+    timestamp, present on articles published since 2026-08-31). Older articles
+    have only pub_date -> returns '' and the caller shows what it always did."""
+    ts = a.get("pub_ts") or ""
+    txt = rel_ar(ts) if ts else ""
+    if not txt:
+        return ""
+    return f'<time class="reltime" datetime="{esc(ts)}">{esc(txt)}</time>'
 
 def adsense_slot():
     """Left-column ad slot: the real AdSense unit when configured, else a placeholder."""
@@ -226,7 +246,7 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-</body></html>{KO_SCRIPT}{LIVE_JS}"""
+</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
 
 def jsonld(obj):
     return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False) + '</script>'
@@ -776,9 +796,10 @@ def news_card(a):
     img = a.get("image_url")
     thumb = (f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>'
              if img else '<div class="card-img noimg">⚽</div>')
+    t = art_reltime(a)
     return (f'<a class="card" href="/a/{a["article_id"]}.html">{thumb}'
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
-            f'<p class="meta">{esc(a.get("author"))}</p></div></a>')
+            f'<p class="meta">{esc(a.get("author"))}{" · " + t if t else ""}</p></div></a>')
 
 def reel_slide(r, first=False):
     """One full-height slide of the TikTok-style vertical feed: tap to play
@@ -972,6 +993,7 @@ def build():
   <div class="feat-body">
     <h2>{esc(feat['title'])}</h2>
     <p>{esc(feat.get('summary'))}</p>
+    {('<p class="feat-when">' + art_reltime(feat) + '</p>') if art_reltime(feat) else ''}
   </div></a>""")
     if rest:
         # horizontal shelf (newest 10); the full archive lives on /news.html
@@ -1018,7 +1040,6 @@ def build():
         for h in headlines[:24]:
             parts.append(headline_card(h))
         parts.append('</div>')
-        parts.append(REL_JS)
     elif rest[10:]:
         # headlines hidden (AdSense originality) — the slot shows a deeper
         # grid of OUR articles instead: the 12 that follow the shelf's 10
@@ -1068,7 +1089,9 @@ def build():
         p.append('<a class="back" href="/">→ رجوع للرئيسية</a>')
         p.append('<article class="article">')
         p.append(f'<h1>{esc(a["title"])}</h1>')
-        p.append(f'<p class="a-meta">{esc(a.get("author"))} · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time></p>')
+        _t = art_reltime(a)
+        p.append(f'<p class="a-meta">{esc(a.get("author"))} · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
+                 f'{" · " + _t if _t else ""}</p>')
         if img:
             p.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager">')
             cr = a.get("image_credit")
@@ -1841,7 +1864,8 @@ def build():
                 f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
                 f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
                 f'<span class="al-s">{esc(strip_tags(a.get("summary") or ""))}</span>'
-                f'<span class="al-m">{esc(a.get("author") or "")} · {esc(a.get("pub_date") or "")}</span>'
+                f'<span class="al-m">{esc(a.get("author") or "")} · '
+                f'{art_reltime(a) or esc(a.get("pub_date") or "")}</span>'
                 f'</span></a>')
         np_.append('</div>')
     else:
@@ -1875,7 +1899,6 @@ def build():
                     f'<span class="al-m"><span class="hsrc">{esc(h.get("source") or "")}</span> · {timeel}</span>'
                     f'</span></a>')
             hp.append('</div>')
-            hp.append(REL_JS)
         else:
             hp.append('<p class="empty-note">لا توجد عناوين حاليًا.</p>')
         hp.append(foot())
@@ -2699,6 +2722,7 @@ a{color:inherit}
 .feat-body{position:absolute;inset-inline:0;bottom:0;padding:22px 26px;z-index:2}
 .feat-body h2{margin:0 0 8px;font-size:1.55rem;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.5)}
 .feat-body p{margin:0;opacity:.94}
+.feat-when{margin-top:8px!important;font-size:.82rem;font-weight:800;opacity:.85}
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:15px}
 .card{display:block;background:var(--card);border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;text-decoration:none;box-shadow:0 3px 10px rgba(15,23,42,.08);transition:transform .16s,box-shadow .16s}
@@ -3498,18 +3522,28 @@ MATCHES_JS = """<script>
 # client-side relative time ("منذ X") - always accurate to the visitor's clock.
 REL_JS = """<script>
 (function(){
+  function unit(n,one,two,few){
+    if(n===1)return 'منذ '+one;
+    if(n===2)return 'منذ '+two;
+    if(n>=3&&n<=10)return 'منذ '+n+' '+few;
+    return 'منذ '+n+' '+one;
+  }
   function rel(iso){
     var d=new Date(iso); if(isNaN(d.getTime())) return null;
     var s=Math.floor((Date.now()-d.getTime())/1000); if(s<0) s=0;
     if(s<60) return 'منذ لحظات';
-    var m=Math.floor(s/60); if(m<60) return 'منذ '+m+' دقيقة';
-    var h=Math.floor(m/60); if(h<24) return 'منذ '+h+' ساعة';
-    return 'منذ '+Math.floor(h/24)+' يوم';
+    var m=Math.floor(s/60); if(m<60) return unit(m,'دقيقة','دقيقتين','دقائق');
+    var h=Math.floor(m/60); if(h<24) return unit(h,'ساعة','ساعتين','ساعات');
+    return unit(Math.floor(h/24),'يوم','يومين','أيام');
   }
-  document.querySelectorAll('time.reltime').forEach(function(el){
-    var t=rel(el.getAttribute('datetime'));
-    if(t) el.textContent=t;
-  });
+  function sweep(){
+    document.querySelectorAll('time.reltime').forEach(function(el){
+      var t=rel(el.getAttribute('datetime'));
+      if(t) el.textContent=t;
+    });
+  }
+  sweep();
+  setInterval(sweep,60000); /* keep 'منذ 5 دقائق' honest on a page left open */
 })();
 </script>"""
 
