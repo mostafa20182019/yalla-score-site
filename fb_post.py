@@ -51,7 +51,9 @@ def main() -> int:
     link = f"{SITE}/a/{aid}.html"
     title = (art.get("title") or "").strip()
     summary = (art.get("summary") or "").strip()
-    message = f"⚽ {title}\n\n{summary}\n\n\U0001f449 {link}"
+    # the article task writes a crafted fb_post (same text the user copies
+    # from /fb.html) — prefer it; fall back to the plain generated format
+    message = (art.get("fb_post") or "").strip() or f"⚽ {title}\n\n{summary}\n\n\U0001f449 {link}"
 
     data = urllib.parse.urlencode(
         {"message": message, "link": link, "access_token": token}

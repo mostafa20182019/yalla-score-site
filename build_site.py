@@ -1856,6 +1856,36 @@ def build():
     write("news.html", "".join(np_))
     urls.append("/news.html")
 
+    # ---- fb.html — INTERNAL helper: ready-to-paste Facebook posts ----
+    # Unlinked, out of the sitemap, noindexed. The user opens it directly
+    # (bookmark) and copies each new article's post until FB auto-posting
+    # (fb_post.py + FB_PAGE_TOKEN) goes live. Post text comes from the
+    # article's fb_post field (written by the AI tasks); older articles get
+    # a plain generated fallback.
+    def _fb_text(a):
+        t = (a.get("fb_post") or "").strip()
+        if t:
+            return t
+        return (f"⚽ {(a.get('title') or '').strip()}\n\n"
+                f"{strip_tags(a.get('summary') or '').strip()}\n\n"
+                f"التفاصيل الكاملة 👇\n{SITE_BASE}/a/{a['article_id']}.html\n\n#يلا_سكور")
+    fbp = [head(f"بوستات فيسبوك — {SITE_NAME}", "صفحة داخلية.",
+                SITE_BASE + "/fb.html")]
+    fbp.append('<h1 class="page-h">بوستات فيسبوك جاهزة 📋</h1>'
+               '<p class="fbp-note">صفحة داخلية غير معلنة — اضغط «نسخ» والصق البوست على صفحة يلا سكور.</p>')
+    for a in articles[:15]:
+        _w = art_reltime(a)
+        fbp.append('<div class="fbp">'
+                   f'<div class="fbp-h"><b>مقال {a["article_id"]}</b> · {esc(a.get("pub_date") or "")}'
+                   f'{" · " + _w if _w else ""}</div>'
+                   f'<textarea class="fbp-t" readonly rows="8">{esc(_fb_text(a))}</textarea>'
+                   '<button type="button" class="fbp-c">📋 نسخ</button></div>')
+    fbp.append(FBCOPY_JS)
+    fbp.append(foot())
+    write("fb.html", "".join(fbp).replace(
+        "<head>", '<head><meta name="robots" content="noindex">', 1))
+    # deliberately NOT appended to urls (sitemap) and linked from nowhere
+
     # ---- headlines page (full aggregated list; gated by SHOW_HEADLINES) ----
     if SHOW_HEADLINES:
         hp = [head(f"عناوين الصحف — {SITE_NAME}",
@@ -2709,6 +2739,14 @@ a{color:inherit}
 .feat-body h2{margin:0 0 8px;font-size:1.55rem;font-weight:900;text-shadow:0 2px 10px rgba(0,0,0,.5)}
 .feat-body p{margin:0;opacity:.94}
 .feat-when{margin-top:8px!important;font-size:.82rem;font-weight:800;opacity:.85}
+/* /fb.html internal helper page */
+.fbp{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px;margin:0 0 14px}
+.fbp-h{color:var(--muted);font-size:.85rem;font-weight:800;margin-bottom:8px}
+.fbp-t{width:100%;min-height:170px;border:1px solid #e2e8f0;border-radius:10px;padding:10px;
+  font:inherit;font-size:.95rem;line-height:1.7;resize:vertical;background:#f8fafc}
+.fbp-c{margin-top:8px;border:0;border-radius:999px;padding:9px 26px;font:inherit;
+  font-weight:800;background:var(--brand,#0a7c3f);color:#fff;cursor:pointer}
+.fbp-note{color:var(--muted);font-weight:700;margin:0 0 16px}
 /* grid */
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:15px}
 .card{display:block;background:var(--card);border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;text-decoration:none;box-shadow:0 3px 10px rgba(15,23,42,.08);transition:transform .16s,box-shadow .16s}
@@ -3530,6 +3568,21 @@ REL_JS = """<script>
   }
   sweep();
   setInterval(sweep,60000); /* keep 'منذ 5 دقائق' honest on a page left open */
+})();
+</script>"""
+
+FBCOPY_JS = """<script>
+(function(){
+  document.querySelectorAll('.fbp-c').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=b.parentNode.querySelector('.fbp-t');
+      t.select();t.setSelectionRange(0,999999);
+      function ok(){b.textContent='✓ اتنسخ';setTimeout(function(){b.textContent='📋 نسخ';},1500);}
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t.value).then(ok,function(){document.execCommand('copy');ok();});
+      }else{document.execCommand('copy');ok();}
+    });
+  });
 })();
 </script>"""
 
