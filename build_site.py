@@ -505,7 +505,10 @@ def make_ticker(matches):
         ab = (f'<img class="tk-b" src="{esc(local_crest(m.get("away_badge")))}" alt="" loading="lazy">'
               if m.get("away_badge") else "")
         if st == "LIVE":
-            mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s tk-live") + '<span class="tk-dot"></span>'
+            # NEVER bake a live score into static HTML - it is up to 15 min
+            # stale and reads as WRONG data (user rule 2026-08-31). Dashes
+            # until LIVE_JS paints the real score seconds after load.
+            mid = score_pill(None, None, "tk-s tk-live") + '<span class="tk-dot"></span>'
         elif st == "FINISHED":
             mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s")
         else:
@@ -958,32 +961,11 @@ def build():
     # browser — a 15-minute-old build can't know what is live right now.
     # between the ad slot and the heading — user's chosen order; the ad keeps
     # its place inside the column, so the bar takes the column's width
-    # build-time SEED: matches LIVE in the (≤15-min-old) build data render
-    # into the card server-side, so returning visitors see it instantly
-    # instead of waiting for the first /live.json round-trip. LIVE_JS's
-    # first tick then reconciles: fresher score/minute, or hides the card
-    # when the match ended since the build. Markup mirrors favRender().
-    seed = []
-    for m in matches:
-        if (m.get("status") or "") != "LIVE" or not _is_ticker_team(m):
-            continue
-        hb = local_crest(m["home_badge"]) if m.get("home_badge") else ""
-        ab = local_crest(m["away_badge"]) if m.get("away_badge") else ""
-        hc = f'<img class="fv-c" src="{esc(hb)}" alt="">' if hb else ""
-        ac = f'<img class="fv-c" src="{esc(ab)}" alt="">' if ab else ""
-        hs = m.get("home_score"); as_ = m.get("away_score")
-        pill = (f'<b class="fv-s"><span>{hs}</span><i>-</i><span>{as_}</span></b>'
-                if hs is not None and as_ is not None else "")
-        seed.append(
-            f'<a class="fav-live" href="{esc(match_url(m))}">'
-            '<span class="fv-live"><span class="fv-dot"></span>'
-            '<span class="fv-lt">مباشر الآن</span></span>'
-            f'<span class="fv-m">{hc}<bdi>{esc(ar_team(m.get("home")))}</bdi>'
-            f'{pill}<bdi>{esc(ar_team(m.get("away")))}</bdi>{ac}</span></a>')
-    if seed:
-        parts.append(f'<div id="favLive" class="fav-wrap">{"".join(seed)}</div>')
-    else:
-        parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
+    # NO static seed (removed 2026-08-31, user rule: never show data that may
+    # be wrong — a build-time "live" snapshot showed a finished match as
+    # مباشر الآن with a stale score). The card renders EXCLUSIVELY from the
+    # first fresh /live.json reply, ~1s after load.
+    parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
     parts.append('<h1 class="page-h">آخر الأخبار</h1>')
     if feat:
         img = feat.get("image_url")
@@ -2629,7 +2611,11 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
              "UPCOMING": ("قادمة", "up"), "POSTPONED": ("", "pp")}.get(st, ("", "up"))
     if st == "POSTPONED":
         mid = '<span class="ko ko-pp">مؤجلة</span>'
-    elif st == "FINISHED" or st == "LIVE":
+    elif st == "LIVE":
+        # static live scores are up to 15 min stale = wrong data (user rule
+        # 2026-08-31): dashes until LIVE_JS paints the real score
+        mid = '<b class="score">- - -</b>'
+    elif st == "FINISHED":
         mid = f'<b class="score">{m.get("home_score") if m.get("home_score") is not None else ""} - {m.get("away_score") if m.get("away_score") is not None else ""}</b>'
     else:
         when = (m.get("koff_time") if show_time and m.get("koff_time") else m.get("kickoff"))
