@@ -172,7 +172,7 @@
  },
  "goal_events": "ok (65 games)",
  "goal_events_dbg": {
-  "candidates": 68,
+  "candidates": 70,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -213,7 +213,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 8302, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 66749847, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 8201, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 5, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67787918, \"extraPlayers\": [58787666], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 8201, \"statusId\": 8, \"stageId\": 9, \"order\": 6, \"num\": 6, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67787918, \"extraPlayers\": [58787666], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -237,9 +237,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.2, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"58'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.2, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"74'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (140)",
- "utc": "2026-08-31T18:20:25Z"
+ "match_details": "ok (142)",
+ "utc": "2026-08-31T18:35:44Z"
 }
