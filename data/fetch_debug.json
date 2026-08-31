@@ -208,7 +208,8 @@
   "sample_details": {
    "event_names": [
     "Woodwork",
-    "بطاقة صفراء"
+    "بطاقة صفراء",
+    "هدف"
    ],
    "card0": "{\"competitorId\": 8302, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 66749847, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "sub0": "null",
@@ -235,9 +236,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"36'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.3, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"45'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (140)",
- "utc": "2026-08-31T17:35:41Z"
+ "utc": "2026-08-31T17:50:24Z"
 }
