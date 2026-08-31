@@ -1,6 +1,6 @@
 {
  "news": "skipped (FETCH_HEADLINES off)",
- "matches": "ok (168)",
+ "matches": "ok (165)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
@@ -170,13 +170,11 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (64 games)",
+ "goal_events": "ok (65 games)",
  "goal_events_dbg": {
-  "candidates": 74,
+  "candidates": 73,
   "detail_fails": 0,
-  "skipped": [
-   "4830056:count-mismatch (0, 0) vs -1--1 []"
-  ],
+  "skipped": [],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -243,5 +241,5 @@
   }
  },
  "match_details": "ok (145)",
- "utc": "2026-08-31T23:20:59Z"
+ "utc": "2026-08-31T23:36:05Z"
 }
