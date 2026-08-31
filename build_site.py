@@ -1866,9 +1866,10 @@ def build():
         t = (a.get("fb_post") or "").strip()
         if t:
             return t
+        # teaser fallback (user rule 2026-08-31): no summary in the post —
+        # the information lives on the site, the post only pulls the click
         return (f"⚽ {(a.get('title') or '').strip()}\n\n"
-                f"{strip_tags(a.get('summary') or '').strip()}\n\n"
-                f"التفاصيل الكاملة 👇\n{SITE_BASE}/a/{a['article_id']}.html\n\n#يلا_سكور")
+                f"التفاصيل الكاملة على الموقع 👇\n{SITE_BASE}/a/{a['article_id']}.html\n\n#يلا_سكور")
     fbp = [head(f"بوستات فيسبوك — {SITE_NAME}", "صفحة داخلية.",
                 SITE_BASE + "/fb.html")]
     fbp.append('<h1 class="page-h">بوستات فيسبوك جاهزة 📋</h1>'
