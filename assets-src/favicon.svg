@@ -1,34 +1,26 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="512" height="512">
-  <defs>
-    <radialGradient id="ball" cx="0.35" cy="0.3" r="1">
-      <stop offset="0" stop-color="#ffffff"/>
-      <stop offset="1" stop-color="#dbe9f3"/>
-    </radialGradient>
-  </defs>
-  <!-- full-bleed brand square: Google/browsers crop favicons into a circle,
-       so the background must fill the whole canvas or the icon floats small
-       inside a white chip -->
-  <rect width="128" height="128" fill="#1f94d3"/>
+  <!-- WhatsApp-style: one solid brand-colored circle filling the whole
+       canvas edge-to-edge, white ball pattern on top. Reads as a bold
+       color block at 16px tab size and fills Google's circular chip. -->
   <g transform="translate(64,64)">
-    <clipPath id="rim"><circle r="50"/></clipPath>
-    <circle r="50" fill="url(#ball)"/>
-    <g clip-path="url(#rim)" transform="scale(0.862)">
-    <g fill="#0d3e59">
-      <polygon points="0,-22 21,-7 13,18 -13,18 -21,-7"/>
-      <polygon points="0,-58 12,-51 8,-38 -8,-38 -12,-51"/>
-      <polygon points="55,-18 58,-4 48,6 38,-4 44,-16"/>
-      <polygon points="-55,-18 -44,-16 -38,-4 -48,6 -58,-4"/>
-      <polygon points="34,46 44,34 56,38 52,52 38,56"/>
-      <polygon points="-34,46 -38,56 -52,52 -56,38 -44,34"/>
+    <clipPath id="rim"><circle r="64"/></clipPath>
+    <circle r="64" fill="#1f94d3"/>
+    <g clip-path="url(#rim)" transform="scale(1.1)">
+      <g fill="#ffffff">
+        <polygon points="0,-22 21,-7 13,18 -13,18 -21,-7"/>
+        <polygon points="0,-58 12,-51 8,-38 -8,-38 -12,-51"/>
+        <polygon points="55,-18 58,-4 48,6 38,-4 44,-16"/>
+        <polygon points="-55,-18 -44,-16 -38,-4 -48,6 -58,-4"/>
+        <polygon points="34,46 44,34 56,38 52,52 38,56"/>
+        <polygon points="-34,46 -38,56 -52,52 -56,38 -44,34"/>
+      </g>
+      <g fill="none" stroke="#ffffff" stroke-width="3.5">
+        <line x1="0" y1="-22" x2="0" y2="-40"/>
+        <line x1="21" y1="-7" x2="46" y2="-12"/>
+        <line x1="-21" y1="-7" x2="-46" y2="-12"/>
+        <line x1="13" y1="18" x2="38" y2="40"/>
+        <line x1="-13" y1="18" x2="-38" y2="40"/>
+      </g>
     </g>
-    <g fill="none" stroke="#0d3e59" stroke-width="3">
-      <line x1="0" y1="-22" x2="0" y2="-40"/>
-      <line x1="21" y1="-7" x2="46" y2="-12"/>
-      <line x1="-21" y1="-7" x2="-46" y2="-12"/>
-      <line x1="13" y1="18" x2="38" y2="40"/>
-      <line x1="-13" y1="18" x2="-38" y2="40"/>
-    </g>
-    </g>
-    <circle r="50" fill="none" stroke="#0d3e59" stroke-width="4"/>
   </g>
 </svg>
