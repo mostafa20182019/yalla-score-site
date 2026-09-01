@@ -6,7 +6,6 @@
  "Saudi Pro League": "ok (table 18 teams)",
  "matches_archive": "ok (356)",
  "standings": "ok (5)",
- "transfers": "ok (12)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
@@ -241,5 +240,5 @@
   }
  },
  "match_details": "ok (147)",
- "utc": "2026-09-01T14:21:13Z"
+ "utc": "2026-09-01T14:35:06Z"
 }
