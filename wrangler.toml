@@ -23,8 +23,10 @@ not_found_handling = "404-page"
 
 [triggers]
 # cron 1: data refresh every 15 min (dispatches publish.yml)
-# cron 2: the 5 daily-article slots, Cairo 10,13,17,20,22 (dispatches
-#         daily-article.yml) — GitHub's own schedule trigger skipped the
-#         17:00 UTC slot entirely on 2026-08-26, so the exact CF cron is
-#         now the article trigger too; worker.js routes by event.cron
-crons = ["1,16,31,46 * * * *", "0 7,10,14,17,19 * * *"]
+# cron 2: the 10 daily-article slots, Cairo 9,11,13,15,17,18,20,21,22,23
+#         (dispatches daily-article.yml) — restored to 10/day 2026-09-01
+#         (was cut to 5 on 2026-08-26). GitHub's own schedule trigger
+#         skipped slots outright, so the exact CF cron is the article
+#         trigger; worker.js routes by event.cron — the string there MUST
+#         match cron 2 EXACTLY or every firing dispatches publish.yml.
+crons = ["1,16,31,46 * * * *", "0 6,8,10,12,14,15,17,18,19,20 * * *"]

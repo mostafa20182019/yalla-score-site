@@ -182,7 +182,8 @@ export default {
     }
     // two crons share this handler — event.cron says which one fired:
     // the article cron dispatches daily-article.yml, the 15-min one publish.yml
-    const workflow = event.cron === "0 7,10,14,17,19 * * *"
+    // (the string must equal cron 2 in wrangler.toml [triggers] EXACTLY)
+    const workflow = event.cron === "0 6,8,10,12,14,15,17,18,19,20 * * *"
       ? "daily-article.yml" : "publish.yml";
     const res = await fetch(
       `https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/${workflow}/dispatches`,
