@@ -891,6 +891,22 @@ def _egy_article(a):
         return False
     return any(t in txt for t in _EGY_TOKENS)
 
+# home block 3 filter: European-football stories (big clubs + leagues).
+# Runs AFTER the Egyptian block, so a story naming both (بيراميدز يفاوض
+# لاعب برشلونة) lands in the Egyptian block and never duplicates here.
+_EUR_TOKENS = ["ريال مدريد", "برشلونة", "مانشستر يونايتد", "مانشستر سيتي",
+               "أرسنال", "آرسنال", "ليفربول", "تشيلسي", "توتنهام",
+               "نيوكاسل", "بايرن ميونخ", "بوروسيا دورتموند",
+               "باريس سان جيرمان", "يوفنتوس", "إنتر ميلان", "ميلان",
+               "نابولي", "أتلتيكو مدريد", "الدوري الإنجليزي",
+               "الدوري الإسباني", "الدوري الإيطالي", "الدوري الألماني",
+               "الدوري الفرنسي", "دوري أبطال أوروبا", "الدوري الأوروبي",
+               "طرابزون سبور"]
+
+def _eur_article(a):
+    txt = (a.get("title") or "") + " " + (a.get("summary") or "")
+    return any(t in txt for t in _EUR_TOKENS)
+
 def reel_slide(r, first=False):
     """One full-height slide of the TikTok-style vertical feed: tap to play
     (VIDEO_JS facade), swipe up for the next (CSS scroll-snap)."""
@@ -1067,6 +1083,12 @@ def build():
             parts.append(fmb_block(egy[0], egy[1:5], "أخبار الدوري المصري",
                                    "/news.html", banner="🇪🇬 الدوري المصري"))
             used |= {a["article_id"] for a in egy[:5]}
+        eur = [a for a in articles
+               if a["article_id"] not in used and _eur_article(a)]
+        if len(eur) >= 2:
+            parts.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
+                                   "/news.html", banner="🏆 كرة القدم الأوروبية"))
+            used |= {a["article_id"] for a in eur[:5]}
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
         parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
