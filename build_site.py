@@ -1599,7 +1599,7 @@ def build():
             img = _lc if _lc.startswith("http") else SITE_BASE + _lc
         murl = f"/m/{mid}.html"
         mp = [head(title, desc, SITE_BASE + murl, image=img, active="matches")]
-        mp.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+        mp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                   f'<a href="/matches.html">المباريات</a> › {esc(comp)}</nav>')
         mp.append(f'<h1 class="page-h">مباراة {esc(h_ar)} و{esc(a_ar)}</h1>')
         mp.append('<div class="mlist">')
@@ -1741,7 +1741,7 @@ def build():
                         "النقاط والمباريات والأهداف وفارق الأهداف "
                         "ونتائج آخر 5 مباريات لكل فريق.",
                         SITE_BASE + st_url, active="matches")]
-            sp2.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+            sp2.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                        f'<a href="/matches.html">المباريات</a> › ترتيب {esc(label)}</nav>')
             sp2.append(f'<h1 class="page-h">ترتيب {esc(label)} {esc(season)}</h1>')
             sp2.append(f'<p class="hintline">جدول {esc(label)} الكامل — يتحدّث '
@@ -1773,7 +1773,7 @@ def build():
                        f"قائمة هدافي {label} لموسم {season} محدثة تلقائيًا بعد كل "
                        "جولة، مع ترتيب صناع الأهداف (التمريرات الحاسمة).",
                        SITE_BASE + sc_url, active="matches")]
-            cp.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+            cp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                       f'<a href="/matches.html">المباريات</a> › هدافو {esc(label)}</nav>')
             cp.append(f'<h1 class="page-h">هدافو {esc(label)} {esc(season)}</h1>')
             cp.append('<section class="minfo"><h2>ترتيب الهدافين</h2>'
@@ -1843,7 +1843,7 @@ def build():
         img = (crest if crest.startswith("http")
                else SITE_BASE + crest) if crest else None
         pt = [head(title, desc, SITE_BASE + t_url, image=img)]
-        pt.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+        pt.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                   f'<a href="/matches.html">المباريات</a> › {esc(name)}</nav>')
         _img = (f'<img class="club-crest" src="{esc(crest)}" alt="{esc(name)}" '
                 'width="64" height="64" loading="eager">' if crest else "")
@@ -2105,7 +2105,7 @@ def build():
                     SITE_BASE + "/" + fname, active="home")]
         np_.append(f'<h1 class="page-h">{esc(h1)}</h1>')
         if fname != "news.html":
-            np_.append('<nav class="crumbs"><a href="/">الرئيسية</a> › '
+            np_.append('<nav class="crumbs"><a href="/">أخبار</a> › '
                        f'<a href="/news.html">كل الأخبار</a> › {esc(h1)}</nav>')
         if arts:
             np_.append('<div class="alist">')
