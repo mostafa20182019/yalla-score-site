@@ -222,7 +222,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <header class="site-head">
   <div class="head-crowd" aria-hidden="true"></div>
   <div class="wrap head-in">
-    <a class="brand" href="/"><span class="ball">⚽</span> {esc(SITE_NAME)}</a>
+    <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>
   </div>
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
@@ -3026,6 +3026,7 @@ a{color:inherit}
   mask-image:linear-gradient(to right,rgba(0,0,0,.95) 55%,transparent 97%);
   pointer-events:none}
 .brand{color:#fff;font-weight:900;font-size:1.3rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.brand .ball{width:30px;height:30px;border-radius:50%;border:2px solid rgba(255,255,255,.9);box-shadow:0 1px 5px rgba(0,0,0,.25);background:#1f94d3}
 .beta{font-size:.62rem;font-weight:800;color:#ffe08a;border:1px solid rgba(255,224,138,.55);background:rgba(0,0,0,.18);padding:2px 9px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 /* second row: navigation tabs (like the app) */
 .site-nav{position:relative;z-index:1;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12)}
