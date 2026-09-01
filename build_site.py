@@ -226,7 +226,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   </div>
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
-    <a href="/" class="navtab{ha}"><span class="ico">🏠</span> الرئيسية<span class="nav-en"> | Home</span></a>
+    <a href="/" class="navtab{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
     <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
 {stats_tab}{vids_tab}{reels_tab}
   </div></nav>
