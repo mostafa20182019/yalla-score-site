@@ -346,6 +346,20 @@ COMP_SLUG = {
     "UEFA Champions League": "champions-league",
 }
 
+# MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
+# on /m/ pages. ONLY entries verified for the current season belong here
+# (firm site rule: never show possibly-wrong data). A missing league gets an
+# honest "لم تتوفر معلومات القناة" line instead. Per-match m["channel"]
+# (if a data source ever provides it) overrides this map.
+COMP_TV = {
+    "Egyptian Premier League": "أون سبورت (OnTime Sports)",
+    "Premier League": "beIN Sports",
+    "Primera Division": "beIN Sports",
+    "Ligue 1": "beIN Sports",
+    "UEFA Champions League": "beIN Sports",
+    # Serie A / Bundesliga / Turkish / Saudi: rights unverified — add when confirmed.
+}
+
 TICKER_TEAMS = [
     ("Real Madrid", None), ("FC Barcelona", None), ("Manchester United", None),
     ("Manchester City", None), ("Arsenal FC", None), ("Liverpool FC", None),
@@ -1549,9 +1563,11 @@ def build():
             title = f"تأجيل مباراة {h_ar} و{a_ar} — {comp} | {SITE_NAME}"
             desc = f"تأجلت مباراة {h_ar} و{a_ar} في {comp} التي كانت مقررة يوم {day_txt}."
         else:
-            title = f"موعد مباراة {h_ar} و{a_ar} — {comp} {m['kickoff']} | {SITE_NAME}"
-            desc = (f"موعد مباراة {h_ar} و{a_ar} في {comp}: {when}. "
-                    "النتيجة المباشرة ومسجلو الأهداف هنا فور انطلاق اللقاء.")
+            title = (f"موعد مباراة {h_ar} و{a_ar} والقنوات الناقلة — "
+                     f"{comp} | {SITE_NAME}")
+            desc = (f"موعد مباراة {h_ar} و{a_ar} في {comp}: {when}، "
+                    "والقنوات الناقلة للمباراة. النتيجة المباشرة ومسجلو "
+                    "الأهداف هنا فور انطلاق اللقاء.")
         img = None
         if m.get("home_badge"):
             _lc = local_crest(m["home_badge"])
@@ -1565,6 +1581,47 @@ def build():
         mp.append(match_row(m, show_time=True, show_comp=True,
                             goals=match_goals(ge_idx, m)))
         mp.append('</div>')
+        # «موعد المباراة والقنوات الناقلة» — a direct-answer paragraph for the
+        # highest-volume pre-match queries ("موعد مباراة X"، "القنوات الناقلة
+        # لمباراة Y"). Pre-match only: after kickoff the page's job is the
+        # result. Channel comes from m["channel"] (per-match, when a source
+        # provides it) else the verified per-league COMP_TV map, else an
+        # honest "not announced" line — never a guess.
+        if st not in ("FINISHED", "POSTPONED"):
+            _tw = f"يوم {day_txt}"
+            if m.get("koff_time"):
+                _sa = ""
+                try:
+                    from zoneinfo import ZoneInfo
+                    _dt = datetime.datetime.fromisoformat(
+                        f"{m['kickoff']}T{m['koff_time']}:00"
+                    ).replace(tzinfo=ZoneInfo("Africa/Cairo"))
+                    _sa = _dt.astimezone(ZoneInfo("Asia/Riyadh")).strftime("%H:%M")
+                except Exception:
+                    pass
+                if _sa == m["koff_time"]:
+                    _tw += (f" في تمام الساعة {m['koff_time']} بتوقيت القاهرة "
+                            "ومكة المكرمة")
+                elif _sa:
+                    _tw += (f" في تمام الساعة {m['koff_time']} بتوقيت القاهرة "
+                            f"({_sa} بتوقيت مكة المكرمة)")
+                else:
+                    _tw += f" في تمام الساعة {m['koff_time']} بتوقيت القاهرة"
+            _rd = f"الجولة {m['round']} من " if m.get("round") else ""
+            mp.append(f'<section class="minfo"><h2>موعد مباراة {esc(h_ar)} '
+                      f'و{esc(a_ar)} والقنوات الناقلة</h2>'
+                      f'<p>تُقام مباراة <b>{esc(h_ar)}</b> و<b>{esc(a_ar)}</b> '
+                      f'ضمن {_rd}{esc(comp)} {_tw}.</p>')
+            if m.get("channel"):
+                mp.append(f'<p>وتُنقل المباراة مباشرة عبر قناة '
+                          f'<b>{esc(str(m["channel"]))}</b>.</p>')
+            elif COMP_TV.get(m.get("competition")):
+                mp.append(f'<p>وتُنقل مباريات {esc(comp)} في المنطقة العربية '
+                          f'عبر قنوات <b>{esc(COMP_TV[m["competition"]])}</b>.</p>')
+            else:
+                mp.append('<p>لم تتوفر بعد معلومات القناة الناقلة لهذه '
+                          'المباراة — تُحدَّث هذه الصفحة تلقائيًا فور توفرها.</p>')
+            mp.append('</section>')
         _det = match_details_for(md_idx, m)
         if _det:
             mp.append(match_details_html(_det[0], _det[1], h_ar, a_ar))
