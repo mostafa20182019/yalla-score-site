@@ -1083,15 +1083,13 @@ def build():
                if a["article_id"] not in used and _egy_article(a)]
         if len(egy) >= 2:
             parts.append(fmb_block(egy[0], egy[1:5], "أخبار الدوري المصري",
-                                   "/news/egypt.html",
-                                   banner="🇪🇬 الدوري المصري"))
+                                   "/news/egypt.html"))
             used |= {a["article_id"] for a in egy[:5]}
         eur = [a for a in articles
                if a["article_id"] not in used and _eur_article(a)]
         if len(eur) >= 2:
             parts.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
-                                   "/news/europe.html",
-                                   banner="🏆 كرة القدم الأوروبية", flip=True))
+                                   "/news/europe.html", flip=True))
             used |= {a["article_id"] for a in eur[:5]}
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
