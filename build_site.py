@@ -242,7 +242,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -360,6 +360,58 @@ def _is_ticker_team(m):
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")
     comp = m.get("competition") or ""
     return any(t in ha and (c is None or c == comp) for t, c in TICKER_TEAMS)
+
+# Evergreen club pages (/team/<slug>) — one per curated club, targeting
+# "أخبار الأهلي اليوم" / "مباريات الزمالك القادمة" query families.
+# match_tokens follow the TICKER_TEAMS convention: (substring token,
+# competition-scope-or-None) — FD English tokens for European clubs
+# ("FC Barcelona" not "Barcelona": Espanyol collision), Arabic clubs scoped
+# to their league (bare "الأهلي" also matches Saudi Al-Ahli). news_tokens
+# are searched in article title+summary; news_excl vetoes false positives.
+TEAM_PAGES = [
+    {"slug": "al-ahly", "name": "الأهلي", "league": "Egyptian Premier League",
+     "match_tokens": [("الأهلي", "Egyptian Premier League")],
+     "news_tokens": ["الأهلي"], "news_excl": ["الأهلي السعودي", "أهلي جدة"]},
+    {"slug": "zamalek", "name": "الزمالك", "league": "Egyptian Premier League",
+     "match_tokens": [("الزمالك", "Egyptian Premier League")],
+     "news_tokens": ["الزمالك"]},
+    {"slug": "pyramids", "name": "بيراميدز", "league": "Egyptian Premier League",
+     "match_tokens": [("بيراميدز", "Egyptian Premier League")],
+     "news_tokens": ["بيراميدز"]},
+    {"slug": "real-madrid", "name": "ريال مدريد", "league": "Primera Division",
+     "match_tokens": [("Real Madrid", None)], "news_tokens": ["ريال مدريد"]},
+    {"slug": "barcelona", "name": "برشلونة", "league": "Primera Division",
+     "match_tokens": [("FC Barcelona", None)], "news_tokens": ["برشلونة"]},
+    {"slug": "man-united", "name": "مانشستر يونايتد", "league": "Premier League",
+     "match_tokens": [("Manchester United", None)],
+     "news_tokens": ["مانشستر يونايتد"]},
+    {"slug": "man-city", "name": "مانشستر سيتي", "league": "Premier League",
+     "match_tokens": [("Manchester City", None)],
+     "news_tokens": ["مانشستر سيتي"]},
+    {"slug": "arsenal", "name": "أرسنال", "league": "Premier League",
+     "match_tokens": [("Arsenal FC", None)], "news_tokens": ["أرسنال", "آرسنال"]},
+    {"slug": "liverpool", "name": "ليفربول", "league": "Premier League",
+     "match_tokens": [("Liverpool FC", None)], "news_tokens": ["ليفربول"]},
+    {"slug": "chelsea", "name": "تشيلسي", "league": "Premier League",
+     "match_tokens": [("Chelsea FC", None)], "news_tokens": ["تشيلسي"]},
+    {"slug": "trabzonspor", "name": "طرابزون سبور", "league": "Turkish Super Lig",
+     "match_tokens": [("طرابزون سبور", "Turkish Super Lig")],
+     "news_tokens": ["طرابزون", "محمد صلاح"]},
+]
+
+def _team_match(tp, m):
+    """Does match m involve club tp? Same token+scope rule as the ticker."""
+    ha = (m.get("home") or "") + "|" + (m.get("away") or "")
+    comp = m.get("competition") or ""
+    return any(t in ha and (c is None or c == comp)
+               for t, c in tp["match_tokens"])
+
+def _team_news(tp, a):
+    """Does article a mention club tp? title+summary, with exclusions."""
+    txt = (a.get("title") or "") + " " + (a.get("summary") or "")
+    if any(x in txt for x in tp.get("news_excl", [])):
+        return False
+    return any(t in txt for t in tp["news_tokens"])
 
 def _tk_date(kick):
     """Short Arabic date chip for non-today items: أمس / غدًا / dd/mm."""
@@ -1083,6 +1135,12 @@ def build():
         if a.get("summary"):
             p.append(f'<p class="lead">{esc(a["summary"])}</p>')
         p.append(f'<div class="a-body">{a.get("body") or ""}</div>')
+        _clubs = [tp for tp in TEAM_PAGES if _team_news(tp, a)]
+        if _clubs:
+            p.append('<nav class="club-chips"><span>المزيد عن:</span>'
+                     + "".join(f'<a href="/team/{tp["slug"]}.html">'
+                               f'{esc(tp["name"])}</a>' for tp in _clubs)
+                     + '</nav>')
         p.append('</article>')
         p.append(foot())
         write(f"a/{a['article_id']}.html", "".join(p))
@@ -1526,6 +1584,12 @@ def build():
         for k, v in info:
             mp.append(f'<div><dt>{esc(k)}</dt><dd>{esc(str(v))}</dd></div>')
         mp.append('</dl></section>')
+        _clubs = [tp for tp in TEAM_PAGES if _team_match(tp, m)]
+        if _clubs:
+            mp.append('<nav class="club-chips"><span>صفحات الأندية:</span>'
+                      + "".join(f'<a href="/team/{tp["slug"]}.html">أخبار '
+                                f'{esc(tp["name"])}</a>' for tp in _clubs)
+                      + '</nav>')
         stc = st_by_comp.get(m.get("competition"))
         if stc and stc.get("table"):
             _slug = COMP_SLUG.get(m.get("competition"))
@@ -1646,6 +1710,126 @@ def build():
             urls.append(sc_url)
             n_lp += 1
     print(f"  + league pages: {n_lp}")
+
+    # ---- per-club pages (/team/<slug>) ----
+    # Evergreen SEO hubs for the highest-volume Arabic query family we don't
+    # cover: "أخبار الأهلي اليوم"، "مباريات الزمالك القادمة"، "نتيجة ريال
+    # مدريد". One page per curated club: latest club news + next matches +
+    # recent results + league standing, refreshed every publish cycle.
+    # Cross-linked from article pages + match pages (club-chips) + footer.
+    os.makedirs(os.path.join(DIST, "team"), exist_ok=True)
+    club_matches_src = sorted(m_all.values(),
+                              key=lambda m: m.get("kickoff") or "")
+    for tp in TEAM_PAGES:
+        name, slug = tp["name"], tp["slug"]
+        league_ar = comp_label(tp["league"])
+        cm = [m for m in club_matches_src
+              if _team_match(tp, m) and m.get("home") and m.get("kickoff")]
+        up_next = [m for m in cm
+                   if (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
+                   and m["kickoff"] >= REF_TODAY][:3]
+        last_res = [m for m in reversed(cm)
+                    if (m.get("status") or "").upper() == "FINISHED"
+                    and m.get("home_score") is not None][:5]
+        news = [a for a in articles if _team_news(tp, a)][:8]
+        st = st_by_comp.get(tp["league"])
+        srow = None
+        if st and st.get("table") and not st.get("zeroed"):
+            for r in st["table"]:
+                if any(t in (r.get("team") or "") for t, _ in tp["match_tokens"]):
+                    srow = r
+                    break
+        crest = ""
+        if srow and srow.get("crest"):
+            crest = local_crest(srow["crest"])
+        else:
+            for m in reversed(cm):
+                for side in ("home", "away"):
+                    if (any(t in (m.get(side) or "")
+                            for t, _ in tp["match_tokens"])
+                            and m.get(side + "_badge")):
+                        crest = local_crest(m[side + "_badge"])
+                        break
+                if crest:
+                    break
+        t_url = f"/team/{slug}.html"
+        title = (f"أخبار {name} اليوم — مباريات ونتائج وترتيب {name} "
+                 f"{season} | {SITE_NAME}")
+        desc = (f"آخر أخبار {name} اليوم، موعد مباراة {name} القادمة، نتائج "
+                f"آخر المباريات وترتيب {name} في {league_ar} {season} — "
+                "تتحدّث الصفحة تلقائيًا على مدار اليوم.")
+        img = (crest if crest.startswith("http")
+               else SITE_BASE + crest) if crest else None
+        pt = [head(title, desc, SITE_BASE + t_url, image=img)]
+        pt.append(f'<nav class="crumbs"><a href="/">الرئيسية</a> › '
+                  f'<a href="/matches.html">المباريات</a> › {esc(name)}</nav>')
+        _img = (f'<img class="club-crest" src="{esc(crest)}" alt="{esc(name)}" '
+                'width="64" height="64" loading="eager">' if crest else "")
+        _pos = ""
+        if srow:
+            _pos = (f'<p class="club-pos">المركز <b>{srow.get("pos")}</b> في '
+                    f'{esc(league_ar)} برصيد <b>{srow.get("pts")}</b> نقطة '
+                    f'من {srow.get("played")} مباراة</p>')
+        pt.append(f'<header class="club-hero">{_img}<div>'
+                  f'<h1 class="page-h">أخبار {esc(name)}</h1>'
+                  f'<p class="hintline">كل جديد {esc(name)}: الأخبار والمباريات '
+                  f'والنتائج والترتيب في مكان واحد — تتحدّث تلقائيًا.</p>'
+                  f'{_pos}</div></header>')
+        if up_next:
+            pt.append(f'<section class="minfo"><h2>مباريات {esc(name)} القادمة</h2>'
+                      '<div class="mlist">')
+            for m in up_next:
+                pt.append(match_row(m, show_time=True, show_comp=True,
+                                    link=match_url(m)))
+            pt.append('</div></section>')
+        if last_res:
+            pt.append(f'<section class="minfo"><h2>آخر نتائج {esc(name)}</h2>'
+                      '<div class="mlist">')
+            for m in last_res:
+                pt.append(match_row(m, show_time=False, show_comp=True,
+                                    link=match_url(m)))
+            pt.append('</div></section>')
+        pt.append(f'<section class="minfo"><h2>آخر أخبار {esc(name)}</h2>')
+        if news:
+            pt.append('<ul class="mp-newslist">')
+            for a in news:
+                _t = art_reltime(a)
+                pt.append(f'<li><a href="/a/{a["article_id"]}.html">'
+                          f'{esc(a["title"])}</a>'
+                          + (f' <span class="club-when">({_t})</span>' if _t else "")
+                          + '</li>')
+            pt.append('</ul>')
+        else:
+            pt.append('<p class="hintline">تُنشر أخبار '
+                      f'{esc(name)} هنا فور ورودها.</p>')
+        pt.append('</section>')
+        if st and st.get("table"):
+            _slug = COMP_SLUG.get(tp["league"])
+            _h = (f'<a href="/standings/{_slug}.html">ترتيب {esc(league_ar)} ←</a>'
+                  if _slug else f'ترتيب {esc(league_ar)}')
+            pt.append(f'<section class="minfo"><h2>{_h}</h2>')
+            pt.append(standings_table(tp["league"], st["table"],
+                                      past=st.get("past"),
+                                      season_label=st.get("season_label"),
+                                      zeroed=st.get("zeroed"),
+                                      form_map=forms.get(tp["league"], {}),
+                                      embedded=True))
+            pt.append('</section>')
+        others = [o for o in TEAM_PAGES if o["slug"] != slug]
+        pt.append('<nav class="club-chips"><span>أندية أخرى:</span>'
+                  + "".join(f'<a href="/team/{o["slug"]}.html">{esc(o["name"])}</a>'
+                            for o in others)
+                  + '</nav>')
+        pt.append(jsonld({
+            "@context": "https://schema.org", "@type": "SportsTeam",
+            "name": name, "sport": "Football", "url": SITE_BASE + t_url,
+            **({"logo": img} if img else {}),
+            "memberOf": {"@type": "SportsOrganization", "name": league_ar},
+        }))
+        pt.append(foot())
+        write(f"team/{slug}.html", "".join(pt))
+        urls.append(t_url)
+    print(f"  + club pages: {len(TEAM_PAGES)}")
 
     # ---- stats dashboard (/stats.html) ----
     sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
@@ -2655,7 +2839,7 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
         return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="ph">⚽</span>'
     comp = ""
     if show_comp:
-        comp = f'<div class="mcomp">{esc(m.get("competition"))}{(" · " + esc(m.get("channel"))) if m.get("channel") else ""}</div>'
+        comp = f'<div class="mcomp">{esc(comp_label(m.get("competition")))}{(" · " + esc(m.get("channel"))) if m.get("channel") else ""}</div>'
     # only LIVE / FINISHED get a status pill (upcoming shows its time instead)
     pill = (f'<span class="pill pill-{badge[1]}">{esc(badge[0])}</span>'
             if st in ("LIVE", "FINISHED") else "")
@@ -3032,6 +3216,19 @@ a{color:inherit}
 .minfo-l dd{margin:0;font-weight:700}
 .mp-newslist{margin:0;padding-inline-start:18px}
 .mp-newslist li{margin:5px 0}
+/* club pages (/team/<slug>) */
+.club-hero{display:flex;align-items:center;gap:16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px 18px;margin:14px 0}
+.club-crest{width:64px;height:64px;object-fit:contain;flex:none}
+.club-hero .page-h{margin:0 0 4px}
+.club-hero .hintline{margin:0}
+.club-pos{margin:6px 0 0;font-size:.85rem;color:var(--green-d);font-weight:700}
+.club-pos b{font-size:1rem}
+.club-when{color:var(--muted);font-size:.78rem}
+.club-chips{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:14px 0;font-size:.85rem}
+.club-chips span{color:var(--muted);font-weight:700}
+.club-chips a{background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:4px 12px;font-weight:800;color:var(--ink);text-decoration:none}
+.club-chips a:hover{border-color:var(--green);color:var(--green-d)}
+@media(max-width:560px){.club-crest{width:48px;height:48px}.club-hero{gap:12px;padding:12px}}
 .mrow-live{border-inline-start-color:var(--live)}.mrow-fin{border-inline-start-color:var(--fin)}
 .pill{grid-area:pill;color:#fff;background:var(--up);border-radius:999px;padding:2px 12px;font-size:.68rem;font-weight:900}
 .pill-live{background:var(--live)}.pill-fin{background:var(--fin)}
