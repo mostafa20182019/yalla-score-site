@@ -11,7 +11,7 @@ Pages) - no credit card needed. Google indexes static HTML very well.
 IMPORTANT: set SITE_BASE to your final public URL before the last build,
 so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 """
-import json, os, html, shutil, datetime, hashlib
+import json, os, re, html, shutil, datetime, hashlib
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
@@ -2686,8 +2686,25 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
   {gblock}
 </div>"""
 
+# The official URL form is EXTENSIONLESS (/news, /a/307, /m/551993): Cloudflare
+# Workers assets 307-redirect /x.html -> /x, so .html canonicals/sitemap URLs
+# made Google see every URL as a temporary redirect whose target pointed back
+# at the redirect (1/500 pages indexed). Files on disk keep their .html names —
+# only emitted URLs are normalized here, at the single output choke point.
+# Matches internal URLs only: absolute ones starting with SITE_BASE, or
+# root-relative ones right after a delimiter ("'>=( or whitespace) so external
+# publisher links like https://example.com/foo.html are never touched.
+_HTML_URL = re.compile(
+    r'(?P<pre>' + re.escape(SITE_BASE) + r'|["\'>=(\s])'
+    r'(?P<path>/[A-Za-z0-9_\-/]+)\.html')
+
+def _clean_urls(text):
+    return _HTML_URL.sub(lambda m: m.group("pre") + m.group("path"), text)
+
 def write(rel, content):
     path = os.path.join(DIST, rel)
+    if rel.endswith((".html", ".xml")):
+        content = _clean_urls(content)
     with open(path, "w", encoding="utf-8") as f:
         f.write(content)
 

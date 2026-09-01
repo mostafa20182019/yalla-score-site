@@ -48,7 +48,7 @@ def main() -> int:
         print(f"top article unchanged (id {aid or '?'}) - no new article this run, skipping")
         return 0
 
-    link = f"{SITE}/a/{aid}.html"
+    link = f"{SITE}/a/{aid}"   # extensionless = the canonical URL form (build_site._clean_urls)
     title = (art.get("title") or "").strip()
     summary = (art.get("summary") or "").strip()
     # the article task writes a crafted fb_post (same text the user copies
