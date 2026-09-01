@@ -1126,9 +1126,20 @@ def build():
         if rest_pool:
             parts.append('<div class="sec-h"><h2 class="page-h">من أخبارنا أيضًا</h2>'
                          '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
-            parts.append('<div class="grid">')
+            # calm 2-col list rows, same idiom as /news.html — the big card
+            # grid here read as scattered too (user, 2026-09-01); compact
+            # variant: no summary line, smaller thumb
+            parts.append('<div class="alist alist-2col">')
             for a in rest_pool[:12]:
-                parts.append(news_card(a))
+                img = a.get("image_url")
+                th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                      if img else '<span class="al-th noimg">⚽</span>')
+                parts.append(
+                    f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
+                    f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
+                    f'<span class="al-m">{esc(a.get("author") or "")} · '
+                    f'{art_reltime(a) or esc(a.get("pub_date") or "")}</span>'
+                    f'</span></a>')
             parts.append('</div>')
     # (matches are NOT shown on the home page - they live on /matches.html)
     # crests + per-match page URL for the live card, curated clubs only
@@ -3260,6 +3271,11 @@ a{color:inherit}
 .al-s{font-size:.82rem;color:var(--muted);font-weight:600;line-height:1.6;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .al-m{font-size:.72rem;color:#94a3b8;font-weight:700}
+/* home «من أخبارنا أيضًا» — compact 2-col variant of the calm list */
+.alist-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;max-width:none}
+.alist-2col .al-th{width:110px;height:72px}
+.alist-2col .al-t{font-size:.9rem;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+@media(max-width:760px){.alist-2col{grid-template-columns:1fr}}
 @media(max-width:560px){
   .al-th{width:104px;height:74px}
   .al-t{font-size:.88rem}
