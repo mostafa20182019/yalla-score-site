@@ -72,22 +72,42 @@ async function gameGoals(gid) {
   } catch (e) { return null; }
 }
 
+async function fetchGames(url) {
+  const r = await fetch(url, {
+    headers: S365_HEADERS,
+    cf: { cacheTtl: 12, cacheEverything: true },
+  });
+  if (!r.ok) return null;
+  return (await r.json()).games || [];
+}
+
 async function liveScores() {
-  const upstream =
-    `https://webws.365scores.com/web/games/current/?appTypeId=5&competitions=${LIVE_COMPS}` +
-    `&langId=27&timezoneName=Africa/Cairo&showOdds=false`;
+  const base =
+    "https://webws.365scores.com/web/games/current/?appTypeId=5" +
+    "&langId=27&timezoneName=Africa/Cairo&showOdds=false";
   const games = [];
   const wantGoals = [];   // {idx, gid, live} — live/just-ended games with a goal
-  let ok = false;
+  let ok = false, src = "multi";
   try {
-    const r = await fetch(upstream, {
-      headers: S365_HEADERS,
-      cf: { cacheTtl: 12, cacheEverything: true },
-    });
-    if (r.ok) {
+    let raw = null;
+    try { raw = await fetchGames(`${base}&competitions=${LIVE_COMPS}`); } catch (e) { raw = null; }
+    // 365scores intermittently serves the multi-competition query a degraded
+    // near-empty reply (2026-09-01: ONE scheduled PL game, HTTP 200, while a
+    // live Egyptian match was in play — single-competition queries kept
+    // returning everything). A healthy multi reply carries today's whole
+    // window (~dozens of games), so a tiny list = degraded → refetch split
+    // per competition and merge (lists are disjoint, no dedup needed).
+    if (!raw || raw.length < 5) {
+      src = "split";
+      const per = await Promise.all(LIVE_COMPS.split(",").map(c =>
+        fetchGames(`${base}&competitions=${c}`).catch(() => null)));
+      raw = [];
+      ok = false;
+      for (const list of per) if (list) { ok = true; raw.push(...list); }
+    } else {
       ok = true;
-      const d = await r.json();
-      for (const g of d.games || []) {
+    }
+    for (const g of raw) {
         const sg = g.statusGroup;            // 2 scheduled / 3 live / 4 ended
         if (sg !== 3 && sg !== 4) continue;  // live + finished (final score)
         const h = g.homeCompetitor || {}, a = g.awayCompetitor || {};
@@ -129,7 +149,6 @@ async function liveScores() {
             && (h.score > 0 || a.score > 0)) {
           wantGoals.push({ idx: games.length - 1, gid: g.id, live: sg === 3 });
         }
-      }
     }
     // live matches first, then just-ended, capped — each detail call is
     // itself edge-cached 20s so bursts collapse upstream
@@ -141,7 +160,7 @@ async function liveScores() {
   } catch (e) { /* fail-empty */ }
   // an upstream failure must NOT be cached for 30s - visitors would all go
   // quiet for minutes mid-match; mark it uncacheable instead
-  return new Response(JSON.stringify({ games, ok, ts: Date.now() }), {
+  return new Response(JSON.stringify({ games, ok, ts: Date.now(), src }), {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": ok ? "public, max-age=10, s-maxage=15" : "no-store",
