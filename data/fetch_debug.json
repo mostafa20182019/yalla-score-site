@@ -170,9 +170,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (65 games)",
+ "goal_events": "ok (58 games)",
  "goal_events_dbg": {
-  "candidates": 73,
+  "candidates": 58,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -241,5 +241,5 @@
   }
  },
  "match_details": "ok (145)",
- "utc": "2026-08-31T23:51:08Z"
+ "utc": "2026-09-01T00:11:49Z"
 }
