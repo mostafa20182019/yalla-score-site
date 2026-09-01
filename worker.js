@@ -74,7 +74,7 @@ async function gameGoals(gid) {
 
 async function liveScores() {
   const upstream =
-    `https://webws.365scores.com/web/games/current/?competitions=${LIVE_COMPS}` +
+    `https://webws.365scores.com/web/games/current/?appTypeId=5&competitions=${LIVE_COMPS}` +
     `&langId=27&timezoneName=Africa/Cairo&showOdds=false`;
   const games = [];
   const wantGoals = [];   // {idx, gid, live} — live/just-ended games with a goal

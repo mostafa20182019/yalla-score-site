@@ -885,7 +885,7 @@ def fetch_goal_events():
     """[{home, away, date, goals:[{side,player,minute,tag}]}] + a debug dict."""
     today = datetime.now(CAIRO).date()
     cutoff = (today - timedelta(days=GOAL_DAYS_BACK)).isoformat()
-    q = f"competitions={S365_ALL_COMPS}&langId=27&timezoneName=Africa/Cairo"
+    q = f"appTypeId=5&competitions={S365_ALL_COMPS}&langId=27&timezoneName=Africa/Cairo"
     cands = {}
     for path in (f"games/current/?{q}&showOdds=false",
                  f"games/results/?{q}&showOdds=false"):
