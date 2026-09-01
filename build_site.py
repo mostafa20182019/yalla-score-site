@@ -858,13 +858,15 @@ def _art_meta(a):
     t = art_reltime(a)
     return esc(a.get("author") or SITE_NAME) + (f" · {t}" if t else "")
 
-def fmb_block(feat_a, list_items, list_head, more_url, banner=""):
+def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False):
     """FotMob-style home block: one featured card (image + title) beside a
-    numbered trending-list column with thumbnails and 'منذ X' bylines."""
+    numbered trending-list column with thumbnails and 'منذ X' bylines.
+    flip=True mirrors the columns (featured LEFT, list RIGHT) for visual
+    alternation between consecutive blocks."""
     img = feat_a.get("image_url")
     imgdiv = (f'<div class="fmb-img" style="background-image:url(\'{esc(img)}\')"></div>'
               if img else '<div class="fmb-img fmb-noimg"></div>')
-    out = ['<section class="fmb">']
+    out = ['<section class="fmb fmb-flip">' if flip else '<section class="fmb">']
     out.append(f'<a class="fmb-feat" href="/a/{feat_a["article_id"]}.html">'
                + (f'<div class="fmb-banner">{banner}</div>' if banner else "")
                + imgdiv
@@ -1089,7 +1091,7 @@ def build():
         if len(eur) >= 2:
             parts.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
                                    "/news/europe.html",
-                                   banner="🏆 كرة القدم الأوروبية"))
+                                   banner="🏆 كرة القدم الأوروبية", flip=True))
             used |= {a["article_id"] for a in eur[:5]}
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
@@ -3394,7 +3396,12 @@ a{color:inherit}
 .fmb-th{width:88px;height:58px;object-fit:cover;border-radius:8px;flex:none;background:#eef2f6}
 .fmb-more{margin-top:auto;padding-top:10px;font-size:.82rem;font-weight:800;color:var(--green-d);text-decoration:none}
 .fmb-more:hover{text-decoration:underline}
-@media(max-width:860px){.fmb{grid-template-columns:1fr;gap:12px;padding:12px}.fmb-fb h2{font-size:1.05rem}.fmb-th{width:76px;height:52px}}
+/* flipped variant: featured card LEFT, list RIGHT (visual alternation) */
+.fmb-flip{grid-template-columns:1fr 1.15fr}
+.fmb-flip .fmb-list{grid-column:1;grid-row:1}
+.fmb-flip .fmb-feat{grid-column:2;grid-row:1}
+@media(max-width:860px){.fmb{grid-template-columns:1fr;gap:12px;padding:12px}.fmb-fb h2{font-size:1.05rem}.fmb-th{width:76px;height:52px}
+  .fmb-flip .fmb-feat,.fmb-flip .fmb-list{grid-column:auto;grid-row:auto}}
 /* scorers under a finished/live match row (/matches day view) */
 .mgoals{grid-column:1/-1;display:grid;grid-template-columns:1fr 40px 1fr;gap:2px 6px;
   margin-top:7px;padding-top:6px;border-top:1px dashed #e8eef4}
