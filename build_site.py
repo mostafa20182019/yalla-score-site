@@ -212,6 +212,9 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <meta name="twitter:description" content="{esc(desc)}">
 <meta name="twitter:image" content="{esc(img)}">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap">
 <link rel="stylesheet" href="/assets/style.css?v={CSS_VER}">
 {ads_head}
 </head>
@@ -3003,7 +3006,11 @@ CSS = r""":root{
    reason). One rule closes the whole class of bug. */
 [hidden]{display:none!important}
 html,body{overflow-x:hidden;max-width:100%}
-body{margin:0;font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
+/* Almarai = FilGoal's Arabic UI font (Google Fonts, display=swap so text
+   never blocks); Segoe/Tahoma stay as the pre-load + no-JS fallback.
+   Almarai's heaviest weight is 800 — the CSS's font-weight:900 rules
+   resolve to it automatically. */
+body{margin:0;font-family:'Almarai','Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
 .wrap{max-width:1600px;margin:0 auto;padding:0 20px}
 a{color:inherit}
 .site-head{background:linear-gradient(90deg,var(--green-d),var(--green));box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
