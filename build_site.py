@@ -3378,7 +3378,11 @@ a{color:inherit}
 .fmb-meta{margin:0;color:var(--muted);font-size:.78rem;font-weight:700}
 .fmb-list{display:flex;flex-direction:column;min-width:0}
 .fmb-lh{font-weight:900;font-size:.95rem;padding-bottom:4px}
-.fmb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eef2f6;text-decoration:none;color:var(--ink);min-width:0}
+/* flex:1 = the rows share the column's full height equally, so the list
+   always bottoms out level with the featured card (no dead space under
+   row 4 when the featured card runs tall) */
+.fmb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eef2f6;text-decoration:none;color:var(--ink);min-width:0;flex:1}
+.fmb-row:last-of-type{border-bottom:0}
 .fmb-row:hover b{color:var(--green-d)}
 .fmb-num{width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;font-size:.68rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
 .fmb-rt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
