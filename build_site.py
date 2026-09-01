@@ -586,26 +586,9 @@ def make_ticker(matches):
     return ('<a class="ticker" href="/matches.html" aria-label="نتائج المباريات — اضغط للتفاصيل">'
             f'<div class="tk-track">{seq}{seq}</div></a>')
 
-def transfers_widget(ts, horizontal=False):
-    """FotMob-style top-transfers widget. Vertical rail (desktop left column)
-    by default; horizontal=True renders a swipeable strip for mobile."""
-    its = []
-    for t in ts:
-        fee = (f'<span class="trf-fee">{esc(t.get("price"))}</span>'
-               if t.get("price") else "")
-        fc = (f'<img class="trf-b" src="{esc(local_crest(t.get("from_crest")))}" alt="" loading="lazy">'
-              if t.get("from_crest") else "")
-        tc = (f'<img class="trf-b" src="{esc(local_crest(t.get("to_crest")))}" alt="" loading="lazy">'
-              if t.get("to_crest") else "")
-        its.append(
-            f'<div class="trf-item"><img class="trf-face" src="{esc(local_crest(t.get("img")))}" alt="" loading="lazy"'
-            f" onerror=\"this.onerror=null;this.src='/media/ph-ball.svg'\">"
-            f'<div class="trf-mid"><b class="trf-name">{esc(t.get("player"))}</b>'
-            f'<span class="trf-clubs">{fc}<bdi>{esc(t.get("from"))}</bdi> ← {tc}<bdi>{esc(t.get("to"))}</bdi></span></div>'
-            f'{fee}</div>')
-    cls = "trf-row" if horizontal else "trf-col"
-    return ('<div class="trf-box"><div class="sec-h"><h2 class="page-h">🔁 أبرز الانتقالات</h2></div>'
-            f'<div class="{cls}">' + "".join(its) + '</div></div>')
+# (the top-transfers widget was removed 2026-09-01 by user decision — the
+# FotMob-style news blocks took its home slots; fetch_data no longer pulls
+# transfers.json. Restore from git history if it ever comes back.)
 
 # Client-side live layer: polls /live.json (edge-cached 15s) and patches
 # scores/minute into the ticker + match rows IN PLACE. Matching is by
@@ -870,6 +853,44 @@ def news_card(a):
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
             f'<p class="meta">{esc(a.get("author"))}{" · " + t if t else ""}</p></div></a>')
 
+def _art_meta(a):
+    """author · منذ X — the byline under FotMob-block titles."""
+    t = art_reltime(a)
+    return esc(a.get("author") or SITE_NAME) + (f" · {t}" if t else "")
+
+def fmb_block(feat_a, list_items, list_head, more_url, banner=""):
+    """FotMob-style home block: one featured card (image + title) beside a
+    numbered trending-list column with thumbnails and 'منذ X' bylines."""
+    img = feat_a.get("image_url")
+    imgdiv = (f'<div class="fmb-img" style="background-image:url(\'{esc(img)}\')"></div>'
+              if img else '<div class="fmb-img fmb-noimg"></div>')
+    out = ['<section class="fmb">']
+    out.append(f'<a class="fmb-feat" href="/a/{feat_a["article_id"]}.html">'
+               + (f'<div class="fmb-banner">{banner}</div>' if banner else "")
+               + imgdiv
+               + f'<div class="fmb-fb"><h2>{esc(feat_a["title"])}</h2>'
+               + f'<p class="fmb-meta">{_art_meta(feat_a)}</p></div></a>')
+    out.append(f'<div class="fmb-list"><div class="fmb-lh">{esc(list_head)}</div>')
+    for i, a in enumerate(list_items, 1):
+        th = (f'<img class="fmb-th" src="{esc(a.get("image_url"))}" alt="" loading="lazy">'
+              if a.get("image_url") else "")
+        out.append(f'<a class="fmb-row" href="/a/{a["article_id"]}.html">'
+                   f'<span class="fmb-num">{i}</span>'
+                   f'<span class="fmb-rt"><b>{esc(a["title"])}</b>'
+                   f'<small>{_art_meta(a)}</small></span>{th}</a>')
+    out.append(f'<a class="fmb-more" href="{more_url}">المزيد ←</a></div></section>')
+    return "".join(out)
+
+# home block 2 filter: Egyptian-football stories (clubs, league, NT)
+_EGY_TOKENS = ["الأهلي", "الزمالك", "بيراميدز", "الدوري المصري",
+               "منتخب مصر", "كأس مصر"]
+
+def _egy_article(a):
+    txt = (a.get("title") or "") + " " + (a.get("summary") or "")
+    if "الأهلي السعودي" in txt or "أهلي جدة" in txt:
+        return False
+    return any(t in txt for t in _EGY_TOKENS)
+
 def reel_slide(r, first=False):
     """One full-height slide of the TikTok-style vertical feed: tap to play
     (VIDEO_JS facade), swipe up for the next (CSS scroll-snap)."""
@@ -942,7 +963,6 @@ def build():
     standings = load("standings.json")   # [{competition, table:[...]}]
     scorers = load("scorers.json")       # [{competition, scorers:[{name,team,goals,...}]}]
     assists = load("assists.json")       # same shape, key "assists"
-    transfers = load("transfers.json")   # top-transfers widget (home)
     fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
     goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
     ge_idx = goal_events_index(goal_events)
@@ -1009,18 +1029,17 @@ def build():
     urls = ["/", "/matches.html"]
 
     # ---- home ----
-    feat = articles[0] if articles else None
-    rest = articles[1:] if articles else []
+    feat = articles[0] if articles else None    # og:image source
     parts = [head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
                   image=(feat and feat.get("image_url")) or None, active="home")]
     parts.append(jsonld({
         "@context": "https://schema.org", "@type": "WebSite",
         "name": SITE_NAME, "url": SITE_BASE + "/",
         "inLanguage": "ar", "description": strip_tags(SITE_DESC)}))
-    # two-column home (same widths as before): main content on the RIGHT,
-    # reserved empty column on the LEFT. The ad strip (future "Top Transfers"
-    # widget, FotMob style) sits ABOVE the latest-news section.
-    parts.append('<div class="home-cols"><div class="home-main">')
+    # single-column home since 2026-09-01 (the transfers rail — the only
+    # left-column tenant — was removed by user decision, replaced by the
+    # FotMob-style blocks). The ad strip keeps its place ABOVE آخر الأخبار
+    # (firm user rule: never move the ad slot).
     parts.append(f'<div class="home-topad">{adsense_slot()}</div>')
     # heading row: title on the start side, a LIVE card for one of the curated
     # clubs on the end side. The card is filled by LIVE_JS in the visitor's
@@ -1033,31 +1052,21 @@ def build():
     # first fresh /live.json reply, ~1s after load.
     parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
     parts.append('<h1 class="page-h">آخر الأخبار</h1>')
-    if feat:
-        img = feat.get("image_url")
-        style = f' style="background-image:url(\'{esc(img)}\')"' if img else ' class="noimg"'
-        parts.append(f"""<a class="feat" href="/a/{feat['article_id']}.html">
-  <div class="feat-img"{style}></div>
-  <div class="feat-body">
-    <h2>{esc(feat['title'])}</h2>
-    <p>{esc(feat.get('summary'))}</p>
-    {('<p class="feat-when">' + art_reltime(feat) + '</p>') if art_reltime(feat) else ''}
-  </div></a>""")
-    if rest:
-        # horizontal shelf (newest 10); the full archive lives on /news.html
-        parts.append('<div class="sec-h"><h2 class="page-h">المزيد من الأخبار</h2>'
-                     '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
-        parts.append('<div class="shelf-wrap">'
-                     '<button type="button" class="sh-btn sh-l" aria-label="التالي">‹</button>'
-                     '<div class="shelf" id="newsShelf">')
-        for a in rest[:10]:
-            parts.append(news_card(a))
-        parts.append('</div>'
-                     '<button type="button" class="sh-btn sh-r" aria-label="السابق">›</button></div>')
-        parts.append(SHELF_JS)
-    # mobile-only transfers strip (desktop shows the left-column rail instead)
-    if transfers:
-        parts.append(f'<div class="trf-mob">{transfers_widget(transfers, horizontal=True)}</div>')
+    # FotMob-style blocks (2026-09-01, replaced the hero + horizontal shelf):
+    # block 1 = newest article featured + the next 4 as a numbered trending
+    # list; block 2 = the same shape scoped to Egyptian football (green
+    # banner), skipping anything block 1 already showed.
+    used = set()
+    if articles:
+        b1 = articles[:5]
+        used = {a["article_id"] for a in b1}
+        parts.append(fmb_block(b1[0], b1[1:], "الأكثر تداولًا", "/news.html"))
+        egy = [a for a in articles
+               if a["article_id"] not in used and _egy_article(a)]
+        if len(egy) >= 2:
+            parts.append(fmb_block(egy[0], egy[1:5], "أخبار الدوري المصري",
+                                   "/news.html", banner="🇪🇬 الدوري المصري"))
+            used |= {a["article_id"] for a in egy[:5]}
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
         parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
@@ -1088,21 +1097,18 @@ def build():
         for h in headlines[:24]:
             parts.append(headline_card(h))
         parts.append('</div>')
-    elif rest[10:]:
+    else:
         # headlines hidden (AdSense originality) — the slot shows a deeper
-        # grid of OUR articles instead: the 12 that follow the shelf's 10
-        parts.append('<div class="sec-h"><h2 class="page-h">من أخبارنا أيضًا</h2>'
-                     '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
-        parts.append('<div class="grid">')
-        for a in rest[10:22]:
-            parts.append(news_card(a))
-        parts.append('</div>')
+        # grid of OUR articles instead: the 12 newest the blocks didn't show
+        rest_pool = [a for a in articles if a["article_id"] not in used]
+        if rest_pool:
+            parts.append('<div class="sec-h"><h2 class="page-h">من أخبارنا أيضًا</h2>'
+                         '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
+            parts.append('<div class="grid">')
+            for a in rest_pool[:12]:
+                parts.append(news_card(a))
+            parts.append('</div>')
     # (matches are NOT shown on the home page - they live on /matches.html)
-    parts.append('</div>')  # /home-main
-    # left column: FotMob-style top-transfers rail (empty when no data)
-    side = transfers_widget(transfers) if transfers else ""
-    parts.append(f'<aside class="home-side">{side}</aside>')
-    parts.append('</div>')  # /home-cols
     # crests + per-match page URL for the live card, curated clubs only
     # (keyed by the Arabic name pair — LIVE_JS normalizes both sides)
     fav_meta = {}
@@ -3319,31 +3325,31 @@ a{color:inherit}
 .day{max-width:820px;margin:0 auto}
 .day-h{color:var(--green-d);font-weight:900;margin:16px 0 10px}
 .comp-h{font-weight:800;color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;margin:14px 4px 6px}
-/* two-column home: main (right) + reserved empty column (left); the ad strip
-   (future Top-Transfers widget) sits above the latest-news section */
-.home-cols{display:grid;grid-template-columns:2fr 1fr;gap:22px;align-items:start}
-.home-main{min-width:0}
 .home-topad{margin:16px 0 18px}
 .mp-main .home-topad{margin-top:0}  /* align with the rails' top on /matches */
 .home-topad .ad-placeholder,.home-topad .ad-unit{position:static;min-height:130px;flex-direction:row}
-/* top-transfers rail (left column, FotMob style) + mobile swipe strip */
-.trf-box .sec-h{margin-bottom:8px}
-.trf-col{display:flex;flex-direction:column;gap:8px}
-.trf-mob{display:none;margin:18px 0 4px}
-.trf-row{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px}
-.trf-row::-webkit-scrollbar{display:none}
-.trf-row .trf-item{flex:0 0 auto}
-.trf-item{display:flex;align-items:center;gap:9px;background:#fff;
-  border:1px solid #e6ebf1;border-radius:12px;padding:8px 12px;
-  box-shadow:0 1px 4px rgba(15,23,42,.05)}
-.trf-item .trf-fee{margin-inline-start:auto}
-.trf-face{width:42px;height:42px;border-radius:50%;object-fit:cover;background:#eef2f6}
-.trf-mid{display:flex;flex-direction:column;gap:2px}
-.trf-name{font-size:.8rem;font-weight:800}
-.trf-clubs{display:flex;align-items:center;gap:4px;font-size:.7rem;color:var(--muted);font-weight:700}
-.trf-b{width:14px;height:14px;object-fit:contain}
-.trf-fee{font-size:.7rem;font-weight:800;color:#0f5e28;background:#e8f6ec;
-  padding:2px 8px;border-radius:999px;white-space:nowrap}
+/* FotMob-style home blocks: featured card + numbered trending list */
+.fmb{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin:0 0 18px}
+.fmb-feat{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);border-radius:12px;overflow:hidden;background:#f8fafc;border:1px solid #eef2f6}
+.fmb-banner{background:linear-gradient(135deg,var(--green-d),var(--green));color:#fff;font-weight:900;padding:10px 14px;font-size:.95rem}
+.fmb-img{aspect-ratio:16/9;background-size:cover;background-position:50% 25%}
+.fmb-noimg{background:linear-gradient(135deg,var(--green),#0a3d1c)}
+.fmb-fb{padding:12px 14px 14px}
+.fmb-fb h2{margin:0 0 8px;font-size:1.3rem;line-height:1.5;font-weight:900}
+.fmb-feat:hover h2{color:var(--green-d)}
+.fmb-meta{margin:0;color:var(--muted);font-size:.78rem;font-weight:700}
+.fmb-list{display:flex;flex-direction:column;min-width:0}
+.fmb-lh{font-weight:900;font-size:.95rem;padding-bottom:4px}
+.fmb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eef2f6;text-decoration:none;color:var(--ink);min-width:0}
+.fmb-row:hover b{color:var(--green-d)}
+.fmb-num{width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;font-size:.68rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
+.fmb-rt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+.fmb-rt b{font-size:.85rem;line-height:1.5;font-weight:800;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.fmb-rt small{color:var(--muted);font-size:.72rem;font-weight:700}
+.fmb-th{width:88px;height:58px;object-fit:cover;border-radius:8px;flex:none;background:#eef2f6}
+.fmb-more{margin-top:auto;padding-top:10px;font-size:.82rem;font-weight:800;color:var(--green-d);text-decoration:none}
+.fmb-more:hover{text-decoration:underline}
+@media(max-width:860px){.fmb{grid-template-columns:1fr;gap:12px;padding:12px}.fmb-fb h2{font-size:1.05rem}.fmb-th{width:76px;height:52px}}
 /* scorers under a finished/live match row (/matches day view) */
 .mgoals{grid-column:1/-1;display:grid;grid-template-columns:1fr 40px 1fr;gap:2px 6px;
   margin-top:7px;padding-top:6px;border-top:1px dashed #e8eef4}
@@ -3460,9 +3466,8 @@ a{color:inherit}
 }
 .ad-placeholder{min-height:600px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;color:#94a3b8;font-weight:800;border:2px dashed #cbd5e1;border-radius:14px;background:#fff}
 .ad-placeholder small{color:#c3cddb;font-weight:700}
-@media(max-width:900px){.home-cols{grid-template-columns:1fr}.home-side{display:none}
-  .home-topad{display:none}  /* mobile already has .ad-top */
-  .trf-mob{display:block}}   /* transfers strip appears on mobile instead of the rail */
+@media(max-width:900px){
+  .home-topad{display:none}}  /* mobile already has .ad-top */
 /* external headlines - 3 per row */
 .hgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 @media(max-width:760px){.hgrid{grid-template-columns:repeat(2,1fr)}}

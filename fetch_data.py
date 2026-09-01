@@ -1226,16 +1226,9 @@ if __name__ == "__main__":
         standings.extend(s365_standings)
         write_items("standings.json", standings)
         print(f"standings: {len(standings)} leagues")
-    try:
-        transfers = fetch_transfers()
-        _DBG["transfers"] = f"ok ({len(transfers)})"
-    except Exception as e:
-        print(f"  ! transfers fetch failed ({e}) - keeping existing transfers.json")
-        _DBG["transfers"] = f"FAIL: {e!r}"
-        transfers = None
-    if transfers:
-        write_items("transfers.json", transfers)
-        print(f"transfers: {len(transfers)}")
+    # transfers feature removed 2026-09-01 (user decision — the home widget
+    # is gone, FotMob-style news blocks took its place). fetch_transfers()
+    # stays defined below for an easy return; nothing writes transfers.json.
     try:
         charts, chart_names = fetch_player_charts()
         for key, field, fname in (("goals", "scorers", "scorers.json"),
