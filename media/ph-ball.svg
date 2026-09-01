@@ -1,8 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 225">
   <defs>
     <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#0d5226"/>
-      <stop offset="1" stop-color="#1d7a3c"/>
+      <stop offset="0" stop-color="#14648f"/>
+      <stop offset="1" stop-color="#1f94d3"/>
     </linearGradient>
     <radialGradient id="ball" cx="0.35" cy="0.3" r="1">
       <stop offset="0" stop-color="#ffffff"/>
@@ -11,7 +11,7 @@
   </defs>
   <rect width="400" height="225" fill="url(#sky)"/>
   <!-- grass blades strip -->
-  <g fill="#0a3d1c">
+  <g fill="#0d3e59">
     <path d="M0 225 L0 196 Q6 206 10 194 Q14 208 20 196 Q26 210 32 195 Q38 208 44 197 Q50 211 58 196 Q64 208 70 195 Q76 210 84 197 Q90 208 96 194 Q102 210 110 196 Q116 208 122 195 Q128 211 136 197 Q142 207 148 194 Q154 210 162 196 Q168 208 174 195 Q180 211 188 197 Q194 207 200 194 Q206 210 214 196 Q220 208 226 195 Q232 211 240 197 Q246 207 252 194 Q258 210 266 196 Q272 208 278 195 Q284 211 292 197 Q298 207 304 194 Q310 210 318 196 Q324 208 330 195 Q336 211 344 197 Q350 207 356 194 Q362 210 370 196 Q376 208 382 195 Q388 211 394 197 Q397 204 400 196 L400 225 Z"/>
   </g>
   <!-- ball (shifted left to make room for the badge) -->
@@ -36,11 +36,11 @@
   </g>
   <!-- Yalla Score badge -->
   <g transform="translate(295,80)">
-    <rect x="-62" y="-20" width="124" height="40" rx="20" fill="#0a3d1c" opacity="0.78"/>
+    <rect x="-62" y="-20" width="124" height="40" rx="20" fill="#0d3e59" opacity="0.78"/>
     <!-- rocket -->
     <g transform="translate(-40,0)" stroke="#ffffff" stroke-width="1.6" fill="none" stroke-linejoin="round" stroke-linecap="round">
       <path d="M0,-11 C4.5,-6.5 5.5,0.5 4,7 L-4,7 C-5.5,0.5 -4.5,-6.5 0,-11 Z" fill="#ffffff" fill-opacity="0.92"/>
-      <circle cx="0" cy="-2" r="2.4" fill="#1d7a3c" stroke="none"/>
+      <circle cx="0" cy="-2" r="2.4" fill="#1f94d3" stroke="none"/>
       <path d="M-4,2 L-9,8 L-4,7 Z" fill="#ffffff" fill-opacity="0.92"/>
       <path d="M4,2 L9,8 L4,7 Z" fill="#ffffff" fill-opacity="0.92"/>
       <line x1="0" y1="7" x2="0" y2="11"/>

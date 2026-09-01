@@ -10,7 +10,7 @@
     <clipPath id="rim"><circle r="58"/></clipPath>
     <circle r="58" fill="url(#ball)"/>
     <g clip-path="url(#rim)">
-    <g fill="#1d7a3c">
+    <g fill="#1f94d3">
       <polygon points="0,-22 21,-7 13,18 -13,18 -21,-7"/>
       <polygon points="0,-58 12,-51 8,-38 -8,-38 -12,-51"/>
       <polygon points="55,-18 58,-4 48,6 38,-4 44,-16"/>
@@ -18,7 +18,7 @@
       <polygon points="34,46 44,34 56,38 52,52 38,56"/>
       <polygon points="-34,46 -38,56 -52,52 -56,38 -44,34"/>
     </g>
-    <g fill="none" stroke="#1d7a3c" stroke-width="3">
+    <g fill="none" stroke="#1f94d3" stroke-width="3">
       <line x1="0" y1="-22" x2="0" y2="-40"/>
       <line x1="21" y1="-7" x2="46" y2="-12"/>
       <line x1="-21" y1="-7" x2="-46" y2="-12"/>
@@ -26,6 +26,6 @@
       <line x1="-13" y1="18" x2="-38" y2="40"/>
     </g>
     </g>
-    <circle r="58" fill="none" stroke="#1d7a3c" stroke-width="5"/>
+    <circle r="58" fill="none" stroke="#1f94d3" stroke-width="5"/>
   </g>
 </svg>
