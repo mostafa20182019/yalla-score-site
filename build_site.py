@@ -1081,13 +1081,15 @@ def build():
                if a["article_id"] not in used and _egy_article(a)]
         if len(egy) >= 2:
             parts.append(fmb_block(egy[0], egy[1:5], "أخبار الدوري المصري",
-                                   "/news.html", banner="🇪🇬 الدوري المصري"))
+                                   "/news/egypt.html",
+                                   banner="🇪🇬 الدوري المصري"))
             used |= {a["article_id"] for a in egy[:5]}
         eur = [a for a in articles
                if a["article_id"] not in used and _eur_article(a)]
         if len(eur) >= 2:
             parts.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
-                                   "/news.html", banner="🏆 كرة القدم الأوروبية"))
+                                   "/news/europe.html",
+                                   banner="🏆 كرة القدم الأوروبية"))
             used |= {a["article_id"] for a in eur[:5]}
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
@@ -1119,28 +1121,9 @@ def build():
         for h in headlines[:24]:
             parts.append(headline_card(h))
         parts.append('</div>')
-    else:
-        # headlines hidden (AdSense originality) — the slot shows a deeper
-        # grid of OUR articles instead: the 12 newest the blocks didn't show
-        rest_pool = [a for a in articles if a["article_id"] not in used]
-        if rest_pool:
-            parts.append('<div class="sec-h"><h2 class="page-h">من أخبارنا أيضًا</h2>'
-                         '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>')
-            # calm 2-col list rows, same idiom as /news.html — the big card
-            # grid here read as scattered too (user, 2026-09-01); compact
-            # variant: no summary line, smaller thumb
-            parts.append('<div class="alist alist-2col">')
-            for a in rest_pool[:12]:
-                img = a.get("image_url")
-                th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
-                      if img else '<span class="al-th noimg">⚽</span>')
-                parts.append(
-                    f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
-                    f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
-                    f'<span class="al-m">{esc(a.get("author") or "")} · '
-                    f'{art_reltime(a) or esc(a.get("pub_date") or "")}</span>'
-                    f'</span></a>')
-            parts.append('</div>')
+    # NOTE (2026-09-01, user): no leftover "من أخبارنا أيضًا" section — home
+    # shows ONLY the three FotMob blocks (featured + 4 each, keep the lists
+    # at 4); everything older lives on /news.html via each block's المزيد.
     # (matches are NOT shown on the home page - they live on /matches.html)
     # crests + per-match page URL for the live card, curated clubs only
     # (keyed by the Arabic name pair — LIVE_JS normalizes both sides)
@@ -2109,32 +2092,52 @@ def build():
     write("editorial.html", "".join(ed))
     urls.append("/editorial.html")
 
-    # ---- news archive (ALL articles; the home page shows hero + shelf only) ----
-    np_ = [head(f"كل الأخبار — {SITE_NAME}",
-                "أرشيف أخبار كرة القدم على يلا سكور — كل المقالات والتقارير.",
-                SITE_BASE + "/news.html", active="home")]
-    np_.append('<h1 class="page-h">كل الأخبار</h1>')
-    if articles:
-        # calm list rows (thumb + title + summary + date) - the old card grid
-        # read as scattered ("شتات") with ragged heights
-        np_.append('<div class="alist">')
-        for a in articles:
-            img = a.get("image_url")
-            th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
-                  if img else '<span class="al-th noimg">⚽</span>')
-            np_.append(
-                f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
-                f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
-                f'<span class="al-s">{esc(strip_tags(a.get("summary") or ""))}</span>'
-                f'<span class="al-m">{esc(a.get("author") or "")} · '
-                f'{art_reltime(a) or esc(a.get("pub_date") or "")}</span>'
-                f'</span></a>')
-        np_.append('</div>')
-    else:
-        np_.append('<p class="empty-note">لا توجد أخبار بعد.</p>')
-    np_.append(foot())
-    write("news.html", "".join(np_))
-    urls.append("/news.html")
+    # ---- news archive pages ----
+    # /news.html = everything; /news/egypt.html + /news/europe.html = the
+    # section archives each home block's «المزيد» opens (user 2026-09-01:
+    # the blocks stay at 4 rows — the rest lives behind المزيد). Same calm
+    # list rows everywhere - the old card grid read as scattered ("شتات").
+    def news_archive(fname, h1, title, desc, arts):
+        np_ = [head(f"{title} — {SITE_NAME}", desc,
+                    SITE_BASE + "/" + fname, active="home")]
+        np_.append(f'<h1 class="page-h">{esc(h1)}</h1>')
+        if fname != "news.html":
+            np_.append('<nav class="crumbs"><a href="/">الرئيسية</a> › '
+                       f'<a href="/news.html">كل الأخبار</a> › {esc(h1)}</nav>')
+        if arts:
+            np_.append('<div class="alist">')
+            for a in arts:
+                img = a.get("image_url")
+                th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                      if img else '<span class="al-th noimg">⚽</span>')
+                np_.append(
+                    f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
+                    f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
+                    f'<span class="al-s">{esc(strip_tags(a.get("summary") or ""))}</span>'
+                    f'<span class="al-m">{esc(a.get("author") or "")} · '
+                    f'{art_reltime(a) or esc(a.get("pub_date") or "")}</span>'
+                    f'</span></a>')
+            np_.append('</div>')
+        else:
+            np_.append('<p class="empty-note">لا توجد أخبار بعد.</p>')
+        np_.append(foot())
+        write(fname, "".join(np_))
+        urls.append("/" + fname)
+
+    news_archive("news.html", "كل الأخبار", "كل الأخبار",
+                 "أرشيف أخبار كرة القدم على يلا سكور — كل المقالات والتقارير.",
+                 articles)
+    os.makedirs(os.path.join(DIST, "news"), exist_ok=True)
+    news_archive("news/egypt.html", "أخبار الدوري المصري",
+                 "أخبار الدوري المصري اليوم",
+                 "كل أخبار الكرة المصرية على يلا سكور: الأهلي والزمالك "
+                 "وبيراميدز والدوري المصري ومنتخب مصر — تتحدّث على مدار اليوم.",
+                 [a for a in articles if _egy_article(a)])
+    news_archive("news/europe.html", "أخبار الكرة الأوروبية",
+                 "أخبار الكرة الأوروبية اليوم",
+                 "كل أخبار الدوريات الأوروبية على يلا سكور: الدوري الإنجليزي "
+                 "والإسباني ودوري الأبطال وكبار الأندية — تتحدّث على مدار اليوم.",
+                 [a for a in articles if _eur_article(a)])
 
     # ---- fb.html — INTERNAL helper: ready-to-paste Facebook posts ----
     # Unlinked, out of the sitemap, noindexed. The user opens it directly
