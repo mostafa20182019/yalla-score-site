@@ -1085,7 +1085,7 @@ def build():
         egy = [a for a in articles
                if a["article_id"] not in used and _egy_article(a)]
         if len(egy) >= 2:
-            parts.append(fmb_block(egy[0], egy[1:5], "أخبار الدوري المصري",
+            parts.append(fmb_block(egy[0], egy[1:5], "أخبار الكرة المصرية",
                                    "/news/egypt.html"))
             used |= {a["article_id"] for a in egy[:5]}
         eur = [a for a in articles
@@ -2131,8 +2131,8 @@ def build():
                  "أرشيف أخبار كرة القدم على يلا سكور — كل المقالات والتقارير.",
                  articles)
     os.makedirs(os.path.join(DIST, "news"), exist_ok=True)
-    news_archive("news/egypt.html", "أخبار الدوري المصري",
-                 "أخبار الدوري المصري اليوم",
+    news_archive("news/egypt.html", "أخبار الكرة المصرية",
+                 "أخبار الكرة المصرية اليوم",
                  "كل أخبار الكرة المصرية على يلا سكور: الأهلي والزمالك "
                  "وبيراميدز والدوري المصري ومنتخب مصر — تتحدّث على مدار اليوم.",
                  [a for a in articles if _egy_article(a)])
