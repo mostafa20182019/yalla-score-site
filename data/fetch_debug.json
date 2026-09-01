@@ -193,13 +193,13 @@
     "gameTimeAndStatusDisplayType",
     "justEnded",
     "gameTime",
-    "addedTime",
     "gameTimeDisplay",
     "preciseGameTime",
     "hasLineups",
     "hasMissingPlayers",
     "hasFieldPositions",
-    "winDescription"
+    "winDescription",
+    "homeCompetitor"
    ],
    "event0": "{\"competitorId\": 5457, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 9.0, \"addedTime\": 0, \"gameTimeDisplay\": \"9'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 484001, \"extraPlayers\": [538543], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
    "member0": "{\"competitorId\": 5457, \"id\": 541540, \"athleteId\": 5755, \"name\": \"ياسين بونو\", \"shortName\": \"بونو\", \"jerseyNumber\": 37, \"nameForURL\": \"yassine-bounou\", \"imageVersion\": 59, \"createdAt\": \"2014-08-17T16:29:25.667Z\"}"
@@ -207,6 +207,7 @@
   "sample_details": {
    "event_names": [
     "Substitution",
+    "بطاقة حمراء",
     "بطاقة صفراء",
     "هدف"
    ],
@@ -239,5 +240,5 @@
   }
  },
  "match_details": "ok (149)",
- "utc": "2026-09-01T18:49:54Z"
+ "utc": "2026-09-01T19:04:54Z"
 }
