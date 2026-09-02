@@ -3053,9 +3053,9 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
                if link else "")
     return f"""<div class="mrow mrow-{badge[1]}" data-lv data-h="{esc(ar_team(m.get('home')))}" data-a="{esc(ar_team(m.get('away')))}">
   {stretch}{pill}
-  <div class="team">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
+  <div class="team th">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
-  <div class="team">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
+  <div class="team ta">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
   {comp}
   {gblock}
 </div>"""
@@ -3433,8 +3433,9 @@ a{color:inherit}
 .pill{grid-area:pill;color:#fff;background:var(--up);border-radius:999px;padding:2px 12px;font-size:.68rem;font-weight:900}
 .pill-live{background:var(--live)}.pill-fin{background:var(--fin)}
 .team{display:flex;align-items:center;gap:8px;font-weight:800;min-width:0}
-.team:first-of-type{grid-area:home;justify-content:flex-end;text-align:end}
-.team:last-of-type{grid-area:away}
+/* explicit th/ta classes: :first/last-of-type broke whenever .mcomp/.mgoals (also divs) followed the away team - it lost its area and auto-placed into the empty pill cell (team pages, 2026-09-02) */
+.team.th{grid-area:home;justify-content:flex-end;text-align:end}
+.team.ta{grid-area:away}
 .team img{width:34px;height:34px;object-fit:contain}
 .team .ph{font-size:1.4rem}
 .mid{grid-area:mid;text-align:center;min-width:74px}
@@ -3445,9 +3446,9 @@ a{color:inherit}
   .mrow{grid-template-columns:1fr auto 1fr;grid-template-areas:"home mid away";position:relative;padding:12px 8px}
   .mrow:has(.pill){padding-top:30px}                 /* room for the corner badge only when present */
   .pill{position:absolute;top:8px;inset-inline-start:10px;grid-area:auto}
-  .team,.team:first-of-type,.team:last-of-type{grid-area:auto;flex-direction:column;justify-content:flex-start;text-align:center;gap:4px;font-size:.76rem;line-height:1.35;min-width:0}
-  .team:first-of-type{grid-area:home}
-  .team:last-of-type{grid-area:away}
+  .team,.team.th,.team.ta{grid-area:auto;flex-direction:column;justify-content:flex-start;text-align:center;gap:4px;font-size:.76rem;line-height:1.35;min-width:0}
+  .team.th{grid-area:home}
+  .team.ta{grid-area:away}
   .team>span{min-width:0;max-width:100%;overflow-wrap:anywhere}   /* long names wrap, never overflow */
   .team img{width:30px;height:30px}
   .mid{min-width:52px}
