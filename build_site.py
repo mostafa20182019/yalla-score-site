@@ -3595,7 +3595,7 @@ a{color:inherit}
 .nf-chips{display:flex;align-items:center;gap:10px}
 .nf-chip{width:44px;height:44px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:transform .12s,border-color .12s,box-shadow .12s}
 .nf-chip:hover{transform:translateY(-2px);border-color:var(--green)}
-.nf-chip.is-on{border:2px solid var(--green);background:#eaf3fa;box-shadow:0 0 0 3px rgba(31,148,211,.18)}
+.nf-chip.is-on{border:2px solid #fff;background:#eaf3fa;box-shadow:0 0 0 3px rgba(31,148,211,.35)}   /* white ring inside the blue glow (user 2026-09-02) */
 .nf-chip img,.nf-chip svg{width:22px;height:22px;object-fit:contain;display:block}
 @media(max-width:560px){.nf-chip{width:40px;height:40px}}
 /* flex:1 = the rows share the column's full height equally, so the list
