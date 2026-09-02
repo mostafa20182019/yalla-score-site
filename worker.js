@@ -187,7 +187,12 @@ async function liveScores() {
       const d = await gameDetail(w.gid);
       if (!d) return;
       const g = games[w.idx];
-      if (d.apply) {
+      // override ONLY games the LIST says are live: a match the list has
+      // already ended must never come back to life because the detail
+      // endpoint is slower to record the final whistle (live data may move
+      // forward from another source, never backwards). Just-ended games get
+      // their goals only.
+      if (d.apply && w.live) {
         g.hs = d.hs; g.as = d.as; g.live = d.live;
         g.min = d.min; g.gt = d.gt; g.hf = d.hf;
         dt++;
