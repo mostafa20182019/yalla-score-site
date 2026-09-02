@@ -11,7 +11,7 @@ Pages) - no credit card needed. Google indexes static HTML very well.
 IMPORTANT: set SITE_BASE to your final public URL before the last build,
 so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 """
-import json, os, re, html, shutil, datetime, hashlib
+import base64, json, os, re, html, shutil, datetime, hashlib
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
@@ -951,11 +951,23 @@ _NF_ICON_EGY = ('<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="tr
                 '<circle cx="12" cy="12" r="2.3" fill="#c09300"/></g>'
                 '<circle cx="12" cy="12" r="11" fill="none" stroke="#e2e8f0"/></svg>')
 
+def _nf_icon_eur():
+    """FotMob-style UCL starball (solid black, no text): the ball cut out of the
+    football-data CL crest, inlined as a data URI. Falls back to the drawn SVG."""
+    f = os.path.join(HERE, "assets-src", "ucl-starball.png")
+    try:
+        with open(f, "rb") as fh:
+            b64 = base64.b64encode(fh.read()).decode("ascii")
+        return (f'<img src="data:image/png;base64,{b64}" alt="" width="24" height="24" '
+                'style="width:24px;height:24px">')
+    except OSError:
+        return _NF_ICON_EUR
+
 def news_filter_bar():
     chips = [
         ("trend", "الأكثر تداولًا", _NF_ICON_TREND),
         ("egy", "أخبار الكرة المصرية", _NF_ICON_EGY),
-        ("eur", "أخبار الكرة الأوروبية", _NF_ICON_EUR),   # plain ball, no emblem text (user)
+        ("eur", "أخبار الكرة الأوروبية", _nf_icon_eur()),   # UCL starball, no text (user wants FotMob's)
     ]
     btns = "".join(
         f'<button type="button" class="nf-chip" data-nf="{k}" title="{esc(t)}" '
