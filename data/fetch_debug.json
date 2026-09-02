@@ -4,10 +4,11 @@
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
- "matches_archive": "ok (364)",
+ "CAF Champions League": "ok (no table)",
+ "matches_archive": "ok (422)",
  "standings": "ok (5)",
- "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
- "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
+ "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5, CAF Champions League:5)",
+ "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5, CAF Champions League:5)",
  "s365_charts": {
   "552": [
    "1:الأهداف",
@@ -167,6 +168,24 @@
    "14:أهداف مستقبلة في المباراة",
    "15:تصديات في المباراة",
    "16:تصديات لضربات الجزاء"
+  ],
+  "624": [
+   "1:الأهداف",
+   "2:أهداف متوقعة",
+   "3:صناعة",
+   "4:صناعة أهداف متوقعة",
+   "5:أهداف + صناعة",
+   "6:أهداف وتمريرات حاسمة متوقعة",
+   "7:تقييم 365",
+   "8:ضربات الجزاء المسجلة",
+   "9:تدخلات ناجحة",
+   "10:إعتراضات خلال المباراة",
+   "11:بطاقات حمراء",
+   "12:بطاقات صفراء",
+   "13:شباك نظيفة",
+   "14:أهداف مستقبلة في المباراة",
+   "15:تصديات في المباراة",
+   "16:تصديات لضربات الجزاء"
   ]
  },
  "goal_events": "ok (34 games)",
@@ -241,5 +260,5 @@
   }
  },
  "match_details": "ok (149)",
- "utc": "2026-09-02T10:06:18Z"
+ "utc": "2026-09-02T10:12:07Z"
 }
