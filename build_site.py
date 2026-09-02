@@ -1558,6 +1558,7 @@ def build():
              '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
              '<span id="dayLabel" class="dn-label"></span>'
              '<button type="button" id="nextDay" class="dn-arrow" aria-label="اليوم التالي">›</button></div>')
+    p.append(FILTERS_HTML)   # FotMob-style match filters (user ask 2026-09-02)
     p.append(f'<div id="days" data-today="{REF_TODAY}">')
     for d in sorted_days:
         p.append(f'<section class="day" data-day="{d}"><h2 class="day-h">{esc(fmt_day(d))}</h2>')
@@ -1569,14 +1570,20 @@ def build():
                                key=lambda kv: (COMP_ORDER.index(kv[0])
                                                if kv[0] in COMP_ORDER
                                                else len(COMP_ORDER), kv[0])):
-            p.append(f'<div class="comp" data-comp="{esc(comp)}">')
+            p.append(f'<div class="comp" data-comp="{esc(comp)}" data-label="{esc(comp_label(comp))}">')
             if comp:
                 p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
             p.append('<div class="mlist">')
             for m in ms:
-                p.append(match_row(m, show_time=True, show_comp=False,
-                                   goals=match_goals(ge_idx, m),
-                                   link=match_url(m)))
+                row = match_row(m, show_time=True, show_comp=False,
+                                goals=match_goals(ge_idx, m),
+                                link=match_url(m))
+                # filter hooks: "على التلفزيون" = a known broadcaster (per-match
+                # channel or the verified COMP_TV map); "حسب الوقت" sorts by data-ko
+                tv = "1" if (m.get("channel") or COMP_TV.get(comp)) else "0"
+                row = row.replace('<div class="mrow ',
+                                  f'<div data-tv="{tv}" data-ko="{esc(m.get("koff_time") or "")}" class="mrow ', 1)
+                p.append(row)
             p.append('</div></div>')
         p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
         p.append('</section>')
@@ -3460,6 +3467,21 @@ a{color:inherit}
 .dn-arrow:hover{background:var(--green-d)}
 .dn-arrow:disabled{opacity:.4;cursor:default}
 .dn-label{flex:1 1 auto;text-align:center;font-weight:900;font-size:1.05rem;color:var(--ink)}
+/* FotMob-style filter bar under the day navigator */
+.mfilters{display:flex;align-items:center;gap:8px;max-width:820px;margin:-4px auto 14px;padding:2px;overflow-x:auto;scrollbar-width:none}
+.mfilters::-webkit-scrollbar{display:none}
+.mfilters[hidden]{display:none}
+.mf-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-weight:800;font-size:.85rem;color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .12s,color .12s,border-color .12s}
+.mf-chip:hover{border-color:var(--green)}
+.mf-chip.is-on{background:var(--green);border-color:var(--green);color:#fff}
+.mf-dot{width:9px;height:9px;border-radius:50%;background:#cbd5e1}
+.mf-chip.is-on .mf-dot{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
+.mf-search{flex:1 1 170px;min-width:130px;display:flex;align-items:center;gap:7px;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:6px 12px;color:var(--muted)}
+.mf-search:focus-within{border-color:var(--green)}
+.mf-search input{border:0;outline:0;flex:1 1 auto;min-width:0;font:inherit;font-weight:700;background:transparent;color:var(--ink)}
+.mf-search input::-webkit-search-cancel-button{cursor:pointer}
+.bytime{max-width:820px;margin:0 auto 16px}
+@media(max-width:560px){.mf-chip{padding:6px 11px;font-size:.78rem}.mf-search{flex-basis:140px}}
 .day{max-width:820px;margin:0 auto}
 .day-h{color:var(--green-d);font-weight:900;margin:16px 0 10px}
 .comp-h{font-weight:800;color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.5px;margin:14px 4px 6px}
@@ -3892,6 +3914,18 @@ ROUNDS_JS = """<script>
 })();
 </script>"""
 
+# FotMob-style filter bar for the matches day view (user ask 2026-09-02):
+# live-only, on-TV, by-time (flat list sorted by kickoff, league label under
+# each match) and a free-text team/league filter. Wired in MATCHES_JS.
+FILTERS_HTML = (
+    '<div id="mfilters" class="mfilters" hidden>'
+    '<button type="button" class="mf-chip" data-f="live" aria-pressed="false"><span class="mf-dot"></span>مباشر</button>'
+    '<button type="button" class="mf-chip" data-f="tv" aria-pressed="false">📺 على التلفزيون</button>'
+    '<button type="button" class="mf-chip" data-f="time" aria-pressed="false">⏱ حسب الوقت</button>'
+    '<label class="mf-search"><span aria-hidden="true">🔍</span>'
+    '<input type="search" id="mfQ" placeholder="فلتر: فريق أو بطولة" autocomplete="off" aria-label="فلتر المباريات"></label>'
+    '</div>')
+
 MATCHES_JS = """<script>
 (function(){
   var wrap=document.getElementById('days'); if(!wrap) return;
@@ -3907,13 +3941,68 @@ MATCHES_JS = """<script>
   var prev=document.getElementById('prevDay'), next=document.getElementById('nextDay');
   sections.forEach(function(s){ var h=s.querySelector('.day-h'); if(h) h.style.display='none'; });
   var filter='';   /* competition name; '' = all */
+  /* ---- FotMob-style filters: live / on TV / by time / text ---- */
+  var mf=document.getElementById('mfilters'); if(mf) mf.hidden=false;
+  var fLive=false, fTv=false, fTime=false, q='';
+  function norm(t){ return (t||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase().replace(/ +/g,' ').trim(); }
+  /* remember each row's league + original list/position: "by time" moves
+     rows out of their .comp blocks and must put them back in order */
+  var rowIdx=0;
+  [].slice.call(wrap.querySelectorAll('.comp')).forEach(function(c){
+    var cn=c.getAttribute('data-comp')||'', cl=c.getAttribute('data-label')||'', list=c.querySelector('.mlist');
+    [].slice.call(c.querySelectorAll('.mrow')).forEach(function(r){ r.__cname=cn; r.__clabel=cl; r.__home=list; r.__idx=rowIdx++; });
+  });
+  function rowOk(r){
+    if(fLive && !r.classList.contains('mrow-live')) return false;
+    if(fTv && r.getAttribute('data-tv')!=='1') return false;
+    if(filter && r.__cname!==filter) return false;
+    if(q){ var hay=norm(r.getAttribute('data-h')+' '+r.getAttribute('data-a')+' '+r.__clabel+' '+r.__cname); if(hay.indexOf(q)<0) return false; }
+    return true;
+  }
+  function byTimeList(sec){
+    var bt=sec.querySelector('.bytime');
+    if(!bt){ bt=document.createElement('div'); bt.className='mlist bytime'; bt.hidden=true; sec.insertBefore(bt, sec.querySelector('.no-comp')); }
+    return bt;
+  }
   function applyFilter(sec){
-    var any=false;
-    [].slice.call(sec.querySelectorAll('.comp')).forEach(function(c){
-      var vis=!filter||c.getAttribute('data-comp')===filter;
-      c.style.display=vis?'':'none'; if(vis) any=true;
+    var rows=[].slice.call(sec.querySelectorAll('.mrow')), comps=[].slice.call(sec.querySelectorAll('.comp'));
+    var bt=byTimeList(sec), any=false;
+    if(fTime){
+      rows.sort(function(a,b){ return (a.getAttribute('data-ko')||'').localeCompare(b.getAttribute('data-ko')||''); });
+      rows.forEach(function(r){
+        if(!r.querySelector('.mf-comp')){ var d=document.createElement('div'); d.className='mcomp mf-comp'; d.textContent=r.__clabel||r.__cname; r.appendChild(d); }
+        bt.appendChild(r);
+      });
+      comps.forEach(function(c){ c.style.display='none'; });
+      bt.hidden=false;
+    } else {
+      rows.slice().sort(function(a,b){ return a.__idx-b.__idx; }).forEach(function(r){
+        var d=r.querySelector('.mf-comp'); if(d) d.parentNode.removeChild(d);
+        if(r.__home && r.parentNode!==r.__home) r.__home.appendChild(r);
+      });
+      bt.hidden=true;
+    }
+    rows.forEach(function(r){ var ok=rowOk(r); r.style.display=ok?'':'none'; if(ok) any=true; });
+    if(!fTime){
+      comps.forEach(function(c){
+        var vis=[].slice.call(c.querySelectorAll('.mrow')).some(function(r){ return r.style.display!=='none'; });
+        c.style.display=vis?'':'none';
+      });
+    }
+    var note=sec.querySelector('.no-comp');
+    if(note){ note.hidden=any; note.textContent=(fLive||fTv||q)?'لا مباريات تطابق الفلتر في هذا اليوم.':'لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.'; }
+  }
+  if(mf){
+    [].slice.call(mf.querySelectorAll('.mf-chip')).forEach(function(b){
+      b.addEventListener('click',function(){
+        var f=b.getAttribute('data-f'), on=!b.classList.contains('is-on');
+        b.classList.toggle('is-on',on); b.setAttribute('aria-pressed',on?'true':'false');
+        if(f==='live') fLive=on; else if(f==='tv') fTv=on; else if(f==='time') fTime=on;
+        applyFilter(sections[idx]);
+      });
     });
-    var note=sec.querySelector('.no-comp'); if(note) note.hidden=any;
+    var qi=document.getElementById('mfQ');
+    if(qi) qi.addEventListener('input',function(){ q=norm(qi.value); applyFilter(sections[idx]); });
   }
   function show(i){
     idx=i;
@@ -3951,7 +4040,7 @@ MATCHES_JS = """<script>
      and a bare '.lg-fix' selector would fight the tab logic for them */
   var fixPanels=[].slice.call(document.querySelectorAll('.mp-extra .lg-fix'));
   var mpage=document.querySelector('.mpage');
-  function matchesShown(on){ nav.style.display = on ? '' : 'none'; wrap.style.display = on ? '' : 'none'; }
+  function matchesShown(on){ nav.style.display = on ? '' : 'none'; wrap.style.display = on ? '' : 'none'; if(mf) mf.style.display = on ? '' : 'none'; }
   function reset(){                 /* all-matches view (default / top nav tab) */
     filter='';
     lgItems.forEach(function(x){ x.classList.remove('is-active'); });
