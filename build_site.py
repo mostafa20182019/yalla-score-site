@@ -361,6 +361,7 @@ COMP_TV = {
     "Primera Division": "beIN Sports",
     "Ligue 1": "beIN Sports",
     "UEFA Champions League": "beIN Sports",
+    "CAF Champions League": "beIN Sports",     # confirmed by the user 2026-09-02
     # Serie A / Bundesliga / Turkish / Saudi: rights unverified — add when confirmed.
 }
 
