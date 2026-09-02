@@ -942,6 +942,19 @@ CLUBS_JS = """<script>
 _NF_ICON_TREND = ('<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">'
                   '<polyline points="2,13 6,13 9,6 13,18 16,11 18,13 22,13" fill="none" '
                   'stroke="#1f94d3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+_NF_ICON_EUR = ('<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">'
+                '<circle cx="12" cy="12" r="11" fill="#ffffff" stroke="#0d3e59" stroke-width="1.6"/>'
+                '<g fill="#0d3e59" transform="translate(12,12) scale(0.19)">'
+                '<polygon points="0,-22 21,-7 13,18 -13,18 -21,-7"/>'
+                '<polygon points="0,-58 12,-51 8,-38 -8,-38 -12,-51"/>'
+                '<polygon points="55,-18 58,-4 48,6 38,-4 44,-16"/>'
+                '<polygon points="-55,-18 -44,-16 -38,-4 -48,6 -58,-4"/>'
+                '<polygon points="34,46 44,34 56,38 52,52 38,56"/>'
+                '<polygon points="-34,46 -38,56 -52,52 -56,38 -44,34"/></g>'
+                '<g fill="none" stroke="#0d3e59" stroke-width="0.7" transform="translate(12,12) scale(0.19)">'
+                '<line x1="0" y1="-22" x2="0" y2="-40"/><line x1="21" y1="-7" x2="46" y2="-12"/>'
+                '<line x1="-21" y1="-7" x2="-46" y2="-12"/><line x1="13" y1="18" x2="38" y2="40"/>'
+                '<line x1="-13" y1="18" x2="-38" y2="40"/></g></svg>')
 _NF_ICON_EGY = ('<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">'
                 '<clipPath id="nfeg"><circle cx="12" cy="12" r="11"/></clipPath>'
                 '<g clip-path="url(#nfeg)"><rect x="0" y="0" width="24" height="8" fill="#ce1126"/>'
@@ -951,12 +964,10 @@ _NF_ICON_EGY = ('<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="tr
                 '<circle cx="12" cy="12" r="11" fill="none" stroke="#e2e8f0"/></svg>')
 
 def news_filter_bar():
-    eur_logo = local_crest(COMP_LOGO["UEFA Champions League"])
     chips = [
         ("trend", "الأكثر تداولًا", _NF_ICON_TREND),
         ("egy", "أخبار الكرة المصرية", _NF_ICON_EGY),
-        ("eur", "أخبار الكرة الأوروبية",
-         f'<img src="{esc(eur_logo)}" alt="" width="22" height="22" loading="lazy">'),
+        ("eur", "أخبار الكرة الأوروبية", _NF_ICON_EUR),   # plain ball, no emblem text (user)
     ]
     btns = "".join(
         f'<button type="button" class="nf-chip" data-nf="{k}" title="{esc(t)}" '
@@ -3579,7 +3590,7 @@ a{color:inherit}
 .fmb-list{display:flex;flex-direction:column;min-width:0}
 .fmb-lh{font-weight:900;font-size:.95rem;padding-bottom:4px}
 /* «آخر الأخبار» title + FotMob-style round filter chips */
-.nf-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nf-bar{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:wrap}
 .nf-bar .page-h{margin:0}
 .nf-chips{display:flex;align-items:center;gap:10px}
 .nf-chip{width:44px;height:44px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:transform .12s,border-color .12s,box-shadow .12s}
