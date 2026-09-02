@@ -872,6 +872,69 @@ def _art_meta(a):
     t = art_reltime(a)
     return esc(a.get("author") or SITE_NAME) + (f" · {t}" if t else "")
 
+def club_crest(tp, standings, matches, fixtures):
+    """Self-hosted crest URL for a TEAM_PAGES club: its standings row first,
+    else any match badge (matches ∪ fixtures rounds); "" when unknown."""
+    toks = tp["match_tokens"]
+    for st in standings:
+        if not _in_scope(tuple(c for _, c in toks if c) or None, st.get("competition")) \
+                and st.get("competition") != tp["league"]:
+            continue
+        for r in st.get("table") or []:
+            if any(t in (r.get("team") or "") for t, _ in toks) and r.get("crest"):
+                return local_crest(r["crest"])
+    pool = list(matches)
+    for fx in fixtures:
+        for rd in fx.get("rounds", []):
+            pool.extend(rd.get("matches", []))
+    for m in reversed(pool):
+        if not _team_match(tp, m):
+            continue
+        for side in ("home", "away"):
+            if any(t in (m.get(side) or "") for t, _ in toks) and m.get(side + "_badge"):
+                return local_crest(m[side + "_badge"])
+    return ""
+
+def clubs_strip(standings, matches, fixtures):
+    """Horizontal crest strip of the curated clubs (user ask 2026-09-02) —
+    each item links to the club's /team/ page. Arrows glide on desktop and
+    hide when everything already fits (CLUBS_JS)."""
+    items = []
+    for tp in TEAM_PAGES:
+        crest = club_crest(tp, standings, matches, fixtures)
+        ico = (f'<img src="{esc(crest)}" alt="" width="46" height="46" loading="lazy">'
+               if crest else '<span class="cs-ph">⚽</span>')
+        items.append(f'<a class="cs-item" href="/team/{tp["slug"]}.html">'
+                     f'{ico}<span>{esc(tp["name"])}</span></a>')
+    if not items:
+        return ""
+    return ('<section class="clubs" aria-label="أندية يلا سكور">'
+            '<button class="cs-btn cs-l" type="button" aria-label="السابق">‹</button>'
+            f'<div class="cs-track" id="clubsStrip">{"".join(items)}</div>'
+            '<button class="cs-btn cs-r" type="button" aria-label="التالي">›</button>'
+            '</section>' + CLUBS_JS)
+
+CLUBS_JS = """<script>
+(function(){
+  var sh=document.getElementById('clubsStrip'); if(!sh) return;
+  var l=document.querySelector('.cs-l'), r=document.querySelector('.cs-r');
+  function fits(){ return sh.scrollWidth <= sh.clientWidth + 2; }
+  function sync(){ var h=fits(); if(l) l.hidden=h; if(r) r.hidden=h; }
+  function step(){ var c=sh.querySelector('.cs-item'); return (c ? c.offsetWidth + 22 : 110) * 3; }
+  /* rAF glide, same reason as SHELF_JS: Chromium mis-clamps RTL smooth scrollBy */
+  function glide(delta){
+    var start=sh.scrollLeft, min=-(sh.scrollWidth-sh.clientWidth), max=0;
+    var target=Math.min(max, Math.max(min, start+delta)), t0=performance.now();
+    function f(t){ var k=Math.min(1,(t-t0)/300); k=1-Math.pow(1-k,3);
+      sh.scrollLeft=start+(target-start)*k; if(k<1) requestAnimationFrame(f); }
+    requestAnimationFrame(f);
+  }
+  if(l) l.addEventListener('click',function(){ glide(-step()); });
+  if(r) r.addEventListener('click',function(){ glide( step()); });
+  sync(); window.addEventListener('resize', sync);
+})();
+</script>"""
+
 def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False):
     """FotMob-style home block: one featured card (image + title) beside a
     numbered trending-list column with thumbnails and 'منذ X' bylines.
@@ -1139,6 +1202,9 @@ def build():
     # shows ONLY the three FotMob blocks (featured + 4 each, keep the lists
     # at 4); everything older lives on /news.html via each block's المزيد.
     # (matches are NOT shown on the home page - they live on /matches.html)
+    # curated-clubs crest strip closes the news page (user ask 2026-09-02):
+    # each crest opens the club's /team/ page
+    parts.append(clubs_strip(standings, matches, fixtures))
     # crests + per-match page URL for the live card, curated clubs only
     # (keyed by the Arabic name pair — LIVE_JS normalizes both sides)
     fav_meta = {}
@@ -3578,6 +3644,26 @@ a{color:inherit}
 .sh-btn:hover{background:var(--green-d)}
 .sh-l{left:-13px}.sh-r{right:-13px}
 @media(max-width:760px){.sh-btn{display:none}}
+/* curated-clubs crest strip (end of the news page) */
+.clubs{position:relative;background:#fff;border:1px solid #e6ebf1;border-radius:14px;
+  padding:14px 30px;margin:22px 0 4px;box-shadow:0 3px 10px rgba(15,23,42,.06)}
+/* no scroll-snap on purpose: RTL snapping in Chromium shifts the initial
+   position one item in (the first club scrolled out of view on mobile) */
+.cs-track{display:flex;gap:22px;overflow-x:auto;scrollbar-width:none;padding:2px 4px}
+.cs-track::-webkit-scrollbar{display:none}
+.cs-item{flex:0 0 auto;width:96px;display:flex;flex-direction:column;align-items:center;gap:8px;
+  text-decoration:none;color:var(--ink);font-weight:800;font-size:.8rem;text-align:center;
+  transition:color .12s,transform .12s}
+.cs-item img,.cs-ph{width:46px;height:46px;object-fit:contain;display:flex;align-items:center;
+  justify-content:center;font-size:1.7rem}
+.cs-item span{line-height:1.25;max-width:96px}   /* two-line names (مانشستر يونايتد) instead of an ellipsis */
+.cs-item:hover{color:var(--green);transform:translateY(-2px)}
+.cs-btn{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:30px;height:30px;
+  border:1px solid #e2e8f0;border-radius:50%;background:#fff;color:var(--ink);font-size:1.3rem;
+  font-weight:900;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.14)}
+.cs-btn:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.cs-l{left:-4px}.cs-r{right:-4px}
+@media(max-width:760px){.clubs{padding:12px 14px}.cs-btn{display:none}.cs-track{gap:16px}.cs-item{width:80px}}
 /* videos */
 .sec-h{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap}
 /* live card for a curated club — its own row directly above "آخر الأخبار" */
