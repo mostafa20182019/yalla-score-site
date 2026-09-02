@@ -936,7 +936,59 @@ CLUBS_JS = """<script>
 })();
 </script>"""
 
-def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False):
+# Filter chips beside the «آخر الأخبار» title (FotMob news-page style, user
+# ask 2026-09-02): round icons — الأكثر تداولًا (pulse), مصر (flag), أوروبا
+# (UCL emblem). Chips whose block is missing on this build hide themselves.
+_NF_ICON_TREND = ('<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">'
+                  '<polyline points="2,13 6,13 9,6 13,18 16,11 18,13 22,13" fill="none" '
+                  'stroke="#1f94d3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>')
+_NF_ICON_EGY = ('<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">'
+                '<clipPath id="nfeg"><circle cx="12" cy="12" r="11"/></clipPath>'
+                '<g clip-path="url(#nfeg)"><rect x="0" y="0" width="24" height="8" fill="#ce1126"/>'
+                '<rect x="0" y="8" width="24" height="8" fill="#ffffff"/>'
+                '<rect x="0" y="16" width="24" height="8" fill="#000000"/>'
+                '<circle cx="12" cy="12" r="2.3" fill="#c09300"/></g>'
+                '<circle cx="12" cy="12" r="11" fill="none" stroke="#e2e8f0"/></svg>')
+
+def news_filter_bar():
+    eur_logo = local_crest(COMP_LOGO["UEFA Champions League"])
+    chips = [
+        ("trend", "الأكثر تداولًا", _NF_ICON_TREND),
+        ("egy", "أخبار الكرة المصرية", _NF_ICON_EGY),
+        ("eur", "أخبار الكرة الأوروبية",
+         f'<img src="{esc(eur_logo)}" alt="" width="22" height="22" loading="lazy">'),
+    ]
+    btns = "".join(
+        f'<button type="button" class="nf-chip" data-nf="{k}" title="{esc(t)}" '
+        f'aria-label="{esc(t)}" aria-pressed="false">{ico}</button>' for k, t, ico in chips)
+    return ('<div class="nf-bar"><h1 class="page-h">آخر الأخبار</h1>'
+            f'<div class="nf-chips" role="group" aria-label="فلتر الأخبار">{btns}</div></div>'
+            + NEWS_FILTER_JS)
+
+NEWS_FILTER_JS = """<script>
+(function(){
+  /* the bar renders BEFORE the blocks, so wait for the DOM (else zero blocks found) */
+  if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',init); } else { init(); }
+  function init(){
+  var bar=document.querySelector('.nf-bar'); if(!bar) return;
+  var chips=[].slice.call(bar.querySelectorAll('.nf-chip'));
+  var blocks=[].slice.call(document.querySelectorAll('.fmb[data-nf]'));
+  if(!blocks.length) return;
+  chips.forEach(function(c){ var k=c.getAttribute('data-nf');
+    if(!blocks.some(function(b){ return b.getAttribute('data-nf')===k; })) c.hidden=true; });
+  var active='';
+  function apply(){
+    chips.forEach(function(c){ var on=c.getAttribute('data-nf')===active;
+      c.classList.toggle('is-on',on); c.setAttribute('aria-pressed',on?'true':'false'); });
+    blocks.forEach(function(b){ b.style.display=(!active||b.getAttribute('data-nf')===active)?'':'none'; });
+  }
+  chips.forEach(function(c){ c.addEventListener('click',function(){
+    var k=c.getAttribute('data-nf'); active=(active===k)?'':k; apply(); }); });
+  }
+})();
+</script>"""
+
+def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf=""):
     """FotMob-style home block: one featured card (image + title) beside a
     numbered trending-list column with thumbnails and 'منذ X' bylines.
     flip=True mirrors the columns (featured LEFT, list RIGHT) for visual
@@ -944,7 +996,8 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False):
     img = feat_a.get("image_url")
     imgdiv = (f'<div class="fmb-img" style="background-image:url(\'{esc(img)}\')"></div>'
               if img else '<div class="fmb-img fmb-noimg"></div>')
-    out = ['<section class="fmb fmb-flip">' if flip else '<section class="fmb">']
+    _nf = f' data-nf="{nf}"' if nf else ""     # news-filter key (NEWS_FILTER_JS)
+    out = [f'<section class="fmb fmb-flip"{_nf}>' if flip else f'<section class="fmb"{_nf}>']
     out.append(f'<a class="fmb-feat" href="/a/{feat_a["article_id"]}.html">'
                + (f'<div class="fmb-banner">{banner}</div>' if banner else "")
                + imgdiv
@@ -1147,7 +1200,9 @@ def build():
     # مباشر الآن with a stale score). The card renders EXCLUSIVELY from the
     # first fresh /live.json reply, ~1s after load.
     parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
-    parts.append('<h1 class="page-h">آخر الأخبار</h1>')
+    # «آخر الأخبار» + FotMob-style filter chips (user ask 2026-09-02): each
+    # chip shows only its block (trend / egy / eur); click again = all blocks
+    parts.append(news_filter_bar())
     # FotMob-style blocks (2026-09-01, replaced the hero + horizontal shelf):
     # block 1 = newest article featured + the next 4 as a numbered trending
     # list; block 2 = the same shape scoped to Egyptian football (green
@@ -1156,18 +1211,18 @@ def build():
     if articles:
         b1 = articles[:5]
         used = {a["article_id"] for a in b1}
-        parts.append(fmb_block(b1[0], b1[1:], "الأكثر تداولًا", "/news.html"))
+        parts.append(fmb_block(b1[0], b1[1:], "الأكثر تداولًا", "/news.html", nf="trend"))
         egy = [a for a in articles
                if a["article_id"] not in used and _egy_article(a)]
         if len(egy) >= 2:
             parts.append(fmb_block(egy[0], egy[1:5], "أخبار الكرة المصرية",
-                                   "/news/egypt.html"))
+                                   "/news/egypt.html", nf="egy"))
             used |= {a["article_id"] for a in egy[:5]}
         eur = [a for a in articles
                if a["article_id"] not in used and _eur_article(a)]
         if len(eur) >= 2:
             parts.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
-                                   "/news/europe.html", flip=True))
+                                   "/news/europe.html", flip=True, nf="eur"))
             used |= {a["article_id"] for a in eur[:5]}
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
@@ -3501,6 +3556,15 @@ a{color:inherit}
 .fmb-meta{margin:0;color:var(--muted);font-size:.78rem;font-weight:700}
 .fmb-list{display:flex;flex-direction:column;min-width:0}
 .fmb-lh{font-weight:900;font-size:.95rem;padding-bottom:4px}
+/* «آخر الأخبار» title + FotMob-style round filter chips */
+.nf-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.nf-bar .page-h{margin:0}
+.nf-chips{display:flex;align-items:center;gap:10px}
+.nf-chip{width:44px;height:44px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:transform .12s,border-color .12s,box-shadow .12s}
+.nf-chip:hover{transform:translateY(-2px);border-color:var(--green)}
+.nf-chip.is-on{border:2px solid var(--green);background:#eaf3fa;box-shadow:0 0 0 3px rgba(31,148,211,.18)}
+.nf-chip img,.nf-chip svg{width:22px;height:22px;object-fit:contain;display:block}
+@media(max-width:560px){.nf-chip{width:40px;height:40px}}
 /* flex:1 = the rows share the column's full height equally, so the list
    always bottoms out level with the featured card (no dead space under
    row 4 when the featured card runs tall) */
@@ -3705,7 +3769,7 @@ a{color:inherit}
 /* tighten the news heading under the bar — but only while the bar is actually
    showing, so a quiet day keeps the normal breathing room. h1 only: the h2
    section headings below must not shift with live state. */
-.fav-wrap:not([hidden]) + h1.page-h{margin-top:9px}
+.fav-wrap:not([hidden]) + .nf-bar{margin-top:9px}
 .fv-live{display:inline-flex;align-items:center;gap:6px;background:var(--live);
   color:#fff;border-radius:999px;padding:3px 12px;font-size:.68rem;font-weight:900;
   letter-spacing:.02em;flex:0 0 auto;white-space:nowrap}
