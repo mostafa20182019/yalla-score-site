@@ -347,6 +347,7 @@ COMP_SLUG = {
     "Turkish Super Lig": "turkey",
     "Saudi Pro League": "saudi",
     "UEFA Champions League": "champions-league",
+    "CAF Champions League": "caf-champions-league",
 }
 
 # MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
@@ -363,20 +364,30 @@ COMP_TV = {
     # Serie A / Bundesliga / Turkish / Saudi: rights unverified — add when confirmed.
 }
 
+# a scope is None (any competition), one competition name, or a tuple of
+# names — the Egyptian clubs must count in Africa too (CAF CL, 2026-09-02),
+# while bare "الأهلي" must still never match Saudi Al-Ahli
+EGY_SCOPE = ("Egyptian Premier League", "CAF Champions League")
+
+def _in_scope(scope, comp):
+    if scope is None:
+        return True
+    return comp in scope if isinstance(scope, tuple) else comp == scope
+
 TICKER_TEAMS = [
     ("Real Madrid", None), ("FC Barcelona", None), ("Manchester United", None),
     ("Manchester City", None), ("Arsenal FC", None), ("Liverpool FC", None),
     ("Chelsea FC", None),
-    ("الأهلي", "Egyptian Premier League"),
-    ("الزمالك", "Egyptian Premier League"),
-    ("بيراميدز", "Egyptian Premier League"),
+    ("الأهلي", EGY_SCOPE),
+    ("الزمالك", EGY_SCOPE),
+    ("بيراميدز", EGY_SCOPE),
     ("طرابزون سبور", "Turkish Super Lig"),
 ]
 
 def _is_ticker_team(m):
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")
     comp = m.get("competition") or ""
-    return any(t in ha and (c is None or c == comp) for t, c in TICKER_TEAMS)
+    return any(t in ha and _in_scope(c, comp) for t, c in TICKER_TEAMS)
 
 # Evergreen club pages (/team/<slug>) — one per curated club, targeting
 # "أخبار الأهلي اليوم" / "مباريات الزمالك القادمة" query families.
@@ -387,13 +398,13 @@ def _is_ticker_team(m):
 # are searched in article title+summary; news_excl vetoes false positives.
 TEAM_PAGES = [
     {"slug": "al-ahly", "name": "الأهلي", "league": "Egyptian Premier League",
-     "match_tokens": [("الأهلي", "Egyptian Premier League")],
+     "match_tokens": [("الأهلي", EGY_SCOPE)],
      "news_tokens": ["الأهلي"], "news_excl": ["الأهلي السعودي", "أهلي جدة"]},
     {"slug": "zamalek", "name": "الزمالك", "league": "Egyptian Premier League",
-     "match_tokens": [("الزمالك", "Egyptian Premier League")],
+     "match_tokens": [("الزمالك", EGY_SCOPE)],
      "news_tokens": ["الزمالك"]},
     {"slug": "pyramids", "name": "بيراميدز", "league": "Egyptian Premier League",
-     "match_tokens": [("بيراميدز", "Egyptian Premier League")],
+     "match_tokens": [("بيراميدز", EGY_SCOPE)],
      "news_tokens": ["بيراميدز"]},
     {"slug": "real-madrid", "name": "ريال مدريد", "league": "Primera Division",
      "match_tokens": [("Real Madrid", None)], "news_tokens": ["ريال مدريد"]},
@@ -420,7 +431,7 @@ def _team_match(tp, m):
     """Does match m involve club tp? Same token+scope rule as the ticker."""
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")
     comp = m.get("competition") or ""
-    return any(t in ha and (c is None or c == comp)
+    return any(t in ha and _in_scope(c, comp)
                for t, c in tp["match_tokens"])
 
 def _team_news(tp, a):
@@ -2418,10 +2429,15 @@ COMP_LOGO = {
     "Bundesliga":       "https://crests.football-data.org/BL1.png",
     "Ligue 1":          "https://crests.football-data.org/FL1.png",
     "UEFA Champions League": "https://crests.football-data.org/CL.png",
+    # 365scores competition emblem (self-hosted through local_crest at build)
+    "CAF Champions League": "https://imagecache.365scores.com/image/upload/"
+                            "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+                            "d_Competitions:default1.png/v4/Competitions/624",
 }
 # friendlier display names (data-comp keeps the raw API name for filtering)
 COMP_LABEL = {
     "Egyptian Premier League": "الدوري المصري",
+    "CAF Champions League": "دوري أبطال أفريقيا",
     "Premier League": "الدوري الإنجليزي",
     "Primera Division": "الدوري الإسباني",
     "Turkish Super Lig": "الدوري التركي",
@@ -2432,7 +2448,8 @@ COMP_LABEL = {
     "UEFA Champions League": "دوري أبطال أوروبا",
 }
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
-COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
+COMP_ORDER = ["Egyptian Premier League", "CAF Champions League",
+              "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
               "Bundesliga", "Serie A", "UEFA Champions League"]
 
@@ -2456,6 +2473,7 @@ def comp_emoji(name):
     if "serie a" in n: return "🇮🇹"
     if "bundesliga" in n: return "🇩🇪"
     if "ligue 1" in n: return "🇫🇷"
+    if "caf" in n or "أفريقيا" in n: return "🌍"   # before the generic "champions"
     if "champions" in n: return "⭐"
     return "⚽"
 
@@ -2554,7 +2572,7 @@ def fav_club_names(standings, fixtures):
         hit = None
         for st in standings:
             comp = st.get("competition")
-            if only_comp and comp != only_comp:
+            if not _in_scope(only_comp, comp):
                 continue
             for r in st.get("table") or []:
                 if token in (r.get("team") or ""):
@@ -2564,7 +2582,7 @@ def fav_club_names(standings, fixtures):
                 break
         if not hit:                      # no table yet: try the fixtures feed
             for fx in fixtures:
-                if only_comp and fx.get("competition") != only_comp:
+                if not _in_scope(only_comp, fx.get("competition")):
                     continue
                 for rd in fx.get("rounds", []):
                     for m in rd.get("matches", []):
@@ -2580,17 +2598,21 @@ def fav_club_names(standings, fixtures):
         # the 365scores competition id (g.c), and a scoped entry only matches
         # inside its own league — otherwise Saudi Al-Ahli ("الأهلي" too)
         # hijacks the favourite-club card meant for Al Ahly Egypt.
-        cid = S365_COMP_IDS.get(only_comp) if only_comp else None
-        if not any(e["n"] == nm for e in names):
-            names.append({"n": nm, "c": cid})
+        # a tuple scope emits one entry per league id (الأهلي in 552 AND 624)
+        scopes = only_comp if isinstance(only_comp, tuple) else (only_comp,)
+        for sc in scopes:
+            cid = S365_COMP_IDS.get(sc) if sc else None
+            if not any(e["n"] == nm and e["c"] == cid for e in names):
+                names.append({"n": nm, "c": cid})
     return names
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
-# must agree with LIVE_COMPS in worker.js (552,78,649,7,11,17,25,35,572).
+# must agree with LIVE_COMPS in worker.js (552,78,649,7,11,17,25,35,572,624).
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
     "Turkish Super Lig": 78,
     "Saudi Pro League": 649,
+    "CAF Champions League": 624,
 }
 
 def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):

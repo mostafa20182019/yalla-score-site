@@ -535,6 +535,7 @@ S365_LEAGUES = [
     (552, "Egyptian Premier League"),   # الدوري المصري
     (78,  "Turkish Super Lig"),         # الدوري التركي (Salah's Trabzonspor)
     (649, "Saudi Pro League"),          # الدوري السعودي
+    (624, "CAF Champions League"),      # دوري أبطال أفريقيا (user ask 2026-09-02)
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
@@ -657,8 +658,11 @@ def fetch_s365_league(matches_out, lid, comp_name):
     entry = None
     try:
         time.sleep(1)
-        srows = (_s365(f"standings/?{q}&live=false").get("standings")
-                 or [{}])[0].get("rows") or []
+        sts = _s365(f"standings/?{q}&live=false").get("standings") or []
+        # a cup group stage returns one standings entry PER GROUP (CAF CL);
+        # rendering [0] alone would silently show group A as "the table" -
+        # skip the table instead (site rule: never show possibly-wrong data)
+        srows = (sts[0].get("rows") or []) if len(sts) == 1 else []
     except Exception as e:
         print(f"  ! 365scores standings failed: {e}")
         srows = []
@@ -700,7 +704,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624"
 
 def _goal_rows(game, fallback_home_id):
     """game detail -> (goals list, health) — tolerant of field-name drift."""
@@ -992,6 +996,7 @@ S365_SCORER_COMPS = [
     (649, "Saudi Pro League"), (7, "Premier League"),
     (11, "Primera Division"), (17, "Serie A"), (25, "Bundesliga"),
     (35, "Ligue 1"), (572, "UEFA Champions League"),
+    (624, "CAF Champions League"),
 ]
 
 # the response carries several athlete charts per competition; these are the
