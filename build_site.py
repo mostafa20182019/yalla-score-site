@@ -3916,12 +3916,12 @@ ROUNDS_JS = """<script>
 </script>"""
 
 # FotMob-style filter bar for the matches day view (user ask 2026-09-02):
-# live-only, on-TV, by-time (flat list sorted by kickoff, league label under
-# each match) and a free-text team/league filter. Wired in MATCHES_JS.
+# live-only, by-time (flat list sorted by kickoff, league label under each
+# match) and a free-text team/league filter. Wired in MATCHES_JS. (An on-TV
+# chip existed for a few hours on 2026-09-02; the user asked to remove it.)
 FILTERS_HTML = (
     '<div id="mfilters" class="mfilters" hidden>'
     '<button type="button" class="mf-chip" data-f="live" aria-pressed="false"><span class="mf-dot"></span>مباشر</button>'
-    '<button type="button" class="mf-chip" data-f="tv" aria-pressed="false">📺 على التلفزيون</button>'
     '<button type="button" class="mf-chip" data-f="time" aria-pressed="false">⏱ حسب الوقت</button>'
     '<label class="mf-search"><span aria-hidden="true">🔍</span>'
     '<input type="search" id="mfQ" placeholder="فلتر: فريق أو بطولة" autocomplete="off" aria-label="فلتر المباريات"></label>'
@@ -3944,7 +3944,7 @@ MATCHES_JS = """<script>
   var filter='';   /* competition name; '' = all */
   /* ---- FotMob-style filters: live / on TV / by time / text ---- */
   var mf=document.getElementById('mfilters'); if(mf) mf.hidden=false;
-  var fLive=false, fTv=false, fTime=false, q='';
+  var fLive=false, fTime=false, q='';   /* the on-TV chip was removed by the user 2026-09-02 */
   function norm(t){ return (t||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase().replace(/ +/g,' ').trim(); }
   /* remember each row's league + original list/position: "by time" moves
      rows out of their .comp blocks and must put them back in order */
@@ -3955,7 +3955,6 @@ MATCHES_JS = """<script>
   });
   function rowOk(r){
     if(fLive && !r.classList.contains('mrow-live')) return false;
-    if(fTv && r.getAttribute('data-tv')!=='1') return false;
     if(filter && r.__cname!==filter) return false;
     if(q){ var hay=norm(r.getAttribute('data-h')+' '+r.getAttribute('data-a')+' '+r.__clabel+' '+r.__cname); if(hay.indexOf(q)<0) return false; }
     return true;
@@ -3991,14 +3990,14 @@ MATCHES_JS = """<script>
       });
     }
     var note=sec.querySelector('.no-comp');
-    if(note){ note.hidden=any; note.textContent=(fLive||fTv||q)?'لا مباريات تطابق الفلتر في هذا اليوم.':'لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.'; }
+    if(note){ note.hidden=any; note.textContent=(fLive||q)?'لا مباريات تطابق الفلتر في هذا اليوم.':'لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.'; }
   }
   if(mf){
     [].slice.call(mf.querySelectorAll('.mf-chip')).forEach(function(b){
       b.addEventListener('click',function(){
         var f=b.getAttribute('data-f'), on=!b.classList.contains('is-on');
         b.classList.toggle('is-on',on); b.setAttribute('aria-pressed',on?'true':'false');
-        if(f==='live') fLive=on; else if(f==='tv') fTv=on; else if(f==='time') fTime=on;
+        if(f==='live') fLive=on; else if(f==='time') fTime=on;
         applyFilter(sections[idx]);
       });
     });
