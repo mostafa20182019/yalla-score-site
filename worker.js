@@ -21,23 +21,69 @@ const S365_HEADERS = {
   "Referer": "https://www.365scores.com/",
 };
 
-// Live scorer lines. One game/ detail call per live match that has a goal,
-// mirroring fetch_data._goal_rows(): goal events only (VAR-disallowed ones
-// excluded), own-goal side flip, and the scoreboard-reconciliation guard —
-// a list that doesn't add up to the score is dropped (null) rather than
-// published wrong; the static 15-min build remains the fallback.
-const GOAL_DETAIL_CAP = 10;   // per cache-miss ceiling on game/ detail calls
+const DETAIL_CAP = 12;   // per cache-miss ceiling on game/ detail calls
+// 365scores competitions whose live games get detail calls FIRST (Egyptian
+// league + CAF CL) — the rest fill the remaining cap slots.
+const DETAIL_FIRST = new Set([552, 624]);
 
-async function gameGoals(gid) {
+// half-time: measured live on 2026-08-23 (Hull x Man Utd) - during the break
+// statusText AND shortStatusText are the bare word "شوط" with gameTimeDisplay
+// frozen at 45'; in play they are "الشوط الأول/الثاني" and "1"/"2". So the
+// break test is EXACT equality with the bare word - a substring would match
+// every in-play status too. The استراحة/half-time/HT checks stay as tolerance
+// for other wordings. "نهاية الشوط الأول" is the transitional wording right
+// after the HT whistle (FULL phrase only — "نهاية الشوط الثاني" is full-time,
+// not a break).
+function halfTime(g) {
+  const stx = (g.statusText || "").trim(), ssx = (g.shortStatusText || "").trim();
+  const st = `${stx} ${ssx} ${g.gameTimeDisplay || ""}`;
+  return stx === "شوط" || ssx === "شوط"
+    || stx.includes("نهاية الشوط الأول") || ssx.includes("نهاية الشوط الأول")
+    || st.includes("استراح") || /half\s*-?\s*time/i.test(st) || /\bHT\b/.test(st);
+}
+
+// minute fields for a LIVE game object (list item or detail game — same shape):
+// min = display text, gt = numeric minute for the client-side minute clock
+// (LIVE_JS advances it locally between polls), hf = half (45+/90+ cap)
+function liveFields(g) {
+  const ht = halfTime(g);
+  return {
+    min: ht ? "استراحة" : (g.gameTimeDisplay || ""),
+    gt: !ht && g.gameTime > 0 ? g.gameTime : 0,
+    hf: (g.shortStatusText || "").trim() === "2" ? 2 : 1,
+  };
+}
+
+// One game/ detail call. 2026-09-02 (Ceramica x Modern Sport): the games/current
+// LIST lagged this endpoint by ~2 minutes — a 63' goal was listed while the
+// list still said 1-0 at 61'. So the detail is the source of ALL numbers for a
+// live game (score, minute, half, goals) and the list only discovers which
+// games are live. Returns null on any failure → the caller keeps list values.
+// Scorer lines mirror fetch_data._goal_rows(): goal events only (VAR-disallowed
+// excluded), own-goal side flip, and the reconciliation guard against THIS
+// reply's score — a list that doesn't add up is never published.
+async function gameDetail(gid) {
   try {
     const r = await fetch(
       `https://webws.365scores.com/web/game/?appTypeId=5&langId=27&gameId=${gid}`,
       { headers: S365_HEADERS, cf: { cacheTtl: 12, cacheEverything: true } });
     if (!r.ok) return null;
     const game = (await r.json()).game || {};
+    const home = game.homeCompetitor || {}, away = game.awayCompetitor || {};
+    if (home.score == null || home.score < 0 || away.score == null || away.score < 0) return null;
+    const hs = Math.round(home.score), as_ = Math.round(away.score);
+    const sg = game.statusGroup;
+    const out = {
+      hs, as: as_,
+      // apply score/status only when the detail carries a known status group
+      // (3 live / 4 ended); goals are usable either way
+      apply: sg === 3 || sg === 4,
+      live: sg === 3,
+      ...(sg === 3 ? liveFields(game) : { min: "", gt: 0, hf: 0 }),
+      goals: null,
+    };
     const members = {};
     for (const m of game.members || []) members[m.id] = m.name;
-    const home = game.homeCompetitor || {}, away = game.awayCompetitor || {};
     const goals = [];
     for (const ev of game.events || []) {
       const et = ev.eventType || ev.type || {};
@@ -59,16 +105,15 @@ async function gameGoals(gid) {
       const tag = sub.includes("عكس") ? "عكسية" : (sub.includes("جزاء") ? "ج" : "");
       goals.push({ s: cid === home.id ? "h" : "a", p: player, m: minute, t: tag });
     }
-    const hs = Math.round(home.score || 0), as_ = Math.round(away.score || 0);
     const cnt = () => [goals.filter(g => g.s === "h").length,
                        goals.filter(g => g.s === "a").length];
     let [ch, ca] = cnt();
     if (ch !== hs || ca !== as_) {
       for (const g of goals) if (g.t === "عكسية") g.s = g.s === "h" ? "a" : "h";
       [ch, ca] = cnt();
-      if (ch !== hs || ca !== as_) return null;
     }
-    return goals;
+    if (ch === hs && ca === as_ && goals.length) out.goals = goals;
+    return out;
   } catch (e) { return null; }
 }
 
@@ -86,8 +131,8 @@ async function liveScores() {
     "https://webws.365scores.com/web/games/current/?appTypeId=5" +
     "&langId=27&timezoneName=Africa/Cairo&showOdds=false";
   const games = [];
-  const wantGoals = [];   // {idx, gid, live} — live/just-ended games with a goal
-  let ok = false, src = "multi";
+  const wantDetail = [];  // {idx, gid, live, first} — live games + just-ended with a goal
+  let ok = false, src = "multi", dt = 0;
   try {
     let raw = null;
     try { raw = await fetchGames(`${base}&competitions=${LIVE_COMPS}`); } catch (e) { raw = null; }
@@ -112,55 +157,47 @@ async function liveScores() {
         if (sg !== 3 && sg !== 4) continue;  // live + finished (final score)
         const h = g.homeCompetitor || {}, a = g.awayCompetitor || {};
         if (h.score == null || h.score < 0 || a.score == null || a.score < 0) continue;
-        // half-time: measured live on 2026-08-23 (Hull x Man Utd) - during
-        // the break this endpoint reports statusText AND shortStatusText as
-        // the bare word "شوط" with gameTimeDisplay frozen at 45'; in play they
-        // are "الشوط الأول/الثاني" and "1"/"2". So the break test is EXACT
-        // equality with the bare word - a substring would match every in-play
-        // status too. The استراحة/half-time/HT checks stay as tolerance for
-        // other wordings 365scores may use elsewhere. "نهاية الشوط الأول" is
-        // the transitional wording right after the HT whistle (user saw the
-        // break label arrive minutes late on Chelsea x Brighton 2026-08-30);
-        // the FULL phrase only - "نهاية الشوط الثاني" is the end of the match,
-        // not a break.
-        const stx = (g.statusText || "").trim(), ssx = (g.shortStatusText || "").trim();
-        const st = `${stx} ${ssx} ${g.gameTimeDisplay || ""}`;
-        const ht = sg === 3 && (stx === "شوط" || ssx === "شوط"
-          || stx.includes("نهاية الشوط الأول") || ssx.includes("نهاية الشوط الأول")
-          || st.includes("استراح") || /half\s*-?\s*time/i.test(st) || /\bHT\b/.test(st));
+        // half-time / minute fields: see halfTime() + liveFields() above
+        const lf = sg === 3 ? liveFields(g) : { min: "", gt: 0, hf: 0 };
+        const c = g.competitionId || 0;
         games.push({
           h: h.name || "", a: a.name || "",
           hs: Math.round(h.score), as: Math.round(a.score),
           live: sg === 3,
-          min: sg === 3 ? (ht ? "استراحة" : (g.gameTimeDisplay || "")) : "",
-          // numeric minute + half for the client-side minute clock: LIVE_JS
-          // advances the minute locally between polls so it never stalls on
-          // the poll/cache cadence (hf: 1st or 2nd half, for the 45+/90+ cap)
-          gt: sg === 3 && !ht && g.gameTime > 0 ? g.gameTime : 0,
-          hf: sg === 3 ? (ssx === "2" ? 2 : 1) : 0,
-          // 365scores competition id — LIVE_JS needs it to disambiguate
-          // same-name clubs across leagues (الأهلي = Al Ahly Egypt AND
-          // Al-Ahli Saudi; the favourite-club card once showed the wrong one)
-          c: g.competitionId || 0,
+          // min/gt/hf: minute text + numeric minute + half for the client-side
+          // minute clock (LIVE_JS advances it locally between polls)
+          min: lf.min, gt: lf.gt, hf: lf.hf,
+          // 365scores competition id — LIVE_JS disambiguates same-name clubs
+          // across leagues with it (الأهلي = Al Ahly Egypt AND Al-Ahli Saudi)
+          c,
         });
-        // scorer lines: live games (and just-ended ones the static build
-        // hasn't caught yet) that actually have a goal to name
-        if (g.id && (sg === 3 || g.justEnded === true)
-            && (h.score > 0 || a.score > 0)) {
-          wantGoals.push({ idx: games.length - 1, gid: g.id, live: sg === 3 });
+        // detail call: EVERY live game (fresher score/minute than the list)
+        // plus just-ended games with a goal the static build hasn't caught yet
+        if (g.id && (sg === 3 || (g.justEnded === true && (h.score > 0 || a.score > 0)))) {
+          wantDetail.push({ idx: games.length - 1, gid: g.id, live: sg === 3,
+                            first: DETAIL_FIRST.has(c) });
         }
     }
-    // live matches first, then just-ended, capped — each detail call is
-    // itself edge-cached 20s so bursts collapse upstream
-    wantGoals.sort((x, y) => (y.live ? 1 : 0) - (x.live ? 1 : 0));
-    await Promise.all(wantGoals.slice(0, GOAL_DETAIL_CAP).map(async (w) => {
-      const gl = await gameGoals(w.gid);
-      if (gl && gl.length) games[w.idx].goals = gl;
+    // priority: live before just-ended, Egyptian/CAF before the rest, capped —
+    // each detail call is itself edge-cached 12s so bursts collapse upstream.
+    // Games past the cap simply keep their list values (the old behaviour).
+    wantDetail.sort((x, y) => ((y.live ? 2 : 0) + (y.first ? 1 : 0))
+                            - ((x.live ? 2 : 0) + (x.first ? 1 : 0)));
+    await Promise.all(wantDetail.slice(0, DETAIL_CAP).map(async (w) => {
+      const d = await gameDetail(w.gid);
+      if (!d) return;
+      const g = games[w.idx];
+      if (d.apply) {
+        g.hs = d.hs; g.as = d.as; g.live = d.live;
+        g.min = d.min; g.gt = d.gt; g.hf = d.hf;
+        dt++;
+      }
+      if (d.goals) g.goals = d.goals;
     }));
   } catch (e) { /* fail-empty */ }
   // an upstream failure must NOT be cached for 30s - visitors would all go
   // quiet for minutes mid-match; mark it uncacheable instead
-  return new Response(JSON.stringify({ games, ok, ts: Date.now(), src }), {
+  return new Response(JSON.stringify({ games, ok, ts: Date.now(), src, dt }), {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": ok ? "public, max-age=10, s-maxage=15" : "no-store",
