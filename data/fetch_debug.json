@@ -192,7 +192,9 @@
  "goal_events_dbg": {
   "candidates": 37,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4804605:count-mismatch (0, 0) vs 0-1 []"
+  ],
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -260,5 +262,5 @@
   }
  },
  "match_details": "ok (152)",
- "utc": "2026-09-02T18:20:04Z"
+ "utc": "2026-09-02T18:37:42Z"
 }
