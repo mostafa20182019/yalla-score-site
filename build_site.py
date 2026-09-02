@@ -967,23 +967,44 @@ def news_filter_bar():
 
 NEWS_FILTER_JS = """<script>
 (function(){
-  /* the bar renders BEFORE the blocks, so wait for the DOM (else zero blocks found) */
+  /* FotMob behaviour (user, 2026-09-02): a chip JUMPS to its block — nothing
+     is hidden. The highlighted chip follows the block in view (scroll-spy).
+     Runs after DOMContentLoaded: the bar renders before the blocks. */
   if(document.readyState==='loading'){ document.addEventListener('DOMContentLoaded',init); } else { init(); }
   function init(){
-  var bar=document.querySelector('.nf-bar'); if(!bar) return;
-  var chips=[].slice.call(bar.querySelectorAll('.nf-chip'));
-  var blocks=[].slice.call(document.querySelectorAll('.fmb[data-nf]'));
-  if(!blocks.length) return;
-  chips.forEach(function(c){ var k=c.getAttribute('data-nf');
-    if(!blocks.some(function(b){ return b.getAttribute('data-nf')===k; })) c.hidden=true; });
-  var active='';
-  function apply(){
-    chips.forEach(function(c){ var on=c.getAttribute('data-nf')===active;
-      c.classList.toggle('is-on',on); c.setAttribute('aria-pressed',on?'true':'false'); });
-    blocks.forEach(function(b){ b.style.display=(!active||b.getAttribute('data-nf')===active)?'':'none'; });
-  }
-  chips.forEach(function(c){ c.addEventListener('click',function(){
-    var k=c.getAttribute('data-nf'); active=(active===k)?'':k; apply(); }); });
+    var bar=document.querySelector('.nf-bar'); if(!bar) return;
+    var chips=[].slice.call(bar.querySelectorAll('.nf-chip'));
+    var blocks=[].slice.call(document.querySelectorAll('.fmb[data-nf]'));
+    if(!blocks.length) return;
+    var byKey={}; blocks.forEach(function(b){ byKey[b.getAttribute('data-nf')]=b; });
+    chips.forEach(function(c){ if(!byKey[c.getAttribute('data-nf')]) c.hidden=true; });
+    var head=document.querySelector('.site-head');
+    function offset(){ return (head?head.offsetHeight:0)+12; }
+    function mark(key){
+      chips.forEach(function(c){ var on=c.getAttribute('data-nf')===key;
+        c.classList.toggle('is-on',on); c.setAttribute('aria-pressed',on?'true':'false'); });
+    }
+    var lock=0;
+    chips.forEach(function(c){ c.addEventListener('click',function(){
+      var b=byKey[c.getAttribute('data-nf')]; if(!b) return;
+      mark(c.getAttribute('data-nf')); lock=Date.now()+900;
+      var y=b.getBoundingClientRect().top+window.pageYOffset-offset();
+      /* smooth where supported; older Safari ignores the options object entirely */
+      if('scrollBehavior' in document.documentElement.style){ window.scrollTo({top:y,behavior:'smooth'}); }
+      else { window.scrollTo(0,y); }
+    }); });
+    /* scroll-spy: the block whose top is nearest below the sticky header wins */
+    function spy(){
+      if(Date.now()<lock) return;
+      var off=offset(), best=null, bestD=Infinity;
+      blocks.forEach(function(b){ var r=b.getBoundingClientRect();
+        if(r.bottom<=off) return;                       /* already scrolled past */
+        var d=Math.abs(r.top-off); if(d<bestD){ bestD=d; best=b; } });
+      mark(best?best.getAttribute('data-nf'):'');
+    }
+    var t=null;
+    window.addEventListener('scroll',function(){ if(t) return; t=setTimeout(function(){ t=null; spy(); },80); },{passive:true});
+    spy();
   }
 })();
 </script>"""
@@ -1200,8 +1221,9 @@ def build():
     # مباشر الآن with a stale score). The card renders EXCLUSIVELY from the
     # first fresh /live.json reply, ~1s after load.
     parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
-    # «آخر الأخبار» + FotMob-style filter chips (user ask 2026-09-02): each
-    # chip shows only its block (trend / egy / eur); click again = all blocks
+    # «آخر الأخبار» + FotMob-style chips (user ask 2026-09-02): a chip scrolls
+    # to its block (trend / egy / eur) and the highlight follows the block in
+    # view — nothing is hidden (user corrected the first hide-others version)
     parts.append(news_filter_bar())
     # FotMob-style blocks (2026-09-01, replaced the hero + horizontal shelf):
     # block 1 = newest article featured + the next 4 as a numbered trending
