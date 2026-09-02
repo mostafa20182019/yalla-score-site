@@ -2448,10 +2448,10 @@ COMP_LABEL = {
     "UEFA Champions League": "دوري أبطال أوروبا",
 }
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
-COMP_ORDER = ["Egyptian Premier League", "CAF Champions League",
-              "Premier League", "Primera Division",
+COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
-              "Bundesliga", "Serie A", "UEFA Champions League"]
+              "Bundesliga", "Serie A", "UEFA Champions League",
+              "CAF Champions League"]   # last, after UCL (user pick 2026-09-02)
 
 def comp_label(name):
     return COMP_LABEL.get(name, name or "")
