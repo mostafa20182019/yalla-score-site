@@ -6,7 +6,7 @@
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
  "matches_archive": "ok (424)",
- "standings": "ok (4)",
+ "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5, CAF Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5, CAF Champions League:5)",
  "s365_charts": {
@@ -253,9 +253,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"45'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"54'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (156)",
- "utc": "2026-09-03T18:05:34Z"
+ "utc": "2026-09-03T18:21:25Z"
 }
