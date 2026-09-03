@@ -212,19 +212,21 @@
     "gameTimeAndStatusDisplayType",
     "justEnded",
     "gameTime",
+    "addedTime",
     "gameTimeDisplay",
     "preciseGameTime",
     "hasLineups",
     "hasMissingPlayers",
     "hasFieldPositions",
-    "winDescription",
-    "homeCompetitor"
+    "winDescription"
    ],
-   "event0": "null",
+   "event0": "{\"competitorId\": 8200, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 44.0, \"addedTime\": 0, \"gameTimeDisplay\": \"44'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 650570, \"isMajor\": false, \"eventType\": {\"id\": 12, \"name\": \"Woodwork\", \"subTypeId\": -1}}",
    "member0": "{\"competitorId\": 8200, \"id\": 50505357, \"athleteId\": 79873, \"name\": \"مصطفى شوبير\", \"shortName\": \"شوبير\", \"jerseyNumber\": 31, \"nameForURL\": \"mostafa-shobeir-oufa\", \"imageVersion\": 26, \"createdAt\": \"2020-08-09T17:37:28.91\"}"
   },
   "sample_details": {
-   "event_names": [],
+   "event_names": [
+    "Woodwork"
+   ],
    "card0": "null",
    "sub0": "null",
    "hc_keys": [
@@ -250,9 +252,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"31'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"45'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (155)",
- "utc": "2026-09-03T17:35:26Z"
+ "utc": "2026-09-03T17:50:28Z"
 }
