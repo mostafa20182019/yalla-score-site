@@ -33,6 +33,9 @@ ADSENSE_SLOT_TOP = ""   # mobile top-banner unit id (leave empty for placeholder
 
 # Optional contact email shown on the Privacy Policy page (leave "" to omit).
 CONTACT_EMAIL = "yallascore.eg@gmail.com"
+# Facebook page «يلا سكور» — numeric id URL always resolves; swap for the
+# vanity URL (facebook.com/<username>) once the page has one.
+FB_PAGE_URL = "https://www.facebook.com/104238901487012"
 
 # Feature switches. Flip to True to bring a section back (nav tab, footer link,
 # home teaser, its page, and sitemap entry all follow this flag automatically).
@@ -245,7 +248,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a></p>
+  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -982,8 +985,15 @@ def news_filter_bar():
     btns = "".join(
         f'<button type="button" class="nf-chip" data-nf="{k}" title="{esc(t)}" '
         f'aria-label="{esc(t)}" aria-pressed="false">{ico}</button>' for k, t, ico in chips)
+    # Facebook follow button on the far end of the title row (user ask
+    # 2026-09-04): the site's Google visitors don't know the page exists.
+    fb = (f'<a class="nf-fb" href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener" '
+          'title="تابعنا على فيسبوك" aria-label="تابعنا على فيسبوك">'
+          '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" '
+          'd="M13.5 22v-8.2h2.8l.4-3.3h-3.2V8.4c0-.9.3-1.6 1.6-1.6h1.7V3.9c-.3 0-1.3-.1-2.5-.1'
+          '-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.3h2.8V22h3.4z"/></svg><span class="nf-fbt">تابعنا</span></a>')
     return ('<div class="nf-bar"><h1 class="page-h">آخر الأخبار</h1>'
-            f'<div class="nf-chips" role="group" aria-label="فلتر الأخبار">{btns}</div></div>'
+            f'<div class="nf-chips" role="group" aria-label="فلتر الأخبار">{btns}</div>{fb}</div>'
             + NEWS_FILTER_JS)
 
 NEWS_FILTER_JS = """<script>
@@ -3603,6 +3613,10 @@ a{color:inherit}
 .nf-bar{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:wrap}
 .nf-bar .page-h{margin:0}
 .nf-chips{display:flex;align-items:center;gap:10px}
+/* Facebook follow pill — pushed to the row END (left in RTL) */
+.nf-fb{margin-inline-start:auto;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 10px;border-radius:22px;background:#1877f2;color:#fff;font-weight:800;font-size:.85rem;text-decoration:none;box-shadow:0 1px 3px rgba(15,23,42,.12);transition:transform .12s,background .12s}
+.nf-fb:hover{background:#166fe5;transform:translateY(-1px)}
+@media(max-width:560px){.nf-fb{height:40px;width:40px;padding:0;justify-content:center;border-radius:50%}.nf-fb .nf-fbt{display:none}}
 .nf-chip{width:44px;height:44px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:transform .12s,border-color .12s,box-shadow .12s}
 .nf-chip:hover{transform:translateY(-2px);border-color:var(--green)}
 .nf-chip.is-on{border:2px solid #fff;background:#eaf3fa;box-shadow:0 0 0 3px rgba(31,148,211,.35)}   /* white ring inside the blue glow (user 2026-09-02) */
