@@ -225,11 +225,12 @@
   },
   "sample_details": {
    "event_names": [
+    "Substitution",
     "Woodwork",
     "بطاقة صفراء"
    ],
    "card0": "{\"competitorId\": 8309, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 45.0, \"addedTime\": 3, \"gameTimeDisplay\": \"45'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 61972152, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "null",
+   "sub0": "{\"competitorId\": 8309, \"statusId\": 8, \"stageId\": 9, \"order\": 6, \"num\": 6, \"gameTime\": 61.0, \"addedTime\": 0, \"gameTimeDisplay\": \"61'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 447022, \"extraPlayers\": [76688368], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -253,9 +254,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"54'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"71'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (156)",
- "utc": "2026-09-03T18:21:25Z"
+ "utc": "2026-09-03T18:37:04Z"
 }
