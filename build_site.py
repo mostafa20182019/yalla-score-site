@@ -577,7 +577,10 @@ def make_ticker(matches):
             kept.append(m)
         return kept
 
-    pool = (live + todays + one_per_team(up)[:10] + one_per_team(fin)[:6])[:14]
+    # ONE match per curated club across the WHOLE pool, priority live > today
+    # > next upcoming > latest finished (user rule 2026-09-03: a club must
+    # never appear twice — deduping only `up` left Ahly today + Ahly next)
+    pool = one_per_team(live + todays + up + fin)[:14]
     if not pool:
         return ""
     sc = lambda v: "-" if v is None else v
