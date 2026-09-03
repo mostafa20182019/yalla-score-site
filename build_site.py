@@ -3613,18 +3613,20 @@ a{color:inherit}
 /* one row: title, chips, follow pill at the END (left in RTL). Under 560px the
    chips drop to their own second row so the pill stays on the TITLE row. */
 .nf-bar{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:nowrap}
-@media(max-width:560px){.nf-bar{flex-wrap:wrap;gap:12px}.nf-chips{order:3;flex-basis:100%}}
+/* mobile (user 2026-09-04): title, chips AND the pill on ONE row — shrink
+   everything instead of wrapping; the title never breaks */
+@media(max-width:560px){.nf-bar{gap:10px}.nf-bar .page-h{font-size:1.45rem;white-space:nowrap}.nf-chips{gap:8px}}
 .nf-bar .page-h{margin:0}
 .nf-chips{display:flex;align-items:center;gap:10px}
 /* Facebook follow pill — pushed to the row END (left in RTL) */
 .nf-fb{margin-inline-start:auto;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 10px;border-radius:22px;background:#1877f2;color:#fff;font-weight:800;font-size:.85rem;text-decoration:none;box-shadow:0 1px 3px rgba(15,23,42,.12);transition:transform .12s,background .12s}
 .nf-fb:hover{background:#166fe5;transform:translateY(-1px)}
-@media(max-width:560px){.nf-fb{height:40px;width:40px;padding:0;justify-content:center;border-radius:50%}.nf-fb .nf-fbt{display:none}}
+@media(max-width:560px){.nf-fb{height:36px;width:36px;padding:0;justify-content:center;border-radius:50%;flex:none}.nf-fb .nf-fbt{display:none}.nf-fb svg{width:19px;height:19px}}
 .nf-chip{width:44px;height:44px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:transform .12s,border-color .12s,box-shadow .12s}
 .nf-chip:hover{transform:translateY(-2px);border-color:var(--green)}
 .nf-chip.is-on{border:2px solid #fff;background:#eaf3fa;box-shadow:0 0 0 3px rgba(31,148,211,.35)}   /* white ring inside the blue glow (user 2026-09-02) */
 .nf-chip img,.nf-chip svg{width:22px;height:22px;object-fit:contain;display:block}
-@media(max-width:560px){.nf-chip{width:40px;height:40px}}
+@media(max-width:560px){.nf-chip{width:36px;height:36px;flex:none}.nf-chip svg{width:19px;height:19px}}
 /* flex:1 = the rows share the column's full height equally, so the list
    always bottoms out level with the featured card (no dead space under
    row 4 when the featured card runs tall) */
