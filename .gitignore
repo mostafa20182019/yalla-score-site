@@ -4,3 +4,5 @@ dist/
 node_modules/
 .wrangler/
 __pycache__/
+# generated Facebook result cards (fb_cards.py)
+media/cards/
