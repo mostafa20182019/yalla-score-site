@@ -43,7 +43,7 @@ SITE = "https://yallascore.site"
 GRAPH = "https://graph.facebook.com/v23.0"
 GRAPH_FEED = f"{GRAPH}/me/feed"
 STATE_FILE = os.path.join(HERE, "data", "fb_posted.json")
-AUTO_MAX_AGE_H = 12      # --auto never posts an article older than this
+AUTO_MAX_AGE_H = 6       # --auto never posts an article older than this (10 articles/day: 12h re-posted a half-day backlog on 2026-09-03)
 AUTO_MAX_PER_RUN = 3     # --auto posts at most this many per run (staggers a backlog)
 
 
