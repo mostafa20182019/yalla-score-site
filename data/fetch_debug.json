@@ -188,9 +188,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (22 games)",
+ "goal_events": "ok (23 games)",
  "goal_events_dbg": {
-  "candidates": 22,
+  "candidates": 23,
   "detail_fails": 0,
   "skipped": [],
   "sample": {
@@ -227,7 +227,8 @@
    "event_names": [
     "Substitution",
     "Woodwork",
-    "بطاقة صفراء"
+    "بطاقة صفراء",
+    "هدف"
    ],
    "card0": "{\"competitorId\": 8309, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 45.0, \"addedTime\": 3, \"gameTimeDisplay\": \"45'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 61972152, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "sub0": "{\"competitorId\": 8309, \"statusId\": 8, \"stageId\": 9, \"order\": 6, \"num\": 6, \"gameTime\": 61.0, \"addedTime\": 0, \"gameTimeDisplay\": \"61'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 447022, \"extraPlayers\": [76688368], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
@@ -254,9 +255,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"83'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.0, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (157)",
- "utc": "2026-09-03T18:50:34Z"
+ "match_details": "ok (158)",
+ "utc": "2026-09-03T19:05:33Z"
 }
