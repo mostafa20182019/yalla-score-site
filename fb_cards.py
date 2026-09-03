@@ -16,11 +16,16 @@ Usage (from this folder, full python path on this machine):
   python fb_cards.py --match 4804606    # one match, any status/club
   python fb_cards.py --all-finished     # every finished curated match (testing)
   python fb_cards.py --out some/dir     # default: media/cards (git-ignored)
+  python fb_cards.py --post --hours 6   # CI: render + publish each new card to the
+                                        # Facebook page (Graph API /me/photos);
+                                        # inert without FB_PAGE_TOKEN, dedup via
+                                        # data/fb_posted.json (committed back)
 
 Output per match: media/cards/<match_id>.png + a ready post text in
 media/cards/<match_id>.txt (title line, hashtags, link to the match page).
 """
-import argparse, datetime, os, sys
+import argparse, datetime, io, json, os, sys, time, uuid
+import urllib.error, urllib.request
 from zoneinfo import ZoneInfo
 
 sys.stdout.reconfigure(encoding="utf-8")
@@ -228,6 +233,96 @@ def post_text(m):
             f"تفاصيل المباراة والهدافون 👇\n{b.SITE_BASE}{b.match_url(m)}\n\n"
             + " ".join(tags) + "\n")
 
+
+# ---------------------------------------------------------------- Facebook
+GRAPH_PHOTOS = "https://graph.facebook.com/v23.0/me/photos"
+STATE_FILE = os.path.join(HERE, "data", "fb_posted.json")   # committed back by publish.yml
+STATE_KEEP_DAYS = 7
+MAX_ATTEMPTS = 3
+
+def load_state():
+    try:
+        with open(STATE_FILE, encoding="utf-8") as f:
+            st = json.load(f)
+    except Exception:
+        st = {}
+    st.setdefault("posted", {})
+    st.setdefault("failed", {})
+    # prune: a match id older than a week can never be re-posted anyway
+    cutoff = time.time() - STATE_KEEP_DAYS * 86400
+    st["posted"] = {k: v for k, v in st["posted"].items() if v.get("ts", 0) >= cutoff}
+    return st
+
+def save_state(st):
+    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+    with open(STATE_FILE, "w", encoding="utf-8") as f:
+        json.dump(st, f, ensure_ascii=False, indent=1)
+
+def multipart(fields, files):
+    """Minimal multipart/form-data encoder (stdlib only, like fb_post.py).
+    files = {name: (filename, bytes, content_type)}."""
+    boundary = "----yalla" + uuid.uuid4().hex
+    out = io.BytesIO()
+    for k, v in fields.items():
+        out.write(f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"\r\n\r\n'.encode())
+        out.write(str(v).encode("utf-8") + b"\r\n")
+    for k, (fn, data, ctype) in files.items():
+        out.write((f'--{boundary}\r\nContent-Disposition: form-data; name="{k}"; '
+                   f'filename="{fn}"\r\nContent-Type: {ctype}\r\n\r\n').encode())
+        out.write(data + b"\r\n")
+    out.write(f"--{boundary}--\r\n".encode())
+    return out.getvalue(), f"multipart/form-data; boundary={boundary}"
+
+def post_photo(token, png_bytes, caption):
+    """Upload the card as a page photo with the post text as caption.
+    Returns the Graph post/photo id, raises on failure."""
+    body, ctype = multipart({"caption": caption, "access_token": token},
+                            {"source": ("card.png", png_bytes, "image/png")})
+    req = urllib.request.Request(GRAPH_PHOTOS, data=body,
+                                 headers={"Content-Type": ctype, "Content-Length": str(len(body))})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        resp = json.load(r)
+    return resp.get("post_id") or resp.get("id")
+
+def post_cards(picked, ge_idx, out_dir):
+    """CI entry: render + publish every not-yet-posted card in `picked`.
+    Never raises - a social error must not fail the publish workflow."""
+    token = os.environ.get("FB_PAGE_TOKEN", "").strip()
+    st = load_state()
+    todo = [m for m in picked
+            if str(m["match_id"]) not in st["posted"]
+            and st["failed"].get(str(m["match_id"]), 0) < MAX_ATTEMPTS]
+    if not todo:
+        print("fb cards: nothing new to post")
+        return
+    if not token:
+        # inert until the FB_PAGE_TOKEN secret exists; state untouched so the
+        # first run WITH a token posts only what is still inside the window
+        print(f"FB_PAGE_TOKEN not set - {len(todo)} card(s) would be posted, skipping")
+        return
+    os.makedirs(out_dir, exist_ok=True)
+    for m in todo:
+        mid = str(m["match_id"])
+        try:
+            card = render_card(m, ge_idx)
+            buf = io.BytesIO()
+            card.save(buf, "PNG", optimize=True)
+            card.save(os.path.join(out_dir, f"{mid}.png"), "PNG", optimize=True)
+            pid = post_photo(token, buf.getvalue(), post_text(m))
+            st["posted"][mid] = {"ts": time.time(), "post_id": pid,
+                                 "h": m.get("home"), "a": m.get("away"),
+                                 "s": f"{m['home_score']}-{m['away_score']}"}
+            st["failed"].pop(mid, None)
+            print(f"posted card {mid} {b.ar_team(m['home'])} {m['home_score']}-{m['away_score']} "
+                  f"{b.ar_team(m['away'])} -> {pid}")
+        except urllib.error.HTTPError as e:
+            st["failed"][mid] = st["failed"].get(mid, 0) + 1
+            print(f"card {mid} FAILED: HTTP {e.code} {e.read().decode('utf-8', 'replace')[:300]}")
+        except Exception as e:  # noqa: BLE001
+            st["failed"][mid] = st["failed"].get(mid, 0) + 1
+            print(f"card {mid} FAILED: {e}")
+    save_state(st)
+
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser(description="Facebook result cards from Yalla Score data")
@@ -235,6 +330,8 @@ def main():
     ap.add_argument("--match", type=int, help="render this match_id only (any club/status)")
     ap.add_argument("--all-finished", action="store_true", help="ignore the time window")
     ap.add_argument("--out", default=os.path.join(HERE, "media", "cards"))
+    ap.add_argument("--post", action="store_true",
+                    help="publish new cards to the Facebook page (needs FB_PAGE_TOKEN; dedup in data/fb_posted.json)")
     args = ap.parse_args()
 
     matches = b.load("matches.json")
@@ -245,6 +342,9 @@ def main():
         picked = finished_matches(matches, None)
     else:
         picked = finished_matches(matches, args.hours)
+    if args.post:
+        post_cards(picked, ge_idx, args.out)
+        return 0
     if not picked:
         print("no matches to render")
         return 0

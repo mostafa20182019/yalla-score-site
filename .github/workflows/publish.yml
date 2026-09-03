@@ -105,6 +105,18 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4 deploy
 
+      # Facebook result cards: one native image post per FINISHED curated-club
+      # match (fb_cards.py renders it from data/matches.json + goal_events.json
+      # fetched above). Runs every refresh, so a card lands within ~15 min of
+      # the final whistle. Dedup/state lives in data/fb_posted.json and rides
+      # the commit-back below. Inert until the FB_PAGE_TOKEN secret exists
+      # (same token as fb_post.py); never fails the publish over a social error.
+      - name: Post result cards to Facebook
+        continue-on-error: true
+        env:
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+        run: python fb_cards.py --post --hours 6
+
       # Keep the repo copy of data/ fresh (caps the failed-fetch fallback at
       # ~30 min of staleness). This step runs AFTER build+deploy on purpose:
       # on 2026-08-08 two parallel runs raced here, the rebase left conflict

@@ -1,2 +1,5 @@
 tzdata
 googlenewsdecoder
+Pillow
+arabic-reshaper
+python-bidi
