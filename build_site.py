@@ -3610,7 +3610,10 @@ a{color:inherit}
 .fmb-list{display:flex;flex-direction:column;min-width:0}
 .fmb-lh{font-weight:900;font-size:.95rem;padding-bottom:4px}
 /* «آخر الأخبار» title + FotMob-style round filter chips */
-.nf-bar{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:wrap}
+/* one row: title, chips, follow pill at the END (left in RTL). Under 560px the
+   chips drop to their own second row so the pill stays on the TITLE row. */
+.nf-bar{display:flex;align-items:center;justify-content:flex-start;gap:16px;flex-wrap:nowrap}
+@media(max-width:560px){.nf-bar{flex-wrap:wrap;gap:12px}.nf-chips{order:3;flex-basis:100%}}
 .nf-bar .page-h{margin:0}
 .nf-chips{display:flex;align-items:center;gap:10px}
 /* Facebook follow pill — pushed to the row END (left in RTL) */
