@@ -57,7 +57,14 @@ _reshaper = arabic_reshaper.ArabicReshaper({
 })
 
 def font(weight, size):
-    return ImageFont.truetype(os.path.join(FONTS, f"Almarai-{weight}.ttf"), size)
+    # BASIC layout on every platform. Linux Pillow wheels ship libraqm, which
+    # shapes + reorders Arabic ITSELF; fed our already-reshaped, already-
+    # reversed string it reversed it again — the first card posted from the
+    # GitHub runner (Ahly 1-0 Smouha, 2026-09-03) came out mirrored with
+    # disconnected letters while the same code rendered fine on Windows (no
+    # raqm). One engine + our own reshaper/bidi = identical output everywhere.
+    return ImageFont.truetype(os.path.join(FONTS, f"Almarai-{weight}.ttf"), size,
+                              layout_engine=ImageFont.Layout.BASIC)
 
 def ar(text):
     """Shape + reorder Arabic for PIL (which draws logical order verbatim).
