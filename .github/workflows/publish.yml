@@ -105,6 +105,20 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: npx --yes wrangler@4 deploy
 
+      # New-article Facebook post. Lives HERE (after Deploy) and not in
+      # daily-article.yml on purpose: posting the moment the article was
+      # committed let Facebook scrape the link before the page existed, and
+      # the post kept a "الصفحة غير موجودة" preview forever (article 358,
+      # 2026-09-03). fb_post.py --auto posts the top article once (state in
+      # data/fb_posted.json), only if it is <12h old, after asking Facebook to
+      # scrape the now-live URL. Gated on `fresh` so the page IS deployed.
+      - name: Post new article to Facebook
+        if: steps.tip.outputs.fresh == 'true'
+        continue-on-error: true
+        env:
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+        run: python fb_post.py --auto
+
       # Facebook result cards: one native image post per FINISHED curated-club
       # match (fb_cards.py renders it from data/matches.json + goal_events.json
       # fetched above). Runs every refresh, so a card lands within ~15 min of

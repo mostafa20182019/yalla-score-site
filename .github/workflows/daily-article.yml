@@ -127,13 +127,9 @@ jobs:
           echo "### No article this run" >> "$GITHUB_STEP_SUMMARY"
           echo "primary=$PRIMARY_ACCT | ${{ steps.acct1.outcome }} / fallback ${{ steps.acct2.outcome }}" >> "$GITHUB_STEP_SUMMARY"
 
-      # Auto-post the new article to the Facebook page («يلا سكور - Yalla Score»).
-      # Inert until the FB_PAGE_TOKEN repo secret exists (fb_post.py skips
-      # silently without it) and never fails the run over a social error.
-      - name: Post new article to Facebook
-        env:
-          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
-        run: python fb_post.py "$PREV_ARTICLE_ID"
+      # The Facebook post of a new article now happens in publish.yml AFTER the
+      # deploy (fb_post.py --auto) - posting here, before the page was live,
+      # gave the post a permanent 404 preview (2026-09-03).
 
       # publish.yml deploys the tip of main. A push made with GITHUB_TOKEN does
       # NOT fire its on:push trigger, so dispatch it explicitly; without this
