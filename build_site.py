@@ -443,13 +443,15 @@ def _team_news(tp, a):
     return any(t in txt for t in tp["news_tokens"])
 
 def _tk_date(kick):
-    """Short Arabic date chip for non-today items: أمس / غدًا / dd/mm."""
+    """Short Arabic date chip: اليوم / أمس / غدًا / dd/mm."""
     try:
         d = datetime.date.fromisoformat(kick)
         t = datetime.date.fromisoformat(REF_TODAY)
     except Exception:
         return kick or ""
     delta = (d - t).days
+    if delta == 0:
+        return "اليوم"
     if delta == -1:
         return "أمس"
     if delta == 1:
@@ -600,7 +602,9 @@ def make_ticker(matches):
             mid = score_pill(m.get("home_score"), m.get("away_score"), "tk-s")
         else:
             mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
-        day = ("" if m.get("kickoff") == REF_TODAY or st == "LIVE"
+        # date chip on every non-live item, today's included (user request
+        # 2026-09-03: «اليوم» next to today's matches); live rows keep the dot
+        day = ("" if st == "LIVE"
                else f'<span class="tk-d">{esc(_tk_date(m.get("kickoff")))}</span>')
         its.append(f'<span class="tk-item" data-lv data-h="{esc(ar_team(m.get("home")))}" data-a="{esc(ar_team(m.get("away")))}">{day}{hb}<bdi>{esc(ar_team(m.get("home")))}</bdi> <span class="tk-mid">{mid}</span> <bdi>{esc(ar_team(m.get("away")))}</bdi>{ab}</span>')
     seq = "".join(its)
