@@ -566,8 +566,11 @@ def make_ticker(matches):
         for m in ms:
             ha = (m.get("home") or "") + "|" + (m.get("away") or "")
             comp = m.get("competition") or ""
+            # _in_scope, NOT c == comp: Egyptian clubs carry a TUPLE scope
+            # (EGY_SCOPE) so == never matched and Zamalek showed once per
+            # fixture (2026-09-03 screenshot: CAF 04/09 + EPL 08/09 both)
             teams = [t for t, c in TICKER_TEAMS
-                     if t in ha and (c is None or c == comp)]
+                     if t in ha and _in_scope(c, comp)]
             if teams and all(t in seen for t in teams):
                 continue
             seen.update(teams)
