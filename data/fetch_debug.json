@@ -170,12 +170,11 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (16 games)",
+ "goal_events": "ok (19 games)",
  "goal_events_dbg": {
-  "candidates": 19,
+  "candidates": 22,
   "detail_fails": 0,
   "skipped": [
-   "4805134:count-mismatch (0, 1) vs 0-2 [a:g@6]",
    "4805128:count-mismatch (0, 0) vs -1--1 []"
   ],
   "sample": {
@@ -209,14 +208,9 @@
    "member0": "{\"competitorId\": 8201, \"id\": 45190845, \"athleteId\": 72937, \"name\": \"محمد شحاتة\", \"shortName\": \"شحاتة\", \"nameForURL\": \"m.-shehata\", \"createdAt\": \"2019-12-21T13:44:33.54\"}"
   },
   "sample_details": {
-   "event_names": [
-    "Substitution",
-    "Woodwork",
-    "بطاقة صفراء",
-    "هدف"
-   ],
-   "card0": "{\"competitorId\": 8309, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 45.0, \"addedTime\": 3, \"gameTimeDisplay\": \"45'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 61972152, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 8309, \"statusId\": 8, \"stageId\": 9, \"order\": 6, \"num\": 6, \"gameTime\": 61.0, \"addedTime\": 0, \"gameTimeDisplay\": \"61'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 447022, \"extraPlayers\": [76688368], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "event_names": [],
+   "card0": "null",
+   "sub0": "null",
    "hc_keys": [
     "id",
     "countryId",
@@ -240,9 +234,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.0, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"4'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"orde"
   }
  },
- "match_details": "ok (162)",
- "utc": "2026-09-04T17:50:10Z"
+ "match_details": "ok (164)",
+ "utc": "2026-09-04T18:05:41Z"
 }
