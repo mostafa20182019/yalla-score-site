@@ -86,9 +86,19 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN_2 || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
         run: |
+          # tee the transcript so Claude's closing report (article written, or
+          # "no new story" + why) lands in the job Summary - no log digging.
+          # pipefail keeps claude's own exit code for the retry logic below.
+          set -o pipefail
           claude -p "$(cat .github/prompts/daily-article.md)" \
             --model claude-sonnet-5 \
-            --dangerously-skip-permissions
+            --dangerously-skip-permissions | tee /tmp/claude-primary.txt
+          {
+            echo "### تقرير Claude (primary account)"
+            echo '```'
+            tail -n 40 /tmp/claude-primary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
 
       # Account 1 can die at three points: before writing, mid-write (image
       # downloaded, article not saved), or AFTER committing. Only the middle
@@ -113,9 +123,30 @@ jobs:
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN || secrets.CLAUDE_CODE_OAUTH_TOKEN_2 }}
         run: |
+          # tee the transcript so Claude's closing report (article written, or
+          # "no new story" + why) lands in the job Summary - no log digging.
+          # pipefail keeps claude's own exit code for the retry logic below.
+          set -o pipefail
           claude -p "$(cat .github/prompts/daily-article.md)" \
             --model claude-sonnet-5 \
-            --dangerously-skip-permissions
+            --dangerously-skip-permissions | tee /tmp/claude-fallback.txt
+          {
+            echo "### تقرير Claude (fallback account)"
+            echo '```'
+            tail -n 40 /tmp/claude-fallback.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # One-line verdict for the Summary page: new article (title) or none.
+      - name: Report outcome
+        if: always()
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$HEAD_BEFORE" ]; then
+            TITLE=$(python -c "import json; print(json.load(open('data/articles.json',encoding='utf-8'))['results'][0]['items'][0]['title'])")
+            echo "## ✅ مقال جديد: $TITLE" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⏭ لا مقال هذا التشغيل - السبب في تقرير Claude أدناه" >> "$GITHUB_STEP_SUMMARY"
+          fi
 
       # Both accounts out = no article this slot, but NOT a broken pipeline:
       # the next slot retries. Stay green so the run list stays meaningful,
