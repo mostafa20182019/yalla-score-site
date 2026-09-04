@@ -151,6 +151,18 @@ async function liveScores() {
       for (const list of per) if (list) { ok = true; raw.push(...list); }
     } else {
       ok = true;
+      // Partial degradation (2026-09-04): the multi-comp reply was a healthy
+      // size yet MISSED the just-ended CAF CL game (AS Port x Zamalek, sg 4)
+      // that the single-comp query returned - so /live.json had no final
+      // score for it and the match page stayed on the baked "مباشر" dashes.
+      // The Egyptian-scope comps are what the site is FOR: always fetch them
+      // individually too and merge by game id (2 extra edge-cached calls).
+      const extra = await Promise.all([...DETAIL_FIRST].map(c =>
+        fetchGames(`${base}&competitions=${c}`).catch(() => null)));
+      const seen = new Set(raw.map(g => g.id));
+      for (const list of extra) for (const g of list || []) {
+        if (!seen.has(g.id)) { seen.add(g.id); raw.push(g); src = "multi+egy"; }
+      }
     }
     for (const g of raw) {
         const sg = g.statusGroup;            // 2 scheduled / 3 live / 4 ended

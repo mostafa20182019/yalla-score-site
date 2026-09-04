@@ -126,6 +126,9 @@ jobs:
       # the commit-back below. Inert until the FB_PAGE_TOKEN secret exists
       # (same token as fb_post.py); never fails the publish over a social error.
       - name: Post result cards to Facebook
+        # gated like the article post: a card links to /m/<id> and must not go
+        # out from a run that skipped its deploy (the page would still say LIVE)
+        if: steps.tip.outputs.fresh == 'true'
         continue-on-error: true
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
