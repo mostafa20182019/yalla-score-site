@@ -286,9 +286,35 @@ def _norm_status(s):
     s = (s or "").upper()
     if s in ("IN_PLAY", "PAUSED"):
         return "LIVE"
-    if s == "FINISHED":
+    if s in ("FINISHED", "AWARDED"):
         return "FINISHED"
+    if s in ("POSTPONED", "CANCELLED", "SUSPENDED"):
+        return "POSTPONED"
     return "UPCOMING"
+
+
+# A football match (incl. extra time + shoot-out) is over within ~3h of
+# kick-off. Anything football-data still labels LIVE - or scheduled-with-a-
+# score - beyond that is a stale upstream status, not a live game.
+LIVE_MAX_H = 3
+
+def _fix_status(row, dt, now):
+    """Sanity-check a football-data row's status against the clock.
+
+    * scheduled + score + kicked off <3h ago  -> LIVE   (FD status lag, seen 2026-08-16)
+    * scheduled/LIVE + score + kicked off >3h -> FINISHED (FD served days-old
+      matches as non-FINISHED on 2026-09-04: Aug-30/31 PL, Serie A and Ligue 1
+      games came through as LIVE and sat in the ticker with a red dot)
+    * LIVE without a score past 3h            -> UPCOMING (never fake a live game)
+    """
+    age = (now - dt).total_seconds() / 3600
+    has_score = row.get("home_score") is not None and row.get("away_score") is not None
+    st = row.get("status")
+    if st == "UPCOMING" and has_score and 0 <= age <= LIVE_MAX_H:
+        row["status"] = "LIVE"
+    elif st in ("UPCOMING", "LIVE") and age > LIVE_MAX_H:
+        row["status"] = "FINISHED" if has_score else "UPCOMING"
+    return row
 
 def fetch_matches():
     if not FD_TOKEN:
@@ -349,14 +375,7 @@ def fetch_matches():
         comp = m.get("competition") or {}
         if (comp.get("code") or "") not in FD_COMPS:
             continue  # keep only our competitions
-        row = to_row(m, dt)
-        # FD's competition endpoint can lag the status while the live score
-        # is already flowing (seen 2026-08-16: kicked-off match still TIMED
-        # but carrying 1-0) - a "scheduled" match with a score whose kickoff
-        # has passed is actually LIVE
-        if (row["status"] == "UPCOMING" and row["home_score"] is not None
-                and dt <= datetime.now(CAIRO)):
-            row["status"] = "LIVE"
+        row = _fix_status(to_row(m, dt), dt, datetime.now(CAIRO))
         # rounds view: every fixture, keyed by matchday (skip if no matchday)
         rd = m.get("matchday")
         if rd is not None:
