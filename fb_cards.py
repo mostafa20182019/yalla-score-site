@@ -246,6 +246,59 @@ GRAPH_PHOTOS = "https://graph.facebook.com/v23.0/me/photos"
 STATE_FILE = os.path.join(HERE, "data", "fb_posted.json")   # committed back by publish.yml
 STATE_KEEP_DAYS = 7
 MAX_ATTEMPTS = 3
+LIVE_JSON_URL = "https://yallascore.site/live.json"
+STABLE_MIN = 25          # a score /live.json cannot confirm must sit unchanged this long before posting
+
+def fetch_live():
+    """Our own /live.json (365scores, detail-verified). {} on any failure."""
+    try:
+        req = urllib.request.Request(f"{LIVE_JSON_URL}?b={int(time.time())}",
+                                     headers={"User-Agent": "yalla-score-fbcards/1.0"})
+        with urllib.request.urlopen(req, timeout=30) as r:
+            games = json.load(r).get("games") or []
+    except Exception as e:  # noqa: BLE001
+        print(f"  live.json unavailable ({e})")
+        return {}
+    out = {}
+    for g in games:
+        out[(b._gnorm(g.get("h")), b._gnorm(g.get("a")))] = g
+    return out
+
+def live_score_for(live, m):
+    """(hs, as, live_flag) from /live.json for this match, or None when the
+    pair is not there. Handles the reversed home/away disagreement."""
+    h, a = b._gnorm(b.ar_team(m.get("home"))), b._gnorm(b.ar_team(m.get("away")))
+    g = live.get((h, a))
+    if g is not None:
+        return g.get("hs"), g.get("as"), bool(g.get("live"))
+    g = live.get((a, h))
+    if g is not None:
+        return g.get("as"), g.get("hs"), bool(g.get("live"))
+    return None
+
+def score_verified(m, live, st, now=None):
+    """Only a confirmed final score may go on a card (user rule: never publish a
+    possibly-wrong number). Confirmed = /live.json shows the same pair finished
+    with the same score; or, when /live.json has no such pair, the same score
+    has been seen for STABLE_MIN minutes across runs. Returns (ok, reason)."""
+    now = now or time.time()
+    mid = str(m["match_id"])
+    ours = f"{m['home_score']}-{m['away_score']}"
+    ls = live_score_for(live, m)
+    if ls is not None:
+        hs, aws, is_live = ls
+        if is_live:
+            return False, f"365scores still live ({hs}-{aws})"
+        if (hs, aws) != (m["home_score"], m["away_score"]):
+            return False, f"score mismatch: ours {ours}, 365scores {hs}-{aws}"
+        return True, "confirmed by 365scores"
+    seen = st.setdefault("seen", {}).get(mid)
+    if not seen or seen.get("s") != ours:
+        st["seen"][mid] = {"s": ours, "ts": now}
+        return False, f"not in live.json; first seen {ours}, waiting {STABLE_MIN} min"
+    if now - seen["ts"] < STABLE_MIN * 60:
+        return False, f"not in live.json; {ours} stable for {int((now - seen['ts']) / 60)} min"
+    return True, f"stable {ours} for {STABLE_MIN}+ min"
 
 def load_state():
     try:
@@ -258,6 +311,7 @@ def load_state():
     # prune: a match id older than a week can never be re-posted anyway
     cutoff = time.time() - STATE_KEEP_DAYS * 86400
     st["posted"] = {k: v for k, v in st["posted"].items() if v.get("ts", 0) >= cutoff}
+    st["seen"] = {k: v for k, v in st.get("seen", {}).items() if v.get("ts", 0) >= cutoff}
     return st
 
 def save_state(st):
@@ -308,8 +362,15 @@ def post_cards(picked, ge_idx, out_dir):
         print(f"FB_PAGE_TOKEN not set - {len(todo)} card(s) would be posted, skipping")
         return
     os.makedirs(out_dir, exist_ok=True)
+    live = fetch_live()
     for m in todo:
         mid = str(m["match_id"])
+        ok, why = score_verified(m, live, st)
+        if not ok:
+            print(f"card {mid} deferred: {why}")
+            continue
+        print(f"card {mid}: {why}")
+        st.get("seen", {}).pop(mid, None)
         try:
             card = render_card(m, ge_idx)
             buf = io.BytesIO()

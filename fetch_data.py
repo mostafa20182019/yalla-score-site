@@ -293,6 +293,64 @@ def _norm_status(s):
     return "UPCOMING"
 
 
+LIVE_JSON_URL = "https://yallascore.site/live.json"
+
+def _live_norm(s):
+    """Same normalization LIVE_JS / build_site._gnorm use to pair names."""
+    s = (s or "")
+    for a, b in (("أ", "ا"), ("إ", "ا"), ("آ", "ا"), ("ة", "ه"), ("ى", "ي")):
+        s = s.replace(a, b)
+    return "".join(ch for ch in s if ch not in ".'’ \t")
+
+def reconcile_with_live(matches, dbg=None):
+    """football-data's final scores are not always final: on 2026-09-04 it
+    reported Betis-Real Madrid FINISHED 1-1 while 365scores (and the pitch)
+    said 1-0, and a result card went out with the wrong number. Our own
+    /live.json is 365scores detail-verified for every league we cover, so for
+    every football-data row that kicked off in the last 12h and is LIVE or
+    FINISHED, take score + status from the live pair when one exists.
+    Egyptian-scope rows already come from 365scores and are left alone."""
+    try:
+        import build_site as _b                   # AR_TEAM: FD English -> 365scores Arabic
+        games = json.loads(http_get(f"{LIVE_JSON_URL}?b={int(time.time())}", retries=1)).get("games") or []
+    except Exception as e:
+        if dbg is not None:
+            dbg["reconcile"] = f"FAIL: {e!r}"
+        return 0
+    by_pair = {}
+    for g in games:
+        by_pair[(_live_norm(g.get("h")), _live_norm(g.get("a")))] = g
+    now = datetime.now(CAIRO)
+    changed = 0
+    for m in matches:
+        if m.get("status") not in ("LIVE", "FINISHED") or not m.get("kickoff"):
+            continue
+        try:
+            ko = datetime.fromisoformat(f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00").replace(tzinfo=CAIRO)
+        except Exception:
+            continue
+        if not (0 <= (now - ko).total_seconds() <= 12 * 3600):
+            continue
+        h, a = _live_norm(_b.ar_team(m.get("home"))), _live_norm(_b.ar_team(m.get("away")))
+        g = by_pair.get((h, a))
+        flip = False
+        if g is None:
+            g = by_pair.get((a, h))              # sources can disagree on who is at home
+            flip = g is not None
+        if g is None or g.get("hs") is None or g.get("as") is None:
+            continue
+        hs, aws = (g["as"], g["hs"]) if flip else (g["hs"], g["as"])
+        status = "LIVE" if g.get("live") else "FINISHED"
+        if (m.get("home_score"), m.get("away_score"), m.get("status")) != (hs, aws, status):
+            print(f"  reconcile: {m.get('home')} {m.get('home_score')}-{m.get('away_score')} {m.get('status')}"
+                  f" -> {hs}-{aws} {status} (365scores)")
+            m["home_score"], m["away_score"], m["status"] = hs, aws, status
+            changed += 1
+    if dbg is not None:
+        dbg["reconcile"] = f"ok ({changed} row(s) corrected, {len(games)} live games)"
+    return changed
+
+
 # A football match (incl. extra time + shoot-out) is over within ~3h of
 # kick-off. Anything football-data still labels LIVE - or scheduled-with-a-
 # score - beyond that is a stale upstream status, not a live game.
@@ -1214,6 +1272,11 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"  ! {_lname} fetch failed ({e})")
                 _DBG[_lname] = f"FAIL: {e!r}"
+        try:
+            reconcile_with_live(matches, _DBG)
+        except Exception as e:
+            print(f"  ! reconcile failed ({e}) - keeping football-data scores")
+            _DBG["reconcile"] = f"FAIL: {e!r}"
         matches.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
         # no row cap: the [today-5 .. today+UPCOMING_DAYS] horizon inside the
         # fetchers bounds the size (an old [:90] here kept cutting the future
