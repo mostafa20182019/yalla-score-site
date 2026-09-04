@@ -178,7 +178,8 @@
    "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
    "4805128:count-mismatch (0, 0) vs -1--1 []",
    "4805131:count-mismatch (0, 0) vs 1-0 []",
-   "4805149:count-mismatch (0, 0) vs 1-0 []"
+   "4805149:count-mismatch (0, 0) vs 1-0 []",
+   "4735273:count-mismatch (1, 1) vs 1-2 [h:g@31/a:g@58]"
   ],
   "sample": {
    "game_keys": [
@@ -208,7 +209,7 @@
     "stages"
    ],
    "event0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 6.0, \"addedTime\": 0, \"gameTimeDisplay\": \"6'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 45190845, \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
-   "member0": "{\"competitorId\": 8201, \"id\": 45190845, \"athleteId\": 72937, \"name\": \"محمد شحاتة\", \"shortName\": \"شحاتة\", \"nameForURL\": \"m.-shehata\", \"createdAt\": \"2019-12-21T13:44:33.54\"}"
+   "member0": "{\"competitorId\": 8201, \"id\": 45190845, \"athleteId\": 72937, \"name\": \"محمد شحاتة\", \"shortName\": \"شحاتة\", \"nameForURL\": \"m.-shehata\", \"createdAt\": \"2019-12-21T13:44:33.54Z\"}"
   },
   "sample_details": {
    "event_names": [
@@ -246,5 +247,5 @@
   }
  },
  "match_details": "ok (169)",
- "utc": "2026-09-04T20:20:23Z"
+ "utc": "2026-09-04T20:35:54Z"
 }
