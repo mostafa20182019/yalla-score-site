@@ -169,6 +169,31 @@ def adsense_top_banner():
                  '<small>Google AdSense</small></div>')
     return f'<div class="ad-top">{inner}</div>'
 
+_OG_DIMS = {}
+
+def _og_dims(url):
+    """(width, height) of one of OUR images (media/ or assets/ under SITE_BASE),
+    (None, None) for anything remote or unreadable. Cached per build."""
+    if not url or not url.startswith(SITE_BASE + "/"):
+        return (None, None)
+    if url in _OG_DIMS:
+        return _OG_DIMS[url]
+    rel = url[len(SITE_BASE) + 1:].split("?")[0]
+    cand = [os.path.join(HERE, rel)]
+    if rel.startswith("assets/"):
+        cand.append(os.path.join(HERE, "assets-src", rel[len("assets/"):]))
+    dims = (None, None)
+    for p in cand:
+        try:
+            from PIL import Image as _PILImage
+            with _PILImage.open(p) as im:
+                dims = im.size
+            break
+        except Exception:
+            continue
+    _OG_DIMS[url] = dims
+    return dims
+
 def head(title, desc, url, image=None, og_type="website", active=""):
     desc = strip_tags(desc)[:300]
     # og:image must be a raster — Facebook/Twitter ignore SVG entirely (the
@@ -178,6 +203,18 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     if not image or image.lower().endswith(".svg"):
         image = SITE_BASE + "/assets/og-banner.png"
     img = image
+    # og:image:width/height: without them Facebook renders the FIRST share of
+    # a URL with NO image (it fetches the picture asynchronously and only later
+    # shares get it) — article 371's post came out with an empty image box on
+    # 2026-09-04. Known only for our own files (media/, assets/), read once.
+    ogw, ogh = _og_dims(img)
+    og_dims = (f'
+<meta property="og:image:width" content="{ogw}">'
+               f'
+<meta property="og:image:height" content="{ogh}">'
+               f'
+<meta property="og:image:type" content="image/{"png" if img.lower().endswith(".png") else "jpeg"}">'
+               if ogw else "")
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
     sa = " is-active" if active == "stats" else ""
@@ -209,7 +246,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <meta property="og:title" content="{esc(title)}">
 <meta property="og:description" content="{esc(desc)}">
 <meta property="og:url" content="{esc(url)}">
-<meta property="og:image" content="{esc(img)}">
+<meta property="og:image" content="{esc(img)}">{og_dims}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{esc(title)}">
 <meta name="twitter:description" content="{esc(desc)}">
