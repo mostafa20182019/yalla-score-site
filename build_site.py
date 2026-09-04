@@ -208,13 +208,12 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     # shares get it) — article 371's post came out with an empty image box on
     # 2026-09-04. Known only for our own files (media/, assets/), read once.
     ogw, ogh = _og_dims(img)
-    og_dims = (f'
-<meta property="og:image:width" content="{ogw}">'
-               f'
-<meta property="og:image:height" content="{ogh}">'
-               f'
-<meta property="og:image:type" content="image/{"png" if img.lower().endswith(".png") else "jpeg"}">'
-               if ogw else "")
+    og_type_img = "png" if img.lower().endswith(".png") else "jpeg"
+    og_dims = (
+        f'\n<meta property="og:image:width" content="{ogw}">'
+        f'\n<meta property="og:image:height" content="{ogh}">'
+        f'\n<meta property="og:image:type" content="image/{og_type_img}">'
+    ) if ogw else ""
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
     sa = " is-active" if active == "stats" else ""
