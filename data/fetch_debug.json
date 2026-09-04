@@ -172,10 +172,12 @@
  },
  "goal_events": "ok (20 games)",
  "goal_events_dbg": {
-  "candidates": 23,
+  "candidates": 24,
   "detail_fails": 0,
   "skipped": [
-   "4805128:count-mismatch (0, 0) vs -1--1 []"
+   "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
+   "4805128:count-mismatch (0, 0) vs -1--1 []",
+   "4805149:count-mismatch (0, 0) vs 1-0 []"
   ],
   "sample": {
    "game_keys": [
@@ -196,13 +198,13 @@
     "gameTimeAndStatusDisplayType",
     "justEnded",
     "gameTime",
+    "addedTime",
     "gameTimeDisplay",
     "preciseGameTime",
     "hasMissingPlayers",
     "winDescription",
     "homeCompetitor",
-    "awayCompetitor",
-    "stages"
+    "awayCompetitor"
    ],
    "event0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 6.0, \"addedTime\": 0, \"gameTimeDisplay\": \"6'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 45190845, \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
    "member0": "{\"competitorId\": 8201, \"id\": 45190845, \"athleteId\": 72937, \"name\": \"محمد شحاتة\", \"shortName\": \"شحاتة\", \"nameForURL\": \"m.-shehata\", \"createdAt\": \"2019-12-21T13:44:33.54\"}"
@@ -237,9 +239,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.6, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"34'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.6, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"45'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (165)",
- "utc": "2026-09-04T18:36:44Z"
+ "match_details": "ok (166)",
+ "utc": "2026-09-04T18:50:14Z"
 }
