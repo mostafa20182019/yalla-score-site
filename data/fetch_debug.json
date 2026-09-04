@@ -170,11 +170,12 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (14 games)",
+ "goal_events": "ok (16 games)",
  "goal_events_dbg": {
-  "candidates": 15,
+  "candidates": 19,
   "detail_fails": 0,
   "skipped": [
+   "4805134:count-mismatch (0, 0) vs 0-1 []",
    "4805128:count-mismatch (0, 0) vs -1--1 []"
   ],
   "sample": {
@@ -186,8 +187,8 @@
     "statusId",
     "seasonNum",
     "stageNum",
-    "roundNum",
-    "roundName",
+    "legNum",
+    "stageName",
     "competitionDisplayName",
     "startTime",
     "statusGroup",
@@ -198,14 +199,14 @@
     "gameTime",
     "gameTimeDisplay",
     "preciseGameTime",
-    "hasLineups",
     "hasMissingPlayers",
-    "hasFieldPositions",
     "winDescription",
-    "homeCompetitor"
+    "homeCompetitor",
+    "awayCompetitor",
+    "stages"
    ],
-   "event0": "{\"competitorId\": 8200, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 44.0, \"addedTime\": 0, \"gameTimeDisplay\": \"44'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 650570, \"isMajor\": false, \"eventType\": {\"id\": 12, \"name\": \"Woodwork\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 8200, \"id\": 50505357, \"athleteId\": 79873, \"name\": \"مصطفى شوبير\", \"shortName\": \"شوبير\", \"jerseyNumber\": 31, \"nameForURL\": \"mostafa-shobeir-oufa\", \"imageVersion\": 26, \"createdAt\": \"2020-08-09T17:37:28.91\"}"
+   "event0": "null",
+   "member0": "null"
   },
   "sample_details": {
    "event_names": [
@@ -242,6 +243,6 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.0, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (159)",
- "utc": "2026-09-04T16:50:29Z"
+ "match_details": "ok (161)",
+ "utc": "2026-09-04T17:04:51Z"
 }
