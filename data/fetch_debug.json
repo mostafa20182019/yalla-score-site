@@ -170,12 +170,11 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (16 games)",
+ "goal_events": "ok (17 games)",
  "goal_events_dbg": {
   "candidates": 19,
   "detail_fails": 0,
   "skipped": [
-   "4805134:count-mismatch (0, 0) vs 0-1 []",
    "4805128:count-mismatch (0, 0) vs -1--1 []"
   ],
   "sample": {
@@ -205,8 +204,8 @@
     "awayCompetitor",
     "stages"
    ],
-   "event0": "null",
-   "member0": "null"
+   "event0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 6.0, \"addedTime\": 0, \"gameTimeDisplay\": \"6'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 45190845, \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
+   "member0": "{\"competitorId\": 8201, \"id\": 45190845, \"athleteId\": 72937, \"name\": \"محمد شحاتة\", \"shortName\": \"شحاتة\", \"nameForURL\": \"m.-shehata\", \"createdAt\": \"2019-12-21T13:44:33.54\"}"
   },
   "sample_details": {
    "event_names": [
@@ -243,6 +242,6 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.0, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (161)",
- "utc": "2026-09-04T17:04:51Z"
+ "match_details": "ok (162)",
+ "utc": "2026-09-04T17:20:06Z"
 }
