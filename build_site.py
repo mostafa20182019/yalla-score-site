@@ -1795,6 +1795,7 @@ def build():
             m_all[m["match_id"]] = m      # day-window copy is always fresher
     sm_cut = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
     n_mp = 0
+    n_mp_idx = 0
     for mid, m in sorted(m_all.items(), key=lambda kv: kv[1].get("kickoff") or ""):
         if not (m.get("home") and m.get("away") and m.get("kickoff")):
             continue
@@ -1827,13 +1828,14 @@ def build():
             _lc = local_crest(m["home_badge"])
             img = _lc if _lc.startswith("http") else SITE_BASE + _lc
         murl = f"/m/{mid}.html"
+        _goals = match_goals(ge_idx, m)
         mp = [head(title, desc, SITE_BASE + murl, image=img, active="matches")]
         mp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                   f'<a href="/matches.html">المباريات</a> › {esc(comp)}</nav>')
         mp.append(f'<h1 class="page-h">مباراة {esc(h_ar)} و{esc(a_ar)}</h1>')
         mp.append('<div class="mlist">')
         mp.append(match_row(m, show_time=True, show_comp=True,
-                            goals=match_goals(ge_idx, m)))
+                            goals=_goals))
         mp.append('</div>')
         # «موعد المباراة والقنوات الناقلة» — a direct-answer paragraph for the
         # highest-volume pre-match queries ("موعد مباراة X"، "القنوات الناقلة
@@ -1937,11 +1939,22 @@ def build():
             "awayTeam": {"@type": "SportsTeam", "name": a_ar},
         }))
         mp.append(foot())
-        write(f"m/{mid}.html", "".join(mp))
+        # AdSense "low value content" rejection (2026-09-04): 457 templated
+        # match pages vs 325 articles in the sitemap. A match page with no
+        # real content yet (no scorers, no lineups/details) stays reachable
+        # for visitors and links but is NOINDEXed and kept out of the
+        # sitemap; it becomes indexable automatically once the data arrives.
+        _rich = bool(_goals) or bool(_det)
+        _html = "".join(mp)
+        if not _rich:
+            _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+        write(f"m/{mid}.html", _html)
         n_mp += 1
-        if m["kickoff"] >= sm_cut:      # keep the sitemap focused on ±30 days
-            urls.append(murl)
-    print(f"  + match pages: {n_mp}")
+        if _rich:
+            n_mp_idx += 1
+            if m["kickoff"] >= sm_cut:      # keep the sitemap focused on ±30 days
+                urls.append(murl)
+    print(f"  + match pages: {n_mp} ({n_mp_idx} indexable with real content)")
 
     # ---- per-league standings + top-scorers pages ----
     # Evergreen SEO landing pages with their own URLs: "ترتيب الدوري المصري"
