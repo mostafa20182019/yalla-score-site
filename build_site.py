@@ -149,8 +149,9 @@ def adsense_slot():
                 f' data-ad-client="{ADSENSE_CLIENT}" data-ad-slot="{ADSENSE_SLOT}"'
                 ' data-ad-format="auto" data-full-width-responsive="true"></ins>'
                 '<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>')
-    return ('<div class="ad-placeholder"><span>مساحة إعلانية</span>'
-            '<small>Google AdSense</small></div>')
+    # no placeholder before approval: empty dashed "ad space" frames read as an
+    # unfinished site to a reviewer (AdSense low-value rejection, 2026-09-04)
+    return ""
 
 def page_head_ad(title_html, hint=""):
     """Page title on the start side, a leaderboard ad on the end side (the free
@@ -169,8 +170,7 @@ def adsense_top_banner():
                  ' data-ad-format="horizontal" data-full-width-responsive="true"></ins>'
                  '<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>')
     else:
-        inner = ('<div class="ad-ph-top"><span>مساحة إعلانية</span>'
-                 '<small>Google AdSense</small></div>')
+        return ""      # nothing (not even the frame) until the real unit exists
     return f'<div class="ad-top">{inner}</div>'
 
 _OG_DIMS = {}
@@ -1409,7 +1409,11 @@ def build():
                      + '</nav>')
         p.append('</article>')
         p.append(foot())
-        write(f"a/{a['article_id']}.html", "".join(p))
+        _ahtml = "".join(p)
+        if len(strip_tags(a.get("body") or "").split()) < 200:
+            # legacy short pieces: keep the URL alive but out of the index
+            _ahtml = _ahtml.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+        write(f"a/{a['article_id']}.html", _ahtml)
         urls.append(f"/a/{a['article_id']}.html")
 
     # ---- shared per-league data + stats machinery (matches page + /stats) ----
@@ -2035,8 +2039,10 @@ def build():
                 cp.append(f'<p class="hintline">شاهد أيضًا: '
                           f'<a href="{st_url}">جدول ترتيب {esc(label)} كاملًا</a></p>')
             cp.append(foot())
-            write(f"scorers/{slug}.html", "".join(cp))
-            urls.append(sc_url)
+            # ~80 words of names = thin content for a reviewer; keep the page
+            # for visitors/links but noindex it and leave it out of the sitemap
+            write(f"scorers/{slug}.html", "".join(cp).replace(
+                "<head>", '<head><meta name="robots" content="noindex">', 1))
             n_lp += 1
     print(f"  + league pages: {n_lp}")
 
