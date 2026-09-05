@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (4 row(s) corrected, 48 live games)",
+ "reconcile": "ok (1 row(s) corrected, 48 live games)",
  "matches_archive": "ok (457)",
  "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -202,13 +202,13 @@
     "gameTimeAndStatusDisplayType",
     "justEnded",
     "gameTime",
+    "addedTime",
     "gameTimeDisplay",
     "preciseGameTime",
     "hasLineups",
     "hasMissingPlayers",
     "hasFieldPositions",
-    "winDescription",
-    "homeCompetitor"
+    "winDescription"
    ],
    "event0": "{\"competitorId\": 24, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 8262598, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 44, \"createdAt\": \"2015-02-22T13:37:43.157\"}"
@@ -221,7 +221,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 24, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 8262598, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 24, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 63.0, \"addedTime\": 0, \"gameTimeDisplay\": \"63'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 75258798, \"extraPlayers\": [6679405], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 24, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 63.0, \"addedTime\": 0, \"gameTimeDisplay\": \"63'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 60366421, \"extraPlayers\": [51923671], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -245,9 +245,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"76'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.2, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (184)",
- "utc": "2026-09-05T15:35:13Z"
+ "utc": "2026-09-05T15:50:29Z"
 }
