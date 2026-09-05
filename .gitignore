@@ -6,3 +6,5 @@ node_modules/
 __pycache__/
 # generated Facebook result cards (fb_cards.py)
 media/cards/
+# match-analysis briefs are per-run scratch (match_brief.py)
+data/briefs/

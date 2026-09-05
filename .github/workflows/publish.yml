@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write                # needed to commit refreshed data/ back to the repo
+  actions: write                 # dispatch match-article.yml when a curated-club match needs a preview/report
 
 # Data-refresh runs are interchangeable - only the newest matters - so they
 # still cancel each other. A PUSH carries new content (an article), so it gets
@@ -133,6 +134,27 @@ jobs:
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
         run: python fb_cards.py --post --hours 6
+
+      # Match-analysis articles (previews before kick-off, reports after
+      # full-time) for the curated clubs: when match_brief.py finds a
+      # candidate in the data this run just fetched, dispatch the AI writer.
+      # Skipped while a match-article run is already queued/in progress (its
+      # concurrency group would only queue a duplicate that exits "no
+      # candidate" anyway). Never fails the publish.
+      - name: Dispatch match-article when a match needs one
+        if: steps.tip.outputs.fresh == 'true'
+        continue-on-error: true
+        run: |
+          PICK=$(python match_brief.py --pick 2>/dev/null || echo '{}')
+          echo "pick: $PICK"
+          if [ "$PICK" = "{}" ] || [ -z "$PICK" ]; then exit 0; fi
+          BUSY=$(curl -sS -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/match-article.yml/runs?per_page=5" \
+            | python -c "import json,sys; rs=json.load(sys.stdin).get('workflow_runs',[]); print(sum(1 for r in rs if r['status'] in ('queued','in_progress','waiting')))")
+          if [ "$BUSY" != "0" ]; then echo "match-article already running ($BUSY) - not dispatching"; exit 0; fi
+          curl -sS -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/match-article.yml/dispatches" \
+            -d '{"ref":"main"}' && echo "dispatched match-article for $PICK"
 
       # Keep the repo copy of data/ fresh (caps the failed-fetch fallback at
       # ~30 min of staleness). This step runs AFTER build+deploy on purpose:

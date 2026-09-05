@@ -1,0 +1,171 @@
+name: Match Article (AI)
+
+# Writes ONE Arabic match-analysis article (preview before kick-off, report
+# after full-time) for a curated-club match, from a numbers-only brief built
+# by match_brief.py, using Claude Code headless. Prompt:
+# .github/prompts/match-article.md
+#
+# Triggers: publish.yml dispatches this workflow whenever match_brief.py --pick
+# finds a candidate (every ~15 min data refresh), so previews land a few hours
+# before kick-off and reports within the hour after the final whistle. The
+# schedule below is only a fallback. The pick step re-checks at run time, so a
+# duplicate dispatch just exits with "no candidate".
+on:
+  schedule:
+    - cron: "40 * * * *"          # hourly fallback
+  workflow_dispatch:
+    inputs:
+      match_id:
+        description: "match_id from data/matches.json (empty = auto-pick)"
+        type: string
+        default: ""
+      kind:
+        description: "preview | report (empty = auto)"
+        type: choice
+        default: ""
+        options: ["", "preview", "report"]
+      account:
+        description: "Claude account to try FIRST (repo default = the PRIMARY_ACCOUNT variable)"
+        type: choice
+        default: "repo default"
+        options: ["repo default", "1", "2"]
+
+permissions:
+  contents: write
+  actions: write
+
+# never two match-article runs at once (duplicate-article risk); never cancel
+# a run that may be mid-publish. Separate group from daily-article so a news
+# article and a match article can be written in parallel.
+concurrency:
+  group: match-article
+  cancel-in-progress: false
+
+jobs:
+  write-match-article:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      HAS_ACCT2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_2 != '' }}
+      PRIMARY_ACCT: ${{ (github.event.inputs.account == '1' || github.event.inputs.account == '2') && github.event.inputs.account || vars.PRIMARY_ACCOUNT || '1' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      # Which match/kind? Explicit inputs win; otherwise match_brief.py picks
+      # the best candidate (reports first, Egyptian clubs first, daily cap).
+      - name: Pick the match
+        id: pick
+        run: |
+          if [ -n "${{ github.event.inputs.match_id }}" ]; then
+            MID="${{ github.event.inputs.match_id }}"; KIND="${{ github.event.inputs.kind }}"
+          else
+            J=$(python match_brief.py --pick)
+            MID=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('match_id',''))" "$J")
+            KIND=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('kind',''))" "$J")
+          fi
+          echo "match_id=$MID" >> "$GITHUB_OUTPUT"
+          echo "kind=$KIND" >> "$GITHUB_OUTPUT"
+          if [ -z "$MID" ]; then
+            echo "## ⏭ no candidate match right now" >> "$GITHUB_STEP_SUMMARY"
+            echo "no candidate"; exit 0
+          fi
+          echo "## 🎯 $KIND for match $MID" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build the brief
+        if: steps.pick.outputs.match_id != ''
+        run: |
+          mkdir -p /tmp/brief
+          python match_brief.py --brief "${{ steps.pick.outputs.match_id }}" \
+            ${{ steps.pick.outputs.kind != '' && format('--kind {0}', steps.pick.outputs.kind) || '' }} \
+            --out /tmp/brief/brief.json | tee /tmp/brief/brief.md
+          {
+            echo "### Brief"; echo '```'; head -n 60 /tmp/brief/brief.md; echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@v4
+        if: steps.pick.outputs.match_id != ''
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code
+        if: steps.pick.outputs.match_id != ''
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Remember state
+        if: steps.pick.outputs.match_id != ''
+        run: echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Write the article (primary account)
+        id: acct1
+        if: steps.pick.outputs.match_id != ''
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN_2 || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          MATCH_ID: ${{ steps.pick.outputs.match_id }}
+          KIND: ${{ steps.pick.outputs.kind }}
+          BRIEF_JSON: /tmp/brief/brief.json
+          BRIEF_MD: /tmp/brief/brief.md
+        run: |
+          set -o pipefail
+          claude -p "$(cat .github/prompts/match-article.md)" \
+            --model claude-sonnet-5 \
+            --dangerously-skip-permissions | tee /tmp/claude-primary.txt
+          { echo "### تقرير Claude (primary)"; echo '```'; tail -n 40 /tmp/claude-primary.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Decide whether to retry
+        id: retry
+        if: steps.pick.outputs.match_id != '' && steps.acct1.outcome == 'failure'
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$HEAD_BEFORE" ]; then
+            echo "committed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "committed=false" >> "$GITHUB_OUTPUT"
+            git reset --hard HEAD; git clean -fd
+          fi
+
+      - name: Write the article (fallback account)
+        id: acct2
+        if: steps.pick.outputs.match_id != '' && steps.acct1.outcome == 'failure' && steps.retry.outputs.committed == 'false' && env.HAS_ACCT2 == 'true'
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN || secrets.CLAUDE_CODE_OAUTH_TOKEN_2 }}
+          MATCH_ID: ${{ steps.pick.outputs.match_id }}
+          KIND: ${{ steps.pick.outputs.kind }}
+          BRIEF_JSON: /tmp/brief/brief.json
+          BRIEF_MD: /tmp/brief/brief.md
+        run: |
+          set -o pipefail
+          claude -p "$(cat .github/prompts/match-article.md)" \
+            --model claude-sonnet-5 \
+            --dangerously-skip-permissions | tee /tmp/claude-fallback.txt
+          { echo "### تقرير Claude (fallback)"; echo '```'; tail -n 40 /tmp/claude-fallback.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report outcome
+        if: always() && steps.pick.outputs.match_id != ''
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$HEAD_BEFORE" ]; then
+            TITLE=$(python -c "import json; print(json.load(open('data/articles.json',encoding='utf-8'))['results'][0]['items'][0]['title'])")
+            echo "## ✅ مقال جديد: $TITLE" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⏭ لا مقال هذا التشغيل - السبب في تقرير Claude أعلاه" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # publish.yml deploys main; a GITHUB_TOKEN push doesn't fire on:push, so
+      # dispatch it (the article's Facebook post happens there, after Deploy).
+      - name: Dispatch publish workflow
+        if: always() && steps.pick.outputs.match_id != ''
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish.yml/dispatches" \
+            -d '{"ref":"main"}'
