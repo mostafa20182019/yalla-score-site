@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (1 row(s) corrected, 52 live games)",
+ "reconcile": "ok (1 row(s) corrected, 55 live games)",
  "matches_archive": "ok (457)",
  "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -171,17 +171,17 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (37 games)",
+ "goal_events": "ok (40 games)",
  "goal_events_dbg": {
-  "candidates": 44,
+  "candidates": 48,
   "detail_fails": 0,
   "skipped": [
    "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
    "4805135:count-mismatch (0, 0) vs 1-0 []",
    "4805139:count-mismatch (0, 0) vs 0-2 []",
+   "4805154:count-mismatch (0, 0) vs 2-0 []",
    "4805128:count-mismatch (0, 0) vs -1--1 []",
-   "4805148:count-mismatch (0, 0) vs 1-0 []",
-   "4805131:count-mismatch (0, 0) vs 1-0 []"
+   "4805148:count-mismatch (0, 0) vs 1-1 []"
   ],
   "sample": {
    "game_keys": [
@@ -221,7 +221,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 24, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 19.0, \"addedTime\": 0, \"gameTimeDisplay\": \"19'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 8262598, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 24, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 63.0, \"addedTime\": 0, \"gameTimeDisplay\": \"63'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 60366421, \"extraPlayers\": [51923671], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 24, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 63.0, \"addedTime\": 0, \"gameTimeDisplay\": \"63'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 75258798, \"extraPlayers\": [6679405], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -248,6 +248,6 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.7, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "match_details": "ok (187)",
- "utc": "2026-09-05T16:21:13Z"
+ "match_details": "ok (190)",
+ "utc": "2026-09-05T16:36:09Z"
 }
