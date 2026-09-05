@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (2 row(s) corrected, 48 live games)",
+ "reconcile": "ok (4 row(s) corrected, 48 live games)",
  "matches_archive": "ok (457)",
  "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -180,8 +180,8 @@
    "4805135:count-mismatch (0, 0) vs 1-0 []",
    "4805139:count-mismatch (0, 0) vs 0-2 []",
    "4805128:count-mismatch (0, 0) vs -1--1 []",
-   "4742080:count-mismatch (0, 0) vs 1-0 []",
-   "4805131:count-mismatch (0, 0) vs 1-0 []"
+   "4805131:count-mismatch (0, 0) vs 1-0 []",
+   "4805149:count-mismatch (0, 0) vs 1-0 []"
   ],
   "sample": {
    "game_keys": [
@@ -245,9 +245,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.7, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"65'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"76'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "match_details": "ok (184)",
- "utc": "2026-09-05T15:23:44Z"
+ "utc": "2026-09-05T15:35:13Z"
 }
