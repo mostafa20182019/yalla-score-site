@@ -36,6 +36,10 @@ CONTACT_EMAIL = "yallascore.eg@gmail.com"
 # Facebook page «يلا سكور» — numeric id URL always resolves; swap for the
 # vanity URL (facebook.com/<username>) once the page has one.
 FB_PAGE_URL = "https://www.facebook.com/104238901487012"
+# Editorial identity shown on /editors.html and in every article byline.
+EDITOR_NAME = "مصطفى عبدالسلام"
+EDITOR_ROLE = "مدير التحرير"
+EDITOR_EMAIL = CONTACT_EMAIL
 
 # Feature switches. Flip to True to bring a section back (nav tab, footer link,
 # home teaser, its page, and sitemap entry all follow this flag automatically).
@@ -284,7 +288,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a></p>
+  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -1375,7 +1379,8 @@ def build():
               "headline": a["title"], "description": strip_tags(a.get("summary")),
               "datePublished": a.get("pub_date"), "dateModified": a.get("pub_date"),
               "inLanguage": "ar", "mainEntityOfPage": url,
-              "author": {"@type": "Organization", "name": a.get("author") or SITE_NAME},
+              "author": {"@type": "Organization", "name": a.get("author") or SITE_NAME,
+                         "url": SITE_BASE + "/editors.html"},
               "publisher": {"@type": "Organization", "name": SITE_NAME,
                             "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"}}}
         if img: ld["image"] = [img]
@@ -1385,7 +1390,7 @@ def build():
         p.append('<article class="article">')
         p.append(f'<h1>{esc(a["title"])}</h1>')
         _t = art_reltime(a)
-        p.append(f'<p class="a-meta">{esc(a.get("author"))} · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
+        p.append(f'<p class="a-meta"><a class="a-by" href="/editors.html">{esc(a.get("author"))}</a> · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
                  f'{" · " + _t if _t else ""}</p>')
         if img:
             p.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager">')
@@ -2246,7 +2251,7 @@ def build():
     ab.append(f'<p><b>{esc(SITE_NAME)}</b> موقع عربي متخصص في كرة القدم، يقدّم أخبار الكرة المصرية '
               'والعالمية، ومواعيد ونتائج المباريات، وجداول ترتيب أبرز البطولات — في مكان واحد وبواجهة سريعة وبسيطة.</p>')
     ab.append('<h2>ماذا نقدّم؟</h2><ul>'
-              '<li><b>أخبار أصلية:</b> يكتب فريق التحرير مقالات بصياغة أصلية بالكامل، بعد التحقق من الخبر '
+              '<li><b>أخبار أصلية:</b> يكتب <a href="/editors.html">فريق التحرير</a> مقالات بصياغة أصلية بالكامل، بعد التحقق من الخبر '
               'من مصدرين مستقلين على الأقل، دون نقل أو نسخ من مواقع أخرى.</li>'
               '<li><b>عناوين من المصادر:</b> نجمع أحدث عناوين الصحف والمواقع الرياضية مع رابط مباشر إلى المصدر الأصلي '
               'لقراءة التفاصيل كاملة على موقعه.</li>'
@@ -2262,6 +2267,46 @@ def build():
     ab.append(foot())
     write("about.html", "".join(ab))
     urls.append("/about.html")
+
+
+    # ---- editorial team page (فريق التحرير) — publisher identity for the
+    # AdSense / E-E-A-T review (2nd rejection 2026-09-04 cited low value
+    # content); linked from every article byline, the footer and /about ----
+    ed = [head("فريق التحرير — " + SITE_NAME,
+               f"من يقف خلف {SITE_NAME}: مدير التحرير، طريقة عملنا في التحقق من الأخبار، وكيف تتواصل معنا للتصحيح.",
+               SITE_BASE + "/editors.html")]
+    ed.append('<article class="article legal"><h1>فريق التحرير</h1><div class="a-body">')
+    ed.append(f'<p>{esc(SITE_NAME)} موقع مصري مستقل لأخبار كرة القدم ونتائج المباريات. '
+              'يشرف على المحتوى مدير تحرير واحد مسؤول عن كل ما يُنشر، ويتلقى التصحيحات والملاحظات مباشرة.</p>')
+    ed.append('<h2>مدير التحرير</h2>'
+              f'<div class="ed-card"><div class="ed-name">{esc(EDITOR_NAME)}</div>'
+              f'<div class="ed-role">{esc(EDITOR_ROLE)} ومؤسس {esc(SITE_NAME)}</div>'
+              f'<p>مطوّر برمجيات مصري ومتابع للكرة المصرية والأوروبية. يضع السياسة التحريرية للموقع، '
+              'ويراجع ما يُنشر، ويردّ على طلبات التصحيح.</p>'
+              f'<p class="ed-contact">البريد: <a href="mailto:{esc(EDITOR_EMAIL)}">{esc(EDITOR_EMAIL)}</a> · '
+              f'<a href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener">صفحة الموقع على فيسبوك</a></p></div>')
+    ed.append('<h2>كيف نعمل</h2><ul>'
+              '<li><b>التحقق أولًا:</b> لا يُنشر خبر إلا بعد تأكيده من مصدرين مستقلين على الأقل، '
+              'ونتجاهل الشائعات المتضاربة حتى تُحسم.</li>'
+              '<li><b>صياغة أصلية:</b> كل مقال مكتوب بصياغتنا، مع نسبة المعلومات إلى مصادرها ودون اختلاق تصريحات أو أرقام.</li>'
+              '<li><b>بيانات المباريات:</b> النتائج وجداول الترتيب والهدافون تُحدَّث آليًا من مزوّدي بيانات متخصصين، '
+              'وتُراجع قواعد سلامتها باستمرار حتى لا يظهر رقم غير مؤكد.</li>'
+              '<li><b>الصور:</b> نستخدم صورًا مرخّصة للاستخدام الحر فقط، مع ذكر المصوّر والرخصة تحت كل صورة.</li>'
+              '<li><b>التصحيح:</b> عند اكتشاف خطأ نصحّحه في المقال نفسه في أسرع وقت. '
+              f'أبلغنا عبر <a href="mailto:{esc(EDITOR_EMAIL)}">{esc(EDITOR_EMAIL)}</a> أو صفحة '
+              '<a href="/contact.html">اتصل بنا</a>.</li></ul>')
+    ed.append('<p>التفاصيل الكاملة في <a href="/editorial.html">السياسة التحريرية</a>.</p>')
+    ed.append('</div></article>')
+    ed.append(jsonld({
+        "@context": "https://schema.org", "@type": "ProfilePage",
+        "name": f"فريق التحرير — {SITE_NAME}", "url": SITE_BASE + "/editors.html",
+        "mainEntity": {"@type": "Person", "name": EDITOR_NAME, "jobTitle": EDITOR_ROLE,
+                       "email": f"mailto:{EDITOR_EMAIL}", "url": SITE_BASE + "/editors.html",
+                       "worksFor": {"@type": "Organization", "name": SITE_NAME, "url": SITE_BASE}},
+    }))
+    ed.append(foot())
+    write("editors.html", "".join(ed))
+    urls.append("/editors.html")
 
     # ---- contact page (اتصل بنا) ----
     ct = [head("اتصل بنا — " + SITE_NAME,
@@ -3671,6 +3716,12 @@ a{color:inherit}
 .nf-fb{margin-inline-start:auto;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 10px;border-radius:22px;background:#1877f2;color:#fff;font-weight:800;font-size:.85rem;text-decoration:none;box-shadow:0 1px 3px rgba(15,23,42,.12);transition:transform .12s,background .12s}
 .nf-fb:hover{background:#166fe5;transform:translateY(-1px)}
 @media(max-width:560px){.nf-fb{height:36px;width:36px;padding:0;justify-content:center;border-radius:50%;flex:none}.nf-fb .nf-fbt{display:none}.nf-fb svg{width:19px;height:19px}}
+/* /editors.html — editor card */
+.ed-card{border:1px solid #e2e8f0;border-radius:14px;padding:16px 18px;background:#f8fafc;margin:8px 0 18px}
+.ed-name{font-weight:900;font-size:1.25rem;color:var(--green-d)}
+.ed-role{color:#64748b;font-weight:700;margin-bottom:8px}
+.ed-contact{margin:6px 0 0;font-size:.95rem}
+.a-by{color:inherit;text-decoration:none;font-weight:800}.a-by:hover{text-decoration:underline}
 .nf-chip{width:44px;height:44px;border-radius:50%;border:1px solid #e2e8f0;background:#fff;display:inline-flex;align-items:center;justify-content:center;padding:0;cursor:pointer;box-shadow:0 1px 3px rgba(15,23,42,.06);transition:transform .12s,border-color .12s,box-shadow .12s}
 .nf-chip:hover{transform:translateY(-2px);border-color:var(--green)}
 .nf-chip.is-on{border:2px solid #fff;background:#eaf3fa;box-shadow:0 0 0 3px rgba(31,148,211,.35)}   /* white ring inside the blue glow (user 2026-09-02) */
