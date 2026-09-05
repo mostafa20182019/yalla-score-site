@@ -177,7 +177,6 @@
   "detail_fails": 0,
   "skipped": [
    "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
-   "4805128:count-mismatch (0, 0) vs -1--1 []",
    "4805131:count-mismatch (0, 0) vs 1-0 []",
    "4805149:count-mismatch (0, 0) vs 1-0 []"
   ],
@@ -247,5 +246,5 @@
   }
  },
  "match_details": "ok (169)",
- "utc": "2026-09-05T01:20:15Z"
+ "utc": "2026-09-05T01:35:22Z"
 }
