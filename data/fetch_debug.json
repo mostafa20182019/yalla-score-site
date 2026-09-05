@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (1 row(s) corrected, 55 live games)",
+ "reconcile": "ok (1 row(s) corrected, 57 live games)",
  "matches_archive": "ok (457)",
  "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -173,15 +173,15 @@
  },
  "goal_events": "ok (40 games)",
  "goal_events_dbg": {
-  "candidates": 48,
+  "candidates": 50,
   "detail_fails": 0,
   "skipped": [
    "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
    "4805135:count-mismatch (0, 0) vs 1-0 []",
    "4805139:count-mismatch (0, 0) vs 0-2 []",
    "4805154:count-mismatch (0, 0) vs 2-0 []",
-   "4805128:count-mismatch (0, 0) vs -1--1 []",
-   "4805148:count-mismatch (0, 0) vs 1-1 []"
+   "4805125:count-mismatch (0, 0) vs 3-1 []",
+   "4805128:count-mismatch (0, 0) vs -1--1 []"
   ],
   "sample": {
    "game_keys": [
@@ -249,5 +249,5 @@
   }
  },
  "match_details": "ok (190)",
- "utc": "2026-09-05T16:36:09Z"
+ "utc": "2026-09-05T16:52:29Z"
 }
