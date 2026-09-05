@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (1 row(s) corrected, 38 live games)",
+ "reconcile": "ok (2 row(s) corrected, 44 live games)",
  "matches_archive": "ok (457)",
  "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -171,9 +171,9 @@
    "16:تصديات لضربات الجزاء"
   ]
  },
- "goal_events": "ok (26 games)",
+ "goal_events": "ok (32 games)",
  "goal_events_dbg": {
-  "candidates": 30,
+  "candidates": 36,
   "detail_fails": 0,
   "skipped": [
    "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
@@ -190,8 +190,8 @@
     "statusId",
     "seasonNum",
     "stageNum",
-    "legNum",
-    "stageName",
+    "roundNum",
+    "roundName",
     "competitionDisplayName",
     "startTime",
     "statusGroup",
@@ -202,24 +202,19 @@
     "gameTime",
     "gameTimeDisplay",
     "preciseGameTime",
+    "hasLineups",
     "hasMissingPlayers",
+    "hasFieldPositions",
     "winDescription",
-    "homeCompetitor",
-    "awayCompetitor",
-    "stages"
+    "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 6.0, \"addedTime\": 0, \"gameTimeDisplay\": \"6'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 45190845, \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
-   "member0": "{\"competitorId\": 8201, \"id\": 45190845, \"athleteId\": 72937, \"name\": \"محمد شحاتة\", \"shortName\": \"شحاتة\", \"nameForURL\": \"m.-shehata\", \"createdAt\": \"2019-12-21T13:44:33.54\"}"
+   "event0": "null",
+   "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 44, \"createdAt\": \"2015-02-22T13:37:43.157\"}"
   },
   "sample_details": {
-   "event_names": [
-    "Substitution",
-    "Woodwork",
-    "بطاقة صفراء",
-    "هدف"
-   ],
-   "card0": "{\"competitorId\": 12135, \"statusId\": 8, \"stageId\": 9, \"order\": 6, \"num\": 1, \"gameTime\": 47.0, \"addedTime\": 0, \"gameTimeDisplay\": \"47'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 77094425, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 12135, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 5, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 77094425, \"extraPlayers\": [77095488], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "event_names": [],
+   "card0": "null",
+   "sub0": "null",
    "hc_keys": [
     "id",
     "countryId",
@@ -243,9 +238,9 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.1, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"3'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"orde"
   }
  },
- "match_details": "ok (176)",
- "utc": "2026-09-05T13:51:04Z"
+ "match_details": "ok (182)",
+ "utc": "2026-09-05T14:06:03Z"
 }
