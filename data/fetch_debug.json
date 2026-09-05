@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 68 live games)",
+ "reconcile": "ok (2 row(s) corrected, 68 live games)",
  "matches_archive": "ok (457)",
  "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -249,5 +249,5 @@
   }
  },
  "match_details": "ok (197)",
- "utc": "2026-09-05T20:37:07Z"
+ "utc": "2026-09-05T20:50:45Z"
 }
