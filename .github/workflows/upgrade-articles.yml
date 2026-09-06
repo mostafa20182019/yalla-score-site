@@ -1,0 +1,172 @@
+name: Upgrade Articles (AI)
+
+# Daily backfill of the thin archive (AdSense "low value content", 2026-09-04):
+# Claude Code rewrites N short articles/day to the current 500-700-word
+# standard with <h2> sections, named sources and an FAQ — same URL, same
+# image, same story — following .github/prompts/upgrade-article.md.
+# Picker: upgrade_pick.py (newest thin articles first, skips already-upgraded).
+on:
+  schedule:
+    - cron: "30 3 * * *"          # 06:30 Cairo, before the first article slot
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many articles to upgrade in this run"
+        type: string
+        default: "5"
+      account:
+        description: "Claude account to try FIRST (repo default = the PRIMARY_ACCOUNT variable)"
+        type: choice
+        default: "repo default"
+        options:
+          - "repo default"
+          - "1"
+          - "2"
+
+permissions:
+  contents: write
+  actions: write                 # dispatch publish.yml afterwards
+
+concurrency:
+  group: upgrade-articles
+  cancel-in-progress: false
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      HAS_ACCT2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_2 != '' }}
+      PRIMARY_ACCT: ${{ (github.event.inputs.account == '1' || github.event.inputs.account == '2') && github.event.inputs.account || vars.PRIMARY_ACCOUNT || '1' }}
+      UPGRADE_COUNT: ${{ github.event.inputs.count || '5' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          pip install googlenewsdecoder pillow
+
+      - name: Show the queue
+        id: queue
+        run: |
+          echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          python upgrade_pick.py --stats | tee /tmp/stats.txt
+          python upgrade_pick.py --count "$UPGRADE_COUNT" | tee /tmp/queue.txt
+          N=$(python upgrade_pick.py --count "$UPGRADE_COUNT" --json | python -c "import sys,json; print(len(json.load(sys.stdin)))")
+          echo "n=$N" >> "$GITHUB_OUTPUT"
+          {
+            echo "Primary Claude account: **$PRIMARY_ACCT** · requested: **$UPGRADE_COUNT**"
+            echo '```'
+            cat /tmp/stats.txt /tmp/queue.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@v4
+        if: steps.queue.outputs.n != '0'
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code
+        if: steps.queue.outputs.n != '0'
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Upgrade articles (primary account)
+        id: acct1
+        if: steps.queue.outputs.n != '0'
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN_2 || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+        run: |
+          set -o pipefail
+          claude -p "$(cat .github/prompts/upgrade-article.md)" \
+            --model claude-sonnet-5 \
+            --dangerously-skip-permissions | tee /tmp/claude-primary.txt
+          {
+            echo "### تقرير Claude (primary account)"
+            echo '```'
+            tail -n 60 /tmp/claude-primary.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Each article is committed on its own, so a mid-run failure keeps the
+      # finished ones. Drop any half-written working-tree state, then let the
+      # fallback account continue: the picker skips articles that already
+      # carry upgraded_ts, so it simply resumes the queue.
+      - name: Reset half-finished work
+        id: retry
+        if: steps.acct1.outcome == 'failure'
+        run: |
+          git reset --hard HEAD
+          git clean -fd
+          DONE=$(git rev-list --count "$HEAD_BEFORE"..HEAD)
+          echo "Articles committed by the primary account before it failed: $DONE"
+          echo "done=$DONE" >> "$GITHUB_OUTPUT"
+
+      - name: Upgrade articles (fallback account)
+        id: acct2
+        if: steps.acct1.outcome == 'failure' && env.HAS_ACCT2 == 'true'
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN || secrets.CLAUDE_CODE_OAUTH_TOKEN_2 }}
+          UPGRADE_COUNT: ${{ github.event.inputs.count || '5' }}
+        run: |
+          set -o pipefail
+          # the primary may have pushed some articles already; work on what is left
+          REMAIN=$(( UPGRADE_COUNT - ${{ steps.retry.outputs.done || 0 }} ))
+          [ "$REMAIN" -lt 1 ] && { echo "queue already done by the primary account"; exit 0; }
+          export UPGRADE_COUNT=$REMAIN
+          claude -p "$(cat .github/prompts/upgrade-article.md)" \
+            --model claude-sonnet-5 \
+            --dangerously-skip-permissions | tee /tmp/claude-fallback.txt
+          {
+            echo "### تقرير Claude (fallback account)"
+            echo '```'
+            tail -n 60 /tmp/claude-fallback.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Belt and braces: the prompt pushes at the end, but if a run died between
+      # the last commit and the push, push whatever is committed.
+      - name: Push any committed upgrades
+        if: always() && steps.queue.outputs.n != '0'
+        run: |
+          git fetch origin main
+          if [ "$(git rev-list --count origin/main..HEAD)" != "0" ]; then
+            git pull --rebase origin main && git push origin main
+          fi
+
+      - name: Report outcome
+        if: always()
+        run: |
+          git fetch origin main >/dev/null 2>&1 || true
+          N=$(git rev-list --count "$HEAD_BEFORE"..HEAD 2>/dev/null || echo 0)
+          if [ "$N" != "0" ]; then
+            echo "## ✅ تمت ترقية $N مقال(ات) هذا التشغيل" >> "$GITHUB_STEP_SUMMARY"
+            git log --format='- %s' "$HEAD_BEFORE"..HEAD >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⏭ لم تُرقَّ أي مقالة هذا التشغيل" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python upgrade_pick.py --stats >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Flag exhausted accounts
+        if: steps.acct1.outcome == 'failure' && steps.acct2.outcome != 'success'
+        run: |
+          echo "::warning::Upgrade run incomplete - the primary Claude account failed and the fallback did not succeed."
+
+      # GITHUB_TOKEN pushes do not fire publish.yml's on:push — dispatch it so
+      # the upgraded pages deploy now instead of at the next 15-min slot.
+      - name: Dispatch publish workflow
+        if: always() && steps.queue.outputs.n != '0'
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish.yml/dispatches" \
+            -d '{"ref":"main"}'

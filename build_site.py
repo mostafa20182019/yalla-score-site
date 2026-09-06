@@ -1644,10 +1644,13 @@ def build():
         img = a.get("image_url")
         _clubs = article_clubs(a)
         _pub_iso = a.get("pub_ts") or a.get("pub_date")
+        # updated_ts is set by the upgrade-articles workflow (rewrite to the
+        # 500-700-word standard) — dateModified, «آخر تحديث» and sitemap lastmod
+        _mod_iso = a.get("updated_ts") or _pub_iso
         _words = len(strip_tags(a.get("body") or "").split())
         ld = {"@context": "https://schema.org", "@type": "NewsArticle",
               "headline": a["title"], "description": strip_tags(a.get("summary")),
-              "datePublished": _pub_iso, "dateModified": _pub_iso,
+              "datePublished": _pub_iso, "dateModified": _mod_iso,
               "inLanguage": "ar", "mainEntityOfPage": url, "url": url,
               "isAccessibleForFree": True, "articleSection": "كرة القدم",
               "wordCount": _words,
@@ -1682,8 +1685,12 @@ def build():
         p.append('<article class="article">')
         p.append(f'<h1>{esc(a["title"])}</h1>')
         _t = art_reltime(a)
+        _upd = ""
+        if a.get("updated_ts"):
+            _upd = (f' · <span class="a-upd">آخر تحديث <time datetime="{esc(a["updated_ts"])}">'
+                    f'{esc(str(a["updated_ts"])[:10])}</time></span>')
         p.append(f'<p class="a-meta"><a class="a-by" href="/editors.html">{esc(a.get("author"))}</a> · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
-                 f'{" · " + _t if _t else ""}</p>')
+                 f'{" · " + _t if _t else ""}{_upd}</p>')
         if img:
             p.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager">')
             cr = a.get("image_credit")
@@ -1740,7 +1747,7 @@ def build():
         write(f"a/{a['article_id']}.html", _ahtml)
         if _words >= ARTICLE_MIN_WORDS:
             urls.append(f"/a/{a['article_id']}.html")
-            _LASTMOD[f"/a/{a['article_id']}.html"] = _pub_iso
+            _LASTMOD[f"/a/{a['article_id']}.html"] = _mod_iso
     print(f"  + articles: {len(articles)} ({n_thin} thin ones noindexed, < {ARTICLE_MIN_WORDS} words)")
 
     # ---- shared per-league data + stats machinery (matches page + /stats) ----
