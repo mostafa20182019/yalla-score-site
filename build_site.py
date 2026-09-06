@@ -40,6 +40,10 @@ FB_PAGE_URL = "https://www.facebook.com/104238901487012"
 EDITOR_NAME = "مصطفى عبدالسلام"
 EDITOR_ROLE = "مدير التحرير"
 EDITOR_EMAIL = CONTACT_EMAIL
+# Cloudflare Web Analytics (cookie-less page views / referrers / top pages).
+# Paste the 32-char token from Cloudflare -> Analytics & Logs -> Web Analytics
+# -> Add a site (manual install). Empty = no beacon in the pages.
+CF_ANALYTICS_TOKEN = ""
 
 # Feature switches. Flip to True to bring a section back (nav tab, footer link,
 # home teaser, its page, and sitemap entry all follow this flag automatically).
@@ -279,6 +283,14 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 """
     return t
 
+def cf_beacon():
+    """Cloudflare Web Analytics beacon — one deferred script, no cookies, no
+    consent banner needed; inert while CF_ANALYTICS_TOKEN is empty."""
+    if not CF_ANALYTICS_TOKEN:
+        return ""
+    return ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
+            f"data-cf-beacon='{{\"token\": \"{CF_ANALYTICS_TOKEN}\"}}'></script>")
+
 def foot():
     year = "2026"
     stats_link = ' · <a href="/stats.html">إحصائيات</a>' if SHOW_STATS_PAGE else ""
@@ -292,7 +304,7 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
+{cf_beacon()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
 
 def jsonld(obj):
     return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False) + '</script>'
