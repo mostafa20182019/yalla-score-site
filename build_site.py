@@ -346,12 +346,27 @@ def jsonld(obj):
 # (site rebuilds every 30 min, so it stays fresh). Set by build().
 TICKER_HTML = ""
 CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash in build()
-# Articles shorter than this are kept online but noindexed + left out of the
-# sitemap (AdSense "low value content" 2026-09-04). Counted as whitespace
-# tokens of the body: 300 would noindex 301/345 articles (2026-09-06 check —
-# the archive averages ~264 tokens), so the bar stays at 200 and the thin
-# archive is fixed by upgrading articles, not by hiding the site.
-ARTICLE_MIN_WORDS = 200
+# Articles shorter than this are UNLISTED: the page stays online at the same
+# URL, but it is noindexed, left out of the sitemap / news sitemap / RSS, and
+# dropped from every listing on the site (home blocks, /news archives, club
+# pages, match pages, related-article blocks).
+#
+# Raised 200 -> 300 on 2026-09-06 (user decision). He asked whether to DELETE
+# the old archive instead; the numbers said no: 60 of these articles have a
+# live Facebook post pointing at them and 35 are linked from another article,
+# so deleting breaks our main traffic channel — while buying nothing back,
+# since Search Console had 499/500 of them as "discovered, not indexed" anyway.
+# Unlisting shows Google and a browsing reviewer exactly what deletion would,
+# keeps the URL working for anyone arriving from an old post, and is reversible.
+# 294 of 355 articles are under the new bar; upgrade-articles.yml rewrites 5/day
+# to the 500-700-word standard and each one crosses back on its own.
+ARTICLE_MIN_WORDS = 300
+
+def article_words(a):
+    return len(strip_tags(a.get("body") or "").split())
+
+def is_thin(a):
+    return article_words(a) < ARTICLE_MIN_WORDS
 # window.__koTs = epoch-ms of nearby kickoffs (set by build(), injected in
 # foot()) — LIVE_JS uses it to wake its polling right before a match starts
 # instead of sleeping through kickoff on the idle 5-minute cadence.
@@ -1778,7 +1793,12 @@ def build():
     os.makedirs(os.path.join(DIST, "a"), exist_ok=True)
     os.makedirs(os.path.join(DIST, "assets"), exist_ok=True)
 
-    articles = load("articles.json")
+    articles_all = load("articles.json")
+    # `articles_all` -> every piece still gets its own page at its own URL.
+    # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
+    # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
+    # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
+    articles = [a for a in articles_all if not is_thin(a)]
     matches = load("matches.json")
     headlines = load("headlines.json")
     videos = load("videos.json")
@@ -1994,9 +2014,9 @@ def build():
     parts.append(foot())
     write("index.html", "".join(parts))
 
-    # ---- article pages ----
+    # ---- article pages ---- (every article, listed or not, keeps its page)
     n_thin = 0
-    for a in articles:
+    for a in articles_all:
         url = article_url(a)
         img = a.get("image_url")
         _clubs = article_clubs(a)
@@ -2105,7 +2125,8 @@ def build():
         if _words >= ARTICLE_MIN_WORDS:
             urls.append(f"/a/{a['article_id']}.html")
             _LASTMOD[f"/a/{a['article_id']}.html"] = _mod_iso
-    print(f"  + articles: {len(articles)} ({n_thin} thin ones noindexed, < {ARTICLE_MIN_WORDS} words)")
+    print(f"  + articles: {len(articles_all)} pages, {len(articles)} listed "
+          f"({n_thin} unlisted: under {ARTICLE_MIN_WORDS} words, noindexed + out of every listing)")
 
     # ---- shared per-league data + stats machinery (matches page + /stats) ----
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
