@@ -1,2 +1,8 @@
 /*
   Cache-Control: public, max-age=0, must-revalidate
+/assets/*
+  Cache-Control: public, max-age=86400
+/assets/crests/*
+  Cache-Control: public, max-age=2592000, immutable
+/media/*
+  Cache-Control: public, max-age=604800

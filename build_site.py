@@ -202,8 +202,32 @@ def _og_dims(url):
     _OG_DIMS[url] = dims
     return dims
 
+def seo_desc(desc, limit=155):
+    """Meta description: Google shows ~155-160 chars; cut at a word boundary
+    so the snippet never ends mid-word. (og:description keeps the long form.)"""
+    d = " ".join(strip_tags(desc).split())
+    if len(d) <= limit:
+        return d
+    cut = d[:limit].rsplit(" ", 1)[0].rstrip(" ،,.:;-—")
+    return cut + "…"
+
+def seo_title(title, limit=62):
+    """<title>: drop the « — يلا سكور» brand suffix when the whole thing would
+    exceed ~60 chars — Google truncates longer titles and the article headline
+    (the part that carries the query words) matters more than the brand,
+    which is already in og:site_name and the publisher schema."""
+    t = " ".join((title or "").split())
+    if len(t) <= limit:
+        return t
+    for suf in (f" — {SITE_NAME}", f" | {SITE_NAME}", f" - {SITE_NAME}"):
+        if t.endswith(suf):
+            return t[:-len(suf)]
+    return t
+
 def head(title, desc, url, image=None, og_type="website", active=""):
-    desc = strip_tags(desc)[:300]
+    og_desc = strip_tags(desc)[:300]
+    desc = seo_desc(desc)
+    title = seo_title(title)
     # og:image must be a raster — Facebook/Twitter ignore SVG entirely (the
     # homepage once inherited a placeholder SVG from the hero article and FB
     # rendered no preview at all) — and at least 200px. The branded 1200x630
@@ -216,6 +240,11 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     # shares get it) — article 371's post came out with an empty image box on
     # 2026-09-04. Known only for our own files (media/, assets/), read once.
     ogw, ogh = _og_dims(img)
+    # Tiny images (club crests ~95px on match/team pages) are below Facebook's
+    # 200px minimum and look broken in Discover/Twitter cards → use the banner.
+    if ogw and ogw < 400:
+        img = SITE_BASE + "/assets/og-banner.png"
+        ogw, ogh = _og_dims(img)
     og_type_img = "png" if img.lower().endswith(".png") else "jpeg"
     og_dims = (
         f'\n<meta property="og:image:width" content="{ogw}">'
@@ -245,19 +274,20 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{esc(url)}">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="google-site-verification" content="mMvVRBkeRXu37K-dU3QCrngUUJs9a2FfwpJNX3CHcpk">
 <meta property="og:type" content="{og_type}">
 <meta property="og:site_name" content="{esc(SITE_NAME)}">
 <meta property="og:locale" content="{LOCALE}">
 <meta property="og:title" content="{esc(title)}">
-<meta property="og:description" content="{esc(desc)}">
+<meta property="og:description" content="{esc(og_desc)}">
 <meta property="og:url" content="{esc(url)}">
 <meta property="og:image" content="{esc(img)}">{og_dims}
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="{esc(title)}">
-<meta name="twitter:description" content="{esc(desc)}">
+<meta name="twitter:description" content="{esc(og_desc)}">
 <meta name="twitter:image" content="{esc(img)}">
+<link rel="alternate" type="application/rss+xml" title="{esc(SITE_NAME)}" href="/feed.xml">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -900,6 +930,75 @@ LIVE_JS = r"""<script>
 def article_url(a):
     return f"{SITE_BASE}/a/{a['article_id']}.html"
 
+# sitemap <lastmod> per URL path (set where the page's real change date is
+# known: articles = publish time, match pages = kickoff/today). Pages that
+# are rebuilt with fresh data every run default to today in the writer;
+# static legal pages get none.
+_LASTMOD = {}
+
+def breadcrumb_ld(items):
+    """BreadcrumbList JSON-LD from [(name, absolute_url), ...]."""
+    return jsonld({
+        "@context": "https://schema.org", "@type": "BreadcrumbList",
+        "itemListElement": [
+            {"@type": "ListItem", "position": i + 1, "name": n, "item": u}
+            for i, (n, u) in enumerate(items)]})
+
+_ART_CLUBS = {}
+def article_clubs(a):
+    """TEAM_PAGES entries an article talks about (cached per article id)."""
+    k = a.get("article_id")
+    if k not in _ART_CLUBS:
+        _ART_CLUBS[k] = [tp for tp in TEAM_PAGES if _team_news(tp, a)]
+    return _ART_CLUBS[k]
+
+_KW_STOP = {"مباراة", "الدوري", "أمام", "بعد", "قبل", "خلال", "اليوم", "المصري",
+            "الفريق", "نادي", "لاعب", "الجولة", "موعد", "نتيجة", "تقرير", "المباراة",
+            "بطولة", "دوري", "أبطال", "الموسم", "الجديد", "يعلن", "رسميًا", "رسميا"}
+def _art_kw(a):
+    return {w.strip("،:.,؟!\"'()«»") for w in (a.get("title") or "").split()
+            if len(w.strip("،:.,؟!\"'()«»")) >= 4} - _KW_STOP
+
+def related_articles(a, articles, n=4):
+    """Articles worth linking from `a`: same match (preview <-> report),
+    shared curated club(s), shared title words; newest first on ties, then
+    padded with the newest articles so every page links to n others."""
+    my_clubs = {tp["slug"] for tp in article_clubs(a)}
+    my_kw = _art_kw(a)
+    scored = []
+    for i, b in enumerate(articles):
+        if b.get("article_id") == a.get("article_id"):
+            continue
+        s = 0
+        if a.get("match_id") and b.get("match_id") == a.get("match_id"):
+            s += 10
+        s += 3 * len(my_clubs & {tp["slug"] for tp in article_clubs(b)})
+        s += min(3, len(my_kw & _art_kw(b)))
+        if s:
+            scored.append((s, -i, b))
+    scored.sort(key=lambda t: (t[0], t[1]), reverse=True)
+    out = [b for _, _, b in scored[:n]]
+    for b in articles:
+        if len(out) >= n:
+            break
+        if b.get("article_id") != a.get("article_id") and b not in out:
+            out.append(b)
+    return out
+
+def _rfc822(a):
+    """RSS pubDate from pub_ts (full ISO) or pub_date (noon Cairo)."""
+    ts = a.get("pub_ts") or ""
+    try:
+        dt = datetime.datetime.fromisoformat(ts.replace("Z", "+00:00"))
+    except Exception:
+        try:
+            from zoneinfo import ZoneInfo
+            dt = datetime.datetime.fromisoformat(f"{a.get('pub_date')}T12:00:00").replace(
+                tzinfo=ZoneInfo("Africa/Cairo"))
+        except Exception:
+            return ""
+    return dt.strftime("%a, %d %b %Y %H:%M:%S %z")
+
 def headline_card(h):
     """One external-headline card (home teaser + /headlines.html page)."""
     t = strip_src(h.get("title"), h.get("source"))
@@ -1285,10 +1384,21 @@ def build():
     feat = articles[0] if articles else None    # og:image source
     parts = [head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
                   image=(feat and feat.get("image_url")) or None, active="home")]
+    # Organization (publisher identity: logo + Facebook page + contact) and
+    # WebSite in one graph — the entity Google ties every NewsArticle's
+    # `publisher` and the brand-name query to.
     parts.append(jsonld({
-        "@context": "https://schema.org", "@type": "WebSite",
-        "name": SITE_NAME, "url": SITE_BASE + "/",
-        "inLanguage": "ar", "description": strip_tags(SITE_DESC)}))
+        "@context": "https://schema.org",
+        "@graph": [
+            {"@type": "Organization", "@id": SITE_BASE + "/#org",
+             "name": SITE_NAME, "url": SITE_BASE + "/",
+             "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"},
+             "sameAs": [FB_PAGE_URL],
+             "email": "yallascore.eg@gmail.com"},
+            {"@type": "WebSite", "@id": SITE_BASE + "/#website",
+             "name": SITE_NAME, "url": SITE_BASE + "/",
+             "inLanguage": "ar", "description": strip_tags(SITE_DESC),
+             "publisher": {"@id": SITE_BASE + "/#org"}}]}))
     # single-column home since 2026-09-01 (the transfers rail — the only
     # left-column tenant — was removed by user decision, replaced by the
     # FotMob-style blocks). The ad strip keeps its place ABOVE آخر الأخبار
@@ -1387,18 +1497,39 @@ def build():
     for a in articles:
         url = article_url(a)
         img = a.get("image_url")
+        _clubs = article_clubs(a)
+        _pub_iso = a.get("pub_ts") or a.get("pub_date")
+        _words = len(strip_tags(a.get("body") or "").split())
         ld = {"@context": "https://schema.org", "@type": "NewsArticle",
               "headline": a["title"], "description": strip_tags(a.get("summary")),
-              "datePublished": a.get("pub_date"), "dateModified": a.get("pub_date"),
-              "inLanguage": "ar", "mainEntityOfPage": url,
+              "datePublished": _pub_iso, "dateModified": _pub_iso,
+              "inLanguage": "ar", "mainEntityOfPage": url, "url": url,
+              "isAccessibleForFree": True, "articleSection": "كرة القدم",
+              "wordCount": _words,
               "author": {"@type": "Organization", "name": a.get("author") or SITE_NAME,
                          "url": SITE_BASE + "/editors.html"},
-              "publisher": {"@type": "Organization", "name": SITE_NAME,
+              "publisher": {"@type": "Organization", "@id": SITE_BASE + "/#org",
+                            "name": SITE_NAME, "url": SITE_BASE + "/",
+                            "sameAs": [FB_PAGE_URL],
                             "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"}}}
-        if img: ld["image"] = [img]
+        if _clubs:
+            ld["keywords"] = ", ".join(tp["name"] for tp in _clubs)
+            ld["about"] = [{"@type": "SportsTeam", "name": tp["name"],
+                            "url": f'{SITE_BASE}/team/{tp["slug"]}.html'} for tp in _clubs]
+        if img:
+            _iw, _ih = _og_dims(img)
+            ld["image"] = ([{"@type": "ImageObject", "url": img, "width": _iw, "height": _ih}]
+                           if _iw else [img])
         p = [head(f"{a['title']} — {SITE_NAME}", a.get("summary"), url, image=img, og_type="article")]
         p.append(jsonld(ld))
-        p.append('<a class="back" href="/">→ رجوع للرئيسية</a>')
+        _crumbs = [("أخبار", SITE_BASE + "/"), ("كل الأخبار", SITE_BASE + "/news.html")]
+        if _clubs:
+            _crumbs.append((_clubs[0]["name"], f'{SITE_BASE}/team/{_clubs[0]["slug"]}.html'))
+        p.append(breadcrumb_ld(_crumbs + [(a["title"], url)]))
+        p.append('<nav class="crumbs">'
+                 + " › ".join(f'<a href="{esc(u.replace(SITE_BASE, "") or "/")}">{esc(n)}</a>'
+                              for n, u in _crumbs)
+                 + '</nav>')
         p.append('<article class="article">')
         p.append(f'<h1>{esc(a["title"])}</h1>')
         _t = art_reltime(a)
@@ -1413,20 +1544,32 @@ def build():
         if a.get("summary"):
             p.append(f'<p class="lead">{esc(a["summary"])}</p>')
         p.append(f'<div class="a-body">{a.get("body") or ""}</div>')
-        _clubs = [tp for tp in TEAM_PAGES if _team_news(tp, a)]
         if _clubs:
             p.append('<nav class="club-chips"><span>المزيد عن:</span>'
                      + "".join(f'<a href="/team/{tp["slug"]}.html">'
                                f'{esc(tp["name"])}</a>' for tp in _clubs)
                      + '</nav>')
         p.append('</article>')
+        # related articles: internal links between pieces about the same
+        # match/club/topic — articles used to get ~2 inbound links each (only
+        # from listing pages), so deep crawl + PageRank flow was weak.
+        _rel = related_articles(a, articles)
+        if _rel:
+            p.append('<section class="minfo related"><h2>مقالات ذات صلة</h2><ul class="mp-newslist">')
+            for b in _rel:
+                _bt = art_reltime(b)
+                p.append(f'<li><a href="/a/{b["article_id"]}.html">{esc(b["title"])}</a>'
+                         + (f' <span class="club-when">({_bt})</span>' if _bt else "")
+                         + '</li>')
+            p.append('</ul></section>')
         p.append(foot())
         _ahtml = "".join(p)
-        if len(strip_tags(a.get("body") or "").split()) < 200:
+        if _words < 200:
             # legacy short pieces: keep the URL alive but out of the index
             _ahtml = _ahtml.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
         write(f"a/{a['article_id']}.html", _ahtml)
         urls.append(f"/a/{a['article_id']}.html")
+        _LASTMOD[f"/a/{a['article_id']}.html"] = _pub_iso
 
     # ---- shared per-league data + stats machinery (matches page + /stats) ----
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
@@ -1677,6 +1820,10 @@ def build():
     p = [head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
               "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
               SITE_BASE + "/matches.html", active="matches")]
+    # the page had no <h1> at all (its visible heading structure starts at the
+    # league sidebar's h2); a screen-reader-only h1 names the page for crawlers
+    # without touching the FotMob-style layout
+    p.append('<h1 class="sr-only">مواعيد ونتائج مباريات اليوم بتوقيت القاهرة</h1>')
     p.append('<div class="mpage">')
 
     # --- right rail (RTL start): leagues filter ---
@@ -1952,14 +2099,25 @@ def build():
         mp.append(jsonld({
             "@context": "https://schema.org", "@type": "SportsEvent",
             "name": f"{h_ar} ضد {a_ar} — {comp}",
+            "description": strip_tags(desc),
+            "url": SITE_BASE + murl,
             "startDate": start_iso,
             "eventStatus": ("https://schema.org/EventPostponed"
                             if st == "POSTPONED"
                             else "https://schema.org/EventScheduled"),
             "homeTeam": {"@type": "SportsTeam", "name": h_ar},
             "awayTeam": {"@type": "SportsTeam", "name": a_ar},
+            "organizer": {"@type": "SportsOrganization", "name": comp},
         }))
+        mp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                 ("المباريات", SITE_BASE + "/matches.html"),
+                                 (comp, SITE_BASE + murl)]))
         mp.append(foot())
+        # lastmod: a page whose match is recent/upcoming changes every run;
+        # an old finished match settled around its kickoff day.
+        _LASTMOD[murl] = (REF_TODAY if m["kickoff"] >= (datetime.date.today()
+                                                        - datetime.timedelta(days=2)).isoformat()
+                          else m["kickoff"])
         # AdSense "low value content" rejection (2026-09-04): 457 templated
         # match pages vs 325 articles in the sitemap. A match page with no
         # real content yet (no scorers, no lineups/details) stays reachable
@@ -2004,6 +2162,9 @@ def build():
                         "النقاط والمباريات والأهداف وفارق الأهداف "
                         "ونتائج آخر 5 مباريات لكل فريق.",
                         SITE_BASE + st_url, active="matches")]
+            sp2.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                      ("المباريات", SITE_BASE + "/matches.html"),
+                                      (f"ترتيب {label}", SITE_BASE + st_url)]))
             sp2.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                        f'<a href="/matches.html">المباريات</a> › ترتيب {esc(label)}</nav>')
             sp2.append(f'<h1 class="page-h">ترتيب {esc(label)} {esc(season)}</h1>')
@@ -2108,6 +2269,9 @@ def build():
         img = (crest if crest.startswith("http")
                else SITE_BASE + crest) if crest else None
         pt = [head(title, desc, SITE_BASE + t_url, image=img)]
+        pt.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                 ("المباريات", SITE_BASE + "/matches.html"),
+                                 (name, SITE_BASE + t_url)]))
         pt.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                   f'<a href="/matches.html">المباريات</a> › {esc(name)}</nav>')
         _img = (f'<img class="club-crest" src="{esc(crest)}" alt="{esc(name)}" '
@@ -2572,16 +2736,54 @@ def build():
             ns.append(f"  <url><loc>{esc(article_url(a))}</loc><news:news>"
                       f"<news:publication><news:name>{esc(SITE_NAME)}</news:name>"
                       "<news:language>ar</news:language></news:publication>"
-                      f"<news:publication_date>{esc(a['pub_date'])}</news:publication_date>"
+                      f"<news:publication_date>{esc(a.get('pub_ts') or a['pub_date'])}</news:publication_date>"
                       f"<news:title>{esc(a['title'])}</news:title></news:news></url>")
     ns.append("</urlset>")
     write("sitemap-news.xml", "\n".join(ns))
+    # RSS 2.0 feed: newest 30 articles (aggregators, Google News/Discover
+    # discovery, and anyone following the site outside Facebook).
+    rss = ['<?xml version="1.0" encoding="UTF-8"?>',
+           '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" '
+           'xmlns:media="http://search.yahoo.com/mrss/">', '<channel>',
+           f'<title>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</title>',
+           f'<link>{SITE_BASE}/</link>',
+           f'<description>{esc(strip_tags(SITE_DESC))}</description>',
+           '<language>ar</language>',
+           f'<atom:link href="{SITE_BASE}/feed.xml" rel="self" type="application/rss+xml"/>',
+           f'<image><url>{SITE_BASE}/assets/logo.png</url><title>{esc(SITE_NAME)}</title>'
+           f'<link>{SITE_BASE}/</link></image>']
+    _lb = _rfc822(articles[0]) if articles else ""
+    if _lb:
+        rss.append(f'<lastBuildDate>{_lb}</lastBuildDate>')
+    for a in articles[:30]:
+        _u = article_url(a)
+        _d = _rfc822(a)
+        _img = a.get("image_url") or ""
+        rss.append('<item>'
+                   f'<title>{esc(a["title"])}</title>'
+                   f'<link>{esc(_u)}</link>'
+                   f'<guid isPermaLink="true">{esc(_u)}</guid>'
+                   + (f'<pubDate>{_d}</pubDate>' if _d else "")
+                   + f'<description>{esc(strip_tags(a.get("summary")))}</description>'
+                   + (f'<media:content url="{esc(_img)}" medium="image"/>' if _img else "")
+                   + '</item>')
+    rss.append('</channel></rss>')
+    write("feed.xml", "\n".join(rss))
     if ADSENSE_CLIENT:   # AdSense seller declaration (clears the ads.txt warning)
         write("ads.txt", f"google.com, {ADSENSE_CLIENT.replace('ca-', '')}, DIRECT, f08c47fec0942fa0\n")
+    # <lastmod> tells Google which of the ~600 URLs actually changed since its
+    # last crawl (it ignores changefreq/priority but uses lastmod). Listing,
+    # team, standings and scorers pages are rebuilt with fresh data every
+    # run -> today; legal/static pages carry none.
+    _dyn = ("/", "/matches.html", "/news.html", "/stats.html")
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for u in urls:
-        sm.append(f"  <url><loc>{esc(SITE_BASE + u)}</loc></url>")
+        lm = _LASTMOD.get(u)
+        if not lm and (u in _dyn or u.startswith(("/news/", "/team/", "/standings/", "/scorers/"))):
+            lm = REF_TODAY
+        sm.append(f"  <url><loc>{esc(SITE_BASE + u)}</loc>"
+                  + (f"<lastmod>{esc(lm)}</lastmod>" if lm else "") + "</url>")
     sm.append("</urlset>")
     write("sitemap.xml", "\n".join(sm))
 
@@ -3633,6 +3835,11 @@ a{color:inherit}
 .mstretch{position:absolute;inset:0;z-index:1;border-radius:12px}
 .mrow:has(.mstretch):hover{border-color:#94a3b8;box-shadow:0 2px 8px rgba(15,23,42,.12)}
 /* per-match page (/m/<id>.html) */
+.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.related{max-width:860px}
+.related .mp-newslist li{margin:7px 0;line-height:1.6}
+.related .mp-newslist a{font-weight:800;color:var(--ink);text-decoration:none}
+.related .mp-newslist a:hover{color:var(--green-d)}
 .crumbs{font-size:.8rem;color:var(--muted);margin:10px 0}
 .crumbs a{color:var(--muted)}
 .minfo{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:14px 18px;margin:14px 0}
