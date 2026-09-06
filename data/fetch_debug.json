@@ -7,7 +7,7 @@
  "CAF Champions League": "ok (no table)",
  "reconcile": "ok (0 row(s) corrected, 85 live games)",
  "matches_archive": "ok (481)",
- "standings": "ok (4)",
+ "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
@@ -257,5 +257,5 @@
   "fails": 0
  },
  "match_details": "ok (216)",
- "utc": "2026-09-06T19:20:00Z"
+ "utc": "2026-09-06T19:35:31Z"
 }
