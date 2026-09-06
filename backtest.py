@@ -87,6 +87,73 @@ def rest_index(bycomp):
     return idx
 
 
+def absence_index(details, comp_of, min_prior=2, core_rate=0.6, replacement=6.3):
+    """((comp, club), date) -> 0..1 'how much of the usual XI is missing today'.
+
+    A club's regulars are the players who started >= core_rate of its EARLIER
+    matches; today's XI is compared against them and each missing regular is
+    weighted by how far his average rating sits above replacement level, so
+    losing a 7.6 starter counts more than losing a 6.4 one.
+
+    Clubs are keyed by (competition, name) on purpose: «الأهلي» is both Al Ahly
+    of Egypt and Al-Ahli of Saudi in the feed, and keying by name alone mixed
+    their squads — every Egyptian regular then looked absent (score 1.00) in a
+    Saudi match. Same class of bug as the favourite-club card, 2026-08-22.
+
+    Only useful once clubs have several stored lineups; returns None while a
+    club has fewer than min_prior earlier ones.
+    """
+    det = [e for e in (details or [])
+           if (e.get("lineups") or {}).get("h", {}).get("xi")
+           and (e.get("lineups") or {}).get("a", {}).get("xi")
+           and comp_of(e.get("home"), e.get("away"), e.get("date"))]
+    det.sort(key=lambda e: e["date"])
+    hist, xi_at, rating = collections.defaultdict(list), {}, {}
+    for e in det:
+        comp = comp_of(e["home"], e["away"], e["date"])
+        for side, club in (("h", e["home"]), ("a", e["away"])):
+            key = (comp, club)
+            xi = e["lineups"][side]["xi"]
+            aids = {p["aid"] for p in xi}
+            xi_at[(key, e["date"])] = aids
+            hist[key].append((e["date"], aids))
+            for p in xi:
+                if p.get("rt") is not None:
+                    rating.setdefault((key, p["aid"]), []).append(float(p["rt"]))
+
+    def weight(key, aid):
+        rs = rating.get((key, aid)) or [replacement + 0.5]
+        return max(0.0, sum(rs) / len(rs) - replacement)
+
+    out = {}
+    for (key, date), today in xi_at.items():
+        prior = [a for d, a in hist[key] if d < date]
+        if len(prior) < min_prior:
+            continue
+        cnt = collections.Counter(a for s in prior for a in s)
+        core = {a for a, n in cnt.items() if n / len(prior) >= core_rate}
+        if not core:
+            out[(key, date)] = 0.0
+            continue
+        tot = sum(weight(key, a) for a in core) or 1.0
+        out[(key, date)] = sum(weight(key, a) for a in core - today) / tot
+    return out
+
+
+def f_absence(alpha=0.25, beta=0.15):
+    """User's idea (2026-09-06): once the XI is published (~1h before kick-off)
+    a club missing its regulars — or getting them back — should move the numbers.
+    A club with absence score s scores less (x 1-alpha*s) and concedes more
+    (opponent x 1+beta*s)."""
+    def f(m, ctx):
+        ai, comp = ctx.get("absence") or {}, m.get("_comp")
+        sh = ai.get(((comp, m["home"]), m["kickoff"]), 0.0)
+        sa = ai.get(((comp, m["away"]), m["kickoff"]), 0.0)
+        return ((1 - alpha * sh) * (1 + beta * sa),
+                (1 - alpha * sa) * (1 + beta * sh))
+    return f
+
+
 def red_index(details):
     """(team, date) -> players sent off in that club's match on that date, so a
     factor can ask 'did this club have a man sent off in its previous game?'"""
@@ -137,7 +204,7 @@ class Score:
 
 
 # ---------------------------------------------------------------- the replay
-def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None):
+def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None, only_active=False):
     """Walk-forward replay. Returns (overall Score, {comp: Score}, [rows])."""
     saved = {k: getattr(A, k) for k in ("PRIOR_TEAM", "PRIOR_LEAGUE", "ELO_K",
                                         "ELO_HFA", "ELO_GOAL_EXP", "DEF_HOME_MU",
@@ -158,9 +225,13 @@ def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None):
                     continue          # cold start: no history for one of the clubs
                 params = A.league_params(train)
                 lh, la, _, _ = A.lambdas(stats, params, m["home"], m["away"])
+                moved = False
                 if factor:
-                    fh, fa = factor(m, ctx or {})
+                    fh, fa = factor(dict(m, _comp=comp), ctx or {})
+                    moved = abs(fh - 1) > 1e-9 or abs(fa - 1) > 1e-9
                     lh, la = lh * fh, la * fa
+                if only_active and not moved:
+                    continue
                 p = A.outcome_from_lambdas(lh, la)
                 probs = {"H": p["ph"], "D": p["pd"], "A": p["pa"]}
                 real = outcome(m["home_score"], m["away_score"])
@@ -235,6 +306,8 @@ VARIANTS = {
     "elo-k-40": lambda: {"params": {"ELO_K": 40.0}},
     "hfa-0": lambda: {"params": {"ELO_HFA": 0.0}},
     "rest-penalty": lambda: {"factor": f_rest()},
+    "absence": lambda: {"factor": f_absence()},
+    "absence-strong": lambda: {"factor": f_absence(0.45, 0.30)},
     "red-card-penalty": lambda: {"factor": f_red()},
 }
 
@@ -265,11 +338,20 @@ def main():
     ap.add_argument("--calib", action="store_true")
     ap.add_argument("--min-prior", type=int, default=1)
     ap.add_argument("--min-league", type=int, default=5)
+    ap.add_argument("--probe", help="factor name whose active matches define the --only-active subset")
+    ap.add_argument("--only-active", action="store_true",
+                    help="score ONLY the matches a candidate factor actually moves")
     ap.add_argument("--json")
     args = ap.parse_args()
 
     bycomp = A.season_matches(load("fixtures.json"), load("matches_archive.json"))
-    ctx = {"rest": rest_index(bycomp), "reds": red_index(load("match_details.json"))}
+    details = load("match_details.json")
+    comp_idx = {}
+    for comp, ms in bycomp.items():
+        for m in ms:
+            comp_idx[(m["home"], m["away"], m["kickoff"])] = comp
+    ctx = {"rest": rest_index(bycomp), "reds": red_index(details),
+           "absence": absence_index(details, lambda h, a, d: comp_idx.get((h, a, d)))}
     prev = {}
     last = {}
     pool = sorted({(m.get("match_id") or (m["home"], m["away"], m["kickoff"])): m
@@ -311,14 +393,31 @@ def main():
             if n >= 10:
                 print(f'{b * 10:>4}-{b * 10 + 10:<5} {n:5} {sp / n * 100:9.1f}% {hit / n * 100:8.1f}%')
 
+    ref = None
     if args.variants:
+        ref = lr
+        if args.only_active:
+            # A factor that leaves 80% of matches untouched has its effect diluted
+            # to nothing when scored over all of them. --only-active scores just
+            # the matches the probe factor actually moves, and rebuilds the live
+            # reference over that same subset so the comparison stays like-for-like.
+            probe = VARIANTS[args.probe or "absence"]()
+            moved = run(bycomp, probe, args.min_prior, args.min_league, ctx, True)[2]
+            keys = {(r["comp"], r["date"], r["home"], r["away"]) for r in moved}
+            sub = Score()
+            for r in rows:
+                if (r["comp"], r["date"], r["home"], r["away"]) in keys:
+                    sub.add(r["probs"], r["real"])
+            ref = sub.row()
+            print(f"\n(subset: the {ref['n'] if ref else 0} matches "
+                  f"'{args.probe or 'absence'}' actually moves)")
         print("\n=== candidates (ship one ONLY if brier AND logloss both improve)")
-        print(fmt("live", lr))
+        print(fmt("live", ref))
         for name, mk in VARIANTS.items():
             if name == "live":
                 continue
-            s, _, _ = run(bycomp, mk(), args.min_prior, args.min_league, ctx)
-            print(fmt(name, s.row(), lr))
+            s, _, _ = run(bycomp, mk(), args.min_prior, args.min_league, ctx, args.only_active)
+            print(fmt(name, s.row(), ref))
 
     if args.sweep:
         key, values = SWEEPS[args.sweep]
@@ -327,8 +426,12 @@ def main():
             s, _, _ = run(bycomp, {"params": {key: v}}, args.min_prior, args.min_league, ctx)
             print(fmt(f"{key}={v}", s.row(), lr))
 
-    print(f"\nSample warning: {lr['n']} scored matches. A brier difference smaller than "
-          f"~{0.9 / math.sqrt(lr['n']):.4f} is inside the noise of this sample — "
+    # the warning must describe the sample actually scored above, not the full
+    # pool: with --only-active the comparison ran on a much smaller subset and
+    # quoting 145 there would understate the noise it has to beat.
+    n_ref = (ref or lr)["n"]
+    print(f"\nSample warning: {n_ref} scored matches. A brier difference smaller than "
+          f"~{0.9 / math.sqrt(n_ref):.4f} is inside the noise of this sample — "
           "do not ship a change on it. Re-run as the season grows.")
 
     if args.json:
