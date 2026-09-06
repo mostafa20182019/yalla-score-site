@@ -87,56 +87,17 @@ def rest_index(bycomp):
     return idx
 
 
-def absence_index(details, comp_of, min_prior=2, core_rate=0.6, replacement=6.3):
+def absence_index(details, comp_of):
     """((comp, club), date) -> 0..1 'how much of the usual XI is missing today'.
-
-    A club's regulars are the players who started >= core_rate of its EARLIER
-    matches; today's XI is compared against them and each missing regular is
-    weighted by how far his average rating sits above replacement level, so
-    losing a 7.6 starter counts more than losing a 6.4 one.
-
-    Clubs are keyed by (competition, name) on purpose: «الأهلي» is both Al Ahly
-    of Egypt and Al-Ahli of Saudi in the feed, and keying by name alone mixed
-    their squads — every Egyptian regular then looked absent (score 1.00) in a
-    Saudi match. Same class of bug as the favourite-club card, 2026-08-22.
-
-    Only useful once clubs have several stored lineups; returns None while a
-    club has fewer than min_prior earlier ones.
-    """
-    det = [e for e in (details or [])
-           if (e.get("lineups") or {}).get("h", {}).get("xi")
-           and (e.get("lineups") or {}).get("a", {}).get("xi")
-           and comp_of(e.get("home"), e.get("away"), e.get("date"))]
-    det.sort(key=lambda e: e["date"])
-    hist, xi_at, rating = collections.defaultdict(list), {}, {}
-    for e in det:
-        comp = comp_of(e["home"], e["away"], e["date"])
-        for side, club in (("h", e["home"]), ("a", e["away"])):
-            key = (comp, club)
-            xi = e["lineups"][side]["xi"]
-            aids = {p["aid"] for p in xi}
-            xi_at[(key, e["date"])] = aids
-            hist[key].append((e["date"], aids))
-            for p in xi:
-                if p.get("rt") is not None:
-                    rating.setdefault((key, p["aid"]), []).append(float(p["rt"]))
-
-    def weight(key, aid):
-        rs = rating.get((key, aid)) or [replacement + 0.5]
-        return max(0.0, sum(rs) / len(rs) - replacement)
-
+    Thin wrapper over analysis.SquadIndex so the harness and the live site score
+    absences with exactly the same definition (see that class for the rules and
+    for why clubs are keyed by competition as well as name)."""
+    sq = A.SquadIndex(details, comp_of)
     out = {}
-    for (key, date), today in xi_at.items():
-        prior = [a for d, a in hist[key] if d < date]
-        if len(prior) < min_prior:
-            continue
-        cnt = collections.Counter(a for s in prior for a in s)
-        core = {a for a, n in cnt.items() if n / len(prior) >= core_rate}
-        if not core:
-            out[(key, date)] = 0.0
-            continue
-        tot = sum(weight(key, a) for a in core) or 1.0
-        out[(key, date)] = sum(weight(key, a) for a in core - today) / tot
+    for (key, date) in sq.xi:
+        r = sq.report(key[0], key[1], date)
+        if r is not None:
+            out[(key, date)] = r["score"]
     return out
 
 

@@ -1052,6 +1052,77 @@ def fetch_goal_events():
     dbg["skipped"] = dbg["skipped"][:6]
     return out, dbg
 
+PREMATCH_WINDOW_MIN = 160   # start looking this many minutes before kick-off
+PREMATCH_CAP = 14           # detail calls per run, on top of the goal-events ones
+
+def fetch_prematch_lineups():
+    """Confirmed starting XIs for matches about to kick off.
+
+    365scores publishes a game's lineups roughly an hour before kick-off; the
+    site rebuilds every ~15 min, so fetching scheduled games inside a ~2.5h
+    window catches the XI within minutes of it being announced. Until now
+    lineups were only ever stored AFTER the match (fetch_goal_events only looks
+    at statusGroup 3/4), so the site could never say who was missing while it
+    still mattered to the reader.
+
+    Entries are shaped exactly like the post-match ones (so update_match_details
+    merges them on the same key) but carry `pre: True` and empty goals/cards/
+    subs. When the match finishes, that run's post-match entry overwrites this
+    one — read_items() seeds the merge and fresh entries win.
+
+    Returns ([entries], debug dict). Never raises: a failure here must not cost
+    the run its goal events.
+    """
+    now = datetime.now(CAIRO)
+    q = f"appTypeId=5&competitions={S365_ALL_COMPS}&langId=27&timezoneName=Africa/Cairo"
+    cands, dbg = {}, {"in_window": 0, "fetched": 0, "with_xi": 0, "fails": 0}
+    try:
+        time.sleep(1)
+        games = (_s365(f"games/current/?{q}&showOdds=false").get("games") or [])
+    except Exception as e:
+        dbg["error"] = repr(e)
+        return [], dbg
+    for g in games:
+        if g.get("statusGroup") != 2:          # scheduled only
+            continue
+        try:
+            ko = datetime.fromisoformat(g.get("startTime") or "").astimezone(CAIRO)
+        except Exception:
+            continue
+        mins = (ko - now).total_seconds() / 60.0
+        if not (0 <= mins <= PREMATCH_WINDOW_MIN):
+            continue
+        cands[g.get("id")] = (g, ko.strftime("%Y-%m-%d"), mins)
+    dbg["in_window"] = len(cands)
+    # closest to kick-off first (most likely to have the XI out), curated clubs ahead
+    ordered = sorted(cands.items(), key=lambda kv: kv[1][2])
+    ordered.sort(key=lambda kv: 0 if any(
+        t in (((kv[1][0].get("homeCompetitor") or {}).get("name") or "") + "|"
+              + ((kv[1][0].get("awayCompetitor") or {}).get("name") or ""))
+        for t in GOAL_PRIORITY) else 1)
+    out = []
+    for gid, (g0, date, _mins) in ordered[:PREMATCH_CAP]:
+        try:
+            time.sleep(0.6)
+            j = _s365(f"game/?appTypeId=5&langId=27&gameId={gid}")
+        except Exception:
+            dbg["fails"] += 1
+            continue
+        dbg["fetched"] += 1
+        game = j.get("game") or {}
+        details = _detail_rows(game, (g0.get("homeCompetitor") or {}).get("id"))
+        lu = details.get("lineups") or {}
+        # store ONLY when an XI is actually out - an empty pre-match entry would
+        # add nothing and would sit in the file until the match is played
+        if not ((lu.get("h") or {}).get("xi") or (lu.get("a") or {}).get("xi")):
+            continue
+        dbg["with_xi"] += 1
+        h = game.get("homeCompetitor") or g0.get("homeCompetitor") or {}
+        a = game.get("awayCompetitor") or g0.get("awayCompetitor") or {}
+        out.append({"home": h.get("name"), "away": a.get("name"), "date": date,
+                    "goals": [], "pre": True, **details})
+    return out, dbg
+
 # ---------------------------------------------------------------- top scorers
 # 365scores is the source: Arabic player names for EVERY league, including the
 # Egyptian/Turkish/Saudi ones football-data's free tier doesn't carry.
@@ -1337,7 +1408,18 @@ if __name__ == "__main__":
         write_items("goal_events.json", goal_events)
         print(f"goal events: {len(goal_events)} games")
         try:
-            n_det = update_match_details(goal_events)
+            # pre-match XIs (published ~1h before kick-off) ride the same store,
+            # so /m/ pages can name the absentees while it still matters
+            pre, pre_dbg = fetch_prematch_lineups()
+            _DBG["prematch_lineups"] = f"ok ({len(pre)} with XI)"
+            _DBG["prematch_dbg"] = pre_dbg
+            print(f"pre-match lineups: {len(pre)} games")
+        except Exception as e:
+            pre = []
+            print(f"  ! pre-match lineups failed ({e})")
+            _DBG["prematch_lineups"] = f"FAIL: {e!r}"
+        try:
+            n_det = update_match_details(goal_events + pre)
             _DBG["match_details"] = f"ok ({n_det})"
             print(f"match details: {n_det} games")
         except Exception as e:

@@ -25,6 +25,7 @@ Model (documented on the site's «كيف يعمل النموذج» section):
                  scored after full time: 1X2 hit rate + Brier score, against a
                  naive "always home" baseline.
 """
+import collections
 import datetime
 import json
 import math
@@ -358,6 +359,111 @@ def player_insights(details, comp_of, ar):
         c["club_late"] = late
         del c["players"]
     return out
+
+
+class SquadIndex:
+    """Who a club normally starts, and who is missing from a given XI.
+
+    Built from the lineups we store per match (data/match_details.json, now
+    including PRE-match XIs published ~1h before kick-off). A club's regulars
+    are the players who started at least `core_rate` of its EARLIER matches;
+    each is weighted by how far his average rating sits above replacement
+    level, so losing a 7.6 starter counts more than losing a 6.4 one.
+
+    Clubs are keyed by (competition, name) deliberately: «الأهلي» is both Al
+    Ahly of Egypt and Al-Ahli of Saudi in the feed, and keying by name alone
+    mixed their squads — every Egyptian regular then read as absent in a Saudi
+    match. Same same-name class of bug as the favourite-club card (2026-08-22).
+
+    report() returns None while a club has fewer than `min_prior` earlier
+    lineups. The bar is 3 on purpose: at 2 the site was printing "بدأ 2 من 2
+    مباريات" as evidence that a player is a regular, which a single rotation
+    call would produce — not something to publish as an absence.
+    """
+
+    def __init__(self, details, comp_of, min_prior=3, core_rate=0.6, replacement=6.3):
+        self.min_prior, self.core_rate, self.replacement = min_prior, core_rate, replacement
+        self.hist = {}        # (comp, club) -> [(date, {aid})], chronological
+        self.xi = {}          # ((comp, club), date) -> {aid}
+        self.names = {}       # ((comp, club), aid) -> display name
+        self.ratings = {}     # ((comp, club), aid) -> [ratings]
+        det = [e for e in (details or []) if comp_of(e.get("home"), e.get("away"), e.get("date"))]
+        det.sort(key=lambda e: e.get("date") or "")
+        for e in det:
+            comp = comp_of(e["home"], e["away"], e["date"])
+            for side, club in (("h", e.get("home")), ("a", e.get("away"))):
+                xi = ((e.get("lineups") or {}).get(side) or {}).get("xi") or []
+                if not xi:
+                    continue
+                key = (comp, club)
+                aids = {p.get("aid") for p in xi if p.get("aid")}
+                if not aids:
+                    continue
+                self.xi[(key, e["date"])] = aids
+                self.hist.setdefault(key, []).append((e["date"], aids))
+                for p in xi:
+                    if not p.get("aid"):
+                        continue
+                    self.names[(key, p["aid"])] = p.get("name")
+                    # ratings on a PRE-match entry are carried-over averages,
+                    # not what the player did in that game — mixing them into
+                    # the per-match history would corrupt the weighting
+                    if p.get("rt") is not None and not e.get("pre"):
+                        # kept WITH its date: a rating earned after the match
+                        # being judged must never weigh on it (that leak would
+                        # flatter any backtest of an absence factor)
+                        self.ratings.setdefault((key, p["aid"]), []).append(
+                            (e["date"], float(p["rt"])))
+
+    def _rat(self, key, aid, before=None):
+        rs = self.ratings.get((key, aid)) or []
+        if before is not None:
+            rs = [r for d, r in rs if d < before]
+        else:
+            rs = [r for _, r in rs]
+        return rs
+
+    def _weight(self, key, aid, before=None):
+        rs = self._rat(key, aid, before) or [self.replacement + 0.5]
+        return max(0.0, sum(rs) / len(rs) - self.replacement)
+
+    def _avg(self, key, aid, before=None):
+        rs = self._rat(key, aid, before)
+        return (sum(rs) / len(rs)) if rs else None
+
+    def has_xi(self, comp, club, date):
+        return ((comp, club), date) in self.xi
+
+    def report(self, comp, club, date):
+        """{'missing': [...], 'back': [...], 'score': 0..1, 'prior': n} or None.
+        `missing` = regulars not in today's XI; `back` = players starting today
+        who did not start the club's previous match (returns from absence)."""
+        key = (comp, club)
+        today = self.xi.get((key, date))
+        if today is None:
+            return None
+        prior = [(d, a) for d, a in self.hist.get(key, []) if d < date]
+        if len(prior) < self.min_prior:
+            return None
+        counts = collections.Counter(a for _, s in prior for a in s)
+        core = {a for a, n in counts.items() if n / len(prior) >= self.core_rate}
+        if not core:
+            return {"missing": [], "back": [], "score": 0.0, "prior": len(prior)}
+        # every rating is read as of `date` — nothing later leaks in
+        total = sum(self._weight(key, a, date) for a in core) or 1.0
+
+        def row(aid):
+            return {"aid": aid, "name": self.names.get((key, aid)),
+                    "starts": counts.get(aid, 0), "of": len(prior),
+                    "avg": self._avg(key, aid, date)}
+
+        missing = sorted((row(a) for a in core - today),
+                         key=lambda r: (-(r["avg"] or 0), -r["starts"]))
+        prev_xi = prior[-1][1]
+        back = sorted((row(a) for a in today - prev_xi if counts.get(a, 0)),
+                      key=lambda r: (-(r["avg"] or 0), -r["starts"]))
+        return {"missing": missing, "back": back, "prior": len(prior),
+                "score": sum(self._weight(key, a, date) for a in core - today) / total}
 
 
 def scorer_insights(scorers, assists, standings_tables):

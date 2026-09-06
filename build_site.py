@@ -1818,6 +1818,8 @@ def build():
         if m.get("home") and m.get("away"):
             _comp_idx[(ar_team(m["home"]), ar_team(m["away"]), m.get("kickoff"))] = m.get("competition")
     _pins = AN.player_insights(_details_raw, lambda h, a, d: _comp_idx.get((h, a, d)), ar_team)
+    # who each club normally starts -> «من غاب ومن عاد» on the match pages
+    _squad = AN.SquadIndex(_details_raw, lambda h, a, d: _comp_idx.get((h, a, d)))
     _sins = AN.scorer_insights(scorers, assists, {s.get("competition"): s["table"] for s in standings if s.get("table")})
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
     reels = load("reels.json")
@@ -2583,6 +2585,12 @@ def build():
         _det = match_details_for(md_idx, m)
         if _det:
             mp.append(match_details_html(_det[0], _det[1], h_ar, a_ar))
+        else:
+            # announced XI before kick-off: the pitch, then who is missing
+            _pre = prematch_for(md_idx, m)
+            if _pre:
+                mp.append(match_details_html(_pre[0], _pre[1], h_ar, a_ar))
+        mp.append(absence_block(_squad, m.get("competition"), m, h_ar, a_ar))
         # «توقع يلا سكور»: model probabilities for an upcoming match; for a
         # finished one, what the model said before kick-off vs the result
         _pb = pred_block(m, _preds.get(str(mid)) if st == "UPCOMING" else None,
@@ -3823,6 +3831,58 @@ def match_details_index(entries):
              e.get("date"))] = e
     return idx
 
+def prematch_for(idx, m):
+    """(entry, flipped) for an UPCOMING match whose XI is already announced
+    (fetch_data stores those with pre=True from ~1h before kick-off), else
+    None. Same reversed-pair fallback as match_details_for."""
+    if (m.get("status") or "").upper() != "UPCOMING":
+        return None
+    h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
+    for key, flip in ((f"{h}|{a}", False), (f"{a}|{h}", True)):
+        e = idx.get((key, m.get("kickoff")))
+        if e is not None and ((e.get("lineups") or {}).get("h", {}).get("xi")
+                              or (e.get("lineups") or {}).get("a", {}).get("xi")):
+            return e, flip
+    return None
+
+def absence_block(squad, comp, m, h_ar, a_ar):
+    """«الغائبون عن التشكيل المعتاد» — presented as FACTS, not as a probability
+    adjustment. The prediction model deliberately ignores this for now: on the
+    25 matches it moves, the absence factor improved brier by 0.013 while the
+    noise band at that sample is ±0.18 (backtest.py, 2026-09-06), so moving the
+    numbers would be dressing up noise. Naming who is missing needs no such
+    proof — it is simply what the announced XI says."""
+    if squad is None or not comp:
+        return ""
+    out = []
+    for club_raw, label in ((m.get("home"), h_ar), (m.get("away"), a_ar)):
+        club = ar_team(club_raw)
+        r = squad.report(comp, club, m.get("kickoff"))
+        if not r or not (r["missing"] or r["back"]):
+            continue
+        bits = []
+        if r["missing"]:
+            bits.append('<p><b>غائبون عن التشكيل المعتاد:</b> ' + '، '.join(
+                f'<bdi>{esc(x["name"])}</bdi>'
+                + (f' <small>(أساسي في {x["starts"]} من {_games(x["of"])}'
+                   + (f'، متوسط تقييمه {x["avg"]:.1f}' if x.get("avg") else '') + ')</small>')
+                for x in r["missing"][:5]) + '</p>')
+        if r["back"]:
+            bits.append('<p><b>عائدون للتشكيل:</b> ' + '، '.join(
+                f'<bdi>{esc(x["name"])}</bdi>' for x in r["back"][:5]) + '</p>')
+        out.append(f'<div class="abs-club"><h3>{esc(label)}</h3>' + "".join(bits) + '</div>')
+    if not out:
+        return ""
+    _up = (m.get("status") or "").upper() == "UPCOMING"
+    _h2 = "التشكيل المعلن — من غاب ومن عاد" if _up else "من غاب عن التشكيل المعتاد"
+    return (f'<section class="minfo absences"><h2>{_h2}</h2>'
+            + "".join(out)
+            + '<p class="pd-note">«التشكيل المعتاد» يُحسب من التشكيلات السابقة لكل فريق هذا '
+              'الموسم: من بدأ 60% منها فأكثر. الغياب هنا واقعة من التشكيل المعلن، وقد يكون '
+              'سببه إصابة أو إيقافًا أو قرارًا فنيًا — لا نخمّن السبب، ولا تدخل هذه المعلومة '
+              'في حساب <a href="/analysis.html#model">التوقع</a> حتى تثبت فائدتها بالأرقام.</p>'
+            '</section>')
+
 def match_details_for(idx, m):
     """(entry, flipped) for a FINISHED/LIVE match, else None — with the
     same reversed-pair fallback as match_goals (sources can disagree on
@@ -3967,7 +4027,12 @@ def match_details_html(e, flipped, h_ar, a_ar):
                     bd += f'<span class="pp-card {c}"></span>'
                 if p.get("name") in off:
                     bd += '<span class="pp-sub">⇄</span>'
-                rc = _rt_class(p.get("rt"))
+                # a rating badge on this pitch means "how he played in THIS
+                # match" — on a pre-match XI the feed's number is a carried-over
+                # average, and printing it next to an unplayed match reads as a
+                # match rating for a match nobody has played (no possibly-wrong
+                # numbers, user rule 2026-08-31)
+                rc = None if e.get("pre") else _rt_class(p.get("rt"))
                 rt = (f'<span class="pp-rt {rc}">{float(p["rt"]):.1f}</span>'
                       if rc else "")
                 cap = '<span class="pp-cap">C</span>' if p.get("cap") else ""
@@ -4452,6 +4517,11 @@ a{color:inherit}
 .tb-bar i{display:block;height:100%;background:var(--green)}
 .tb-v{font-weight:800}.tb-v small{color:var(--muted);font-weight:600}
 .explain ol{padding-inline-start:20px;line-height:1.9}.explain p{line-height:1.9}
+.absences .abs-club{border-top:1px solid #eef2f6;padding:8px 0}
+.absences .abs-club:first-of-type{border-top:0}
+.absences h3{font-size:.95rem;margin:0 0 4px;color:var(--green-d)}
+.absences p{margin:4px 0;line-height:1.9}
+.absences small{color:var(--muted);font-weight:600}
 .more-link{font-weight:800;margin:8px 0}
 @media (max-width:640px){
   .prow{grid-template-columns:1fr;grid-template-areas:"when" "teams" "bar" "meta";gap:6px}
