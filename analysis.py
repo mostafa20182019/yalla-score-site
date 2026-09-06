@@ -133,24 +133,13 @@ def _pois(lmb, k):
     return math.exp(-lmb) * lmb ** k / math.factorial(k)
 
 
-def predict(comp_stats, params, home, away):
-    """Outcome probabilities for home vs away in one competition. Unknown clubs
-    (no finished match yet) get league-average strength and Elo 1500."""
-    blank = {"elo": 1500.0, "played": 0, "gf": 0, "ga": 0}
-    h = comp_stats.get(home, blank)
-    a = comp_stats.get(away, blank)
-    mu = params["mu"]
-    att_h, def_h = strength(h, mu)
-    att_a, def_a = strength(a, mu)
-    lh = params["mu_home"] * att_h * def_a
-    la = params["mu_away"] * att_a * def_h
-    gap = (h["elo"] + ELO_HFA - a["elo"]) / 400.0
-    f = 10 ** (gap / ELO_GOAL_EXP)
-    lh *= math.sqrt(f)
-    la /= math.sqrt(f)
+def outcome_from_lambdas(lh, la):
+    """Poisson grid over 0..MAX_GOALS for both sides -> outcome probabilities.
+    The ONE place the grid is computed: predict() and backtest.py both call it,
+    so a candidate factor that only rescales the expected goals cannot drift
+    away from the live model."""
     lh, la = max(0.15, min(lh, 4.5)), max(0.15, min(la, 4.5))
-    ph = pd = pa = 0.0
-    over25 = btts = 0.0
+    ph = pd = pa = over25 = btts = 0.0
     grid = []
     for i in range(MAX_GOALS + 1):
         for j in range(MAX_GOALS + 1):
@@ -162,14 +151,37 @@ def predict(comp_stats, params, home, away):
             if i + j >= 3: over25 += p
             if i and j: btts += p
     tot = ph + pd + pa
-    ph, pd, pa = ph / tot, pd / tot, pa / tot
     grid.sort(reverse=True)
+    return {"ph": ph / tot, "pd": pd / tot, "pa": pa / tot, "lh": lh, "la": la,
+            "top": [(i, j, p / tot) for p, i, j in grid[:3]],
+            "over25": over25 / tot, "btts": btts / tot}
+
+
+def lambdas(comp_stats, params, home, away):
+    """Expected goals for both sides, before the Poisson grid. Unknown clubs
+    (no finished match yet) get league-average strength and Elo 1500."""
+    blank = {"elo": 1500.0, "played": 0, "gf": 0, "ga": 0}
+    h = comp_stats.get(home, blank)
+    a = comp_stats.get(away, blank)
+    mu = params["mu"]
+    att_h, def_h = strength(h, mu)
+    att_a, def_a = strength(a, mu)
+    lh = params["mu_home"] * att_h * def_a
+    la = params["mu_away"] * att_a * def_h
+    gap = (h["elo"] + ELO_HFA - a["elo"]) / 400.0
+    f = 10 ** (gap / ELO_GOAL_EXP)
+    return lh * math.sqrt(f), la / math.sqrt(f), h, a
+
+
+def predict(comp_stats, params, home, away):
+    """Outcome probabilities for home vs away in one competition."""
+    lh, la, h, a = lambdas(comp_stats, params, home, away)
+    out = outcome_from_lambdas(lh, la)
     n_min = min(h["played"], a["played"])
-    return {"home": home, "away": away, "ph": ph, "pd": pd, "pa": pa,
-            "lh": lh, "la": la, "top": [(i, j, p / tot) for p, i, j in grid[:3]],
-            "over25": over25 / tot, "btts": btts / tot,
-            "elo_h": h["elo"], "elo_a": a["elo"], "n_h": h["played"], "n_a": a["played"],
-            "conf": "low" if n_min < 4 else "mid" if n_min < 10 else "high"}
+    out.update({"home": home, "away": away,
+                "elo_h": h["elo"], "elo_a": a["elo"], "n_h": h["played"], "n_a": a["played"],
+                "conf": "low" if n_min < 4 else "mid" if n_min < 10 else "high"})
+    return out
 
 
 CONF_AR = {"low": "عيّنة صغيرة", "mid": "ثقة متوسطة", "high": "ثقة جيدة"}
