@@ -177,7 +177,7 @@
   "candidates": 60,
   "detail_fails": 0,
   "skipped": [
-   "4805136:count-mismatch (0, 0) vs 0-1 []",
+   "4805136:count-mismatch (0, 0) vs 0-2 []",
    "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
    "4805135:count-mismatch (0, 0) vs 1-0 []",
    "4805139:count-mismatch (0, 0) vs 0-2 []",
@@ -203,13 +203,13 @@
     "gameTimeAndStatusDisplayType",
     "justEnded",
     "gameTime",
+    "addedTime",
     "gameTimeDisplay",
     "preciseGameTime",
     "hasMissingPlayers",
     "winDescription",
     "homeCompetitor",
-    "awayCompetitor",
-    "stages"
+    "awayCompetitor"
    ],
    "event0": "{\"competitorId\": 22143, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 5.0, \"addedTime\": 0, \"gameTimeDisplay\": \"5'\", \"gameTimeAndStatusDisplayType\": 2, \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
    "member0": "{\"competitorId\": 22143}"
@@ -250,5 +250,5 @@
   }
  },
  "match_details": "ok (197)",
- "utc": "2026-09-06T12:35:39Z"
+ "utc": "2026-09-06T12:50:59Z"
 }
