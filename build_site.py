@@ -343,6 +343,12 @@ def jsonld(obj):
 # (site rebuilds every 30 min, so it stays fresh). Set by build().
 TICKER_HTML = ""
 CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash in build()
+# Articles shorter than this are kept online but noindexed + left out of the
+# sitemap (AdSense "low value content" 2026-09-04). Counted as whitespace
+# tokens of the body: 300 would noindex 301/345 articles (2026-09-06 check —
+# the archive averages ~264 tokens), so the bar stays at 200 and the thin
+# archive is fixed by upgrading articles, not by hiding the site.
+ARTICLE_MIN_WORDS = 200
 # window.__koTs = epoch-ms of nearby kickoffs (set by build(), injected in
 # foot()) — LIVE_JS uses it to wake its polling right before a match starts
 # instead of sleeping through kickoff on the idle 5-minute cadence.
@@ -985,6 +991,144 @@ def related_articles(a, articles, n=4):
             out.append(b)
     return out
 
+def _team_link(comp, raw_name):
+    """Arabic team name, linked to its /team/ page when it is a curated club."""
+    nm = ar_team(raw_name)
+    for tp in TEAM_PAGES:
+        scope = tuple(c for _, c in tp["match_tokens"] if c) or None
+        in_league = (tp["league"] == comp) or (scope is not None and _in_scope(scope, comp))
+        if in_league and any(t in (raw_name or "") or t == nm for t, _ in tp["match_tokens"]):
+            return f'<a href="/team/{tp["slug"]}.html">{esc(nm)}</a>'
+    return esc(nm)
+
+def _cnt(n, one, two, few, many):
+    """Arabic count with proper agreement: 1 -> one ("نقطة واحدة"),
+    2 -> two ("نقطتان"), 3-10 -> "n few" ("5 نقاط"), 0/11+ -> "n many" ("12 نقطة")."""
+    n = int(n or 0)
+    if n == 0:
+        return f"دون {few}"          # "دون أهداف" / "دون خسائر"
+    if n == 1:
+        return one
+    if n == 2:
+        return two
+    if 3 <= n <= 10:
+        return f"{n} {few}"
+    return f"{n} {many}"
+
+def _pts(n):   return _cnt(n, "نقطة واحدة", "نقطتين", "نقاط", "نقطة")
+def _games(n): return _cnt(n, "مباراة واحدة", "مباراتين", "مباريات", "مباراة")
+def _goals(n): return _cnt(n, "هدف واحد", "هدفين", "أهداف", "هدفًا")
+def _wins(n):  return _cnt(n, "فوز واحد", "فوزين", "انتصارات", "فوزًا")
+def _draws(n): return _cnt(n, "تعادل واحد", "تعادلين", "تعادلات", "تعادلًا")
+def _losses(n): return _cnt(n, "خسارة واحدة", "خسارتين", "خسائر", "خسارة")
+
+def standings_analysis(comp, label, season, rows, form_map, scorers, up_next, zeroed=False):
+    """Editorial reading of a league table, generated ONLY from the numbers we
+    already publish (AdSense 'low value content' remediation: a bare table is
+    thin; the same page with an explanation, a title-race reading, form notes
+    and an FAQ is a real guide). Returns (html, faq_jsonld_or_empty).
+    Every sentence is a restatement of table/form/scorer data — no guesses."""
+    rows = [r for r in rows if r.get("team")]
+    if not rows:
+        return "", ""
+    if zeroed or all(int(r.get("played") or 0) == 0 for r in rows):
+        html = (f'<section class="minfo st-analysis"><h2>عن ترتيب {esc(label)} {esc(season)}</h2>'
+                f'<p>الموسم الجديد من {esc(label)} لم ينطلق بعد، لذلك يظهر الجدول بقائمة الأندية '
+                f'المشاركة ({len(rows)} فريقًا) وكل الأرقام عند الصفر. بمجرد انتهاء أول مباراة يتحدّث '
+                'الجدول تلقائيًا بالنقاط والأهداف وفارق الأهداف ونتائج آخر خمس مباريات لكل فريق.</p>'
+                '<p><b>كيف تُقرأ الأعمدة؟</b> لعب = عدد المباريات، ف/ت/خ = الفوز والتعادل والخسارة، '
+                'له/عليه = الأهداف المسجلة والمستقبلة، الفارق = له ناقص عليه، النقاط = 3 لكل فوز '
+                'ونقطة لكل تعادل.</p></section>')
+        return html, ""
+    T = lambda r: _team_link(comp, r.get("team"))
+    N = lambda r: ar_team(r.get("team"))
+    lead, second = rows[0], (rows[1] if len(rows) > 1 else None)
+    gap = int(lead.get("pts") or 0) - int((second or {}).get("pts") or 0)
+    ps = []
+    ps.append(f'<p>يتصدر {T(lead)} ترتيب {esc(label)} برصيد <b>{_pts(lead.get("pts"))}</b> من '
+              f'{_games(lead.get("played"))} '
+              f'({_wins(lead.get("won"))}، {_draws(lead.get("draw"))}، {_losses(lead.get("lost"))})'
+              + (f'، بفارق {_pts(gap)} عن {T(second)} صاحب المركز الثاني.'
+                 if second and gap > 0 else
+                 (f'، متساويًا في النقاط مع {T(second)} الثاني الذي يفصله عنه فارق الأهداف '
+                  f'({lead.get("gd")} مقابل {second.get("gd")}).' if second else '.'))
+              + '</p>')
+    top3 = rows[:3]
+    if len(rows) >= 4:
+        ps.append('<p>المربع الأمامي حتى الآن: ' + '، '.join(
+            f'{T(r)} ({_pts(r.get("pts"))})' for r in rows[:4]) + '.</p>')
+    played = [r for r in rows if int(r.get("played") or 0) > 0]
+    if played:
+        best_att = max(played, key=lambda r: (int(r.get("gf") or 0), -int(r.get("ga") or 0)))
+        best_def = min(played, key=lambda r: (int(r.get("ga") or 0), -int(r.get("gf") or 0)))
+        best_gd = max(played, key=lambda r: int(r.get("gd") or 0))
+        worst_gd = min(played, key=lambda r: int(r.get("gd") or 0))
+        ps.append(f'<p><b>الهجوم والدفاع:</b> أقوى خط هجوم هو {T(best_att)} بـ{_goals(best_att.get("gf"))}، '
+                  f'وأقل شباك استقبالًا للأهداف {T(best_def)} '
+                  + (f'بـ{_goals(best_def.get("ga"))} فقط. ' if int(best_def.get("ga") or 0) else 'بشباك لم تستقبل أي هدف حتى الآن. ')
+                  + f'أفضل فارق أهداف يملكه {T(best_gd)} ({"+" if int(best_gd.get("gd") or 0) > 0 else ""}{best_gd.get("gd")})، '
+                  f'وأسوأ فارق عند {T(worst_gd)} ({worst_gd.get("gd")}).</p>')
+    fm = form_map or {}
+    def _last5(r):
+        return (fm.get(r.get("team")) or [])[-5:]
+    hot = sorted([r for r in rows if len(_last5(r)) >= 3],
+                 key=lambda r: (-_last5(r).count("W"), _last5(r).count("L")))[:3]
+    cold = [r for r in rows if len(_last5(r)) >= 3 and _last5(r).count("W") == 0]
+    if hot:
+        ps.append('<p><b>الفرق في أفضل حالاتها:</b> ' + '، '.join(
+            f'{T(r)} ({_wins(_last5(r).count("W"))} في آخر {_games(len(_last5(r)))})' for r in hot)
+            + (f'. أما الفرق التي لم تحقق أي فوز في آخر مبارياتها فهي: '
+               + '، '.join(T(r) for r in cold[:4]) + '.' if cold else '.') + '</p>')
+    bottom = rows[-3:] if len(rows) >= 6 else []
+    if bottom:
+        ps.append('<p><b>قاع الجدول:</b> ' + '، '.join(
+            f'{T(r)} ({_pts(r.get("pts"))})' for r in bottom)
+            + ' — هذه الفرق تحتاج إلى تحسين سريع في النتائج قبل أن تتسع الفجوة مع منطقة الأمان.</p>')
+    top_sc = (scorers or [None])[0]
+    if top_sc and top_sc.get("name"):
+        ps.append(f'<p><b>هداف البطولة:</b> {esc(top_sc["name"])} ({esc(ar_team(top_sc.get("team")))}) '
+                  f'برصيد {_goals(top_sc.get("goals") or top_sc.get("value"))}'
+                  + (f'، يليه {esc(scorers[1]["name"])} بـ{_goals(scorers[1].get("goals") or scorers[1].get("value"))}.'
+                     if len(scorers) > 1 else '.') + '</p>')
+    nxt = up_next[0] if up_next else None
+    if nxt:
+        ps.append(f'<p><b>الجولة القادمة:</b> تُستكمل مباريات {esc(label)} يوم {esc(nxt.get("kickoff"))} '
+                  f'بلقاء {esc(ar_team(nxt.get("home")))} و{esc(ar_team(nxt.get("away")))}'
+                  + (f' و{_games(len(up_next) - 1)} أخرى' if len(up_next) > 1 else '')
+                  + ' — القائمة الكاملة أسفل الصفحة، وكل مباراة لها صفحتها بالتشكيل والأهداف.</p>')
+    ps.append('<p><b>كيف تُقرأ الأعمدة؟</b> «لعب» عدد المباريات، «ف/ت/خ» الفوز والتعادل والخسارة، '
+              '«له» الأهداف المسجلة و«عليه» المستقبلة، «الفارق» = له ناقص عليه، و«النقاط» = 3 نقاط '
+              'لكل فوز ونقطة لكل تعادل. عند التساوي في النقاط تُطبَّق معايير الفصل الواردة في لائحة '
+              'البطولة (فارق الأهداف والأهداف المسجلة، وفي بعض البطولات المواجهات المباشرة أولًا). '
+              'النقاط الملوّنة بجوار كل فريق هي نتائج آخر خمس مباريات من الأقدم إلى الأحدث.</p>')
+    html = (f'<section class="minfo st-analysis"><h2>قراءة في ترتيب {esc(label)} {esc(season)}</h2>'
+            + "".join(ps) + '</section>')
+    # FAQ — answers are the same data in question form
+    faq = [(f"من يتصدر {label} حاليًا؟",
+            f"{N(lead)} يتصدر برصيد {_pts(lead.get('pts'))} من {_games(lead.get('played'))}"
+            + (f"، بفارق {_pts(gap)} عن {N(second)}." if second and gap > 0 else "."))]
+    if second:
+        faq.append((f"كم الفارق بين الأول والثاني في {label}؟",
+                    f"{_pts(gap)} بين {N(lead)} ({lead.get('pts')}) و{N(second)} ({second.get('pts')})."
+                    if gap else f"لا فارق في النقاط: {N(lead)} و{N(second)} متساويان برصيد {_pts(lead.get('pts'))}، ويفصل بينهما فارق الأهداف."))
+    if top_sc and top_sc.get("name"):
+        faq.append((f"من هو هداف {label} هذا الموسم؟",
+                    f"{top_sc['name']} لاعب {ar_team(top_sc.get('team'))} برصيد {_goals(top_sc.get('goals') or top_sc.get('value'))} حتى الآن."))
+    faq.append(("كيف يُحسب فارق الأهداف؟",
+                "فارق الأهداف = الأهداف المسجلة (له) ناقص الأهداف المستقبلة (عليه). يُستخدم كأحد معايير الفصل بين الفرق المتساوية في النقاط."))
+    if nxt:
+        faq.append((f"متى الجولة القادمة في {label}؟",
+                    f"أقرب مباراة يوم {nxt.get('kickoff')}: {ar_team(nxt.get('home'))} ضد {ar_team(nxt.get('away'))} (التوقيت بتوقيت القاهرة في صفحة المباريات)."))
+    faq.append(("كم مرة يتحدّث جدول الترتيب؟",
+                "يتحدّث الجدول تلقائيًا كل ربع ساعة تقريبًا من مصدر بيانات المباريات، فتظهر النتائج بعد صافرة النهاية مباشرة."))
+    fhtml = ('<section class="minfo faq"><h2>أسئلة شائعة عن ' + esc(label) + '</h2>'
+             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>' for q, a in faq)
+             + '</section>')
+    fld = jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                  "mainEntity": [{"@type": "Question", "name": q,
+                                  "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]})
+    return html, fhtml + fld
+
 def _rfc822(a):
     """RSS pubDate from pub_ts (full ISO) or pub_date (noon Cairo)."""
     ts = a.get("pub_ts") or ""
@@ -1494,6 +1638,7 @@ def build():
     write("index.html", "".join(parts))
 
     # ---- article pages ----
+    n_thin = 0
     for a in articles:
         url = article_url(a)
         img = a.get("image_url")
@@ -1506,7 +1651,11 @@ def build():
               "inLanguage": "ar", "mainEntityOfPage": url, "url": url,
               "isAccessibleForFree": True, "articleSection": "كرة القدم",
               "wordCount": _words,
-              "author": {"@type": "Organization", "name": a.get("author") or SITE_NAME,
+              # a named person in `author` becomes a Person entity pointing at
+              # the editors page; the generic "فريق التحرير" stays an Organization
+              "author": {"@type": ("Organization" if (a.get("author") or SITE_NAME) in
+                                   (SITE_NAME, "فريق التحرير", "فريق يلا سكور") else "Person"),
+                         "name": a.get("author") or SITE_NAME,
                          "url": SITE_BASE + "/editors.html"},
               "publisher": {"@type": "Organization", "@id": SITE_BASE + "/#org",
                             "name": SITE_NAME, "url": SITE_BASE + "/",
@@ -1544,6 +1693,24 @@ def build():
         if a.get("summary"):
             p.append(f'<p class="lead">{esc(a["summary"])}</p>')
         p.append(f'<div class="a-body">{a.get("body") or ""}</div>')
+        # optional editorial blocks written by the article tasks since
+        # 2026-09-06: named sources (transparency — "المصادر") and a short FAQ
+        # answered from the body. Older articles simply have neither field.
+        _src = [s for s in (a.get("sources") or []) if isinstance(s, dict) and s.get("name")]
+        if _src:
+            p.append('<section class="a-sources"><h2>المصادر</h2><ul>'
+                     + "".join((f'<li><a href="{esc(s["url"])}" target="_blank" rel="noopener nofollow">{esc(s["name"])}</a>'
+                                if s.get("url") else f'<li>{esc(s["name"])}')
+                               + (f' — {esc(s["note"])}' if s.get("note") else "") + '</li>' for s in _src)
+                     + '</ul></section>')
+        _faq = [f for f in (a.get("faq") or []) if isinstance(f, dict) and f.get("q") and f.get("a")]
+        if _faq:
+            p.append('<section class="a-faq"><h2>أسئلة شائعة</h2>'
+                     + "".join(f'<details><summary>{esc(f["q"])}</summary><p>{esc(f["a"])}</p></details>' for f in _faq)
+                     + '</section>')
+            p.append(jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                             "mainEntity": [{"@type": "Question", "name": f["q"],
+                                             "acceptedAnswer": {"@type": "Answer", "text": f["a"]}} for f in _faq]}))
         if _clubs:
             p.append('<nav class="club-chips"><span>المزيد عن:</span>'
                      + "".join(f'<a href="/team/{tp["slug"]}.html">'
@@ -1564,12 +1731,17 @@ def build():
             p.append('</ul></section>')
         p.append(foot())
         _ahtml = "".join(p)
-        if _words < 200:
-            # legacy short pieces: keep the URL alive but out of the index
+        if _words < ARTICLE_MIN_WORDS:
+            # legacy short pieces: keep the URL alive (still linked from lists
+            # and related blocks) but out of the index AND out of the sitemap —
+            # a noindexed URL in the sitemap is a contradictory signal.
             _ahtml = _ahtml.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+            n_thin += 1
         write(f"a/{a['article_id']}.html", _ahtml)
-        urls.append(f"/a/{a['article_id']}.html")
-        _LASTMOD[f"/a/{a['article_id']}.html"] = _pub_iso
+        if _words >= ARTICLE_MIN_WORDS:
+            urls.append(f"/a/{a['article_id']}.html")
+            _LASTMOD[f"/a/{a['article_id']}.html"] = _pub_iso
+    print(f"  + articles: {len(articles)} ({n_thin} thin ones noindexed, < {ARTICLE_MIN_WORDS} words)")
 
     # ---- shared per-league data + stats machinery (matches page + /stats) ----
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
@@ -2174,6 +2346,10 @@ def build():
                                        season_label=st.get("season_label"),
                                        zeroed=st.get("zeroed"),
                                        form_map=forms.get(comp, {}), embedded=True))
+            _an, _faq = standings_analysis(comp, label, season, st["table"],
+                                           forms.get(comp, {}), sc or [], up_next,
+                                           zeroed=st.get("zeroed"))
+            sp2.append(_an)
             if sc:
                 sp2.append(f'<section class="minfo"><h2>'
                            f'<a href="{sc_url}">هدافو {esc(label)} ←</a></h2>'
@@ -2185,6 +2361,7 @@ def build():
                     sp2.append(match_row(m, show_time=True, show_comp=False,
                                          link=match_url(m)))
                 sp2.append('</div></section>')
+            sp2.append(_faq)
             sp2.append(foot())
             write(f"standings/{slug}.html", "".join(sp2))
             urls.append(st_url)
@@ -2433,8 +2610,10 @@ def build():
     ab.append(f'<p><b>{esc(SITE_NAME)}</b> موقع عربي متخصص في كرة القدم، يقدّم أخبار الكرة المصرية '
               'والعالمية، ومواعيد ونتائج المباريات، وجداول ترتيب أبرز البطولات — في مكان واحد وبواجهة سريعة وبسيطة.</p>')
     ab.append('<h2>ماذا نقدّم؟</h2><ul>'
-              '<li><b>أخبار أصلية:</b> يكتب <a href="/editors.html">فريق التحرير</a> مقالات بصياغة أصلية بالكامل، بعد التحقق من الخبر '
-              'من مصدرين مستقلين على الأقل، دون نقل أو نسخ من مواقع أخرى.</li>'
+              '<li><b>أخبار بصياغتنا:</b> يكتب <a href="/editors.html">فريق التحرير</a> المقالات بصياغته الخاصة '
+              'من الحقائق التي أكّدها مصدران مستقلان على الأقل، مع تسمية المصدر داخل الخبر وإضافة الخلفية '
+              'والأرقام وما يعنيه الخبر — دون نسخ نصوص المواقع الأخرى. '
+              '<a href="/editorial.html">تفاصيل طريقة العمل في السياسة التحريرية</a>.</li>'
               '<li><b>عناوين من المصادر:</b> نجمع أحدث عناوين الصحف والمواقع الرياضية مع رابط مباشر إلى المصدر الأصلي '
               'لقراءة التفاصيل كاملة على موقعه.</li>'
               '<li><b>مباريات وترتيب:</b> مواعيد ونتائج المباريات وجداول الترتيب لأبرز الدوريات والبطولات، '
@@ -2549,9 +2728,19 @@ def build():
               '<li>نتجنّب نشر الشائعات والتقارير المتضاربة حتى تتضح، ونميّز دائمًا بين الخبر '
               'المؤكد والمنسوب ("بحسب تقارير صحفية").</li>'
               '<li>لا نختلق تصريحات أو أرقامًا أو تفاصيل تعاقدية غير معلنة.</li></ul>')
-    ed.append('<h2>أصالة المحتوى</h2><ul>'
-              '<li>كل مقالاتنا تُكتب بصياغة أصلية بالكامل — الحقائق عامة، أما الصياغة فحقّ لكاتبها، '
-              'لذلك لا ننقل ولا نعيد صياغة نصوص المواقع الأخرى.</li>'
+    ed.append('<h2>كيف نُعِدّ الخبر؟</h2><ul>'
+              '<li><b>مصادر الخبر:</b> نبدأ من المصدر الرسمي حين يتوفر (النادي، الاتحاد، اللاعب عبر '
+              'حساباته الرسمية) ثم نقارنه بما نشرته وسائل إعلام رياضية موثوقة، ولا نكتب إلا ما اتفق عليه '
+              'مصدران مستقلان على الأقل. نسمّي المصدر داخل الخبر، ونذكر المصادر التي اعتمدنا عليها في '
+              'نهاية المقال في المقالات المنشورة منذ سبتمبر 2026.</li>'
+              '<li><b>الكتابة:</b> نكتب المقال بصياغتنا الخاصة من الحقائق المؤكدة، ولا ننسخ نصوص المواقع '
+              'الأخرى. نحرص على أن يضيف كل مقال ما يفيد القارئ فعلًا: خلفية القصة، الأرقام ذات الصلة '
+              '(المباريات، الأهداف، الترتيب، التواريخ)، ماذا يعني الخبر للنادي أو اللاعب، وما الخطوة '
+              'التالية المتوقعة، مع الربط بمقالاتنا السابقة عن الموضوع نفسه.</li>'
+              '<li><b>البيانات:</b> النتائج والمواعيد وجداول الترتيب والهدافون تأتي من مزوّدي بيانات '
+              'المباريات وتتحدّث تلقائيًا، ولا نعرض نتيجة مباشرة إلا بعد تأكدها من المصدر.</li>'
+              '<li><b>إعداد:</b> <a href="/editors.html">فريق تحرير يلا سكور</a>، ويظهر وقت النشر '
+              'على كل مقال.</li>'
               '<li>قسم "عناوين الصحف" تجميعي بطبيعته: يعرض العنوان ويحيل مباشرةً إلى المصدر الأصلي.</li></ul>')
     ed.append('<h2>الصور</h2><ul>'
               '<li>نستخدم صورًا مرخّصة للاستخدام الحر فقط، وثيقة الصلة بموضوع الخبر، '
@@ -3836,6 +4025,15 @@ a{color:inherit}
 .mrow:has(.mstretch):hover{border-color:#94a3b8;box-shadow:0 2px 8px rgba(15,23,42,.12)}
 /* per-match page (/m/<id>.html) */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+.st-analysis p,.faq p{line-height:1.9;margin:8px 0}
+.st-analysis a{font-weight:800;color:var(--green-d);text-decoration:none}
+.faq details,.a-faq details{border-top:1px solid #e2e8f0;padding:8px 0}
+.faq details:first-of-type,.a-faq details:first-of-type{border-top:0}
+.faq summary,.a-faq summary{cursor:pointer;font-weight:800;color:var(--ink)}
+.a-sources,.a-faq{margin:22px 0 0;padding-top:14px;border-top:1px solid #e2e8f0}
+.a-sources h2,.a-faq h2{font-size:1.05rem;margin:0 0 8px}
+.a-sources ul{margin:0;padding-inline-start:18px}
+.a-sources li{margin:4px 0;font-size:.92rem}
 .related{max-width:860px}
 .related .mp-newslist li{margin:7px 0;line-height:1.6}
 .related .mp-newslist a{font-weight:800;color:var(--ink);text-decoration:none}
