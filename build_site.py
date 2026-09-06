@@ -12,6 +12,7 @@ IMPORTANT: set SITE_BASE to your final public URL before the last build,
 so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 """
 import base64, json, os, re, html, shutil, datetime, hashlib
+import analysis as AN     # تحليلات: strength model, predictions, accuracy, player insights
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
@@ -253,6 +254,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
     ) if ogw else ""
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
+    aa = " is-active" if active == "analysis" else ""
     sa = " is-active" if active == "stats" else ""
     stats_tab = ('    <a href="/stats.html" class="navtab' + sa + '">'
                  '<span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>'
@@ -305,6 +307,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
   <nav class="site-nav"><div class="wrap nav-in">
     <a href="/" class="navtab{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
     <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/analysis.html" class="navtab{aa}"><span class="ico">📈</span> تحليلات<span class="nav-en"> | Analysis</span></a>
 {stats_tab}{vids_tab}{reels_tab}
   </div></nav>
 </header>
@@ -330,7 +333,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a></p>
+  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/analysis.html">تحليلات وتوقعات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -1434,6 +1437,329 @@ def video_facade(v):
             f'<div class="vb"><h3>{title}</h3>{meta}</div></div>')
 
 # ---------------------------------------------------------------- build
+# ---------------------------------------------------------------- تحليلات (rendering)
+AN_DISCLAIMER = ('التوقعات احتمالات إحصائية من نموذج يلا سكور مبنية على نتائج الموسم الحالي فقط، '
+                 'وليست نصيحة للمراهنة. كلما زاد عدد المباريات زادت دقة النموذج.')
+
+def _pct(x):
+    return f"{round(x * 100)}%"
+
+def prob_bar(p, labels=True):
+    """Three-segment 1X2 bar (home = brand blue, draw = grey, away = slate)."""
+    ph, pd, pa = p["ph"], p["pd"], p["pa"]
+    def seg(cls, v, txt):
+        return (f'<span class="pb-seg pb-{cls}" style="width:{v * 100:.1f}%">'
+                f'{("<b>" + txt + "</b>") if labels and v >= 0.14 else ""}</span>')
+    return ('<div class="pbar" role="img" aria-label="'
+            f'فوز الأرض {_pct(ph)}، تعادل {_pct(pd)}، فوز الضيف {_pct(pa)}">'
+            + seg("h", ph, _pct(ph)) + seg("d", pd, _pct(pd)) + seg("a", pa, _pct(pa)) + '</div>')
+
+def conf_chip(conf):
+    return f'<span class="conf conf-{esc(conf)}">{esc(AN.CONF_AR.get(conf, ""))}</span>'
+
+def pred_row(m, p):
+    """Compact prediction row for the analysis pages (links to the match page)."""
+    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+    def crest(u):
+        return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="ph">⚽</span>'
+    top = p["top"][0]
+    link = match_url(m) or "#"
+    when = f'{_tk_date(m.get("kickoff"))}{(" · " + m["koff_time"]) if m.get("koff_time") else ""}'
+    fav = h if p["ph"] >= max(p["pd"], p["pa"]) else a if p["pa"] >= p["pd"] else "التعادل"
+    return (f'<a class="prow" href="{esc(link)}">'
+            f'<span class="pr-when">{esc(when)}</span>'
+            f'<span class="pr-teams"><span class="pr-t">{crest(m.get("home_badge"))}<bdi>{esc(h)}</bdi></span>'
+            f'<span class="pr-vs">×</span>'
+            f'<span class="pr-t">{crest(m.get("away_badge"))}<bdi>{esc(a)}</bdi></span></span>'
+            + prob_bar(p) +
+            f'<span class="pr-meta"><span class="pr-fav">الأرجح: <b>{esc(fav)}</b></span>'
+            f'<span class="pr-score">النتيجة الأكثر احتمالًا <b>{top[0]}-{top[1]}</b></span>'
+            + conf_chip(p["conf"]) + '</span></a>')
+
+def pred_block(m, p, logged, comp_stats):
+    """«توقع يلا سكور» section on a match page. Upcoming: live model output.
+    Finished (with a frozen prediction): what we said vs what happened."""
+    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+    st = (m.get("status") or "").upper()
+    if st == "UPCOMING" and p:
+        top = " · ".join(f'<b>{i}-{j}</b> ({_pct(q)})' for i, j, q in p["top"])
+        hs, as_ = comp_stats.get(m.get("home")), comp_stats.get(m.get("away"))
+        facts = []
+        if hs and hs["played"]:
+            facts.append(f'{esc(h)}: {_goals(hs["gf"])} له و{_goals(hs["ga"])} عليه في {AN_games(hs["played"])} '
+                         f'(تقييم القوة {round(hs["elo"])})')
+        if as_ and as_["played"]:
+            facts.append(f'{esc(a)}: {_goals(as_["gf"])} له و{_goals(as_["ga"])} عليه في {AN_games(as_["played"])} '
+                         f'(تقييم القوة {round(as_["elo"])})')
+        return (f'<section class="minfo predict"><h2>توقع يلا سكور لمباراة {esc(h)} و{esc(a)}</h2>'
+                f'<div class="pd-heads"><span>{esc(h)} <b>{_pct(p["ph"])}</b></span>'
+                f'<span>تعادل <b>{_pct(p["pd"])}</b></span><span>{esc(a)} <b>{_pct(p["pa"])}</b></span></div>'
+                + prob_bar(p, labels=False) +
+                f'<p class="pd-line">الأهداف المتوقعة: <b>{p["lh"]:.1f}</b> لـ{esc(h)} و<b>{p["la"]:.1f}</b> لـ{esc(a)} · '
+                f'أكثر من 2.5 هدف: <b>{_pct(p["over25"])}</b> · يسجل الفريقان: <b>{_pct(p["btts"])}</b></p>'
+                f'<p class="pd-line">النتائج الأكثر احتمالًا: {top}</p>'
+                + (f'<p class="pd-facts">{" — ".join(facts)}</p>' if facts else "")
+                + f'<p class="pd-note">{conf_chip(p["conf"])} {AN_DISCLAIMER} '
+                  '<a href="/analysis.html">كيف يعمل النموذج؟</a></p></section>')
+    if st == "FINISHED" and logged and logged.get("hs") is not None:
+        pick_ar = {"H": f"فوز {h}", "D": "التعادل", "A": f"فوز {a}"}[logged["pick"]]
+        verdict = ('<span class="hit ok">✔ أصاب التوقع</span>' if logged.get("hit")
+                   else '<span class="hit no">✘ لم يُصب التوقع</span>')
+        fake = {"ph": logged["ph"], "pd": logged["pd"], "pa": logged["pa"]}
+        return (f'<section class="minfo predict"><h2>ماذا توقع نموذج يلا سكور قبل المباراة؟</h2>'
+                + prob_bar(fake) +
+                f'<p class="pd-line">رجّح النموذج <b>{esc(pick_ar)}</b> باحتمال {_pct(max(fake.values()))} '
+                f'ونتيجة <b>{esc(logged.get("score", ""))}</b>، وانتهت المباراة <b>{logged["hs"]}-{logged["as"]}</b>. {verdict}</p>'
+                f'<p class="pd-note">{AN_DISCLAIMER} <a href="/analysis.html#accuracy">سجل دقة التوقعات</a></p></section>')
+    return ""
+
+def AN_games(n):
+    return _games(n)
+
+def power_table(comp, stats, params, form_map):
+    """Club strength table for one competition, ranked by Elo."""
+    rows = sorted(stats.values(), key=lambda r: -r["elo"])
+    if not rows:
+        return ""
+    mu = params["mu"]
+    out = ['<div class="tbl-wrap"><table class="ptable"><thead><tr>'
+           '<th>#</th><th class="tl">النادي</th><th title="تقييم القوة (Elo)">القوة</th><th>لعب</th>'
+           '<th title="أهداف له لكل مباراة">له/م</th><th title="أهداف عليه لكل مباراة">عليه/م</th>'
+           '<th title="مؤشر الهجوم مقارنة بمتوسط الدوري">هجوم</th><th title="مؤشر الدفاع مقارنة بمتوسط الدوري (الأقل أفضل)">دفاع</th>'
+           '<th>ن/م</th><th>آخر 5</th></tr></thead><tbody>']
+    for i, r in enumerate(rows, 1):
+        att, dfc = AN.strength(r, mu)
+        pg = r["played"] or 1
+        crest = f'<img src="{esc(local_crest(r["badge"]))}" alt="" loading="lazy">' if r.get("badge") else ""
+        out.append(f'<tr><td>{i}</td><td class="tl">{crest}<bdi>{esc(ar_team(r["team"]))}</bdi></td>'
+                   f'<td><b>{round(r["elo"])}</b></td><td>{r["played"]}</td>'
+                   f'<td>{r["gf"] / pg:.2f}</td><td>{r["ga"] / pg:.2f}</td>'
+                   f'<td class="{"good" if att > 1.1 else "bad" if att < 0.9 else ""}">{att:.2f}</td>'
+                   f'<td class="{"good" if dfc < 0.9 else "bad" if dfc > 1.1 else ""}">{dfc:.2f}</td>'
+                   f'<td>{r["pts"] / pg:.2f}</td><td>{form_dots((form_map or {}).get(r["team"]) or r["form"])}</td></tr>')
+    out.append('</tbody></table></div>')
+    return "".join(out)
+
+def timing_bars(timing, title):
+    tot = sum(timing.values()) or 1
+    mx = max(timing.values()) or 1
+    bars = "".join(
+        f'<div class="tb"><span class="tb-l">{esc(lbl)}</span>'
+        f'<span class="tb-bar"><i style="width:{timing[lbl] / mx * 100:.0f}%"></i></span>'
+        f'<span class="tb-v">{timing[lbl]} <small>({timing[lbl] / tot * 100:.0f}%)</small></span></div>'
+        for lbl, _, _ in AN.MINUTE_BUCKETS)
+    return f'<div class="timing"><h3>{esc(title)}</h3>{bars}</div>'
+
+def ratings_table(rows, title):
+    if not rows:
+        return ""
+    out = [f'<div class="tbl-wrap"><h3>{esc(title)}</h3><table class="ptable"><thead><tr><th>#</th>'
+           '<th class="tl">اللاعب</th><th class="tl">النادي</th><th>المركز</th><th>مباريات</th><th>متوسط التقييم</th><th>أفضل</th></tr></thead><tbody>']
+    for i, r in enumerate(rows, 1):
+        out.append(f'<tr><td>{i}</td><td class="tl"><bdi>{esc(r["name"])}</bdi></td><td class="tl"><bdi>{esc(r["club"])}</bdi></td>'
+                   f'<td>{esc(r.get("pos") or "")}</td><td>{r["n"]}</td><td><b>{r["avg"]:.2f}</b></td><td>{r["best"]:.1f}</td></tr>')
+    out.append('</tbody></table></div>')
+    return "".join(out)
+
+def ga_table(rows, share, title):
+    if not rows:
+        return ""
+    sh = {(s["name"], s["team"]): s for s in share}
+    out = [f'<div class="tbl-wrap"><h3>{esc(title)}</h3><table class="ptable"><thead><tr><th>#</th>'
+           '<th class="tl">اللاعب</th><th class="tl">النادي</th><th>أهداف</th><th>صناعة</th><th>أ+ص</th>'
+           '<th title="نسبة أهدافه من أهداف ناديه">من أهداف ناديه</th></tr></thead><tbody>']
+    for i, r in enumerate(rows, 1):
+        s = sh.get((r["name"], r["team"]))
+        out.append(f'<tr><td>{i}</td><td class="tl"><bdi>{esc(r["name"])}</bdi></td><td class="tl"><bdi>{esc(ar_team(r["team"]))}</bdi></td>'
+                   f'<td>{r["g"]}</td><td>{r["a"]}</td><td><b>{r["g"] + r["a"]}</b></td>'
+                   f'<td>{(_pct(s["share"]) + " (" + str(s["g"]) + "/" + str(s["club_goals"]) + ")") if s else "—"}</td></tr>')
+    out.append('</tbody></table></div>')
+    return "".join(out)
+
+def accuracy_html(acc, anchor=True):
+    a = acc.get("all")
+    hid = ' id="accuracy"' if anchor else ""
+    if not a:
+        return (f'<section class="minfo"{hid}><h2>دقة التوقعات</h2><p>يُثبَّت كل توقع قبل انطلاق المباراة ثم يُقارَن '
+                'بالنتيجة الفعلية بعد صافرة النهاية. يبدأ هذا السجل بالظهور بعد أول مباريات تُلعب منذ إطلاق القسم.</p></section>')
+    out = [f'<section class="minfo"{hid}><h2>دقة التوقعات</h2>'
+           f'<div class="acc-tiles"><div class="tile"><b>{a["n"]}</b><span>مباراة مقيَّمة</span></div>'
+           f'<div class="tile"><b>{_pct(a["hit_rate"])}</b><span>إصابة الاتجاه (فوز/تعادل/خسارة)</span></div>'
+           f'<div class="tile"><b>{_pct(a["home_baseline"])}</b><span>لو توقعنا فوز الأرض دائمًا</span></div>'
+           f'<div class="tile"><b>{a["brier"]:.3f}</b><span>مؤشر Brier (الأقل أفضل، 0.667 = عشوائي)</span></div>'
+           f'<div class="tile"><b>{a["score_hits"]}</b><span>نتيجة مضبوطة</span></div></div>']
+    if acc.get("comps"):
+        out.append('<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">البطولة</th><th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead><tbody>')
+        for comp in COMP_ORDER + [c for c in acc["comps"] if c not in COMP_ORDER]:
+            c = acc["comps"].get(comp)
+            if c:
+                out.append(f'<tr><td class="tl">{esc(comp_label(comp))}</td><td>{c["n"]}</td><td>{_pct(c["hit_rate"])}</td><td>{c["brier"]:.3f}</td></tr>')
+        out.append('</tbody></table></div>')
+    if acc.get("recent"):
+        out.append('<h3>آخر المباريات المقيَّمة</h3><ul class="acc-list">')
+        for e in acc["recent"]:
+            pick_ar = {"H": ar_team(e["home"]), "D": "تعادل", "A": ar_team(e["away"])}[e["pick"]]
+            out.append(f'<li><bdi>{esc(ar_team(e["home"]))} {e["hs"]}-{e["as"]} {esc(ar_team(e["away"]))}</bdi> — '
+                       f'توقعنا <b>{esc(pick_ar)}</b> ({_pct(max(e["ph"], e["pd"], e["pa"]))}) '
+                       + ('<span class="hit ok">✔</span>' if e.get("hit") else '<span class="hit no">✘</span>') + '</li>')
+        out.append('</ul>')
+    out.append('</section>')
+    return "".join(out)
+
+def model_explainer():
+    return ('<section class="minfo explain" id="model"><h2>كيف يعمل نموذج يلا سكور؟</h2>'
+            '<p>القسم لا يعتمد على آراء أو توقعات شخصية، بل على أرقام المباريات الفعلية التي يجمعها الموقع '
+            'كل ربع ساعة. لكل بطولة يبني النموذج ثلاث طبقات:</p><ol>'
+            '<li><b>تقييم القوة (Elo):</b> يبدأ كل نادٍ برصيد 1500 نقطة، ويربح أو يخسر نقاطًا بعد كل مباراة '
+            'بحسب النتيجة وقوة الخصم، مع ميزة صغيرة لصاحب الأرض. الفوز على فريق قوي يرفع التقييم أكثر من الفوز على فريق ضعيف.</li>'
+            '<li><b>مؤشرا الهجوم والدفاع:</b> متوسط أهداف كل نادٍ له وعليه مقارنة بمتوسط الدوري، مع تخفيف أثر العيّنات '
+            'الصغيرة في بداية الموسم حتى لا يبدو فريق «لا يُقهر» بعد مباراتين.</li>'
+            '<li><b>الأهداف المتوقعة والاحتمالات:</b> من المؤشرين ومتوسط أهداف الأرض والضيف في الدوري يُحسب عدد الأهداف '
+            'المتوقع لكل فريق، ثم توزيع بواسون على كل النتائج الممكنة يعطي احتمالات الفوز والتعادل والخسارة، '
+            'والنتائج الأكثر ترجيحًا، واحتمال تجاوز 2.5 هدف وتسجيل الفريقين.</li></ol>'
+            '<p><b>الشفافية:</b> يُثبَّت كل توقع قبل انطلاق المباراة ولا يُعدَّل بعدها، ثم يُقارَن بالنتيجة الفعلية في '
+            '<a href="#accuracy">سجل الدقة</a> أعلاه، إلى جانب مقياس ساذج (توقع فوز الأرض دائمًا) حتى يعرف القارئ إن كان '
+            'النموذج يضيف شيئًا فعلًا.</p>'
+            '<p><b>حدود النموذج:</b> لا يعرف الإصابات ولا الإيقافات ولا تغيّر المدرب، ويعتمد على الموسم الحالي فقط '
+            'فتكون عيّنته صغيرة في الجولات الأولى (نُشير إلى ذلك بوسم «عيّنة صغيرة»). لذلك تُقرأ التوقعات كاحتمالات '
+            'وليست حقائق، وهي ليست نصيحة للمراهنة.</p></section>')
+
+def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, sins, forms):
+    """Write /analysis.html (hub) + /analysis/<slug>.html per league. Returns urls."""
+    urls = []
+    today = datetime.date.fromisoformat(REF_TODAY)
+    wk = (today + datetime.timedelta(days=7)).isoformat()
+    by_comp = {}
+    for m in upcoming:
+        p = preds.get(str(m.get("match_id")))
+        if p and (m.get("kickoff") or "") <= wk:
+            by_comp.setdefault(m.get("competition"), []).append((m, p))
+    for ms in by_comp.values():
+        ms.sort(key=lambda t: (t[0].get("kickoff") or "", t[0].get("koff_time") or ""))
+    comps = [c for c in COMP_ORDER if c in tstats] + [c for c in tstats if c not in COMP_ORDER]
+    n_pred = sum(len(v) for v in by_comp.values())
+    # ---- hub ----
+    hp = [head("تحليلات وتوقعات المباريات بالأرقام — يلا سكور",
+               "توقعات مباريات الأسبوع باحتمالات مبنية على بيانات الموسم، تقييم قوة الأندية، تحليل اللاعبين، "
+               "وسجل شفاف لدقة التوقعات في الدوري المصري وأبرز الدوريات.",
+               SITE_BASE + "/analysis.html", active="analysis")]
+    hp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html")]))
+    hp.append('<nav class="crumbs"><a href="/">أخبار</a> › تحليلات</nav>')
+    hp.append('<h1 class="page-h">تحليلات وتوقعات بالأرقام</h1>')
+    hp.append(f'<p class="hintline">نموذج يلا سكور يقرأ نتائج الموسم الحالي في {len(comps)} بطولات ويحوّلها إلى '
+              f'تقييم قوة لكل نادٍ واحتمالات لكل مباراة قادمة — {n_pred} مباراة متوقعة خلال الأيام السبعة القادمة. '
+              '<a href="#model">كيف يعمل النموذج؟</a></p>')
+    hp.append('<div class="an-nav">' + "".join(
+        f'<a href="/analysis/{COMP_SLUG[c]}.html">{comp_icon(c)} {esc(comp_label(c))}</a>'
+        for c in comps if c in COMP_SLUG) + '</div>')
+    hp.append('<section class="minfo"><h2>توقعات مباريات الأسبوع</h2>')
+    if not by_comp:
+        hp.append('<p class="hintline">لا مباريات قادمة خلال سبعة أيام في البطولات المغطاة.</p>')
+    for c in comps:
+        rows = by_comp.get(c)
+        if not rows:
+            continue
+        hp.append(f'<h3 class="an-comp">{comp_icon(c)} <a href="/analysis/{COMP_SLUG.get(c, "")}.html">{esc(comp_label(c))}</a></h3>')
+        hp.append('<div class="plist">' + "".join(pred_row(m, p) for m, p in rows[:8]) + '</div>')
+        if len(rows) > 8 and c in COMP_SLUG:
+            hp.append(f'<p class="more-link"><a href="/analysis/{COMP_SLUG[c]}.html">كل توقعات {esc(comp_label(c))} ({len(rows)}) ←</a></p>')
+    hp.append(f'<p class="pd-note">{AN_DISCLAIMER}</p></section>')
+    # power snapshot: top 5 per league
+    hp.append('<section class="minfo"><h2>أقوى الأندية الآن (تقييم Elo)</h2><div class="pw-grid">')
+    for c in comps:
+        rows = sorted(tstats[c].values(), key=lambda r: -r["elo"])[:5]
+        if not rows or all(r["played"] == 0 for r in rows):
+            continue
+        hp.append(f'<div class="pw-card"><h3>{comp_icon(c)} {esc(comp_label(c))}</h3><ol>' + "".join(
+            f'<li><bdi>{esc(ar_team(r["team"]))}</bdi> <b>{round(r["elo"])}</b></li>' for r in rows)
+            + (f'</ol><a href="/analysis/{COMP_SLUG[c]}.html">الجدول الكامل ←</a></div>' if c in COMP_SLUG else '</ol></div>'))
+    hp.append('</div></section>')
+    # players snapshot: best-rated across leagues (n>=2)
+    best = []
+    for c, d in pins.items():
+        for r in d.get("ratings", [])[:5]:
+            best.append(dict(r, comp=c))
+    best.sort(key=lambda r: (-r["avg"], -r["n"]))
+    if best:
+        hp.append('<section class="minfo"><h2>أعلى اللاعبين تقييمًا هذا الموسم</h2>'
+                  '<p class="hintline">متوسط تقييم اللاعب في المباريات التي بدأها أساسيًا (مرتان على الأقل)، من تقييمات مزوّد البيانات.</p>'
+                  '<div class="tbl-wrap"><table class="ptable"><thead><tr><th>#</th><th class="tl">اللاعب</th><th class="tl">النادي</th><th class="tl">البطولة</th><th>مباريات</th><th>التقييم</th></tr></thead><tbody>')
+        for i, r in enumerate(best[:12], 1):
+            hp.append(f'<tr><td>{i}</td><td class="tl"><bdi>{esc(r["name"])}</bdi></td><td class="tl"><bdi>{esc(r["club"])}</bdi></td>'
+                      f'<td class="tl">{esc(comp_label(r["comp"]))}</td><td>{r["n"]}</td><td><b>{r["avg"]:.2f}</b></td></tr>')
+        hp.append('</tbody></table></div></section>')
+    hp.append(accuracy_html(acc))
+    hp.append(model_explainer())
+    hp.append(foot())
+    write("analysis.html", "".join(hp))
+    urls.append("/analysis.html")
+    # ---- per-league pages ----
+    for c in comps:
+        slug = COMP_SLUG.get(c)
+        if not slug:
+            continue
+        label = comp_label(c)
+        stats, params = tstats[c], lparams[c]
+        if not stats:
+            continue
+        lp = [head(f"تحليلات {label}: توقعات المباريات وقوة الأندية واللاعبون — يلا سكور",
+                   f"توقعات مباريات {label} القادمة باحتمالات مبنية على نتائج الموسم، ترتيب قوة الأندية (Elo) "
+                   f"ومؤشرات الهجوم والدفاع، توقيت الأهداف، وأعلى اللاعبين تقييمًا.",
+                   SITE_BASE + f"/analysis/{slug}.html", active="analysis")]
+        lp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html"),
+                                 (label, SITE_BASE + f"/analysis/{slug}.html")]))
+        lp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › <a href="/analysis.html">تحليلات</a> › {esc(label)}</nav>')
+        lp.append(f'<h1 class="page-h">تحليلات {esc(label)}</h1>')
+        n_m = params["n"]
+        lp.append(f'<p class="hintline">مبنية على {_games(n_m)} منتهية هذا الموسم · متوسط الأهداف في المباراة '
+                  f'{(params["gpm"] or 0):.2f}'
+                  + (f' · فوز الأرض في {_pct(params["home_win"])} من المباريات والتعادل في {_pct(params["draw"])}' if params["home_win"] is not None else '')
+                  + '.</p>')
+        rows = by_comp.get(c, [])
+        # all upcoming of this comp within 14 days
+        wk2 = (today + datetime.timedelta(days=14)).isoformat()
+        rows = sorted([(m, preds[str(m["match_id"])]) for m in upcoming
+                       if m.get("competition") == c and str(m.get("match_id")) in preds and (m.get("kickoff") or "") <= wk2],
+                      key=lambda t: (t[0].get("kickoff") or "", t[0].get("koff_time") or ""))
+        lp.append(f'<section class="minfo"><h2>توقعات مباريات {esc(label)} القادمة</h2>')
+        lp.append('<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>' if rows
+                  else '<p class="hintline">لا مباريات قادمة خلال 14 يومًا.</p>')
+        lp.append(f'<p class="pd-note">{AN_DISCLAIMER}</p></section>')
+        lp.append(f'<section class="minfo"><h2>قوة أندية {esc(label)}</h2>'
+                  '<p class="hintline">الترتيب بتقييم القوة (Elo) لا بالنقاط: يكافئ الفوز على الأقوياء ويأخذ فارق الأهداف '
+                  'في الحساب. مؤشر الهجوم/الدفاع = أهداف النادي مقارنة بمتوسط الدوري (1.00 = المتوسط).</p>'
+                  + power_table(c, stats, params, forms.get(c, {})) + '</section>')
+        pi = pins.get(c)
+        si = sins.get(c)
+        if pi or si:
+            lp.append(f'<section class="minfo"><h2>تحليل اللاعبين في {esc(label)}</h2>')
+            if si and si.get("ga"):
+                lp.append(ga_table(si["ga"], si.get("share", []), "الأكثر مساهمة في الأهداف (أهداف + صناعة)"))
+            if pi and pi.get("ratings"):
+                lp.append(ratings_table(pi["ratings"][:10], "أعلى اللاعبين تقييمًا (مرتان أساسيًا على الأقل)"))
+            lp.append('</section>')
+        if pi and sum(pi["timing"].values()) >= 10:
+            late = sorted(pi["club_late"].items(), key=lambda kv: -kv[1]["late_share"])[:3]
+            early = sorted(pi["club_late"].items(), key=lambda kv: -(kv[1]["early"] / kv[1]["total"]))[:3]
+            lp.append(f'<section class="minfo"><h2>متى تُسجَّل الأهداف في {esc(label)}؟</h2>'
+                      f'<p class="hintline">توزيع {sum(pi["timing"].values())} هدفًا في {_games(pi["n_matches"])} مرصودة بالتفاصيل هذا الموسم.</p>'
+                      + timing_bars(pi["timing"], "الأهداف حسب فترة المباراة (بالدقائق)"))
+            if late:
+                lp.append('<p class="pd-line"><b>أندية الأهداف المتأخرة (بعد الدقيقة 75):</b> ' + '، '.join(
+                    f'<bdi>{esc(k)}</bdi> ({v["late"]} من {v["total"]})' for k, v in late if v["late"]) + '</p>')
+            if early:
+                lp.append('<p class="pd-line"><b>أندية البداية السريعة (أول 15 دقيقة):</b> ' + '، '.join(
+                    f'<bdi>{esc(k)}</bdi> ({v["early"]} من {v["total"]})' for k, v in early if v["early"]) + '</p>')
+            lp.append('</section>')
+        ca = {"all": acc["comps"].get(c), "comps": {}, "recent": [e for e in acc.get("recent", []) if e.get("comp") == c]}
+        lp.append(accuracy_html(ca, anchor=False))
+        lp.append(f'<p class="more-link"><a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a> · '
+                  f'<a href="/analysis.html#model">كيف يعمل النموذج؟</a></p>')
+        lp.append(foot())
+        write(f"analysis/{slug}.html", "".join(lp))
+        urls.append(f"/analysis/{slug}.html")
+    return urls
+
 def build():
     # Clear dist CONTENTS rather than the folder itself, so an open handle on
     # dist (e.g. a running preview server) doesn't block the rebuild.
@@ -1463,7 +1789,36 @@ def build():
     goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
     ge_idx = goal_events_index(goal_events)
     # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
-    md_idx = match_details_index(load("match_details.json"))
+    _details_raw = load("match_details.json")
+    md_idx = match_details_index(_details_raw)
+
+    # ---- تحليلات: strength model + predictions + accuracy + player insights ----
+    _archive = load("matches_archive.json")
+    _bycomp = AN.season_matches(fixtures, _archive)
+    _tstats = AN.team_stats(_bycomp)
+    _lparams = {c: AN.league_params(ms) for c, ms in _bycomp.items()}
+    def _pred(m):
+        comp = m.get("competition")
+        if comp not in _tstats or not m.get("home") or not m.get("away"):
+            return None
+        return AN.predict(_tstats[comp], _lparams[comp], m["home"], m["away"])
+    _upcoming = [m for m in matches if (m.get("status") or "").upper() == "UPCOMING" and m.get("match_id")]
+    _preds = {}
+    for m in _upcoming:
+        p = _pred(m)
+        if p:
+            _preds[str(m["match_id"])] = p
+    _plog = AN.load_log()
+    AN.update_log(_plog, _upcoming, _preds, matches + _archive, datetime.date.today())
+    if AN.save_log(_plog):
+        print("  + predictions log updated:", len(_plog), "entries")
+    _acc = AN.accuracy(_plog)
+    _comp_idx = {}
+    for m in matches + _archive + [mm for f in fixtures for rd in f.get("rounds", []) for mm in rd.get("matches", [])]:
+        if m.get("home") and m.get("away"):
+            _comp_idx[(ar_team(m["home"]), ar_team(m["away"]), m.get("kickoff"))] = m.get("competition")
+    _pins = AN.player_insights(_details_raw, lambda h, a, d: _comp_idx.get((h, a, d)), ar_team)
+    _sins = AN.scorer_insights(scorers, assists, {s.get("competition"): s["table"] for s in standings if s.get("table")})
     # reels: hand-picked first, then auto-pulled channel uploads (deduped)
     reels = load("reels.json")
     seen_r = {r.get("video_id") for r in reels}
@@ -2228,6 +2583,12 @@ def build():
         _det = match_details_for(md_idx, m)
         if _det:
             mp.append(match_details_html(_det[0], _det[1], h_ar, a_ar))
+        # «توقع يلا سكور»: model probabilities for an upcoming match; for a
+        # finished one, what the model said before kick-off vs the result
+        _pb = pred_block(m, _preds.get(str(mid)) if st == "UPCOMING" else None,
+                         _plog.get(str(mid)), _tstats.get(m.get("competition"), {}))
+        if _pb:
+            mp.append(_pb)
         info = [("البطولة", comp)]
         if m.get("round"):
             info.append(("الجولة", str(m["round"])))
@@ -2402,6 +2763,13 @@ def build():
                 "<head>", '<head><meta name="robots" content="noindex">', 1))
             n_lp += 1
     print(f"  + league pages: {n_lp}")
+
+    # ---- تحليلات: /analysis hub + /analysis/<league> ----
+    os.makedirs(os.path.join(DIST, "analysis"), exist_ok=True)
+    _an_urls = analysis_pages(matches, _upcoming, _preds, _plog, _acc, _tstats, _lparams,
+                              _pins, _sins, forms)
+    urls.extend(_an_urls)
+    print(f"  + analysis pages: {len(_an_urls)}")
 
     # ---- per-club pages (/team/<slug>) ----
     # Evergreen SEO hubs for the highest-volume Arabic query family we don't
@@ -2971,12 +3339,12 @@ def build():
     # last crawl (it ignores changefreq/priority but uses lastmod). Listing,
     # team, standings and scorers pages are rebuilt with fresh data every
     # run -> today; legal/static pages carry none.
-    _dyn = ("/", "/matches.html", "/news.html", "/stats.html")
+    _dyn = ("/", "/matches.html", "/news.html", "/stats.html", "/analysis.html")
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for u in urls:
         lm = _LASTMOD.get(u)
-        if not lm and (u in _dyn or u.startswith(("/news/", "/team/", "/standings/", "/scorers/"))):
+        if not lm and (u in _dyn or u.startswith(("/news/", "/team/", "/standings/", "/scorers/", "/analysis/"))):
             lm = REF_TODAY
         sm.append(f"  <url><loc>{esc(SITE_BASE + u)}</loc>"
                   + (f"<lastmod>{esc(lm)}</lastmod>" if lm else "") + "</url>")
@@ -4032,6 +4400,63 @@ a{color:inherit}
 .mrow:has(.mstretch):hover{border-color:#94a3b8;box-shadow:0 2px 8px rgba(15,23,42,.12)}
 /* per-match page (/m/<id>.html) */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+/* تحليلات */
+.an-nav{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 16px}
+.an-nav a{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:999px;padding:5px 12px;font-weight:800;font-size:.85rem;color:var(--ink);text-decoration:none}
+.an-nav a:hover{border-color:var(--green);color:var(--green-d)}
+.an-nav .lg-logo,.an-comp .lg-logo{width:18px;height:18px;object-fit:contain}
+.an-comp{display:flex;align-items:center;gap:6px;font-size:1rem;margin:16px 0 8px}
+.an-comp a{color:var(--ink);text-decoration:none}
+.plist{display:flex;flex-direction:column;gap:8px}
+.prow{display:grid;grid-template-columns:96px 1fr 180px;grid-template-areas:"when teams bar" "when meta bar";gap:4px 14px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--ink)}
+.prow:hover{border-color:var(--green)}
+.pr-when{grid-area:when;font-size:.8rem;font-weight:800;color:var(--muted)}
+.pr-teams{grid-area:teams;display:flex;align-items:center;gap:8px;font-weight:900;min-width:0}
+.pr-t{display:inline-flex;align-items:center;gap:6px;min-width:0}
+.pr-t img{width:22px;height:22px;object-fit:contain}
+.pr-vs{color:var(--muted);font-weight:600}
+.prow .pbar{grid-area:bar}
+.pr-meta{grid-area:meta;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);font-weight:700}
+.pbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#e2e8f0;direction:ltr}
+.pb-seg{display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;min-width:0}
+.pb-h{background:var(--green)}.pb-d{background:#94a3b8}.pb-a{background:#334155}
+.conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800}
+.conf-low{background:#fef3c7;color:#92400e}.conf-mid{background:#e0f2fe;color:#075985}.conf-high{background:#dcfce7;color:#166534}
+.predict .pd-heads{display:flex;justify-content:space-between;font-weight:800;font-size:.9rem;margin-bottom:6px}
+.predict .pd-heads b{color:var(--green-d)}
+.pd-line{margin:8px 0;line-height:1.8}
+.pd-facts{color:var(--muted);font-size:.88rem;line-height:1.8}
+.pd-note{color:var(--muted);font-size:.8rem;line-height:1.7;margin:10px 0 0}
+.hit{font-weight:900;border-radius:6px;padding:1px 8px}.hit.ok{background:#dcfce7;color:#166534}.hit.no{background:#fee2e2;color:#991b1b}
+.tbl-wrap{overflow-x:auto}
+.ptable{width:100%;border-collapse:collapse;font-size:.88rem}
+.ptable th,.ptable td{padding:7px 8px;text-align:center;border-bottom:1px solid #eef2f6;white-space:nowrap}
+.ptable th{color:var(--muted);font-weight:800;font-size:.78rem}
+.ptable .tl{text-align:start}
+.ptable td.tl img{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-inline-end:6px}
+.ptable td.good{color:#166534;font-weight:800}.ptable td.bad{color:#991b1b;font-weight:800}
+.tbl-wrap h3,.timing h3{font-size:.95rem;margin:14px 0 8px}
+.pw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
+.pw-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px}
+.pw-card h3{display:flex;align-items:center;gap:6px;font-size:.92rem;margin:0 0 6px}
+.pw-card ol{margin:0;padding-inline-start:18px;font-size:.88rem;line-height:1.9}
+.pw-card li b{color:var(--green-d);float:left}
+.pw-card a{display:block;margin-top:6px;font-size:.8rem;font-weight:800;color:var(--green-d);text-decoration:none}
+.acc-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:10px}
+.tile{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center}
+.tile b{display:block;font-size:1.4rem;color:var(--green-d)}
+.tile span{font-size:.74rem;color:var(--muted);font-weight:700}
+.acc-list{margin:0;padding-inline-start:18px;line-height:1.9;font-size:.9rem}
+.timing .tb{display:grid;grid-template-columns:64px 1fr 84px;align-items:center;gap:8px;margin:4px 0;font-size:.85rem}
+.tb-bar{height:14px;background:#e2e8f0;border-radius:4px;overflow:hidden}
+.tb-bar i{display:block;height:100%;background:var(--green)}
+.tb-v{font-weight:800}.tb-v small{color:var(--muted);font-weight:600}
+.explain ol{padding-inline-start:20px;line-height:1.9}.explain p{line-height:1.9}
+.more-link{font-weight:800;margin:8px 0}
+@media (max-width:640px){
+  .prow{grid-template-columns:1fr;grid-template-areas:"when" "teams" "bar" "meta";gap:6px}
+  .pr-when{font-size:.75rem}
+}
 .st-analysis p,.faq p{line-height:1.9;margin:8px 0}
 .st-analysis a{font-weight:800;color:var(--green-d);text-decoration:none}
 .faq details,.a-faq details{border-top:1px solid #e2e8f0;padding:8px 0}
