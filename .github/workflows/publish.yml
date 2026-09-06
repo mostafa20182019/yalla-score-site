@@ -5,26 +5,47 @@ name: Publish Yalla Score
 on:
   push:
     branches: [ main ]           # deploy on every push (also forces GitHub to register the workflow)
+    # 4x/hour, placed in the GAPS between the Cloudflare Worker cron slots
+    # (:01,:16,:31,:46) — a run takes ~6 min, so :01-:07 etc. are busy windows
+    # and a punctual schedule run at :11/:26/:41/:56 no longer lands on top of
+    # one. (GitHub cron is best-effort and often late, so this only reduces
+    # collisions; it cannot remove them.)
   schedule:
-    - cron: "7,22,37,52 * * * *"  # 4x/hour on off-peak minutes (GitHub cron is best-effort and often delayed/skipped; extra slots = fresher data)
-  workflow_dispatch: {}          # allows a manual run from the Actions tab (also fired by the Cloudflare Worker cron)
+    - cron: "11,26,41,56 * * * *"
+  workflow_dispatch:             # manual run from the Actions tab; also fired by the Cloudflare Worker cron and by the article workflows
+    inputs:
+      reason:
+        description: "refresh = interchangeable data refresh (cancellable) · article = carries new content (never cancelled)"
+        type: choice
+        default: "refresh"
+        options: [ "refresh", "article" ]
 
 permissions:
   contents: write                # needed to commit refreshed data/ back to the repo
   actions: write                 # dispatch match-article.yml when a curated-club match needs a preview/report
 
 # Data-refresh runs are interchangeable - only the newest matters - so they
-# still cancel each other. A PUSH carries new content (an article), so it gets
-# its own group and is never cancelled.
+# still cancel each other. Runs that CARRY NEW CONTENT get their own group and
+# are never cancelled: a PUSH, and a dispatch with reason=article (sent by
+# daily-article / match-article / upgrade-articles after they commit).
 #
 # Why: with a single shared group + cancel-in-progress, a trigger fires every
 # ~15 min (Worker cron + GitHub cron), so any run slower than that window was
 # always cancelled by the next one. During the GitHub Actions outage on
 # 2026-08-06, ten consecutive runs were cancelled or failed and article 85
 # never deployed - it had to be pushed out by hand with a local wrangler.
+#
+# reason=article added 2026-09-06: an article's own dispatch was landing in the
+# shared refresh group and being killed by the next Worker cron mid-fetch (15 of
+# 60 runs cancelled), so the article waited for the following cron to publish it
+# - up to ~10 extra minutes, with its Facebook post (gated on a fresh deploy)
+# delayed with it. Content was never LOST (every run checks out `ref: main`, so
+# the next run to finish ships it), only delayed. Overlapping an article run
+# with a refresh run is safe: both deploy the same tip of main (wrangler deploy
+# is idempotent) and the data commit-back already tolerates losing a race.
 concurrency:
-  group: publish-${{ github.event_name == 'push' && github.sha || 'refresh' }}
-  cancel-in-progress: ${{ github.event_name != 'push' }}
+  group: publish-${{ github.event_name == 'push' && github.sha || (github.event.inputs.reason == 'article' && github.run_id || 'refresh') }}
+  cancel-in-progress: ${{ github.event_name != 'push' && github.event.inputs.reason != 'article' }}
 
 jobs:
   publish:
