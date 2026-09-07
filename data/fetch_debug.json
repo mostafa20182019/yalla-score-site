@@ -179,10 +179,10 @@
   "skipped": [
    "4805136:count-mismatch (0, 0) vs 0-2 []",
    "4805134:count-mismatch (0, 2) vs 1-2 [a:g@6/a:g@37]",
-   "4805123:count-mismatch (0, 0) vs 1-0 []",
    "4805124:count-mismatch (0, 0) vs 0-1 []",
    "4805129:count-mismatch (0, 0) vs 0-1 []",
-   "4805133:count-mismatch (0, 0) vs 1-0 []"
+   "4805133:count-mismatch (0, 0) vs 1-0 []",
+   "4805122:count-mismatch (0, 0) vs 4-0 []"
   ],
   "sample": {
    "game_keys": [
@@ -257,5 +257,5 @@
   "fails": 0
  },
  "match_details": "ok (216)",
- "utc": "2026-09-07T01:05:22Z"
+ "utc": "2026-09-07T01:20:59Z"
 }
