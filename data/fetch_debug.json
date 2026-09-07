@@ -174,7 +174,7 @@
  },
  "goal_events": "ok (43 games)",
  "goal_events_dbg": {
-  "candidates": 87,
+  "candidates": 88,
   "detail_fails": 0,
   "skipped": [
    "4805136:count-mismatch (0, 0) vs 0-2 []",
@@ -249,13 +249,13 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (6 with XI)",
+ "prematch_lineups": "ok (5 with XI)",
  "prematch_dbg": {
-  "in_window": 8,
-  "fetched": 8,
-  "with_xi": 6,
+  "in_window": 7,
+  "fetched": 7,
+  "with_xi": 5,
   "fails": 0
  },
  "match_details": "ok (224)",
- "utc": "2026-09-07T15:20:53Z"
+ "utc": "2026-09-07T15:35:35Z"
 }
