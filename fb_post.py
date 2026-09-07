@@ -242,8 +242,9 @@ def heal_previews(token, st):
             print(f"  preview for article {aid} is good now")
 
 
-def auto(token, items):
-    st = load_state()
+def pending(items, st):
+    """Articles the local state says are still unposted and young enough,
+    oldest first, capped per run. Shared by --auto and --pending."""
     todo = []
     for art in items:
         aid = str(art.get("article_id", "")).strip()
@@ -254,7 +255,12 @@ def auto(token, items):
             continue          # undated / old: never auto-posted
         todo.append((age, art))
     todo.sort(key=lambda t: -t[0])            # oldest first, newest last
-    todo = [art for _, art in todo][:AUTO_MAX_PER_RUN]
+    return [art for _, art in todo][:AUTO_MAX_PER_RUN]
+
+
+def auto(token, items):
+    st = load_state()
+    todo = pending(items, st)
     if not todo:
         print("no new article to post")
     elif not token:
@@ -266,9 +272,16 @@ def auto(token, items):
         # race, which is what was posting the same news more than once.
         on_page = already_on_page(token)
         if on_page is None:
-            print("  ! page feed unreadable - falling back to the local state only "
-                  "(a lost state write can still duplicate; check the token's "
-                  "pages_read_engagement permission)")
+            # Verified dead end 2026-09-07: the token's scope list DOES contain
+            # pages_read_engagement and Graph still answers (#10) for both
+            # /me/feed and /<page-id>/feed - the permission is Standard Access,
+            # and reading a page's feed needs Advanced Access or the
+            # "Page Public Content Access" feature, i.e. a full App Review.
+            # Not worth it: duplicates are prevented by serialising the posting
+            # workflow instead (concurrency group fb-post). Kept because it
+            # starts working the day App Review is done.
+            print("  page feed check unavailable (needs App Review) - relying on "
+                  "the serialised queue + the state file")
         else:
             keep = []
             for art in todo:
@@ -309,6 +322,11 @@ def main() -> int:
     items = load_articles()
     if not items:
         print("no articles - skipping")
+        return 0
+    if "--pending" in sys.argv[1:]:
+        # how many articles WOULD be posted - lets publish.yml dispatch the
+        # serialised posting workflow only when there is something to do
+        print(len(pending(items, load_state())))
         return 0
     if "--auto" in sys.argv[1:]:
         return auto(token, items)

@@ -144,40 +144,24 @@ jobs:
       # Variables > New variable, FB_POST_ARTICLES = on.
       # NOTE: the result-card step below is a SEPARATE feature (match scores as
       # images) and is deliberately left running.
-      - name: Post new article to Facebook
+      # Article posting itself moved OUT of this workflow on 2026-09-07: publish
+      # runs overlap by design, and two of them posted article 422 twice. It now
+      # lives in fb-post.yml behind `concurrency: group: fb-post,
+      # cancel-in-progress: false`, so dispatches QUEUE instead of racing and a
+      # queued run checks out the state the previous one pushed. Dispatched only
+      # when something is actually pending, so a quiet cycle costs no run.
+      - name: Dispatch the Facebook post when an article is pending
         if: steps.tip.outputs.fresh == 'true' && vars.FB_POST_ARTICLES == 'on'
         continue-on-error: true
-        env:
-          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # Article 422 went out TWICE on 2026-09-07 (runs 34150714822 at
-          # 18:12 and 34150987016 at 18:16): both were mid-flight, both read a
-          # dedup state from their own ~5-minute-old checkout, neither had
-          # recorded the post yet. Two changes close that window:
-          #  1. read the state from origin/main HERE, not from the checkout the
-          #     run started with - it may be minutes stale;
-          #  2. commit and push the state IMMEDIATELY after posting instead of
-          #     waiting for the end-of-run commit-back, because the gap between
-          #     posting and recording is where the duplicate is born.
-          # The real fix is fb_post.already_on_page(), but that needs the
-          # pages_read_engagement permission the token does not have yet.
-          git fetch --quiet origin main || true
-          git checkout origin/main -- data/fb_posted.json 2>/dev/null || true
-          python fb_post.py --auto
-          if ! git diff --quiet -- data/fb_posted.json; then
-            git add data/fb_posted.json
-            git commit -m "fb: record posted articles [skip ci]"
-            for attempt in 1 2 3 4 5; do
-              if git pull --rebase origin main && git push; then
-                echo "  dedup state pushed on attempt $attempt"; break
-              fi
-              git rebase --abort 2>/dev/null || true
-              echo "  state push attempt $attempt lost the race - retrying in 5s"
-              sleep 5
-            done
-          fi
+          N=$(python fb_post.py --pending)
+          echo "articles pending a Facebook post: $N"
+          if [ "$N" = "0" ]; then exit 0; fi
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/fb-post.yml/dispatches" \
+            -d '{"ref":"main"}' && echo "dispatched fb-post.yml"
 
       # Facebook result cards: one native image post per FINISHED curated-club
       # match (fb_cards.py renders it from data/matches.json + goal_events.json
