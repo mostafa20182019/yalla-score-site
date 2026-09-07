@@ -37,6 +37,7 @@ are visible to the app's admins only (see FB_AUTOPOST_RUNBOOK.md).
 import datetime
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -148,6 +149,48 @@ def scrape_until_ok(token, link):
     return False, og
 
 
+def already_on_page(token, limit=50):
+    """Article ids that are ALREADY published on the page, read from Facebook
+    itself. Returns a set, or None when the read fails.
+
+    Why this exists (root cause of the duplicate posts, found 2026-09-07): the
+    dedup state lives in data/fb_posted.json, which the workflow commits back
+    in its LAST step with `git push || echo "push failed (race...)"`. A log scan
+    of 30 recent publish runs found 5 of them (17%) losing that race — the
+    article had gone out to Facebook but the repo never learned it, so the next
+    run read the old state, saw the article as unposted, and posted it again.
+    With AUTO_MAX_AGE_H=6 and a run every ~15 min, one article could go out
+    many times. Two overlapping runs both loading the state before either
+    writes cause the same thing.
+
+    The page itself is the only source that cannot be lost to a git race, so it
+    is now the authority: every post we make carries the article URL in its
+    message, so the ids present in the recent feed are the ids already posted.
+    """
+    url = (f"{GRAPH}/me/feed?fields=message,created_time,attachments%7Btarget%7D"
+           f"&limit={limit}&access_token={urllib.parse.quote(token)}")
+    try:
+        with urllib.request.urlopen(urllib.request.Request(
+                url, headers={"User-Agent": "yalla-score-fbpost/1.0"}), timeout=30) as r:
+            data = json.load(r)
+    except urllib.error.HTTPError as e:
+        body = e.read().decode("utf-8", "replace")[:300]
+        print(f"  ! could not read the page feed: HTTP {e.code} {body}")
+        return None
+    except Exception as e:  # noqa: BLE001
+        print(f"  ! could not read the page feed: {e}")
+        return None
+    ids = set()
+    for post in data.get("data") or []:
+        blob = post.get("message") or ""
+        for att in ((post.get("attachments") or {}).get("data") or []):
+            blob += " " + str(((att.get("target") or {}).get("url")) or "")
+        ids.update(re.findall(r"/a/(\d+)", blob))
+    print(f"  page feed: {len(data.get('data') or [])} recent posts, "
+          f"{len(ids)} article id(s) already published")
+    return ids
+
+
 def post_article(token, art):
     """Publish the feed post (preview already verified by the caller)."""
     link = article_link(art)
@@ -217,6 +260,33 @@ def auto(token, items):
     elif not token:
         print(f"FB_PAGE_TOKEN not set - {len(todo)} article(s) would be posted, skipping")
         return 0
+    if todo and token:
+        # second gate, and the authoritative one: ask the PAGE what is already
+        # published. Catches every article whose state write was lost to a git
+        # race, which is what was posting the same news more than once.
+        on_page = already_on_page(token)
+        if on_page is None:
+            print("  ! page feed unreadable - falling back to the local state only "
+                  "(a lost state write can still duplicate; check the token's "
+                  "pages_read_engagement permission)")
+        else:
+            keep = []
+            for art in todo:
+                aid = str(art.get("article_id", "")).strip()
+                if aid in on_page:
+                    # repair the state so the next run does not ask again
+                    st["articles"].setdefault(aid, {
+                        "ts": time.time(), "post_id": "recovered-from-page",
+                        "title": art.get("title"), "og_ok": True})
+                    print(f"article {aid}: ALREADY on the page - skipping "
+                          "(state had lost it; recovered)")
+                else:
+                    keep.append(art)
+            todo = keep
+            if not todo:
+                save_state(st)
+                print("nothing left to post after checking the page")
+                return 0
     for art in todo:
         aid = str(art.get("article_id", "")).strip()
         link = article_link(art)
