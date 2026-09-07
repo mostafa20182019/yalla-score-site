@@ -174,7 +174,7 @@
  },
  "goal_events": "ok (41 games)",
  "goal_events_dbg": {
-  "candidates": 91,
+  "candidates": 85,
   "detail_fails": 0,
   "skipped": [
    "4805136:count-mismatch (0, 0) vs 0-2 []",
@@ -257,5 +257,5 @@
   "fails": 0
  },
  "match_details": "ok (216)",
- "utc": "2026-09-06T23:50:38Z"
+ "utc": "2026-09-07T00:06:35Z"
 }
