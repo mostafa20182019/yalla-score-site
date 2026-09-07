@@ -134,8 +134,18 @@ jobs:
       # 2026-09-03). fb_post.py --auto posts the top article once (state in
       # data/fb_posted.json), only if it is <12h old, after asking Facebook to
       # scrape the now-live URL. Gated on `fresh` so the page IS deployed.
+      # STOPPED 2026-09-06 on the user's request ("وقف المهمة اللى بتنزل اخبار
+      # على الفيس"). The step now needs the repo variable FB_POST_ARTICLES set
+      # to 'on' to run, and that variable does not exist - so news articles are
+      # no longer auto-posted to the page. Nothing else changed: the token, the
+      # scrape/preview guards and data/fb_posted.json are all untouched, so
+      # turning it back on posts only articles from the last 6 hours (no flood
+      # of the backlog). To resume: Settings > Secrets and variables > Actions >
+      # Variables > New variable, FB_POST_ARTICLES = on.
+      # NOTE: the result-card step below is a SEPARATE feature (match scores as
+      # images) and is deliberately left running.
       - name: Post new article to Facebook
-        if: steps.tip.outputs.fresh == 'true'
+        if: steps.tip.outputs.fresh == 'true' && vars.FB_POST_ARTICLES == 'on'
         continue-on-error: true
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
