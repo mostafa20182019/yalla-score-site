@@ -509,7 +509,8 @@ def _is_ticker_team(m):
 TEAM_PAGES = [
     {"slug": "al-ahly", "name": "الأهلي", "league": "Egyptian Premier League",
      "match_tokens": [("الأهلي", EGY_SCOPE)],
-     "news_tokens": ["الأهلي"], "news_excl": ["الأهلي السعودي", "أهلي جدة"]},
+     "news_tokens": ["الأهلي"],
+     "news_excl": ["الأهلي السعودي", "أهلي جدة", "شباب الأهلي دبي", "شباب أهلي دبي"]},
     {"slug": "zamalek", "name": "الزمالك", "league": "Egyptian Premier League",
      "match_tokens": [("الزمالك", EGY_SCOPE)],
      "news_tokens": ["الزمالك"]},
