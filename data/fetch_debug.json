@@ -161,9 +161,9 @@
    "5:بطاقات صفراء"
   ]
  },
- "goal_events": "ok (46 games)",
+ "goal_events": "ok (48 games)",
  "goal_events_dbg": {
-  "candidates": 88,
+  "candidates": 90,
   "detail_fails": 0,
   "skipped": [
    "4805136:count-mismatch (0, 0) vs 0-2 []",
@@ -182,8 +182,8 @@
     "statusId",
     "seasonNum",
     "stageNum",
-    "legNum",
-    "stageName",
+    "roundNum",
+    "roundName",
     "competitionDisplayName",
     "startTime",
     "statusGroup",
@@ -194,24 +194,21 @@
     "gameTime",
     "gameTimeDisplay",
     "preciseGameTime",
+    "hasLineups",
     "hasMissingPlayers",
+    "hasFieldPositions",
     "winDescription",
-    "homeCompetitor",
-    "awayCompetitor",
-    "stages"
+    "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 22143, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 5.0, \"addedTime\": 0, \"gameTimeDisplay\": \"5'\", \"gameTimeAndStatusDisplayType\": 2, \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
-   "member0": "{\"competitorId\": 22143}"
+   "event0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 17.0, \"addedTime\": 0, \"gameTimeDisplay\": \"17'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 39171209, \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
+   "member0": "{\"competitorId\": 8201, \"id\": 6914248, \"athleteId\": 56674, \"name\": \"المهدي سليمان\", \"shortName\": \"سليمان\", \"jerseyNumber\": 37, \"nameForURL\": \"mahdi-soliman\", \"imageVersion\": 21, \"createdAt\": \"2018-02-24T12:24:42.687\"}"
   },
   "sample_details": {
    "event_names": [
-    "Substitution",
-    "Woodwork",
-    "بطاقة صفراء",
     "هدف"
    ],
-   "card0": "{\"competitorId\": 107, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 13.0, \"addedTime\": 0, \"gameTimeDisplay\": \"13'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 75441450, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 107, \"statusId\": 8, \"stageId\": 9, \"order\": 7, \"num\": 7, \"gameTime\": 66.0, \"addedTime\": 0, \"gameTimeDisplay\": \"66'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 491469, \"extraPlayers\": [25965721], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "card0": "null",
+   "sub0": "null",
    "hc_keys": [
     "id",
     "countryId",
@@ -235,7 +232,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"20'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (6 with XI)",
@@ -246,5 +243,5 @@
   "fails": 0
  },
  "match_details": "ok (240)",
- "utc": "2026-09-08T17:01:27Z"
+ "utc": "2026-09-08T17:20:47Z"
 }
