@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 73 live games)",
+ "reconcile": "ok (0 row(s) corrected, 75 live games)",
  "matches_archive": "ok (482)",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -238,13 +238,13 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (8 with XI)",
+ "prematch_lineups": "ok (6 with XI)",
  "prematch_dbg": {
-  "in_window": 8,
-  "fetched": 8,
-  "with_xi": 8,
+  "in_window": 6,
+  "fetched": 6,
+  "with_xi": 6,
   "fails": 0
  },
  "match_details": "ok (240)",
- "utc": "2026-09-08T16:50:39Z"
+ "utc": "2026-09-08T17:01:27Z"
 }
