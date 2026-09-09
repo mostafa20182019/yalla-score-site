@@ -13,6 +13,13 @@ name: D1 Admin
 #   export   dump D1 back to data/*.json and commit it (the audit log)
 #   verify   compare D1's row counts against the json files (read-only)
 on:
+  # Daily export, 04:20 Cairo - a quiet hour, and clear of the 06:30 article
+  # upgrade job. Daily is deliberate: the export is a BACKUP and the build's
+  # fallback source, not a live mirror, and committing it every 15 minutes
+  # would add ~96 state commits a day for nothing. Raise the cadence here if
+  # the fallback ever needs to be fresher than a day.
+  schedule:
+    - cron: "20 2 * * *"
   workflow_dispatch:
     inputs:
       task:
@@ -32,6 +39,10 @@ jobs:
   admin:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    env:
+      # `inputs.task` is empty on a schedule trigger, so default it here rather
+      # than letting the CLI be invoked with a bare "--"
+      TASK: ${{ inputs.task || 'export' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -48,9 +59,9 @@ jobs:
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: |
           set -o pipefail
-          python d1_admin.py --${{ inputs.task }} | tee /tmp/d1.txt
+          python d1_admin.py --"$TASK" | tee /tmp/d1.txt
           {
-            echo "### D1 · ${{ inputs.task }}"
+            echo "### D1 · $TASK"
             echo '```'
             cat /tmp/d1.txt
             echo '```'
@@ -60,7 +71,7 @@ jobs:
       # walk the state's history in git, which is how the duplicate-post bug
       # was found in the first place.
       - name: Commit the export
-        if: inputs.task == 'export'
+        if: env.TASK == 'export'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
