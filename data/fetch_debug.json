@@ -177,12 +177,12 @@
   "candidates": 69,
   "detail_fails": 0,
   "skipped": [
-   "4828493:count-mismatch (0, 0) vs 0-1 []",
    "4805136:count-mismatch (0, 0) vs 0-2 []",
    "4805141:count-mismatch (0, 0) vs 4-1 []",
    "4805142:count-mismatch (0, 0) vs 1-1 []",
    "4805122:count-mismatch (0, 0) vs 4-0 []",
-   "4805145:count-mismatch (0, 0) vs 1-1 []"
+   "4805145:count-mismatch (0, 0) vs 1-1 []",
+   "4805151:count-mismatch (0, 0) vs 0-1 []"
   ],
   "sample": {
    "game_keys": [
@@ -259,5 +259,5 @@
   "fails": 0
  },
  "match_details": "ok (253)",
- "utc": "2026-09-09T19:19:54Z"
+ "utc": "2026-09-09T19:26:30Z"
 }
