@@ -80,6 +80,16 @@ jobs:
         run: python fetch_data.py
 
       - name: Build the static site
+        env:
+          # build_site freezes/scores the prediction log through store.py. Without
+          # these it falls back to data/predictions.json and the log stops being
+          # atomic - the exact omission that made the fb_post conversion inert
+          # earlier today, so it is spelled out here. Other workflows also run
+          # build_site (the article prompts verify their build); they fall back
+          # harmlessly, because publish.yml is the only authoritative writer.
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: python build_site.py
 
       # Plain npx instead of cloudflare/wrangler-action@v3: the deploy step is
