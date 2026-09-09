@@ -312,8 +312,11 @@ def seen_get(match_id):
     return (rows[0]["score"], rows[0]["first_at"]) if rows else (None, None)
 
 
-def seen_set(match_id, score):
-    match_id, now = str(match_id), int(time.time())
+def seen_set(match_id, score, now=None):
+    """Start (or restart) the stability clock for this score. `now` is
+    injectable so a test can drive the STABLE_MIN window without waiting -
+    without it the timer could only ever be tested against the real clock."""
+    match_id, now = str(match_id), int(now if now is not None else time.time())
     if backend() == "json":
         st = _fb_json()
         st["seen"][match_id] = {"s": score, "ts": now}

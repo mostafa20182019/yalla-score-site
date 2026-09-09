@@ -19,7 +19,11 @@ Usage (from this folder, full python path on this machine):
   python fb_cards.py --post --hours 6   # CI: render + publish each new card to the
                                         # Facebook page (Graph API /me/photos);
                                         # inert without FB_PAGE_TOKEN, dedup via
-                                        # data/fb_posted.json (committed back)
+                                        # store.py (D1 when configured)
+
+Publishing verifies the score first (never publish a possibly-wrong number),
+then CLAIMS the match in the store before rendering, so two overlapping runs
+cannot post the same card twice - the same fix fb_post.py got for articles.
 
 Output per match: media/cards/<match_id>.png + a ready post text in
 media/cards/<match_id>.txt (title line, hashtags, link to the match page).
@@ -32,6 +36,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import build_site as b                      # data loaders, crest cache, Arabic names
+import store                                # dedup/claim state (D1, else json)
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import arabic_reshaper
@@ -243,7 +248,6 @@ def post_text(m):
 
 # ---------------------------------------------------------------- Facebook
 GRAPH_PHOTOS = "https://graph.facebook.com/v23.0/me/photos"
-STATE_FILE = os.path.join(HERE, "data", "fb_posted.json")   # committed back by publish.yml
 STATE_KEEP_DAYS = 7
 MAX_ATTEMPTS = 3
 LIVE_JSON_URL = "https://yallascore.site/live.json"
@@ -276,11 +280,14 @@ def live_score_for(live, m):
         return g.get("as"), g.get("hs"), bool(g.get("live"))
     return None
 
-def score_verified(m, live, st, now=None):
+def score_verified(m, live, now=None):
     """Only a confirmed final score may go on a card (user rule: never publish a
     possibly-wrong number). Confirmed = /live.json shows the same pair finished
     with the same score; or, when /live.json has no such pair, the same score
-    has been seen for STABLE_MIN minutes across runs. Returns (ok, reason)."""
+    has been seen for STABLE_MIN minutes across runs. Returns (ok, reason).
+
+    The stability timer lives in the store (fb_seen), so it survives a run that
+    loses a git push - which used to reset the clock and re-delay a card."""
     now = now or time.time()
     mid = str(m["match_id"])
     ours = f"{m['home_score']}-{m['away_score']}"
@@ -292,32 +299,13 @@ def score_verified(m, live, st, now=None):
         if (hs, aws) != (m["home_score"], m["away_score"]):
             return False, f"score mismatch: ours {ours}, 365scores {hs}-{aws}"
         return True, "confirmed by 365scores"
-    seen = st.setdefault("seen", {}).get(mid)
-    if not seen or seen.get("s") != ours:
-        st["seen"][mid] = {"s": ours, "ts": now}
+    seen_score, seen_ts = store.seen_get(mid)
+    if seen_score != ours:
+        store.seen_set(mid, ours, now=now)
         return False, f"not in live.json; first seen {ours}, waiting {STABLE_MIN} min"
-    if now - seen["ts"] < STABLE_MIN * 60:
-        return False, f"not in live.json; {ours} stable for {int((now - seen['ts']) / 60)} min"
+    if now - (seen_ts or 0) < STABLE_MIN * 60:
+        return False, f"not in live.json; {ours} stable for {int((now - (seen_ts or 0)) / 60)} min"
     return True, f"stable {ours} for {STABLE_MIN}+ min"
-
-def load_state():
-    try:
-        with open(STATE_FILE, encoding="utf-8") as f:
-            st = json.load(f)
-    except Exception:
-        st = {}
-    st.setdefault("posted", {})
-    st.setdefault("failed", {})
-    # prune: a match id older than a week can never be re-posted anyway
-    cutoff = time.time() - STATE_KEEP_DAYS * 86400
-    st["posted"] = {k: v for k, v in st["posted"].items() if v.get("ts", 0) >= cutoff}
-    st["seen"] = {k: v for k, v in st.get("seen", {}).items() if v.get("ts", 0) >= cutoff}
-    return st
-
-def save_state(st):
-    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(st, f, ensure_ascii=False, indent=1)
 
 def multipart(fields, files):
     """Minimal multipart/form-data encoder (stdlib only, like fb_post.py).
@@ -349,10 +337,11 @@ def post_cards(picked, ge_idx, out_dir):
     """CI entry: render + publish every not-yet-posted card in `picked`.
     Never raises - a social error must not fail the publish workflow."""
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
-    st = load_state()
+    print(f"fb cards: state backend {store.backend()}")
+    posted = store.posted_ids("card")
     todo = [m for m in picked
-            if str(m["match_id"]) not in st["posted"]
-            and st["failed"].get(str(m["match_id"]), 0) < MAX_ATTEMPTS]
+            if str(m["match_id"]) not in posted
+            and store.failed_count("card", m["match_id"]) < MAX_ATTEMPTS]
     if not todo:
         print("fb cards: nothing new to post")
         return
@@ -365,31 +354,42 @@ def post_cards(picked, ge_idx, out_dir):
     live = fetch_live()
     for m in todo:
         mid = str(m["match_id"])
-        ok, why = score_verified(m, live, st)
+        # verify the score BEFORE claiming: a deferral is the common path here
+        # (a card waits for 365scores to agree), and claiming first would mean
+        # claim-then-release on almost every run
+        ok, why = score_verified(m, live)
         if not ok:
             print(f"card {mid} deferred: {why}")
             continue
+        # then claim, so only one run can render and publish this card even if
+        # two of them verified the same score at the same moment
+        if not store.claim("card", mid, title=f'{m.get("home")} - {m.get("away")}',
+                           score=f'{m["home_score"]}-{m["away_score"]}'):
+            print(f"card {mid}: already posted, or claimed by another run - skipping")
+            continue
         print(f"card {mid}: {why}")
-        st.get("seen", {}).pop(mid, None)
         try:
             card = render_card(m, ge_idx)
             buf = io.BytesIO()
             card.save(buf, "PNG", optimize=True)
             card.save(os.path.join(out_dir, f"{mid}.png"), "PNG", optimize=True)
             pid = post_photo(token, buf.getvalue(), post_text(m))
-            st["posted"][mid] = {"ts": time.time(), "post_id": pid,
-                                 "h": m.get("home"), "a": m.get("away"),
-                                 "s": f"{m['home_score']}-{m['away_score']}"}
-            st["failed"].pop(mid, None)
+            store.record_post("card", mid, pid,
+                              title=f'{m.get("home")} - {m.get("away")}',
+                              score=f'{m["home_score"]}-{m["away_score"]}')
+            store.clear_failed("card", mid)
+            store.seen_clear(mid)
             print(f"posted card {mid} {b.ar_team(m['home'])} {m['home_score']}-{m['away_score']} "
                   f"{b.ar_team(m['away'])} -> {pid}")
         except urllib.error.HTTPError as e:
-            st["failed"][mid] = st["failed"].get(mid, 0) + 1
+            store.bump_failed("card", mid, f"HTTP {e.code}")
+            store.release("card", mid)
             print(f"card {mid} FAILED: HTTP {e.code} {e.read().decode('utf-8', 'replace')[:300]}")
         except Exception as e:  # noqa: BLE001
-            st["failed"][mid] = st["failed"].get(mid, 0) + 1
+            store.bump_failed("card", mid, str(e)[:200])
+            store.release("card", mid)
             print(f"card {mid} FAILED: {e}")
-    save_state(st)
+    store.fb_prune(STATE_KEEP_DAYS)
 
 # ---------------------------------------------------------------- main
 def main():
@@ -399,7 +399,7 @@ def main():
     ap.add_argument("--all-finished", action="store_true", help="ignore the time window")
     ap.add_argument("--out", default=os.path.join(HERE, "media", "cards"))
     ap.add_argument("--post", action="store_true",
-                    help="publish new cards to the Facebook page (needs FB_PAGE_TOKEN; dedup in data/fb_posted.json)")
+                    help="publish new cards to the Facebook page (needs FB_PAGE_TOKEN; dedup in the D1 store)")
     args = ap.parse_args()
 
     matches = b.load("matches.json")

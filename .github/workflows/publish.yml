@@ -182,6 +182,12 @@ jobs:
         continue-on-error: true
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          # cards claim in the same store as articles (kind='card'), so a
+          # second run cannot post the same card - and the score-stability
+          # timer no longer resets when a run loses its git push
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: python fb_cards.py --post --hours 6
 
       # Match-analysis articles (previews before kick-off, reports after
