@@ -5,12 +5,19 @@ Called by .github/workflows/publish.yml AFTER the site is deployed:
 
     python fb_post.py --auto
 
---auto posts every article in data/articles.json that (a) is not yet recorded
-in data/fb_posted.json ("articles" key, shared with fb_cards.py and committed
-back by the workflow) and (b) was published within the last AUTO_MAX_AGE_H
-hours - oldest first, at most AUTO_MAX_PER_RUN per run - so the first run never
-floods the page with old articles, and two articles written in one slot both
-get posted (only the top one used to be considered).
+--auto posts every article in data/articles.json that (a) is not yet recorded in
+the state store (store.py: D1 when configured, else the old json file) and
+(b) was published within the last AUTO_MAX_AGE_H hours - oldest first, at most
+AUTO_MAX_PER_RUN per run - so the first run never floods the page with old
+articles, and two articles written in one slot both get posted.
+
+CLAIM-THEN-POST (2026-09-09): the run INSERTs a claim keyed on the article id
+BEFORE it posts, so a concurrent run loses on the primary key instead of
+posting the same article twice - which is what happened to article 422 on
+2026-09-07, when two overlapping publish runs both read a json state file that
+neither had written yet. A claim with no post_id is released on any deferral
+and expires after store.CLAIM_TTL_SEC, so a run that dies mid-post cannot
+silence an article forever.
 
 PREVIEW SAFETY (the two 404-preview incidents):
   * 2026-09-03, article 358: the post was made from daily-article.yml at commit
@@ -37,7 +44,6 @@ are visible to the app's admins only (see FB_AUTOPOST_RUNBOOK.md).
 import datetime
 import json
 import os
-import re
 import sys
 import time
 import urllib.error
@@ -47,10 +53,11 @@ import urllib.request
 sys.stdout.reconfigure(encoding="utf-8")
 
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import store  # noqa: E402 - needs HERE on sys.path first
 SITE = "https://yallascore.site"
 GRAPH = "https://graph.facebook.com/v23.0"
 GRAPH_FEED = f"{GRAPH}/me/feed"
-STATE_FILE = os.path.join(HERE, "data", "fb_posted.json")
 AUTO_MAX_AGE_H = 6       # --auto never posts an article older than this (10 articles/day: 12h re-posted a half-day backlog on 2026-09-03)
 AUTO_MAX_PER_RUN = 3     # --auto posts at most this many per run (staggers a backlog)
 NOT_FOUND_MARK = "الصفحة غير موجودة"   # <title> of dist/404.html
@@ -59,20 +66,7 @@ SCRAPE_TRIES, SCRAPE_WAIT = 4, 10      # then up to ~40s for Facebook's crawler 
 HEAL_WINDOW_H = 4                      # re-scrape posts younger than this whose preview isn't confirmed
 
 
-def load_state():
-    try:
-        with open(STATE_FILE, encoding="utf-8") as f:
-            st = json.load(f)
-    except Exception:
-        st = {}
-    st.setdefault("articles", {})
-    return st
-
-
-def save_state(st):
-    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
-    with open(STATE_FILE, "w", encoding="utf-8") as f:
-        json.dump(st, f, ensure_ascii=False, indent=1)
+MAX_POST_ATTEMPTS = 3    # a permanently failing article must not eat a slot forever
 
 
 def load_articles():
@@ -149,48 +143,6 @@ def scrape_until_ok(token, link):
     return False, og
 
 
-def already_on_page(token, limit=50):
-    """Article ids that are ALREADY published on the page, read from Facebook
-    itself. Returns a set, or None when the read fails.
-
-    Why this exists (root cause of the duplicate posts, found 2026-09-07): the
-    dedup state lives in data/fb_posted.json, which the workflow commits back
-    in its LAST step with `git push || echo "push failed (race...)"`. A log scan
-    of 30 recent publish runs found 5 of them (17%) losing that race — the
-    article had gone out to Facebook but the repo never learned it, so the next
-    run read the old state, saw the article as unposted, and posted it again.
-    With AUTO_MAX_AGE_H=6 and a run every ~15 min, one article could go out
-    many times. Two overlapping runs both loading the state before either
-    writes cause the same thing.
-
-    The page itself is the only source that cannot be lost to a git race, so it
-    is now the authority: every post we make carries the article URL in its
-    message, so the ids present in the recent feed are the ids already posted.
-    """
-    url = (f"{GRAPH}/me/feed?fields=message,created_time,attachments%7Btarget%7D"
-           f"&limit={limit}&access_token={urllib.parse.quote(token)}")
-    try:
-        with urllib.request.urlopen(urllib.request.Request(
-                url, headers={"User-Agent": "yalla-score-fbpost/1.0"}), timeout=30) as r:
-            data = json.load(r)
-    except urllib.error.HTTPError as e:
-        body = e.read().decode("utf-8", "replace")[:300]
-        print(f"  ! could not read the page feed: HTTP {e.code} {body}")
-        return None
-    except Exception as e:  # noqa: BLE001
-        print(f"  ! could not read the page feed: {e}")
-        return None
-    ids = set()
-    for post in data.get("data") or []:
-        blob = post.get("message") or ""
-        for att in ((post.get("attachments") or {}).get("data") or []):
-            blob += " " + str(((att.get("target") or {}).get("url")) or "")
-        ids.update(re.findall(r"/a/(\d+)", blob))
-    print(f"  page feed: {len(data.get('data') or [])} recent posts, "
-          f"{len(ids)} article id(s) already published")
-    return ids
-
-
 def post_article(token, art):
     """Publish the feed post (preview already verified by the caller)."""
     link = article_link(art)
@@ -205,115 +157,94 @@ def post_article(token, art):
     return resp.get("id")
 
 
-def try_post(token, art, st=None, og_verified=None):
-    """Post one article, print the outcome, record it in st when given.
-    Returns True on success. Never raises."""
+def try_post(token, art, og_verified=None):
+    """Post one article and record it. Returns True on success. Never raises.
+    The caller must already hold the claim (see auto())."""
     aid = str(art.get("article_id", "")).strip()
     try:
         pid = post_article(token, art)
         print(f"posted article {aid} to Facebook: post id {pid}")
-        if st is not None:
-            st["articles"][aid] = {"ts": time.time(), "post_id": pid, "title": art.get("title"),
-                                   "og_ok": bool(og_verified)}
+        store.record_post("article", aid, pid, title=art.get("title"),
+                          og_ok=bool(og_verified))
         return True
     except urllib.error.HTTPError as e:
         body = e.read().decode("utf-8", "replace")[:500]
         print(f"Facebook post FAILED (article {aid}): HTTP {e.code} {body}")
+        store.bump_failed("article", aid, f"HTTP {e.code} {body[:200]}")
     except Exception as e:  # noqa: BLE001 - never block the publish over a social post
         print(f"Facebook post FAILED (article {aid}): {e}")
+        store.bump_failed("article", aid, str(e)[:200])
     return False
 
 
-def heal_previews(token, st):
-    """Re-scrape recently posted URLs whose preview was never confirmed good
-    (older records have no og_ok at all). Facebook refreshes the existing
-    post's preview from the new scrape."""
-    now = time.time()
-    for aid, rec in st["articles"].items():
-        if rec.get("og_ok") or now - rec.get("ts", 0) > HEAL_WINDOW_H * 3600:
-            continue
-        if not str(rec.get("post_id") or "").strip() or "seeded" in str(rec.get("post_id")):
+def heal_previews(token):
+    """Re-scrape recently posted URLs whose preview was never confirmed good.
+    Facebook refreshes the existing post's preview from the new scrape."""
+    for rec in store.unconfirmed("article", HEAL_WINDOW_H):
+        aid = rec["ref_id"]
+        if "seeded" in str(rec.get("post_id") or ""):
             continue
         link = f"{SITE}/a/{aid}"
         print(f"heal: re-scraping {link}")
-        og = scrape(token, link)
-        if og_ok(og):
-            rec["og_ok"] = True
+        if og_ok(scrape(token, link)):
+            store.set_og_ok("article", aid)
             print(f"  preview for article {aid} is good now")
 
 
-def pending(items, st):
-    """Articles the local state says are still unposted and young enough,
-    oldest first, capped per run. Shared by --auto and --pending."""
+def pending(items):
+    """Articles not yet posted and young enough, oldest first, capped per run.
+    Shared by --auto and --pending. This is a filter, not a lock - auto() still
+    has to win the claim before it posts anything."""
+    posted = store.posted_ids("article")
     todo = []
     for art in items:
         aid = str(art.get("article_id", "")).strip()
-        if not aid or aid in st["articles"]:
+        if not aid or aid in posted:
             continue
         age = article_age_hours(art)
         if age is None or age > AUTO_MAX_AGE_H:
             continue          # undated / old: never auto-posted
+        if store.failed_count("article", aid) >= MAX_POST_ATTEMPTS:
+            continue          # gave up on this one; don't burn a slot on it
         todo.append((age, art))
     todo.sort(key=lambda t: -t[0])            # oldest first, newest last
     return [art for _, art in todo][:AUTO_MAX_PER_RUN]
 
 
 def auto(token, items):
-    st = load_state()
-    todo = pending(items, st)
+    print(f"state backend: {store.backend()}")
+    todo = pending(items)
     if not todo:
         print("no new article to post")
     elif not token:
         print(f"FB_PAGE_TOKEN not set - {len(todo)} article(s) would be posted, skipping")
         return 0
-    if todo and token:
-        # second gate, and the authoritative one: ask the PAGE what is already
-        # published. Catches every article whose state write was lost to a git
-        # race, which is what was posting the same news more than once.
-        on_page = already_on_page(token)
-        if on_page is None:
-            # Verified dead end 2026-09-07: the token's scope list DOES contain
-            # pages_read_engagement and Graph still answers (#10) for both
-            # /me/feed and /<page-id>/feed - the permission is Standard Access,
-            # and reading a page's feed needs Advanced Access or the
-            # "Page Public Content Access" feature, i.e. a full App Review.
-            # Not worth it: duplicates are prevented by serialising the posting
-            # workflow instead (concurrency group fb-post). Kept because it
-            # starts working the day App Review is done.
-            print("  page feed check unavailable (needs App Review) - relying on "
-                  "the serialised queue + the state file")
-        else:
-            keep = []
-            for art in todo:
-                aid = str(art.get("article_id", "")).strip()
-                if aid in on_page:
-                    # repair the state so the next run does not ask again
-                    st["articles"].setdefault(aid, {
-                        "ts": time.time(), "post_id": "recovered-from-page",
-                        "title": art.get("title"), "og_ok": True})
-                    print(f"article {aid}: ALREADY on the page - skipping "
-                          "(state had lost it; recovered)")
-                else:
-                    keep.append(art)
-            todo = keep
-            if not todo:
-                save_state(st)
-                print("nothing left to post after checking the page")
-                return 0
     for art in todo:
         aid = str(art.get("article_id", "")).strip()
+        # CLAIM BEFORE POSTING. This one line is the duplicate fix: the claim is
+        # an INSERT on PRIMARY KEY (kind, ref_id), so a concurrent run loses
+        # here instead of posting the same article a second time - which is what
+        # happened to article 422 on 2026-09-07. The claim is held through the
+        # waits below, because that gap is exactly where the race used to live.
+        if not store.claim("article", aid, title=art.get("title")):
+            print(f"article {aid}: already posted, or claimed by another run - skipping")
+            continue
         link = article_link(art)
         if not wait_live(link):
+            store.release("article", aid)
             print(f"article {aid}: page not live yet - deferred to the next run")
             continue
         ok, og = scrape_until_ok(token, link)
         if not ok:
+            store.release("article", aid)
             print(f"article {aid}: Facebook still sees the 404 page - deferred to the next run")
             continue
-        try_post(token, art, st, og_verified=True)
+        if not try_post(token, art, og_verified=True):
+            # try_post already counted the failure; drop the claim so a later
+            # run may retry, up to MAX_POST_ATTEMPTS
+            store.release("article", aid)
     if token:
-        heal_previews(token, st)
-    save_state(st)
+        heal_previews(token)
     return 0
 
 
@@ -326,7 +257,7 @@ def main() -> int:
     if "--pending" in sys.argv[1:]:
         # how many articles WOULD be posted - lets publish.yml dispatch the
         # serialised posting workflow only when there is something to do
-        print(len(pending(items, load_state())))
+        print(len(pending(items)))
         return 0
     if "--auto" in sys.argv[1:]:
         return auto(token, items)

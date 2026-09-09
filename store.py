@@ -200,10 +200,20 @@ def record_post(kind, ref_id, post_id, title=None, score=None, og_ok=False):
         st[_bucket(kind)][ref_id] = rec
         _jsave(FB_JSON, st)
         return
-    sql("UPDATE fb_posted SET post_id = ?, posted_at = ?, og_ok = ?, "
-        "title = COALESCE(?, title), score = COALESCE(?, score) "
-        "WHERE kind = ? AND ref_id = ?",
-        [post_id, now, 1 if og_ok else 0, title, score, kind, ref_id])
+    # UPSERT, not a bare UPDATE: auto() always claims first, but the legacy
+    # positional mode and any manual/repair call do not, and an UPDATE that
+    # matches no row would record the post NOWHERE - silently, which is the
+    # worst possible outcome for a dedup record. Caught by test_fb_post case 7.
+    sql("INSERT INTO fb_posted (kind, ref_id, post_id, title, score, og_ok, "
+        "                       claimed_at, posted_at) "
+        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) "
+        "ON CONFLICT(kind, ref_id) DO UPDATE SET "
+        "  post_id   = excluded.post_id, "
+        "  posted_at = excluded.posted_at, "
+        "  og_ok     = excluded.og_ok, "
+        "  title     = COALESCE(excluded.title, fb_posted.title), "
+        "  score     = COALESCE(excluded.score, fb_posted.score)",
+        [kind, ref_id, post_id, title, score, 1 if og_ok else 0, now, now])
 
 
 def release(kind, ref_id):
