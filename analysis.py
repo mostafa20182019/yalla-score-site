@@ -197,7 +197,16 @@ def update_log(log, upcoming, preds_by_id, finished, today):
     """Freeze/refresh predictions for upcoming matches, score finished ones.
     `upcoming`: matches with status UPCOMING within PRED_WINDOW_DAYS;
     `preds_by_id`: match_id -> predict() result; `finished`: all finished
-    matches we know (matches ∪ archive). Mutates and returns log."""
+    matches we know (matches ∪ archive).
+
+    Mutates `log` in place and returns the ids it touched:
+    {"frozen": [...], "scored": [...], "pruned": [...]}. The caller needs that
+    to persist only what changed - build_site writes each one through the store,
+    and re-sending all ~200 rows every 15 minutes would be absurd. This module
+    stays pure on purpose (no network, no store import) so backtest.py can run
+    it offline.
+    """
+    frozen, scored, pruned = [], [], []
     horizon = (today + datetime.timedelta(days=PRED_WINDOW_DAYS)).isoformat()
     for m in upcoming:
         mid = str(m.get("match_id") or "")
@@ -213,6 +222,7 @@ def update_log(log, upcoming, preds_by_id, finished, today):
                     "lh": round(p["lh"], 3), "la": round(p["la"], 3),
                     "score": f'{p["top"][0][0]}-{p["top"][0][1]}', "conf": p["conf"],
                     "ts": today.isoformat(), "hs": None, "as": None}
+        frozen.append(mid)
     fin_by_id = {str(m.get("match_id")): m for m in finished if m.get("match_id") and _fin(m)}
     for mid, e in log.items():
         if e.get("hs") is not None:
@@ -227,10 +237,12 @@ def update_log(log, upcoming, preds_by_id, finished, today):
         e.update({"hs": hs, "as": aw, "outcome": o, "pick": pick, "hit": pick == o,
                   "brier": round(sum((probs[k] - (1.0 if k == o else 0.0)) ** 2 for k in probs), 4),
                   "score_hit": e.get("score") == f"{hs}-{aw}"})
+        scored.append(mid)
     cut = (today - datetime.timedelta(days=PRUNE_DAYS)).isoformat()
     for mid in [k for k, v in log.items() if (v.get("kickoff") or "") < cut]:
         del log[mid]
-    return log
+        pruned.append(mid)
+    return {"frozen": frozen, "scored": scored, "pruned": pruned}
 
 
 def load_log(path=PRED_LOG):

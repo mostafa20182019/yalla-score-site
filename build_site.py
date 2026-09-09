@@ -13,6 +13,7 @@ so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 """
 import base64, json, os, re, html, shutil, datetime, hashlib
 import analysis as AN     # تحليلات: strength model, predictions, accuracy, player insights
+import store              # prediction log (D1 when configured, else the json file)
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
@@ -1829,10 +1830,40 @@ def build():
         p = _pred(m)
         if p:
             _preds[str(m["match_id"])] = p
-    _plog = AN.load_log()
-    AN.update_log(_plog, _upcoming, _preds, matches + _archive, datetime.date.today())
-    if AN.save_log(_plog):
-        print("  + predictions log updated:", len(_plog), "entries")
+    # The prediction log lives in the store (D1 when configured). A frozen
+    # prediction that gets re-frozen with newer data would silently inflate the
+    # published accuracy, which is the one thing the accuracy page exists to
+    # prevent - so the freeze has to be atomic, and store.pred_freeze refuses
+    # to touch a row that is already scored.
+    #
+    # THE BUILD MUST NOT DEPEND ON A LIVE SERVICE: if the store is unreachable,
+    # fall back to the last committed export, skip persisting, and still render
+    # every page. A dead database may cost us one cycle of the log; it must
+    # never cost us the site.
+    _plog, _pstore_ok = {}, True
+    try:
+        _plog = store.pred_all()
+    except Exception as e:                                  # noqa: BLE001
+        _pstore_ok = False
+        print(f"  ! prediction store unreachable ({e}) - using the committed export")
+        _plog = AN.load_log()
+    _pch = AN.update_log(_plog, _upcoming, _preds, matches + _archive, datetime.date.today())
+    if _pstore_ok:
+        try:
+            for _mid in _pch["frozen"]:
+                store.pred_freeze(_mid, _plog[_mid])
+            for _mid in _pch["scored"]:
+                _e = _plog[_mid]
+                store.pred_score(_mid, _e["hs"], _e["as"], _e["outcome"], _e["pick"],
+                                 _e["hit"], _e["brier"], _e["score_hit"])
+            if _pch["pruned"]:
+                store.pred_prune(AN.PRUNE_DAYS)
+            if any(_pch.values()):
+                print(f'  + predictions: {len(_pch["frozen"])} frozen, '
+                      f'{len(_pch["scored"])} scored, {len(_pch["pruned"])} pruned '
+                      f'({len(_plog)} in the log, backend {store.backend()})')
+        except Exception as e:                              # noqa: BLE001
+            print(f"  ! could not persist predictions ({e}) - pages still build")
     _acc = AN.accuracy(_plog)
     _comp_idx = {}
     for m in matches + _archive + [mm for f in fixtures for rd in f.get("rounds", []) for mm in rd.get("matches", [])]:
