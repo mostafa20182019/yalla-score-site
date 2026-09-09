@@ -14,6 +14,7 @@ name: D1 Admin
 #   export   dump D1 back to data/*.json and commit it (the audit log)
 #   verify   compare D1's row counts against the json files (read-only)
 #   warehouse reload the analytics facts so they can be queried in SQL
+#   sample   run the analytics queries and print them (read-only)
 on:
   # Daily export, 04:20 Cairo - a quiet hour, and clear of the 06:30 article
   # upgrade job. Daily is deliberate: the export is a BACKUP and the build's
@@ -29,7 +30,7 @@ on:
         description: "What to do"
         type: choice
         default: "status"
-        options: [ "status", "init", "migrate", "export", "verify", "warehouse" ]
+        options: [ "status", "init", "migrate", "export", "verify", "warehouse", "sample" ]
 
 permissions:
   contents: write          # the export task commits data/*.json

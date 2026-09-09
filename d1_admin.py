@@ -12,6 +12,9 @@ Tasks
   --export    dump D1 back to data/*.json (the git-tracked audit log)
   --verify    compare the D1 row counts against what the json files hold
   --warehouse reload the analytics facts (competitions/teams/matches/strength)
+  --sample    run the read-only analytics queries and print them (a smoke test
+              for the warehouse, and a copy-paste starting point for the D1
+              console)
 """
 import json
 import os
@@ -31,11 +34,54 @@ def _json_counts():
             "predictions": len(store._jload(store.PRED_JSON, {}))}
 
 
+SAMPLES = [
+    ("the model's inputs for the next five matches",
+     """SELECT kickoff, koff_time, comp_ar, home_ar, away_ar,
+               home_elo, away_elo, home_attack, away_defence, mu_home,
+               ph, model_score
+          FROM v_upcoming
+         WHERE kickoff >= date('now')
+         ORDER BY kickoff, koff_time LIMIT 5"""),
+    ("do predictions join to matches? (0 unmatched means the ids line up)",
+     """SELECT COUNT(*) AS predictions,
+               SUM(CASE WHEN m.match_id IS NULL THEN 1 ELSE 0 END) AS unmatched
+          FROM predictions p LEFT JOIN matches m ON m.match_id = p.match_id"""),
+    ("Egyptian league, strongest five by Elo",
+     """SELECT t.name_ar, s.elo, s.played, s.form, s.attack, s.defence
+          FROM team_strength s
+          JOIN teams        t ON t.team_id = s.team_id AND t.comp_id = s.comp_id
+          JOIN competitions c ON c.comp_id = s.comp_id
+         WHERE c.slug = 'egypt' ORDER BY s.elo DESC LIMIT 5"""),
+    ("league goal means the Poisson grid uses",
+     """SELECT c.name_ar, p.n, p.mu_home, p.mu_away, p.home_win, p.draw, p.gpm
+          FROM league_params p JOIN competitions c ON c.comp_id = p.comp_id
+         ORDER BY c.sort_order"""),
+    ("the model's track record",
+     "SELECT * FROM v_accuracy ORDER BY n DESC"),
+]
+
+
+def _sample():
+    for title, q in SAMPLES:
+        print("")
+        print(f"--- {title}")
+        try:
+            rows = store.sql(q)
+        except Exception as e:                          # noqa: BLE001
+            print(f"    FAILED: {e}")
+            continue
+        if not rows:
+            print("    (no rows)")
+            continue
+        for r in rows:
+            print("    " + "  ".join(f"{k}={r[k]}" for k in r))
+
+
 def main():
     args = sys.argv[1:]
     be = store.backend()
     print(f"backend: {be}")
-    WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse")
+    WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse", "--sample")
     if be == "json" and any(a in args for a in WRITERS):
         print("!! D1 is NOT configured (CF_API_TOKEN / CF_ACCOUNT_ID / CF_D1_ID missing).")
         print("   Nothing was written. Add the three secrets and re-run.")
@@ -58,6 +104,9 @@ def main():
     if "--export" in args:
         ok = store.export_json()
         print("exported D1 -> data/*.json" if ok else "export skipped")
+
+    if "--sample" in args:
+        _sample()
 
     after = store.counts()
     print("d1 counts:", json.dumps(after, ensure_ascii=False))
