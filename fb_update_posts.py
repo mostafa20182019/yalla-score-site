@@ -11,13 +11,15 @@ Usage (locally, token stays on your machine):
     python fb_update_posts.py --all-match        # every article with a `kind` and a recorded post
     python fb_update_posts.py --dry-run 393      # show the text, change nothing
 
-The post ids come from data/fb_posted.json ("articles" -> post_id). Records
+The post ids come from the state store (store.py). Records
 whose post_id starts with "seeded" (never really posted) are skipped.
 """
 import json, os, sys, urllib.parse, urllib.request, urllib.error
 
 sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, HERE)
+import store  # noqa: E402 - needs HERE on sys.path first
 GRAPH = "https://graph.facebook.com/v23.0"
 
 
@@ -28,8 +30,11 @@ def main():
     ids = [a for a in args if a.isdigit()]
     arts = {str(a["article_id"]): a for a in
             json.load(open(os.path.join(HERE, "data", "articles.json"), encoding="utf-8"))["results"][0]["items"]}
-    state = json.load(open(os.path.join(HERE, "data", "fb_posted.json"), encoding="utf-8"))
-    posted = state.get("articles", {})
+    # post ids come from the store (D1 in CI; locally it falls back to the
+    # daily export, so run the d1-admin "export" task and git pull first if you
+    # need an id posted in the last few hours)
+    posted = {aid: store.get_post("article", aid) for aid in store.posted_ids("article")}
+    print(f"post ids from the {store.backend()} store: {len(posted)} article(s)")
     if all_match:
         ids = [k for k, a in arts.items() if a.get("kind") and k in posted]
     if not ids:
@@ -52,14 +57,12 @@ def main():
         try:
             with urllib.request.urlopen(urllib.request.Request(f"{GRAPH}/{rec['post_id']}", data=data), timeout=30) as r:
                 print(f"{aid}: updated -> {json.load(r)}")
-            rec["text_updated"] = True
+            # the old code set a "text_updated" flag in the json here; nothing
+            # ever read it, so it is gone rather than ported to a column
         except urllib.error.HTTPError as e:
             print(f"{aid}: FAILED HTTP {e.code} {e.read().decode('utf-8', 'replace')[:300]}")
         except Exception as e:  # noqa: BLE001
             print(f"{aid}: FAILED {e}")
-    if not dry:
-        json.dump(state, open(os.path.join(HERE, "data", "fb_posted.json"), "w", encoding="utf-8"),
-                  ensure_ascii=False, indent=1)
     return 0
 
 

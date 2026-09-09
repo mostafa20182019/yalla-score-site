@@ -1,20 +1,19 @@
 name: Facebook Post (articles)
 
-# Posts new articles to the Facebook page — SERIALISED.
+# Posts new articles to the Facebook page.
 #
-# Why this is a workflow of its own instead of a step inside publish.yml:
-# publish runs overlap by design (Worker cron + GitHub cron + article
-# dispatches, ~6 min each), and on 2026-09-07 two of them posted article 422
-# twice — both had read data/fb_posted.json from their own ~5-minute-old
-# checkout and neither had recorded its post yet. The authoritative guard
-# (asking the page what it already shows) turned out to need a full Meta App
-# Review, so the fix cannot come from Facebook.
+# It is a workflow of its own for ONE reason now: publish.yml's refresh runs are
+# cancellable, and a run killed between "posted to Facebook" and "recorded the
+# post" would leave an open claim that the TTL later hands to another run - a
+# duplicate 15 minutes late. This job has cancel-in-progress: false, so it runs
+# to completion and that window only opens on a hard crash.
 #
-# GitHub's own concurrency queue solves it instead: with cancel-in-progress
-# false and a fixed group, a second dispatch WAITS for the first to finish
-# rather than running beside it. By the time it starts, the first run has
-# already pushed the state, and the checkout below reads it. Two runs can no
-# longer post the same article.
+# It no longer exists to SERIALISE posting. It used to: two overlapping publish
+# runs posted article 422 twice on 2026-09-07 because both read a json state
+# file neither had written yet, and a concurrency queue was the workaround.
+# The claim is now an INSERT on PRIMARY KEY (kind, ref_id) in D1
+# (store.py / fb_post.auto), so the loser of a race cannot post at all - with
+# or without a queue. The queue stays only as the no-cancel guarantee above.
 #
 # publish.yml dispatches this after its deploy, and only when
 # `python fb_post.py --pending` says there is something to post.
@@ -22,7 +21,7 @@ on:
   workflow_dispatch: {}
 
 permissions:
-  contents: write          # push the dedup state back
+  contents: read           # the state lives in D1; nothing is pushed
 
 concurrency:
   group: fb-post
@@ -53,12 +52,6 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          # the queue guarantees no other run is posting right now, but a
-          # data-refresh commit may still have landed since this checkout
-          git fetch --quiet origin main || true
-          git checkout origin/main -- data/fb_posted.json 2>/dev/null || true
           python fb_post.py --auto | tee /tmp/fb.txt
           {
             echo "### Facebook"
@@ -66,24 +59,3 @@ jobs:
             tail -n 25 /tmp/fb.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
-
-      # Pushed here, inside the serialised job: the next queued run checks out
-      # main and must see what this one posted.
-      - name: Record what was posted
-        if: always()
-        run: |
-          if ! git diff --quiet -- data/fb_posted.json; then
-            git add data/fb_posted.json
-            git commit -m "fb: record posted articles [skip ci]"
-            for attempt in 1 2 3 4 5; do
-              if git pull --rebase origin main && git push; then
-                echo "dedup state pushed on attempt $attempt"; exit 0
-              fi
-              git rebase --abort 2>/dev/null || true
-              echo "state push attempt $attempt lost the race - retrying in 5s"
-              sleep 5
-            done
-            echo "::warning::could not push the Facebook dedup state after 5 attempts"
-          else
-            echo "nothing posted - state unchanged"
-          fi

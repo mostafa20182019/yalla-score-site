@@ -254,20 +254,6 @@ def load_log(path=PRED_LOG):
         return {}
 
 
-def save_log(log, path=PRED_LOG):
-    new = json.dumps(log, ensure_ascii=False, indent=1, sort_keys=True)
-    try:
-        with open(path, encoding="utf-8") as f:
-            if f.read() == new:
-                return False
-    except Exception:
-        pass
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(new)
-    return True
-
-
 def accuracy(log):
     """Scored predictions -> overall + per-competition metrics."""
     rows = [e for e in log.values() if e.get("hs") is not None]

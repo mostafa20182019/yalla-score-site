@@ -142,24 +142,22 @@ jobs:
       # committed let Facebook scrape the link before the page existed, and
       # the post kept a "الصفحة غير موجودة" preview forever (article 358,
       # 2026-09-03). fb_post.py --auto posts the top article once (state in
-      # data/fb_posted.json), only if it is <12h old, after asking Facebook to
+      # the D1 store), only if it is <12h old, after asking Facebook to
       # scrape the now-live URL. Gated on `fresh` so the page IS deployed.
       # STOPPED 2026-09-06 on the user's request ("وقف المهمة اللى بتنزل اخبار
       # على الفيس"). The step now needs the repo variable FB_POST_ARTICLES set
       # to 'on' to run, and that variable does not exist - so news articles are
       # no longer auto-posted to the page. Nothing else changed: the token, the
-      # scrape/preview guards and data/fb_posted.json are all untouched, so
+      # scrape/preview guards and the D1 state are all untouched, so
       # turning it back on posts only articles from the last 6 hours (no flood
       # of the backlog). To resume: Settings > Secrets and variables > Actions >
       # Variables > New variable, FB_POST_ARTICLES = on.
       # NOTE: the result-card step below is a SEPARATE feature (match scores as
       # images) and is deliberately left running.
-      # Article posting itself moved OUT of this workflow on 2026-09-07: publish
-      # runs overlap by design, and two of them posted article 422 twice. It now
-      # lives in fb-post.yml behind `concurrency: group: fb-post,
-      # cancel-in-progress: false`, so dispatches QUEUE instead of racing and a
-      # queued run checks out the state the previous one pushed. Dispatched only
-      # when something is actually pending, so a quiet cycle costs no run.
+      # Article posting lives in fb-post.yml (see its header for why it is a
+      # separate, non-cancellable workflow). Duplicates are prevented by the
+      # claim INSERT in D1, not by this dispatch. Dispatched only when something
+      # is actually pending, so a quiet cycle costs no extra run.
       - name: Dispatch the Facebook post when an article is pending
         if: steps.tip.outputs.fresh == 'true' && vars.FB_POST_ARTICLES == 'on'
         continue-on-error: true
@@ -182,9 +180,10 @@ jobs:
       # Facebook result cards: one native image post per FINISHED curated-club
       # match (fb_cards.py renders it from data/matches.json + goal_events.json
       # fetched above). Runs every refresh, so a card lands within ~15 min of
-      # the final whistle. Dedup/state lives in data/fb_posted.json and rides
-      # the commit-back below. Inert until the FB_PAGE_TOKEN secret exists
-      # (same token as fb_post.py); never fails the publish over a social error.
+      # the final whistle. Dedup + the score-stability timer live in the D1
+      # store (kind='card'), so nothing rides the commit-back. Inert until the
+      # FB_PAGE_TOKEN secret exists (same token as fb_post.py); never fails the
+      # publish over a social error.
       - name: Post result cards to Facebook
         # gated like the article post: a card links to /m/<id> and must not go
         # out from a run that skipped its deploy (the page would still say LIVE)
@@ -235,12 +234,12 @@ jobs:
           git add data/
           if ! git diff --cached --quiet; then
             git commit -m "data refresh [skip ci]"
-            # RETRY, added 2026-09-07. A single attempt lost the race in 5 of
-            # 30 recent runs (17%), and data/fb_posted.json rides this commit —
-            # so a lost push meant Facebook had the article but the repo did
-            # not, and the next run posted it again. fb_post.py now also checks
-            # the page itself, but losing the state write is worth fixing here
-            # too: it is also what makes the same result card go out twice.
+            # RETRY, added 2026-09-07: a single attempt lost the race in 5 of
+            # 30 runs (17%). The Facebook state no longer rides this commit —
+            # it is in D1 — so a lost push can no longer cause a duplicate
+            # post. The retry stays for the DATA files (matches, standings,
+            # goal_events): losing it just means the fallback copy in the repo
+            # is one cycle staler than it should be.
             pushed=""
             for attempt in 1 2 3 4 5; do
               if git pull --rebase origin main; then
