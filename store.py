@@ -55,6 +55,12 @@ def backend():
     return "json"
 
 
+# D1 rejects a statement with more than 100 bound parameters ("too many SQL
+# variables"), well below SQLite's own default of 999. Batch sizes derive from
+# this, see upsert_many.
+MAX_BIND_VARS = 100
+
+
 class Conflict(Exception):
     """A UNIQUE / PRIMARY KEY violation: someone else already holds this row."""
 
@@ -105,13 +111,18 @@ def sql(statement, params=None):
     return res.get("results") or []
 
 
-def upsert_many(table, columns, rows, key_cols, update_cols=None, chunk=60):
+def upsert_many(table, columns, rows, key_cols, update_cols=None, chunk=None):
     """Batched INSERT ... ON CONFLICT DO UPDATE. Returns the number of rows sent.
 
-    One HTTP call per chunk, not per row: the analytics refresh writes ~1200
-    rows and doing that one statement at a time would be ~1200 round trips.
-    chunk=60 keeps every request under SQLite's bind-parameter ceiling even for
-    the widest table (team_strength, 22 columns -> 1320 params).
+    One HTTP call per chunk, not per row: the first analytics refresh writes
+    ~2600 rows and doing that one statement at a time would be ~2600 round
+    trips.
+
+    The chunk size is derived, not fixed: **D1 allows at most 100 bound
+    parameters per statement** (much lower than SQLite's own 999 default, which
+    is why a fixed chunk=60 passed locally and then failed on D1 with
+    "too many SQL variables"). So a 4-column table batches 25 rows at a time
+    and a 23-column one batches 4.
 
     Returns 0 on the json backend: the warehouse is a QUERY surface, nothing in
     the site reads it, so there is no json equivalent to keep in step.
@@ -121,6 +132,7 @@ def upsert_many(table, columns, rows, key_cols, update_cols=None, chunk=60):
         return 0
     if backend() == "json":
         return 0
+    chunk = chunk or max(1, MAX_BIND_VARS // max(1, len(columns)))
     update_cols = [c for c in (update_cols or columns) if c not in key_cols]
     cols = ", ".join(columns)
     one = "(" + ", ".join("?" for _ in columns) + ")"
