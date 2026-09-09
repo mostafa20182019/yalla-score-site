@@ -205,3 +205,136 @@ SELECT p.comp, c.name_ar AS comp_ar, COUNT(*) AS n,
   LEFT JOIN competitions c ON c.comp_id = p.comp
  WHERE p.hs IS NOT NULL
  GROUP BY p.comp;
+
+-- ===========================================================================
+-- Analytics warehouse, phase B: what happened INSIDE a match.
+--
+-- Phase A stored a match as a result. This stores the match itself: who
+-- started, how they were rated, who scored, who was booked, who came on. It is
+-- the layer that lets a question like "does an XI's average rating predict the
+-- next result better than Elo does?" be asked in SQL instead of guessed.
+--
+-- The join key is `matches.match_id` (the 365scores game id). The detail
+-- records in data/match_details.json now carry it; the ~250 records written
+-- before that change are resolved by (name_ar, name_ar, date) instead, which
+-- warehouse.py reports on every refresh so a silent drop is impossible.
+-- ===========================================================================
+
+CREATE TABLE IF NOT EXISTS players (
+  player_id  INTEGER PRIMARY KEY,          -- the 365scores athlete id, stable
+  name       TEXT NOT NULL,                -- latest spelling seen
+  pos        TEXT,                          -- latest position label (Arabic)
+  seen_at    TEXT                           -- date of the latest appearance
+);
+
+-- One row per starter per match. Pre-match XIs land here too (rating NULL),
+-- which is what makes «من غاب ومن عاد» checkable rather than anecdotal.
+CREATE TABLE IF NOT EXISTS match_lineups (
+  match_id   TEXT NOT NULL REFERENCES matches(match_id),
+  side       TEXT NOT NULL,                 -- 'h' | 'a'
+  player_id  INTEGER NOT NULL REFERENCES players(player_id),
+  shirt      INTEGER,
+  pos        TEXT,
+  line       INTEGER,                       -- 1 keeper .. 5 attack
+  side_pos   INTEGER,                       -- 0..100 left-to-right on the pitch
+  rating     REAL,                          -- NULL when unrated (source sends -1)
+  formation  TEXT,                          -- that side's shape, e.g. '4-2-3-1'
+  PRIMARY KEY (match_id, side, player_id)
+);
+CREATE INDEX IF NOT EXISTS lineups_player ON match_lineups (player_id);
+
+-- Events. `seq` is the position in the source's list for that match: the
+-- refresh rewrites a match's rows together, so it is stable within a match.
+-- player_id is filled in when the name can be matched to that side's XI, and
+-- left NULL otherwise (a substitute who scored has no id in the source) -
+-- player_name is always there, so nothing is lost either way.
+CREATE TABLE IF NOT EXISTS match_goals (
+  match_id    TEXT NOT NULL REFERENCES matches(match_id),
+  seq         INTEGER NOT NULL,
+  side        TEXT,
+  minute      TEXT,                          -- '56', '90+1'
+  player_name TEXT,
+  player_id   INTEGER REFERENCES players(player_id),
+  tag         TEXT,                          -- source marker, usually empty
+  PRIMARY KEY (match_id, seq)
+);
+
+CREATE TABLE IF NOT EXISTS match_cards (
+  match_id    TEXT NOT NULL REFERENCES matches(match_id),
+  seq         INTEGER NOT NULL,
+  side        TEXT,
+  minute      TEXT,
+  player_name TEXT,
+  player_id   INTEGER REFERENCES players(player_id),
+  color       TEXT,                          -- 'y' | 'r'
+  PRIMARY KEY (match_id, seq)
+);
+
+CREATE TABLE IF NOT EXISTS match_subs (
+  match_id  TEXT NOT NULL REFERENCES matches(match_id),
+  seq       INTEGER NOT NULL,
+  side      TEXT,
+  minute    TEXT,
+  in_name   TEXT,
+  out_name  TEXT,
+  out_id    INTEGER REFERENCES players(player_id),   -- the starter, so resolvable
+  PRIMARY KEY (match_id, seq)
+);
+
+-- The published leaderboards (data/scorers.json, data/assists.json). One table
+-- with a `kind` discriminator rather than two near-identical ones.
+-- player_id is recovered from the athlete photo URL (.../Athletes/87904),
+-- which is the same id space as a lineup's `aid` - verified on محمد الشيبي.
+-- It is NULL rather than guessed when that URL is missing.
+CREATE TABLE IF NOT EXISTS top_players (
+  comp_id   TEXT NOT NULL REFERENCES competitions(comp_id),
+  kind      TEXT NOT NULL,                   -- 'goals' | 'assists'
+  rank      INTEGER NOT NULL,
+  name      TEXT,
+  team      TEXT,                             -- club name as the source spells it
+  player_id INTEGER,                          -- no FK: a leader may never have
+                                              -- appeared in a stored lineup
+  value     INTEGER,                          -- goals, or assists
+  played    INTEGER,                          -- NULL when the source sends 0
+  as_of     TEXT,
+  PRIMARY KEY (comp_id, kind, rank)
+);
+
+-- --------------------------------------------------------------- views
+
+-- Every rated appearance with its club and competition attached: the table
+-- you actually want when asking about players.
+DROP VIEW IF EXISTS v_player_ratings;
+CREATE VIEW v_player_ratings AS
+SELECT l.match_id, m.comp_id, c.name_ar AS comp_ar, m.kickoff,
+       p.player_id, p.name AS player, l.pos, l.shirt, l.rating, l.formation,
+       l.side,
+       CASE l.side WHEN 'h' THEN th.name_ar ELSE ta.name_ar END AS club_ar,
+       CASE l.side WHEN 'h' THEN ta.name_ar ELSE th.name_ar END AS opponent_ar,
+       CASE l.side WHEN 'h' THEN m.home_score ELSE m.away_score END AS gf,
+       CASE l.side WHEN 'h' THEN m.away_score ELSE m.home_score END AS ga
+  FROM match_lineups l
+  JOIN players       p  ON p.player_id = l.player_id
+  JOIN matches       m  ON m.match_id  = l.match_id
+  JOIN competitions  c  ON c.comp_id   = m.comp_id
+  LEFT JOIN teams    th ON th.team_id  = m.home_id
+  LEFT JOIN teams    ta ON ta.team_id  = m.away_id;
+
+-- Squad quality as the source rates it, per club: the feature to test against
+-- Elo. `matches_rated` matters - an average over two matches is not evidence.
+DROP VIEW IF EXISTS v_squad_rating;
+CREATE VIEW v_squad_rating AS
+SELECT comp_ar, club_ar, COUNT(DISTINCT match_id) AS matches_rated,
+       COUNT(*) AS appearances,
+       ROUND(AVG(rating), 3) AS avg_xi_rating,
+       ROUND(MAX(rating), 2) AS best_rating
+  FROM v_player_ratings
+ WHERE rating IS NOT NULL
+ GROUP BY comp_ar, club_ar;
+
+-- The leaderboards with the competition's Arabic name.
+DROP VIEW IF EXISTS v_top_players;
+CREATE VIEW v_top_players AS
+SELECT c.name_ar AS comp_ar, t.kind, t.rank, t.name, t.team, t.value,
+       t.played, t.player_id, t.as_of
+  FROM top_players t JOIN competitions c ON c.comp_id = t.comp_id;

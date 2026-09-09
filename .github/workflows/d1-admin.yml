@@ -42,7 +42,7 @@ concurrency:
 jobs:
   admin:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30          # the first full warehouse load is ~12k rows
     env:
       # `inputs.task` is empty on a schedule trigger, so pick the task from the
       # cron that fired rather than letting the CLI be invoked with a bare "--"

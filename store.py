@@ -154,18 +154,38 @@ def init_schema():
     with open(SCHEMA, encoding="utf-8") as f:
         script = f.read()
     n = 0
-    for chunk in script.split(";"):
-        # Strip full-line comments FIRST, then test for emptiness. Testing
-        # chunk.startswith("--") instead skips every statement that has a
-        # comment block above it - which silently dropped CREATE TABLE
-        # predictions until test_store.py caught it.
-        clean = "\n".join(l for l in chunk.splitlines()
-                          if not l.strip().startswith("--")).strip()
-        if not clean:
-            continue
-        sql(clean)
+    for chunk in _statements(script):
+        sql(chunk)
         n += 1
     return n
+
+
+def _statements(script):
+    """Split a .sql script into statements, comments removed FIRST.
+
+    Order matters, and both orders have now been wrong once:
+      * testing chunk.startswith("--") AFTER splitting skipped every statement
+        that had a comment block above it (CREATE TABLE predictions vanished
+        until test_store.py caught it);
+      * splitting on ";" BEFORE removing comments tears apart any comment that
+        CONTAINS a semicolon, and the leftover prose then looks like SQL
+        ("near 'the': syntax error", hit while adding the phase-B tables).
+    So cut each line at its first `--` outside a quoted string, then split.
+    """
+    out = []
+    for line in script.splitlines():
+        quote = None
+        for i, ch in enumerate(line):
+            if quote:
+                if ch == quote:
+                    quote = None
+            elif ch in "'" + '"':
+                quote = ch
+            elif ch == "-" and line[i + 1:i + 2] == "-":
+                line = line[:i]
+                break
+        out.append(line)
+    return [c.strip() for c in chr(10).join(out).split(";") if c.strip()]
 
 
 # ---------------------------------------------------------------- json fallback
@@ -582,6 +602,8 @@ def warehouse_counts():
     if backend() == "json":
         return {}
     out = {}
-    for t in ("competitions", "teams", "matches", "team_strength", "league_params"):
+    for t in ("competitions", "teams", "matches", "team_strength", "league_params",
+              "players", "match_lineups", "match_goals", "match_cards",
+              "match_subs", "top_players"):
         out[t] = (sql(f"SELECT COUNT(*) n FROM {t}") or [{"n": 0}])[0]["n"]
     return out

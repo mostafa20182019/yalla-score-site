@@ -1047,7 +1047,12 @@ def fetch_goal_events():
             continue
         h = game.get("homeCompetitor") or g0.get("homeCompetitor") or {}
         a = game.get("awayCompetitor") or g0.get("awayCompetitor") or {}
-        out.append({"home": h.get("name"), "away": a.get("name"),
+        # match_id (the 365scores game id) is what makes the D1 warehouse able
+        # to join these details to `matches` exactly, instead of guessing from
+        # (home, away, date) - which is ambiguous when the source keeps a stale
+        # fixture row for a match it has already played
+        out.append({"match_id": gid,
+                    "home": h.get("name"), "away": a.get("name"),
                     "date": date, "goals": goals, **details})
     dbg["skipped"] = dbg["skipped"][:6]
     return out, dbg
@@ -1119,7 +1124,8 @@ def fetch_prematch_lineups():
         dbg["with_xi"] += 1
         h = game.get("homeCompetitor") or g0.get("homeCompetitor") or {}
         a = game.get("awayCompetitor") or g0.get("awayCompetitor") or {}
-        out.append({"home": h.get("name"), "away": a.get("name"), "date": date,
+        out.append({"match_id": gid,
+                    "home": h.get("name"), "away": a.get("name"), "date": date,
                     "goals": [], "pre": True, **details})
     return out, dbg
 

@@ -11,7 +11,9 @@ Tasks
   --migrate   init + load the existing data/*.json into D1 + report counts
   --export    dump D1 back to data/*.json (the git-tracked audit log)
   --verify    compare the D1 row counts against what the json files hold
-  --warehouse reload the analytics facts (competitions/teams/matches/strength)
+  --warehouse reload the analytics facts: the competitions/teams/matches
+              layer AND the in-match layer (lineups, ratings, goals, cards,
+              subs, leaderboards)
   --sample    run the read-only analytics queries and print them (a smoke test
               for the warehouse, and a copy-paste starting point for the D1
               console)
@@ -58,6 +60,21 @@ SAMPLES = [
          ORDER BY c.sort_order"""),
     ("the model's track record",
      "SELECT * FROM v_accuracy ORDER BY n DESC"),
+    ("best rated performances on record",
+     """SELECT kickoff, comp_ar, player, club_ar, opponent_ar, pos, rating
+          FROM v_player_ratings
+         WHERE rating IS NOT NULL ORDER BY rating DESC, kickoff DESC LIMIT 5"""),
+    ("squad quality vs Elo - the feature worth testing",
+     """SELECT s.club_ar, s.matches_rated, s.avg_xi_rating, ts.elo
+          FROM v_squad_rating s
+          JOIN teams t   ON t.name_ar = s.club_ar
+          JOIN competitions c ON c.comp_id = t.comp_id AND c.name_ar = s.comp_ar
+          JOIN team_strength ts ON ts.team_id = t.team_id AND ts.comp_id = t.comp_id
+         WHERE c.slug = 'egypt'
+         ORDER BY s.avg_xi_rating DESC LIMIT 6"""),
+    ("top scorers as published",
+     """SELECT comp_ar, rank, name, team, value FROM v_top_players
+         WHERE kind = 'goals' ORDER BY comp_ar, rank LIMIT 6"""),
 ]
 
 
@@ -100,6 +117,7 @@ def main():
     if "--warehouse" in args:
         import warehouse                      # imports build_site: only load it when asked
         warehouse.refresh()
+        warehouse.refresh_details()           # needs matches/teams to exist first
 
     if "--export" in args:
         ok = store.export_json()
