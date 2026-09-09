@@ -256,7 +256,10 @@ def main() -> int:
         return 0
     if "--pending" in sys.argv[1:]:
         # how many articles WOULD be posted - lets publish.yml dispatch the
-        # serialised posting workflow only when there is something to do
+        # posting workflow only when there is something to do. The backend goes
+        # to stderr so stdout stays a bare number the workflow can read, while
+        # the log still says which store answered.
+        print(f"store backend: {store.backend()}", file=sys.stderr)
         print(len(pending(items)))
         return 0
     if "--auto" in sys.argv[1:]:

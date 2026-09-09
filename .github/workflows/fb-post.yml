@@ -47,6 +47,11 @@ jobs:
       - name: Post new articles to Facebook
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          # the dedup state: with these the claim is an atomic INSERT in D1,
+          # without them store.py falls back to the old json file
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
