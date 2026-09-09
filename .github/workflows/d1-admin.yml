@@ -1,6 +1,7 @@
 name: D1 Admin
 
-# Maintenance for the D1 state store, run on demand from the Actions tab.
+# Maintenance for the D1 state store, on a cron and on demand from the Actions
+# tab.
 #
 # It lives here rather than as a local script because the three Cloudflare
 # secrets exist only in GitHub - the migration deliberately never puts a
@@ -12,6 +13,7 @@ name: D1 Admin
 #   migrate  init + load the existing data/*.json into D1 + verify the counts
 #   export   dump D1 back to data/*.json and commit it (the audit log)
 #   verify   compare D1's row counts against the json files (read-only)
+#   warehouse reload the analytics facts so they can be queried in SQL
 on:
   # Daily export, 04:20 Cairo - a quiet hour, and clear of the 06:30 article
   # upgrade job. Daily is deliberate: the export is a BACKUP and the build's
@@ -19,14 +21,15 @@ on:
   # would add ~96 state commits a day for nothing. Raise the cadence here if
   # the fallback ever needs to be fresher than a day.
   schedule:
-    - cron: "20 2 * * *"
+    - cron: "20 2 * * *"      # export  (daily backup, see above)
+    - cron: "40 * * * *"      # warehouse (hourly analytics refresh)
   workflow_dispatch:
     inputs:
       task:
         description: "What to do"
         type: choice
         default: "status"
-        options: [ "status", "init", "migrate", "export", "verify" ]
+        options: [ "status", "init", "migrate", "export", "verify", "warehouse" ]
 
 permissions:
   contents: write          # the export task commits data/*.json
@@ -40,9 +43,9 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      # `inputs.task` is empty on a schedule trigger, so default it here rather
-      # than letting the CLI be invoked with a bare "--"
-      TASK: ${{ inputs.task || 'export' }}
+      # `inputs.task` is empty on a schedule trigger, so pick the task from the
+      # cron that fired rather than letting the CLI be invoked with a bare "--"
+      TASK: ${{ inputs.task || (github.event.schedule == '20 2 * * *' && 'export') || 'warehouse' }}
     steps:
       - uses: actions/checkout@v4
         with:

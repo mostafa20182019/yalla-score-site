@@ -105,6 +105,38 @@ def sql(statement, params=None):
     return res.get("results") or []
 
 
+def upsert_many(table, columns, rows, key_cols, update_cols=None, chunk=60):
+    """Batched INSERT ... ON CONFLICT DO UPDATE. Returns the number of rows sent.
+
+    One HTTP call per chunk, not per row: the analytics refresh writes ~1200
+    rows and doing that one statement at a time would be ~1200 round trips.
+    chunk=60 keeps every request under SQLite's bind-parameter ceiling even for
+    the widest table (team_strength, 22 columns -> 1320 params).
+
+    Returns 0 on the json backend: the warehouse is a QUERY surface, nothing in
+    the site reads it, so there is no json equivalent to keep in step.
+    """
+    rows = list(rows)
+    if not rows:
+        return 0
+    if backend() == "json":
+        return 0
+    update_cols = [c for c in (update_cols or columns) if c not in key_cols]
+    cols = ", ".join(columns)
+    one = "(" + ", ".join("?" for _ in columns) + ")"
+    setter = ", ".join(f"{c} = excluded.{c}" for c in update_cols)
+    tail = (f" ON CONFLICT({', '.join(key_cols)}) DO UPDATE SET {setter}"
+            if setter else f" ON CONFLICT({', '.join(key_cols)}) DO NOTHING")
+    sent = 0
+    for i in range(0, len(rows), chunk):
+        batch = rows[i:i + chunk]
+        params = [v for r in batch for v in (r[c] for c in columns)]
+        sql(f"INSERT INTO {table} ({cols}) VALUES " + ", ".join(one for _ in batch) + tail,
+            params)
+        sent += len(batch)
+    return sent
+
+
 def init_schema():
     """Create the tables. Safe to re-run (every statement is IF NOT EXISTS)."""
     with open(SCHEMA, encoding="utf-8") as f:
@@ -526,3 +558,18 @@ def counts():
             "seen": one("SELECT COUNT(*) n FROM fb_seen"),
             "predictions": one("SELECT COUNT(*) n FROM predictions"),
             "pred_scored": one("SELECT COUNT(*) n FROM predictions WHERE hs IS NOT NULL")}
+
+
+def warehouse_counts():
+    """Row counts for the analytics warehouse (see warehouse.py).
+
+    Kept apart from counts() because these tables arrived later: a store that
+    has not run --init since then has the state tables but not these, and the
+    health check for the state store should not start failing because of it.
+    """
+    if backend() == "json":
+        return {}
+    out = {}
+    for t in ("competitions", "teams", "matches", "team_strength", "league_params"):
+        out[t] = (sql(f"SELECT COUNT(*) n FROM {t}") or [{"n": 0}])[0]["n"]
+    return out

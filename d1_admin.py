@@ -11,6 +11,7 @@ Tasks
   --migrate   init + load the existing data/*.json into D1 + report counts
   --export    dump D1 back to data/*.json (the git-tracked audit log)
   --verify    compare the D1 row counts against what the json files hold
+  --warehouse reload the analytics facts (competitions/teams/matches/strength)
 """
 import json
 import os
@@ -34,7 +35,8 @@ def main():
     args = sys.argv[1:]
     be = store.backend()
     print(f"backend: {be}")
-    if be == "json" and any(a in args for a in ("--init", "--migrate", "--export", "--verify")):
+    WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse")
+    if be == "json" and any(a in args for a in WRITERS):
         print("!! D1 is NOT configured (CF_API_TOKEN / CF_ACCOUNT_ID / CF_D1_ID missing).")
         print("   Nothing was written. Add the three secrets and re-run.")
         return 1
@@ -49,12 +51,22 @@ def main():
         n = store.import_json()
         print(f"migrated: {n} new rows inserted (rows already present are skipped)")
 
+    if "--warehouse" in args:
+        import warehouse                      # imports build_site: only load it when asked
+        warehouse.refresh()
+
     if "--export" in args:
         ok = store.export_json()
         print("exported D1 -> data/*.json" if ok else "export skipped")
 
     after = store.counts()
     print("d1 counts:", json.dumps(after, ensure_ascii=False))
+    # the warehouse tables are newer than the state tables, so a store that has
+    # not had --init since they landed simply has no rows to report
+    try:
+        print("warehouse counts:", json.dumps(store.warehouse_counts(), ensure_ascii=False))
+    except Exception as e:                     # noqa: BLE001
+        print(f"warehouse counts unavailable ({e}) - run --init")
 
     if "--verify" in args or "--migrate" in args:
         j = _json_counts()
