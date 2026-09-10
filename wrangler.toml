@@ -30,3 +30,15 @@ not_found_handling = "404-page"
 #         trigger; worker.js routes by event.cron — the string there MUST
 #         match cron 2 EXACTLY or every firing dispatches publish.yml.
 crons = ["1,16,31,46 * * * *", "0 6,8,10,12,14,15,17,18,19,20 * * *"]
+
+# D1 binding for the /admin/api routes (the admin page reads and writes
+# articles through the Worker - a browser cannot reach D1 directly).
+#
+# database_id is a PLACEHOLDER on purpose: this repository is PUBLIC and the
+# three Cloudflare identifiers live in GitHub secrets. The deploy step swaps in
+# the CF_D1_ID secret before `wrangler deploy` and fails the build if the
+# placeholder is still there, so a broken binding cannot ship quietly.
+[[d1_databases]]
+binding = "DB"
+database_name = "yallascore-d1"
+database_id = "__CF_D1_ID__"

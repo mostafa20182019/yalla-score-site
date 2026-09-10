@@ -222,6 +222,243 @@ async function liveScores() {
   });
 }
 
+/* ==========================================================================
+ * /admin/api — the admin page's door to D1.
+ *
+ * A browser cannot talk to D1: access is through a Worker binding (or an
+ * account-wide API token, which would then be sitting in localStorage on a
+ * laptop). So the Worker that already serves this site holds the binding and
+ * exposes the few operations the admin page needs.
+ *
+ * FAIL CLOSED. Every route needs the x-admin-token header to match the
+ * ADMIN_TOKEN Worker secret, and when that secret is not set the routes
+ * answer 503 rather than being open. Cloudflare Access can be layered in
+ * front later for a second factor; trusting its Cf-Access-* headers without
+ * verifying the JWT would be security theatre, so that is deliberately not
+ * done here.
+ *
+ * Writes go through the SAME rules as article_put.py: the id is allocated
+ * inside the INSERT, and the unique index on (match_id, kind) refuses a
+ * duplicate match piece.
+ * ======================================================================== */
+
+const ADMIN_ORIGINS = ["http://localhost:8123", "http://127.0.0.1:8123",
+                       "https://yallascore.site"];
+
+function corsHeaders(request) {
+  const origin = request.headers.get("Origin") || "";
+  const allow = ADMIN_ORIGINS.includes(origin) ? origin : ADMIN_ORIGINS[0];
+  return {
+    "Access-Control-Allow-Origin": allow,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, OPTIONS",
+    "Access-Control-Allow-Headers": "content-type, x-admin-token",
+    "Access-Control-Max-Age": "86400",
+    "Vary": "Origin",
+  };
+}
+
+function jsonReply(request, body, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      ...corsHeaders(request),
+    },
+  });
+}
+
+/* the json shape the admin page and data/articles.json both use */
+const ART_FIELDS = ["title", "summary", "body", "author", "pub_date", "pub_ts",
+                    "match_id", "kind", "image_url", "image_credit", "fb_post",
+                    "updated_ts", "upgraded_ts"];
+
+function words(html) {
+  return (String(html || "").replace(/<[^>]+>/g, " ").trim().split(/\s+/)
+          .filter(Boolean)).length;
+}
+
+async function articleRow(env, id) {
+  const a = await env.DB.prepare(
+    "SELECT article_id, title, summary, body, author, pub_date, pub_ts, " +
+    "match_id, kind, image_url, image_credit, fb_post, updated_ts, " +
+    "upgraded_ts, words, thin FROM articles WHERE article_id = ?"
+  ).bind(String(id)).first();
+  if (!a) return null;
+  const kids = await env.DB.batch([
+    env.DB.prepare("SELECT name, url, note FROM article_sources WHERE article_id = ? ORDER BY seq").bind(String(id)),
+    env.DB.prepare("SELECT q, a FROM article_faq WHERE article_id = ? ORDER BY seq").bind(String(id)),
+  ]);
+  a.sources = kids[0].results || [];
+  a.faq = kids[1].results || [];
+  return a;
+}
+
+async function writeChildren(env, id, sources, faq) {
+  const stmts = [
+    env.DB.prepare("DELETE FROM article_sources WHERE article_id = ?").bind(id),
+    env.DB.prepare("DELETE FROM article_faq WHERE article_id = ?").bind(id),
+  ];
+  (sources || []).forEach((x, i) => stmts.push(env.DB.prepare(
+    "INSERT INTO article_sources (article_id, seq, name, url, note) VALUES (?, ?, ?, ?, ?)"
+  ).bind(id, i, x.name || null, x.url || null, x.note || null)));
+  (faq || []).forEach((x, i) => stmts.push(env.DB.prepare(
+    "INSERT INTO article_faq (article_id, seq, q, a) VALUES (?, ?, ?, ?)"
+  ).bind(id, i, x.q || null, x.a || null)));
+  await env.DB.batch(stmts);
+}
+
+/* ask GitHub to rebuild: writing to D1 makes the article EXIST, but the site
+ * is static HTML - it only appears once publish.yml has rebuilt the pages.
+ * reason=article marks the run uncancellable (it carries new content). */
+async function dispatchPublish(env) {
+  if (!env.GH_TOKEN) return "no GH_TOKEN - publish not triggered";
+  const r = await fetch(
+    "https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/publish.yml/dispatches",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${env.GH_TOKEN}`,
+        "Accept": "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "User-Agent": "yalla-score-worker",
+      },
+      body: JSON.stringify({ ref: "main", inputs: { reason: "article" } }),
+    }
+  );
+  return r.ok ? "publish dispatched" : `publish dispatch failed (${r.status})`;
+}
+
+async function adminApi(request, env, url) {
+  if (request.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: corsHeaders(request) });
+  }
+  if (!env.DB) {
+    return jsonReply(request, { error: "D1 binding missing on the Worker" }, 503);
+  }
+  if (!env.ADMIN_TOKEN) {
+    return jsonReply(request, {
+      error: "ADMIN_TOKEN is not set on the Worker - the admin API is closed",
+    }, 503);
+  }
+  if (request.headers.get("x-admin-token") !== env.ADMIN_TOKEN) {
+    return jsonReply(request, { error: "bad or missing x-admin-token" }, 401);
+  }
+
+  const parts = url.pathname.replace(/^\/admin\/api\/?/, "").split("/");
+
+  // GET /admin/api/articles — the list, WITHOUT bodies (403 bodies is ~800KB
+  // and the list only shows titles)
+  if (request.method === "GET" && parts[0] === "articles") {
+    const { results } = await env.DB.prepare(
+      "SELECT article_id, title, pub_date, pub_ts, author, image_url, kind, " +
+      "match_id, words, thin, has_sources, has_faq, upgraded_ts FROM articles " +
+      "ORDER BY CAST(article_id AS INTEGER) DESC"
+    ).all();
+    return jsonReply(request, { items: results || [] });
+  }
+
+  // GET /admin/api/article/<id> — the full record, for the edit form
+  if (request.method === "GET" && parts[0] === "article" && parts[1]) {
+    const a = await articleRow(env, parts[1]);
+    return a ? jsonReply(request, a)
+             : jsonReply(request, { error: "no such article" }, 404);
+  }
+
+  // POST /admin/api/article — publish a new one
+  if (request.method === "POST" && parts[0] === "article") {
+    let rec;
+    try { rec = await request.json(); }
+    catch (e) { return jsonReply(request, { error: "body is not json" }, 400); }
+    for (const f of ["title", "summary", "body", "author", "pub_date"]) {
+      if (!String(rec[f] || "").trim()) {
+        return jsonReply(request, { error: `missing ${f}` }, 400);
+      }
+    }
+    if (!!rec.match_id !== !!rec.kind) {
+      return jsonReply(request, { error: "match_id and kind go together" }, 400);
+    }
+    const w = words(rec.body);
+    const cols = ART_FIELDS.concat(["words", "thin", "has_sources", "has_faq"]);
+    const vals = ART_FIELDS.map(f => (rec[f] === undefined || rec[f] === "" ? null : rec[f]))
+      .concat([w, w < 300 ? 1 : 0,
+               (rec.sources || []).length ? 1 : 0, (rec.faq || []).length ? 1 : 0]);
+    let row;
+    try {
+      // the id is allocated INSIDE the statement, so two saves at the same
+      // moment cannot be handed the same one
+      row = await env.DB.prepare(
+        "INSERT INTO articles (article_id, " + cols.join(", ") + ", as_of) " +
+        "SELECT CAST(COALESCE(MAX(CAST(article_id AS INTEGER)), 0) + 1 AS TEXT), " +
+        cols.map(() => "?").join(", ") + ", date('now') FROM articles " +
+        "RETURNING article_id"
+      ).bind(...vals).first();
+    } catch (e) {
+      const m = String(e);
+      if (/UNIQUE|constraint/i.test(m)) {
+        return jsonReply(request, {
+          error: "that match already has a piece of this kind",
+        }, 409);
+      }
+      return jsonReply(request, { error: m }, 500);
+    }
+    const id = String(row.article_id);
+    await writeChildren(env, id, rec.sources, rec.faq);
+    return jsonReply(request, {
+      article_id: id, words: w, thin: w < 300,
+      publish: await dispatchPublish(env),
+    }, 201);
+  }
+
+  // PUT /admin/api/article/<id> — edit an existing one. Only the fields in the
+  // body are touched, so a partial save cannot blank a column it never sent.
+  if (request.method === "PUT" && parts[0] === "article" && parts[1]) {
+    const id = String(parts[1]);
+    let rec;
+    try { rec = await request.json(); }
+    catch (e) { return jsonReply(request, { error: "body is not json" }, 400); }
+    const exists = await env.DB.prepare(
+      "SELECT article_id FROM articles WHERE article_id = ?").bind(id).first();
+    if (!exists) return jsonReply(request, { error: "no such article" }, 404);
+
+    const sets = [], vals = [];
+    for (const f of ART_FIELDS) {
+      if (f in rec) { sets.push(`${f} = ?`); vals.push(rec[f] === "" ? null : rec[f]); }
+    }
+    let w = null;
+    if ("body" in rec) {
+      w = words(rec.body);
+      sets.push("words = ?", "thin = ?");
+      vals.push(w, w < 300 ? 1 : 0);
+    }
+    if ("sources" in rec) { sets.push("has_sources = ?"); vals.push((rec.sources || []).length ? 1 : 0); }
+    if ("faq" in rec) { sets.push("has_faq = ?"); vals.push((rec.faq || []).length ? 1 : 0); }
+    if (sets.length) {
+      try {
+        await env.DB.prepare(
+          `UPDATE articles SET ${sets.join(", ")} WHERE article_id = ?`
+        ).bind(...vals, id).run();
+      } catch (e) {
+        const m = String(e);
+        if (/UNIQUE|constraint/i.test(m)) {
+          return jsonReply(request, {
+            error: "that match already has a piece of this kind",
+          }, 409);
+        }
+        return jsonReply(request, { error: m }, 500);
+      }
+    }
+    if ("sources" in rec || "faq" in rec) {
+      await writeChildren(env, id, rec.sources, rec.faq);
+    }
+    return jsonReply(request, {
+      article_id: id, words: w, publish: await dispatchPublish(env),
+    });
+  }
+
+  return jsonReply(request, { error: `no route for ${request.method} ${url.pathname}` }, 404);
+}
+
 export default {
   async fetch(request, env, ctx) {
     // Permanent redirect from any non-canonical host — the legacy
@@ -233,6 +470,9 @@ export default {
     if (url.hostname !== canonical) {
       url.hostname = canonical;
       return Response.redirect(url.toString(), 301);
+    }
+    if (url.pathname === "/admin/api" || url.pathname.startsWith("/admin/api/")) {
+      return adminApi(request, env, url);
     }
     if (url.pathname === "/live.json") {
       const cache = caches.default;
