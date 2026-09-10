@@ -1,4 +1,26 @@
 {
+ "4763768": {
+  "as": null,
+  "away": "بشكتاش",
+  "brier": null,
+  "comp": "Turkish Super Lig",
+  "conf": "low",
+  "hit": null,
+  "home": "آمد سبور",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "20:00",
+  "la": 1.817,
+  "lh": 1.509,
+  "outcome": null,
+  "pa": 0.4511,
+  "pd": 0.2267,
+  "ph": 0.3222,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
  "4764281": {
   "as": 0,
   "away": "غنتشلربيرليغي",
@@ -107,7 +129,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764291": {
   "as": null,
@@ -129,7 +151,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764292": {
   "as": null,
@@ -151,7 +173,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764293": {
   "as": null,
@@ -173,7 +195,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764294": {
   "as": null,
@@ -195,7 +217,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764295": {
   "as": null,
@@ -217,7 +239,7 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764296": {
   "as": null,
@@ -239,7 +261,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764297": {
   "as": null,
@@ -261,7 +283,7 @@
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764298": {
   "as": null,
@@ -283,7 +305,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764299": {
   "as": null,
@@ -305,7 +327,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764300": {
   "as": null,
@@ -327,7 +349,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4764301": {
   "as": null,
@@ -349,7 +371,29 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "4764302": {
+  "as": null,
+  "away": "ريزة سبور",
+  "brier": null,
+  "comp": "Turkish Super Lig",
+  "conf": "low",
+  "hit": null,
+  "home": "غوز تبة",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "20:00",
+  "la": 1.462,
+  "lh": 1.696,
+  "outcome": null,
+  "pa": 0.3327,
+  "pd": 0.2345,
+  "ph": 0.4328,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "4764303": {
   "as": null,
@@ -371,7 +415,29 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "4764304": {
+  "as": null,
+  "away": "أيوب سبور",
+  "brier": null,
+  "comp": "Turkish Super Lig",
+  "conf": "low",
+  "hit": null,
+  "home": "فنربخشة",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "17:00",
+  "la": 0.986,
+  "lh": 2.141,
+  "outcome": null,
+  "pa": 0.1639,
+  "pd": 0.1987,
+  "ph": 0.6374,
+  "pick": null,
+  "score": "2-0",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "4764305": {
   "as": null,
@@ -393,7 +459,29 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "4764306": {
+  "as": null,
+  "away": "سامسون سبور",
+  "brier": null,
+  "comp": "Turkish Super Lig",
+  "conf": "low",
+  "hit": null,
+  "home": "إيرزوروم سبور",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "17:00",
+  "la": 1.285,
+  "lh": 1.314,
+  "outcome": null,
+  "pa": 0.3613,
+  "pd": 0.264,
+  "ph": 0.3747,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "4788276": {
   "as": 0,
@@ -528,69 +616,69 @@
   "ts": "2026-09-08"
  },
  "4788290": {
-  "as": null,
+  "as": 1,
   "away": "الشباب",
-  "brier": null,
+  "brier": 0.273,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 1,
   "home": "الخلود",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-09",
   "koff_time": "18:55",
   "la": 1.142,
   "lh": 2.007,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.2122,
   "pd": 0.2144,
   "ph": 0.5734,
-  "pick": null,
+  "pick": "H",
   "score": "2-1",
-  "score_hit": null,
+  "score_hit": 1,
   "ts": "2026-09-09"
  },
  "4788291": {
-  "as": null,
+  "as": 2,
   "away": "الدرعية",
-  "brier": null,
+  "brier": 0.5932,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 1,
   "home": "الفتح",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-09",
   "koff_time": "21:00",
   "la": 0.882,
   "lh": 0.711,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.3727,
   "pd": 0.3523,
   "ph": 0.275,
-  "pick": null,
+  "pick": "A",
   "score": "0-0",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "4788292": {
-  "as": null,
+  "as": 1,
   "away": "أبها",
-  "brier": null,
+  "brier": 0.0975,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 1,
   "home": "النصر",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-09",
   "koff_time": "21:00",
   "la": 0.93,
   "lh": 2.707,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.1045,
   "pd": 0.1491,
   "ph": 0.7464,
-  "pick": null,
+  "pick": "H",
   "score": "2-0",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "4789473": {
@@ -604,16 +692,16 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "19:20",
-  "la": 0.559,
-  "lh": 1.066,
+  "la": 0.566,
+  "lh": 1.2,
   "outcome": null,
-  "pa": 0.1915,
-  "pd": 0.333,
-  "ph": 0.4755,
+  "pa": 0.1748,
+  "pd": 0.3085,
+  "ph": 0.5167,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789474": {
   "as": null,
@@ -626,16 +714,16 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "21:00",
-  "la": 0.778,
-  "lh": 1.863,
+  "la": 0.759,
+  "lh": 2.029,
   "outcome": null,
-  "pa": 0.1504,
-  "pd": 0.2188,
-  "ph": 0.6307,
+  "pa": 0.13,
+  "pd": 0.1999,
+  "ph": 0.6701,
   "pick": null,
-  "score": "1-0",
+  "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789476": {
   "as": null,
@@ -648,16 +736,16 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "18:50",
-  "la": 1.841,
-  "lh": 0.706,
+  "la": 1.831,
+  "lh": 0.711,
   "outcome": null,
-  "pa": 0.6444,
-  "pd": 0.2185,
-  "ph": 0.137,
+  "pa": 0.641,
+  "pd": 0.2199,
+  "ph": 0.1391,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789477": {
   "as": null,
@@ -670,16 +758,16 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "21:00",
-  "la": 1.249,
-  "lh": 1.486,
+  "la": 1.304,
+  "lh": 1.464,
   "outcome": null,
-  "pa": 0.3187,
-  "pd": 0.2543,
-  "ph": 0.4271,
+  "pa": 0.3367,
+  "pd": 0.2536,
+  "ph": 0.4097,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789478": {
   "as": null,
@@ -692,16 +780,16 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "21:00",
-  "la": 2.367,
-  "lh": 1.161,
+  "la": 2.401,
+  "lh": 1.128,
   "outcome": null,
-  "pa": 0.6405,
-  "pd": 0.1862,
-  "ph": 0.1732,
+  "pa": 0.6538,
+  "pd": 0.1825,
+  "ph": 0.1638,
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789479": {
   "as": null,
@@ -714,16 +802,16 @@
   "hs": null,
   "kickoff": "2026-09-11",
   "koff_time": "18:25",
-  "la": 0.771,
-  "lh": 1.743,
+  "la": 0.769,
+  "lh": 1.749,
   "outcome": null,
-  "pa": 0.1621,
-  "pd": 0.2323,
-  "ph": 0.6056,
+  "pa": 0.161,
+  "pd": 0.2315,
+  "ph": 0.6075,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789480": {
   "as": null,
@@ -736,16 +824,16 @@
   "hs": null,
   "kickoff": "2026-09-11",
   "koff_time": "18:45",
-  "la": 1.36,
-  "lh": 0.703,
+  "la": 1.354,
+  "lh": 0.708,
   "outcome": null,
-  "pa": 0.526,
-  "pd": 0.2809,
-  "ph": 0.1931,
+  "pa": 0.523,
+  "pd": 0.2817,
+  "ph": 0.1953,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789481": {
   "as": null,
@@ -758,16 +846,16 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "21:00",
-  "la": 2.138,
-  "lh": 0.853,
+  "la": 2.153,
+  "lh": 0.837,
   "outcome": null,
-  "pa": 0.6683,
-  "pd": 0.1935,
-  "ph": 0.1382,
+  "pa": 0.6751,
+  "pd": 0.1912,
+  "ph": 0.1337,
   "pick": null,
   "score": "0-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4789482": {
   "as": null,
@@ -780,16 +868,16 @@
   "hs": null,
   "kickoff": "2026-09-11",
   "koff_time": "21:00",
-  "la": 1.163,
-  "lh": 1.76,
+  "la": 1.158,
+  "lh": 1.766,
   "outcome": null,
-  "pa": 0.2517,
-  "pd": 0.2349,
-  "ph": 0.5134,
+  "pa": 0.2496,
+  "pd": 0.2344,
+  "ph": 0.516,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804653": {
   "as": 1,
@@ -880,25 +968,25 @@
   "ts": "2026-09-07"
  },
  "4804662": {
-  "as": null,
+  "as": 0,
   "away": "الجونة",
-  "brier": null,
+  "brier": 0.2462,
   "comp": "Egyptian Premier League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "بيراميدز",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-09",
   "koff_time": "17:00",
   "la": 0.562,
   "lh": 1.493,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.1387,
   "pd": 0.2604,
   "ph": 0.601,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 1,
   "ts": "2026-09-09"
  },
  "4804663": {
@@ -946,69 +1034,69 @@
   "ts": "2026-09-08"
  },
  "4804665": {
-  "as": null,
+  "as": 1,
   "away": "وادي دجلة",
-  "brier": null,
+  "brier": 0.7652,
   "comp": "Egyptian Premier League",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "مودرن سبورت",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-09",
   "koff_time": "17:00",
   "la": 1.011,
   "lh": 0.82,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.3899,
   "pd": 0.3233,
   "ph": 0.2868,
-  "pick": null,
+  "pick": "A",
   "score": "0-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "4804666": {
-  "as": null,
+  "as": 1,
   "away": "زد",
-  "brier": null,
+  "brier": 0.6911,
   "comp": "Egyptian Premier League",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "الشرقية إنبي",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-09",
   "koff_time": "20:00",
-  "la": 1.054,
-  "lh": 0.936,
-  "outcome": null,
-  "pa": 0.3766,
-  "pd": 0.3087,
-  "ph": 0.3147,
-  "pick": null,
+  "la": 1.037,
+  "lh": 0.949,
+  "outcome": "H",
+  "pa": 0.3685,
+  "pd": 0.3095,
+  "ph": 0.3221,
+  "pick": "A",
   "score": "0-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "4804667": {
-  "as": null,
+  "as": 1,
   "away": "الأهلي",
-  "brier": null,
+  "brier": 0.861,
   "comp": "Egyptian Premier League",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "المقاولون العرب",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-09",
   "koff_time": "20:00",
-  "la": 1.541,
-  "lh": 0.927,
-  "outcome": null,
-  "pa": 0.5164,
-  "pd": 0.2566,
-  "ph": 0.227,
-  "pick": null,
+  "la": 1.518,
+  "lh": 0.939,
+  "outcome": "D",
+  "pa": 0.5073,
+  "pd": 0.259,
+  "ph": 0.2337,
+  "pick": "A",
   "score": "0-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "4804668": {
@@ -1022,38 +1110,38 @@
   "hs": null,
   "kickoff": "2026-09-14",
   "koff_time": "17:00",
-  "la": 0.564,
-  "lh": 1.194,
+  "la": 0.551,
+  "lh": 1.219,
   "outcome": null,
-  "pa": 0.175,
-  "pd": 0.3096,
-  "ph": 0.5154,
+  "pa": 0.1678,
+  "pd": 0.3054,
+  "ph": 0.5269,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804670": {
   "as": null,
   "away": "القناة",
   "brier": null,
   "comp": "Egyptian Premier League",
-  "conf": "low",
+  "conf": "mid",
   "hit": null,
   "home": "زد",
   "hs": null,
   "kickoff": "2026-09-14",
   "koff_time": "20:00",
-  "la": 0.967,
-  "lh": 0.728,
+  "la": 1.066,
+  "lh": 0.755,
   "outcome": null,
-  "pa": 0.3981,
-  "pd": 0.3374,
-  "ph": 0.2645,
+  "pa": 0.4238,
+  "pd": 0.3208,
+  "ph": 0.2553,
   "pick": null,
-  "score": "0-0",
+  "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804671": {
   "as": null,
@@ -1066,60 +1154,60 @@
   "hs": null,
   "kickoff": "2026-09-14",
   "koff_time": "20:00",
-  "la": 0.964,
-  "lh": 1.608,
+  "la": 0.943,
+  "lh": 1.643,
   "outcome": null,
-  "pa": 0.2264,
-  "pd": 0.2494,
-  "ph": 0.5241,
+  "pa": 0.2162,
+  "pd": 0.2459,
+  "ph": 0.5379,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804672": {
   "as": null,
   "away": "مودرن سبورت",
   "brier": null,
   "comp": "Egyptian Premier League",
-  "conf": "low",
+  "conf": "mid",
   "hit": null,
   "home": "بترول اسيوط",
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "17:00",
-  "la": 0.904,
-  "lh": 0.724,
+  "la": 0.973,
+  "lh": 0.729,
   "outcome": null,
-  "pa": 0.3774,
-  "pd": 0.3473,
-  "ph": 0.2753,
+  "pa": 0.3996,
+  "pd": 0.3365,
+  "ph": 0.2639,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804673": {
   "as": null,
   "away": "المقاولون العرب",
   "brier": null,
   "comp": "Egyptian Premier League",
-  "conf": "low",
+  "conf": "mid",
   "hit": null,
   "home": "وادي دجلة",
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "17:00",
-  "la": 0.764,
-  "lh": 1.21,
+  "la": 0.859,
+  "lh": 1.195,
   "outcome": null,
-  "pa": 0.2334,
-  "pd": 0.3002,
-  "ph": 0.4664,
+  "pa": 0.2645,
+  "pd": 0.2977,
+  "ph": 0.4378,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804674": {
   "as": null,
@@ -1132,82 +1220,82 @@
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "20:00",
-  "la": 1.094,
-  "lh": 1.036,
+  "la": 1.071,
+  "lh": 1.058,
   "outcome": null,
-  "pa": 0.3666,
-  "pd": 0.2969,
-  "ph": 0.3366,
+  "pa": 0.3547,
+  "pd": 0.2972,
+  "ph": 0.3481,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804675": {
   "as": null,
   "away": "ابو قير للاسمدة",
   "brier": null,
   "comp": "Egyptian Premier League",
-  "conf": "low",
+  "conf": "mid",
   "hit": null,
   "home": "الأهلي",
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "20:00",
-  "la": 0.586,
-  "lh": 1.789,
+  "la": 0.575,
+  "lh": 1.764,
   "outcome": null,
-  "pa": 0.1155,
-  "pd": 0.2193,
-  "ph": 0.6651,
+  "pa": 0.1154,
+  "pd": 0.2221,
+  "ph": 0.6625,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804676": {
   "as": null,
   "away": "منتخب السويس بتروجت",
   "brier": null,
   "comp": "Egyptian Premier League",
-  "conf": "low",
+  "conf": "mid",
   "hit": null,
   "home": "الجونة",
   "hs": null,
   "kickoff": "2026-09-16",
   "koff_time": "17:00",
-  "la": 1.202,
-  "lh": 1.229,
+  "la": 1.171,
+  "lh": 1.111,
   "outcome": null,
-  "pa": 0.3564,
-  "pd": 0.2745,
-  "ph": 0.3691,
+  "pa": 0.3723,
+  "pd": 0.2849,
+  "ph": 0.3428,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804677": {
   "as": null,
   "away": "بيراميدز",
   "brier": null,
   "comp": "Egyptian Premier League",
-  "conf": "low",
+  "conf": "mid",
   "hit": null,
   "home": "الشرقية إنبي",
   "hs": null,
   "kickoff": "2026-09-16",
   "koff_time": "20:00",
-  "la": 1.889,
-  "lh": 0.675,
+  "la": 1.718,
+  "lh": 0.671,
   "outcome": null,
-  "pa": 0.6628,
-  "pd": 0.2115,
-  "ph": 0.1257,
+  "pa": 0.626,
+  "pd": 0.2323,
+  "ph": 0.1417,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4804678": {
   "as": null,
@@ -1220,16 +1308,16 @@
   "hs": null,
   "kickoff": "2026-09-16",
   "koff_time": "20:00",
-  "la": 1.908,
-  "lh": 0.48,
+  "la": 1.867,
+  "lh": 0.49,
   "outcome": null,
-  "pa": 0.7184,
-  "pd": 0.1974,
-  "ph": 0.0842,
+  "pa": 0.7075,
+  "pd": 0.2034,
+  "ph": 0.0891,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805122": {
   "as": 0,
@@ -1449,7 +1537,7 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805156": {
   "as": null,
@@ -1471,7 +1559,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805157": {
   "as": null,
@@ -1493,7 +1581,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805158": {
   "as": null,
@@ -1515,7 +1603,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805159": {
   "as": null,
@@ -1537,7 +1625,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805160": {
   "as": null,
@@ -1559,7 +1647,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805161": {
   "as": null,
@@ -1581,7 +1669,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805162": {
   "as": null,
@@ -1603,7 +1691,7 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805163": {
   "as": null,
@@ -1625,7 +1713,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805164": {
   "as": null,
@@ -1647,7 +1735,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805165": {
   "as": null,
@@ -1669,7 +1757,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805166": {
   "as": null,
@@ -1691,7 +1779,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805167": {
   "as": null,
@@ -1713,7 +1801,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805176": {
   "as": null,
@@ -1735,7 +1823,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805177": {
   "as": null,
@@ -1757,7 +1845,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805178": {
   "as": null,
@@ -1779,7 +1867,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805179": {
   "as": null,
@@ -1801,7 +1889,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805182": {
   "as": null,
@@ -1823,7 +1911,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805183": {
   "as": null,
@@ -1845,7 +1933,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805184": {
   "as": null,
@@ -1867,7 +1955,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805185": {
   "as": null,
@@ -1889,7 +1977,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805186": {
   "as": null,
@@ -1911,7 +1999,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805187": {
   "as": null,
@@ -1933,7 +2021,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805188": {
   "as": null,
@@ -1955,7 +2043,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805189": {
   "as": null,
@@ -1977,7 +2065,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805190": {
   "as": null,
@@ -1999,7 +2087,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805191": {
   "as": null,
@@ -2021,7 +2109,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805192": {
   "as": null,
@@ -2043,7 +2131,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4805193": {
   "as": null,
@@ -2065,7 +2153,7 @@
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "4849458": {
   "as": null,
@@ -2087,7 +2175,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558589": {
   "as": null,
@@ -2109,7 +2197,73 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "558590": {
+  "as": null,
+  "away": "Genoa CFC",
+  "brier": null,
+  "comp": "Serie A",
+  "conf": "low",
+  "hit": null,
+  "home": "Parma Calcio 1913",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "16:00",
+  "la": 0.913,
+  "lh": 1.311,
+  "outcome": null,
+  "pa": 0.2601,
+  "pd": 0.282,
+  "ph": 0.4579,
+  "pick": null,
+  "score": "1-0",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
+ "558591": {
+  "as": null,
+  "away": "SSC Napoli",
+  "brier": null,
+  "comp": "Serie A",
+  "conf": "low",
+  "hit": null,
+  "home": "ACF Fiorentina",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "13:30",
+  "la": 2.095,
+  "lh": 1.081,
+  "outcome": null,
+  "pa": 0.6058,
+  "pd": 0.2058,
+  "ph": 0.1885,
+  "pick": null,
+  "score": "1-2",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
+ "558592": {
+  "as": null,
+  "away": "Como 1907",
+  "brier": null,
+  "comp": "Serie A",
+  "conf": "low",
+  "hit": null,
+  "home": "Frosinone Calcio",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "16:00",
+  "la": 1.498,
+  "lh": 1.495,
+  "outcome": null,
+  "pa": 0.379,
+  "pd": 0.2434,
+  "ph": 0.3776,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "558593": {
   "as": null,
@@ -2131,7 +2285,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558594": {
   "as": null,
@@ -2153,7 +2307,29 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "558595": {
+  "as": null,
+  "away": "Atalanta BC",
+  "brier": null,
+  "comp": "Serie A",
+  "conf": "low",
+  "hit": null,
+  "home": "Juventus FC",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "19:00",
+  "la": 0.915,
+  "lh": 1.285,
+  "outcome": null,
+  "pa": 0.2651,
+  "pd": 0.2847,
+  "ph": 0.4501,
+  "pick": null,
+  "score": "1-0",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "558596": {
   "as": null,
@@ -2175,7 +2351,29 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "558597": {
+  "as": null,
+  "away": "US Lecce",
+  "brier": null,
+  "comp": "Serie A",
+  "conf": "low",
+  "hit": null,
+  "home": "AC Milan",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "21:45",
+  "la": 0.827,
+  "lh": 1.72,
+  "outcome": null,
+  "pa": 0.178,
+  "pd": 0.2362,
+  "ph": 0.5858,
+  "pick": null,
+  "score": "1-0",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "558598": {
   "as": null,
@@ -2197,7 +2395,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558599": {
   "as": null,
@@ -2219,7 +2417,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558600": {
   "as": null,
@@ -2241,7 +2439,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558601": {
   "as": null,
@@ -2263,7 +2461,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558602": {
   "as": null,
@@ -2285,7 +2483,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558603": {
   "as": null,
@@ -2307,7 +2505,7 @@
   "pick": null,
   "score": "0-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558604": {
   "as": null,
@@ -2329,7 +2527,7 @@
   "pick": null,
   "score": "0-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558605": {
   "as": null,
@@ -2351,7 +2549,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558606": {
   "as": null,
@@ -2373,7 +2571,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558607": {
   "as": null,
@@ -2395,7 +2593,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558608": {
   "as": null,
@@ -2417,7 +2615,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "558610": {
   "as": 0,
@@ -2507,6 +2705,50 @@
   "score_hit": 1,
   "ts": "2026-09-06"
  },
+ "559675": {
+  "as": null,
+  "away": "Paris Saint-Germain FC",
+  "brier": null,
+  "comp": "Ligue 1",
+  "conf": "low",
+  "hit": null,
+  "home": "Olympique de Marseille",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "21:45",
+  "la": 1.523,
+  "lh": 2.014,
+  "outcome": null,
+  "pa": 0.2931,
+  "pd": 0.2155,
+  "ph": 0.4914,
+  "pick": null,
+  "score": "2-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
+ "559676": {
+  "as": null,
+  "away": "Stade Brestois 29",
+  "brier": null,
+  "comp": "Ligue 1",
+  "conf": "low",
+  "hit": null,
+  "home": "AJ Auxerre",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "16:00",
+  "la": 2.522,
+  "lh": 1.536,
+  "outcome": null,
+  "pa": 0.589,
+  "pd": 0.1858,
+  "ph": 0.2252,
+  "pick": null,
+  "score": "1-2",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
  "559677": {
   "as": null,
   "away": "FC Lorient",
@@ -2527,7 +2769,29 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "559678": {
+  "as": null,
+  "away": "Lille OSC",
+  "brier": null,
+  "comp": "Ligue 1",
+  "conf": "low",
+  "hit": null,
+  "home": "OGC Nice",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "18:15",
+  "la": 1.436,
+  "lh": 0.859,
+  "outcome": null,
+  "pa": 0.5057,
+  "pd": 0.2691,
+  "ph": 0.2251,
+  "pick": null,
+  "score": "0-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "559679": {
   "as": null,
@@ -2549,7 +2813,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559680": {
   "as": null,
@@ -2571,7 +2835,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559681": {
   "as": null,
@@ -2593,7 +2857,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559682": {
   "as": null,
@@ -2615,7 +2879,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559683": {
   "as": null,
@@ -2637,7 +2901,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559684": {
   "as": null,
@@ -2659,7 +2923,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559685": {
   "as": null,
@@ -2681,7 +2945,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559686": {
   "as": null,
@@ -2703,7 +2967,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559687": {
   "as": null,
@@ -2725,7 +2989,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559688": {
   "as": null,
@@ -2747,7 +3011,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559689": {
   "as": null,
@@ -2769,7 +3033,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559690": {
   "as": null,
@@ -2791,7 +3055,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559691": {
   "as": null,
@@ -2813,7 +3077,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559692": {
   "as": null,
@@ -2835,7 +3099,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "559694": {
   "as": 3,
@@ -2923,7 +3187,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560573": {
   "as": null,
@@ -2945,7 +3209,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560574": {
   "as": null,
@@ -2967,7 +3231,7 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560575": {
   "as": null,
@@ -2989,7 +3253,7 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560576": {
   "as": null,
@@ -3011,7 +3275,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560577": {
   "as": null,
@@ -3033,7 +3297,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560578": {
   "as": null,
@@ -3055,7 +3319,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560579": {
   "as": null,
@@ -3077,7 +3341,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560580": {
   "as": null,
@@ -3099,7 +3363,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560581": {
   "as": null,
@@ -3121,7 +3385,51 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "560582": {
+  "as": null,
+  "away": "Liverpool FC",
+  "brier": null,
+  "comp": "Premier League",
+  "conf": "low",
+  "hit": null,
+  "home": "AFC Bournemouth",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "16:00",
+  "la": 1.497,
+  "lh": 1.543,
+  "outcome": null,
+  "pa": 0.3694,
+  "pd": 0.2412,
+  "ph": 0.3894,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
+ "560583": {
+  "as": null,
+  "away": "Manchester United FC",
+  "brier": null,
+  "comp": "Premier League",
+  "conf": "low",
+  "hit": null,
+  "home": "Fulham FC",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "18:30",
+  "la": 1.904,
+  "lh": 1.804,
+  "outcome": null,
+  "pa": 0.4119,
+  "pd": 0.2158,
+  "ph": 0.3722,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "560584": {
   "as": null,
@@ -3143,7 +3451,29 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "560585": {
+  "as": null,
+  "away": "Crystal Palace FC",
+  "brier": null,
+  "comp": "Premier League",
+  "conf": "low",
+  "hit": null,
+  "home": "Leeds United FC",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "16:00",
+  "la": 0.918,
+  "lh": 1.976,
+  "outcome": null,
+  "pa": 0.1683,
+  "pd": 0.2119,
+  "ph": 0.6198,
+  "pick": null,
+  "score": "1-0",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "560586": {
   "as": null,
@@ -3165,7 +3495,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560587": {
   "as": null,
@@ -3187,7 +3517,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560588": {
   "as": null,
@@ -3209,7 +3539,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "560589": {
   "as": null,
@@ -3231,7 +3561,29 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "560590": {
+  "as": null,
+  "away": "Sunderland AFC",
+  "brier": null,
+  "comp": "Premier League",
+  "conf": "low",
+  "hit": null,
+  "home": "Manchester City FC",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "16:00",
+  "la": 0.833,
+  "lh": 1.846,
+  "outcome": null,
+  "pa": 0.1645,
+  "pd": 0.2225,
+  "ph": 0.613,
+  "pick": null,
+  "score": "1-0",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "560591": {
   "as": null,
@@ -3253,7 +3605,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564658": {
   "as": 3,
@@ -3407,7 +3759,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564669": {
   "as": null,
@@ -3429,7 +3781,7 @@
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564670": {
   "as": null,
@@ -3451,7 +3803,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564671": {
   "as": null,
@@ -3473,7 +3825,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564672": {
   "as": null,
@@ -3495,7 +3847,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564673": {
   "as": null,
@@ -3517,7 +3869,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564674": {
   "as": null,
@@ -3539,7 +3891,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564675": {
   "as": null,
@@ -3561,7 +3913,7 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564676": {
   "as": null,
@@ -3583,7 +3935,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564677": {
   "as": null,
@@ -3605,7 +3957,7 @@
   "pick": null,
   "score": "3-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564678": {
   "as": null,
@@ -3627,7 +3979,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564679": {
   "as": null,
@@ -3649,7 +4001,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564680": {
   "as": null,
@@ -3671,7 +4023,7 @@
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564681": {
   "as": null,
@@ -3693,7 +4045,7 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564683": {
   "as": null,
@@ -3715,7 +4067,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564684": {
   "as": null,
@@ -3737,7 +4089,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564685": {
   "as": null,
@@ -3759,7 +4111,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564686": {
   "as": null,
@@ -3781,7 +4133,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564687": {
   "as": null,
@@ -3803,7 +4155,51 @@
   "pick": null,
   "score": "3-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "564688": {
+  "as": null,
+  "away": "Real Madrid CF",
+  "brier": null,
+  "comp": "Primera Division",
+  "conf": "mid",
+  "hit": null,
+  "home": "Club Atlético de Madrid",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "17:15",
+  "la": 1.634,
+  "lh": 1.452,
+  "outcome": null,
+  "pa": 0.4203,
+  "pd": 0.2382,
+  "ph": 0.3415,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
+ "564689": {
+  "as": null,
+  "away": "Real Sociedad de Fútbol",
+  "brier": null,
+  "comp": "Primera Division",
+  "conf": "mid",
+  "hit": null,
+  "home": "Valencia CF",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "22:00",
+  "la": 1.408,
+  "lh": 1.108,
+  "outcome": null,
+  "pa": 0.4383,
+  "pd": 0.2654,
+  "ph": 0.2963,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "564690": {
   "as": null,
@@ -3825,7 +4221,7 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564691": {
   "as": null,
@@ -3847,7 +4243,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564692": {
   "as": null,
@@ -3869,7 +4265,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564693": {
   "as": null,
@@ -3891,7 +4287,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "564694": {
   "as": null,
@@ -3913,7 +4309,73 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "564695": {
+  "as": null,
+  "away": "Real Betis Balompié",
+  "brier": null,
+  "comp": "Primera Division",
+  "conf": "mid",
+  "hit": null,
+  "home": "RC Deportivo La Coruña",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "19:30",
+  "la": 1.057,
+  "lh": 1.884,
+  "outcome": null,
+  "pa": 0.2098,
+  "pd": 0.2236,
+  "ph": 0.5666,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
+ "564696": {
+  "as": null,
+  "away": "Levante UD",
+  "brier": null,
+  "comp": "Primera Division",
+  "conf": "mid",
+  "hit": null,
+  "home": "Villarreal CF",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "19:30",
+  "la": 1.339,
+  "lh": 1.609,
+  "outcome": null,
+  "pa": 0.3187,
+  "pd": 0.2431,
+  "ph": 0.4382,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
+ },
+ "564697": {
+  "as": null,
+  "away": "Málaga CF",
+  "brier": null,
+  "comp": "Primera Division",
+  "conf": "mid",
+  "hit": null,
+  "home": "Getafe CF",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "15:00",
+  "la": 0.71,
+  "lh": 1.334,
+  "outcome": null,
+  "pa": 0.1987,
+  "pd": 0.2844,
+  "ph": 0.5169,
+  "pick": null,
+  "score": "1-0",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "565786": {
   "as": 4,
@@ -3957,7 +4419,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565795": {
   "as": null,
@@ -3979,7 +4441,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565796": {
   "as": null,
@@ -4001,7 +4463,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565797": {
   "as": null,
@@ -4023,7 +4485,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565798": {
   "as": null,
@@ -4045,7 +4507,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565799": {
   "as": null,
@@ -4067,7 +4529,7 @@
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565800": {
   "as": null,
@@ -4089,7 +4551,7 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565801": {
   "as": null,
@@ -4111,7 +4573,7 @@
   "pick": null,
   "score": "3-0",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565802": {
   "as": null,
@@ -4133,7 +4595,29 @@
   "pick": null,
   "score": "3-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "565803": {
+  "as": null,
+  "away": "TSG 1899 Hoffenheim",
+  "brier": null,
+  "comp": "Bundesliga",
+  "conf": "low",
+  "hit": null,
+  "home": "SC Paderborn 07",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "20:30",
+  "la": 1.118,
+  "lh": 1.765,
+  "outcome": null,
+  "pa": 0.2406,
+  "pd": 0.2346,
+  "ph": 0.5248,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "565804": {
   "as": null,
@@ -4155,7 +4639,29 @@
   "pick": null,
   "score": "3-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "565805": {
+  "as": null,
+  "away": "SV 07 Elversberg",
+  "brier": null,
+  "comp": "Bundesliga",
+  "conf": "low",
+  "hit": null,
+  "home": "FC Schalke 04",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "18:30",
+  "la": 1.743,
+  "lh": 1.595,
+  "outcome": null,
+  "pa": 0.4168,
+  "pd": 0.2283,
+  "ph": 0.3549,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "565806": {
   "as": null,
@@ -4177,7 +4683,29 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
+ },
+ "565807": {
+  "as": null,
+  "away": "RB Leipzig",
+  "brier": null,
+  "comp": "Bundesliga",
+  "conf": "low",
+  "hit": null,
+  "home": "Bayer 04 Leverkusen",
+  "hs": null,
+  "kickoff": "2026-09-20",
+  "koff_time": "16:30",
+  "la": 1.364,
+  "lh": 2.402,
+  "outcome": null,
+  "pa": 0.2076,
+  "pd": 0.1897,
+  "ph": 0.6027,
+  "pick": null,
+  "score": "2-1",
+  "score_hit": null,
+  "ts": "2026-09-10"
  },
  "565808": {
   "as": null,
@@ -4199,7 +4727,7 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565809": {
   "as": null,
@@ -4221,7 +4749,7 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565810": {
   "as": null,
@@ -4243,7 +4771,7 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "565811": {
   "as": null,
@@ -4265,7 +4793,7 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "575325": {
   "as": 1,
@@ -4356,135 +4884,135 @@
   "ts": "2026-09-08"
  },
  "575329": {
-  "as": null,
+  "as": 1,
   "away": "Feyenoord Rotterdam",
-  "brier": null,
+  "brier": 0.4698,
   "comp": "UEFA Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "FC Barcelona",
-  "hs": null,
+  "hs": 5,
   "kickoff": "2026-09-09",
   "koff_time": "19:45",
   "la": 1.302,
   "lh": 1.591,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.313,
   "pd": 0.2453,
   "ph": 0.4417,
-  "pick": null,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "575330": {
-  "as": null,
+  "as": 1,
   "away": "Viking FK",
-  "brier": null,
+  "brier": 0.4698,
   "comp": "UEFA Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "VfB Stuttgart",
-  "hs": null,
+  "hs": 3,
   "kickoff": "2026-09-09",
   "koff_time": "19:45",
   "la": 1.302,
   "lh": 1.591,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.313,
   "pd": 0.2453,
   "ph": 0.4417,
-  "pick": null,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "575331": {
-  "as": null,
+  "as": 1,
   "away": "Club Atlético de Madrid",
-  "brier": null,
+  "brier": 0.3906,
   "comp": "UEFA Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "Liverpool FC",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-09",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
-  "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
-  "pick": null,
+  "la": 1.278,
+  "lh": 1.773,
+  "outcome": "H",
+  "pa": 0.2766,
+  "pd": 0.2331,
+  "ph": 0.4903,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "575332": {
-  "as": null,
+  "as": 1,
   "away": "ŠK Slovan Bratislava",
-  "brier": null,
+  "brier": 0.3906,
   "comp": "UEFA Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "Paris Saint-Germain FC",
-  "hs": null,
+  "hs": 6,
   "kickoff": "2026-09-09",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
-  "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
-  "pick": null,
+  "la": 1.278,
+  "lh": 1.773,
+  "outcome": "H",
+  "pa": 0.2766,
+  "pd": 0.2331,
+  "ph": 0.4903,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "575333": {
-  "as": null,
+  "as": 1,
   "away": "Arsenal FC",
-  "brier": null,
+  "brier": 0.818,
   "comp": "UEFA Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "SSC Napoli",
-  "hs": null,
+  "hs": 0,
   "kickoff": "2026-09-09",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
-  "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
-  "pick": null,
+  "la": 1.278,
+  "lh": 1.773,
+  "outcome": "A",
+  "pa": 0.2766,
+  "pd": 0.2331,
+  "ph": 0.4903,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "575334": {
-  "as": null,
+  "as": 1,
   "away": "Galatasaray SK",
-  "brier": null,
+  "brier": 0.3906,
   "comp": "UEFA Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "Sporting Clube de Portugal",
-  "hs": null,
+  "hs": 3,
   "kickoff": "2026-09-09",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
-  "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
-  "pick": null,
+  "la": 1.278,
+  "lh": 1.773,
+  "outcome": "H",
+  "pa": 0.2766,
+  "pd": 0.2331,
+  "ph": 0.4903,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "ts": "2026-09-09"
  },
  "575335": {
@@ -4498,16 +5026,16 @@
   "hs": null,
   "kickoff": "2026-09-10",
   "koff_time": "19:45",
-  "la": 1.302,
-  "lh": 1.591,
+  "la": 1.239,
+  "lh": 1.907,
   "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
+  "pa": 0.2473,
+  "pd": 0.2233,
+  "ph": 0.5295,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "575336": {
   "as": null,
@@ -4520,16 +5048,16 @@
   "hs": null,
   "kickoff": "2026-09-10",
   "koff_time": "19:45",
-  "la": 1.302,
-  "lh": 1.591,
+  "la": 1.239,
+  "lh": 1.907,
   "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
+  "pa": 0.2473,
+  "pd": 0.2233,
+  "ph": 0.5295,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "575337": {
   "as": null,
@@ -4542,16 +5070,16 @@
   "hs": null,
   "kickoff": "2026-09-10",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
+  "la": 1.239,
+  "lh": 1.907,
   "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
+  "pa": 0.2473,
+  "pd": 0.2233,
+  "ph": 0.5295,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "575338": {
   "as": null,
@@ -4564,16 +5092,16 @@
   "hs": null,
   "kickoff": "2026-09-10",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
+  "la": 1.239,
+  "lh": 1.907,
   "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
+  "pa": 0.2473,
+  "pd": 0.2233,
+  "ph": 0.5295,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "575339": {
   "as": null,
@@ -4586,16 +5114,16 @@
   "hs": null,
   "kickoff": "2026-09-10",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
+  "la": 1.239,
+  "lh": 1.907,
   "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
+  "pa": 0.2473,
+  "pd": 0.2233,
+  "ph": 0.5295,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  },
  "575340": {
   "as": null,
@@ -4608,15 +5136,15 @@
   "hs": null,
   "kickoff": "2026-09-10",
   "koff_time": "22:00",
-  "la": 1.302,
-  "lh": 1.591,
+  "la": 1.239,
+  "lh": 1.907,
   "outcome": null,
-  "pa": 0.313,
-  "pd": 0.2453,
-  "ph": 0.4417,
+  "pa": 0.2473,
+  "pd": 0.2233,
+  "ph": 0.5295,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-09"
+  "ts": "2026-09-10"
  }
 }
