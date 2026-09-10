@@ -51,9 +51,34 @@ def _fin(m):
             and m.get("away_score") is not None)
 
 
+def fixture_key(m):
+    """Which FIXTURE this is, independent of the id the feed happens to use.
+
+    Two clubs cannot meet twice in one competition on one day, so this is a
+    safe identity - and it is the only one that catches the feed storing a
+    played match under two different match_ids. Dedupe on this AND on the id,
+    never on `match_id or <this>`: the id is always present, so the `or`
+    short-circuits and the fixture half never runs."""
+    return (m.get("competition"), m.get("home"), m.get("away"), m.get("kickoff"))
+
+
 def season_matches(fixtures, archive):
-    """competition -> chronological finished matches (deduped by match_id,
-    else by (home, away, kickoff))."""
+    """competition -> chronological finished matches, deduped by match_id AND
+    by the fixture itself (comp, home, away, kickoff).
+
+    Both keys are needed, and the reason is a real bug this used to have. The
+    key was `match_id or (home, away, kickoff)` -- but match_id is always
+    present, so the `or` short-circuited and the fixture fallback never ran.
+    The feed stores eight fixtures TWICE under two different match ids, both
+    FINISHED (سيراميكا كليوباترا vs القناة, 23 Aug, is one), so those results
+    were counted twice: Elo moved twice, the goal totals were inflated, and
+    the league table rebuilt from them came out 3 points heavy. Found by
+    V_TABLE_CHECK in the Oracle copy, which reconciles our results against
+    the table the league publishes.
+
+    Two clubs cannot play each other twice in one competition on one day, so
+    the fixture identity is safe. A leg played on a different date keeps its
+    own row."""
     by_comp = {}
     seen = set()
     pool = []
@@ -65,10 +90,13 @@ def season_matches(fixtures, archive):
     for m in pool:
         if not _fin(m) or not m.get("competition"):
             continue
-        key = m.get("match_id") or (m.get("home"), m.get("away"), m.get("kickoff"))
-        if key in seen:
+        fixture = fixture_key(m)
+        mid = m.get("match_id")
+        if fixture in seen or (mid and ("id", mid) in seen):
             continue
-        seen.add(key)
+        seen.add(fixture)
+        if mid:
+            seen.add(("id", mid))
         by_comp.setdefault(m["competition"], []).append(m)
     for ms in by_comp.values():
         ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))

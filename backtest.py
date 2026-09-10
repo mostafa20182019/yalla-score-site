@@ -72,7 +72,7 @@ def rest_index(bycomp):
     pool, seen = [], set()
     for ms in bycomp.values():
         for m in ms:
-            k = m.get("match_id") or (m["home"], m["away"], m["kickoff"])
+            k = A.fixture_key(m)
             if k not in seen:
                 seen.add(k)
                 pool.append(m)
@@ -315,7 +315,7 @@ def main():
            "absence": absence_index(details, lambda h, a, d: comp_idx.get((h, a, d)))}
     prev = {}
     last = {}
-    pool = sorted({(m.get("match_id") or (m["home"], m["away"], m["kickoff"])): m
+    pool = sorted({A.fixture_key(m): m
                    for ms in bycomp.values() for m in ms}.values(),
                   key=lambda m: (m["kickoff"], m.get("koff_time") or ""))
     for m in pool:
