@@ -532,3 +532,16 @@ SELECT article_id, pub_date, words, title, upgraded_ts
   FROM articles
  WHERE thin = 1
  ORDER BY words ASC, pub_date ASC;
+
+-- With D1 as the writer (2026-09-10), two duplicate-article races stop being
+-- possible by construction rather than by convention:
+--
+--   * the id: it is allocated inside the INSERT statement itself
+--     (SELECT MAX(...)+1), so two runs appending at the same moment cannot
+--     both pick 459. The old rule - "new article_id = max(existing) + 1",
+--     computed in Python from a file - could and did.
+--   * the piece: one preview and one report per match, no more. The prompt
+--     already said so; this index means the second attempt fails instead.
+CREATE UNIQUE INDEX IF NOT EXISTS articles_match_kind
+    ON articles (match_id, kind)
+ WHERE match_id IS NOT NULL AND kind IS NOT NULL;

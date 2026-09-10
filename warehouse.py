@@ -488,10 +488,21 @@ def refresh_details(verbose=True):
 # this exists so the editorial questions can be asked in SQL.
 
 
-def refresh_articles(verbose=True):
-    """Load articles, their sources, their FAQ, and the clubs they cover."""
+def refresh_articles(verbose=True, source="d1"):
+    """Recompute the article rows' derived data, and backfill from json.
+
+    `source` decides where the articles are READ from, and this matters:
+
+      "d1"   the default and what the hourly refresh uses. D1 is the writer,
+             so the job here is only to recompute what is derived - words,
+             thin, the club links - for rows article_put.py has already
+             stored. Reading the json here instead would let a checkout that
+             is a few minutes old OVERWRITE an article published since.
+      "json" the one-time backfill (d1_admin --articles-backfill), and the
+             rollback path if D1 ever has to be rebuilt from the export.
+    """
     today = datetime.date.today().isoformat()
-    arts = b.load("articles.json")
+    arts = b.load("articles.json") if source == "json" else store.article_all()
 
     # the curated clubs first - article_clubs points at them
     clubs = [{"slug": tp["slug"], "name_ar": tp["name"], "league": tp.get("league")}
@@ -526,15 +537,24 @@ def refresh_articles(verbose=True):
         for tp in b.article_clubs(a):
             links.append({"article_id": aid, "slug": tp["slug"]})
 
-    ACOLS = ["article_id", "title", "summary", "author", "kind", "match_id",
-             "pub_date", "pub_ts", "updated_ts", "upgraded_ts", "image_url",
-             "image_credit", "words", "thin", "has_sources", "has_faq",
-             "fb_post", "body_hash"]
+    if source == "json":
+        ACOLS = ["article_id", "title", "summary", "author", "kind", "match_id",
+                 "pub_date", "pub_ts", "updated_ts", "upgraded_ts", "image_url",
+                 "image_credit", "words", "thin", "has_sources", "has_faq",
+                 "fb_post", "body_hash"]
+        WCOLS = ACOLS + ["body", "as_of"]
+    else:
+        # D1 owns the text; only the derived counters are ours to fix
+        ACOLS = ["article_id", "words", "thin", "has_sources", "has_faq"]
+        WCOLS = ACOLS
     a_write, a_same = _changed_only("articles", ["article_id"], ACOLS, rows)
-    n_art = store.upsert_many("articles", ACOLS + ["body", "as_of"],
-                              [dict(r, as_of=today) for r in a_write], ["article_id"])
+    n_art = store.upsert_many("articles", WCOLS,
+                              [dict(r, as_of=today) for r in a_write], ["article_id"],
+                              update_cols=[c for c in ACOLS if c != "article_id"])
 
     SCOLS = ["article_id", "seq", "name", "url", "note"]
+    # note: in "d1" mode `srcs`/`faqs` were read back OUT of D1, so these
+    # upserts are no-ops. They exist for the json backfill.
     s_write, s_same = _changed_only("article_sources", ["article_id", "seq"], SCOLS, srcs)
     n_src = store.upsert_many("article_sources", SCOLS, s_write, ["article_id", "seq"])
 

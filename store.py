@@ -23,6 +23,8 @@ from their own ~5-minute-old git checkout, and neither had recorded its post
 yet. `claim()` below replaces every workaround we built for that: it INSERTs
 first, and a concurrent loser fails on the primary key instead of posting.
 """
+import datetime
+import hashlib
 import json
 import os
 import sqlite3
@@ -608,3 +610,169 @@ def warehouse_counts():
               "articles", "article_sources", "article_faq", "article_clubs"):
         out[t] = (sql(f"SELECT COUNT(*) n FROM {t}") or [{"n": 0}])[0]["n"]
     return out
+
+# ==================================================================== articles
+# D1 is the writer for articles as of 2026-09-10. data/articles.json is now the
+# EXPORT: still committed on every publish (it is the build's fallback and the
+# forensic log), but no longer the thing that decides what exists.
+#
+# The json field order used to be whatever each AI run happened to produce - 18
+# distinct orders across 403 articles - so the export normalises it. That is a
+# one-off reshuffle of the file and deterministic diffs from then on.
+
+ARTICLE_FIELDS = ["article_id", "title", "summary", "body", "author",
+                  "pub_date", "pub_ts", "match_id", "kind", "image_url",
+                  "image_credit", "sources", "faq", "fb_post",
+                  "updated_ts", "upgraded_ts"]
+
+# columns the caller owns; words/thin are editorial, computed by the caller
+ARTICLE_COLS = ["title", "summary", "body", "author", "pub_date", "pub_ts",
+                "match_id", "kind", "image_url", "image_credit", "fb_post",
+                "updated_ts", "upgraded_ts", "words", "thin", "has_sources",
+                "has_faq", "body_hash"]
+
+
+class DuplicateArticle(Exception):
+    """A second preview/report for a match the site already covered."""
+
+
+def _is_conflict(e):
+    m = str(e).lower()
+    return "unique" in m or "constraint" in m
+
+
+def article_all(with_body=True):
+    """Every article, newest id first, shaped like data/articles.json items.
+
+    One query for the articles and one each for sources and FAQ - not one per
+    article. 403 articles must not become 1209 HTTP calls.
+    """
+    if backend() == "json":
+        return _jload(ARTICLES_JSON,
+                      {"results": [{"items": []}]})["results"][0]["items"]
+    cols = ", ".join(c for c in ARTICLE_COLS if with_body or c != "body")
+    rows = sql(f"SELECT article_id, {cols} FROM articles "
+               f"ORDER BY CAST(article_id AS INTEGER) DESC")
+    kids = {}
+    for r in sql("SELECT article_id, seq, name, url, note FROM article_sources "
+                 "ORDER BY article_id, seq"):
+        kids.setdefault(r["article_id"], {}).setdefault("sources", []).append(
+            {"name": r["name"], "url": r["url"], "note": r["note"]})
+    for r in sql("SELECT article_id, seq, q, a FROM article_faq "
+                 "ORDER BY article_id, seq"):
+        kids.setdefault(r["article_id"], {}).setdefault("faq", []).append(
+            {"q": r["q"], "a": r["a"]})
+    out = []
+    for r in rows:
+        a = dict(r)
+        a.update(kids.get(r["article_id"], {}))
+        # NULL means "the field was never there" - emitting it as null would
+        # add 400 meaningless keys to the export
+        out.append({k: a[k] for k in ARTICLE_FIELDS
+                    if a.get(k) is not None and a.get(k) != []})
+    return out
+
+
+def article_doc():
+    """data/articles.json as a document, ready for _jsave."""
+    return {"results": [{"items": article_all()}]}
+
+
+ARTICLES_JSON = os.path.join(HERE, "data", "articles.json")
+
+
+def article_export(path=None):
+    """Rewrite data/articles.json from D1. Returns the article count.
+
+    `path` exists so a test can prove the export without overwriting the
+    repository's own article file - which it did, once.
+    """
+    if backend() == "json":
+        return 0
+    doc = article_doc()
+    _jsave(path or ARTICLES_JSON, doc)
+    return len(doc["results"][0]["items"])
+
+
+def _article_children(aid, sources, faq, clubs):
+    for i, s in enumerate(sources or []):
+        sql("INSERT INTO article_sources (article_id, seq, name, url, note) "
+            "VALUES (?, ?, ?, ?, ?) ON CONFLICT(article_id, seq) DO UPDATE SET "
+            "name = excluded.name, url = excluded.url, note = excluded.note",
+            [aid, i, s.get("name"), s.get("url"), s.get("note")])
+    sql("DELETE FROM article_sources WHERE article_id = ? AND seq >= ?",
+        [aid, len(sources or [])])
+    for i, q in enumerate(faq or []):
+        sql("INSERT INTO article_faq (article_id, seq, q, a) VALUES (?, ?, ?, ?) "
+            "ON CONFLICT(article_id, seq) DO UPDATE SET q = excluded.q, a = excluded.a",
+            [aid, i, q.get("q"), q.get("a")])
+    sql("DELETE FROM article_faq WHERE article_id = ? AND seq >= ?",
+        [aid, len(faq or [])])
+    if clubs is not None:
+        sql("DELETE FROM article_clubs WHERE article_id = ?", [aid])
+        for slug in clubs:
+            sql("INSERT INTO article_clubs (article_id, slug) VALUES (?, ?) "
+                "ON CONFLICT(article_id, slug) DO NOTHING", [aid, slug])
+
+
+def article_add(rec, clubs=None):
+    """Insert an article, allocating its id INSIDE the statement.
+
+    `rec` carries the json fields plus the caller's computed words/thin. The id
+    comes from `SELECT MAX(...) + 1` in the same INSERT, so two runs publishing
+    at the same second get different ids instead of the same one. Returns the
+    new article_id.
+
+    Raises DuplicateArticle when the match already has a piece of that kind.
+    """
+    if backend() == "json":
+        raise RuntimeError("article_add needs D1 - refusing to write to json")
+    cols = [c for c in ARTICLE_COLS if c != "body_hash"]
+    vals = [rec.get(c) for c in cols]
+    stmt = ("INSERT INTO articles (article_id, " + ", ".join(cols) +
+            ", body_hash, as_of) SELECT CAST(COALESCE(MAX(CAST(article_id AS "
+            "INTEGER)), 0) + 1 AS TEXT), " + ", ".join("?" * len(cols)) +
+            ", ?, ? FROM articles RETURNING article_id")
+    body_hash = _body_hash(rec.get("body") or "")
+    try:
+        got = sql(stmt, vals + [body_hash, datetime.date.today().isoformat()])
+    except Exception as e:                                     # noqa: BLE001
+        if _is_conflict(e):
+            raise DuplicateArticle(
+                f"match {rec.get('match_id')} already has a {rec.get('kind')}")
+        raise
+    aid = str(got[0]["article_id"])
+    _article_children(aid, rec.get("sources"), rec.get("faq"), clubs or [])
+    return aid
+
+
+def article_update(aid, rec, clubs=None):
+    """Replace an existing article's fields (the upgrade path). Only the keys
+    present in `rec` are touched, so a partial rewrite cannot blank a column
+    it did not mean to."""
+    if backend() == "json":
+        raise RuntimeError("article_update needs D1 - refusing to write to json")
+    aid = str(aid)
+    if not sql("SELECT article_id FROM articles WHERE article_id = ?", [aid]):
+        raise KeyError(f"article {aid} does not exist")
+    sets = [c for c in ARTICLE_COLS if c in rec and c != "body_hash"]
+    params = [rec[c] for c in sets]
+    if "body" in rec:
+        sets.append("body_hash")
+        params.append(_body_hash(rec.get("body") or ""))
+    if not sets:
+        return aid
+    sql(f"UPDATE articles SET {', '.join(c + ' = ?' for c in sets)} "
+        f"WHERE article_id = ?", params + [aid])
+    if "sources" in rec or "faq" in rec or clubs is not None:
+        _article_children(aid, rec.get("sources"), rec.get("faq"), clubs)
+    return aid
+
+
+def article_get(aid):
+    rows = [a for a in article_all() if str(a["article_id"]) == str(aid)]
+    return rows[0] if rows else None
+
+
+def _body_hash(body):
+    return hashlib.sha1((body or "").encode("utf-8")).hexdigest()[:16]

@@ -1795,7 +1795,17 @@ def build():
     os.makedirs(os.path.join(DIST, "a"), exist_ok=True)
     os.makedirs(os.path.join(DIST, "assets"), exist_ok=True)
 
-    articles_all = load("articles.json")
+    # Articles come from D1 (the writer since 2026-09-10). The committed
+    # export is the fallback, and it is a real one: a build must render every
+    # page when the store is unreachable. It can only ever be BEHIND, never
+    # wrong - article_put.py rewrites it in the same commit as the article.
+    try:
+        articles_all = store.article_all()
+        print(f"  articles: {len(articles_all)} from the {store.backend()} store")
+    except Exception as e:                                  # noqa: BLE001
+        articles_all = load("articles.json")
+        print(f"  ! article store unreachable ({e}) - using the committed "
+              f"export ({len(articles_all)} articles)")
     # `articles_all` -> every piece still gets its own page at its own URL.
     # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
     # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces

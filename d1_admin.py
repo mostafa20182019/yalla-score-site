@@ -11,6 +11,7 @@ Tasks
   --migrate   init + load the existing data/*.json into D1 + report counts
   --export    dump D1 back to data/*.json (the git-tracked audit log)
   --verify    compare the D1 row counts against what the json files hold
+  --articles-backfill  load data/articles.json INTO D1 (one-time / rollback)
   --warehouse reload the analytics facts: the competitions/teams/matches
               layer AND the in-match layer (lineups, ratings, goals, cards,
               subs, leaderboards)
@@ -145,9 +146,15 @@ def main():
         warehouse.refresh_details()           # needs matches/teams to exist first
         warehouse.refresh_articles()
 
+    if "--articles-backfill" in args:
+        import warehouse
+        warehouse.refresh_articles(source="json")   # json -> D1, the one-time load
+
     if "--export" in args:
         ok = store.export_json()
         print("exported D1 -> data/*.json" if ok else "export skipped")
+        n = store.article_export()
+        print(f"exported D1 -> data/articles.json ({n} articles)")
 
     if "--sample" in args:
         _sample()

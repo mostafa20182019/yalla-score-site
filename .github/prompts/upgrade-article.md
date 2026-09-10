@@ -39,7 +39,7 @@ VALUE CHECK before saving: every paragraph adds information the previous ones di
 - `sources`: list of {"name": "<outlet / official account>", "url": "<decoded URL>", "note": "<what it confirmed>"} for every source you actually read (2-4). Official statements first. If you found none, use an empty list — do not fabricate.
 - `faq`: 2-3 {"q", "a"} pairs readers search for (e.g. «متى ينتهي عقد X؟», «كم هدفًا سجل X هذا الموسم؟», «هل رحل X عن النادي؟») — every answer is a fact stated in the body.
 - `updated_ts` = `TZ=Africa/Cairo date -Iseconds` (shown on the page as «آخر تحديث» and used as the sitemap lastmod) and `upgraded_ts` = the same value (marks the article done for the picker).
-- Write data/articles.json back with ensure_ascii=False, indent=2. Keep the JSON valid.
+- **Save through `article_put.py --update <id>` — do NOT hand-edit data/articles.json.** Write the fields you changed to `/tmp/draft.json` (typically `body`, `summary`, `sources`, `faq`, `updated_ts`, `upgraded_ts`, and `title` only if you really changed it) and run `python article_put.py --update <id> /tmp/draft.json`. Only the fields present in the draft are written, so nothing you leave out can be blanked, and the tool rewrites data/articles.json from D1 afterwards. If it prints "D1 is not configured", stop and report it.
 
 ### E. Verify and commit this article
 1. `python build_site.py` must succeed; check that `dist/a/<id>.html` contains `<h2>`, the «المصادر» block (when sources exist) and «أسئلة شائعة».

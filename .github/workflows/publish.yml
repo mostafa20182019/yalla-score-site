@@ -231,7 +231,13 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add data/
+          # The three D1 exports are NOT ours to commit: article_put.py and the
+          # d1-admin export job own them. A publish run that started before an
+          # article landed still has the older file in its checkout, and staging
+          # it here would commit a REVERT of that article's export on top of main
+          # (the article itself is safe in D1, but the build's fallback copy would
+          # go backwards). fetch_data never writes these files anyway.
+          git add data/ ':!data/articles.json' ':!data/fb_posted.json' ':!data/predictions.json'
           if ! git diff --cached --quiet; then
             git commit -m "data refresh [skip ci]"
             # RETRY, added 2026-09-07: a single attempt lost the race in 5 of

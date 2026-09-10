@@ -31,8 +31,9 @@ Every number, name, minute, position, rating, formation and result in the articl
 6. **أرقام المباراة في سطور**: 3-5 bullets, each a number from the brief.
 7. Links: match page, club page(s), one related article.
 
-## Article record — append to data/articles.json as the FIRST item of results[0].items
-- `article_id` = max(int(existing ids)) + 1 (cast, some ids are strings)
+## Article record — a draft file, published with `article_put.py`
+Write the object to `/tmp/draft.json` and publish it with `python article_put.py --new /tmp/draft.json` (run `--check` on it first). **Never hand-edit data/articles.json**: D1 is the writer since 2026-09-10, it allocates the id inside the INSERT, and its unique index on (match_id, kind) is what actually guarantees one preview and one report per match. If the tool prints "D1 is not configured", stop and report it.
+- `article_id` — omit it, the database assigns it
 - `title` (~60-95 chars, Arabic, names both clubs; preview titles start with «قبل المباراة:» or «تحليل:»؛ report titles with «تقرير:» or the result), `summary` (1-2 sentences), `body` (HTML), `author` = "فريق التحرير"
 - `pub_date` = today Cairo (`TZ=Africa/Cairo date +%F`), `pub_ts` = `TZ=Africa/Cairo date -Iseconds`
 - `match_id` = $MATCH_ID (as a number), `kind` = $KIND  ← these two fields are the dedup key; never omit them
@@ -46,7 +47,7 @@ Every number, name, minute, position, rating, formation and result in the articl
 
 ## Publish
 1. `python build_site.py` and check dist/a/<new_id>.html exists.
-2. `git add data/articles.json media/<file-if-new>`; commit "Yalla Score: match <preview|report> - <home> v <away> (<comp>)"; `git pull --rebase origin main && git push origin main` (retry once on rejection).
+2. `git add data/articles.json media/<file-if-new>`; commit "Yalla Score: match <preview|report> - <home> v <away> (<comp>)"; `git pull --rebase origin main && git push origin main` (retry once on rejection). article_put.py has already rewritten data/articles.json from D1 — the commit carries that export.
 
 ## Output
 End with a short report: kind, title, the numbers used (count), image chosen + licence, expected URL https://yallascore.site/a/<id> — or "already covered, skipped" / "brief too thin, skipped" with the reason.

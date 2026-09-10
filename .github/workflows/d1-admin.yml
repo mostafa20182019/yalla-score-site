@@ -30,7 +30,8 @@ on:
         description: "What to do"
         type: choice
         default: "status"
-        options: [ "status", "init", "migrate", "export", "verify", "warehouse", "sample" ]
+        options: [ "status", "init", "migrate", "export", "verify", "warehouse",
+                   "sample", "articles-backfill" ]
 
 permissions:
   contents: write          # the export task commits data/*.json
@@ -80,7 +81,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet -- data/; then
-            git add data/fb_posted.json data/predictions.json
+            git add data/fb_posted.json data/predictions.json data/articles.json
             git commit -m "d1: export state [skip ci]"
             for attempt in 1 2 3; do
               if git pull --rebase origin main && git push; then exit 0; fi
