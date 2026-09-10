@@ -40,5 +40,8 @@ crons = ["1,16,31,46 * * * *", "0 6,8,10,12,14,15,17,18,19,20 * * *"]
 # placeholder is still there, so a broken binding cannot ship quietly.
 [[d1_databases]]
 binding = "DB"
-database_name = "yallascore-d1"
+# the real name in the dashboard is "yallascore" (I had guessed
+# "yallascore-d1"). The binding works off database_id either way, but a
+# wrong name here would mislead any `wrangler d1` command later.
+database_name = "yallascore"
 database_id = "__CF_D1_ID__"
