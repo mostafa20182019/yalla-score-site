@@ -690,7 +690,15 @@ def article_export(path=None):
     if backend() == "json":
         return 0
     doc = article_doc()
-    _jsave(path or ARTICLES_JSON, doc)
+    # its own writer rather than _jsave: this file keeps the conventions it has
+    # always had - indent=2, and the fields in ARTICLE_FIELDS order rather than
+    # alphabetical, so a human diffing an article still reads title, summary,
+    # body in that order
+    target = path or ARTICLES_JSON
+    os.makedirs(os.path.dirname(target), exist_ok=True)
+    with open(target, "w", encoding="utf-8") as f:
+        json.dump(doc, f, ensure_ascii=False, indent=2)
+        f.write("\n")
     return len(doc["results"][0]["items"])
 
 
