@@ -338,3 +338,82 @@ CREATE VIEW v_top_players AS
 SELECT c.name_ar AS comp_ar, t.kind, t.rank, t.name, t.team, t.value,
        t.played, t.player_id, t.as_of
   FROM top_players t JOIN competitions c ON c.comp_id = t.comp_id;
+
+-- ===========================================================================
+-- The OFFICIAL league table, as published (data/standings.json).
+--
+-- `team_strength` already holds our own numbers - Elo, attack, defence, all
+-- computed from results. This is the other thing: the table the competition
+-- itself publishes. Keeping both is the point. Without it there is no way to
+-- ask in SQL whether our model's order agrees with reality, which is the
+-- first question anyone should ask of a model.
+--
+-- Note the two sources genuinely differ: the official table counts matches we
+-- may not hold, and a pre-season table is published with every stat zeroed.
+-- ===========================================================================
+
+CREATE TABLE IF NOT EXISTS standings (
+  comp_id  TEXT NOT NULL REFERENCES competitions(comp_id),
+  team_id  INTEGER NOT NULL REFERENCES teams(team_id),
+  pos      INTEGER,
+  played   INTEGER,
+  won      INTEGER,
+  draw     INTEGER,
+  lost     INTEGER,
+  gf       INTEGER,
+  ga       INTEGER,
+  gd       INTEGER,
+  pts      INTEGER,
+  as_of    TEXT,
+  PRIMARY KEY (comp_id, team_id)
+);
+
+-- Per-competition state of that snapshot. A separate table rather than
+-- columns on `competitions`: this describes the TABLE (which season it is,
+-- whether it is a pre-season placeholder with every stat zeroed), not the
+-- competition itself. It also means no ALTER on a live table.
+CREATE TABLE IF NOT EXISTS standings_meta (
+  comp_id      TEXT PRIMARY KEY REFERENCES competitions(comp_id),
+  season_label TEXT,
+  zeroed       INTEGER,                    -- 1 = new season, not started yet
+  rows         INTEGER,
+  as_of        TEXT
+);
+
+-- The table as a reader sees it.
+DROP VIEW IF EXISTS v_standings;
+CREATE VIEW v_standings AS
+SELECT c.name_ar AS comp_ar, c.slug, s.pos, t.name_ar AS club_ar,
+       s.played, s.won, s.draw, s.lost, s.gf, s.ga, s.gd, s.pts,
+       m.season_label, m.zeroed, s.as_of
+  FROM standings s
+  JOIN competitions   c ON c.comp_id = s.comp_id
+  JOIN teams          t ON t.team_id = s.team_id
+  LEFT JOIN standings_meta m ON m.comp_id = s.comp_id;
+
+-- Our order against the real one. `gap` is positive when the model rates a
+-- club higher than the table does - i.e. where it disagrees, and therefore
+-- where it is worth looking.
+--
+-- Two traps, both handled here rather than left for the reader:
+--   * a pre-season table (zeroed) has every club level on 0 points, so its
+--     "order" is alphabetical and any comparison is noise -> excluded;
+--   * the published table SHARES a position between clubs with identical
+--     records (Liverpool and Newcastle both 6th, next club 8th). Against a
+--     strict RANK() that inflates the gap - badly in a competition where one
+--     matchday has been played and 16 clubs share 1st. `tied` says how many
+--     clubs share that position, so a fair comparison is `WHERE tied = 1`.
+DROP VIEW IF EXISTS v_table_vs_model;
+CREATE VIEW v_table_vs_model AS
+SELECT c.name_ar AS comp_ar, c.slug, t.name_ar AS club_ar,
+       s.pos AS official_pos, s.pts, s.played,
+       RANK() OVER (PARTITION BY s.comp_id ORDER BY ts.elo DESC) AS model_pos,
+       ROUND(ts.elo, 1) AS elo,
+       s.pos - RANK() OVER (PARTITION BY s.comp_id ORDER BY ts.elo DESC) AS gap,
+       COUNT(*) OVER (PARTITION BY s.comp_id, s.pos) AS tied
+  FROM standings s
+  JOIN competitions    c  ON c.comp_id = s.comp_id
+  JOIN teams           t  ON t.team_id = s.team_id
+  JOIN team_strength   ts ON ts.team_id = s.team_id AND ts.comp_id = s.comp_id
+  LEFT JOIN standings_meta m ON m.comp_id = s.comp_id
+ WHERE COALESCE(m.zeroed, 0) = 0;

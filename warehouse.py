@@ -55,6 +55,37 @@ def _changed_only(table, key_cols, columns, rows):
     return out, same
 
 
+
+def _standings_rows(standings, ids, known_comps, today):
+    """The official table -> (rows, meta rows, unresolved club count).
+
+    The club name in standings.json is the same source name `teams.name`
+    holds - the teams table is partly built FROM these rows - so the join is
+    exact rather than fuzzy. A club that still does not resolve is counted and
+    skipped: a table row with no club is worse than a missing row.
+    """
+    rows, meta, lost = [], [], 0
+    for s in standings or []:
+        comp = s.get("competition")
+        if comp not in known_comps:
+            continue
+        table = s.get("table") or []
+        for r in table:
+            tid = ids.get((comp, r.get("team")))
+            if tid is None:
+                lost += 1
+                continue
+            rows.append({"comp_id": comp, "team_id": tid, "pos": r.get("pos"),
+                         "played": r.get("played"), "won": r.get("won"),
+                         "draw": r.get("draw"), "lost": r.get("lost"),
+                         "gf": r.get("gf"), "ga": r.get("ga"), "gd": r.get("gd"),
+                         "pts": r.get("pts"), "as_of": today})
+        meta.append({"comp_id": comp,
+                     "season_label": (s.get("season_label") or "").strip() or None,
+                     "zeroed": 1 if s.get("zeroed") else 0,
+                     "rows": len(table), "as_of": today})
+    return rows, meta, lost
+
 def _comp_rows():
     rows = []
     for i, comp in enumerate(b.COMP_ORDER):
@@ -124,6 +155,18 @@ def refresh(verbose=True):
     ids = {(r["comp_id"], r["name"]): r["team_id"]
            for r in store.sql("SELECT team_id, comp_id, name FROM teams")}
 
+    # the official table, now that the club ids exist
+    st_rows, st_meta, st_lost = _standings_rows(standings, ids, known_comps, today)
+    STCOLS = ["comp_id", "team_id", "pos", "played", "won", "draw", "lost",
+              "gf", "ga", "gd", "pts"]
+    st_write, st_same = _changed_only("standings", ["comp_id", "team_id"],
+                                      STCOLS, st_rows)
+    n_st = store.upsert_many("standings", STCOLS + ["as_of"], st_write,
+                             ["comp_id", "team_id"])
+    n_stm = store.upsert_many(
+        "standings_meta", ["comp_id", "season_label", "zeroed", "rows", "as_of"],
+        st_meta, ["comp_id"])
+
     mrows = []
     for m in pool:
         comp = m.get("competition")
@@ -184,14 +227,18 @@ def refresh(verbose=True):
         prows, ["comp_id"])
 
     counts = {"competitions": n_comp, "teams_written": n_team, "teams_same": t_same,
+              "standings_written": n_st, "standings_same": st_same,
+              "standings_meta": n_stm, "standings_unresolved": st_lost,
               "matches_written": n_match, "matches_same": unchanged,
               "strength_written": n_str, "strength_same": s_same,
               "league_params": n_par}
     if verbose:
         print("warehouse:", ", ".join(f"{k}={v}" for k, v in counts.items()))
         print(f"  rows written this refresh: "
-              f"{n_comp + n_team + n_match + n_str + n_par} "
+              f"{n_comp + n_team + n_match + n_str + n_par + n_st + n_stm} "
               f"(D1 free tier allows 100k/day)")
+        if st_lost:
+            print(f"  ! {st_lost} table rows name a club with no id - skipped")
     return counts
 
 # =========================================================== phase B: in-match

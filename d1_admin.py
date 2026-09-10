@@ -72,6 +72,18 @@ SAMPLES = [
           JOIN team_strength ts ON ts.team_id = t.team_id AND ts.comp_id = t.comp_id
          WHERE c.slug = 'egypt'
          ORDER BY s.avg_xi_rating DESC LIMIT 6"""),
+    ("the official table (Egypt)",
+     """SELECT pos, club_ar, played, won, draw, lost, gf, ga, gd, pts
+          FROM v_standings WHERE slug = 'egypt' ORDER BY pos"""),
+    ("does our Elo agree with the published table? (untied rows only)",
+     """SELECT comp_ar, COUNT(*) clubs, ROUND(AVG(ABS(gap)), 2) avg_places_off,
+               MAX(ABS(gap)) worst
+          FROM v_table_vs_model WHERE tied = 1
+         GROUP BY comp_ar ORDER BY avg_places_off"""),
+    ("where the model disagrees most with the table",
+     """SELECT comp_ar, club_ar, official_pos, model_pos, gap, pts, elo
+          FROM v_table_vs_model WHERE tied = 1
+         ORDER BY ABS(gap) DESC LIMIT 6"""),
     ("top scorers as published",
      """SELECT comp_ar, rank, name, team, value FROM v_top_players
          WHERE kind = 'goals' ORDER BY comp_ar, rank LIMIT 6"""),
