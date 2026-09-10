@@ -417,3 +417,118 @@ SELECT c.name_ar AS comp_ar, c.slug, t.name_ar AS club_ar,
   JOIN team_strength   ts ON ts.team_id = s.team_id AND ts.comp_id = s.comp_id
   LEFT JOIN standings_meta m ON m.comp_id = s.comp_id
  WHERE COALESCE(m.zeroed, 0) = 0;
+
+-- ===========================================================================
+-- The articles, phase C.
+--
+-- Read-only mirror, loaded by the hourly refresh. data/articles.json stays the
+-- source of truth and the build still reads it - making D1 the writer is the
+-- separate step we agreed to take only after a month of measuring the state
+-- store. Nothing here can stop an article from publishing.
+--
+-- What it buys today: the editorial questions become SQL. Which clubs are we
+-- under-covering? Which archive pieces are still under the 300-word bar and in
+-- what order should they be upgraded? Does every recent article carry sources
+-- and an FAQ? How many match pieces never got their report?
+-- ===========================================================================
+
+CREATE TABLE IF NOT EXISTS articles (
+  article_id   TEXT PRIMARY KEY,
+  title        TEXT,
+  summary      TEXT,
+  author       TEXT,
+  kind         TEXT,                      -- 'preview' | 'report' | NULL = news
+  match_id     TEXT,                      -- set on match pieces; see v_articles
+  pub_date     TEXT,
+  pub_ts       TEXT,
+  updated_ts   TEXT,
+  upgraded_ts  TEXT,
+  image_url    TEXT,
+  image_credit TEXT,
+  words        INTEGER,                   -- body with tags stripped
+  thin         INTEGER,                   -- 1 = under ARTICLE_MIN_WORDS (unlisted)
+  has_sources  INTEGER,
+  has_faq      INTEGER,
+  fb_post      TEXT,                      -- the condensed text posted to Facebook
+  body         TEXT,                      -- the HTML, so the row is the article
+  body_hash    TEXT,                      -- what the refresh diffs on, not the body
+  as_of        TEXT
+);
+CREATE INDEX IF NOT EXISTS articles_pub   ON articles (pub_date);
+CREATE INDEX IF NOT EXISTS articles_match ON articles (match_id);
+
+-- The sources block under an article (added 2026-09-06 for the AdSense work).
+CREATE TABLE IF NOT EXISTS article_sources (
+  article_id TEXT NOT NULL REFERENCES articles(article_id),
+  seq        INTEGER NOT NULL,
+  name       TEXT,
+  url        TEXT,
+  note       TEXT,
+  PRIMARY KEY (article_id, seq)
+);
+
+CREATE TABLE IF NOT EXISTS article_faq (
+  article_id TEXT NOT NULL REFERENCES articles(article_id),
+  seq        INTEGER NOT NULL,
+  q          TEXT,
+  a          TEXT,
+  PRIMARY KEY (article_id, seq)
+);
+
+-- The 11 curated clubs (build_site.TEAM_PAGES). They are site data, not
+-- configuration: each one is an indexed /team/<slug> page, and the slug is a
+-- published URL that must never change.
+CREATE TABLE IF NOT EXISTS clubs (
+  slug     TEXT PRIMARY KEY,
+  name_ar  TEXT,
+  league   TEXT
+);
+
+-- Which clubs an article is about, decided by the site's OWN matcher
+-- (build_site.article_clubs, exclusions included - "الأهلي السعودي" is not
+-- Al Ahly). Re-deriving that here would be a second, divergent answer.
+CREATE TABLE IF NOT EXISTS article_clubs (
+  article_id TEXT NOT NULL REFERENCES articles(article_id),
+  slug       TEXT NOT NULL REFERENCES clubs(slug),
+  PRIMARY KEY (article_id, slug)
+);
+CREATE INDEX IF NOT EXISTS article_clubs_slug ON article_clubs (slug);
+
+-- ---------------------------------------------------------------- views
+
+-- An article with the match it covers, when it covers one. LEFT JOIN on
+-- purpose: a match older than the archive window is no longer in `matches`,
+-- and the article must not vanish with it.
+DROP VIEW IF EXISTS v_articles;
+CREATE VIEW v_articles AS
+SELECT a.article_id, a.pub_date, a.kind, a.title, a.words, a.thin,
+       a.has_sources, a.has_faq,
+       c.name_ar AS comp_ar, th.name_ar AS home_ar, ta.name_ar AS away_ar,
+       m.kickoff, m.home_score, m.away_score, a.match_id
+  FROM articles a
+  LEFT JOIN matches      m  ON m.match_id = a.match_id
+  LEFT JOIN competitions c  ON c.comp_id  = m.comp_id
+  LEFT JOIN teams        th ON th.team_id = m.home_id
+  LEFT JOIN teams        ta ON ta.team_id = m.away_id;
+
+-- Are we covering the clubs we promised to cover?
+DROP VIEW IF EXISTS v_club_coverage;
+CREATE VIEW v_club_coverage AS
+SELECT cl.slug, cl.name_ar, cl.league,
+       COUNT(ac.article_id)                                   AS articles,
+       SUM(CASE WHEN a.thin = 0 THEN 1 ELSE 0 END)            AS full_length,
+       MAX(a.pub_date)                                        AS last_article,
+       ROUND(AVG(a.words), 0)                                 AS avg_words
+  FROM clubs cl
+  LEFT JOIN article_clubs ac ON ac.slug = cl.slug
+  LEFT JOIN articles      a  ON a.article_id = ac.article_id
+ GROUP BY cl.slug;
+
+-- The upgrade queue, in the order upgrade-articles.yml should work through it:
+-- thinnest and oldest first, and never one that has already been upgraded.
+DROP VIEW IF EXISTS v_thin_articles;
+CREATE VIEW v_thin_articles AS
+SELECT article_id, pub_date, words, title, upgraded_ts
+  FROM articles
+ WHERE thin = 1
+ ORDER BY words ASC, pub_date ASC;

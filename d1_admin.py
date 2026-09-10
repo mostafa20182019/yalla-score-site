@@ -84,6 +84,19 @@ SAMPLES = [
      """SELECT comp_ar, club_ar, official_pos, model_pos, gap, pts, elo
           FROM v_table_vs_model WHERE tied = 1
          ORDER BY ABS(gap) DESC LIMIT 6"""),
+    ("are we covering the clubs we promised to cover?",
+     """SELECT name_ar, articles, full_length, avg_words, last_article
+          FROM v_club_coverage ORDER BY articles DESC"""),
+    ("the upgrade queue (thinnest first)",
+     "SELECT article_id, pub_date, words, title FROM v_thin_articles LIMIT 5"),
+    # home_score IS NOT NULL = the match has actually been played, so a missing
+    # report is a gap rather than a match that simply has not kicked off yet
+    ("played matches we previewed but never reported on",
+     """SELECT home_ar, away_ar, kickoff,
+               MAX(CASE WHEN kind = 'report' THEN 1 ELSE 0 END) report
+          FROM v_articles
+         WHERE match_id IS NOT NULL AND home_score IS NOT NULL
+         GROUP BY match_id HAVING report = 0 ORDER BY kickoff DESC LIMIT 5"""),
     ("top scorers as published",
      """SELECT comp_ar, rank, name, team, value FROM v_top_players
          WHERE kind = 'goals' ORDER BY comp_ar, rank LIMIT 6"""),
@@ -130,6 +143,7 @@ def main():
         import warehouse                      # imports build_site: only load it when asked
         warehouse.refresh()
         warehouse.refresh_details()           # needs matches/teams to exist first
+        warehouse.refresh_articles()
 
     if "--export" in args:
         ok = store.export_json()

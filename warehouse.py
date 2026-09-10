@@ -20,6 +20,7 @@ must be per-build, because a prediction is frozen before kick-off) is written by
 build_site as before.
 """
 import datetime
+import hashlib
 import os
 import sys
 
@@ -481,3 +482,125 @@ def refresh_details(verbose=True):
                   f"fixture and {rep['ambiguous']} were ambiguous - they are skipped, "
                   f"not guessed")
     return counts
+
+# ============================================================ phase C: articles
+# A read-only mirror of data/articles.json. The build still reads the json;
+# this exists so the editorial questions can be asked in SQL.
+
+
+def refresh_articles(verbose=True):
+    """Load articles, their sources, their FAQ, and the clubs they cover."""
+    today = datetime.date.today().isoformat()
+    arts = b.load("articles.json")
+
+    # the curated clubs first - article_clubs points at them
+    clubs = [{"slug": tp["slug"], "name_ar": tp["name"], "league": tp.get("league")}
+             for tp in b.TEAM_PAGES]
+    n_cl = store.upsert_many("clubs", ["slug", "name_ar", "league"], clubs, ["slug"])
+
+    rows, srcs, faqs, links = [], [], [], []
+    for a in arts:
+        aid = str(a.get("article_id"))
+        body = a.get("body") or ""
+        words = b.article_words(a)
+        rows.append({
+            "article_id": aid, "title": a.get("title"), "summary": a.get("summary"),
+            "author": a.get("author"), "kind": a.get("kind"),
+            "match_id": str(a["match_id"]) if a.get("match_id") else None,
+            "pub_date": a.get("pub_date"), "pub_ts": a.get("pub_ts"),
+            "updated_ts": a.get("updated_ts"), "upgraded_ts": a.get("upgraded_ts"),
+            "image_url": a.get("image_url"), "image_credit": a.get("image_credit"),
+            "words": words, "thin": 1 if words < b.ARTICLE_MIN_WORDS else 0,
+            "has_sources": 1 if a.get("sources") else 0,
+            "has_faq": 1 if a.get("faq") else 0,
+            "fb_post": a.get("fb_post"), "body": body,
+            # the diff runs on the hash: pulling 800KB of bodies back every hour
+            # to compare them would be the expensive way to learn nothing
+            "body_hash": hashlib.sha1(body.encode("utf-8")).hexdigest()[:16],
+        })
+        for i, s in enumerate(a.get("sources") or []):
+            srcs.append({"article_id": aid, "seq": i, "name": s.get("name"),
+                         "url": s.get("url"), "note": s.get("note")})
+        for i, q in enumerate(a.get("faq") or []):
+            faqs.append({"article_id": aid, "seq": i, "q": q.get("q"), "a": q.get("a")})
+        for tp in b.article_clubs(a):
+            links.append({"article_id": aid, "slug": tp["slug"]})
+
+    ACOLS = ["article_id", "title", "summary", "author", "kind", "match_id",
+             "pub_date", "pub_ts", "updated_ts", "upgraded_ts", "image_url",
+             "image_credit", "words", "thin", "has_sources", "has_faq",
+             "fb_post", "body_hash"]
+    a_write, a_same = _changed_only("articles", ["article_id"], ACOLS, rows)
+    n_art = store.upsert_many("articles", ACOLS + ["body", "as_of"],
+                              [dict(r, as_of=today) for r in a_write], ["article_id"])
+
+    SCOLS = ["article_id", "seq", "name", "url", "note"]
+    s_write, s_same = _changed_only("article_sources", ["article_id", "seq"], SCOLS, srcs)
+    n_src = store.upsert_many("article_sources", SCOLS, s_write, ["article_id", "seq"])
+
+    QCOLS = ["article_id", "seq", "q", "a"]
+    q_write, q_same = _changed_only("article_faq", ["article_id", "seq"], QCOLS, faqs)
+    n_faq = store.upsert_many("article_faq", QCOLS, q_write, ["article_id", "seq"])
+
+    LCOLS = ["article_id", "slug"]
+    l_write, l_same = _changed_only("article_clubs", LCOLS, LCOLS, links)
+    n_lnk = store.upsert_many("article_clubs", LCOLS, l_write, LCOLS)
+
+    # a source or FAQ list can shrink when an upgrade rewrites an article.
+    # Every article gets an entry, zeros included - see _trim_by.
+    def _by_article(items):
+        out = {r["article_id"]: 0 for r in rows}
+        for it in items:
+            out[it["article_id"]] = out.get(it["article_id"], 0) + 1
+        return out
+    trimmed = (_trim_by("article_sources", "article_id", _by_article(srcs))
+               + _trim_by("article_faq", "article_id", _by_article(faqs)))
+
+    # a club link can disappear when an upgrade rewrites the text
+    stale = 0
+    if store.backend() != "json":
+        want = {(r["article_id"], r["slug"]) for r in links}
+        for r in store.sql("SELECT article_id, slug FROM article_clubs"):
+            if (r["article_id"], r["slug"]) not in want:
+                store.sql("DELETE FROM article_clubs WHERE article_id = ? AND slug = ?",
+                          [r["article_id"], r["slug"]])
+                stale += 1
+
+    counts = {"clubs": n_cl, "articles_written": n_art, "articles_same": a_same,
+              "sources_written": n_src, "sources_same": s_same,
+              "faq_written": n_faq, "faq_same": q_same,
+              "club_links_written": n_lnk, "club_links_same": l_same,
+              "trimmed": trimmed, "stale_links_removed": stale}
+    if verbose:
+        print("articles:", ", ".join(f"{k}={v}" for k, v in counts.items()))
+        print(f"  rows written this refresh: "
+              f"{n_cl + n_art + n_src + n_faq + n_lnk}")
+        lost = store.sql("SELECT COUNT(*) n FROM articles a LEFT JOIN matches m "
+                         "ON m.match_id = a.match_id "
+                         "WHERE a.match_id IS NOT NULL AND m.match_id IS NULL")
+        if lost and lost[0]["n"]:
+            print(f"  note: {lost[0]['n']} match pieces point at a fixture that has "
+                  f"aged out of `matches` - the article keeps its match_id")
+    return counts
+
+
+def _trim_by(table, key_col, counts):
+    """Same idea as _trim but for a table keyed on something other than
+    match_id: drop rows whose seq is past the current list length.
+
+    It walks `counts`, never the stored keys. An earlier version walked the
+    table and treated "absent from counts" as zero, which meant a partial map
+    silently deleted every row it did not mention - so the caller must pass a
+    count for EVERY key it owns, including the zeros.
+    """
+    if not counts:
+        return 0
+    gone = 0
+    have = {r[key_col]: r["n"] for r in
+            store.sql(f"SELECT {key_col}, COUNT(*) AS n FROM {table} GROUP BY {key_col}")}
+    for k, want in counts.items():
+        n = have.get(k, 0)
+        if n > want:
+            store.sql(f"DELETE FROM {table} WHERE {key_col} = ? AND seq >= ?", [k, want])
+            gone += n - want
+    return gone

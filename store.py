@@ -604,6 +604,7 @@ def warehouse_counts():
     out = {}
     for t in ("competitions", "teams", "matches", "team_strength", "league_params",
               "players", "match_lineups", "match_goals", "match_cards",
-              "match_subs", "top_players"):
+              "match_subs", "top_players", "standings", "standings_meta",
+              "articles", "article_sources", "article_faq", "article_clubs"):
         out[t] = (sql(f"SELECT COUNT(*) n FROM {t}") or [{"n": 0}])[0]["n"]
     return out
