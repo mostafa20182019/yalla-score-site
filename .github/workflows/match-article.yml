@@ -8,11 +8,13 @@ name: Match Article (AI)
 # Triggers: publish.yml dispatches this workflow whenever match_brief.py --pick
 # finds a candidate (every ~15 min data refresh), so previews land a few hours
 # before kick-off and reports within the hour after the final whistle. The
-# schedule below is only a fallback. The pick step re-checks at run time, so a
-# duplicate dispatch just exits with "no candidate".
+# pick step re-checks at run time, so a duplicate dispatch just exits with
+# "no candidate".
+#
+# No schedule of its own (removed 2026-09-12): the hourly cron fired twice in
+# fourteen days while publish.yml dispatched this 98 times. GitHub throttles
+# schedule triggers on free repos; the dispatch is the reliable path.
 on:
-  schedule:
-    - cron: "40 * * * *"          # hourly fallback
   workflow_dispatch:
     inputs:
       match_id:

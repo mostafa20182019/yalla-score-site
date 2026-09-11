@@ -234,6 +234,24 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows/match-article.yml/dispatches" \
             -d '{"ref":"main"}' && echo "dispatched match-article for $PICK"
 
+      # The analytics warehouse in D1 (teams/matches/strength/lineups/articles
+      # - what /analysis and the user's own SQL read). It used to refresh on
+      # an hourly cron in d1-admin.yml that GitHub fired ~once a day. Here it
+      # rides the runs the Worker cron reliably starts (:01/:16/:31/:46) and
+      # the minute gate keeps it to the first run of each hour. ~30 s, upserts
+      # only what changed, and never fails the publish. On demand: the
+      # d1-admin workflow's `warehouse` task.
+      - name: Refresh the analytics warehouse (first run of each hour)
+        continue-on-error: true
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: |
+          M=$(date -u +%M)
+          if [ "$M" -ge 15 ]; then echo "minute $M - not this run"; exit 0; fi
+          python d1_admin.py --warehouse
+
       # Keep the repo copy of data/ fresh (caps the failed-fetch fallback at
       # ~30 min of staleness). This step runs AFTER build+deploy on purpose:
       # on 2026-08-08 two parallel runs raced here, the rebase left conflict
