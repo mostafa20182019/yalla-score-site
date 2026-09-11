@@ -34,6 +34,11 @@ import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PRED_LOG = os.path.join(HERE, "data", "predictions.json")
+# Written by the Oracle side copy (oracle-yalla/predict.cmd, nightly at 00:20)
+# and committed like any other export. An INPUT, never a dependency: missing or
+# older than ORACLE_MAX_AGE_H -> the python model below is used, as before.
+ORACLE_PREDS = os.path.join(HERE, "data", "oracle_predictions.json")
+ORACLE_MAX_AGE_H = 30
 
 ELO_K, ELO_HFA = 28.0, 70.0
 PRIOR_TEAM = 5.0        # matches of league-average strength blended into each club
@@ -216,6 +221,51 @@ def predict(comp_stats, params, home, away):
 CONF_AR = {"low": "عيّنة صغيرة", "mid": "ثقة متوسطة", "high": "ثقة جيدة"}
 
 
+def load_oracle(path=ORACLE_PREDS, now=None, max_age_h=ORACLE_MAX_AGE_H):
+    """match_id -> predict()-shaped dict built from the Oracle model's expected
+    goals, plus a small status dict for the build log.
+
+    Oracle exports the two lambdas per fixture (6 decimals) and this rebuilds
+    the SAME Poisson grid from them - so ph/pd/pa/top/over25/btts all exist and
+    agree with what the schema stored to ~1e-6, and the pages need no special
+    case. The confidence chip is recomputed here from n_h/n_a with the one rule
+    (predict() above) so the two sources can never define it differently.
+
+    Returns ({}, status) - i.e. "use python" - when the file is missing,
+    unreadable, or its meta.generated_at is older than max_age_h. That
+    fallback is the whole design: the laptop that runs Oracle is off most of
+    the day, and the build must not care."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+        meta = d.get("meta") or {}
+        gen = datetime.datetime.fromisoformat(str(meta.get("generated_at")))
+        if gen.tzinfo is None:
+            gen = gen.replace(tzinfo=datetime.timezone.utc)
+    except Exception as e:                                  # noqa: BLE001
+        return {}, {"status": "missing", "why": str(e)[:80]}
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    age_h = (now - gen).total_seconds() / 3600.0
+    if age_h > max_age_h:
+        return {}, {"status": "stale", "age_h": round(age_h, 1), "generated_at": meta.get("generated_at")}
+    out = {}
+    for mid, r in (d.get("predictions") or {}).items():
+        try:
+            lh, la = float(r["lh"]), float(r["la"])
+            n_h, n_a = int(r.get("n_h") or 0), int(r.get("n_a") or 0)
+        except (KeyError, TypeError, ValueError):
+            continue
+        p = outcome_from_lambdas(lh, la)
+        n_min = min(n_h, n_a)
+        p.update({"home": r.get("home"), "away": r.get("away"),
+                  "elo_h": r.get("elo_h"), "elo_a": r.get("elo_a"), "n_h": n_h, "n_a": n_a,
+                  "conf": "low" if n_min < 4 else "mid" if n_min < 10 else "high",
+                  "src": "oracle", "src_ts": r.get("ts")})
+        out[str(mid)] = p
+    return out, {"status": "ok", "n": len(out), "age_h": round(age_h, 1),
+                 "generated_at": meta.get("generated_at"), "params": meta.get("params")}
+
+
 # ---------------------------------------------------------------- prediction log
 def _outcome(hs, aw):
     return "H" if hs > aw else "D" if hs == aw else "A"
@@ -249,6 +299,7 @@ def update_log(log, upcoming, preds_by_id, finished, today):
                     "ph": round(p["ph"], 4), "pd": round(p["pd"], 4), "pa": round(p["pa"], 4),
                     "lh": round(p["lh"], 3), "la": round(p["la"], 3),
                     "score": f'{p["top"][0][0]}-{p["top"][0][1]}', "conf": p["conf"],
+                    "src": p.get("src") or "python",
                     "ts": today.isoformat(), "hs": None, "as": None}
         frozen.append(mid)
     fin_by_id = {str(m.get("match_id")): m for m in finished if m.get("match_id") and _fin(m)}
@@ -298,7 +349,13 @@ def accuracy(log):
     comps = {}
     for e in rows:
         comps.setdefault(e.get("comp"), []).append(e)
+    # by source, so the day the Oracle model turns out worse (or better) than
+    # the python one is visible instead of averaged away
+    srcs = {}
+    for e in rows:
+        srcs.setdefault(e.get("src") or "python", []).append(e)
     return {"all": agg(rows), "comps": {c: agg(es) for c, es in comps.items()},
+            "by_src": {k: agg(es) for k, es in srcs.items()},
             "recent": sorted(rows, key=lambda e: (e.get("kickoff") or "", e.get("koff_time") or ""),
                              reverse=True)[:12]}
 

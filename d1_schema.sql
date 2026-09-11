@@ -82,6 +82,28 @@ CREATE TABLE IF NOT EXISTS predictions (
 CREATE INDEX IF NOT EXISTS predictions_kickoff ON predictions (kickoff);
 CREATE INDEX IF NOT EXISTS predictions_scored  ON predictions (hs);
 
+-- Which model produced a frozen prediction: 'python' (analysis.py, the
+-- default) or 'oracle' (the PL/SQL model in the side copy, delivered nightly
+-- as data/oracle_predictions.json). A side table, not a column: the project
+-- rule is no ALTER on a live table. Absent row = python.
+CREATE TABLE IF NOT EXISTS prediction_source (
+  match_id  TEXT PRIMARY KEY REFERENCES predictions(match_id),
+  src       TEXT NOT NULL,                   -- python | oracle
+  src_ts    TEXT                             -- the date the source computed it
+);
+
+-- Accuracy per model, so the two are never averaged into one number.
+DROP VIEW IF EXISTS v_accuracy_by_src;
+CREATE VIEW v_accuracy_by_src AS
+SELECT COALESCE(s.src, 'python') AS src, COUNT(*) AS n,
+       ROUND(AVG(CASE WHEN p.hit = 1 THEN 1.0 ELSE 0.0 END), 4) AS hit_rate,
+       ROUND(AVG(p.brier), 4) AS brier,
+       SUM(p.score_hit) AS exact_scores
+  FROM predictions p
+  LEFT JOIN prediction_source s ON s.match_id = p.match_id
+ WHERE p.hs IS NOT NULL
+ GROUP BY COALESCE(s.src, 'python');
+
 -- ===========================================================================
 -- ANALYTICS WAREHOUSE (2026-09-09, user's ask: "كل الداتا التى تخص صفحة
 -- التحليلات تكون موجودة فى الداتابيز ... عايز اروح على الداتا واعرف اتوقع

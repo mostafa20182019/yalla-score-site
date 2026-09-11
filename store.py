@@ -431,7 +431,19 @@ def pred_all():
         mid = d.pop("match_id")
         d["as"] = d.pop("away_score", None)
         d["ts"] = d.pop("predicted_on", None)
+        d["src"] = "python"                     # overwritten below when known
         out[mid] = d
+    # The side table arrives with a schema update that only the d1-admin
+    # workflow applies. Until it has run, every prediction is simply 'python'
+    # - the build must not lose its log over a missing OPTIONAL table.
+    try:
+        rows = sql("SELECT match_id, src, src_ts FROM prediction_source", [])
+    except Exception:                                       # noqa: BLE001
+        rows = []
+    for r in rows:
+        if r["match_id"] in out:
+            out[r["match_id"]]["src"] = r["src"]
+            out[r["match_id"]]["src_ts"] = r["src_ts"]
     return out
 
 
@@ -453,6 +465,7 @@ def pred_freeze(match_id, rec):
     try:
         sql("INSERT INTO predictions (match_id, " + ", ".join(_PRED_COLS) + ") "
             "VALUES (?" + ", ?" * len(_PRED_COLS) + ")", [match_id] + vals)
+        _pred_source(match_id, rec)
         return True
     except Conflict:
         # refresh only while the match is still unplayed; never touch a scored row
@@ -460,7 +473,22 @@ def pred_freeze(match_id, rec):
                    ", ".join(f"{c} = ?" for c in _PRED_COLS) +
                    " WHERE match_id = ? AND hs IS NULL RETURNING match_id",
                    vals + [match_id])
+        if rows:
+            _pred_source(match_id, rec)
         return bool(rows)
+
+
+def _pred_source(match_id, rec):
+    """Side row saying which model the (just written) prediction came from.
+    Called only after a successful freeze, so it can never tag a scored row."""
+    try:
+        sql("INSERT INTO prediction_source (match_id, src, src_ts) VALUES (?, ?, ?) "
+            "ON CONFLICT(match_id) DO UPDATE SET src = excluded.src, src_ts = excluded.src_ts",
+            [match_id, rec.get("src") or "python", rec.get("src_ts")])
+    except Exception as e:                                  # noqa: BLE001
+        # same reason as in pred_all: the prediction itself is already frozen,
+        # only its provenance is lost until d1-admin --init creates the table
+        print(f"  ! prediction_source not recorded for {match_id} ({str(e)[:60]})")
 
 
 def pred_score(match_id, hs, away_score, outcome, pick, hit, brier, score_hit):
@@ -488,6 +516,8 @@ def pred_prune(keep_days=150):
         return 0
     import datetime
     cut = (datetime.date.today() - datetime.timedelta(days=keep_days)).isoformat()
+    sql("DELETE FROM prediction_source WHERE match_id IN "
+        "(SELECT match_id FROM predictions WHERE kickoff < ?)", [cut])
     sql("DELETE FROM predictions WHERE kickoff < ?", [cut])
     return 1
 

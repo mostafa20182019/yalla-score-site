@@ -1839,7 +1839,27 @@ def build():
     for m in _upcoming:
         p = _pred(m)
         if p:
+            p["src"] = "python"
             _preds[str(m["match_id"])] = p
+    # The Oracle side copy's model, when its nightly file is fresh. It replaces
+    # the python number for the fixtures it covers and is silently absent
+    # otherwise - the build never waits on, or fails because of, the laptop
+    # that produced it. Which source each frozen prediction came from is kept
+    # (src), so the two can be scored apart.
+    _orc, _orc_st = AN.load_oracle()
+    _n_orc = 0
+    for _mid in list(_preds):
+        if _mid in _orc:
+            _preds[_mid] = _orc[_mid]
+            _n_orc += 1
+    if _orc_st.get("status") == "ok":
+        print(f'  + predictions: {_n_orc} of {len(_preds)} from the Oracle model '
+              f'(file {_orc_st.get("age_h")}h old, {_orc_st.get("n")} fixtures in it), '
+              f'{len(_preds) - _n_orc} from python')
+    else:
+        print(f'  + predictions: all {len(_preds)} from python '
+              f'(oracle file {_orc_st.get("status")}'
+              + (f', {_orc_st.get("age_h")}h old' if _orc_st.get("age_h") else '') + ')')
     # The prediction log lives in the store (D1 when configured). A frozen
     # prediction that gets re-frozen with newer data would silently inflate the
     # published accuracy, which is the one thing the accuracy page exists to
@@ -1875,6 +1895,9 @@ def build():
         except Exception as e:                              # noqa: BLE001
             print(f"  ! could not persist predictions ({e}) - pages still build")
     _acc = AN.accuracy(_plog)
+    for _k, _v in sorted((_acc.get("by_src") or {}).items()):
+        if _v:
+            print(f'  + accuracy [{_k}]: n={_v["n"]} hit={_v["hit_rate"]:.1%} brier={_v["brier"]:.4f}')
     _comp_idx = {}
     for m in matches + _archive + [mm for f in fixtures for rd in f.get("rounds", []) for mm in rd.get("matches", [])]:
         if m.get("home") and m.get("away"):
