@@ -170,9 +170,20 @@ jobs:
 
       # publish.yml deploys main; a GITHUB_TOKEN push doesn't fire on:push, so
       # dispatch it (the article's Facebook post happens there, after Deploy).
+      # ONLY when an article was actually committed (2026-09-12). Dispatching
+      # on every run was one half of a loop: publish.yml dispatched this
+      # workflow whenever a candidate existed, this dispatched publish.yml even
+      # when Claude wrote nothing, and the two ping-ponged every ~2 minutes for
+      # three hours on 2026-09-11 (23 bot dispatches an hour). The other half
+      # is gone too (publish.yml no longer dispatches match-article), but a
+      # run that produced nothing has nothing to publish either way.
       - name: Dispatch publish workflow
         if: always() && steps.pick.outputs.match_id != ''
         run: |
+          if [ "$(git rev-parse HEAD)" = "$HEAD_BEFORE" ]; then
+            echo "no article was committed this run - not dispatching publish"
+            exit 0
+          fi
           curl -sS -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \
