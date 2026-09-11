@@ -1,6 +1,6 @@
 {
  "news": "skipped (FETCH_HEADLINES off)",
- "matches": "ok (142)",
+ "matches": "ok (125)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
@@ -196,6 +196,7 @@
   "sample_details": {
    "event_names": [
     "Substitution",
+    "Woodwork",
     "إضاعة الضّربات الجّزائيّة",
     "بطاقة صفراء",
     "هدف"
@@ -225,7 +226,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.3, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"63'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (0 with XI)",
@@ -236,5 +237,5 @@
   "fails": 0
  },
  "match_details": "ok (267)",
- "utc": "2026-09-11T19:29:49Z"
+ "utc": "2026-09-11T20:07:01Z"
 }
