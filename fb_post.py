@@ -42,6 +42,7 @@ app MUST be published (Live): posts made while the app is in Development mode
 are visible to the app's admins only (see FB_AUTOPOST_RUNBOOK.md).
 """
 import datetime
+from zoneinfo import ZoneInfo
 import json
 import os
 import sys
@@ -60,6 +61,14 @@ GRAPH = "https://graph.facebook.com/v23.0"
 GRAPH_FEED = f"{GRAPH}/me/feed"
 AUTO_MAX_AGE_H = 6       # --auto never posts an article older than this (10 articles/day: 12h re-posted a half-day backlog on 2026-09-03)
 AUTO_MAX_PER_RUN = 3     # --auto posts at most this many per run (staggers a backlog)
+# POSTING WINDOW (2026-09-12, user: fewer runs). Cairo hours [open, close):
+# the page posts from 13:00 until 01:00 the next day. Outside it `--pending`
+# answers 0, so publish.yml never dispatches the poster - roughly halving its
+# runs - and AUTO_MAX_AGE_H is measured in OPEN hours (see open_hours), so a
+# report written at 02:00 is still fresh at 13:00 instead of being dropped.
+# None = no window (the tests set that; the runner never does).
+POST_WINDOW = (13, 1)
+CAIRO = ZoneInfo("Africa/Cairo")
 NOT_FOUND_MARK = "الصفحة غير موجودة"   # <title> of dist/404.html
 LIVE_TRIES, LIVE_WAIT = 6, 10          # wait up to ~60s for the URL to serve the page
 SCRAPE_TRIES, SCRAPE_WAIT = 4, 10      # then up to ~40s for Facebook's crawler to see it
@@ -83,6 +92,48 @@ def article_age_hours(art):
         return (datetime.datetime.now(datetime.timezone.utc) - t).total_seconds() / 3600
     except Exception:
         return None       # unknown age (old articles have no pub_ts)
+
+
+def _now():
+    return datetime.datetime.now(datetime.timezone.utc)
+
+
+def window_open(now=None):
+    """Is the Facebook posting window open at `now` (Cairo clock)?"""
+    if not POST_WINDOW:
+        return True
+    h = (now or _now()).astimezone(CAIRO).hour
+    o, c = POST_WINDOW
+    return (o <= h or h < c) if o > c else (o <= h < c)
+
+
+def open_hours(since, now=None):
+    """Hours between `since` and `now` during which the window was open.
+    Walks the span hour by hour (it is at most a day or two long), so the
+    freshness rule sees a night-time article as 0 h old when the page reopens."""
+    now = now or _now()
+    if not POST_WINDOW:
+        return (now - since).total_seconds() / 3600
+    if since >= now:
+        return 0.0
+    total, t = 0.0, since
+    while t < now:
+        step = min(now, (t + datetime.timedelta(hours=1)).replace(minute=0, second=0, microsecond=0))
+        if step <= t:
+            step = min(now, t + datetime.timedelta(hours=1))
+        if window_open(t):
+            total += (step - t).total_seconds() / 3600
+        t = step
+    return total
+
+
+def article_pub_dt(art):
+    ts = (art.get("pub_ts") or "").strip()
+    try:
+        t = datetime.datetime.fromisoformat(ts)
+        return t if t.tzinfo else t.replace(tzinfo=datetime.timezone.utc)
+    except Exception:
+        return None
 
 
 def article_link(art):
@@ -201,9 +252,10 @@ def pending(items):
         aid = str(art.get("article_id", "")).strip()
         if not aid or aid in posted:
             continue
-        age = article_age_hours(art)
+        pub = article_pub_dt(art)
+        age = open_hours(pub) if pub else None
         if age is None or age > AUTO_MAX_AGE_H:
-            continue          # undated / old: never auto-posted
+            continue          # undated / old (in OPEN hours): never auto-posted
         if store.failed_count("article", aid) >= MAX_POST_ATTEMPTS:
             continue          # gave up on this one; don't burn a slot on it
         todo.append((age, art))
@@ -260,6 +312,11 @@ def main() -> int:
         # to stderr so stdout stays a bare number the workflow can read, while
         # the log still says which store answered.
         print(f"store backend: {store.backend()}", file=sys.stderr)
+        if not window_open():
+            print(f"posting window {POST_WINDOW[0]:02d}:00-{POST_WINDOW[1]:02d}:00 Cairo is closed "
+                  f"(now {_now().astimezone(CAIRO):%H:%M}) - nothing to dispatch", file=sys.stderr)
+            print(0)
+            return 0
         print(len(pending(items)))
         return 0
     if "--auto" in sys.argv[1:]:
