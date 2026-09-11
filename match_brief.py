@@ -39,8 +39,14 @@ import build_site as b
 
 CAIRO = ZoneInfo("Africa/Cairo")
 PREVIEW_MIN_H, PREVIEW_MAX_H = 2.0, 30.0
-REPORT_MAX_H = 8.0
-DAILY_CAP = 8
+# The writer runs at four fixed Cairo slots (13:00 / 17:00 / 20:00 / 23:30)
+# since 2026-09-12, not every 15 minutes. So a match that ends at 23:00 is
+# first SEEN at the 13:00 slot, 14 hours later: the report window has to be
+# that wide or late games would never get their report. Previews are fine -
+# 2..30 h before kick-off covers any gap between slots.
+REPORT_MAX_H = 14.5
+# one article per slot, so four a day; the cap is a backstop, not the limiter
+DAILY_CAP = 4
 EGY_FIRST = ("الأهلي", "الزمالك", "بيراميدز")
 
 S365_HEADERS = {

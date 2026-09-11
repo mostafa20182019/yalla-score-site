@@ -5,15 +5,16 @@ name: Match Article (AI)
 # by match_brief.py, using Claude Code headless. Prompt:
 # .github/prompts/match-article.md
 #
-# Triggers: publish.yml dispatches this workflow whenever match_brief.py --pick
-# finds a candidate (every ~15 min data refresh), so previews land a few hours
-# before kick-off and reports within the hour after the final whistle. The
-# pick step re-checks at run time, so a duplicate dispatch just exits with
-# "no candidate".
+# Triggers: the Cloudflare Worker cron dispatches this workflow at four fixed
+# Cairo times - 13:00, 17:00, 20:00, 23:30 (wrangler.toml crons 3+4,
+# worker.js matchSlotCairo) - one article per slot, reports before previews,
+# Egyptian clubs first. The pick step re-checks at run time, so a slot with
+# nothing to write just exits with "no candidate".
 #
-# No schedule of its own (removed 2026-09-12): the hourly cron fired twice in
-# fourteen days while publish.yml dispatched this 98 times. GitHub throttles
-# schedule triggers on free repos; the dispatch is the reliable path.
+# No GitHub schedule (its hourly cron fired twice in fourteen days - GitHub
+# throttles schedule triggers on free repos) and, since 2026-09-12, no
+# dispatch from publish.yml either (every 15 minutes it had produced six
+# previews in seventy minutes). The Worker cron is exact.
 on:
   workflow_dispatch:
     inputs:

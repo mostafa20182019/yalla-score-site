@@ -459,6 +459,16 @@ async function adminApi(request, env, url) {
   return jsonReply(request, { error: `no route for ${request.method} ${url.pathname}` }, 404);
 }
 
+// The match-article slots, on the Cairo clock. Exported for the test.
+const MATCH_SLOTS = ["13:00", "17:00", "20:00", "23:30"];
+const MATCH_CRONS = new Set(["0 9,10,13,14,16,17 * * *", "30 19,20 * * *"]);
+export function matchSlotCairo(date) {
+  const hm = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit", hour12: false,
+  }).format(date).replace(/^24/, "00");
+  return MATCH_SLOTS.includes(hm) ? hm : null;
+}
+
 export default {
   async fetch(request, env, ctx) {
     // Permanent redirect from any non-canonical host — the legacy
@@ -493,11 +503,24 @@ export default {
       console.log("GH_TOKEN secret not set yet; skipping workflow dispatch");
       return;
     }
-    // two crons share this handler — event.cron says which one fired:
-    // the article cron dispatches daily-article.yml, the 15-min one publish.yml
-    // (the string must equal cron 2 in wrangler.toml [triggers] EXACTLY)
-    const workflow = event.cron === "0 6,8,10,12,14,15,17,18,19,20 * * *"
-      ? "daily-article.yml" : "publish.yml";
+    // four crons share this handler — event.cron says which one fired (each
+    // string must equal its line in wrangler.toml [triggers] EXACTLY):
+    //   cron 2          -> daily-article.yml
+    //   cron 3 / cron 4 -> match-article.yml, but only when the CAIRO clock is
+    //                      on one of the four slots (the crons list both the
+    //                      summer and the winter UTC hour of every slot)
+    //   anything else   -> publish.yml (the 15-minute refresh)
+    let workflow = "publish.yml";
+    if (event.cron === "0 6,8,10,12,14,15,17,18,19,20 * * *") {
+      workflow = "daily-article.yml";
+    } else if (MATCH_CRONS.has(event.cron)) {
+      const slot = matchSlotCairo(new Date(event.scheduledTime || Date.now()));
+      if (!slot) {
+        console.log("match-article cron fired off-slot (DST twin) - skipping");
+        return;
+      }
+      workflow = "match-article.yml";
+    }
     const res = await fetch(
       `https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/${workflow}/dispatches`,
       {

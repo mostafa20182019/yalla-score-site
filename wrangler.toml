@@ -29,7 +29,13 @@ not_found_handling = "404-page"
 #         skipped slots outright, so the exact CF cron is the article
 #         trigger; worker.js routes by event.cron — the string there MUST
 #         match cron 2 EXACTLY or every firing dispatches publish.yml.
-crons = ["1,16,31,46 * * * *", "0 6,8,10,12,14,15,17,18,19,20 * * *"]
+# cron 3 + 4: the four match-article slots, Cairo 13:00 / 17:00 / 20:00 /
+#         23:30 (user's choice, 2026-09-12; one article per slot). Cairo is
+#         UTC+3 in summer and UTC+2 in winter, so each slot is listed at BOTH
+#         UTC hours and worker.js dispatches only when the Cairo clock is on
+#         a slot (matchSlotCairo). Eight firings a day, four dispatches.
+crons = ["1,16,31,46 * * * *", "0 6,8,10,12,14,15,17,18,19,20 * * *",
+         "0 9,10,13,14,16,17 * * *", "30 19,20 * * *"]
 
 # D1 binding for the /admin/api routes (the admin page reads and writes
 # articles through the Worker - a browser cannot reach D1 directly).
