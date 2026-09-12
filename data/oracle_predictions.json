@@ -2,9 +2,9 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-12T17:30:03+03:00",
+    "generated_at" : "2026-09-12T17:45:04+03:00",
     "days" : 10,
-    "n" : 144,
+    "n" : 143,
     "params" :
     {
       "elo_k" : 28,
@@ -4741,26 +4741,6 @@
       "n_a" : 5,
       "elo_h" : 1448.01,
       "elo_a" : 1487.71,
-      "ts" : "2026-09-12"
-    },
-    "564673" :
-    {
-      "comp" : "Primera Division",
-      "home" : "CA Osasuna",
-      "away" : "RCD Espanyol de Barcelona",
-      "kickoff" : "2026-09-12",
-      "koff_time" : "17:15",
-      "lh" : 1.523151,
-      "la" : 1.223758,
-      "ph" : 0.442,
-      "pd" : 0.2524,
-      "pa" : 0.3056,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1466.37,
-      "elo_a" : 1450.43,
       "ts" : "2026-09-12"
     },
     "564678" :
