@@ -1381,6 +1381,33 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
     out.append(f'<a class="fmb-more" href="{more_url}">المزيد ←</a></div></section>')
     return "".join(out)
 
+
+def pred_home_block(upcoming, preds, today, n=4):
+    """«توقعات يلا سكور» on the home page (user ask 2026-09-12): the next few
+    predicted fixtures, in the same card language as the FotMob blocks, with
+    المزيد opening /analysis.html. Picks matches within 7 days that HAVE a
+    prediction, curated clubs first, then the Egyptian league, then kickoff.
+    Rows are pred_row() - the same markup the analysis pages use - so a
+    number here is never a second rendering of the same prediction."""
+    wk = (today + datetime.timedelta(days=7)).isoformat()
+    cand = []
+    for m in upcoming:
+        p = preds.get(str(m.get("match_id")))
+        if not p or (m.get("kickoff") or "") > wk:
+            continue
+        cand.append((0 if _is_ticker_team(m) else 1,
+                     0 if m.get("competition") == "Egyptian Premier League" else 1,
+                     m.get("kickoff") or "", m.get("koff_time") or "", m, p))
+    cand.sort(key=lambda t: t[:4])
+    rows = [(m, p) for *_, m, p in cand[:n]]
+    if not rows:
+        return ""
+    return ('<section class="fmb fmb-pred" data-nf="pred">'
+            '<div class="fmb-lh fmb-predh"><span>توقعات يلا سكور</span>'
+            '<small>احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
+            '<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>'
+            '<a class="fmb-more" href="/analysis.html">كل التوقعات والتحليلات ←</a></section>')
+
 # home block 2 filter: Egyptian-football stories (clubs, league, NT)
 _EGY_TOKENS = ["الأهلي", "الزمالك", "بيراميدز", "الدوري المصري",
                "منتخب مصر", "كأس مصر"]
@@ -2038,6 +2065,9 @@ def build():
             parts.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
                                    "/news/europe.html", flip=True, nf="eur"))
             used |= {a["article_id"] for a in eur[:5]}
+    # «توقعات يلا سكور» under the news blocks (user ask 2026-09-12): four
+    # predicted fixtures, المزيد -> /analysis.html
+    parts.append(pred_home_block(_upcoming, _preds, datetime.date.fromisoformat(REF_TODAY)))
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
         parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
@@ -4764,6 +4794,10 @@ a{color:inherit}
 .fmb-th{width:88px;height:58px;object-fit:cover;border-radius:8px;flex:none;background:#eef2f6}
 .fmb-more{margin-top:auto;padding-top:10px;font-size:.82rem;font-weight:800;color:var(--green-d);text-decoration:none}
 .fmb-more:hover{text-decoration:underline}
+.fmb-pred{display:block}
+.fmb-predh{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap;padding-bottom:10px}
+.fmb-predh small{font-weight:700;color:var(--muted);font-size:.75rem}
+.fmb-pred .fmb-more{display:inline-block;margin-top:12px}
 /* flipped variant: featured card LEFT, list RIGHT (visual alternation) */
 .fmb-flip{grid-template-columns:1fr 1.15fr}
 .fmb-flip .fmb-list{grid-column:1;grid-row:1}
