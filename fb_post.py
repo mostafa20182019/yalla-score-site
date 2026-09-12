@@ -61,13 +61,16 @@ GRAPH = "https://graph.facebook.com/v23.0"
 GRAPH_FEED = f"{GRAPH}/me/feed"
 AUTO_MAX_AGE_H = 6       # --auto never posts an article older than this (10 articles/day: 12h re-posted a half-day backlog on 2026-09-03)
 AUTO_MAX_PER_RUN = 3     # --auto posts at most this many per run (staggers a backlog)
-# POSTING WINDOW (2026-09-12, user: fewer runs). Cairo hours [open, close):
-# the page posts from 13:00 until 01:00 the next day. Outside it `--pending`
-# answers 0, so publish.yml never dispatches the poster - roughly halving its
-# runs - and AUTO_MAX_AGE_H is measured in OPEN hours (see open_hours), so a
-# report written at 02:00 is still fresh at 13:00 instead of being dropped.
-# None = no window (the tests set that; the runner never does).
-POST_WINDOW = (13, 1)
+# POSTING WINDOW - OFF (2026-09-12, second decision of the day). A window of
+# Cairo hours [open, close) was added in the morning to post only 13:00-01:00
+# ("fewer runs"); by the afternoon the user restated the rule the page should
+# follow: an article that lands on the site lands on Facebook - and the two
+# morning slots (09:00, 11:00) were waiting up to four hours. None = post at
+# any hour. The machinery (window_open / open_hours) stays for the tests and
+# for the day someone wants a window again: set e.g. (13, 1). Runs are not
+# affected either way - publish.yml dispatches the poster only when
+# `--pending` finds an article.
+POST_WINDOW = None
 CAIRO = ZoneInfo("Africa/Cairo")
 NOT_FOUND_MARK = "الصفحة غير موجودة"   # <title> of dist/404.html
 LIVE_TRIES, LIVE_WAIT = 6, 10          # wait up to ~60s for the URL to serve the page
