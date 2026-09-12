@@ -173,6 +173,7 @@ def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None, only_active=False):
     for k, v in (cfg.get("params") or {}).items():
         setattr(A, k, v)
     factor = cfg.get("factor")
+    seeds = cfg.get("seeds")          # {comp: {club: starting Elo}} - season carry-over
     overall, per, rows = Score(), collections.defaultdict(Score), []
     try:
         for comp, ms in bycomp.items():
@@ -180,7 +181,7 @@ def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None, only_active=False):
                 train = ms[:i]
                 if len(train) < min_league:
                     continue
-                stats = A.team_stats({comp: train})[comp]
+                stats = A.team_stats({comp: train}, seeds)[comp]
                 h, a = stats.get(m["home"]), stats.get(m["away"])
                 if not h or not a or h["played"] < min_prior or a["played"] < min_prior:
                     continue          # cold start: no history for one of the clubs
@@ -258,8 +259,22 @@ def f_red(penalty=0.90):
     return f
 
 
+def carry(shrink):
+    """Season carry-over seeds (roadmap factor 1) at a given shrink toward 1500.
+    Needs data/season_prev/*.json (season_carry.py --fetch on the runner)."""
+    import season_carry
+    seeds, _ = season_carry.seeds_from_raw(shrink=shrink)
+    if not seeds:
+        print("  ! no data/season_prev files - carry-over variant runs with flat 1500")
+    return {"seeds": seeds}
+
+
 VARIANTS = {
     "live": lambda: {},
+    "carry-over": lambda: carry(1 / 3),          # keep 2/3 of last season's edge (the proposal)
+    "carry-over-half": lambda: carry(0.5),
+    "carry-over-full": lambda: carry(0.0),       # no regression to the mean at all
+    "carry-over-light": lambda: carry(2 / 3),
     "no-elo-nudge": lambda: {"params": {"ELO_GOAL_EXP": 1e9}},
     "no-shrinkage": lambda: {"params": {"PRIOR_TEAM": 0.0}},
     "heavy-shrinkage": lambda: {"params": {"PRIOR_TEAM": 10.0}},

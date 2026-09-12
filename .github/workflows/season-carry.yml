@@ -1,0 +1,64 @@
+name: Season carry-over (Elo seeds)
+
+# Roadmap factor 1 (2026-09-12): pull LAST season's results for the five big
+# European leagues from football-data.org and write data/elo_seeds.json - the
+# starting Elo of every club this season (two thirds of last season's edge,
+# promoted clubs at the mean of the relegated). The FD_TOKEN lives only here,
+# so the fetch runs on the runner; the seeds themselves are then committed and
+# read by the build (analysis.team_stats) and by the Oracle copy (ELO_SEEDS).
+#
+# Runs when this file or season_carry.py changes (so the first push does the
+# first fetch), or by hand from the Actions tab. Once a season is enough; the
+# build itself never calls football-data for this.
+on:
+  push:
+    branches: [main]
+    paths:
+      - season_carry.py
+      - .github/workflows/season-carry.yml
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: season-carry
+  cancel-in-progress: false
+
+jobs:
+  seeds:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Fetch last season and compute the seeds
+        env:
+          FD_TOKEN: ${{ secrets.FD_TOKEN }}
+        run: |
+          python season_carry.py --fetch --seeds --show | tee /tmp/seeds.txt
+          {
+            echo "### Elo seeds"
+            echo '```'
+            head -n 80 /tmp/seeds.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # [skip ci]: the next 15-minute refresh picks the seeds up; no extra deploy
+      - name: Commit the raw season and the seeds
+        run: |
+          git config user.name "yalla-score-bot"
+          git config user.email "bot@yallascore.site"
+          git add data/season_prev data/elo_seeds.json
+          if git diff --cached --quiet; then
+            echo "seeds unchanged - nothing to commit"; exit 0
+          fi
+          git commit -m "elo seeds: season carry-over for the five European leagues [skip ci]"
+          git pull --rebase origin main
+          git push origin main
