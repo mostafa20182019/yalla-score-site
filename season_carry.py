@@ -1,4 +1,4 @@
-"""Season carry-over Elo seeds (روadmap factor 1, 2026-09-12).
+"""Season carry-over Elo seeds (roadmap factor 1, 2026-09-12).
 
 Every club used to start the season at Elo 1500, so after three rounds a
 promoted side that kept two clean sheets stood above the champion. This
