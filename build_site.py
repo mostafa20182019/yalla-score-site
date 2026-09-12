@@ -1868,11 +1868,17 @@ def build():
     # was simply never wired to it. The rolling file is layered on top anyway
     # so a just-scored goal still wins the moment it is fetched.
     _orc_res, _orc_res_st = AN.load_oracle_results()
+    # the SCORE of a finished match comes from the archive too, not only its
+    # scorers - both halves of "النتيجة ومسجلي الأهداف"
+    _sc_fill, _sc_chg = apply_oracle_scores(matches, oracle_results_index(_orc_res))
     ge_idx = goal_events_index(_orc_res)
     ge_idx.update(goal_events_index(_details_raw))
     ge_idx.update(goal_events_index(goal_events))
-    print("  + scorers: %d from the Oracle archive (%s), %d rows indexed"
-          % (_orc_res_st.get("count", 0), _orc_res_st.get("status"), len(ge_idx)))
+    print("  + Oracle archive (%s): %d match(es); scores taken for %d"
+          "%s; scorer index %d rows"
+          % (_orc_res_st.get("status"), _orc_res_st.get("count", 0), _sc_fill,
+             (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else "",
+             len(ge_idx)))
 
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
@@ -3973,6 +3979,52 @@ def match_goals(idx, m):
             g = [{**x, "side": "a" if x.get("side") == "h" else "h"}
                  for x in rg]
     return g
+
+def oracle_results_index(entries):
+    """(normalized home|away, date) -> (home_score, away_score), from the frozen
+    archive. Keyed by NAMES and date like the scorer index above, not by
+    match_id: the site's matches come from football-data for the European
+    leagues and its ids are not 365scores ids, which is the same reason
+    goal_events_index exists in this shape."""
+    idx = {}
+    for e in entries:
+        if e.get("hs") is not None and e.get("as") is not None:
+            idx[(f'{_gnorm(e.get("home"))}|{_gnorm(e.get("away"))}',
+                 e.get("date"))] = (e["hs"], e["as"])
+    return idx
+
+
+def apply_oracle_scores(matches, idx):
+    """Overlay the frozen score onto every FINISHED match the archive owns.
+
+    Oracle wins here, which is the point: the user asked that a finished match
+    be read from his own tables. It should never actually differ - both numbers
+    come from the same feed and a finished match does not get corrected - so
+    any disagreement is worth seeing rather than hiding, and the count is
+    printed in the build log. Matches the archive does not hold keep the site's
+    own number, so nothing can go blank.
+
+    Returns (filled, changed): rows taken from the archive, and how many of
+    those carried a different score than the site had."""
+    filled = changed = 0
+    for m in matches:
+        if (m.get("status") or "").upper() != "FINISHED":
+            continue
+        h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
+        hit, flip = idx.get((f"{h}|{a}", m.get("kickoff"))), False
+        if hit is None:
+            # same reversed-pair fallback the scorers use: the two sources can
+            # disagree on who was at home
+            hit, flip = idx.get((f"{a}|{h}", m.get("kickoff"))), True
+        if hit is None:
+            continue
+        hs, asc = (hit[1], hit[0]) if flip else hit
+        if m.get("home_score") != hs or m.get("away_score") != asc:
+            changed += 1
+        m["home_score"], m["away_score"] = hs, asc
+        filled += 1
+    return filled, changed
+
 
 def match_details_index(entries):
     """Same keying as goal_events_index, but keeps the whole entry
