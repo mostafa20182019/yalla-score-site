@@ -1827,7 +1827,13 @@ def build():
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
     _bycomp = AN.season_matches(fixtures, _archive)
-    _tstats = AN.team_stats(_bycomp)
+    # season carry-over (roadmap factor 1): the five European leagues start from
+    # last season's carried Elo (data/elo_seeds.json, season_carry.py); absent
+    # file = flat 1500 as before. The Oracle copy reads the same seeds.
+    _seeds = AN.load_elo_seeds()
+    if _seeds:
+        print(f'  + elo seeds: {sum(len(v) for v in _seeds.values())} clubs in {len(_seeds)} leagues')
+    _tstats = AN.team_stats(_bycomp, _seeds)
     _lparams = {c: AN.league_params(ms) for c, ms in _bycomp.items()}
     def _pred(m):
         comp = m.get("competition")

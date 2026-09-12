@@ -108,17 +108,41 @@ def season_matches(fixtures, archive):
     return by_comp
 
 
-def team_stats(by_comp):
-    """competition -> {team: {...}} with Elo, goals, splits, form, ppg."""
+ELO_SEEDS = os.path.join(HERE, "data", "elo_seeds.json")
+
+
+def load_elo_seeds(path=ELO_SEEDS):
+    """{competition: {club: starting Elo}} from season_carry.py, or {} when the
+    file is absent (every club then starts at 1500 as before). Only the five
+    European leagues are in it by decision; the others are simply not keys."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            return json.load(f).get("seeds") or {}
+    except Exception:                                   # noqa: BLE001
+        return {}
+
+
+def team_stats(by_comp, seeds=None):
+    """competition -> {team: {...}} with Elo, goals, splits, form, ppg.
+
+    `seeds` = {competition: {club: starting Elo}} (roadmap factor 1, 2026-09-12):
+    a club present there starts the season from its carried-over Elo instead
+    of 1500. Everything else about the replay is unchanged."""
     out = {}
     for comp, ms in by_comp.items():
         t = {}
+        seed = (seeds or {}).get(comp) or {}
         def row(name):
-            return t.setdefault(name, {"team": name, "elo": 1500.0, "played": 0, "won": 0, "draw": 0,
+            return t.setdefault(name, {"team": name, "elo": float(seed.get(name, 1500.0)), "played": 0, "won": 0, "draw": 0,
                                        "lost": 0, "gf": 0, "ga": 0, "pts": 0, "form": [],
                                        "h_played": 0, "h_gf": 0, "h_ga": 0, "h_pts": 0,
                                        "a_played": 0, "a_gf": 0, "a_ga": 0, "a_pts": 0,
                                        "cs": 0, "badge": None})
+        # a seeded club exists from day one (its carried Elo, 0 played), so the
+        # strength table lists the whole league before round 1 and a round-1
+        # fixture is predicted from the seeds instead of from nothing
+        for name in seed:
+            row(name)
         for m in ms:
             h, a = row(m["home"]), row(m["away"])
             hs, aw = int(m["home_score"]), int(m["away_score"])
