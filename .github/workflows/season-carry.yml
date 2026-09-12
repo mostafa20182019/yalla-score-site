@@ -47,16 +47,16 @@ jobs:
           # with exit 128 - "pathspec did not match", nothing to add)
           set -o pipefail
           rc=0
-          # the log is COMMITTED next to the raw files (data/season_prev/_last_run.log)
+          # the log is COMMITTED next to the raw files (data/season_prev/_last_run.txt)
           # so the outcome can be read from the repo itself - the job summary is
           # not readable without a GitHub login
           mkdir -p data/season_prev
-          { date -u; python season_carry.py --fetch --seeds --show 2>&1; echo "exit $?"; } | tee data/season_prev/_last_run.log
-          grep -q '^exit 0$' data/season_prev/_last_run.log || rc=1
+          { date -u; python season_carry.py --fetch --seeds --show 2>&1; echo "exit $?"; } | tee data/season_prev/_last_run.txt
+          grep -q '^exit 0$' data/season_prev/_last_run.txt || rc=1
           {
             echo "### Elo seeds (exit $rc)"
             echo '```'
-            head -n 80 data/season_prev/_last_run.log
+            head -n 80 data/season_prev/_last_run.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $rc
