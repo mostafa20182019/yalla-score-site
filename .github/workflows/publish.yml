@@ -108,12 +108,21 @@ jobs:
       # deploys the newer tip. The data commit-back below still runs, so the
       # fetched data isn't wasted.
       #
-      # EXCEPTION (2026-08-28): a "data refresh" commit-back carries
-      # [skip ci], so NO run follows it. Skipping for that mover strands this
-      # build until the next cron - article 266 sat saved-but-unpublished
-      # exactly this way. Our dist/ was built from data this run fetched
-      # itself, so the other run's data commit changes nothing we would ship.
-      # Deploy when the ONLY thing that moved main is data commit-backs.
+      # EXCEPTION (2026-08-28, widened 2026-09-13): a mover that carries the
+      # CI-skip marker starts NO run of its own, so skipping for it strands
+      # this build for good - article 266 sat saved-but-unpublished exactly
+      # that way. Our dist/ was built from data this run fetched itself, so a
+      # marker-carrying commit changes nothing we would ship, and the run that
+      # WOULD ship it does not exist.
+      #
+      # It used to allow one exact subject, "data refresh <marker>". Then the
+      # Oracle task began pushing "oracle predictions <date> <time> <marker>"
+      # every 15 minutes (2026-09-12) and those are not that string, so they
+      # counted as content: the 20:37Z run of 2026-09-12 fetched the weekend's
+      # scorers, built them, and had its deploy skipped because an Oracle push
+      # landed at 20:45Z. /matches served a build with no scorers for hours.
+      # Match on the MARKER, not on a subject, so the next such task needs no
+      # edit here.
       - name: Skip the deploy if main moved past this checkout
         id: tip
         run: |
@@ -121,10 +130,10 @@ jobs:
           if [ "$(git rev-parse HEAD)" = "$(git rev-parse origin/main)" ]; then
             echo "fresh=true" >> "$GITHUB_OUTPUT"
           else
-            CONTENT=$(git log --format=%s HEAD..origin/main                       | grep -cv '^data refresh \[skip ci\]$' || true)
+            CONTENT=$(git log --format=%s HEAD..origin/main | grep -cv '\[skip ci\]$' || true)
             if [ "$CONTENT" -eq 0 ]; then
               echo "fresh=true" >> "$GITHUB_OUTPUT"
-              echo "main moved by data commit-back only - deploying (no newer run is coming)"
+              echo "main moved only by commits that start no run - deploying (no newer run is coming)"
             else
               echo "fresh=false" >> "$GITHUB_OUTPUT"
               echo "main moved $(git rev-parse --short HEAD) -> $(git rev-parse --short origin/main) with $CONTENT content commit(s); skipping deploy"
