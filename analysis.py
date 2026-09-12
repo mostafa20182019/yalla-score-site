@@ -38,6 +38,7 @@ PRED_LOG = os.path.join(HERE, "data", "predictions.json")
 # and committed like any other export. An INPUT, never a dependency: missing or
 # older than ORACLE_MAX_AGE_H -> the python model below is used, as before.
 ORACLE_PREDS = os.path.join(HERE, "data", "oracle_predictions.json")
+ORACLE_RESULTS = os.path.join(HERE, "data", "oracle_results.json")
 ORACLE_MAX_AGE_H = 30
 
 ELO_K, ELO_HFA = 28.0, 70.0
@@ -240,6 +241,38 @@ def predict(comp_stats, params, home, away):
                 "elo_h": h["elo"], "elo_a": a["elo"], "n_h": h["played"], "n_a": a["played"],
                 "conf": "low" if n_min < 4 else "mid" if n_min < 10 else "high"})
     return out
+
+
+def load_oracle_results(path=ORACLE_RESULTS):
+    """The finished-match archive Oracle owns: [{home, away, date, hs, as,
+    goals:[...]}] plus a status dict for the build log.
+
+    Deliberately NOT age-gated, and that is the whole difference from
+    load_oracle() above. A prediction goes stale because the world moves; a
+    FINISHED match never changes again, so a file written three days ago is
+    exactly as true today. Gating it would throw away the archive every time
+    the laptop stayed off, which is the opposite of why it exists.
+
+    Entries come out shaped like goal_events rows so the caller can index them
+    with the same function. Returns ([], status) when the file is missing or
+    unreadable: the site then falls back to its own stores and nothing breaks.
+    """
+    try:
+        with open(path, encoding="utf-8") as f:
+            d = json.load(f)
+    except Exception as e:                                  # noqa: BLE001
+        return [], {"status": "missing", "why": str(e)[:80]}
+    rows = d.get("results") or []
+    out = []
+    for r in rows:
+        out.append({"home": r.get("home"), "away": r.get("away"),
+                    "date": r.get("date"), "match_id": r.get("match_id"),
+                    "hs": r.get("hs"), "as": r.get("as"),
+                    "goals": r.get("goals") or []})
+    meta = d.get("meta") or {}
+    return out, {"status": "ok", "count": len(out),
+                 "scorers": sum(len(x["goals"]) for x in out),
+                 "generated_at": meta.get("generated_at")}
 
 
 CONF_AR = {"low": "عيّنة صغيرة", "mid": "ثقة متوسطة", "high": "ثقة جيدة"}

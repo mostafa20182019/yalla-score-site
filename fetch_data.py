@@ -962,6 +962,18 @@ def update_match_details(entries):
     write_items("match_details.json", out)
     return len(out)
 
+def _frozen_match_ids():
+    """Ids of matches the Oracle archive already owns, so we never ask
+    365scores about them again. Missing file = empty set = fetch everything,
+    which is what makes this an optimisation and not a dependency."""
+    try:
+        with open(os.path.join(DATA, "oracle_results.json"), encoding="utf-8") as f:
+            d = json.load(f)
+        return {str(r.get("match_id")) for r in (d.get("results") or [])
+                if r.get("match_id") is not None}
+    except Exception:                                       # noqa: BLE001
+        return set()
+
 def fetch_goal_events():
     """[{home, away, date, goals:[{side,player,minute,tag}]}] + a debug dict."""
     today = datetime.now(CAIRO).date()
@@ -987,7 +999,19 @@ def fetch_goal_events():
                 cands[g.get("id")] = (g, date)
         except Exception as e:
             print(f"  ! goal-events {path.split('?')[0]} failed: {e}")
-    out, dbg = [], {"candidates": len(cands), "detail_fails": 0, "skipped": []}
+    # A match already FROZEN in the Oracle archive is never asked about again:
+    # its result and scorers are saved in the user's own tables and a finished
+    # match does not change. This is the "ميروحش لـ365scores يجيبها" half of the
+    # design - and it also frees room under GOAL_DETAIL_CAP for the matches we
+    # genuinely still need details for.
+    frozen = _frozen_match_ids()
+    if frozen:
+        before = len(cands)
+        cands = {k: v for k, v in cands.items() if str(k) not in frozen}
+        print(f"goal events: {before - len(cands)} match(es) already frozen in "
+              f"Oracle - not re-fetched")
+    out, dbg = [], {"candidates": len(cands), "detail_fails": 0, "skipped": [],
+                    "frozen_skipped": len(frozen)}
     # cap order was feed-arrival order — a curated club could fall outside
     # the cap while a minor game made it in. Newest first, favourites first.
     ordered = sorted(cands.items(), key=lambda kv: kv[1][1] or "", reverse=True)

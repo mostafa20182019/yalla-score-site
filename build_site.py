@@ -1849,7 +1849,14 @@ def build():
     # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
     _details_raw = load("match_details.json")
     md_idx = match_details_index(_details_raw)
-    # Scorers come from match_details FIRST and goal_events only on top.
+    # Scorers come from the Oracle archive FIRST, then match_details, then
+    # goal_events on top.
+    #
+    # The archive (data/oracle_results.json, written by yalla_results in the
+    # Oracle copy) is the only one of the three that is PERMANENT: a match is
+    # frozen there once its recorded scorers account for its score, and nothing
+    # rewrites it afterwards. It is still only an INPUT - missing or old, the
+    # two files below carry the page exactly as before.
     # goal_events.json is a ROLLING window: fetch_data rewrites it with what
     # 365scores still returns, so a finished match drops out of it within
     # hours and its scorers silently vanished from every row - the Premier
@@ -1860,8 +1867,12 @@ def build():
     # page keeps its details after the match leaves the window") - the list
     # was simply never wired to it. The rolling file is layered on top anyway
     # so a just-scored goal still wins the moment it is fetched.
-    ge_idx = goal_events_index(_details_raw)
+    _orc_res, _orc_res_st = AN.load_oracle_results()
+    ge_idx = goal_events_index(_orc_res)
+    ge_idx.update(goal_events_index(_details_raw))
     ge_idx.update(goal_events_index(goal_events))
+    print("  + scorers: %d from the Oracle archive (%s), %d rows indexed"
+          % (_orc_res_st.get("count", 0), _orc_res_st.get("status"), len(ge_idx)))
 
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
