@@ -1,0 +1,2144 @@
+{
+ "competition": "Ligue 1",
+ "code": "FL1",
+ "season": 2025,
+ "fetched_at": "2026-09-12T12:18:21+00:00",
+ "n": 305,
+ "matches": [
+  {
+   "date": "2025-08-15",
+   "home": "Stade Rennais FC 1901",
+   "away": "Olympique de Marseille",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-16",
+   "home": "Racing Club de Lens",
+   "away": "Olympique Lyonnais",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-16",
+   "home": "AS Monaco FC",
+   "away": "Le Havre AC",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-16",
+   "home": "OGC Nice",
+   "away": "Toulouse FC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-17",
+   "home": "Stade Brestois 29",
+   "away": "Lille OSC",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2025-08-17",
+   "home": "AJ Auxerre",
+   "away": "FC Lorient",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-17",
+   "home": "FC Metz",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-17",
+   "home": "Angers SCO",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-17",
+   "home": "FC Nantes",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-22",
+   "home": "Paris Saint-Germain FC",
+   "away": "Angers SCO",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-23",
+   "home": "Olympique de Marseille",
+   "away": "Paris FC",
+   "home_score": 5,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-23",
+   "home": "OGC Nice",
+   "away": "AJ Auxerre",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-23",
+   "home": "Olympique Lyonnais",
+   "away": "FC Metz",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-24",
+   "home": "FC Lorient",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-24",
+   "home": "Le Havre AC",
+   "away": "Racing Club de Lens",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-24",
+   "home": "Toulouse FC",
+   "away": "Stade Brestois 29",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-24",
+   "home": "RC Strasbourg Alsace",
+   "away": "FC Nantes",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-24",
+   "home": "Lille OSC",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-29",
+   "home": "Racing Club de Lens",
+   "away": "Stade Brestois 29",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-30",
+   "home": "FC Lorient",
+   "away": "Lille OSC",
+   "home_score": 1,
+   "away_score": 7
+  },
+  {
+   "date": "2025-08-30",
+   "home": "FC Nantes",
+   "away": "AJ Auxerre",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-30",
+   "home": "Toulouse FC",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 3,
+   "away_score": 6
+  },
+  {
+   "date": "2025-08-31",
+   "home": "Angers SCO",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-31",
+   "home": "Le Havre AC",
+   "away": "OGC Nice",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-31",
+   "home": "AS Monaco FC",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-31",
+   "home": "Paris FC",
+   "away": "FC Metz",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-31",
+   "home": "Olympique Lyonnais",
+   "away": "Olympique de Marseille",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-12",
+   "home": "Olympique de Marseille",
+   "away": "FC Lorient",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-13",
+   "home": "OGC Nice",
+   "away": "FC Nantes",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-13",
+   "home": "AJ Auxerre",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-14",
+   "home": "Lille OSC",
+   "away": "Toulouse FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-14",
+   "home": "FC Metz",
+   "away": "Angers SCO",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-14",
+   "home": "Paris Saint-Germain FC",
+   "away": "Racing Club de Lens",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-14",
+   "home": "RC Strasbourg Alsace",
+   "away": "Le Havre AC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-14",
+   "home": "Stade Brestois 29",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-14",
+   "home": "Stade Rennais FC 1901",
+   "away": "Olympique Lyonnais",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-19",
+   "home": "Olympique Lyonnais",
+   "away": "Angers SCO",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-20",
+   "home": "FC Nantes",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-20",
+   "home": "Stade Brestois 29",
+   "away": "OGC Nice",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-20",
+   "home": "Racing Club de Lens",
+   "away": "Lille OSC",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-21",
+   "home": "Paris FC",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2025-09-21",
+   "home": "Le Havre AC",
+   "away": "FC Lorient",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-21",
+   "home": "AJ Auxerre",
+   "away": "Toulouse FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-21",
+   "home": "AS Monaco FC",
+   "away": "FC Metz",
+   "home_score": 5,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-22",
+   "home": "Olympique de Marseille",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-26",
+   "home": "RC Strasbourg Alsace",
+   "away": "Olympique de Marseille",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-27",
+   "home": "FC Lorient",
+   "away": "AS Monaco FC",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-27",
+   "home": "Toulouse FC",
+   "away": "FC Nantes",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-27",
+   "home": "Paris Saint-Germain FC",
+   "away": "AJ Auxerre",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-28",
+   "home": "OGC Nice",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-28",
+   "home": "FC Metz",
+   "away": "Le Havre AC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-28",
+   "home": "Lille OSC",
+   "away": "Olympique Lyonnais",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-28",
+   "home": "Angers SCO",
+   "away": "Stade Brestois 29",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-28",
+   "home": "Stade Rennais FC 1901",
+   "away": "Racing Club de Lens",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-03",
+   "home": "Paris FC",
+   "away": "FC Lorient",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-04",
+   "home": "FC Metz",
+   "away": "Olympique de Marseille",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-04",
+   "home": "Stade Brestois 29",
+   "away": "FC Nantes",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-04",
+   "home": "AJ Auxerre",
+   "away": "Racing Club de Lens",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-05",
+   "home": "Olympique Lyonnais",
+   "away": "Toulouse FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-05",
+   "home": "RC Strasbourg Alsace",
+   "away": "Angers SCO",
+   "home_score": 5,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-05",
+   "home": "Le Havre AC",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-05",
+   "home": "AS Monaco FC",
+   "away": "OGC Nice",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-05",
+   "home": "Lille OSC",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-17",
+   "home": "Paris Saint-Germain FC",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-18",
+   "home": "OGC Nice",
+   "away": "Olympique Lyonnais",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-18",
+   "home": "Angers SCO",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-18",
+   "home": "Olympique de Marseille",
+   "away": "Le Havre AC",
+   "home_score": 6,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-19",
+   "home": "Racing Club de Lens",
+   "away": "Paris FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-19",
+   "home": "FC Lorient",
+   "away": "Stade Brestois 29",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-19",
+   "home": "Toulouse FC",
+   "away": "FC Metz",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-19",
+   "home": "Stade Rennais FC 1901",
+   "away": "AJ Auxerre",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-19",
+   "home": "FC Nantes",
+   "away": "Lille OSC",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-24",
+   "home": "Paris FC",
+   "away": "FC Nantes",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-25",
+   "home": "Stade Brestois 29",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-25",
+   "home": "AS Monaco FC",
+   "away": "Toulouse FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-25",
+   "home": "Racing Club de Lens",
+   "away": "Olympique de Marseille",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-26",
+   "home": "Lille OSC",
+   "away": "FC Metz",
+   "home_score": 6,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-26",
+   "home": "AJ Auxerre",
+   "away": "Le Havre AC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-26",
+   "home": "Angers SCO",
+   "away": "FC Lorient",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-26",
+   "home": "Stade Rennais FC 1901",
+   "away": "OGC Nice",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-26",
+   "home": "Olympique Lyonnais",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-29",
+   "home": "Le Havre AC",
+   "away": "Stade Brestois 29",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-29",
+   "home": "FC Lorient",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-29",
+   "home": "FC Metz",
+   "away": "Racing Club de Lens",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-29",
+   "home": "OGC Nice",
+   "away": "Lille OSC",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-29",
+   "home": "FC Nantes",
+   "away": "AS Monaco FC",
+   "home_score": 3,
+   "away_score": 5
+  },
+  {
+   "date": "2025-10-29",
+   "home": "Paris FC",
+   "away": "Olympique Lyonnais",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-29",
+   "home": "Toulouse FC",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-29",
+   "home": "Olympique de Marseille",
+   "away": "Angers SCO",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-29",
+   "home": "RC Strasbourg Alsace",
+   "away": "AJ Auxerre",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-01",
+   "home": "Paris Saint-Germain FC",
+   "away": "OGC Nice",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-01",
+   "home": "AS Monaco FC",
+   "away": "Paris FC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-01",
+   "home": "AJ Auxerre",
+   "away": "Olympique de Marseille",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Stade Rennais FC 1901",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-02",
+   "home": "FC Nantes",
+   "away": "FC Metz",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Toulouse FC",
+   "away": "Le Havre AC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Lille OSC",
+   "away": "Angers SCO",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Racing Club de Lens",
+   "away": "FC Lorient",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Stade Brestois 29",
+   "away": "Olympique Lyonnais",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-07",
+   "home": "Paris FC",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-08",
+   "home": "Olympique de Marseille",
+   "away": "Stade Brestois 29",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-08",
+   "home": "Le Havre AC",
+   "away": "FC Nantes",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-08",
+   "home": "AS Monaco FC",
+   "away": "Racing Club de Lens",
+   "home_score": 1,
+   "away_score": 4
+  },
+  {
+   "date": "2025-11-09",
+   "home": "FC Lorient",
+   "away": "Toulouse FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-09",
+   "home": "FC Metz",
+   "away": "OGC Nice",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-09",
+   "home": "RC Strasbourg Alsace",
+   "away": "Lille OSC",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-09",
+   "home": "Angers SCO",
+   "away": "AJ Auxerre",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-09",
+   "home": "Olympique Lyonnais",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2025-11-21",
+   "home": "OGC Nice",
+   "away": "Olympique de Marseille",
+   "home_score": 1,
+   "away_score": 5
+  },
+  {
+   "date": "2025-11-22",
+   "home": "Racing Club de Lens",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-22",
+   "home": "Stade Rennais FC 1901",
+   "away": "AS Monaco FC",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-22",
+   "home": "Paris Saint-Germain FC",
+   "away": "Le Havre AC",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-23",
+   "home": "AJ Auxerre",
+   "away": "Olympique Lyonnais",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-23",
+   "home": "FC Nantes",
+   "away": "FC Lorient",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-23",
+   "home": "Toulouse FC",
+   "away": "Angers SCO",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-23",
+   "home": "Stade Brestois 29",
+   "away": "FC Metz",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-23",
+   "home": "Lille OSC",
+   "away": "Paris FC",
+   "home_score": 4,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-28",
+   "home": "FC Metz",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-29",
+   "home": "AS Monaco FC",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-29",
+   "home": "Paris FC",
+   "away": "AJ Auxerre",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-29",
+   "home": "Olympique de Marseille",
+   "away": "Toulouse FC",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-30",
+   "home": "RC Strasbourg Alsace",
+   "away": "Stade Brestois 29",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-30",
+   "home": "Le Havre AC",
+   "away": "Lille OSC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-30",
+   "home": "FC Lorient",
+   "away": "OGC Nice",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-30",
+   "home": "Angers SCO",
+   "away": "Racing Club de Lens",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-30",
+   "home": "Olympique Lyonnais",
+   "away": "FC Nantes",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-05",
+   "home": "Stade Brestois 29",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-05",
+   "home": "Lille OSC",
+   "away": "Olympique de Marseille",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-06",
+   "home": "FC Nantes",
+   "away": "Racing Club de Lens",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-12-06",
+   "home": "Toulouse FC",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-06",
+   "home": "Paris Saint-Germain FC",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 5,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-07",
+   "home": "OGC Nice",
+   "away": "Angers SCO",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-07",
+   "home": "Le Havre AC",
+   "away": "Paris FC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-07",
+   "home": "AJ Auxerre",
+   "away": "FC Metz",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-07",
+   "home": "FC Lorient",
+   "away": "Olympique Lyonnais",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-12",
+   "home": "Angers SCO",
+   "away": "FC Nantes",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-13",
+   "home": "Stade Rennais FC 1901",
+   "away": "Stade Brestois 29",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-13",
+   "home": "FC Metz",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2025-12-13",
+   "home": "Paris FC",
+   "away": "Toulouse FC",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-12-14",
+   "home": "Olympique Lyonnais",
+   "away": "Le Havre AC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-14",
+   "home": "AJ Auxerre",
+   "away": "Lille OSC",
+   "home_score": 3,
+   "away_score": 4
+  },
+  {
+   "date": "2025-12-14",
+   "home": "RC Strasbourg Alsace",
+   "away": "FC Lorient",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-14",
+   "home": "Racing Club de Lens",
+   "away": "OGC Nice",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-14",
+   "home": "Olympique de Marseille",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-02",
+   "home": "Toulouse FC",
+   "away": "Racing Club de Lens",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2026-01-03",
+   "home": "AS Monaco FC",
+   "away": "Olympique Lyonnais",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-01-03",
+   "home": "OGC Nice",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-03",
+   "home": "Lille OSC",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Olympique de Marseille",
+   "away": "FC Nantes",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Le Havre AC",
+   "away": "Angers SCO",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-04",
+   "home": "FC Lorient",
+   "away": "FC Metz",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Stade Brestois 29",
+   "away": "AJ Auxerre",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Paris Saint-Germain FC",
+   "away": "Paris FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-16",
+   "home": "AS Monaco FC",
+   "away": "FC Lorient",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-01-16",
+   "home": "Paris Saint-Germain FC",
+   "away": "Lille OSC",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-17",
+   "home": "Racing Club de Lens",
+   "away": "AJ Auxerre",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-17",
+   "home": "Toulouse FC",
+   "away": "OGC Nice",
+   "home_score": 5,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-17",
+   "home": "Angers SCO",
+   "away": "Olympique de Marseille",
+   "home_score": 2,
+   "away_score": 5
+  },
+  {
+   "date": "2026-01-18",
+   "home": "RC Strasbourg Alsace",
+   "away": "FC Metz",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-18",
+   "home": "FC Nantes",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-18",
+   "home": "Stade Rennais FC 1901",
+   "away": "Le Havre AC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-18",
+   "home": "Olympique Lyonnais",
+   "away": "Stade Brestois 29",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-23",
+   "home": "AJ Auxerre",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-24",
+   "home": "Stade Rennais FC 1901",
+   "away": "FC Lorient",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-24",
+   "home": "Le Havre AC",
+   "away": "AS Monaco FC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-24",
+   "home": "Olympique de Marseille",
+   "away": "Racing Club de Lens",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-25",
+   "home": "FC Nantes",
+   "away": "OGC Nice",
+   "home_score": 1,
+   "away_score": 4
+  },
+  {
+   "date": "2026-01-25",
+   "home": "FC Metz",
+   "away": "Olympique Lyonnais",
+   "home_score": 2,
+   "away_score": 5
+  },
+  {
+   "date": "2026-01-25",
+   "home": "Paris FC",
+   "away": "Angers SCO",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-25",
+   "home": "Stade Brestois 29",
+   "away": "Toulouse FC",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-25",
+   "home": "Lille OSC",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 1,
+   "away_score": 4
+  },
+  {
+   "date": "2026-01-30",
+   "home": "Racing Club de Lens",
+   "away": "Le Havre AC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-31",
+   "home": "Paris FC",
+   "away": "Olympique de Marseille",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-31",
+   "home": "FC Lorient",
+   "away": "FC Nantes",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-31",
+   "home": "AS Monaco FC",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-01",
+   "home": "Olympique Lyonnais",
+   "away": "Lille OSC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-01",
+   "home": "Toulouse FC",
+   "away": "AJ Auxerre",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-01",
+   "home": "OGC Nice",
+   "away": "Stade Brestois 29",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-01",
+   "home": "Angers SCO",
+   "away": "FC Metz",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-01",
+   "home": "RC Strasbourg Alsace",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-06",
+   "home": "FC Metz",
+   "away": "Lille OSC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-07",
+   "home": "Racing Club de Lens",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-07",
+   "home": "Stade Brestois 29",
+   "away": "FC Lorient",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-07",
+   "home": "FC Nantes",
+   "away": "Olympique Lyonnais",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-08",
+   "home": "OGC Nice",
+   "away": "AS Monaco FC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Le Havre AC",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-08",
+   "home": "AJ Auxerre",
+   "away": "Paris FC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Angers SCO",
+   "away": "Toulouse FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Paris Saint-Germain FC",
+   "away": "Olympique de Marseille",
+   "home_score": 5,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-13",
+   "home": "Stade Rennais FC 1901",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-13",
+   "home": "AS Monaco FC",
+   "away": "FC Nantes",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-14",
+   "home": "Olympique de Marseille",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-14",
+   "home": "Lille OSC",
+   "away": "Stade Brestois 29",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-14",
+   "home": "Paris FC",
+   "away": "Racing Club de Lens",
+   "home_score": 0,
+   "away_score": 5
+  },
+  {
+   "date": "2026-02-15",
+   "home": "Le Havre AC",
+   "away": "Toulouse FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-15",
+   "home": "FC Lorient",
+   "away": "Angers SCO",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-15",
+   "home": "FC Metz",
+   "away": "AJ Auxerre",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-02-15",
+   "home": "Olympique Lyonnais",
+   "away": "OGC Nice",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-20",
+   "home": "Stade Brestois 29",
+   "away": "Olympique de Marseille",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-21",
+   "home": "Racing Club de Lens",
+   "away": "AS Monaco FC",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2026-02-21",
+   "home": "Toulouse FC",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-21",
+   "home": "Paris Saint-Germain FC",
+   "away": "FC Metz",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-22",
+   "home": "AJ Auxerre",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2026-02-22",
+   "home": "FC Nantes",
+   "away": "Le Havre AC",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-22",
+   "home": "OGC Nice",
+   "away": "FC Lorient",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2026-02-22",
+   "home": "Angers SCO",
+   "away": "Lille OSC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-22",
+   "home": "RC Strasbourg Alsace",
+   "away": "Olympique Lyonnais",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-27",
+   "home": "RC Strasbourg Alsace",
+   "away": "Racing Club de Lens",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-28",
+   "home": "Stade Rennais FC 1901",
+   "away": "Toulouse FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-28",
+   "home": "AS Monaco FC",
+   "away": "Angers SCO",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-28",
+   "home": "Le Havre AC",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-01",
+   "home": "Paris FC",
+   "away": "OGC Nice",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-01",
+   "home": "FC Lorient",
+   "away": "AJ Auxerre",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-01",
+   "home": "FC Metz",
+   "away": "Stade Brestois 29",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-01",
+   "home": "Lille OSC",
+   "away": "FC Nantes",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-01",
+   "home": "Olympique de Marseille",
+   "away": "Olympique Lyonnais",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-06",
+   "home": "Paris Saint-Germain FC",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-03-07",
+   "home": "FC Nantes",
+   "away": "Angers SCO",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-07",
+   "home": "AJ Auxerre",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-07",
+   "home": "Toulouse FC",
+   "away": "Olympique de Marseille",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Racing Club de Lens",
+   "away": "FC Metz",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-08",
+   "home": "OGC Nice",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 0,
+   "away_score": 4
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Lille OSC",
+   "away": "FC Lorient",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Stade Brestois 29",
+   "away": "Le Havre AC",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Olympique Lyonnais",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-13",
+   "home": "Olympique de Marseille",
+   "away": "AJ Auxerre",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-14",
+   "home": "FC Lorient",
+   "away": "Racing Club de Lens",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-14",
+   "home": "Angers SCO",
+   "away": "OGC Nice",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-14",
+   "home": "AS Monaco FC",
+   "away": "Stade Brestois 29",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-15",
+   "home": "RC Strasbourg Alsace",
+   "away": "Paris FC",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-15",
+   "home": "Le Havre AC",
+   "away": "Olympique Lyonnais",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-15",
+   "home": "FC Metz",
+   "away": "Toulouse FC",
+   "home_score": 3,
+   "away_score": 4
+  },
+  {
+   "date": "2026-03-15",
+   "home": "Stade Rennais FC 1901",
+   "away": "Lille OSC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-20",
+   "home": "Racing Club de Lens",
+   "away": "Angers SCO",
+   "home_score": 5,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-21",
+   "home": "Toulouse FC",
+   "away": "FC Lorient",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-21",
+   "home": "AJ Auxerre",
+   "away": "Stade Brestois 29",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-21",
+   "home": "OGC Nice",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 0,
+   "away_score": 4
+  },
+  {
+   "date": "2026-03-22",
+   "home": "Olympique Lyonnais",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-22",
+   "home": "Paris FC",
+   "away": "Le Havre AC",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-22",
+   "home": "Olympique de Marseille",
+   "away": "Lille OSC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-22",
+   "home": "Stade Rennais FC 1901",
+   "away": "FC Metz",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-22",
+   "home": "FC Nantes",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-03",
+   "home": "Paris Saint-Germain FC",
+   "away": "Toulouse FC",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-04",
+   "home": "RC Strasbourg Alsace",
+   "away": "OGC Nice",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-04",
+   "home": "Stade Brestois 29",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 3,
+   "away_score": 4
+  },
+  {
+   "date": "2026-04-04",
+   "home": "Lille OSC",
+   "away": "Racing Club de Lens",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-05",
+   "home": "Angers SCO",
+   "away": "Olympique Lyonnais",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-05",
+   "home": "Le Havre AC",
+   "away": "AJ Auxerre",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-05",
+   "home": "FC Lorient",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-05",
+   "home": "FC Metz",
+   "away": "FC Nantes",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-05",
+   "home": "AS Monaco FC",
+   "away": "Olympique de Marseille",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-10",
+   "home": "Paris FC",
+   "away": "AS Monaco FC",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-10",
+   "home": "Olympique de Marseille",
+   "away": "FC Metz",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-11",
+   "home": "AJ Auxerre",
+   "away": "FC Nantes",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-11",
+   "home": "Stade Rennais FC 1901",
+   "away": "Angers SCO",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-12",
+   "home": "Toulouse FC",
+   "away": "Lille OSC",
+   "home_score": 0,
+   "away_score": 4
+  },
+  {
+   "date": "2026-04-12",
+   "home": "OGC Nice",
+   "away": "Le Havre AC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-12",
+   "home": "Olympique Lyonnais",
+   "away": "FC Lorient",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-17",
+   "home": "Racing Club de Lens",
+   "away": "Toulouse FC",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-18",
+   "home": "FC Lorient",
+   "away": "Olympique de Marseille",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-18",
+   "home": "Angers SCO",
+   "away": "Le Havre AC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-18",
+   "home": "Lille OSC",
+   "away": "OGC Nice",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-19",
+   "home": "AS Monaco FC",
+   "away": "AJ Auxerre",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-19",
+   "home": "FC Metz",
+   "away": "Paris FC",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-19",
+   "home": "FC Nantes",
+   "away": "Stade Brestois 29",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-19",
+   "home": "RC Strasbourg Alsace",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-19",
+   "home": "Paris Saint-Germain FC",
+   "away": "Olympique Lyonnais",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-22",
+   "home": "Paris Saint-Germain FC",
+   "away": "FC Nantes",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-24",
+   "home": "Stade Brestois 29",
+   "away": "Racing Club de Lens",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-25",
+   "home": "Olympique Lyonnais",
+   "away": "AJ Auxerre",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-25",
+   "home": "Angers SCO",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-25",
+   "home": "Toulouse FC",
+   "away": "AS Monaco FC",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-26",
+   "home": "FC Lorient",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-26",
+   "home": "Le Havre AC",
+   "away": "FC Metz",
+   "home_score": 4,
+   "away_score": 4
+  },
+  {
+   "date": "2026-04-26",
+   "home": "Paris FC",
+   "away": "Lille OSC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-26",
+   "home": "Stade Rennais FC 1901",
+   "away": "FC Nantes",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-26",
+   "home": "Olympique de Marseille",
+   "away": "OGC Nice",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-02",
+   "home": "FC Nantes",
+   "away": "Olympique de Marseille",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-02",
+   "home": "Paris Saint-Germain FC",
+   "away": "FC Lorient",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-02",
+   "home": "FC Metz",
+   "away": "AS Monaco FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-02",
+   "home": "OGC Nice",
+   "away": "Racing Club de Lens",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-03",
+   "home": "Lille OSC",
+   "away": "Le Havre AC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-03",
+   "home": "AJ Auxerre",
+   "away": "Angers SCO",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-03",
+   "home": "Paris FC",
+   "away": "Stade Brestois 29",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-03",
+   "home": "RC Strasbourg Alsace",
+   "away": "Toulouse FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-03",
+   "home": "Olympique Lyonnais",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 4,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-08",
+   "home": "Racing Club de Lens",
+   "away": "FC Nantes",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-10",
+   "home": "Le Havre AC",
+   "away": "Olympique de Marseille",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-10",
+   "home": "AJ Auxerre",
+   "away": "OGC Nice",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-10",
+   "home": "AS Monaco FC",
+   "away": "Lille OSC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-10",
+   "home": "FC Metz",
+   "away": "FC Lorient",
+   "home_score": 0,
+   "away_score": 4
+  },
+  {
+   "date": "2026-05-10",
+   "home": "Toulouse FC",
+   "away": "Olympique Lyonnais",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-10",
+   "home": "Paris Saint-Germain FC",
+   "away": "Stade Brestois 29",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-10",
+   "home": "Angers SCO",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-10",
+   "home": "Stade Rennais FC 1901",
+   "away": "Paris FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-13",
+   "home": "Stade Brestois 29",
+   "away": "RC Strasbourg Alsace",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-13",
+   "home": "Racing Club de Lens",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-17",
+   "home": "FC Lorient",
+   "away": "Le Havre AC",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Paris FC",
+   "away": "Paris Saint-Germain FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-17",
+   "home": "OGC Nice",
+   "away": "FC Metz",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Olympique Lyonnais",
+   "away": "Racing Club de Lens",
+   "home_score": 0,
+   "away_score": 4
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Olympique de Marseille",
+   "away": "Stade Rennais FC 1901",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Lille OSC",
+   "away": "AJ Auxerre",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-17",
+   "home": "RC Strasbourg Alsace",
+   "away": "AS Monaco FC",
+   "home_score": 5,
+   "away_score": 4
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Stade Brestois 29",
+   "away": "Angers SCO",
+   "home_score": 1,
+   "away_score": 1
+  }
+ ]
+}
