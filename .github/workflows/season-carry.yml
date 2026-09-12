@@ -42,20 +42,33 @@ jobs:
         env:
           FD_TOKEN: ${{ secrets.FD_TOKEN }}
         run: |
-          python season_carry.py --fetch --seeds --show | tee /tmp/seeds.txt
+          # pipefail: a failed fetch must FAIL this step (the first run hid a
+          # fetch error behind tee's exit code and died in the commit step
+          # with exit 128 - "pathspec did not match", nothing to add)
+          set -o pipefail
+          rc=0
+          # the log is COMMITTED next to the raw files (data/season_prev/_last_run.log)
+          # so the outcome can be read from the repo itself - the job summary is
+          # not readable without a GitHub login
+          mkdir -p data/season_prev
+          { date -u; python season_carry.py --fetch --seeds --show 2>&1; echo "exit $?"; } | tee data/season_prev/_last_run.log
+          grep -q '^exit 0$' data/season_prev/_last_run.log || rc=1
           {
-            echo "### Elo seeds"
+            echo "### Elo seeds (exit $rc)"
             echo '```'
-            head -n 80 /tmp/seeds.txt
+            head -n 80 data/season_prev/_last_run.log
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
 
       # [skip ci]: the next 15-minute refresh picks the seeds up; no extra deploy
-      - name: Commit the raw season and the seeds
+      - name: Commit the raw season, the seeds and the run log
+        if: always()
         run: |
           git config user.name "yalla-score-bot"
           git config user.email "bot@yallascore.site"
-          git add data/season_prev data/elo_seeds.json
+          git add data/season_prev
+          [ -f data/elo_seeds.json ] && git add data/elo_seeds.json
           if git diff --cached --quiet; then
             echo "seeds unchanged - nothing to commit"; exit 0
           fi
