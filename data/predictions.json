@@ -10,16 +10,17 @@
   "hs": null,
   "kickoff": "2026-09-20",
   "koff_time": "20:00",
-  "la": 1.817,
-  "lh": 1.509,
+  "la": 1.904,
+  "lh": 1.356,
   "outcome": null,
-  "pa": 0.4511,
-  "pd": 0.2267,
-  "ph": 0.3222,
+  "pa": 0.503,
+  "pd": 0.2233,
+  "ph": 0.2737,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764281": {
   "as": 0,
@@ -41,6 +42,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4764284": {
@@ -63,6 +65,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4764285": {
@@ -85,6 +88,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4764288": {
@@ -107,6 +111,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4764290": {
@@ -120,16 +125,17 @@
   "hs": null,
   "kickoff": "2026-09-14",
   "koff_time": "20:00",
-  "la": 1.542,
-  "lh": 1.796,
+  "la": 1.51,
+  "lh": 1.828,
   "outcome": null,
-  "pa": 0.3335,
-  "pd": 0.2271,
-  "ph": 0.4394,
+  "pa": 0.3208,
+  "pd": 0.2261,
+  "ph": 0.4532,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764291": {
   "as": null,
@@ -142,16 +148,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "17:00",
-  "la": 1.096,
-  "lh": 1.255,
+  "la": 1.073,
+  "lh": 1.278,
   "outcome": null,
-  "pa": 0.3216,
-  "pd": 0.2789,
-  "ph": 0.3994,
+  "pa": 0.311,
+  "pd": 0.2782,
+  "ph": 0.4108,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764292": {
   "as": null,
@@ -164,16 +171,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "20:00",
-  "la": 1.098,
-  "lh": 2.058,
+  "la": 1.076,
+  "lh": 2.095,
   "outcome": null,
-  "pa": 0.1965,
-  "pd": 0.2093,
-  "ph": 0.5943,
+  "pa": 0.1873,
+  "pd": 0.2056,
+  "ph": 0.6071,
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764293": {
   "as": null,
@@ -186,16 +194,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "20:00",
-  "la": 1.309,
-  "lh": 1.821,
+  "la": 1.282,
+  "lh": 1.853,
   "outcome": null,
-  "pa": 0.2763,
-  "pd": 0.2293,
-  "ph": 0.4943,
+  "pa": 0.265,
+  "pd": 0.2272,
+  "ph": 0.5078,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764294": {
   "as": null,
@@ -208,16 +217,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "17:00",
-  "la": 1.454,
-  "lh": 1.132,
+  "la": 1.424,
+  "lh": 1.152,
   "outcome": null,
-  "pa": 0.4448,
-  "pd": 0.2607,
-  "ph": 0.2945,
+  "pa": 0.4323,
+  "pd": 0.2625,
+  "ph": 0.3052,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764295": {
   "as": null,
@@ -230,16 +240,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "20:00",
-  "la": 2.152,
-  "lh": 1.231,
+  "la": 2.107,
+  "lh": 1.253,
   "outcome": null,
-  "pa": 0.5833,
-  "pd": 0.2046,
-  "ph": 0.2122,
+  "pa": 0.5691,
+  "pd": 0.2083,
+  "ph": 0.2225,
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764296": {
   "as": null,
@@ -252,37 +263,39 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "20:00",
-  "la": 1.319,
-  "lh": 1.728,
+  "la": 1.292,
+  "lh": 1.759,
   "outcome": null,
-  "pa": 0.2936,
-  "pd": 0.2357,
-  "ph": 0.4707,
+  "pa": 0.2821,
+  "pd": 0.2339,
+  "ph": 0.484,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764297": {
-  "as": null,
+  "as": 0,
   "away": "إيرزوروم سبور",
-  "brier": null,
+  "brier": 0.1685,
   "comp": "Turkish Super Lig",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "بشكتاش",
-  "hs": null,
+  "hs": 3,
   "kickoff": "2026-09-11",
   "koff_time": "20:00",
   "la": 0.986,
   "lh": 2.289,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.1488,
   "pd": 0.1857,
   "ph": 0.6655,
-  "pick": null,
+  "pick": "H",
   "score": "2-0",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "4764298": {
@@ -296,16 +309,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "17:00",
-  "la": 1.386,
-  "lh": 1.871,
+  "la": 1.357,
+  "lh": 1.904,
   "outcome": null,
-  "pa": 0.2857,
-  "pd": 0.2253,
-  "ph": 0.489,
+  "pa": 0.274,
+  "pd": 0.2233,
+  "ph": 0.5027,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764299": {
   "as": null,
@@ -318,16 +332,17 @@
   "hs": null,
   "kickoff": "2026-09-19",
   "koff_time": "20:00",
-  "la": 1.727,
-  "lh": 2.034,
+  "la": 1.691,
+  "lh": 2.07,
   "outcome": null,
-  "pa": 0.3336,
-  "pd": 0.2122,
-  "ph": 0.4542,
+  "pa": 0.3201,
+  "pd": 0.211,
+  "ph": 0.4689,
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764300": {
   "as": null,
@@ -340,16 +355,17 @@
   "hs": null,
   "kickoff": "2026-09-18",
   "koff_time": "20:00",
-  "la": 0.988,
-  "lh": 1.982,
+  "la": 0.968,
+  "lh": 2.017,
   "outcome": null,
-  "pa": 0.1824,
-  "pd": 0.2133,
-  "ph": 0.6043,
+  "pa": 0.1739,
+  "pd": 0.2094,
+  "ph": 0.6167,
   "pick": null,
-  "score": "1-0",
+  "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764301": {
   "as": null,
@@ -362,16 +378,17 @@
   "hs": null,
   "kickoff": "2026-09-19",
   "koff_time": "20:00",
-  "la": 1.192,
-  "lh": 1.781,
+  "la": 1.167,
+  "lh": 1.813,
   "outcome": null,
-  "pa": 0.2553,
-  "pd": 0.2331,
-  "ph": 0.5116,
+  "pa": 0.2448,
+  "pd": 0.2305,
+  "ph": 0.5246,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764302": {
   "as": null,
@@ -384,16 +401,17 @@
   "hs": null,
   "kickoff": "2026-09-20",
   "koff_time": "20:00",
-  "la": 1.462,
-  "lh": 1.696,
+  "la": 1.431,
+  "lh": 1.726,
   "outcome": null,
-  "pa": 0.3327,
-  "pd": 0.2345,
-  "ph": 0.4328,
+  "pa": 0.3202,
+  "pd": 0.2335,
+  "ph": 0.4462,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764303": {
   "as": null,
@@ -406,16 +424,17 @@
   "hs": null,
   "kickoff": "2026-09-19",
   "koff_time": "17:00",
-  "la": 1.43,
-  "lh": 1.346,
+  "la": 1.4,
+  "lh": 1.371,
   "outcome": null,
-  "pa": 0.392,
-  "pd": 0.2539,
-  "ph": 0.3542,
+  "pa": 0.3795,
+  "pd": 0.2544,
+  "ph": 0.3661,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764304": {
   "as": null,
@@ -428,16 +447,17 @@
   "hs": null,
   "kickoff": "2026-09-20",
   "koff_time": "17:00",
-  "la": 0.986,
-  "lh": 2.141,
+  "la": 0.966,
+  "lh": 2.179,
   "outcome": null,
-  "pa": 0.1639,
-  "pd": 0.1987,
-  "ph": 0.6374,
+  "pa": 0.1559,
+  "pd": 0.1945,
+  "ph": 0.6496,
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764305": {
   "as": null,
@@ -450,38 +470,40 @@
   "hs": null,
   "kickoff": "2026-09-19",
   "koff_time": "17:00",
-  "la": 1.045,
-  "lh": 1.678,
+  "la": 1.024,
+  "lh": 1.708,
   "outcome": null,
-  "pa": 0.2361,
-  "pd": 0.2424,
-  "ph": 0.5215,
+  "pa": 0.2265,
+  "pd": 0.2396,
+  "ph": 0.5339,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4764306": {
   "as": null,
   "away": "سامسون سبور",
   "brier": null,
   "comp": "Turkish Super Lig",
-  "conf": "low",
+  "conf": "mid",
   "hit": null,
   "home": "إيرزوروم سبور",
   "hs": null,
   "kickoff": "2026-09-20",
   "koff_time": "17:00",
-  "la": 1.285,
-  "lh": 1.314,
+  "la": 1.4,
+  "lh": 1.18,
   "outcome": null,
-  "pa": 0.3613,
-  "pd": 0.264,
-  "ph": 0.3747,
+  "pa": 0.4199,
+  "pd": 0.2632,
+  "ph": 0.3169,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4788276": {
   "as": 0,
@@ -503,6 +525,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4788282": {
@@ -525,6 +548,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4788285": {
@@ -547,6 +571,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "4788286": {
@@ -569,6 +594,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "4788287": {
@@ -591,6 +617,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "4788288": {
@@ -613,6 +640,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "4788290": {
@@ -635,6 +663,7 @@
   "pick": "H",
   "score": "2-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "4788291": {
@@ -657,6 +686,7 @@
   "pick": "A",
   "score": "0-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "4788292": {
@@ -679,6 +709,7 @@
   "pick": "H",
   "score": "2-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "4789473": {
@@ -692,16 +723,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "19:20",
-  "la": 0.566,
-  "lh": 1.2,
+  "la": 0.576,
+  "lh": 1.201,
   "outcome": null,
-  "pa": 0.1748,
-  "pd": 0.3085,
-  "ph": 0.5167,
+  "pa": 0.1778,
+  "pd": 0.308,
+  "ph": 0.5141,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4789474": {
   "as": null,
@@ -714,16 +746,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "21:00",
-  "la": 0.759,
-  "lh": 2.029,
+  "la": 0.768,
+  "lh": 2.014,
   "outcome": null,
-  "pa": 0.13,
-  "pd": 0.1999,
-  "ph": 0.6701,
+  "pa": 0.1331,
+  "pd": 0.2019,
+  "ph": 0.665,
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4789476": {
   "as": null,
@@ -736,16 +769,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "18:50",
-  "la": 1.831,
-  "lh": 0.711,
+  "la": 1.828,
+  "lh": 0.718,
   "outcome": null,
-  "pa": 0.641,
-  "pd": 0.2199,
-  "ph": 0.1391,
+  "pa": 0.6384,
+  "pd": 0.2206,
+  "ph": 0.141,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4789477": {
   "as": null,
@@ -758,16 +792,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "21:00",
-  "la": 1.304,
-  "lh": 1.464,
+  "la": 1.306,
+  "lh": 1.46,
   "outcome": null,
-  "pa": 0.3367,
-  "pd": 0.2536,
-  "ph": 0.4097,
+  "pa": 0.3382,
+  "pd": 0.2538,
+  "ph": 0.4081,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4789478": {
   "as": null,
@@ -780,59 +815,62 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "21:00",
-  "la": 2.401,
-  "lh": 1.128,
+  "la": 2.386,
+  "lh": 1.13,
   "outcome": null,
-  "pa": 0.6538,
-  "pd": 0.1825,
-  "ph": 0.1638,
+  "pa": 0.6508,
+  "pd": 0.1837,
+  "ph": 0.1656,
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4789479": {
-  "as": null,
+  "as": 3,
   "away": "الاتفاق",
-  "brier": null,
+  "brier": 0.9856,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 0,
   "home": "القادسية",
-  "hs": null,
+  "hs": 3,
   "kickoff": "2026-09-11",
   "koff_time": "18:25",
   "la": 0.769,
   "lh": 1.749,
-  "outcome": null,
+  "outcome": "D",
   "pa": 0.161,
   "pd": 0.2315,
   "ph": 0.6075,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "4789480": {
-  "as": null,
+  "as": 3,
   "away": "الاتحاد",
-  "brier": null,
+  "brier": 0.345,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 1,
   "home": "الفيصلي",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-11",
   "koff_time": "18:45",
   "la": 1.354,
   "lh": 0.708,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.523,
   "pd": 0.2817,
   "ph": 0.1953,
-  "pick": null,
+  "pick": "A",
   "score": "0-1",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "4789481": {
@@ -846,37 +884,39 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "21:00",
-  "la": 2.153,
-  "lh": 0.837,
+  "la": 2.143,
+  "lh": 0.843,
   "outcome": null,
-  "pa": 0.6751,
-  "pd": 0.1912,
-  "ph": 0.1337,
+  "pa": 0.6717,
+  "pd": 0.1925,
+  "ph": 0.1358,
   "pick": null,
   "score": "0-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4789482": {
-  "as": null,
+  "as": 1,
   "away": "الحزم",
-  "brier": null,
+  "brier": 0.3663,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 1,
   "home": "الأهلي",
-  "hs": null,
+  "hs": 3,
   "kickoff": "2026-09-11",
   "koff_time": "21:00",
-  "la": 1.158,
-  "lh": 1.766,
-  "outcome": null,
-  "pa": 0.2496,
-  "pd": 0.2344,
-  "ph": 0.516,
-  "pick": null,
+  "la": 1.175,
+  "lh": 1.741,
+  "outcome": "H",
+  "pa": 0.2576,
+  "pd": 0.2364,
+  "ph": 0.506,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "4804653": {
@@ -899,6 +939,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4804654": {
@@ -921,6 +962,7 @@
   "pick": "H",
   "score": "0-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4804656": {
@@ -943,6 +985,7 @@
   "pick": "H",
   "score": "0-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4804660": {
@@ -965,6 +1008,7 @@
   "pick": "A",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "4804662": {
@@ -987,6 +1031,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "4804663": {
@@ -1009,6 +1054,7 @@
   "pick": "A",
   "score": "0-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "4804664": {
@@ -1031,6 +1077,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "4804665": {
@@ -1053,6 +1100,7 @@
   "pick": "A",
   "score": "0-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "4804666": {
@@ -1075,6 +1123,7 @@
   "pick": "A",
   "score": "0-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "4804667": {
@@ -1097,6 +1146,7 @@
   "pick": "A",
   "score": "0-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "4804668": {
@@ -1110,16 +1160,17 @@
   "hs": null,
   "kickoff": "2026-09-14",
   "koff_time": "17:00",
-  "la": 0.551,
-  "lh": 1.219,
+  "la": 0.546,
+  "lh": 1.227,
   "outcome": null,
-  "pa": 0.1678,
-  "pd": 0.3054,
-  "ph": 0.5269,
+  "pa": 0.165,
+  "pd": 0.3041,
+  "ph": 0.5309,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804670": {
   "as": null,
@@ -1132,16 +1183,17 @@
   "hs": null,
   "kickoff": "2026-09-14",
   "koff_time": "20:00",
-  "la": 1.066,
-  "lh": 0.755,
+  "la": 0.967,
+  "lh": 0.761,
   "outcome": null,
-  "pa": 0.4238,
-  "pd": 0.3208,
-  "ph": 0.2553,
+  "pa": 0.3897,
+  "pd": 0.3345,
+  "ph": 0.2758,
   "pick": null,
-  "score": "0-1",
+  "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804671": {
   "as": null,
@@ -1154,16 +1206,17 @@
   "hs": null,
   "kickoff": "2026-09-14",
   "koff_time": "20:00",
-  "la": 0.943,
-  "lh": 1.643,
+  "la": 0.839,
+  "lh": 1.726,
   "outcome": null,
-  "pa": 0.2162,
-  "pd": 0.2459,
-  "ph": 0.5379,
+  "pa": 0.18,
+  "pd": 0.2358,
+  "ph": 0.5841,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804672": {
   "as": null,
@@ -1176,16 +1229,17 @@
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "17:00",
-  "la": 0.973,
-  "lh": 0.729,
+  "la": 0.964,
+  "lh": 0.733,
   "outcome": null,
-  "pa": 0.3996,
-  "pd": 0.3365,
-  "ph": 0.2639,
+  "pa": 0.3959,
+  "pd": 0.3375,
+  "ph": 0.2667,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804673": {
   "as": null,
@@ -1198,16 +1252,17 @@
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "17:00",
-  "la": 0.859,
-  "lh": 1.195,
+  "la": 0.851,
+  "lh": 1.203,
   "outcome": null,
-  "pa": 0.2645,
-  "pd": 0.2977,
-  "ph": 0.4378,
+  "pa": 0.2608,
+  "pd": 0.2971,
+  "ph": 0.4421,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804674": {
   "as": null,
@@ -1220,16 +1275,17 @@
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "20:00",
-  "la": 1.071,
-  "lh": 1.058,
+  "la": 1.062,
+  "lh": 1.064,
   "outcome": null,
-  "pa": 0.3547,
-  "pd": 0.2972,
-  "ph": 0.3481,
+  "pa": 0.3506,
+  "pd": 0.2974,
+  "ph": 0.352,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804675": {
   "as": null,
@@ -1242,16 +1298,17 @@
   "hs": null,
   "kickoff": "2026-09-15",
   "koff_time": "20:00",
-  "la": 0.575,
-  "lh": 1.764,
+  "la": 0.569,
+  "lh": 1.779,
   "outcome": null,
-  "pa": 0.1154,
-  "pd": 0.2221,
-  "ph": 0.6625,
+  "pa": 0.1128,
+  "pd": 0.2199,
+  "ph": 0.6673,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804676": {
   "as": null,
@@ -1264,16 +1321,17 @@
   "hs": null,
   "kickoff": "2026-09-16",
   "koff_time": "17:00",
-  "la": 1.171,
-  "lh": 1.111,
+  "la": 1.161,
+  "lh": 1.118,
   "outcome": null,
-  "pa": 0.3723,
-  "pd": 0.2849,
-  "ph": 0.3428,
+  "pa": 0.3681,
+  "pd": 0.2851,
+  "ph": 0.3468,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804677": {
   "as": null,
@@ -1286,16 +1344,17 @@
   "hs": null,
   "kickoff": "2026-09-16",
   "koff_time": "20:00",
-  "la": 1.718,
-  "lh": 0.671,
+  "la": 1.705,
+  "lh": 0.674,
   "outcome": null,
-  "pa": 0.626,
-  "pd": 0.2323,
-  "ph": 0.1417,
+  "pa": 0.6221,
+  "pd": 0.234,
+  "ph": 0.1438,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4804678": {
   "as": null,
@@ -1308,16 +1367,17 @@
   "hs": null,
   "kickoff": "2026-09-16",
   "koff_time": "20:00",
-  "la": 1.867,
-  "lh": 0.49,
+  "la": 1.854,
+  "lh": 0.492,
   "outcome": null,
-  "pa": 0.7075,
-  "pd": 0.2034,
-  "ph": 0.0891,
+  "pa": 0.7042,
+  "pd": 0.2053,
+  "ph": 0.0904,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805122": {
   "as": 0,
@@ -1339,6 +1399,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805123": {
@@ -1361,6 +1422,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805133": {
@@ -1383,6 +1445,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805141": {
@@ -1405,6 +1468,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805142": {
@@ -1427,6 +1491,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805144": {
@@ -1449,6 +1514,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805145": {
@@ -1471,6 +1537,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805146": {
@@ -1493,6 +1560,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805151": {
@@ -1515,6 +1583,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "4805155": {
@@ -1537,6 +1606,7 @@
   "pick": "A",
   "score": "0-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-10"
  },
  "4805156": {
@@ -1550,16 +1620,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "16:00",
-  "la": 0.838,
-  "lh": 0.812,
+  "la": 0.801,
+  "lh": 0.874,
   "outcome": null,
-  "pa": 0.3339,
-  "pd": 0.3467,
-  "ph": 0.3193,
+  "pa": 0.3077,
+  "pd": 0.3432,
+  "ph": 0.3491,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805157": {
   "as": null,
@@ -1572,16 +1643,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "18:00",
-  "la": 0.566,
-  "lh": 1.201,
+  "la": 0.546,
+  "lh": 1.281,
   "outcome": null,
-  "pa": 0.1748,
-  "pd": 0.3083,
-  "ph": 0.517,
+  "pa": 0.1585,
+  "pd": 0.2947,
+  "ph": 0.5469,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805158": {
   "as": null,
@@ -1594,16 +1666,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "16:00",
-  "la": 1.493,
-  "lh": 1.166,
+  "la": 1.411,
+  "lh": 1.244,
   "outcome": null,
-  "pa": 0.4473,
-  "pd": 0.2564,
-  "ph": 0.2962,
+  "pa": 0.4087,
+  "pd": 0.2597,
+  "ph": 0.3315,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805159": {
   "as": null,
@@ -1616,37 +1689,39 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "16:00",
-  "la": 0.574,
-  "lh": 0.823,
+  "la": 0.554,
+  "lh": 0.886,
   "outcome": null,
-  "pa": 0.236,
-  "pd": 0.3787,
-  "ph": 0.3853,
+  "pa": 0.2175,
+  "pd": 0.3683,
+  "ph": 0.4142,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805160": {
-  "as": null,
+  "as": 0,
   "away": "فومبوني",
-  "brier": null,
+  "brier": 0.4693,
   "comp": "CAF Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "15 دي أجوستو",
-  "hs": null,
+  "hs": 4,
   "kickoff": "2026-09-11",
   "koff_time": "17:00",
   "la": 0.829,
   "lh": 1.182,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.2579,
   "pd": 0.3009,
   "ph": 0.4412,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "4805161": {
@@ -1660,16 +1735,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "16:00",
-  "la": 0.566,
-  "lh": 1.201,
+  "la": 0.546,
+  "lh": 1.281,
   "outcome": null,
-  "pa": 0.1748,
-  "pd": 0.3083,
-  "ph": 0.517,
+  "pa": 0.1585,
+  "pd": 0.2947,
+  "ph": 0.5469,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805162": {
   "as": null,
@@ -1682,16 +1758,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "17:00",
-  "la": 1.143,
-  "lh": 0.81,
+  "la": 1.086,
+  "lh": 0.872,
   "outcome": null,
-  "pa": 0.4343,
-  "pd": 0.3069,
-  "ph": 0.2588,
+  "pa": 0.4012,
+  "pd": 0.31,
+  "ph": 0.2887,
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805163": {
   "as": null,
@@ -1704,16 +1781,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "19:00",
-  "la": 0.827,
-  "lh": 1.185,
+  "la": 0.79,
+  "lh": 1.264,
   "outcome": null,
-  "pa": 0.2566,
-  "pd": 0.3006,
-  "ph": 0.4427,
+  "pa": 0.2325,
+  "pd": 0.292,
+  "ph": 0.4755,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805164": {
   "as": null,
@@ -1726,37 +1804,39 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "15:00",
-  "la": 0.838,
-  "lh": 0.812,
+  "la": 0.801,
+  "lh": 0.874,
   "outcome": null,
-  "pa": 0.3339,
-  "pd": 0.3467,
-  "ph": 0.3193,
+  "pa": 0.3077,
+  "pd": 0.3432,
+  "ph": 0.3491,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805165": {
-  "as": null,
+  "as": 0,
   "away": "نسور الكونغو",
-  "brier": null,
+  "brier": 0.695,
   "comp": "CAF Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "الجيش الرواندي",
-  "hs": null,
+  "hs": 3,
   "kickoff": "2026-09-11",
   "koff_time": "19:00",
   "la": 0.838,
   "lh": 0.812,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.3339,
   "pd": 0.3467,
   "ph": 0.3193,
-  "pick": null,
+  "pick": "D",
   "score": "0-0",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "4805166": {
@@ -1770,16 +1850,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "20:00",
-  "la": 0.816,
-  "lh": 1.635,
+  "la": 0.78,
+  "lh": 1.732,
   "outcome": null,
-  "pa": 0.1859,
-  "pd": 0.2459,
-  "ph": 0.5682,
+  "pa": 0.1653,
+  "pd": 0.2338,
+  "ph": 0.6009,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805167": {
   "as": null,
@@ -1792,16 +1873,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "16:00",
-  "la": 0.838,
-  "lh": 0.812,
+  "la": 0.801,
+  "lh": 0.874,
   "outcome": null,
-  "pa": 0.3339,
-  "pd": 0.3467,
-  "ph": 0.3193,
+  "pa": 0.3077,
+  "pd": 0.3432,
+  "ph": 0.3491,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805176": {
   "as": null,
@@ -1814,16 +1896,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "20:00",
-  "la": 0.564,
-  "lh": 1.641,
+  "la": 0.544,
+  "lh": 1.739,
   "outcome": null,
-  "pa": 0.1242,
-  "pd": 0.2385,
-  "ph": 0.6374,
+  "pa": 0.1107,
+  "pd": 0.2239,
+  "ph": 0.6655,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805177": {
   "as": null,
@@ -1836,16 +1919,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "19:00",
-  "la": 0.574,
-  "lh": 0.823,
+  "la": 0.554,
+  "lh": 0.886,
   "outcome": null,
-  "pa": 0.236,
-  "pd": 0.3787,
-  "ph": 0.3853,
+  "pa": 0.2175,
+  "pd": 0.3683,
+  "ph": 0.4142,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805178": {
   "as": null,
@@ -1858,16 +1942,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "16:00",
-  "la": 0.564,
-  "lh": 1.641,
+  "la": 0.544,
+  "lh": 1.739,
   "outcome": null,
-  "pa": 0.1242,
-  "pd": 0.2385,
-  "ph": 0.6374,
+  "pa": 0.1107,
+  "pd": 0.2239,
+  "ph": 0.6655,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805179": {
   "as": null,
@@ -1880,16 +1965,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "19:30",
-  "la": 0.574,
-  "lh": 0.823,
+  "la": 0.554,
+  "lh": 0.886,
   "outcome": null,
-  "pa": 0.236,
-  "pd": 0.3787,
-  "ph": 0.3853,
+  "pa": 0.2175,
+  "pd": 0.3683,
+  "ph": 0.4142,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805182": {
   "as": null,
@@ -1902,16 +1988,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "18:00",
-  "la": 1.895,
-  "lh": 1.163,
+  "la": 1.783,
+  "lh": 1.241,
   "outcome": null,
-  "pa": 0.5443,
-  "pd": 0.2238,
-  "ph": 0.2319,
+  "pa": 0.501,
+  "pd": 0.2326,
+  "ph": 0.2664,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805183": {
   "as": null,
@@ -1924,16 +2011,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "19:00",
-  "la": 0.827,
-  "lh": 1.185,
+  "la": 0.79,
+  "lh": 1.264,
   "outcome": null,
-  "pa": 0.2566,
-  "pd": 0.3006,
-  "ph": 0.4427,
+  "pa": 0.2325,
+  "pd": 0.292,
+  "ph": 0.4755,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805184": {
   "as": null,
@@ -1946,16 +2034,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "20:00",
-  "la": 0.566,
-  "lh": 1.201,
+  "la": 0.546,
+  "lh": 1.281,
   "outcome": null,
-  "pa": 0.1748,
-  "pd": 0.3083,
-  "ph": 0.517,
+  "pa": 0.1585,
+  "pd": 0.2947,
+  "ph": 0.5469,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805185": {
   "as": null,
@@ -1968,37 +2057,39 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "19:00",
-  "la": 0.574,
-  "lh": 0.823,
+  "la": 0.554,
+  "lh": 0.886,
   "outcome": null,
-  "pa": 0.236,
-  "pd": 0.3787,
-  "ph": 0.3853,
+  "pa": 0.2175,
+  "pd": 0.3683,
+  "ph": 0.4142,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805186": {
-  "as": null,
+  "as": 1,
   "away": "إينوغو رينجرز",
-  "brier": null,
+  "brier": 0.751,
   "comp": "CAF Champions League",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "سوبيماب",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-11",
   "koff_time": "17:00",
   "la": 0.827,
   "lh": 1.185,
-  "outcome": null,
+  "outcome": "D",
   "pa": 0.2566,
   "pd": 0.3006,
   "ph": 0.4427,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "4805187": {
@@ -2012,16 +2103,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "22:00",
-  "la": 0.574,
-  "lh": 0.823,
+  "la": 0.554,
+  "lh": 0.886,
   "outcome": null,
-  "pa": 0.236,
-  "pd": 0.3787,
-  "ph": 0.3853,
+  "pa": 0.2175,
+  "pd": 0.3683,
+  "ph": 0.4142,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805188": {
   "as": null,
@@ -2034,16 +2126,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "18:00",
-  "la": 0.827,
-  "lh": 1.185,
+  "la": 0.79,
+  "lh": 1.264,
   "outcome": null,
-  "pa": 0.2566,
-  "pd": 0.3006,
-  "ph": 0.4427,
+  "pa": 0.2325,
+  "pd": 0.292,
+  "ph": 0.4755,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805189": {
   "as": null,
@@ -2056,16 +2149,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "20:00",
-  "la": 0.827,
-  "lh": 1.185,
+  "la": 0.79,
+  "lh": 1.264,
   "outcome": null,
-  "pa": 0.2566,
-  "pd": 0.3006,
-  "ph": 0.4427,
+  "pa": 0.2325,
+  "pd": 0.292,
+  "ph": 0.4755,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805190": {
   "as": null,
@@ -2078,16 +2172,17 @@
   "hs": null,
   "kickoff": "2026-09-13",
   "koff_time": "19:00",
-  "la": 0.838,
-  "lh": 0.812,
+  "la": 0.801,
+  "lh": 0.874,
   "outcome": null,
-  "pa": 0.3339,
-  "pd": 0.3467,
-  "ph": 0.3193,
+  "pa": 0.3077,
+  "pd": 0.3432,
+  "ph": 0.3491,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805191": {
   "as": null,
@@ -2100,16 +2195,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "16:00",
-  "la": 0.838,
-  "lh": 0.812,
+  "la": 0.801,
+  "lh": 0.874,
   "outcome": null,
-  "pa": 0.3339,
-  "pd": 0.3467,
-  "ph": 0.3193,
+  "pa": 0.3077,
+  "pd": 0.3432,
+  "ph": 0.3491,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805192": {
   "as": null,
@@ -2122,16 +2218,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "17:00",
-  "la": 0.566,
-  "lh": 1.201,
+  "la": 0.546,
+  "lh": 1.281,
   "outcome": null,
-  "pa": 0.1748,
-  "pd": 0.3083,
-  "ph": 0.517,
+  "pa": 0.1585,
+  "pd": 0.2947,
+  "ph": 0.5469,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4805193": {
   "as": null,
@@ -2144,16 +2241,17 @@
   "hs": null,
   "kickoff": "2026-09-12",
   "koff_time": "19:00",
-  "la": 0.838,
-  "lh": 0.812,
+  "la": 0.801,
+  "lh": 0.874,
   "outcome": null,
-  "pa": 0.3339,
-  "pd": 0.3467,
-  "ph": 0.3193,
+  "pa": 0.3077,
+  "pd": 0.3432,
+  "ph": 0.3491,
   "pick": null,
   "score": "0-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "4849458": {
   "as": null,
@@ -2175,6 +2273,7 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
+  "src": "python",
   "ts": "2026-09-10"
  },
  "558589": {
@@ -2197,7 +2296,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558590": {
   "as": null,
@@ -2219,7 +2319,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558591": {
   "as": null,
@@ -2241,7 +2342,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558592": {
   "as": null,
@@ -2263,7 +2365,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558593": {
   "as": null,
@@ -2285,7 +2388,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558594": {
   "as": null,
@@ -2307,7 +2411,8 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558595": {
   "as": null,
@@ -2329,7 +2434,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558596": {
   "as": null,
@@ -2351,7 +2457,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558597": {
   "as": null,
@@ -2373,7 +2480,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558598": {
   "as": null,
@@ -2395,7 +2503,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558599": {
   "as": null,
@@ -2417,7 +2526,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558600": {
   "as": null,
@@ -2439,7 +2549,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558601": {
   "as": null,
@@ -2461,7 +2572,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558602": {
   "as": null,
@@ -2483,7 +2595,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558603": {
   "as": null,
@@ -2505,7 +2618,8 @@
   "pick": null,
   "score": "0-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558604": {
   "as": null,
@@ -2527,7 +2641,8 @@
   "pick": null,
   "score": "0-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558605": {
   "as": null,
@@ -2549,28 +2664,30 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558606": {
-  "as": null,
+  "as": 4,
   "away": "ACF Fiorentina",
-  "brier": null,
+  "brier": 0.8456,
   "comp": "Serie A",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "Venezia FC",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-11",
   "koff_time": "21:45",
   "la": 1.168,
   "lh": 1.691,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.2638,
   "pd": 0.2405,
   "ph": 0.4958,
-  "pick": null,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "558607": {
@@ -2593,7 +2710,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558608": {
   "as": null,
@@ -2615,7 +2733,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "558610": {
   "as": 0,
@@ -2637,6 +2756,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "558613": {
@@ -2659,6 +2779,7 @@
   "pick": "A",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "558617": {
@@ -2681,6 +2802,7 @@
   "pick": "A",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "558618": {
@@ -2703,6 +2825,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "559675": {
@@ -2725,7 +2848,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559676": {
   "as": null,
@@ -2747,7 +2871,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559677": {
   "as": null,
@@ -2769,7 +2894,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559678": {
   "as": null,
@@ -2791,7 +2917,8 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559679": {
   "as": null,
@@ -2813,7 +2940,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559680": {
   "as": null,
@@ -2835,7 +2963,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559681": {
   "as": null,
@@ -2857,7 +2986,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559682": {
   "as": null,
@@ -2879,7 +3009,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559683": {
   "as": null,
@@ -2901,7 +3032,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559684": {
   "as": null,
@@ -2923,7 +3055,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559685": {
   "as": null,
@@ -2945,7 +3078,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559686": {
   "as": null,
@@ -2967,7 +3101,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559687": {
   "as": null,
@@ -2989,7 +3124,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559688": {
   "as": null,
@@ -3011,28 +3147,30 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559689": {
-  "as": null,
+  "as": 0,
   "away": "Olympique de Marseille",
-  "brier": null,
+  "brier": 0.4145,
   "comp": "Ligue 1",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "Stade Rennais FC 1901",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-11",
   "koff_time": "21:45",
   "la": 1.617,
   "lh": 2.039,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.3094,
   "pd": 0.2133,
   "ph": 0.4772,
-  "pick": null,
+  "pick": "H",
   "score": "2-1",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "559690": {
@@ -3055,7 +3193,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559691": {
   "as": null,
@@ -3077,7 +3216,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559692": {
   "as": null,
@@ -3099,7 +3239,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "559694": {
   "as": 3,
@@ -3121,6 +3262,7 @@
   "pick": "A",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "559698": {
@@ -3143,6 +3285,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "560570": {
@@ -3165,6 +3308,7 @@
   "pick": "H",
   "score": "2-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "560572": {
@@ -3187,7 +3331,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560573": {
   "as": null,
@@ -3209,7 +3354,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560574": {
   "as": null,
@@ -3231,7 +3377,8 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560575": {
   "as": null,
@@ -3253,7 +3400,8 @@
   "pick": null,
   "score": "0-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560576": {
   "as": null,
@@ -3275,7 +3423,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560577": {
   "as": null,
@@ -3297,7 +3446,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560578": {
   "as": null,
@@ -3319,7 +3469,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560579": {
   "as": null,
@@ -3341,7 +3492,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560580": {
   "as": null,
@@ -3363,7 +3515,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560581": {
   "as": null,
@@ -3385,7 +3538,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560582": {
   "as": null,
@@ -3407,7 +3561,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560583": {
   "as": null,
@@ -3429,7 +3584,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560584": {
   "as": null,
@@ -3451,7 +3607,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560585": {
   "as": null,
@@ -3473,7 +3630,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560586": {
   "as": null,
@@ -3495,7 +3653,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560587": {
   "as": null,
@@ -3517,7 +3676,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560588": {
   "as": null,
@@ -3539,7 +3699,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560589": {
   "as": null,
@@ -3561,7 +3722,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560590": {
   "as": null,
@@ -3583,7 +3745,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "560591": {
   "as": null,
@@ -3605,7 +3768,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564658": {
   "as": 3,
@@ -3627,6 +3791,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "564659": {
@@ -3649,6 +3814,7 @@
   "pick": "A",
   "score": "0-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "564661": {
@@ -3671,6 +3837,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "564664": {
@@ -3693,6 +3860,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "564665": {
@@ -3715,6 +3883,7 @@
   "pick": "H",
   "score": "1-0",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-07"
  },
  "564666": {
@@ -3737,6 +3906,7 @@
   "pick": "A",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "564668": {
@@ -3759,28 +3929,30 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564669": {
-  "as": null,
+  "as": 0,
   "away": "Valencia CF",
-  "brier": null,
+  "brier": 0.1032,
   "comp": "Primera Division",
   "conf": "mid",
-  "hit": null,
+  "hit": 1,
   "home": "Sevilla FC",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-11",
   "koff_time": "22:00",
   "la": 0.748,
   "lh": 2.406,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.0973,
   "pd": 0.1623,
   "ph": 0.7404,
-  "pick": null,
+  "pick": "H",
   "score": "2-0",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "564670": {
@@ -3803,7 +3975,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564671": {
   "as": null,
@@ -3825,7 +3998,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564672": {
   "as": null,
@@ -3847,7 +4021,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564673": {
   "as": null,
@@ -3869,7 +4044,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564674": {
   "as": null,
@@ -3891,7 +4067,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564675": {
   "as": null,
@@ -3913,7 +4090,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564676": {
   "as": null,
@@ -3935,7 +4113,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564677": {
   "as": null,
@@ -3957,7 +4136,8 @@
   "pick": null,
   "score": "3-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564678": {
   "as": null,
@@ -3979,7 +4159,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564679": {
   "as": null,
@@ -4001,7 +4182,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564680": {
   "as": null,
@@ -4023,7 +4205,8 @@
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564681": {
   "as": null,
@@ -4045,7 +4228,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564683": {
   "as": null,
@@ -4067,7 +4251,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564684": {
   "as": null,
@@ -4089,7 +4274,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564685": {
   "as": null,
@@ -4111,7 +4297,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564686": {
   "as": null,
@@ -4133,7 +4320,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564687": {
   "as": null,
@@ -4155,7 +4343,8 @@
   "pick": null,
   "score": "3-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564688": {
   "as": null,
@@ -4177,7 +4366,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564689": {
   "as": null,
@@ -4199,7 +4389,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564690": {
   "as": null,
@@ -4221,7 +4412,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564691": {
   "as": null,
@@ -4243,7 +4435,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564692": {
   "as": null,
@@ -4265,7 +4458,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564693": {
   "as": null,
@@ -4287,7 +4481,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564694": {
   "as": null,
@@ -4309,7 +4504,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564695": {
   "as": null,
@@ -4331,7 +4527,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564696": {
   "as": null,
@@ -4353,7 +4550,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "564697": {
   "as": null,
@@ -4375,7 +4573,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565786": {
   "as": 4,
@@ -4397,6 +4596,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-06"
  },
  "565794": {
@@ -4419,7 +4619,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565795": {
   "as": null,
@@ -4441,7 +4642,8 @@
   "pick": null,
   "score": "1-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565796": {
   "as": null,
@@ -4463,28 +4665,30 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565797": {
-  "as": null,
+  "as": 3,
   "away": "FC Schalke 04",
-  "brier": null,
+  "brier": 0.8792,
   "comp": "Bundesliga",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "1. FC Union Berlin",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-11",
   "koff_time": "21:30",
   "la": 1.253,
   "lh": 1.884,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.2537,
   "pd": 0.225,
   "ph": 0.5212,
-  "pick": null,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-11"
  },
  "565798": {
@@ -4507,7 +4711,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565799": {
   "as": null,
@@ -4529,7 +4734,8 @@
   "pick": null,
   "score": "2-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565800": {
   "as": null,
@@ -4551,7 +4757,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565801": {
   "as": null,
@@ -4573,7 +4780,8 @@
   "pick": null,
   "score": "3-0",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565802": {
   "as": null,
@@ -4595,7 +4803,8 @@
   "pick": null,
   "score": "3-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565803": {
   "as": null,
@@ -4617,7 +4826,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565804": {
   "as": null,
@@ -4639,7 +4849,8 @@
   "pick": null,
   "score": "3-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565805": {
   "as": null,
@@ -4661,7 +4872,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565806": {
   "as": null,
@@ -4683,7 +4895,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565807": {
   "as": null,
@@ -4705,7 +4918,8 @@
   "pick": null,
   "score": "2-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565808": {
   "as": null,
@@ -4727,7 +4941,8 @@
   "pick": null,
   "score": "1-1",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565809": {
   "as": null,
@@ -4749,7 +4964,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565810": {
   "as": null,
@@ -4771,7 +4987,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "565811": {
   "as": null,
@@ -4793,7 +5010,8 @@
   "pick": null,
   "score": "1-2",
   "score_hit": null,
-  "ts": "2026-09-11"
+  "src": "python",
+  "ts": "2026-09-12"
  },
  "575325": {
   "as": 1,
@@ -4815,6 +5033,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "575326": {
@@ -4837,6 +5056,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "575327": {
@@ -4859,6 +5079,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "575328": {
@@ -4881,6 +5102,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-08"
  },
  "575329": {
@@ -4903,6 +5125,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "575330": {
@@ -4925,6 +5148,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "575331": {
@@ -4947,6 +5171,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "575332": {
@@ -4969,6 +5194,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "575333": {
@@ -4991,6 +5217,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "575334": {
@@ -5013,6 +5240,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-09"
  },
  "575335": {
@@ -5035,6 +5263,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-10"
  },
  "575336": {
@@ -5057,6 +5286,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 1,
+  "src": "python",
   "ts": "2026-09-10"
  },
  "575337": {
@@ -5079,6 +5309,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-10"
  },
  "575338": {
@@ -5101,6 +5332,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-10"
  },
  "575339": {
@@ -5123,6 +5355,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-10"
  },
  "575340": {
@@ -5145,6 +5378,7 @@
   "pick": "H",
   "score": "1-1",
   "score_hit": 0,
+  "src": "python",
   "ts": "2026-09-10"
  }
 }
