@@ -1846,10 +1846,22 @@ def build():
     assists = load("assists.json")       # same shape, key "assists"
     fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
     goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
-    ge_idx = goal_events_index(goal_events)
     # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
     _details_raw = load("match_details.json")
     md_idx = match_details_index(_details_raw)
+    # Scorers come from match_details FIRST and goal_events only on top.
+    # goal_events.json is a ROLLING window: fetch_data rewrites it with what
+    # 365scores still returns, so a finished match drops out of it within
+    # hours and its scorers silently vanished from every row - the Premier
+    # League Saturday of 2026-09-12 was showing bare scores by midnight, on a
+    # page built from data that still held all 23 of those matches. That is
+    # exactly what match_details exists to prevent (fetch_data.py:948 says so:
+    # "goal_events.json is a rolling window, this file accumulates so a match
+    # page keeps its details after the match leaves the window") - the list
+    # was simply never wired to it. The rolling file is layered on top anyway
+    # so a just-scored goal still wins the moment it is fetched.
+    ge_idx = goal_events_index(_details_raw)
+    ge_idx.update(goal_events_index(goal_events))
 
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
