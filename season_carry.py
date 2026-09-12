@@ -61,15 +61,28 @@ def fetch(season=SEASON_PREV, token=None):
         print("FD_TOKEN not set - cannot fetch", file=sys.stderr)
         return 1
     os.makedirs(PREV_DIR, exist_ok=True)
+    failed = []
     for i, code in enumerate(LEAGUES):
         if i:
             time.sleep(7)
         url = f"https://api.football-data.org/v4/competitions/{code}/matches?season={season}"
-        try:
-            doc = _fd_get(url, token)
-        except Exception as e:                       # noqa: BLE001
-            print(f"{code}: fetch failed - {e}", file=sys.stderr)
-            return 1
+        doc = None
+        for attempt in (1, 2, 3):
+            try:
+                doc = _fd_get(url, token)
+                break
+            except Exception as e:                   # noqa: BLE001
+                # 429 = the 10-requests-a-minute wall; wait it out and try again.
+                # Any other error: report and move on - the other leagues still
+                # get their file, and the missing one shows in the summary.
+                print(f"{code}: attempt {attempt} failed - {e}", file=sys.stderr)
+                if "429" in str(e) and attempt < 3:
+                    time.sleep(65)
+                else:
+                    break
+        if doc is None:
+            failed.append(code)
+            continue
         ms = [m for m in doc.get("matches", []) if m.get("status") == "FINISHED"]
         slim = [{"date": (m.get("utcDate") or "")[:10],
                  "home": (m.get("homeTeam") or {}).get("name"),
@@ -86,6 +99,9 @@ def fetch(season=SEASON_PREV, token=None):
         with open(path, "w", encoding="utf-8") as f:
             json.dump(out, f, ensure_ascii=False, indent=1)
         print(f"{code} {LEAGUES[code]}: {len(slim)} finished matches -> {os.path.relpath(path, HERE)}")
+    if failed:
+        print(f"leagues NOT fetched: {failed}", file=sys.stderr)
+        return 1
     return 0
 
 
