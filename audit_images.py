@@ -106,12 +106,49 @@ def club_vocabulary():
     return sorted(names, key=len, reverse=True)
 
 
+def registry():
+    """data/media_credits.json - photos stocked by hand in the Oracle library.
+
+    A second place a credit can legitimately live. Before it existed, a file in
+    media/ could only be registered by an article already using it, so a photo
+    chosen in advance was unusable by our own rule. Same shape of record, so
+    the checks below apply to it unchanged."""
+    path = os.path.join(HERE, "data", "media_credits.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as fh:
+        d = json.load(fh) or {}
+    return {p["file"]: p.get("credit") for p in (d.get("photos") or []) if p.get("file")}
+
+
+def orphans(credited):
+    """Files in media/ that no article and no registry entry vouches for.
+
+    Our own rule forbids publishing them: with no licence line recorded, nobody
+    can tell a leftover from a photo we deleted for being wrong. They are dead
+    weight until someone registers them on page 30 of the Oracle app."""
+    folder = os.path.join(HERE, "media")
+    if not os.path.isdir(folder):
+        return []
+    out = []
+    for fn in sorted(os.listdir(folder)):
+        if not os.path.isfile(os.path.join(folder, fn)):
+            continue
+        if fn in credited or fn.startswith("ph-"):    # ph-* are our own placeholders
+            continue
+        out.append(fn)
+    return out
+
+
 def main():
     d = json.load(open(os.path.join(HERE, "data", "articles.json"), encoding="utf-8"))
     arts = d["results"][0]["items"]
     vocab = club_vocabulary()
+    reg = registry()
 
     by_file, suspects = {}, []
+    for fn, credit in reg.items():
+        by_file[fn] = {"ids": ["(library)"], "credit": credit}
     for a in arts:
         img = a.get("image_url") or ""
         if "/media/" not in img:
@@ -173,6 +210,14 @@ def main():
         print(f"  {fn}   (articles: {', '.join(g['ids'])})")
         print(f"    credit : {g['credit'][:130]}")
         print(f"    why    : {g['why']}\n")
+
+    dead = orphans(set(by_file) | set(reg))
+    if dead:
+        print(f"--- {len(dead)} file(s) in media/ with no credit anywhere: unusable ---")
+        for fn in dead:
+            print(f"  {fn}")
+        print("    register them on page 30 of the Oracle app, or delete them")
+        print()
 
     if "--pool" in sys.argv[1:]:
         print("--- photos reused by more than one article ---")
