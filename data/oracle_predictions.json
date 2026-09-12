@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-12T22:30:05+03:00",
+    "generated_at" : "2026-09-12T22:45:04+03:00",
     "days" : 10,
     "n" : 113,
     "params" :
