@@ -1,0 +1,273 @@
+{
+ "meta": {
+  "season_prev": 2025,
+  "shrink": 0.3333,
+  "method": "seed = 1500 + (final_prev - 1500) * (1 - shrink); promoted = mean carried Elo of the relegated",
+  "leagues": [
+   "Bundesliga",
+   "Ligue 1",
+   "Premier League",
+   "Primera Division",
+   "Serie A"
+  ],
+  "generated_at": "2026-09-12T12:19:06+00:00"
+ },
+ "seeds": {
+  "Premier League": {
+   "Liverpool FC": 1516.84,
+   "AFC Bournemouth": 1547.38,
+   "Aston Villa FC": 1526.61,
+   "Newcastle United FC": 1484.49,
+   "Brighton & Hove Albion FC": 1502.88,
+   "Fulham FC": 1493.34,
+   "Sunderland AFC": 1491.42,
+   "Tottenham Hotspur FC": 1449.51,
+   "Manchester City FC": 1604.01,
+   "Nottingham Forest FC": 1504.89,
+   "Brentford FC": 1507.28,
+   "Chelsea FC": 1481.29,
+   "Crystal Palace FC": 1462.18,
+   "Manchester United FC": 1586.44,
+   "Arsenal FC": 1622.0,
+   "Leeds United FC": 1498.91,
+   "Everton FC": 1476.8,
+   "Coventry City FC": 1414.58,
+   "Hull City AFC": 1414.58,
+   "Ipswich Town FC": 1414.58
+  },
+  "Primera Division": {
+   "Rayo Vallecano de Madrid": 1516.25,
+   "Villarreal CF": 1556.27,
+   "FC Barcelona": 1645.16,
+   "Deportivo Alavés": 1471.61,
+   "Levante UD": 1483.41,
+   "Valencia CF": 1510.55,
+   "Real Sociedad de Fútbol": 1482.35,
+   "RC Celta de Vigo": 1507.2,
+   "Getafe CF": 1494.58,
+   "Athletic Club": 1455.02,
+   "Sevilla FC": 1457.88,
+   "RCD Espanyol de Barcelona": 1456.57,
+   "Club Atlético de Madrid": 1535.35,
+   "Elche CF": 1472.4,
+   "Real Betis Balompié": 1539.24,
+   "Real Madrid CF": 1610.92,
+   "CA Osasuna": 1453.24,
+   "Málaga CF": 1450.67,
+   "RC Deportivo La Coruña": 1450.67,
+   "Real Racing Club de Santander": 1450.67
+  },
+  "Bundesliga": {
+   "FC Bayern München": 1680.61,
+   "RB Leipzig": 1557.38,
+   "Eintracht Frankfurt": 1478.96,
+   "SV Werder Bremen": 1430.8,
+   "Bayer 04 Leverkusen": 1551.15,
+   "TSG 1899 Hoffenheim": 1532.93,
+   "SC Freiburg": 1500.86,
+   "FC Augsburg": 1483.73,
+   "1. FC Union Berlin": 1463.66,
+   "VfB Stuttgart": 1570.49,
+   "Borussia Dortmund": 1601.76,
+   "1. FSV Mainz 05": 1496.73,
+   "1. FC Köln": 1436.39,
+   "Borussia Mönchengladbach": 1485.17,
+   "Hamburger SV": 1472.94,
+   "FC Schalke 04": 1418.81,
+   "SC Paderborn 07": 1418.81,
+   "SV 07 Elversberg": 1418.81
+  },
+  "Serie A": {
+   "Genoa CFC": 1466.59,
+   "US Lecce": 1453.09,
+   "US Sassuolo Calcio": 1481.4,
+   "SSC Napoli": 1568.31,
+   "AC Milan": 1535.75,
+   "AS Roma": 1580.85,
+   "Bologna FC 1909": 1507.3,
+   "Cagliari Calcio": 1468.07,
+   "ACF Fiorentina": 1498.03,
+   "Como 1907": 1590.67,
+   "SS Lazio": 1511.29,
+   "Atalanta BC": 1536.97,
+   "Juventus FC": 1565.29,
+   "Parma Calcio 1913": 1474.34,
+   "Udinese Calcio": 1499.78,
+   "FC Internazionale Milano": 1639.99,
+   "Torino FC": 1468.64,
+   "AC Monza": 1384.55,
+   "Frosinone Calcio": 1384.55,
+   "Venezia FC": 1384.55
+  },
+  "Ligue 1": {
+   "Stade Rennais FC 1901": 1548.82,
+   "Olympique de Marseille": 1528.53,
+   "Racing Club de Lens": 1581.33,
+   "Olympique Lyonnais": 1532.83,
+   "AS Monaco FC": 1524.75,
+   "Le Havre AC": 1466.69,
+   "OGC Nice": 1437.98,
+   "Toulouse FC": 1498.72,
+   "Stade Brestois 29": 1456.86,
+   "Lille OSC": 1558.06,
+   "AJ Auxerre": 1486.1,
+   "FC Lorient": 1499.34,
+   "RC Strasbourg Alsace": 1526.99,
+   "Angers SCO": 1437.49,
+   "Paris FC": 1517.87,
+   "Paris Saint-Germain FC": 1606.85,
+   "ES Troyes AC": 1395.39,
+   "Le Mans FC": 1395.39
+  }
+ },
+ "notes": {
+  "Premier League": {
+   "n_prev": 380,
+   "clubs_prev": 20,
+   "clubs_now": 20,
+   "relegated": [
+    "Burnley FC",
+    "West Ham United FC",
+    "Wolverhampton Wanderers FC"
+   ],
+   "promoted": [
+    "Coventry City FC",
+    "Hull City AFC",
+    "Ipswich Town FC"
+   ],
+   "promoted_seed": 1414.58,
+   "final_top": [
+    [
+     1683.0,
+     "Arsenal FC"
+    ],
+    [
+     1656.0,
+     "Manchester City FC"
+    ],
+    [
+     1629.7,
+     "Manchester United FC"
+    ]
+   ]
+  },
+  "Primera Division": {
+   "n_prev": 380,
+   "clubs_prev": 20,
+   "clubs_now": 20,
+   "relegated": [
+    "Girona FC",
+    "RCD Mallorca",
+    "Real Oviedo"
+   ],
+   "promoted": [
+    "Málaga CF",
+    "RC Deportivo La Coruña",
+    "Real Racing Club de Santander"
+   ],
+   "promoted_seed": 1450.67,
+   "final_top": [
+    [
+     1717.7,
+     "FC Barcelona"
+    ],
+    [
+     1666.4,
+     "Real Madrid CF"
+    ],
+    [
+     1584.4,
+     "Villarreal CF"
+    ]
+   ]
+  },
+  "Bundesliga": {
+   "n_prev": 306,
+   "clubs_prev": 18,
+   "clubs_now": 18,
+   "relegated": [
+    "1. FC Heidenheim 1846",
+    "FC St. Pauli 1910",
+    "VfL Wolfsburg"
+   ],
+   "promoted": [
+    "FC Schalke 04",
+    "SC Paderborn 07",
+    "SV 07 Elversberg"
+   ],
+   "promoted_seed": 1418.81,
+   "final_top": [
+    [
+     1770.9,
+     "FC Bayern München"
+    ],
+    [
+     1652.6,
+     "Borussia Dortmund"
+    ],
+    [
+     1605.7,
+     "VfB Stuttgart"
+    ]
+   ]
+  },
+  "Serie A": {
+   "n_prev": 380,
+   "clubs_prev": 20,
+   "clubs_now": 20,
+   "relegated": [
+    "AC Pisa 1909",
+    "Hellas Verona FC",
+    "US Cremonese"
+   ],
+   "promoted": [
+    "AC Monza",
+    "Frosinone Calcio",
+    "Venezia FC"
+   ],
+   "promoted_seed": 1384.55,
+   "final_top": [
+    [
+     1710.0,
+     "FC Internazionale Milano"
+    ],
+    [
+     1636.0,
+     "Como 1907"
+    ],
+    [
+     1621.3,
+     "AS Roma"
+    ]
+   ]
+  },
+  "Ligue 1": {
+   "n_prev": 305,
+   "clubs_prev": 18,
+   "clubs_now": 18,
+   "relegated": [
+    "FC Metz",
+    "FC Nantes"
+   ],
+   "promoted": [
+    "ES Troyes AC",
+    "Le Mans FC"
+   ],
+   "promoted_seed": 1395.39,
+   "final_top": [
+    [
+     1660.3,
+     "Paris Saint-Germain FC"
+    ],
+    [
+     1622.0,
+     "Racing Club de Lens"
+    ],
+    [
+     1587.1,
+     "Lille OSC"
+    ]
+   ]
+  }
+ }
+}

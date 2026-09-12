@@ -1,0 +1,120 @@
+Sat Sep 12 12:18:32 UTC 2026
+PL Premier League: 380 finished matches -> data/season_prev/PL-2025.json
+PD Primera Division: 380 finished matches -> data/season_prev/PD-2025.json
+BL1 Bundesliga: 306 finished matches -> data/season_prev/BL1-2025.json
+SA Serie A: 380 finished matches -> data/season_prev/SA-2025.json
+FL1 Ligue 1: 305 finished matches -> data/season_prev/FL1-2025.json
+wrote data/elo_seeds.json: 96 clubs in 5 leagues, shrink 0.333
+  Premier League: prev 380 matches, promoted ['Coventry City FC', 'Hull City AFC', 'Ipswich Town FC'] -> 1414.58, relegated ['Burnley FC', 'West Ham United FC', 'Wolverhampton Wanderers FC']
+  Primera Division: prev 380 matches, promoted ['Málaga CF', 'RC Deportivo La Coruña', 'Real Racing Club de Santander'] -> 1450.67, relegated ['Girona FC', 'RCD Mallorca', 'Real Oviedo']
+  Bundesliga: prev 306 matches, promoted ['FC Schalke 04', 'SC Paderborn 07', 'SV 07 Elversberg'] -> 1418.81, relegated ['1. FC Heidenheim 1846', 'FC St. Pauli 1910', 'VfL Wolfsburg']
+  Serie A: prev 380 matches, promoted ['AC Monza', 'Frosinone Calcio', 'Venezia FC'] -> 1384.55, relegated ['AC Pisa 1909', 'Hellas Verona FC', 'US Cremonese']
+  Ligue 1: prev 305 matches, promoted ['ES Troyes AC', 'Le Mans FC'] -> 1395.39, relegated ['FC Metz', 'FC Nantes']
+{'season_prev': 2025, 'shrink': 0.3333, 'method': 'seed = 1500 + (final_prev - 1500) * (1 - shrink); promoted = mean carried Elo of the relegated', 'leagues': ['Bundesliga', 'Ligue 1', 'Premier League', 'Primera Division', 'Serie A'], 'generated_at': '2026-09-12T12:19:06+00:00'}
+
+Premier League
+   1622.00  Arsenal FC
+   1604.01  Manchester City FC
+   1586.44  Manchester United FC
+   1547.38  AFC Bournemouth
+   1526.61  Aston Villa FC
+   1516.84  Liverpool FC
+   1507.28  Brentford FC
+   1504.89  Nottingham Forest FC
+   1502.88  Brighton & Hove Albion FC
+   1498.91  Leeds United FC
+   1493.34  Fulham FC
+   1491.42  Sunderland AFC
+   1484.49  Newcastle United FC
+   1481.29  Chelsea FC
+   1476.80  Everton FC
+   1462.18  Crystal Palace FC
+   1449.51  Tottenham Hotspur FC
+   1414.58  Coventry City FC
+   1414.58  Hull City AFC
+   1414.58  Ipswich Town FC
+
+Primera Division
+   1645.16  FC Barcelona
+   1610.92  Real Madrid CF
+   1556.27  Villarreal CF
+   1539.24  Real Betis Balompié
+   1535.35  Club Atlético de Madrid
+   1516.25  Rayo Vallecano de Madrid
+   1510.55  Valencia CF
+   1507.20  RC Celta de Vigo
+   1494.58  Getafe CF
+   1483.41  Levante UD
+   1482.35  Real Sociedad de Fútbol
+   1472.40  Elche CF
+   1471.61  Deportivo Alavés
+   1457.88  Sevilla FC
+   1456.57  RCD Espanyol de Barcelona
+   1455.02  Athletic Club
+   1453.24  CA Osasuna
+   1450.67  Málaga CF
+   1450.67  RC Deportivo La Coruña
+   1450.67  Real Racing Club de Santander
+
+Bundesliga
+   1680.61  FC Bayern München
+   1601.76  Borussia Dortmund
+   1570.49  VfB Stuttgart
+   1557.38  RB Leipzig
+   1551.15  Bayer 04 Leverkusen
+   1532.93  TSG 1899 Hoffenheim
+   1500.86  SC Freiburg
+   1496.73  1. FSV Mainz 05
+   1485.17  Borussia Mönchengladbach
+   1483.73  FC Augsburg
+   1478.96  Eintracht Frankfurt
+   1472.94  Hamburger SV
+   1463.66  1. FC Union Berlin
+   1436.39  1. FC Köln
+   1430.80  SV Werder Bremen
+   1418.81  FC Schalke 04
+   1418.81  SC Paderborn 07
+   1418.81  SV 07 Elversberg
+
+Serie A
+   1639.99  FC Internazionale Milano
+   1590.67  Como 1907
+   1580.85  AS Roma
+   1568.31  SSC Napoli
+   1565.29  Juventus FC
+   1536.97  Atalanta BC
+   1535.75  AC Milan
+   1511.29  SS Lazio
+   1507.30  Bologna FC 1909
+   1499.78  Udinese Calcio
+   1498.03  ACF Fiorentina
+   1481.40  US Sassuolo Calcio
+   1474.34  Parma Calcio 1913
+   1468.64  Torino FC
+   1468.07  Cagliari Calcio
+   1466.59  Genoa CFC
+   1453.09  US Lecce
+   1384.55  AC Monza
+   1384.55  Frosinone Calcio
+   1384.55  Venezia FC
+
+Ligue 1
+   1606.85  Paris Saint-Germain FC
+   1581.33  Racing Club de Lens
+   1558.06  Lille OSC
+   1548.82  Stade Rennais FC 1901
+   1532.83  Olympique Lyonnais
+   1528.53  Olympique de Marseille
+   1526.99  RC Strasbourg Alsace
+   1524.75  AS Monaco FC
+   1517.87  Paris FC
+   1499.34  FC Lorient
+   1498.72  Toulouse FC
+   1486.10  AJ Auxerre
+   1466.69  Le Havre AC
+   1456.86  Stade Brestois 29
+   1437.98  OGC Nice
+   1437.49  Angers SCO
+   1395.39  ES Troyes AC
+   1395.39  Le Mans FC
+exit 0
