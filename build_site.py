@@ -1849,36 +1849,45 @@ def build():
     # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
     _details_raw = load("match_details.json")
     md_idx = match_details_index(_details_raw)
-    # Scorers come from the Oracle archive FIRST, then match_details, then
-    # goal_events on top.
+    # ONE rule for a finished match, and it is the user's: ask the Oracle
+    # archive first, and fall back to the python files only when Oracle has
+    # nothing to say. The score already worked that way; the scorers did not,
+    # because these are dict.update() layers and the LAST one wins - so the
+    # archive being applied first made it the loser, the exact opposite of
+    # what the comment claimed. The archive is applied LAST now.
     #
-    # The archive (data/oracle_results.json, written by yalla_results in the
-    # Oracle copy) is the only one of the three that is PERMANENT: a match is
-    # frozen there once its recorded scorers account for its score, and nothing
-    # rewrites it afterwards. It is still only an INPUT - missing or old, the
-    # two files below carry the page exactly as before.
-    # goal_events.json is a ROLLING window: fetch_data rewrites it with what
-    # 365scores still returns, so a finished match drops out of it within
-    # hours and its scorers silently vanished from every row - the Premier
-    # League Saturday of 2026-09-12 was showing bare scores by midnight, on a
-    # page built from data that still held all 23 of those matches. That is
-    # exactly what match_details exists to prevent (fetch_data.py:948 says so:
-    # "goal_events.json is a rolling window, this file accumulates so a match
-    # page keeps its details after the match leaves the window") - the list
-    # was simply never wired to it. The rolling file is layered on top anyway
-    # so a just-scored goal still wins the moment it is fetched.
+    # Reading bottom-up, the fallback chain is:
+    #   match_details.json  - the site's own 45-day store, the deepest python
+    #                         source
+    #   goal_events.json    - a ROLLING window: fetch_data rewrites it with
+    #                         whatever 365scores still returns, so a finished
+    #                         match drops out within hours. That is what made
+    #                         the Premier League Saturday of 2026-09-12 show
+    #                         bare scores by midnight. Fresher than the store
+    #                         while it lasts, which is why it sits above it.
+    #   oracle_results.json - the frozen archive, and the winner wherever it
+    #                         has the match.
+    #
+    # Letting frozen beat fresh is safe BECAUSE of the freeze gate in
+    # yalla_results.freeze: a match is only ever frozen once its scorers
+    # account for its score, so if Oracle has it, the list is complete. A live
+    # or just-finished match is not in the archive at all and falls straight
+    # through to the feed. The cost, stated plainly: if a complete-but-wrong
+    # list ever gets frozen, a later correction from the feed will NOT
+    # overwrite it - that is what "frozen" means, and it is what was asked for.
     _orc_res, _orc_res_st = AN.load_oracle_results()
     # the SCORE of a finished match comes from the archive too, not only its
     # scorers - both halves of "النتيجة ومسجلي الأهداف"
     _sc_fill, _sc_chg = apply_oracle_scores(matches, oracle_results_index(_orc_res))
-    ge_idx = goal_events_index(_orc_res)
-    ge_idx.update(goal_events_index(_details_raw))
+    ge_idx = goal_events_index(_details_raw)
     ge_idx.update(goal_events_index(goal_events))
+    ge_idx.update(goal_events_index(_orc_res))      # frozen wins
+    _n_orc_goals = len(goal_events_index(_orc_res))
     print("  + Oracle archive (%s): %d match(es); scores taken for %d"
-          "%s; scorer index %d rows"
+          "%s; scorers %d of %d rows from Oracle, the rest from the python files"
           % (_orc_res_st.get("status"), _orc_res_st.get("count", 0), _sc_fill,
              (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else "",
-             len(ge_idx)))
+             _n_orc_goals, len(ge_idx)))
 
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
