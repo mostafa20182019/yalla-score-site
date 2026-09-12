@@ -1,0 +1,2669 @@
+{
+ "competition": "Primera Division",
+ "code": "PD",
+ "season": 2025,
+ "fetched_at": "2026-09-12T12:09:13+00:00",
+ "n": 380,
+ "matches": [
+  {
+   "date": "2025-08-15",
+   "home": "Girona FC",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2025-08-15",
+   "home": "Villarreal CF",
+   "away": "Real Oviedo",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-16",
+   "home": "RCD Mallorca",
+   "away": "FC Barcelona",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-08-16",
+   "home": "Deportivo Alavés",
+   "away": "Levante UD",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-16",
+   "home": "Valencia CF",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-17",
+   "home": "RC Celta de Vigo",
+   "away": "Getafe CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-17",
+   "home": "Athletic Club",
+   "away": "Sevilla FC",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-17",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Club Atlético de Madrid",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-18",
+   "home": "Elche CF",
+   "away": "Real Betis Balompié",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-19",
+   "home": "Real Madrid CF",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-22",
+   "home": "Real Betis Balompié",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-23",
+   "home": "RCD Mallorca",
+   "away": "RC Celta de Vigo",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-23",
+   "home": "Club Atlético de Madrid",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-23",
+   "home": "Levante UD",
+   "away": "FC Barcelona",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2025-08-24",
+   "home": "CA Osasuna",
+   "away": "Valencia CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-24",
+   "home": "Real Sociedad de Fútbol",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-24",
+   "home": "Villarreal CF",
+   "away": "Girona FC",
+   "home_score": 5,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-24",
+   "home": "Real Oviedo",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-08-25",
+   "home": "Athletic Club",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-25",
+   "home": "Sevilla FC",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-27",
+   "home": "RC Celta de Vigo",
+   "away": "Real Betis Balompié",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-29",
+   "home": "Elche CF",
+   "away": "Levante UD",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-29",
+   "home": "Valencia CF",
+   "away": "Getafe CF",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-30",
+   "home": "Deportivo Alavés",
+   "away": "Club Atlético de Madrid",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-30",
+   "home": "Real Oviedo",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-30",
+   "home": "Girona FC",
+   "away": "Sevilla FC",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-30",
+   "home": "Real Madrid CF",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-31",
+   "home": "RC Celta de Vigo",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-08-31",
+   "home": "Real Betis Balompié",
+   "away": "Athletic Club",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-08-31",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-08-31",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "FC Barcelona",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-12",
+   "home": "Sevilla FC",
+   "away": "Elche CF",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-13",
+   "home": "Getafe CF",
+   "away": "Real Oviedo",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-13",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Real Madrid CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-13",
+   "home": "Athletic Club",
+   "away": "Deportivo Alavés",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-13",
+   "home": "Club Atlético de Madrid",
+   "away": "Villarreal CF",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-14",
+   "home": "RC Celta de Vigo",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-14",
+   "home": "Levante UD",
+   "away": "Real Betis Balompié",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-14",
+   "home": "CA Osasuna",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-14",
+   "home": "FC Barcelona",
+   "away": "Valencia CF",
+   "home_score": 6,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-15",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "RCD Mallorca",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-19",
+   "home": "Real Betis Balompié",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-20",
+   "home": "Girona FC",
+   "away": "Levante UD",
+   "home_score": 0,
+   "away_score": 4
+  },
+  {
+   "date": "2025-09-20",
+   "home": "Real Madrid CF",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-20",
+   "home": "Villarreal CF",
+   "away": "CA Osasuna",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-20",
+   "home": "Deportivo Alavés",
+   "away": "Sevilla FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-20",
+   "home": "Valencia CF",
+   "away": "Athletic Club",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-21",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "RC Celta de Vigo",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-21",
+   "home": "RCD Mallorca",
+   "away": "Club Atlético de Madrid",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-21",
+   "home": "Elche CF",
+   "away": "Real Oviedo",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-21",
+   "home": "FC Barcelona",
+   "away": "Getafe CF",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-23",
+   "home": "Athletic Club",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-23",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Valencia CF",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-23",
+   "home": "Levante UD",
+   "away": "Real Madrid CF",
+   "home_score": 1,
+   "away_score": 4
+  },
+  {
+   "date": "2025-09-23",
+   "home": "Sevilla FC",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-24",
+   "home": "Getafe CF",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-24",
+   "home": "Club Atlético de Madrid",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-24",
+   "home": "Real Sociedad de Fútbol",
+   "away": "RCD Mallorca",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-25",
+   "home": "CA Osasuna",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-25",
+   "home": "Real Oviedo",
+   "away": "FC Barcelona",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2025-09-26",
+   "home": "Girona FC",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-27",
+   "home": "Getafe CF",
+   "away": "Levante UD",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-27",
+   "home": "Club Atlético de Madrid",
+   "away": "Real Madrid CF",
+   "home_score": 5,
+   "away_score": 2
+  },
+  {
+   "date": "2025-09-27",
+   "home": "RCD Mallorca",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-27",
+   "home": "Villarreal CF",
+   "away": "Athletic Club",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-28",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Sevilla FC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-28",
+   "home": "Elche CF",
+   "away": "RC Celta de Vigo",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-28",
+   "home": "FC Barcelona",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-09-28",
+   "home": "Real Betis Balompié",
+   "away": "CA Osasuna",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-09-30",
+   "home": "Valencia CF",
+   "away": "Real Oviedo",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-03",
+   "home": "CA Osasuna",
+   "away": "Getafe CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-04",
+   "home": "Real Oviedo",
+   "away": "Levante UD",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-04",
+   "home": "Girona FC",
+   "away": "Valencia CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-04",
+   "home": "Athletic Club",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-04",
+   "home": "Real Madrid CF",
+   "away": "Villarreal CF",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-05",
+   "home": "Deportivo Alavés",
+   "away": "Elche CF",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-05",
+   "home": "Sevilla FC",
+   "away": "FC Barcelona",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-05",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Real Betis Balompié",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-05",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-05",
+   "home": "RC Celta de Vigo",
+   "away": "Club Atlético de Madrid",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-17",
+   "home": "Real Oviedo",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-18",
+   "home": "Sevilla FC",
+   "away": "RCD Mallorca",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-18",
+   "home": "FC Barcelona",
+   "away": "Girona FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-18",
+   "home": "Villarreal CF",
+   "away": "Real Betis Balompié",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-18",
+   "home": "Club Atlético de Madrid",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-19",
+   "home": "Elche CF",
+   "away": "Athletic Club",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-19",
+   "home": "RC Celta de Vigo",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-19",
+   "home": "Levante UD",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-19",
+   "home": "Getafe CF",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-20",
+   "home": "Deportivo Alavés",
+   "away": "Valencia CF",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-24",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-25",
+   "home": "Girona FC",
+   "away": "Real Oviedo",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-25",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-25",
+   "home": "Athletic Club",
+   "away": "Getafe CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-25",
+   "home": "Valencia CF",
+   "away": "Villarreal CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-26",
+   "home": "RCD Mallorca",
+   "away": "Levante UD",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-26",
+   "home": "Real Madrid CF",
+   "away": "FC Barcelona",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-10-26",
+   "home": "CA Osasuna",
+   "away": "RC Celta de Vigo",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2025-10-26",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-10-27",
+   "home": "Real Betis Balompié",
+   "away": "Club Atlético de Madrid",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-10-31",
+   "home": "Getafe CF",
+   "away": "Girona FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-01",
+   "home": "Villarreal CF",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-01",
+   "home": "Club Atlético de Madrid",
+   "away": "Sevilla FC",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-01",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Athletic Club",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-01",
+   "home": "Real Madrid CF",
+   "away": "Valencia CF",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Levante UD",
+   "away": "RC Celta de Vigo",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Deportivo Alavés",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-02",
+   "home": "FC Barcelona",
+   "away": "Elche CF",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-02",
+   "home": "Real Betis Balompié",
+   "away": "RCD Mallorca",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-03",
+   "home": "Real Oviedo",
+   "away": "CA Osasuna",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-07",
+   "home": "Elche CF",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-08",
+   "home": "Girona FC",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-08",
+   "home": "Sevilla FC",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-08",
+   "home": "Club Atlético de Madrid",
+   "away": "Levante UD",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-08",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Villarreal CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-09",
+   "home": "Athletic Club",
+   "away": "Real Oviedo",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-09",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-09",
+   "home": "Valencia CF",
+   "away": "Real Betis Balompié",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-09",
+   "home": "RCD Mallorca",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-09",
+   "home": "RC Celta de Vigo",
+   "away": "FC Barcelona",
+   "home_score": 2,
+   "away_score": 4
+  },
+  {
+   "date": "2025-11-21",
+   "home": "Valencia CF",
+   "away": "Levante UD",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-22",
+   "home": "Deportivo Alavés",
+   "away": "RC Celta de Vigo",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-22",
+   "home": "FC Barcelona",
+   "away": "Athletic Club",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-22",
+   "home": "CA Osasuna",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2025-11-22",
+   "home": "Villarreal CF",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-23",
+   "home": "Real Oviedo",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-23",
+   "home": "Real Betis Balompié",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-23",
+   "home": "Getafe CF",
+   "away": "Club Atlético de Madrid",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-23",
+   "home": "Elche CF",
+   "away": "Real Madrid CF",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-24",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-28",
+   "home": "Getafe CF",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-29",
+   "home": "RCD Mallorca",
+   "away": "CA Osasuna",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-29",
+   "home": "FC Barcelona",
+   "away": "Deportivo Alavés",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-29",
+   "home": "Levante UD",
+   "away": "Athletic Club",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-29",
+   "home": "Club Atlético de Madrid",
+   "away": "Real Oviedo",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-11-30",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Villarreal CF",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2025-11-30",
+   "home": "Sevilla FC",
+   "away": "Real Betis Balompié",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-11-30",
+   "home": "RC Celta de Vigo",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-11-30",
+   "home": "Girona FC",
+   "away": "Real Madrid CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-01",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Valencia CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-02",
+   "home": "FC Barcelona",
+   "away": "Club Atlético de Madrid",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-03",
+   "home": "Athletic Club",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-12-05",
+   "home": "Real Oviedo",
+   "away": "RCD Mallorca",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-06",
+   "home": "Villarreal CF",
+   "away": "Getafe CF",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-06",
+   "home": "Deportivo Alavés",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-06",
+   "home": "Real Betis Balompié",
+   "away": "FC Barcelona",
+   "home_score": 3,
+   "away_score": 5
+  },
+  {
+   "date": "2025-12-06",
+   "home": "Athletic Club",
+   "away": "Club Atlético de Madrid",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-07",
+   "home": "Elche CF",
+   "away": "Girona FC",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-07",
+   "home": "Valencia CF",
+   "away": "Sevilla FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-07",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-07",
+   "home": "Real Madrid CF",
+   "away": "RC Celta de Vigo",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-12-08",
+   "home": "CA Osasuna",
+   "away": "Levante UD",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-12",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-12-13",
+   "home": "Club Atlético de Madrid",
+   "away": "Valencia CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-13",
+   "home": "RCD Mallorca",
+   "away": "Elche CF",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-13",
+   "home": "FC Barcelona",
+   "away": "CA Osasuna",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-13",
+   "home": "Getafe CF",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-14",
+   "home": "Sevilla FC",
+   "away": "Real Oviedo",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-14",
+   "home": "RC Celta de Vigo",
+   "away": "Athletic Club",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-14",
+   "home": "Deportivo Alavés",
+   "away": "Real Madrid CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2025-12-15",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Real Betis Balompié",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-19",
+   "home": "Valencia CF",
+   "away": "RCD Mallorca",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-20",
+   "home": "Real Oviedo",
+   "away": "RC Celta de Vigo",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-20",
+   "home": "Levante UD",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2025-12-20",
+   "home": "CA Osasuna",
+   "away": "Deportivo Alavés",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-20",
+   "home": "Real Madrid CF",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-21",
+   "home": "Girona FC",
+   "away": "Club Atlético de Madrid",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2025-12-21",
+   "home": "Villarreal CF",
+   "away": "FC Barcelona",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2025-12-21",
+   "home": "Elche CF",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-21",
+   "home": "Real Betis Balompié",
+   "away": "Getafe CF",
+   "home_score": 4,
+   "away_score": 0
+  },
+  {
+   "date": "2025-12-22",
+   "home": "Athletic Club",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-02",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-03",
+   "home": "RC Celta de Vigo",
+   "away": "Valencia CF",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-03",
+   "home": "CA Osasuna",
+   "away": "Athletic Club",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-03",
+   "home": "Elche CF",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-01-03",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "FC Barcelona",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Sevilla FC",
+   "away": "Levante UD",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Real Madrid CF",
+   "away": "Real Betis Balompié",
+   "home_score": 5,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Deportivo Alavés",
+   "away": "Real Oviedo",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-04",
+   "home": "RCD Mallorca",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-04",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Club Atlético de Madrid",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-09",
+   "home": "Getafe CF",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-10",
+   "home": "Real Oviedo",
+   "away": "Real Betis Balompié",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-10",
+   "home": "Villarreal CF",
+   "away": "Deportivo Alavés",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-10",
+   "home": "Girona FC",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-10",
+   "home": "Valencia CF",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-11",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-11",
+   "home": "Levante UD",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-12",
+   "home": "Sevilla FC",
+   "away": "RC Celta de Vigo",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-16",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Girona FC",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-17",
+   "home": "Real Madrid CF",
+   "away": "Levante UD",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-17",
+   "home": "RCD Mallorca",
+   "away": "Athletic Club",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-17",
+   "home": "CA Osasuna",
+   "away": "Real Oviedo",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-17",
+   "home": "Real Betis Balompié",
+   "away": "Villarreal CF",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-18",
+   "home": "Getafe CF",
+   "away": "Valencia CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-18",
+   "home": "Club Atlético de Madrid",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-18",
+   "home": "RC Celta de Vigo",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-18",
+   "home": "Real Sociedad de Fútbol",
+   "away": "FC Barcelona",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-19",
+   "home": "Elche CF",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-23",
+   "home": "Levante UD",
+   "away": "Elche CF",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-24",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-01-24",
+   "home": "Valencia CF",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-24",
+   "home": "Sevilla FC",
+   "away": "Athletic Club",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-24",
+   "home": "Villarreal CF",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-25",
+   "home": "Club Atlético de Madrid",
+   "away": "RCD Mallorca",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-25",
+   "home": "FC Barcelona",
+   "away": "Real Oviedo",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-25",
+   "home": "Real Sociedad de Fútbol",
+   "away": "RC Celta de Vigo",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-25",
+   "home": "Deportivo Alavés",
+   "away": "Real Betis Balompié",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-26",
+   "home": "Girona FC",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-01-30",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-31",
+   "home": "Real Oviedo",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-31",
+   "home": "CA Osasuna",
+   "away": "Villarreal CF",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-01-31",
+   "home": "Levante UD",
+   "away": "Club Atlético de Madrid",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-01-31",
+   "home": "Elche CF",
+   "away": "FC Barcelona",
+   "home_score": 1,
+   "away_score": 3
+  },
+  {
+   "date": "2026-02-01",
+   "home": "Real Madrid CF",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-01",
+   "home": "Real Betis Balompié",
+   "away": "Valencia CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-01",
+   "home": "Getafe CF",
+   "away": "RC Celta de Vigo",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-01",
+   "home": "Athletic Club",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-02",
+   "home": "RCD Mallorca",
+   "away": "Sevilla FC",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-06",
+   "home": "RC Celta de Vigo",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-07",
+   "home": "FC Barcelona",
+   "away": "RCD Mallorca",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-07",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Elche CF",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Deportivo Alavés",
+   "away": "Getafe CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Athletic Club",
+   "away": "Levante UD",
+   "home_score": 4,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Sevilla FC",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Club Atlético de Madrid",
+   "away": "Real Betis Balompié",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-08",
+   "home": "Valencia CF",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-09",
+   "home": "Villarreal CF",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-13",
+   "home": "Elche CF",
+   "away": "CA Osasuna",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-14",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "RC Celta de Vigo",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-14",
+   "home": "Getafe CF",
+   "away": "Villarreal CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-14",
+   "home": "Sevilla FC",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-14",
+   "home": "Real Madrid CF",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-15",
+   "home": "Real Oviedo",
+   "away": "Athletic Club",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-15",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Club Atlético de Madrid",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-15",
+   "home": "Levante UD",
+   "away": "Valencia CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-15",
+   "home": "RCD Mallorca",
+   "away": "Real Betis Balompié",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-16",
+   "home": "Girona FC",
+   "away": "FC Barcelona",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-18",
+   "home": "Levante UD",
+   "away": "Villarreal CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-20",
+   "home": "Athletic Club",
+   "away": "Elche CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-21",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Real Oviedo",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2026-02-21",
+   "home": "Real Betis Balompié",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-21",
+   "home": "CA Osasuna",
+   "away": "Real Madrid CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-21",
+   "home": "Club Atlético de Madrid",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 4,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-22",
+   "home": "Getafe CF",
+   "away": "Sevilla FC",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-22",
+   "home": "FC Barcelona",
+   "away": "Levante UD",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-22",
+   "home": "RC Celta de Vigo",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-22",
+   "home": "Villarreal CF",
+   "away": "Valencia CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-23",
+   "home": "Deportivo Alavés",
+   "away": "Girona FC",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-02-27",
+   "home": "Levante UD",
+   "away": "Deportivo Alavés",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-02-28",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Athletic Club",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-28",
+   "home": "FC Barcelona",
+   "away": "Villarreal CF",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-28",
+   "home": "RCD Mallorca",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-02-28",
+   "home": "Real Oviedo",
+   "away": "Club Atlético de Madrid",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-01",
+   "home": "Elche CF",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-01",
+   "home": "Valencia CF",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-01",
+   "home": "Real Betis Balompié",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-01",
+   "home": "Girona FC",
+   "away": "RC Celta de Vigo",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-02",
+   "home": "Real Madrid CF",
+   "away": "Getafe CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-04",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Real Oviedo",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-06",
+   "home": "RC Celta de Vigo",
+   "away": "Real Madrid CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-07",
+   "home": "CA Osasuna",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-07",
+   "home": "Levante UD",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-07",
+   "home": "Club Atlético de Madrid",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-07",
+   "home": "Athletic Club",
+   "away": "FC Barcelona",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Villarreal CF",
+   "away": "Elche CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Getafe CF",
+   "away": "Real Betis Balompié",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Sevilla FC",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-08",
+   "home": "Valencia CF",
+   "away": "Deportivo Alavés",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-09",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Real Oviedo",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-13",
+   "home": "Deportivo Alavés",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-14",
+   "home": "Girona FC",
+   "away": "Athletic Club",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-14",
+   "home": "Club Atlético de Madrid",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-14",
+   "home": "Real Oviedo",
+   "away": "Valencia CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-14",
+   "home": "Real Madrid CF",
+   "away": "Elche CF",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-15",
+   "home": "RCD Mallorca",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-15",
+   "home": "FC Barcelona",
+   "away": "Sevilla FC",
+   "home_score": 5,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-15",
+   "home": "Real Betis Balompié",
+   "away": "RC Celta de Vigo",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-15",
+   "home": "Real Sociedad de Fútbol",
+   "away": "CA Osasuna",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-16",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Levante UD",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-20",
+   "home": "Villarreal CF",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-21",
+   "home": "Elche CF",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-21",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-21",
+   "home": "Levante UD",
+   "away": "Real Oviedo",
+   "home_score": 4,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-21",
+   "home": "CA Osasuna",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-21",
+   "home": "Sevilla FC",
+   "away": "Valencia CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-03-22",
+   "home": "FC Barcelona",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-03-22",
+   "home": "RC Celta de Vigo",
+   "away": "Deportivo Alavés",
+   "home_score": 3,
+   "away_score": 4
+  },
+  {
+   "date": "2026-03-22",
+   "home": "Athletic Club",
+   "away": "Real Betis Balompié",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-03-22",
+   "home": "Real Madrid CF",
+   "away": "Club Atlético de Madrid",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-03",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-04",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Levante UD",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-04",
+   "home": "RCD Mallorca",
+   "away": "Real Madrid CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-04",
+   "home": "Real Betis Balompié",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-04",
+   "home": "Club Atlético de Madrid",
+   "away": "FC Barcelona",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-05",
+   "home": "Getafe CF",
+   "away": "Athletic Club",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-05",
+   "home": "Valencia CF",
+   "away": "RC Celta de Vigo",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-05",
+   "home": "Real Oviedo",
+   "away": "Sevilla FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-05",
+   "home": "Deportivo Alavés",
+   "away": "CA Osasuna",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-06",
+   "home": "Girona FC",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-10",
+   "home": "Real Madrid CF",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-11",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Deportivo Alavés",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-11",
+   "home": "Elche CF",
+   "away": "Valencia CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-11",
+   "home": "FC Barcelona",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 4,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-11",
+   "home": "Sevilla FC",
+   "away": "Club Atlético de Madrid",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-12",
+   "home": "CA Osasuna",
+   "away": "Real Betis Balompié",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-12",
+   "home": "RCD Mallorca",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-12",
+   "home": "RC Celta de Vigo",
+   "away": "Real Oviedo",
+   "home_score": 0,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-12",
+   "home": "Athletic Club",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-13",
+   "home": "Levante UD",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-21",
+   "home": "Athletic Club",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-21",
+   "home": "RCD Mallorca",
+   "away": "Valencia CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-21",
+   "home": "Real Madrid CF",
+   "away": "Deportivo Alavés",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-21",
+   "home": "Girona FC",
+   "away": "Real Betis Balompié",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-22",
+   "home": "Elche CF",
+   "away": "Club Atlético de Madrid",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-22",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Getafe CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-22",
+   "home": "FC Barcelona",
+   "away": "RC Celta de Vigo",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-23",
+   "home": "Levante UD",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-23",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-04-23",
+   "home": "Real Oviedo",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-24",
+   "home": "Real Betis Balompié",
+   "away": "Real Madrid CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-25",
+   "home": "Deportivo Alavés",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-25",
+   "home": "Getafe CF",
+   "away": "FC Barcelona",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-25",
+   "home": "Valencia CF",
+   "away": "Girona FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-25",
+   "home": "Club Atlético de Madrid",
+   "away": "Athletic Club",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-26",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 3,
+   "away_score": 3
+  },
+  {
+   "date": "2026-04-26",
+   "home": "Real Oviedo",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-04-26",
+   "home": "CA Osasuna",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-26",
+   "home": "Villarreal CF",
+   "away": "RC Celta de Vigo",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-04-27",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Levante UD",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-01",
+   "home": "Girona FC",
+   "away": "RCD Mallorca",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-02",
+   "home": "Villarreal CF",
+   "away": "Levante UD",
+   "home_score": 5,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-02",
+   "home": "Valencia CF",
+   "away": "Club Atlético de Madrid",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-02",
+   "home": "Deportivo Alavés",
+   "away": "Athletic Club",
+   "home_score": 2,
+   "away_score": 4
+  },
+  {
+   "date": "2026-05-02",
+   "home": "CA Osasuna",
+   "away": "FC Barcelona",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-03",
+   "home": "RC Celta de Vigo",
+   "away": "Elche CF",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-03",
+   "home": "Getafe CF",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-03",
+   "home": "Real Betis Balompié",
+   "away": "Real Oviedo",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-03",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-04",
+   "home": "Sevilla FC",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-08",
+   "home": "Levante UD",
+   "away": "CA Osasuna",
+   "home_score": 3,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-09",
+   "home": "Elche CF",
+   "away": "Deportivo Alavés",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-09",
+   "home": "Sevilla FC",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-09",
+   "home": "Club Atlético de Madrid",
+   "away": "RC Celta de Vigo",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-09",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Real Betis Balompié",
+   "home_score": 2,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-10",
+   "home": "RCD Mallorca",
+   "away": "Villarreal CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-10",
+   "home": "Athletic Club",
+   "away": "Valencia CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-10",
+   "home": "Real Oviedo",
+   "away": "Getafe CF",
+   "home_score": 0,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-10",
+   "home": "FC Barcelona",
+   "away": "Real Madrid CF",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-11",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-12",
+   "home": "RC Celta de Vigo",
+   "away": "Levante UD",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2026-05-12",
+   "home": "Real Betis Balompié",
+   "away": "Elche CF",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-12",
+   "home": "CA Osasuna",
+   "away": "Club Atlético de Madrid",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-13",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Athletic Club",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-13",
+   "home": "Villarreal CF",
+   "away": "Sevilla FC",
+   "home_score": 2,
+   "away_score": 3
+  },
+  {
+   "date": "2026-05-13",
+   "home": "Deportivo Alavés",
+   "away": "FC Barcelona",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-13",
+   "home": "Getafe CF",
+   "away": "RCD Mallorca",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-14",
+   "home": "Valencia CF",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-14",
+   "home": "Girona FC",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-14",
+   "home": "Real Madrid CF",
+   "away": "Real Oviedo",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Athletic Club",
+   "away": "RC Celta de Vigo",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Club Atlético de Madrid",
+   "away": "Girona FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Elche CF",
+   "away": "Getafe CF",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Levante UD",
+   "away": "RCD Mallorca",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Rayo Vallecano de Madrid",
+   "away": "Villarreal CF",
+   "home_score": 2,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Real Sociedad de Fútbol",
+   "away": "Valencia CF",
+   "home_score": 3,
+   "away_score": 4
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Real Oviedo",
+   "away": "Deportivo Alavés",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-17",
+   "home": "CA Osasuna",
+   "away": "RCD Espanyol de Barcelona",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-17",
+   "home": "Sevilla FC",
+   "away": "Real Madrid CF",
+   "home_score": 0,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-17",
+   "home": "FC Barcelona",
+   "away": "Real Betis Balompié",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-23",
+   "home": "Deportivo Alavés",
+   "away": "Rayo Vallecano de Madrid",
+   "home_score": 1,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-23",
+   "home": "Real Betis Balompié",
+   "away": "Levante UD",
+   "home_score": 2,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-23",
+   "home": "RC Celta de Vigo",
+   "away": "Sevilla FC",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-23",
+   "home": "RCD Espanyol de Barcelona",
+   "away": "Real Sociedad de Fútbol",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-23",
+   "home": "Getafe CF",
+   "away": "CA Osasuna",
+   "home_score": 1,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-23",
+   "home": "RCD Mallorca",
+   "away": "Real Oviedo",
+   "home_score": 3,
+   "away_score": 0
+  },
+  {
+   "date": "2026-05-23",
+   "home": "Real Madrid CF",
+   "away": "Athletic Club",
+   "home_score": 4,
+   "away_score": 2
+  },
+  {
+   "date": "2026-05-23",
+   "home": "Valencia CF",
+   "away": "FC Barcelona",
+   "home_score": 3,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-23",
+   "home": "Girona FC",
+   "away": "Elche CF",
+   "home_score": 1,
+   "away_score": 1
+  },
+  {
+   "date": "2026-05-24",
+   "home": "Villarreal CF",
+   "away": "Club Atlético de Madrid",
+   "home_score": 5,
+   "away_score": 1
+  }
+ ]
+}
