@@ -5,7 +5,7 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (2 row(s) corrected, 39 live games)",
+ "reconcile": "ok (2 row(s) corrected, 46 live games)",
  "matches_archive": "ok (482)",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -171,12 +171,13 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (41 games)",
+ "goal_events": "ok (42 games)",
  "goal_events_dbg": {
-  "candidates": 47,
+  "candidates": 48,
   "detail_fails": 0,
   "skipped": [
    "4805178:count-mismatch (0, 0) vs 1-0 []",
+   "4805191:count-mismatch (0, 0) vs 0-1 []",
    "4805160:count-mismatch (0, 0) vs 4-0 []",
    "4805186:count-mismatch (0, 0) vs 1-1 []",
    "4805165:count-mismatch (0, 0) vs 3-0 []",
@@ -239,16 +240,16 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"3'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"orde"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"16'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (7 with XI)",
+ "prematch_lineups": "ok (6 with XI)",
  "prematch_dbg": {
-  "in_window": 12,
-  "fetched": 12,
-  "with_xi": 7,
+  "in_window": 11,
+  "fetched": 11,
+  "with_xi": 6,
   "fails": 0
  },
  "match_details": "ok (288)",
- "utc": "2026-09-12T14:03:34Z"
+ "utc": "2026-09-12T14:17:36Z"
 }
