@@ -1860,6 +1860,13 @@ def build():
         print(f'  + predictions: all {len(_preds)} from python '
               f'(oracle file {_orc_st.get("status")}'
               + (f', {_orc_st.get("age_h")}h old' if _orc_st.get("age_h") else '') + ')')
+    # The clubs' Elo table («أقوى الأندية», the per-league strength tables, the
+    # facts on a match page) from the same fresh file - laid over the python
+    # rows AFTER the python fallback predictions above were computed, so those
+    # stay pure python. Stale or missing file = python's table, as before.
+    if _orc_st.get("status") == "ok" and _orc_st.get("strength"):
+        _n_ap, _n_un = AN.apply_oracle_strength(_tstats, _orc_st["strength"])
+        print(f'  + strength: {_n_ap} club rows from the Oracle model, {_n_un} unmatched kept on python')
     # The prediction log lives in the store (D1 when configured). A frozen
     # prediction that gets re-frozen with newer data would silently inflate the
     # published accuracy, which is the one thing the accuracy page exists to

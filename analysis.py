@@ -262,8 +262,49 @@ def load_oracle(path=ORACLE_PREDS, now=None, max_age_h=ORACLE_MAX_AGE_H):
                   "conf": "low" if n_min < 4 else "mid" if n_min < 10 else "high",
                   "src": "oracle", "src_ts": r.get("ts")})
         out[str(mid)] = p
+    # "strength" (since 2026-09-12): {competition: [{team, elo, played, gf, ga,
+    # att, def}]} - the clubs' current Elo table from the same replay the
+    # predictions stand on. Parsed here so it shares the freshness verdict;
+    # apply_oracle_strength() lays it over team_stats().
+    strength = {}
+    for comp, rows in (d.get("strength") or {}).items():
+        for r in rows or []:
+            try:
+                strength.setdefault(str(comp), {})[str(r["team"])] = {
+                    "elo": float(r["elo"]), "played": int(r["played"]),
+                    "gf": int(r["gf"]), "ga": int(r["ga"])}
+            except (KeyError, TypeError, ValueError):
+                continue
     return out, {"status": "ok", "n": len(out), "age_h": round(age_h, 1),
-                 "generated_at": meta.get("generated_at"), "params": meta.get("params")}
+                 "generated_at": meta.get("generated_at"), "params": meta.get("params"),
+                 "strength": strength}
+
+
+def apply_oracle_strength(tstats, strength):
+    """Overlay the Oracle model's elo / played / gf / ga onto team_stats() rows.
+
+    Only clubs python already has get the four model numbers - the row keeps
+    its badge, form, points and home/away splits (plain counts python has
+    anyway). A club Oracle knows and python does not is skipped, and vice
+    versa; both are counted so the build log shows the overlap. Call it AFTER
+    the python predictions are computed, so the python fallback forecast stays
+    pure python and only the strength DISPLAY changes source.
+    Returns (applied, unmatched)."""
+    applied = unmatched = 0
+    for comp, rows in (strength or {}).items():
+        ts = tstats.get(comp)
+        if not ts:
+            unmatched += len(rows)
+            continue
+        for team, r in rows.items():
+            row = ts.get(team)
+            if not row:
+                unmatched += 1
+                continue
+            row.update({"elo": r["elo"], "played": r["played"], "gf": r["gf"], "ga": r["ga"],
+                        "src": "oracle"})
+            applied += 1
+    return applied, unmatched
 
 
 # ---------------------------------------------------------------- prediction log
