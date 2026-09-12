@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 38 live games)",
+ "reconcile": "ok (0 row(s) corrected, 30 live games)",
  "matches_archive": "ok (482)",
  "standings": "ok (6)",
- "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
- "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
+ "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
+ "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
   "552": [
    "1:الأهداف",
@@ -48,6 +48,24 @@
    "16:تصديات لضربات الجزاء"
   ],
   "649": [
+   "1:الأهداف",
+   "2:أهداف متوقعة",
+   "3:صناعة",
+   "4:صناعة أهداف متوقعة",
+   "5:أهداف + صناعة",
+   "6:أهداف وتمريرات حاسمة متوقعة",
+   "7:تقييم 365",
+   "8:ضربات الجزاء المسجلة",
+   "9:تدخلات ناجحة",
+   "10:إعتراضات خلال المباراة",
+   "11:بطاقات حمراء",
+   "12:بطاقات صفراء",
+   "13:شباك نظيفة",
+   "14:أهداف مستقبلة في المباراة",
+   "15:تصديات في المباراة",
+   "16:تصديات لضربات الجزاء"
+  ],
+  "7": [
    "1:الأهداف",
    "2:أهداف متوقعة",
    "3:صناعة",
@@ -153,9 +171,9 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (39 games)",
+ "goal_events": "ok (27 games)",
  "goal_events_dbg": {
-  "candidates": 43,
+  "candidates": 31,
   "detail_fails": 0,
   "skipped": [
    "4805160:count-mismatch (0, 0) vs 4-0 []",
@@ -202,7 +220,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 14895, \"statusId\": 8, \"stageId\": 9, \"order\": 7, \"num\": 1, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 68073464, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 14895, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 5, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 55555120, \"extraPlayers\": [76147031], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 14895, \"statusId\": 8, \"stageId\": 9, \"order\": 5, \"num\": 5, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 3648648, \"extraPlayers\": [52473308], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -237,5 +255,5 @@
   "fails": 0
  },
  "match_details": "ok (267)",
- "utc": "2026-09-11T23:01:55Z"
+ "utc": "2026-09-12T08:36:10Z"
 }
