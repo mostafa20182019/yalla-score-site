@@ -12,6 +12,9 @@ Tasks
   --export    dump D1 back to data/*.json (the git-tracked audit log)
   --verify    compare the D1 row counts against what the json files hold
   --articles-backfill  load data/articles.json INTO D1 (one-time / rollback)
+  --fix-images apply data/image_fixes.json to the articles in D1 - the way a
+              wrong photo on an already published article is corrected, since
+              the Cloudflare credentials exist only here. Idempotent.
   --warehouse reload the analytics facts: the competitions/teams/matches
               layer AND the in-match layer (lineups, ratings, goals, cards,
               subs, leaderboards)
@@ -120,11 +123,55 @@ def _sample():
             print("    " + "  ".join(f"{k}={r[k]}" for k in r))
 
 
+def _fix_images():
+    """Correct the photo of already-published articles from data/image_fixes.json.
+
+    Why a file and not a one-off script: a wrong photo is an editorial fault, and
+    the reason it was wrong is worth keeping. The entry is committed, reviewed in
+    a diff like anything else, and the next person can see that «the club was
+    right, the person had retired» is a way an image check can pass and still be
+    wrong. Applying is idempotent, so re-running the task is always safe.
+    """
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "data", "image_fixes.json")
+    if not os.path.exists(path):
+        print("fix-images: no data/image_fixes.json, nothing to do")
+        return
+    with open(path, encoding="utf-8") as fh:
+        fixes = (json.load(fh) or {}).get("fixes") or []
+    applied = skipped = missing = 0
+    for f in fixes:
+        aid = str(f.get("article_id") or "").strip()
+        url = f.get("image_url")
+        credit = f.get("image_credit")
+        if not aid or not url or not credit:
+            print(f"fix-images: incomplete entry {f!r} - skipped")
+            continue
+        cur = store.article_get(aid)
+        if cur is None:
+            print(f"fix-images: article {aid} not in D1 - skipped")
+            missing += 1
+            continue
+        if (cur.get("image_url") or "") == url:
+            print(f"fix-images: {aid} already applied")
+            skipped += 1
+            continue
+        was = (cur.get("image_url") or "").rsplit("/", 1)[-1] or "(none)"
+        store.article_update(aid, {"image_url": url, "image_credit": credit})
+        print(f"fix-images: {aid} {was} -> {url.rsplit('/', 1)[-1]}")
+        if f.get("why"):
+            print(f"            why: {f['why']}")
+        applied += 1
+    print(f"fix-images: {applied} applied, {skipped} already applied, "
+          f"{missing} not found")
+
+
 def main():
     args = sys.argv[1:]
     be = store.backend()
     print(f"backend: {be}")
-    WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse", "--sample")
+    WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse",
+               "--sample", "--fix-images")
     if be == "json" and any(a in args for a in WRITERS):
         print("!! D1 is NOT configured (CF_API_TOKEN / CF_ACCOUNT_ID / CF_D1_ID missing).")
         print("   Nothing was written. Add the three secrets and re-run.")
@@ -149,6 +196,9 @@ def main():
     if "--articles-backfill" in args:
         import warehouse
         warehouse.refresh_articles(source="json")   # json -> D1, the one-time load
+
+    if "--fix-images" in args:
+        _fix_images()
 
     if "--export" in args:
         ok = store.export_json()

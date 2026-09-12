@@ -1,0 +1,17 @@
+{
+  "_why": "Corrections to the photo of an ALREADY PUBLISHED article. D1 is the writer, and the Cloudflare credentials live only on the runner, so a wrong photo is fixed by adding an entry here and dispatching the D1 Admin workflow with task `fix-images`. The entry stays in git as the record of what was wrong and why. Applying is idempotent: an article already carrying the new image_url is reported as 'already applied' and left alone.",
+  "fixes": [
+    {
+      "article_id": "467",
+      "why": "A preview of a match being played TODAY was illustrated with Steven Gerrard, who retired in 2016. The credit said so («أسطورة ليفربول السابق ... عام 2014») and the club test passed, because the club was right - only the person was a decade out of the story. Replaced with the host's ground, which is what the editorial rule prescribes when no current-squad photo is available.",
+      "image_url": "https://yallascore.site/media/anfield-kop-stand-panorama.jpg",
+      "image_credit": "صورة: مدرجات ملعب أنفيلد معقل ليفربول — تصوير Yurificacion، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)"
+    },
+    {
+      "article_id": "433",
+      "why": "Same photo, same mistake, one match earlier - the Liverpool v Atletico Madrid preview. Found by the audit that the 467 report triggered.",
+      "image_url": "https://yallascore.site/media/anfield-stadium-liverpool-2026.jpg",
+      "image_credit": "صورة: ملعب أنفيلد معقل ليفربول — تصوير Vojta Zurek، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)"
+    }
+  ]
+}

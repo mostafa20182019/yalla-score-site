@@ -15,6 +15,8 @@ name: D1 Admin
 #   verify   compare D1's row counts against the json files (read-only)
 #   warehouse reload the analytics facts so they can be queried in SQL
 #   sample   run the analytics queries and print them (read-only)
+#   fix-images apply data/image_fixes.json - correct the photo of an article that
+#            is already published (see that file for why each one was wrong)
 on:
   # Daily export, 04:20 Cairo - a quiet hour, and clear of the 06:30 article
   # upgrade job. Daily is deliberate: the export is a BACKUP and the build's
@@ -35,7 +37,7 @@ on:
         type: choice
         default: "status"
         options: [ "status", "init", "migrate", "export", "verify", "warehouse",
-                   "sample", "articles-backfill" ]
+                   "sample", "articles-backfill", "fix-images" ]
 
 permissions:
   contents: write          # the export task commits data/*.json
