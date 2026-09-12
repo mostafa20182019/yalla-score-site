@@ -247,13 +247,13 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (1 with XI)",
+ "prematch_lineups": "ok (2 with XI)",
  "prematch_dbg": {
-  "in_window": 1,
-  "fetched": 1,
-  "with_xi": 1,
-  "fails": 0
+  "in_window": 8,
+  "fetched": 7,
+  "with_xi": 2,
+  "fails": 1
  },
- "match_details": "ok (268)",
- "utc": "2026-09-12T10:13:22Z"
+ "match_details": "ok (269)",
+ "utc": "2026-09-12T10:27:35Z"
 }
