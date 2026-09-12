@@ -27,11 +27,6 @@ on:
         type: choice
         default: ""
         options: ["", "preview", "report"]
-      account:
-        description: "Claude account to try FIRST (repo default = the PRIMARY_ACCOUNT variable)"
-        type: choice
-        default: "repo default"
-        options: ["repo default", "1", "2"]
 
 permissions:
   contents: write
@@ -48,9 +43,6 @@ jobs:
   write-match-article:
     runs-on: ubuntu-latest
     timeout-minutes: 25
-    env:
-      HAS_ACCT2: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN_2 != '' }}
-      PRIMARY_ACCT: ${{ (github.event.inputs.account == '1' || github.event.inputs.account == '2') && github.event.inputs.account || vars.PRIMARY_ACCOUNT || '1' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -107,12 +99,15 @@ jobs:
         if: steps.pick.outputs.match_id != ''
         run: echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
-      - name: Write the article (primary account)
-        id: acct1
+      # ONE Claude account since 2026-09-12 (second-account failover removed on
+      # the user's decision). continue-on-error keeps the run green when the
+      # account is out of quota: the next slot simply retries.
+      - name: Write the article
+        id: write
         if: steps.pick.outputs.match_id != ''
         continue-on-error: true
         env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN_2 || secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
@@ -124,39 +119,8 @@ jobs:
           set -o pipefail
           claude -p "$(cat .github/prompts/match-article.md)" \
             --model claude-sonnet-5 \
-            --dangerously-skip-permissions | tee /tmp/claude-primary.txt
-          { echo "### تقرير Claude (primary)"; echo '```'; tail -n 40 /tmp/claude-primary.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
-
-      - name: Decide whether to retry
-        id: retry
-        if: steps.pick.outputs.match_id != '' && steps.acct1.outcome == 'failure'
-        run: |
-          if [ "$(git rev-parse HEAD)" != "$HEAD_BEFORE" ]; then
-            echo "committed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "committed=false" >> "$GITHUB_OUTPUT"
-            git reset --hard HEAD; git clean -fd
-          fi
-
-      - name: Write the article (fallback account)
-        id: acct2
-        if: steps.pick.outputs.match_id != '' && steps.acct1.outcome == 'failure' && steps.retry.outputs.committed == 'false' && env.HAS_ACCT2 == 'true'
-        continue-on-error: true
-        env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ env.PRIMARY_ACCT == '2' && secrets.CLAUDE_CODE_OAUTH_TOKEN || secrets.CLAUDE_CODE_OAUTH_TOKEN_2 }}
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_D1_ID: ${{ secrets.CF_D1_ID }}
-          MATCH_ID: ${{ steps.pick.outputs.match_id }}
-          KIND: ${{ steps.pick.outputs.kind }}
-          BRIEF_JSON: /tmp/brief/brief.json
-          BRIEF_MD: /tmp/brief/brief.md
-        run: |
-          set -o pipefail
-          claude -p "$(cat .github/prompts/match-article.md)" \
-            --model claude-sonnet-5 \
-            --dangerously-skip-permissions | tee /tmp/claude-fallback.txt
-          { echo "### تقرير Claude (fallback)"; echo '```'; tail -n 40 /tmp/claude-fallback.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+            --dangerously-skip-permissions | tee /tmp/claude.txt
+          { echo "### تقرير Claude"; echo '```'; tail -n 40 /tmp/claude.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report outcome
         if: always() && steps.pick.outputs.match_id != ''
@@ -167,6 +131,12 @@ jobs:
           else
             echo "## ⏭ لا مقال هذا التشغيل - السبب في تقرير Claude أعلاه" >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      - name: Flag a failed Claude step
+        if: steps.write.outcome == 'failure'
+        run: |
+          echo "::warning::The Claude step failed (exit code non-zero) - check the account's quota / token if this repeats."
+          echo "### ⚠️ Claude step failed this run" >> "$GITHUB_STEP_SUMMARY"
 
       # publish.yml deploys main; a GITHUB_TOKEN push doesn't fire on:push, so
       # dispatch it (the article's Facebook post happens there, after Deploy).
