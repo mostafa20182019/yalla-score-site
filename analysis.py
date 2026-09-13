@@ -332,9 +332,37 @@ def load_oracle(path=ORACLE_PREDS, now=None, max_age_h=ORACLE_MAX_AGE_H):
                     "gf": int(r["gf"]), "ga": int(r["ga"])}
             except (KeyError, TypeError, ValueError):
                 continue
+    # "league" (2026-09-13): per competition the finished-match count, goal means
+    # with the prior, home-win / draw shares and goals per match - the numbers
+    # league_params() computes and the per-league page prints. Same freshness
+    # verdict; apply_oracle_league() lays it over league_params() output.
+    league = {}
+    for comp, r in (d.get("league") or {}).items():
+        try:
+            league[str(comp)] = {"n": int(r["n"]), "mu_home": float(r["mu_home"]),
+                                 "mu_away": float(r["mu_away"]), "mu": float(r["mu"]),
+                                 "home_win": None if r.get("home_win") is None else float(r["home_win"]),
+                                 "draw": None if r.get("draw") is None else float(r["draw"]),
+                                 "gpm": None if r.get("gpm") is None else float(r["gpm"])}
+        except (KeyError, TypeError, ValueError):
+            continue
     return out, {"status": "ok", "n": len(out), "age_h": round(age_h, 1),
                  "generated_at": meta.get("generated_at"), "params": meta.get("params"),
-                 "strength": strength}
+                 "strength": strength, "league": league}
+
+
+def apply_oracle_league(lparams, league):
+    """Overlay the Oracle copy's league parameters onto league_params() dicts,
+    for the competitions both sides know. Same rule as the strength overlay:
+    call it AFTER the python fallback predictions are computed, so only the
+    DISPLAY changes source. Returns (applied, unmatched)."""
+    applied = unmatched = 0
+    for comp, r in (league or {}).items():
+        if comp in lparams:
+            lparams[comp].update(r); lparams[comp]["src"] = "oracle"; applied += 1
+        else:
+            unmatched += 1
+    return applied, unmatched
 
 
 def apply_oracle_strength(tstats, strength):

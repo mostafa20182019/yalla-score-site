@@ -1938,6 +1938,12 @@ def build():
     if _orc_st.get("status") == "ok" and _orc_st.get("strength"):
         _n_ap, _n_un = AN.apply_oracle_strength(_tstats, _orc_st["strength"])
         print(f'  + strength: {_n_ap} club rows from the Oracle model, {_n_un} unmatched kept on python')
+    # the per-league header numbers (finished matches, goals per match, home-win
+    # and draw shares, the league mean behind the attack/defence indices) -
+    # Oracle first, python's league_params() when the file is stale or absent
+    if _orc_st.get("status") == "ok" and _orc_st.get("league"):
+        _n_lg, _n_lu = AN.apply_oracle_league(_lparams, _orc_st["league"])
+        print(f'  + league params: {_n_lg} competitions from the Oracle model, {_n_lu} unmatched')
     # The prediction log lives in the store (D1 when configured). A frozen
     # prediction that gets re-frozen with newer data would silently inflate the
     # published accuracy, which is the one thing the accuracy page exists to
