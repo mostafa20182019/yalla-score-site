@@ -126,7 +126,9 @@ async function fetchGames(url) {
   return (await r.json()).games || [];
 }
 
-async function liveScores() {
+// The upstream read, as DATA (games + flags). liveScores() wraps it in the
+// Response the pre-store code served; refreshLive() feeds it into the D1 store.
+async function liveScoresData() {
   const base =
     "https://webws.365scores.com/web/games/current/?appTypeId=5" +
     "&langId=27&timezoneName=Africa/Cairo&showOdds=false";
@@ -173,6 +175,7 @@ async function liveScores() {
         const lf = sg === 3 ? liveFields(g) : { min: "", gt: 0, hf: 0 };
         const c = g.competitionId || 0;
         games.push({
+          id: g.id || 0,
           h: h.name || "", a: a.name || "",
           hs: Math.round(h.score), as: Math.round(a.score),
           live: sg === 3,
@@ -212,14 +215,201 @@ async function liveScores() {
       if (d.goals) g.goals = d.goals;
     }));
   } catch (e) { /* fail-empty */ }
-  // an upstream failure must NOT be cached for 30s - visitors would all go
-  // quiet for minutes mid-match; mark it uncacheable instead
-  return new Response(JSON.stringify({ games, ok, ts: Date.now(), src, dt }), {
+  return { games, ok, src, dt };
+}
+
+function liveResponse(data, extra = {}) {
+  // an upstream failure must NOT be cached - visitors would all go quiet
+  // for minutes mid-match; mark it uncacheable instead
+  return new Response(JSON.stringify({ ...data, ts: Date.now(), ...extra }), {
     headers: {
       "content-type": "application/json; charset=utf-8",
-      "cache-control": ok ? "public, max-age=10, s-maxage=15" : "no-store",
+      "cache-control": data.ok ? "public, max-age=10, s-maxage=5" : "no-store",
     },
   });
+}
+
+async function liveScores() {
+  return liveResponse(await liveScoresData());
+}
+
+/* ==========================================================================
+ * The live store (2026-09-13) — a goal, once seen, is REMEMBERED.
+ *
+ * User's diagnosis, exactly right: «هو معندوش حاجة ثابتة تقول إن فيه هدف».
+ * Until now every visit re-read 365scores (a cold /live.json waited on the
+ * list + up to 12 detail calls, and an upstream hiccup meant dashes), and a
+ * goal existed nowhere on our side until the match was over.
+ *
+ * Now D1 keeps one row per game the upstream lists today (live_state: score,
+ * minute, half, status, the goal list) plus an append-only goal log
+ * (live_goals: one row per goal the moment it appears; a VAR reversal marks
+ * it cancelled rather than deleting it). /live.json is served FROM the store
+ * in milliseconds and the store is refreshed from 365scores in the
+ * background - at most once per REFRESH_SEC across all visitors - and by a
+ * one-minute cron when nobody is watching.
+ *
+ * The user's firm rule («لا نعرض رقمًا قد يكون خطأ») is kept by age: a stored
+ * row is served only while upstream re-confirmed it within LIVE_TTL_SEC;
+ * older rows are not shown (the page falls back to dashes exactly as before).
+ * The store never overrides upstream: it is memory, not authority. This does
+ * not make 365scores faster - it removes OUR waiting and OUR forgetting.
+ * ======================================================================== */
+const REFRESH_SEC  = 12;   // background refresh cadence while visitors poll
+const LIVE_TTL_SEC = 90;   // a stored row older than this is not served
+const STORE_SCHEMA = [
+  "CREATE TABLE IF NOT EXISTS live_state (game_id INTEGER PRIMARY KEY, c INTEGER, h TEXT, a TEXT, " +
+  "hs INTEGER, as_ INTEGER, live INTEGER, min TEXT, gt INTEGER, hf INTEGER, goals TEXT, " +
+  "first_seen INTEGER, seen_at INTEGER, changed_at INTEGER)",
+  "CREATE TABLE IF NOT EXISTS live_goals (game_id INTEGER, seq INTEGER, side TEXT, player TEXT, " +
+  "minute TEXT, tag TEXT, score_h INTEGER, score_a INTEGER, c INTEGER, h TEXT, a TEXT, " +
+  "seen_at INTEGER, cancelled INTEGER DEFAULT 0, cancelled_at INTEGER, PRIMARY KEY (game_id, seq))",
+  "CREATE TABLE IF NOT EXISTS live_meta (k TEXT PRIMARY KEY, v TEXT)",
+];
+let storeReady = false;
+async function ensureStore(env) {
+  if (storeReady || !env.DB) return;
+  await env.DB.batch(STORE_SCHEMA.map(q => env.DB.prepare(q)));
+  storeReady = true;
+}
+
+const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
+  "score_h, score_a, c, h, a, seen_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+const META_SET = "/*lm_set*/ INSERT INTO live_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v";
+
+async function storeRead(env, now) {
+  const [rows, meta] = await Promise.all([
+    env.DB.prepare("/*ls_rows*/ SELECT * FROM live_state WHERE seen_at >= ?")
+      .bind(now - LIVE_TTL_SEC * 1000).all(),
+    env.DB.prepare("/*ls_meta*/ SELECT v FROM live_meta WHERE k = 'last_refresh'").first(),
+  ]);
+  const last = meta && meta.v ? Number(meta.v) : 0;
+  const games = (rows.results || []).map(r => ({
+    id: r.game_id, h: r.h, a: r.a, hs: r.hs, as: r.as_, live: !!r.live,
+    min: r.min || "", gt: r.gt || 0, hf: r.hf || 0, c: r.c || 0,
+    ...(r.goals ? { goals: JSON.parse(r.goals) } : {}),
+  }));
+  return { games, last };
+}
+
+// the same goal on both sides: side + player + minute
+const goalKey = (g) => `${g.s}|${g.p || ""}|${g.m || ""}`;
+
+// Compare the fresh upstream read with the stored rows, write what changed,
+// append goal events. Returns {upserts, events} for the log and the tests.
+async function storeApply(env, fresh, now) {
+  const ids = fresh.games.map(g => g.id).filter(Boolean);
+  const prev = {};
+  if (ids.length) {
+    const q = `/*ls_prev*/ SELECT * FROM live_state WHERE game_id IN (${ids.map(() => "?").join(",")})`;
+    const r = await env.DB.prepare(q).bind(...ids).all();
+    for (const row of r.results || []) prev[row.game_id] = row;
+  }
+  const stmts = [];
+  let upserts = 0, events = 0;
+  const goalRow = (g, seq, ev) => env.DB.prepare(GOAL_INS)
+    .bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now);
+  for (const g of fresh.games) {
+    if (!g.id) continue;
+    const p = prev[g.id];
+    const oldGoals = p && p.goals ? JSON.parse(p.goals) : [];
+    const newGoals = g.goals || [];
+    if (!p) {
+      // first sight of this game today: the goals already on the board are
+      // events ONLY when the detail names them (scorer + minute). A bare score
+      // with no list - a match first seen at 2-2 - seeds nothing: we cannot say
+      // when those goals fell, and nameless untimed rows would only pollute the
+      // log. Goals from here on are caught by the score diff below.
+      newGoals.forEach((ev, i) => { stmts.push(goalRow(g, i + 1, ev)); events += 1; });
+    } else {
+      const seqRow = await env.DB.prepare("/*lg_seq*/ SELECT COALESCE(MAX(seq),0) AS s FROM live_goals WHERE game_id = ?")
+        .bind(g.id).first();
+      let seq = seqRow ? Number(seqRow.s) : 0;
+      if (newGoals.length || oldGoals.length) {
+        // the detail's goal list is the truth about WHICH goals: a new key is
+        // an event, a vanished key is a VAR reversal
+        const prevKeys = new Set(oldGoals.map(goalKey)), nextKeys = new Set(newGoals.map(goalKey));
+        for (const ev of newGoals) if (!prevKeys.has(goalKey(ev))) {
+          seq += 1; stmts.push(goalRow(g, seq, ev)); events += 1;
+        }
+        for (const ev of oldGoals) if (!nextKeys.has(goalKey(ev))) {
+          stmts.push(env.DB.prepare("/*lg_cancel*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +
+            "WHERE game_id = ? AND side = ? AND COALESCE(player,'') = ? AND COALESCE(minute,'') = ? AND cancelled = 0")
+            .bind(now, g.id, ev.s, ev.p || "", ev.m || ""));
+          events += 1;
+        }
+      } else {
+        // no goal list on either side: go by the score alone
+        for (const [side, d] of [["h", g.hs - p.hs], ["a", g.as - p.as_]]) {
+          for (let i = 0; i < d; i++) {
+            seq += 1; stmts.push(goalRow(g, seq, { s: side, m: g.min || null })); events += 1;
+          }
+          if (d < 0) {   // VAR took a goal back: cancel that side's latest live goal
+            stmts.push(env.DB.prepare("/*lg_cancel_last*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +
+              "WHERE game_id = ? AND side = ? AND cancelled = 0 AND seq = " +
+              "(SELECT MAX(seq) FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 0)")
+              .bind(now, g.id, side, g.id, side));
+            events += 1;
+          }
+        }
+      }
+    }
+    // the state row: written only when something changed, touched otherwise
+    const goalsJson = newGoals.length ? JSON.stringify(newGoals) : null;
+    const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
+      || (p.min || "") !== (g.min || "") || (p.gt || 0) !== (g.gt || 0) || (p.hf || 0) !== (g.hf || 0)
+      || (p.goals || null) !== goalsJson;
+    if (changed) {
+      stmts.push(env.DB.prepare("/*ls_upsert*/ INSERT INTO live_state (game_id, c, h, a, hs, as_, live, min, gt, hf, goals, " +
+        "first_seen, seen_at, changed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(game_id) DO UPDATE SET " +
+        "c=excluded.c, h=excluded.h, a=excluded.a, hs=excluded.hs, as_=excluded.as_, live=excluded.live, min=excluded.min, " +
+        "gt=excluded.gt, hf=excluded.hf, goals=excluded.goals, seen_at=excluded.seen_at, changed_at=excluded.changed_at")
+        .bind(g.id, g.c, g.h, g.a, g.hs, g.as, g.live ? 1 : 0, g.min || "", g.gt || 0, g.hf || 0, goalsJson, now, now, now));
+      upserts += 1;
+    } else {
+      stmts.push(env.DB.prepare("/*ls_touch*/ UPDATE live_state SET seen_at = ? WHERE game_id = ?").bind(now, g.id));
+    }
+  }
+  stmts.push(env.DB.prepare(META_SET).bind("last_refresh", String(now)));
+  stmts.push(env.DB.prepare(META_SET).bind("last_src", `${fresh.src}/${fresh.dt}`));
+  for (let i = 0; i < stmts.length; i += 40) await env.DB.batch(stmts.slice(i, i + 40));   // D1 batch cap
+  return { upserts, events };
+}
+
+// One refresh: upstream -> store. A failed upstream read changes nothing (the
+// store keeps serving what it last confirmed, until LIVE_TTL ages it out).
+let refreshing = null;
+async function refreshLive(env) {
+  if (refreshing) return refreshing;          // collapse concurrent triggers in this isolate
+  refreshing = (async () => {
+    const now = Date.now();
+    const fresh = await liveScoresData();
+    if (!fresh.ok) {
+      await env.DB.prepare(META_SET).bind("last_fail", String(now)).run();
+      return { ok: false };
+    }
+    const r = await storeApply(env, fresh, now);
+    return { ok: true, ...r, n: fresh.games.length };
+  })().finally(() => { refreshing = null; });
+  return refreshing;
+}
+
+// /live.json from the store: instant when warm, background-refreshed when
+// due, synchronous (the old path) only when cold or stale.
+async function liveFromStore(env, ctx) {
+  await ensureStore(env);
+  const now = Date.now();
+  let { games, last } = await storeRead(env, now);
+  const age = last ? (now - last) / 1000 : Infinity;
+  if (age > LIVE_TTL_SEC) {
+    // cold start or a stale store: fetch now, then serve what landed
+    const r = await refreshLive(env);
+    if (!r.ok && !games.length) return liveResponse({ games: [], ok: false, src: "store-cold" });
+    ({ games, last } = await storeRead(env, Date.now()));
+    return liveResponse({ games, ok: true, src: "store-fresh" }, { age: 0 });
+  }
+  if (age > REFRESH_SEC && ctx && ctx.waitUntil) ctx.waitUntil(refreshLive(env));
+  return liveResponse({ games, ok: true, src: "store" }, { age: Math.round(age) });
 }
 
 /* ==========================================================================
@@ -489,7 +679,9 @@ export default {
       const key = new Request("https://yallascore.site/live.json");
       const hit = await cache.match(key);
       if (hit) return hit;
-      const res = await liveScores();
+      // the D1-backed store when the binding exists; the direct upstream
+      // read otherwise (local dev without D1, and the pre-store tests)
+      const res = env.DB ? await liveFromStore(env, ctx) : await liveScores();
       if ((res.headers.get("cache-control") || "").includes("s-maxage")) {
         ctx.waitUntil(cache.put(key, res.clone()));
       }
@@ -499,6 +691,16 @@ export default {
   },
 
   async scheduled(event, env, ctx) {
+    // cron 5: keep the live store warm when nobody is polling, so the first
+    // visitor of a quiet evening is served from memory too. One upstream
+    // list read a minute; needs no GitHub token.
+    if (event.cron === "* * * * *") {
+      if (!env.DB) return;
+      await ensureStore(env);
+      const r = await refreshLive(env);
+      console.log("live store refresh:", JSON.stringify(r));
+      return;
+    }
     if (!env.GH_TOKEN) {
       console.log("GH_TOKEN secret not set yet; skipping workflow dispatch");
       return;

@@ -34,8 +34,11 @@ not_found_handling = "404-page"
 #         UTC+3 in summer and UTC+2 in winter, so each slot is listed at BOTH
 #         UTC hours and worker.js dispatches only when the Cairo clock is on
 #         a slot (matchSlotCairo). Eight firings a day, four dispatches.
+# cron 5: every minute - refresh the LIVE STORE in D1 (worker.js refreshLive)
+#         so /live.json is served from memory even for the first visitor of a
+#         quiet hour. No GitHub dispatch; the string is matched EXACTLY too.
 crons = ["1,16,31,46 * * * *", "0 6,8,10,12,14,15,17,18,19,20 * * *",
-         "0 9,10,13,14,16,17 * * *", "30 19,20 * * *"]
+         "0 9,10,13,14,16,17 * * *", "30 19,20 * * *", "* * * * *"]
 
 # D1 binding for the /admin/api routes (the admin page reads and writes
 # articles through the Worker - a browser cannot reach D1 directly).
