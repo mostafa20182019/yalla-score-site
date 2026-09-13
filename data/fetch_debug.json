@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 98 live games)",
+ "reconcile": "ok (0 row(s) corrected, 68 live games)",
  "matches_archive": "ok (482)",
  "standings": "ok (6)",
- "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
- "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
+ "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
+ "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
   "552": [
    "1:الأهداف",
@@ -48,6 +48,24 @@
    "16:تصديات لضربات الجزاء"
   ],
   "649": [
+   "1:الأهداف",
+   "2:أهداف متوقعة",
+   "3:صناعة",
+   "4:صناعة أهداف متوقعة",
+   "5:أهداف + صناعة",
+   "6:أهداف وتمريرات حاسمة متوقعة",
+   "7:تقييم 365",
+   "8:ضربات الجزاء المسجلة",
+   "9:تدخلات ناجحة",
+   "10:إعتراضات خلال المباراة",
+   "11:بطاقات حمراء",
+   "12:بطاقات صفراء",
+   "13:شباك نظيفة",
+   "14:أهداف مستقبلة في المباراة",
+   "15:تصديات في المباراة",
+   "16:تصديات لضربات الجزاء"
+  ],
+  "7": [
    "1:الأهداف",
    "2:أهداف متوقعة",
    "3:صناعة",
@@ -155,12 +173,81 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (0 games)",
+ "goal_events": "ok (29 games)",
  "goal_events_dbg": {
-  "candidates": 0,
+  "candidates": 44,
   "detail_fails": 0,
-  "skipped": [],
-  "frozen_skipped": 130
+  "skipped": [
+   "4805158:count-mismatch (0, 0) vs 2-0 []",
+   "4805159:count-mismatch (0, 0) vs 3-1 []",
+   "4805167:count-mismatch (0, 0) vs 0-3 []",
+   "4805178:count-mismatch (0, 0) vs 1-0 []",
+   "4805191:count-mismatch (0, 0) vs 0-1 []",
+   "4805162:count-mismatch (0, 0) vs 1-1 []"
+  ],
+  "frozen_skipped": 130,
+  "sample": {
+   "game_keys": [
+    "lineTypesIds",
+    "id",
+    "sportId",
+    "competitionId",
+    "statusId",
+    "seasonNum",
+    "stageNum",
+    "roundNum",
+    "roundName",
+    "competitionDisplayName",
+    "startTime",
+    "statusGroup",
+    "statusText",
+    "shortStatusText",
+    "gameTimeAndStatusDisplayType",
+    "justEnded",
+    "gameTime",
+    "gameTimeDisplay",
+    "preciseGameTime",
+    "hasLineups",
+    "hasMissingPlayers",
+    "hasFieldPositions",
+    "winDescription",
+    "homeCompetitor"
+   ],
+   "event0": "{\"competitorId\": 108, \"statusId\": 8, \"stageId\": 9, \"order\": 1, \"num\": 1, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 60734154, \"extraPlayers\": [886827], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "member0": "{\"competitorId\": 108, \"id\": 558151, \"athleteId\": 10896, \"name\": \"أليسون\", \"shortName\": \"أليسون\", \"jerseyNumber\": 1, \"nameForURL\": \"alisson\", \"imageVersion\": 65, \"createdAt\": \"2014-09-28T21:35:14.39\"}"
+  },
+  "sample_details": {
+   "event_names": [
+    "Substitution",
+    "بطاقة صفراء"
+   ],
+   "card0": "{\"competitorId\": 120, \"statusId\": 8, \"stageId\": 9, \"order\": 11, \"num\": 1, \"gameTime\": 81.0, \"addedTime\": 0, \"gameTimeDisplay\": \"81'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 401162, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 108, \"statusId\": 8, \"stageId\": 9, \"order\": 1, \"num\": 1, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 60734154, \"extraPlayers\": [886827], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "hc_keys": [
+    "id",
+    "countryId",
+    "sportId",
+    "isQualified",
+    "toQualify",
+    "isWinner",
+    "type",
+    "recentMatches",
+    "lineups",
+    "nameForURL",
+    "imageVersion",
+    "color",
+    "awayColor",
+    "mainCompetitionId"
+   ],
+   "lineups_keys": [
+    "status",
+    "formation",
+    "hasFieldPositions",
+    "members",
+    "statsCategory"
+   ],
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.9, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+  }
  },
  "prematch_lineups": "ok (0 with XI)",
  "prematch_dbg": {
@@ -170,5 +257,5 @@
   "fails": 0
  },
  "match_details": "ok (300)",
- "utc": "2026-09-12T22:50:50Z"
+ "utc": "2026-09-13T08:05:59Z"
 }
