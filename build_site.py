@@ -2377,7 +2377,7 @@ def build():
                   for s in scorers if s.get("scorers")}
     as_by_comp = {s.get("competition"): (s.get("assists") or [])
                   for s in assists if s.get("assists")}
-    forms = team_form(fixtures)
+    forms = team_form(fixtures, standings)
     elos = compute_elo(fixtures)
     fx_by_comp = {f.get("competition"): f for f in fixtures if f.get("rounds")}
     STAT_PAL = ["#1f94d3", "#e11d48", "#f59e0b", "#7c3aed", "#334155"]
@@ -3694,23 +3694,52 @@ def compute_elo(fixtures):
         out[comp] = {t: (r[t], n[t]) for t in r}
     return out
 
-def team_form(fixtures):
+def team_form(fixtures, standings=None):
     """competition -> team -> chronological 'W'/'D'/'L' list, from the rounds
-    data we already carry (finished matches with scores)."""
+    data we already carry (finished matches with scores).
+
+    Reconciled with the official table (2026-09-13, user: Barcelona «لعب 5»
+    but four dots): within ONE fetch, football-data's standings already
+    counted Levante x Barcelona while its fixtures still said LIVE 1-3 - the
+    feed flips a match to FINISHED minutes after it updates the table. So when
+    the table says a club has played MORE matches than we have finished for
+    it, the club's LIVE match with a score (there is at most one) counts as
+    decided too. When the fixture flips to FINISHED it is counted the normal
+    way, never twice."""
     form = {}
+    pending = {}                     # comp -> team -> [(sortkey, result)] of LIVE matches with a score
     for f in fixtures:
         comp = f.get("competition")
         ms = []
         for rd in f.get("rounds", []):
             ms.extend(rd.get("matches", []))
-        ms = [m for m in ms if m.get("status") == "FINISHED"
-              and m.get("home_score") is not None and m.get("away_score") is not None]
+        ms = [m for m in ms if m.get("home_score") is not None and m.get("away_score") is not None
+              and m.get("status") in ("FINISHED", "LIVE")]
         ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
         d = form.setdefault(comp, {})
+        pd_ = pending.setdefault(comp, {})
         for m in ms:
             hs, aw = m["home_score"], m["away_score"]
-            d.setdefault(m.get("home"), []).append("W" if hs > aw else "D" if hs == aw else "L")
-            d.setdefault(m.get("away"), []).append("W" if aw > hs else "D" if hs == aw else "L")
+            rh = "W" if hs > aw else "D" if hs == aw else "L"
+            ra = "W" if aw > hs else "D" if hs == aw else "L"
+            if m.get("status") == "FINISHED":
+                d.setdefault(m.get("home"), []).append(rh)
+                d.setdefault(m.get("away"), []).append(ra)
+            else:
+                pd_.setdefault(m.get("home"), []).append(rh)
+                pd_.setdefault(m.get("away"), []).append(ra)
+    for st in standings or []:
+        comp = st.get("competition")
+        if comp not in form:
+            continue
+        for row in st.get("table") or []:
+            team, played = row.get("team"), row.get("played")
+            if team is None or played is None:
+                continue
+            have = len(form[comp].get(team, []))
+            extra = pending.get(comp, {}).get(team, [])
+            if played > have and extra:
+                form[comp].setdefault(team, []).extend(extra[-(played - have):])
     return form
 
 def form_dots(results):
