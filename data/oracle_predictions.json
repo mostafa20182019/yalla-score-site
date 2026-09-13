@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-13T17:00:05+03:00",
+    "generated_at" : "2026-09-13T17:15:03+03:00",
     "days" : 10,
     "n" : 106,
     "params" :
@@ -2026,7 +2026,7 @@
         "def" : 1.0393
       },
       {
-        "team" : "VfB Stuttgart",
+        "team" : "Sporting Clube de Portugal",
         "elo" : 1514.02,
         "played" : 1,
         "gf" : 3,
@@ -2035,7 +2035,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "Sporting Clube de Portugal",
+        "team" : "VfB Stuttgart",
         "elo" : 1514.02,
         "played" : 1,
         "gf" : 3,
@@ -2116,15 +2116,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "LASK Linz",
-        "elo" : 1488.78,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 1,
-        "att" : 0.8333,
-        "def" : 0.9363
-      },
-      {
         "team" : "FC Internazionale Milano",
         "elo" : 1488.78,
         "played" : 1,
@@ -2150,6 +2141,15 @@
         "ga" : 3,
         "att" : 1.0393,
         "def" : 1.1423
+      },
+      {
+        "team" : "LASK Linz",
+        "elo" : 1488.78,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 1,
+        "att" : 0.8333,
+        "def" : 0.9363
       },
       {
         "team" : "Viking FK",
