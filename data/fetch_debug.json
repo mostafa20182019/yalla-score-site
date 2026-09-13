@@ -173,9 +173,9 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (29 games)",
+ "goal_events": "ok (35 games)",
  "goal_events_dbg": {
-  "candidates": 44,
+  "candidates": 51,
   "detail_fails": 0,
   "skipped": [
    "4805158:count-mismatch (0, 0) vs 2-0 []",
@@ -185,7 +185,7 @@
    "4805191:count-mismatch (0, 0) vs 0-1 []",
    "4805162:count-mismatch (0, 0) vs 1-1 []"
   ],
-  "frozen_skipped": 130,
+  "frozen_skipped": 132,
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -249,13 +249,13 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.9, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (0 with XI)",
+ "prematch_lineups": "ok (1 with XI)",
  "prematch_dbg": {
-  "in_window": 0,
-  "fetched": 0,
-  "with_xi": 0,
+  "in_window": 2,
+  "fetched": 2,
+  "with_xi": 1,
   "fails": 0
  },
- "match_details": "ok (300)",
- "utc": "2026-09-13T08:05:59Z"
+ "match_details": "ok (301)",
+ "utc": "2026-09-13T10:12:16Z"
 }
