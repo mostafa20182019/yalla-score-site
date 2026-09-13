@@ -2,9 +2,9 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-13T19:45:03+03:00",
+    "generated_at" : "2026-09-13T20:00:04+03:00",
     "days" : 10,
-    "n" : 97,
+    "n" : 96,
     "params" :
     {
       "elo_k" : 28,
@@ -8933,26 +8933,6 @@
       "n_a" : 4,
       "elo_h" : 1486.82,
       "elo_a" : 1556.12,
-      "ts" : "2026-09-13"
-    },
-    "564668" :
-    {
-      "comp" : "Primera Division",
-      "home" : "Getafe CF",
-      "away" : "RC Deportivo La Coruña",
-      "kickoff" : "2026-09-13",
-      "koff_time" : "19:30",
-      "lh" : 1.133451,
-      "la" : 1.320194,
-      "ph" : 0.3194,
-      "pd" : 0.2716,
-      "pa" : 0.409,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1471.87,
-      "elo_a" : 1486.82,
       "ts" : "2026-09-13"
     },
     "564674" :
