@@ -2377,8 +2377,10 @@ def build():
                   for s in scorers if s.get("scorers")}
     as_by_comp = {s.get("competition"): (s.get("assists") or [])
                   for s in assists if s.get("assists")}
-    forms = team_form(fixtures, standings)
-    elos = compute_elo(fixtures)
+    # both read the season pool (_bycomp) so a truncated fixtures.json cannot
+    # empty the «آخر 5» column or the tile fallback (2026-09-13)
+    forms = team_form(fixtures, standings, _bycomp)
+    elos = compute_elo(fixtures, _bycomp)
     fx_by_comp = {f.get("competition"): f for f in fixtures if f.get("rounds")}
     STAT_PAL = ["#1f94d3", "#e11d48", "#f59e0b", "#7c3aed", "#334155"]
 
@@ -3670,18 +3672,44 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
-def compute_elo(fixtures):
-    """competition -> {team: (rating, played)} from finished matches in the
-    rounds data, chronological. Plain Elo: start 1500, K=28, home adv +70."""
+def _scored(m):
+    return m.get("home_score") is not None and m.get("away_score") is not None
+
+
+def _finished_by_comp(fixtures, pool=None):
+    """competition -> chronological FINISHED matches with scores.
+
+    From the season pool when the build has one (fixtures ∪ archive ∪ the
+    Oracle copy's season rows, de-duplicated by analysis.season_matches - the
+    very matches the Elo model replays), from the rounds data alone otherwise.
+
+    2026-09-13: fixtures.json arrived with La Liga cut to rounds [4, 5] after a
+    degraded feed answer (fetch_data.merge_fixture_rounds now stops that at the
+    source) and the «آخر 5» column collapsed to one or two dots. The pool still
+    held the season, so the standings columns read from it: a truncated
+    fixtures file can no longer empty them."""
     out = {}
+    for comp, ms in (pool or {}).items():
+        out[comp] = [m for m in ms if m.get("status") == "FINISHED" and _scored(m)]
     for f in fixtures:
         comp = f.get("competition")
+        if comp in out:
+            continue
         ms = []
         for rd in f.get("rounds", []):
             ms.extend(rd.get("matches", []))
-        ms = [m for m in ms if m.get("status") == "FINISHED"
-              and m.get("home_score") is not None and m.get("away_score") is not None]
+        out[comp] = [m for m in ms if m.get("status") == "FINISHED" and _scored(m)]
+    for ms in out.values():
         ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    return out
+
+
+def compute_elo(fixtures, pool=None):
+    """competition -> {team: (rating, played)} from the finished matches
+    (_finished_by_comp), chronological. Plain Elo: start 1500, K=28, home adv +70.
+    Only a fallback for the league tiles when a league has no official table."""
+    out = {}
+    for comp, ms in _finished_by_comp(fixtures, pool).items():
         r, n = {}, {}
         for m in ms:
             h, a = m.get("home"), m.get("away")
@@ -3694,9 +3722,10 @@ def compute_elo(fixtures):
         out[comp] = {t: (r[t], n[t]) for t in r}
     return out
 
-def team_form(fixtures, standings=None):
-    """competition -> team -> chronological 'W'/'D'/'L' list, from the rounds
-    data we already carry (finished matches with scores).
+def team_form(fixtures, standings=None, pool=None):
+    """competition -> team -> chronological 'W'/'D'/'L' list: finished matches
+    from the season pool (see _finished_by_comp; the rounds data when there is
+    no pool), LIVE matches with a score from the rounds data.
 
     Reconciled with the official table (2026-09-13, user: Barcelona «لعب 5»
     but four dots): within ONE fetch, football-data's standings already
@@ -3707,27 +3736,32 @@ def team_form(fixtures, standings=None):
     decided too. When the fixture flips to FINISHED it is counted the normal
     way, never twice."""
     form = {}
-    pending = {}                     # comp -> team -> [(sortkey, result)] of LIVE matches with a score
+    pending = {}                     # comp -> team -> results of LIVE matches with a score
+
+    def _res(m):
+        hs, aw = m["home_score"], m["away_score"]
+        return ("W" if hs > aw else "D" if hs == aw else "L",
+                "W" if aw > hs else "D" if hs == aw else "L")
+
+    for comp, ms in _finished_by_comp(fixtures, pool).items():
+        d = form.setdefault(comp, {})
+        for m in ms:
+            rh, ra = _res(m)
+            d.setdefault(m.get("home"), []).append(rh)
+            d.setdefault(m.get("away"), []).append(ra)
     for f in fixtures:
         comp = f.get("competition")
         ms = []
         for rd in f.get("rounds", []):
             ms.extend(rd.get("matches", []))
-        ms = [m for m in ms if m.get("home_score") is not None and m.get("away_score") is not None
-              and m.get("status") in ("FINISHED", "LIVE")]
+        ms = [m for m in ms if _scored(m) and m.get("status") == "LIVE"]
         ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
-        d = form.setdefault(comp, {})
+        form.setdefault(comp, {})
         pd_ = pending.setdefault(comp, {})
         for m in ms:
-            hs, aw = m["home_score"], m["away_score"]
-            rh = "W" if hs > aw else "D" if hs == aw else "L"
-            ra = "W" if aw > hs else "D" if hs == aw else "L"
-            if m.get("status") == "FINISHED":
-                d.setdefault(m.get("home"), []).append(rh)
-                d.setdefault(m.get("away"), []).append(ra)
-            else:
-                pd_.setdefault(m.get("home"), []).append(rh)
-                pd_.setdefault(m.get("away"), []).append(ra)
+            rh, ra = _res(m)
+            pd_.setdefault(m.get("home"), []).append(rh)
+            pd_.setdefault(m.get("away"), []).append(ra)
     for st in standings or []:
         comp = st.get("competition")
         if comp not in form:

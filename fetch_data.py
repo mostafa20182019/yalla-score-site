@@ -281,6 +281,46 @@ def fetch_reels_auto():
 
 # --------------------------------------------------------------- matches
 _FIXTURES = None   # per-league full-season fixtures by round, set by fetch_matches
+_FIX_MERGE_NOTE = None   # set by fetch_matches when a league had to be merged with the previous file
+
+
+def merge_fixture_rounds(by_league, prev_items):
+    """A degraded fetch must not shrink a season (2026-09-13).
+
+    football-data's /competitions/{code}/matches returns the FULL season. When
+    that one call fails (429 from two overlapping runs, a timeout) only the
+    day-window pulls fill the league, and La Liga collapsed from 38 rounds to
+    [4, 5] in one refresh: the «آخر 5» column showed one or two dots, the
+    rounds panel lost the season. So for every league this feed gave us
+    before (previous fixtures.json entry marked src "fd", or simply present in
+    this fetch) whose NEW set is smaller than the previous one, the previous
+    rows are kept and the fresh rows override them match by match. A complete
+    fetch (380 >= 380) never merges, so the feed stays the source of truth
+    whenever it answers. Returns (by_league, note-or-None)."""
+    notes = []
+    prev_fd = {f.get("competition"): f for f in prev_items or []
+               if f.get("src") == "fd" or f.get("competition") in by_league}
+
+    def key(m):
+        return m.get("match_id") or (m.get("home"), m.get("away"), m.get("kickoff"))
+
+    for name, pf in prev_fd.items():
+        prev_rows = [(rd.get("round"), m) for rd in pf.get("rounds", [])
+                     for m in rd.get("matches", []) if rd.get("round") is not None]
+        new_n = sum(len(v) for v in by_league.get(name, {}).values())
+        if not prev_rows or new_n >= len(prev_rows):
+            continue
+        merged = {key(m): (rd, m) for rd, m in prev_rows}
+        for rd, rows in by_league.get(name, {}).items():
+            for m in rows:
+                merged[key(m)] = (rd, m)
+        rebuilt = {}
+        for rd, m in merged.values():
+            rebuilt.setdefault(int(rd), []).append(m)
+        by_league[name] = rebuilt
+        notes.append(f"{name}: {new_n} fetched < {len(prev_rows)} kept -> "
+                     f"{sum(len(v) for v in rebuilt.values())} merged")
+    return by_league, ("; ".join(notes) or None)
 
 def _norm_status(s):
     s = (s or "").upper()
@@ -445,6 +485,13 @@ def fetch_matches():
             out.append(row)
     out.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
 
+    # a league whose full-season call failed keeps its previous rounds (see
+    # merge_fixture_rounds); the fresh rows still override the old ones
+    global _FIX_MERGE_NOTE
+    by_league, _FIX_MERGE_NOTE = merge_fixture_rounds(by_league, read_items("fixtures.json"))
+    if _FIX_MERGE_NOTE:
+        print(f"  ! fixtures merged with the previous file: {_FIX_MERGE_NOTE}")
+
     # build fixtures.json structure: [{competition, current, rounds:[{round,matches}]}]
     global _FIXTURES
     fixtures = []
@@ -460,7 +507,8 @@ def fetch_matches():
             if any(mm["kickoff"] >= today_s for mm in r["matches"]):
                 current = r["round"]
                 break
-        fixtures.append({"competition": name, "current": current, "rounds": rlist})
+        fixtures.append({"competition": name, "current": current, "rounds": rlist,
+                         "src": "fd"})      # "fd" = football-data; the merge above relies on it
     _FIXTURES = fixtures
     return out
 
@@ -1452,6 +1500,7 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"  ! matches archive failed ({e}) - keeping existing file")
             _DBG["matches_archive"] = f"FAIL: {e!r}"
+    _DBG["fixtures_merge"] = _FIX_MERGE_NOTE or "none (every league complete)"
     if _FIXTURES is not None:
         write_items("fixtures.json", _FIXTURES)
         print(f"fixtures: {len(_FIXTURES)} leagues, "
