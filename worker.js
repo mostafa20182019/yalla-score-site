@@ -265,6 +265,10 @@ const STORE_SCHEMA = [
   "minute TEXT, tag TEXT, score_h INTEGER, score_a INTEGER, c INTEGER, h TEXT, a TEXT, " +
   "seen_at INTEGER, cancelled INTEGER DEFAULT 0, cancelled_at INTEGER, PRIMARY KEY (game_id, seq))",
   "CREATE TABLE IF NOT EXISTS live_meta (k TEXT PRIMARY KEY, v TEXT)",
+  // the post-match report queue - see THE REPORT QUEUE below
+  "CREATE TABLE IF NOT EXISTS report_queue (game_id INTEGER PRIMARY KEY, c INTEGER, h TEXT, a TEXT, " +
+  "hs INTEGER, as_ INTEGER, ended_at INTEGER, due_at INTEGER, tries INTEGER DEFAULT 0, " +
+  "done_at INTEGER, done_why TEXT)",
 ];
 let storeReady = false;
 async function ensureStore(env) {
@@ -272,6 +276,70 @@ async function ensureStore(env) {
   await env.DB.batch(STORE_SCHEMA.map(q => env.DB.prepare(q)));
   storeReady = true;
 }
+
+/* ==========================================================================
+ * THE REPORT QUEUE (2026-09-13) - a curated club's match gets its report
+ * because the match ENDED, not because a slot came round.
+ *
+ * The site published a preview for 16 of the last 16 curated matches and a
+ * report for 8. Nothing was broken: four fixed slots a day, one article per
+ * slot, previews and reports competing for the same four - and a match that
+ * ended at 23:00 had one chance the next afternoon before its window closed.
+ *
+ * The final whistle is a fact this Worker already learns every minute: the
+ * live store sees a game go from live to ended. So it writes the match into
+ * report_queue with a due time ~30 minutes later (long enough for the goal
+ * list and the lineups to reach data/, short enough to still be news), and
+ * the one-minute cron dispatches match-article.yml when that time comes.
+ *
+ * The queue row closes when a report for that match_id exists in `articles`
+ * (D1 is the writer for articles since 2026-09-10), so a retry cannot produce
+ * a second one. It gives up after REPORT_TRIES and leaves the match to the
+ * four slots, which stay exactly as they were - a safety net, no longer the
+ * only path. The dispatch carries kind=report and NO match_id: match_brief.py
+ * --pick --kind report re-decides at run time and owns the daily cap, so
+ * there is one place where "how many reports today" is answered.
+ * ======================================================================== */
+const REPORT_DELAY_MS = 30 * 60 * 1000;   // final whistle -> dispatch
+const REPORT_RETRY_MS = 25 * 60 * 1000;   // and again, if no report appeared
+const REPORT_TRIES    = 3;                // then leave it to the fixed slots
+const REPORT_KEEP_MS  = 3 * 24 * 3600 * 1000;   // purge queue rows this old
+// mirrors match_brief.REPORT_DAILY_CAP - here only to avoid dispatching a run
+// that would decline anyway; match_brief.py is the authority.
+const REPORT_DAILY_CAP = 4;
+
+// The 11 curated clubs as 365scores spells them (the live feed is langId=27,
+// so every name is Arabic - these are NOT the football-data names in
+// matches.json). Scope repeats build_site's: الأهلي is also a Saudi club and
+// a Dubai club, so the Egyptian three count only in the Egyptian league (552)
+// and the CAF Champions League (624); طرابزون سبور only in the Turkish league.
+const EGY_LIVE_COMPS = [552, 624];
+const CURATED_LIVE = [
+  { t: "الأهلي", comps: EGY_LIVE_COMPS },
+  { t: "الزمالك", comps: EGY_LIVE_COMPS },
+  { t: "بيراميدز", comps: EGY_LIVE_COMPS },
+  { t: "طرابزون سبور", comps: [78] },
+  { t: "ريال مدريد", comps: null },
+  { t: "برشلونة", comps: null },
+  { t: "مانشستر يونايتد", comps: null },
+  { t: "مانشستر سيتي", comps: null },
+  { t: "أرسنال", comps: null },
+  { t: "ليفربول", comps: null },
+  { t: "تشيلسي", comps: null },
+];
+// same normalisation match_brief._norm uses, so آرسنال matches أرسنال
+const arNorm = (x) => (x || "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
+function curatedLive(g) {
+  const ha = arNorm(g.h) + "|" + arNorm(g.a);
+  return CURATED_LIVE.some(cl => ha.includes(arNorm(cl.t))
+                              && (!cl.comps || cl.comps.includes(g.c)));
+}
+const cairoDate = (ms) => new Intl.DateTimeFormat("en-CA", {
+  timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit",
+}).format(new Date(ms));
+
+const REPORT_INS = "/*rq_ins*/ INSERT OR IGNORE INTO report_queue (game_id, c, h, a, hs, as_, " +
+  "ended_at, due_at, tries) VALUES (?,?,?,?,?,?,?,?,0)";
 
 const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
   "score_h, score_a, c, h, a, seen_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -306,7 +374,7 @@ async function storeApply(env, fresh, now) {
     for (const row of r.results || []) prev[row.game_id] = row;
   }
   const stmts = [];
-  let upserts = 0, events = 0;
+  let upserts = 0, events = 0, ended = 0;
   const goalRow = (g, seq, ev) => env.DB.prepare(GOAL_INS)
     .bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now);
   for (const g of fresh.games) {
@@ -354,6 +422,14 @@ async function storeApply(env, fresh, now) {
         }
       }
     }
+    // THE FINAL WHISTLE: a game we saw live is not live any more. This is the
+    // only moment we can be sure the match just ended (a game first seen
+    // already finished never transitions - the four fixed slots cover that).
+    if (p && p.live && !g.live && curatedLive(g)) {
+      stmts.push(env.DB.prepare(REPORT_INS)
+        .bind(g.id, g.c, g.h, g.a, g.hs, g.as, now, now + REPORT_DELAY_MS));
+      ended += 1;
+    }
     // the state row: written only when something changed, touched otherwise
     const goalsJson = newGoals.length ? JSON.stringify(newGoals) : null;
     const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
@@ -373,7 +449,7 @@ async function storeApply(env, fresh, now) {
   stmts.push(env.DB.prepare(META_SET).bind("last_refresh", String(now)));
   stmts.push(env.DB.prepare(META_SET).bind("last_src", `${fresh.src}/${fresh.dt}`));
   for (let i = 0; i < stmts.length; i += 40) await env.DB.batch(stmts.slice(i, i + 40));   // D1 batch cap
-  return { upserts, events };
+  return { upserts, events, ended };
 }
 
 // One refresh: upstream -> store. A failed upstream read changes nothing (the
@@ -392,6 +468,53 @@ async function refreshLive(env) {
     return { ok: true, ...r, n: fresh.games.length };
   })().finally(() => { refreshing = null; });
   return refreshing;
+}
+
+/* One tick of the report queue, called by the one-minute cron after the live
+ * refresh. Closes rows whose report exists, dispatches at most ONE run per
+ * tick (match-article.yml serialises runs anyway, and one match at a time is
+ * how the writer works), and purges what it no longer needs. */
+async function dueReports(env, now) {
+  const out = { due: 0, closed: 0, dispatched: 0, gaveup: 0 };
+  const rows = await env.DB.prepare(
+    "/*rq_due*/ SELECT * FROM report_queue WHERE done_at IS NULL AND due_at <= ? " +
+    "ORDER BY due_at LIMIT 5").bind(now).all();
+  const list = rows.results || [];
+  out.due = list.length;
+  for (const r of list) {
+    // already written (by this queue, by a fixed slot, or by hand)?
+    const got = await env.DB.prepare(
+      "/*rq_have*/ SELECT article_id FROM articles WHERE match_id = ? AND kind = 'report' LIMIT 1")
+      .bind(String(r.game_id)).first();
+    if (got) { await closeReport(env, r.game_id, now, "written"); out.closed += 1; continue; }
+    if ((r.tries || 0) >= REPORT_TRIES) {
+      await closeReport(env, r.game_id, now, "gave up - left to the fixed slots");
+      out.gaveup += 1; continue;
+    }
+    if (out.dispatched) continue;                 // one dispatch per tick
+    const cnt = await env.DB.prepare(
+      "/*rq_today*/ SELECT COUNT(*) AS n FROM articles WHERE kind = 'report' AND pub_date = ?")
+      .bind(cairoDate(now)).first();
+    if (cnt && Number(cnt.n) >= REPORT_DAILY_CAP) {
+      console.log("report queue: daily cap reached, not dispatching");
+      break;                                      // try again after midnight
+    }
+    if (!env.GH_TOKEN) { console.log("report queue: no GH_TOKEN"); break; }
+    const ok = await dispatchWorkflow(env, "match-article.yml", { kind: "report" });
+    await env.DB.prepare(
+      "/*rq_try*/ UPDATE report_queue SET tries = tries + 1, due_at = ? WHERE game_id = ?")
+      .bind(now + REPORT_RETRY_MS, r.game_id).run();
+    if (ok) out.dispatched += 1;
+  }
+  await env.DB.prepare("/*rq_purge*/ DELETE FROM report_queue WHERE ended_at < ?")
+    .bind(now - REPORT_KEEP_MS).run();
+  return out;
+}
+
+async function closeReport(env, gameId, now, why) {
+  await env.DB.prepare(
+    "/*rq_done*/ UPDATE report_queue SET done_at = ?, done_why = ? WHERE game_id = ?")
+    .bind(now, why, gameId).run();
 }
 
 // /live.json from the store: instant when warm, background-refreshed when
@@ -536,10 +659,9 @@ async function writeChildren(env, id, sources, faq, embeds) {
 /* ask GitHub to rebuild: writing to D1 makes the article EXIST, but the site
  * is static HTML - it only appears once publish.yml has rebuilt the pages.
  * reason=article marks the run uncancellable (it carries new content). */
-async function dispatchPublish(env) {
-  if (!env.GH_TOKEN) return "no GH_TOKEN - publish not triggered";
+async function dispatchWorkflow(env, workflow, inputs) {
   const r = await fetch(
-    "https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/publish.yml/dispatches",
+    `https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/${workflow}/dispatches`,
     {
       method: "POST",
       headers: {
@@ -548,10 +670,18 @@ async function dispatchPublish(env) {
         "Content-Type": "application/json",
         "User-Agent": "yalla-score-worker",
       },
-      body: JSON.stringify({ ref: "main", inputs: { reason: "article" } }),
+      body: JSON.stringify(inputs ? { ref: "main", inputs } : { ref: "main" }),
     }
   );
-  return r.ok ? "publish dispatched" : `publish dispatch failed (${r.status})`;
+  const ok = r.status === 204 || r.ok;
+  console.log("workflow dispatch:", workflow, r.status, ok ? "OK" : await r.text());
+  return ok;
+}
+
+async function dispatchPublish(env) {
+  if (!env.GH_TOKEN) return "no GH_TOKEN - publish not triggered";
+  const ok = await dispatchWorkflow(env, "publish.yml", { reason: "article" });
+  return ok ? "publish dispatched" : "publish dispatch failed";
 }
 
 async function adminApi(request, env, url) {
@@ -740,6 +870,13 @@ export default {
       await ensureStore(env);
       const r = await refreshLive(env);
       console.log("live store refresh:", JSON.stringify(r));
+      // and the matches that ended: the report queue (see THE REPORT QUEUE)
+      try {
+        const q = await dueReports(env, Date.now());
+        if (q.due) console.log("report queue:", JSON.stringify(q));
+      } catch (e) {
+        console.log("report queue failed:", e && e.message);   // never break the live refresh
+      }
       return;
     }
     if (!env.GH_TOKEN) {
@@ -764,21 +901,8 @@ export default {
       }
       workflow = "match-article.yml";
     }
-    const res = await fetch(
-      `https://api.github.com/repos/mostafa20182019/yalla-score-site/actions/workflows/${workflow}/dispatches`,
-      {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${env.GH_TOKEN}`,
-          "Accept": "application/vnd.github+json",
-          "User-Agent": "yalla-score-cron",
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ ref: "main" }),
-      }
-    );
     // 204 = accepted; anything else is logged for debugging (visible in
     // Cloudflare dashboard -> Worker -> Logs).
-    console.log("workflow dispatch:", workflow, res.status, res.status === 204 ? "OK" : await res.text());
+    await dispatchWorkflow(env, workflow, null);
   },
 };

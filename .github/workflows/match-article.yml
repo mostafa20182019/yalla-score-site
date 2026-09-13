@@ -5,11 +5,19 @@ name: Match Article (AI)
 # by match_brief.py, using Claude Code headless. Prompt:
 # .github/prompts/match-article.md
 #
-# Triggers: the Cloudflare Worker cron dispatches this workflow at four fixed
-# Cairo times - 13:00, 17:00, 20:00, 23:30 (wrangler.toml crons 3+4,
-# worker.js matchSlotCairo) - one article per slot, reports before previews,
-# Egyptian clubs first. The pick step re-checks at run time, so a slot with
-# nothing to write just exits with "no candidate".
+# Triggers (two, both from the Cloudflare Worker):
+#   1. THE FINAL WHISTLE (2026-09-13) - the one-minute live cron sees a curated
+#      match end and dispatches this workflow ~30 min later with kind=report,
+#      so the report follows the match instead of waiting for a slot. See
+#      "THE REPORT QUEUE" in worker.js.
+#   2. The four fixed Cairo slots - 13:00, 17:00, 20:00, 23:30 (wrangler.toml
+#      crons 3+4, worker.js matchSlotCairo) - one article per slot, reports
+#      before previews, Egyptian clubs first. They now serve previews and are
+#      the safety net for a report the live store never saw (a match that was
+#      already over the first time we looked).
+# The pick step re-checks at run time - candidates, dedup and the per-kind
+# daily caps all live in match_brief.py - so a run with nothing to write just
+# exits with "no candidate".
 #
 # No GitHub schedule (its hourly cron fired twice in fourteen days - GitHub
 # throttles schedule triggers on free repos) and, since 2026-09-12, no
@@ -23,7 +31,7 @@ on:
         type: string
         default: ""
       kind:
-        description: "preview | report (empty = auto)"
+        description: "preview | report (empty = auto; with no match_id it restricts the auto-pick)"
         type: choice
         default: ""
         options: ["", "preview", "report"]
@@ -55,15 +63,18 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
-      # Which match/kind? Explicit inputs win; otherwise match_brief.py picks
-      # the best candidate (reports first, Egyptian clubs first, daily cap).
+      # Which match/kind? An explicit match_id wins (a forced run from the
+      # Actions UI). Otherwise match_brief.py picks the best candidate - reports
+      # first, Egyptian clubs first, per-kind daily caps - restricted to `kind`
+      # when the caller asked for one (the final-whistle dispatch asks for
+      # report, so a queued match can never be answered with a preview).
       - name: Pick the match
         id: pick
         run: |
           if [ -n "${{ github.event.inputs.match_id }}" ]; then
             MID="${{ github.event.inputs.match_id }}"; KIND="${{ github.event.inputs.kind }}"
           else
-            J=$(python match_brief.py --pick)
+            J=$(python match_brief.py --pick ${{ github.event.inputs.kind != '' && format('--kind {0}', github.event.inputs.kind) || '' }})
             MID=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('match_id',''))" "$J")
             KIND=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('kind',''))" "$J")
           fi

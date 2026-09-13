@@ -18,6 +18,7 @@ endpoint, so the writer never has to invent a statistic:
 Usage (from this folder):
   python match_brief.py --list                 # candidates: previews + reports for curated clubs
   python match_brief.py --pick                 # ONE candidate as JSON {"match_id":..,"kind":..} or {}
+  python match_brief.py --pick --kind report   # the same, restricted to reports
   python match_brief.py --brief 4805134 --kind report [--out /tmp/brief.json]
   python match_brief.py --brief 560569  --kind preview
 
@@ -26,8 +27,9 @@ Candidate rules:
   report  = FINISHED curated match that ended within REPORT_MAX_H hours and has
             goal events or lineups in our data (no data = nothing to analyse yet)
   dedup   = an article in data/articles.json with the same match_id AND kind
-  cap     = at most DAILY_CAP match articles per day (Cairo); Egyptian clubs first,
-            reports before previews
+  cap     = PREVIEW_DAILY_CAP previews and REPORT_DAILY_CAP reports per day
+            (Cairo), counted SEPARATELY so a busy preview day can never eat a
+            report's place; Egyptian clubs first, reports before previews
 """
 import argparse, datetime, json, os, re, sys
 from zoneinfo import ZoneInfo
@@ -39,14 +41,20 @@ import build_site as b
 
 CAIRO = ZoneInfo("Africa/Cairo")
 PREVIEW_MIN_H, PREVIEW_MAX_H = 2.0, 30.0
-# The writer runs at four fixed Cairo slots (13:00 / 17:00 / 20:00 / 23:30)
-# since 2026-09-12, not every 15 minutes. So a match that ends at 23:00 is
-# first SEEN at the 13:00 slot, 14 hours later: the report window has to be
-# that wide or late games would never get their report. Previews are fine -
-# 2..30 h before kick-off covers any gap between slots.
-REPORT_MAX_H = 14.5
-# one article per slot, so four a day; the cap is a backstop, not the limiter
-DAILY_CAP = 4
+# A report is normally written ~30 min after the final whistle: the Worker's
+# one-minute live cron sees the match end and dispatches match-article.yml
+# (2026-09-13). The four fixed Cairo slots (13:00 / 17:00 / 20:00 / 23:30)
+# stay as the safety net for a match the live store never saw go from live to
+# ended - which is why the window is a day-and-a-bit and not a few hours: the
+# backstop has to still be allowed to write yesterday's late game.
+REPORT_MAX_H = 30.0
+# Separate caps per kind. They used to be ONE cap of 4 shared by both kinds,
+# and with one article per slot that is what starved the reports: half of the
+# curated matches of 2026-09-08..13 got a preview and never got a report
+# (16/16 previews, 8/16 reports). A preview must not be able to spend a
+# report's budget - they are not substitutes for each other.
+PREVIEW_DAILY_CAP = 4
+REPORT_DAILY_CAP = 4
 EGY_FIRST = ("الأهلي", "الزمالك", "بيراميدز")
 
 S365_HEADERS = {
@@ -113,10 +121,17 @@ def existing_kinds(articles):
             out.add((str(a["match_id"]), a["kind"]))
     return out
 
-def today_count(articles):
+def today_count(articles, kind=None):
+    """How many match articles were published today (Cairo), by kind."""
     today = _now().date().isoformat()
-    return sum(1 for a in articles if a.get("kind") in ("preview", "report")
+    kinds = (kind,) if kind else ("preview", "report")
+    return sum(1 for a in articles if a.get("kind") in kinds
                and (a.get("pub_date") or "") == today)
+
+DAILY_CAP = {"preview": PREVIEW_DAILY_CAP, "report": REPORT_DAILY_CAP}
+
+def has_room(articles, kind):
+    return today_count(articles, kind) < DAILY_CAP[kind]
 
 
 def candidates(d, now=None):
@@ -429,11 +444,12 @@ def main():
     d = load_all()
     if args.list or args.pick:
         cs = candidates(d)
+        if args.kind:
+            cs = [c for c in cs if c["kind"] == args.kind]
         if args.pick:
-            if today_count(d["articles"]) >= DAILY_CAP:
-                print(json.dumps({}))
-                return 0
-            c = cs[0] if cs else None
+            # the caps are per kind, so a full preview day still lets a report
+            # through (and the other way round)
+            c = next((c for c in cs if has_room(d["articles"], c["kind"])), None)
             print(json.dumps({"match_id": c["match_id"], "kind": c["kind"]} if c else {}))
             return 0
         for c in cs:
