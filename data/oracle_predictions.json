@@ -2,9 +2,9 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-13T18:45:04+03:00",
+    "generated_at" : "2026-09-13T18:15:04+03:00",
     "days" : 10,
-    "n" : 102,
+    "n" : 104,
     "params" :
     {
       "elo_k" : 28,
@@ -24,8 +24,8 @@
         "played" : 2,
         "gf" : 5,
         "ga" : 1,
-        "att" : 1.1382,
-        "def" : 0.7991
+        "att" : 1.1429,
+        "def" : 0.8
       },
       {
         "team" : "Borussia Dortmund",
@@ -33,17 +33,8 @@
         "played" : 3,
         "gf" : 8,
         "ga" : 2,
-        "att" : 1.2185,
-        "def" : 0.7734
-      },
-      {
-        "team" : "RB Leipzig",
-        "elo" : 1562.98,
-        "played" : 3,
-        "gf" : 9,
-        "ga" : 3,
-        "att" : 1.2927,
-        "def" : 0.8476
+        "att" : 1.225,
+        "def" : 0.775
       },
       {
         "team" : "VfB Stuttgart",
@@ -51,8 +42,8 @@
         "played" : 3,
         "gf" : 6,
         "ga" : 8,
-        "att" : 1.0702,
-        "def" : 1.2185
+        "att" : 1.075,
+        "def" : 1.225
       },
       {
         "team" : "Bayer 04 Leverkusen",
@@ -60,8 +51,17 @@
         "played" : 3,
         "gf" : 8,
         "ga" : 5,
-        "att" : 1.2185,
-        "def" : 0.996
+        "att" : 1.225,
+        "def" : 1
+      },
+      {
+        "team" : "RB Leipzig",
+        "elo" : 1548.66,
+        "played" : 2,
+        "gf" : 4,
+        "ga" : 3,
+        "att" : 1.0571,
+        "def" : 0.9714
       },
       {
         "team" : "SC Freiburg",
@@ -69,8 +69,8 @@
         "played" : 3,
         "gf" : 10,
         "ga" : 1,
-        "att" : 1.3669,
-        "def" : 0.6992
+        "att" : 1.375,
+        "def" : 0.7
       },
       {
         "team" : "FC Augsburg",
@@ -78,8 +78,8 @@
         "played" : 3,
         "gf" : 9,
         "ga" : 3,
-        "att" : 1.2927,
-        "def" : 0.8476
+        "att" : 1.3,
+        "def" : 0.85
       },
       {
         "team" : "TSG 1899 Hoffenheim",
@@ -87,8 +87,8 @@
         "played" : 3,
         "gf" : 6,
         "ga" : 7,
-        "att" : 1.0702,
-        "def" : 1.1444
+        "att" : 1.075,
+        "def" : 1.15
       },
       {
         "team" : "1. FSV Mainz 05",
@@ -96,8 +96,8 @@
         "played" : 3,
         "gf" : 6,
         "ga" : 3,
-        "att" : 1.0702,
-        "def" : 0.8476
+        "att" : 1.075,
+        "def" : 0.85
       },
       {
         "team" : "Eintracht Frankfurt",
@@ -105,8 +105,8 @@
         "played" : 3,
         "gf" : 7,
         "ga" : 8,
-        "att" : 1.1444,
-        "def" : 1.2185
+        "att" : 1.15,
+        "def" : 1.225
       },
       {
         "team" : "SV 07 Elversberg",
@@ -114,8 +114,8 @@
         "played" : 2,
         "gf" : 7,
         "ga" : 5,
-        "att" : 1.3078,
-        "def" : 1.1382
+        "att" : 1.3143,
+        "def" : 1.1429
       },
       {
         "team" : "SV Werder Bremen",
@@ -123,8 +123,8 @@
         "played" : 3,
         "gf" : 5,
         "ga" : 6,
-        "att" : 0.996,
-        "def" : 1.0702
+        "att" : 1,
+        "def" : 1.075
       },
       {
         "team" : "1. FC Köln",
@@ -132,8 +132,8 @@
         "played" : 3,
         "gf" : 5,
         "ga" : 7,
-        "att" : 0.996,
-        "def" : 1.1444
+        "att" : 1,
+        "def" : 1.15
       },
       {
         "team" : "Borussia Mönchengladbach",
@@ -141,8 +141,8 @@
         "played" : 3,
         "gf" : 3,
         "ga" : 12,
-        "att" : 0.8476,
-        "def" : 1.5153
+        "att" : 0.85,
+        "def" : 1.525
       },
       {
         "team" : "FC Schalke 04",
@@ -150,8 +150,17 @@
         "played" : 3,
         "gf" : 3,
         "ga" : 4,
-        "att" : 0.8476,
-        "def" : 0.9218
+        "att" : 0.85,
+        "def" : 0.925
+      },
+      {
+        "team" : "Hamburger SV",
+        "elo" : 1433.01,
+        "played" : 2,
+        "gf" : 0,
+        "ga" : 7,
+        "att" : 0.7143,
+        "def" : 1.3143
       },
       {
         "team" : "1. FC Union Berlin",
@@ -159,17 +168,8 @@
         "played" : 3,
         "gf" : 4,
         "ga" : 10,
-        "att" : 0.9218,
-        "def" : 1.3669
-      },
-      {
-        "team" : "Hamburger SV",
-        "elo" : 1418.69,
-        "played" : 3,
-        "gf" : 0,
-        "ga" : 12,
-        "att" : 0.625,
-        "def" : 1.5153
+        "att" : 0.925,
+        "def" : 1.375
       },
       {
         "team" : "SC Paderborn 07",
@@ -178,7 +178,7 @@
         "gf" : 0,
         "ga" : 4,
         "att" : 0.625,
-        "def" : 0.9218
+        "def" : 0.925
       }
     ],
     "CAF Champions League" :
@@ -1936,15 +1936,6 @@
     "UEFA Champions League" :
     [
       {
-        "team" : "FC Bayern München",
-        "elo" : 1522.43,
-        "played" : 1,
-        "gf" : 5,
-        "ga" : 0,
-        "att" : 1.3482,
-        "def" : 0.8333
-      },
-      {
         "team" : "Paris Saint-Germain FC",
         "elo" : 1522.43,
         "played" : 1,
@@ -1952,6 +1943,15 @@
         "ga" : 1,
         "att" : 1.4512,
         "def" : 0.9363
+      },
+      {
+        "team" : "FC Bayern München",
+        "elo" : 1522.43,
+        "played" : 1,
+        "gf" : 5,
+        "ga" : 0,
+        "att" : 1.3482,
+        "def" : 0.8333
       },
       {
         "team" : "Manchester City FC",
@@ -1990,15 +1990,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "Arsenal FC",
-        "elo" : 1516.78,
-        "played" : 1,
-        "gf" : 1,
-        "ga" : 0,
-        "att" : 0.9363,
-        "def" : 0.8333
-      },
-      {
         "team" : "Real Betis Balompié",
         "elo" : 1516.78,
         "played" : 1,
@@ -2026,7 +2017,16 @@
         "def" : 1.0393
       },
       {
-        "team" : "VfB Stuttgart",
+        "team" : "Arsenal FC",
+        "elo" : 1516.78,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 0,
+        "att" : 0.9363,
+        "def" : 0.8333
+      },
+      {
+        "team" : "Sporting Clube de Portugal",
         "elo" : 1514.02,
         "played" : 1,
         "gf" : 3,
@@ -2035,7 +2035,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "Sporting Clube de Portugal",
+        "team" : "VfB Stuttgart",
         "elo" : 1514.02,
         "played" : 1,
         "gf" : 3,
@@ -2116,24 +2116,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "LASK Linz",
-        "elo" : 1488.78,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 1,
-        "att" : 0.8333,
-        "def" : 0.9363
-      },
-      {
-        "team" : "FC Internazionale Milano",
-        "elo" : 1488.78,
-        "played" : 1,
-        "gf" : 1,
-        "ga" : 2,
-        "att" : 0.9363,
-        "def" : 1.0393
-      },
-      {
         "team" : "Club Atlético de Madrid",
         "elo" : 1488.78,
         "played" : 1,
@@ -2150,6 +2132,24 @@
         "ga" : 3,
         "att" : 1.0393,
         "def" : 1.1423
+      },
+      {
+        "team" : "LASK Linz",
+        "elo" : 1488.78,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 1,
+        "att" : 0.8333,
+        "def" : 0.9363
+      },
+      {
+        "team" : "FC Internazionale Milano",
+        "elo" : 1488.78,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 2,
+        "att" : 0.9363,
+        "def" : 1.0393
       },
       {
         "team" : "Viking FK",
@@ -2242,15 +2242,6 @@
         "def" : 1.0393
       },
       {
-        "team" : "FK Bodø/Glimt",
-        "elo" : 1477.57,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 5,
-        "att" : 0.8333,
-        "def" : 1.3482
-      },
-      {
         "team" : "ŠK Slovan Bratislava",
         "elo" : 1477.57,
         "played" : 1,
@@ -2258,6 +2249,15 @@
         "ga" : 6,
         "att" : 0.9363,
         "def" : 1.4512
+      },
+      {
+        "team" : "FK Bodø/Glimt",
+        "elo" : 1477.57,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 5,
+        "att" : 0.8333,
+        "def" : 1.3482
       }
     ]
   },
@@ -2325,13 +2325,13 @@
     },
     "Bundesliga" :
     {
-      "n" : 26,
-      "mu_home" : 2.0217,
-      "mu_away" : 1.3478,
-      "mu" : 1.6848,
-      "home_win" : 0.5385,
-      "draw" : 0.1923,
-      "gpm" : 3.8846
+      "n" : 25,
+      "mu_home" : 1.9556,
+      "mu_away" : 1.3778,
+      "mu" : 1.6667,
+      "home_win" : 0.52,
+      "draw" : 0.2,
+      "gpm" : 3.84
     },
     "Serie A" :
     {
@@ -2689,19 +2689,6 @@
       "away_score" : 1,
       "home_badge" : "https://crests.football-data.org/1.png",
       "away_badge" : "https://crests.football-data.org/12.png",
-      "status" : "FINISHED"
-    },
-    {
-      "match_id" : "565799",
-      "competition" : "Bundesliga",
-      "kickoff" : "2026-09-13",
-      "koff_time" : "16:30",
-      "home" : "RB Leipzig",
-      "away" : "Hamburger SV",
-      "home_score" : 5,
-      "away_score" : 0,
-      "home_badge" : "https://crests.football-data.org/721.png",
-      "away_badge" : "https://crests.football-data.org/7.png",
       "status" : "FINISHED"
     },
     {
@@ -7469,6 +7456,26 @@
       "elo_a" : 1479.02,
       "ts" : "2026-09-13"
     },
+    "4805188" :
+    {
+      "comp" : "CAF Champions League",
+      "home" : "ريفرز يونايتد",
+      "away" : "سان بيدرو",
+      "kickoff" : "2026-09-13",
+      "koff_time" : "18:00",
+      "lh" : 1.354971,
+      "la" : 0.784133,
+      "ph" : 0.503,
+      "pd" : 0.2803,
+      "pa" : 0.2167,
+      "score" : "1-0",
+      "conf" : "low",
+      "n_h" : 1,
+      "n_a" : 1,
+      "elo_h" : 1502.78,
+      "elo_a" : 1497.22,
+      "ts" : "2026-09-13"
+    },
     "4849458" :
     {
       "comp" : "CAF Champions League",
@@ -7847,6 +7854,26 @@
       "n_a" : 3,
       "elo_h" : 1451.67,
       "elo_a" : 1472.2,
+      "ts" : "2026-09-13"
+    },
+    "559686" :
+    {
+      "comp" : "Ligue 1",
+      "home" : "Le Mans FC",
+      "away" : "Racing Club de Lens",
+      "kickoff" : "2026-09-13",
+      "koff_time" : "18:15",
+      "lh" : 1.59445,
+      "la" : 1.89069,
+      "ph" : 0.3289,
+      "pd" : 0.2212,
+      "pa" : 0.4499,
+      "score" : "1-1",
+      "conf" : "low",
+      "n_h" : 3,
+      "n_a" : 3,
+      "elo_h" : 1393.13,
+      "elo_a" : 1558.08,
       "ts" : "2026-09-13"
     },
     "559682" :
@@ -8256,17 +8283,17 @@
       "away" : "RB Leipzig",
       "kickoff" : "2026-09-20",
       "koff_time" : "16:30",
-      "lh" : 2.147305,
-      "la" : 1.68751,
-      "ph" : 0.4857,
-      "pd" : 0.2073,
-      "pa" : 0.307,
+      "lh" : 2.409597,
+      "la" : 1.406648,
+      "ph" : 0.5952,
+      "pd" : 0.1901,
+      "pa" : 0.2147,
       "score" : "2-1",
       "conf" : "low",
       "n_h" : 3,
-      "n_a" : 3,
+      "n_a" : 2,
       "elo_h" : 1551.27,
-      "elo_a" : 1562.98,
+      "elo_a" : 1548.66,
       "ts" : "2026-09-13"
     },
     "565808" :
@@ -8276,16 +8303,16 @@
       "away" : "1. FC Köln",
       "kickoff" : "2026-09-19",
       "koff_time" : "16:30",
-      "lh" : 1.481968,
-      "la" : 1.984775,
-      "ph" : 0.2889,
-      "pd" : 0.2175,
-      "pa" : 0.4936,
+      "lh" : 1.65766,
+      "la" : 1.754743,
+      "ph" : 0.367,
+      "pd" : 0.2259,
+      "pa" : 0.4071,
       "score" : "1-1",
       "conf" : "low",
-      "n_h" : 3,
+      "n_h" : 2,
       "n_a" : 3,
-      "elo_h" : 1418.69,
+      "elo_h" : 1433.01,
       "elo_a" : 1437.46,
       "ts" : "2026-09-13"
     },
@@ -8296,11 +8323,11 @@
       "away" : "FC Augsburg",
       "kickoff" : "2026-09-19",
       "koff_time" : "16:30",
-      "lh" : 1.700698,
-      "la" : 1.871195,
-      "ph" : 0.3556,
-      "pd" : 0.2198,
-      "pa" : 0.4246,
+      "lh" : 1.656399,
+      "la" : 1.932213,
+      "ph" : 0.3354,
+      "pd" : 0.218,
+      "pa" : 0.4466,
       "score" : "1-1",
       "conf" : "low",
       "n_h" : 3,
@@ -8316,11 +8343,11 @@
       "away" : "SC Freiburg",
       "kickoff" : "2026-09-19",
       "koff_time" : "16:30",
-      "lh" : 1.622906,
-      "la" : 2.237765,
-      "ph" : 0.2802,
-      "pd" : 0.2028,
-      "pa" : 0.517,
+      "lh" : 1.579342,
+      "la" : 2.313172,
+      "ph" : 0.2607,
+      "pd" : 0.1985,
+      "pa" : 0.5408,
       "score" : "1-2",
       "conf" : "low",
       "n_h" : 3,
@@ -8336,11 +8363,11 @@
       "away" : "1. FSV Mainz 05",
       "kickoff" : "2026-09-19",
       "koff_time" : "16:30",
-      "lh" : 1.458314,
-      "la" : 2.176829,
-      "ph" : 0.2554,
-      "pd" : 0.2057,
-      "pa" : 0.5389,
+      "lh" : 1.418639,
+      "la" : 2.249539,
+      "ph" : 0.2374,
+      "pd" : 0.2007,
+      "pa" : 0.5619,
       "score" : "1-2",
       "conf" : "low",
       "n_h" : 3,
@@ -8356,12 +8383,12 @@
       "away" : "SV 07 Elversberg",
       "kickoff" : "2026-09-20",
       "koff_time" : "18:30",
-      "lh" : 2.000172,
-      "la" : 1.584481,
-      "ph" : 0.4757,
-      "pd" : 0.2157,
-      "pa" : 0.3086,
-      "score" : "2-1",
+      "lh" : 1.948072,
+      "la" : 1.633378,
+      "ph" : 0.4546,
+      "pd" : 0.2177,
+      "pa" : 0.3277,
+      "score" : "1-1",
       "conf" : "low",
       "n_h" : 3,
       "n_a" : 2,
@@ -8376,11 +8403,11 @@
       "away" : "Borussia Dortmund",
       "kickoff" : "2026-09-19",
       "koff_time" : "19:30",
-      "lh" : 1.669162,
-      "la" : 2.006283,
-      "ph" : 0.3258,
-      "pd" : 0.2143,
-      "pa" : 0.4599,
+      "lh" : 1.625203,
+      "la" : 2.072641,
+      "ph" : 0.3057,
+      "pd" : 0.2115,
+      "pa" : 0.4827,
       "score" : "1-2",
       "conf" : "low",
       "n_h" : 3,
@@ -8396,11 +8423,11 @@
       "away" : "1. FC Union Berlin",
       "kickoff" : "2026-09-18",
       "koff_time" : "21:30",
-      "lh" : 3.688139,
-      "la" : 0.846741,
-      "ph" : 0.8685,
-      "pd" : 0.0844,
-      "pa" : 0.0471,
+      "lh" : 3.602979,
+      "la" : 0.869589,
+      "ph" : 0.8582,
+      "pd" : 0.0899,
+      "pa" : 0.0519,
       "score" : "3-0",
       "conf" : "low",
       "n_h" : 2,
@@ -8436,11 +8463,11 @@
       "away" : "TSG 1899 Hoffenheim",
       "kickoff" : "2026-09-20",
       "koff_time" : "20:30",
-      "lh" : 1.415639,
-      "la" : 1.358067,
-      "ph" : 0.386,
+      "lh" : 1.376051,
+      "la" : 1.399403,
+      "ph" : 0.3676,
       "pd" : 0.2541,
-      "pa" : 0.3598,
+      "pa" : 0.3782,
       "score" : "1-1",
       "conf" : "low",
       "n_h" : 3,
