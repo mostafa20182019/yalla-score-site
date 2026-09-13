@@ -365,6 +365,34 @@ def apply_oracle_league(lparams, league):
     return applied, unmatched
 
 
+def load_oracle_season(path=ORACLE_PREDS):
+    """Every FINISHED match of the season the Oracle copy knows (the "season" key
+    of oracle_predictions.json), in matches.json shape, so season_matches() can
+    put it in the pool both models replay. NOT age-gated - a finished match never
+    changes - and the whole point (2026-09-13, user: «عايز الاثنين متطابقين»):
+    the site's rolling files forget a league's opening rounds, Oracle's MATCHES
+    keeps them, so without this python's Elo and Oracle's drift apart (Saudi
+    league, 60 vs 51 matches). Returns ([], status) when the file or key is
+    absent: the pool is then the feed's files, as before."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            rows = json.load(f).get("season") or []
+    except Exception as e:                                  # noqa: BLE001
+        return [], {"status": "missing", "why": str(e)[:80]}
+    out = []
+    for r in rows:
+        try:
+            out.append({"match_id": r.get("match_id"), "competition": r["competition"],
+                        "kickoff": r["kickoff"], "koff_time": r.get("koff_time"),
+                        "home": r["home"], "away": r["away"],
+                        "home_score": int(r["home_score"]), "away_score": int(r["away_score"]),
+                        "home_badge": r.get("home_badge"), "away_badge": r.get("away_badge"),
+                        "status": "FINISHED", "src": "oracle"})
+        except (KeyError, TypeError, ValueError):
+            continue
+    return out, {"status": "ok", "n": len(out)}
+
+
 def apply_oracle_strength(tstats, strength):
     """Overlay the Oracle model's elo / played / gf / ga onto team_stats() rows.
 

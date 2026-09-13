@@ -1891,7 +1891,15 @@ def build():
 
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
-    _bycomp = AN.season_matches(fixtures, _archive)
+    # Oracle first for the match pool too (user rule 2026-09-13): the finished
+    # matches the Oracle copy accumulated go into the pool AHEAD of the feed's
+    # rolling files, so both models replay the same season and a score Oracle
+    # holds wins a conflict. season_matches() de-duplicates by fixture, so a
+    # match present on both sides is counted once. No file = the feed alone.
+    _orc_season, _orc_season_st = AN.load_oracle_season()
+    if _orc_season:
+        print(f'  + season pool: {len(_orc_season)} finished matches from the Oracle copy ahead of the feed files')
+    _bycomp = AN.season_matches(fixtures, _orc_season + _archive)
     # season carry-over (roadmap factor 1): the five European leagues start from
     # last season's carried Elo (data/elo_seeds.json, season_carry.py); absent
     # file = flat 1500 as before. The Oracle copy reads the same seeds.
