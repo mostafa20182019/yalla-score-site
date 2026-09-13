@@ -179,7 +179,7 @@
   "detail_fails": 0,
   "skipped": [
    "4805164:count-mismatch (0, 0) vs 0-3 []",
-   "4805161:count-mismatch (0, 0) vs 4-1 []",
+   "4805161:count-mismatch (0, 0) vs 5-1 []",
    "4805158:count-mismatch (0, 0) vs 2-0 []",
    "4805159:count-mismatch (0, 0) vs 3-1 []",
    "4805167:count-mismatch (0, 0) vs 0-3 []",
@@ -245,7 +245,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.2, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"17'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"33'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (8 with XI)",
@@ -256,5 +256,5 @@
   "fails": 0
  },
  "match_details": "ok (315)",
- "utc": "2026-09-13T14:35:56Z"
+ "utc": "2026-09-13T14:52:16Z"
 }
