@@ -553,6 +553,47 @@ def export_json():
     return True
 
 
+LIVE_GOALS_JSON = os.path.join(HERE, "data", "live_goals.json")
+
+
+def live_goals_export(path=LIVE_GOALS_JSON):
+    """The Worker's live goal log (live_goals, written the moment a goal appears,
+    a VAR reversal flagged cancelled) -> data/live_goals.json, newest last.
+    The Oracle copy loads this file (oracle-yalla/34_live_goals.sql). The table is
+    created lazily by the Worker, so a store that has never served a live game
+    has no table yet: that is "nothing to export", not an error."""
+    if backend() == "json":
+        return None
+    try:
+        rows = sql("SELECT game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, "
+                   "seen_at, cancelled, cancelled_at FROM live_goals ORDER BY seen_at, game_id, seq", [])
+    except RuntimeError as e:
+        if "no such table" in str(e).lower():
+            return None
+        raise
+    out = []
+    for r in rows:
+        rec = {"game_id": str(r["game_id"]), "seq": r["seq"], "side": r["side"], "player": r.get("player"),
+               "minute": r.get("minute"), "tag": r.get("tag") or None, "score": f'{r["score_h"]}-{r["score_a"]}',
+               "c": r.get("c"), "home": r.get("h"), "away": r.get("a"),
+               "seen_at": _iso_ms(r.get("seen_at")), "cancelled": bool(r.get("cancelled"))}
+        if r.get("cancelled_at"):
+            rec["cancelled_at"] = _iso_ms(r["cancelled_at"])
+        out.append(rec)
+    _jsave(path, {"meta": {"source": "worker live store", "n": len(out),
+                           "exported_at": datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")},
+                  "goals": out})
+    return len(out)
+
+
+def _iso_ms(ms):
+    """epoch milliseconds (the Worker's Date.now()) -> ISO-8601 UTC, seconds."""
+    try:
+        return datetime.datetime.fromtimestamp(int(ms) / 1000, datetime.timezone.utc).isoformat(timespec="seconds")
+    except (TypeError, ValueError, OSError):
+        return None
+
+
 def import_json():
     """One-time migration: existing JSON state -> D1. Idempotent (skips rows
     that are already there), so it is safe to re-run after a partial failure."""

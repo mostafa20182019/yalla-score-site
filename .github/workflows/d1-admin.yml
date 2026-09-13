@@ -86,8 +86,10 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          if ! git diff --quiet -- data/; then
+          # (a brand-new file is invisible to git diff - hence the ls-files test)
+          if ! git diff --quiet -- data/ || [ -n "$(git ls-files --others --exclude-standard data/live_goals.json)" ]; then
             git add data/fb_posted.json data/predictions.json data/articles.json
+            [ -f data/live_goals.json ] && git add data/live_goals.json   # the Worker live store's goal log (2026-09-13)
             git commit -m "d1: export state [skip ci]"
             for attempt in 1 2 3; do
               if git pull --rebase origin main && git push; then exit 0; fi

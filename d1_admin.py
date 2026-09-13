@@ -205,6 +205,8 @@ def main():
         print("exported D1 -> data/*.json" if ok else "export skipped")
         n = store.article_export()
         print(f"exported D1 -> data/articles.json ({n} articles)")
+        g = store.live_goals_export()
+        print("exported D1 -> data/live_goals.json (%s)" % ("no live store yet" if g is None else f"{g} goals"))
 
     if "--sample" in args:
         _sample()
