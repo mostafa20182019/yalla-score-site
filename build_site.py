@@ -1482,6 +1482,47 @@ def video_facade(v):
 
 # ---------------------------------------------------------------- build
 # ---------------------------------------------------------------- تحليلات (rendering)
+# Official-post embeds under an article (user ask 2026-09-13: «النقطة 1» -
+# the club's own X / Instagram / Facebook post, the one legal way to show a
+# professional photo of the event without a licence: the platform serves it).
+# Rendered as a CARD that loads the platform's script only when the reader
+# clicks - nothing third-party on page load (speed, AdSense, privacy). Without
+# JS the card is a plain link to the post.
+EMBED_LABEL = {"x": "X (تويتر)", "instagram": "إنستغرام", "facebook": "فيسبوك"}
+
+
+def embed_platform(url):
+    return store.embed_platform(url)
+
+
+def embeds_block(urls):
+    items = [(u, embed_platform(u)) for u in (urls or []) if isinstance(u, str)]
+    items = [(u, p) for u, p in items if p]
+    if not items:
+        return ""
+    cards = []
+    for u, p in items:
+        short = re.sub(r"^https://(www\.)?", "", u)
+        short = short if len(short) <= 60 else short[:57] + "…"
+        cards.append(f'<div class="emb" data-p="{p}" data-u="{esc(u)}">'
+                     f'<div class="emb-h"><span class="emb-ico emb-{p}"></span><b>منشور رسمي على {EMBED_LABEL[p]}</b></div>'
+                     f'<a class="emb-l" href="{esc(u)}" target="_blank" rel="noopener nofollow">{esc(short)}</a>'
+                     f'<button type="button" class="emb-b">عرض المنشور</button></div>')
+    return ('<section class="a-embeds"><h2>من الحسابات الرسمية</h2>'
+            '<p class="hintline">يُحمَّل المنشور من منصته عند الضغط فقط، وتنطبق عليه سياسة خصوصية تلك المنصة.</p>'
+            + "".join(cards) + '</section>' + EMBED_JS)
+
+
+EMBED_JS = r"""<script>(function(){if(window.__ye)return;window.__ye=1;
+var L={};function need(src,id,done){if(L[src]){done();return}var s=document.createElement('script');s.src=src;s.async=true;s.onload=function(){L[src]=1;done()};document.head.appendChild(s)}
+document.addEventListener('click',function(e){var b=e.target.closest('.emb-b');if(!b)return;var c=b.closest('.emb'),p=c.getAttribute('data-p'),u=c.getAttribute('data-u');
+b.disabled=true;b.textContent='جارٍ التحميل…';var box=document.createElement('div');box.className='emb-box';c.appendChild(box);
+if(p==='x'){box.innerHTML='<blockquote class="twitter-tweet" dir="rtl"><a href="'+u+'"></a></blockquote>';need('https://platform.twitter.com/widgets.js','x',function(){if(window.twttr&&twttr.widgets)twttr.widgets.load(box)})}
+else if(p==='instagram'){box.innerHTML='<blockquote class="instagram-media" data-instgrm-permalink="'+u+'" data-instgrm-version="14" style="margin:0 auto;max-width:540px;width:100%"></blockquote>';need('https://www.instagram.com/embed.js','ig',function(){if(window.instgrm)instgrm.Embeds.process()})}
+else if(p==='facebook'){if(!document.getElementById('fb-root')){var r=document.createElement('div');r.id='fb-root';document.body.appendChild(r)}box.innerHTML='<div class="fb-post" data-href="'+u+'" data-width="500" data-show-text="true"></div>';need('https://connect.facebook.net/ar_AR/sdk.js#xfbml=1&version=v20.0','fb',function(){if(window.FB&&FB.XFBML)FB.XFBML.parse(box)})}
+b.remove();});})();</script>"""
+
+
 AN_DISCLAIMER = ('التوقعات احتمالات إحصائية من نموذج يلا سكور مبنية على نتائج الموسم الحالي فقط، '
                  'وليست نصيحة للمراهنة. كلما زاد عدد المباريات زادت دقة النموذج.')
 
@@ -2255,6 +2296,8 @@ def build():
             p.append(jsonld({"@context": "https://schema.org", "@type": "FAQPage",
                              "mainEntity": [{"@type": "Question", "name": f["q"],
                                              "acceptedAnswer": {"@type": "Answer", "text": f["a"]}} for f in _faq]}))
+        # official posts about the story, click-to-load (2026-09-13)
+        p.append(embeds_block(a.get("embeds")))
         if _clubs:
             p.append('<nav class="club-chips"><span>المزيد عن:</span>'
                      + "".join(f'<a href="/team/{tp["slug"]}.html">'
@@ -4763,6 +4806,18 @@ a{color:inherit}
 .a-sources h2,.a-faq h2{font-size:1.05rem;margin:0 0 8px}
 .a-sources ul{margin:0;padding-inline-start:18px}
 .a-sources li{margin:4px 0;font-size:.92rem}
+.a-embeds{margin:22px 0 0;padding-top:14px;border-top:1px solid #e2e8f0}
+.a-embeds h2{font-size:1.05rem;margin:0 0 4px}
+.a-embeds .hintline{margin:0 0 10px;font-size:.8rem}
+.emb{border:1px solid #e2e8f0;border-radius:12px;padding:12px 14px;margin:10px 0;background:#f8fafc}
+.emb-h{display:flex;align-items:center;gap:8px;font-size:.95rem}
+.emb-ico{display:inline-block;width:14px;height:14px;border-radius:3px;background:#0f172a}
+.emb-instagram{background:#c13584}.emb-facebook{background:#1877f2}
+.emb-l{display:block;direction:ltr;text-align:left;font-size:.82rem;color:var(--muted);margin:6px 0 10px;word-break:break-all;text-decoration:none}
+.emb-l:hover{text-decoration:underline}
+.emb-b{background:var(--green);color:#fff;border:0;border-radius:8px;padding:8px 14px;font-weight:800;cursor:pointer;font-family:inherit}
+.emb-b:hover{background:var(--green-d)}
+.emb-box{margin-top:10px;display:flex;justify-content:center}
 .related{max-width:860px}
 .related .mp-newslist li{margin:7px 0;line-height:1.6}
 .related .mp-newslist a{font-weight:800;color:var(--ink);text-decoration:none}

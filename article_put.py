@@ -59,6 +59,11 @@ def validate(rec, updating=False):
         # the standing rule: no credit, no use. Only our own placeholders are
         # exempt, and they are the last resort anyway.
         bad.append("image_url without image_credit (only our placeholders are exempt)")
+    for u in rec.get("embeds") or []:
+        # an embed must be an https post URL on X / Instagram / Facebook - the
+        # club's own announcement, not a guess (the prompts say official only)
+        if not isinstance(u, str) or not store.embed_platform(u):
+            bad.append(f"embed is not an X/Instagram/Facebook post URL: {u!r}")
     words = len(b.strip_tags(rec.get("body") or "").split())
     if not updating and words < 300:
         bad.append(f"body is {words} words - under the {b.ARTICLE_MIN_WORDS}-word bar, "

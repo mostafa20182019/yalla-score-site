@@ -97,6 +97,8 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
     <img id="imgPrev" alt="">
     <label>حقوق الصورة (مطلوب مع أي صورة من ويكيميديا/أنسبلاش)</label>
     <input type="text" id="fcredit" placeholder="صورة: الموضوع — تصوير المصور، رخصة CC BY 4.0 (ويكيميديا كومنز)">
+    <label>منشورات رسمية للتضمين (اختياري): روابط منشورات النادي/الاتحاد/اللاعب على X أو إنستغرام أو فيسبوك — رابط في كل سطر. تظهر تحت الخبر كبطاقة تُحمَّل عند الضغط</label>
+    <textarea id="fembeds" dir="ltr" style="min-height:64px" placeholder="https://x.com/AlAhly/status/..."></textarea>
     <label>نص الخبر * <span style="font-weight:400">(اكتب فقرات عادية وافصل بينها بسطر فاضي — بتتحول تلقائيًا. ولو عارف HTML اكتبه مباشرة)</span></label>
     <textarea id="fbody" placeholder="الفقرة الأولى ...&#10;&#10;الفقرة الثانية ..."></textarea>
     <div class="row" style="margin-top:6px">
@@ -298,6 +300,7 @@ function editArt(i){
     document.getElementById("fsummary").value=a.summary||"";
     document.getElementById("fimg").value=a.image_url||"";
     document.getElementById("fcredit").value=a.image_credit||"";
+    document.getElementById("fembeds").value=(a.embeds||[]).join("\n");
     document.getElementById("fbody").value=a.body||"";
     document.getElementById("fauthor").value=a.author||"فريق التحرير";
     document.getElementById("fdate").value=a.pub_date||"";
@@ -309,7 +312,7 @@ function editArt(i){
 function resetForm(){
   editIdx=null;
   document.getElementById("formTitle").textContent="➕ خبر جديد";
-  ["ftitle","fsummary","fimg","fcredit","fbody"].forEach(function(id){document.getElementById(id).value="";});
+  ["ftitle","fsummary","fimg","fcredit","fembeds","fbody"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("fauthor").value="فريق التحرير";
   document.getElementById("fdate").value=new Date().toISOString().slice(0,10);
   document.getElementById("formBtn").textContent="💾 انشر الخبر";
@@ -337,9 +340,12 @@ function submitForm(){
   var w=html.replace(/<[^>]+>/g," ").trim().split(/\s+/).filter(Boolean).length;
   if(w<300 && !confirm("النص "+w+" كلمة — تحت حد الـ300.\n\nالخبر هيتنشر لكن مخفي: بيفضل على رابطه ويخرج من كل قوايم الموقع.\n\nتكمل؟")) return;
 
+  var _emb=document.getElementById("fembeds").value.split(/\n/).map(function(x){return x.trim()}).filter(Boolean);
+  var _badEmb=_emb.filter(function(u){return !/^https:\/\/(www\.|m\.|mobile\.)?(x\.com|twitter\.com|instagram\.com|facebook\.com|fb\.watch)\/./.test(u)});
+  if(_badEmb.length) return show("formStatus","err","رابط تضمين غير صالح (لازم يكون منشور على X أو إنستغرام أو فيسبوك): "+_badEmb[0]);
   var rec={
     title:t, summary:sm, body:html,
-    image_url:_img||null, image_credit:_cr||null,
+    image_url:_img||null, image_credit:_cr||null, embeds:_emb,
     author:document.getElementById("fauthor").value.trim()||"فريق التحرير",
     pub_date:document.getElementById("fdate").value||new Date().toISOString().slice(0,10)
   };

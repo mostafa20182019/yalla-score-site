@@ -693,7 +693,7 @@ def warehouse_counts():
 
 ARTICLE_FIELDS = ["article_id", "title", "summary", "body", "author",
                   "pub_date", "pub_ts", "match_id", "kind", "image_url",
-                  "image_credit", "sources", "faq", "fb_post",
+                  "image_credit", "sources", "faq", "embeds", "fb_post",
                   "updated_ts", "upgraded_ts"]
 
 # columns the caller owns; words/thin are editorial, computed by the caller
@@ -710,6 +710,39 @@ class DuplicateArticle(Exception):
 def _is_conflict(e):
     m = str(e).lower()
     return "unique" in m or "constraint" in m
+
+
+EMBED_HOSTS = {"x.com": "x", "twitter.com": "x", "mobile.twitter.com": "x",
+               "instagram.com": "instagram", "facebook.com": "facebook",
+               "m.facebook.com": "facebook", "fb.watch": "facebook"}
+
+
+def embed_platform(url):
+    """'x' / 'instagram' / 'facebook' for an https post URL on those hosts, else
+    None. The single definition both the validator and the renderer use."""
+    try:
+        from urllib.parse import urlparse
+        u = urlparse(str(url or ""))
+        if u.scheme != "https" or not u.path or u.path == "/":
+            return None
+        return EMBED_HOSTS.get(u.hostname.lower().removeprefix("www."))
+    except Exception:                                       # noqa: BLE001
+        return None
+
+
+_embeds_ready = False
+
+
+def _ensure_embeds():
+    """article_embeds is newer than the rest of the schema: create it on first
+    use so neither the build nor a publish waits for a d1-admin --init."""
+    global _embeds_ready
+    if _embeds_ready or backend() == "json":
+        return
+    sql("CREATE TABLE IF NOT EXISTS article_embeds (article_id TEXT NOT NULL, "
+        "seq INTEGER NOT NULL, url TEXT NOT NULL, platform TEXT, "
+        "PRIMARY KEY (article_id, seq))")
+    _embeds_ready = True
 
 
 def article_all(with_body=True):
@@ -733,6 +766,10 @@ def article_all(with_body=True):
                  "ORDER BY article_id, seq"):
         kids.setdefault(r["article_id"], {}).setdefault("faq", []).append(
             {"q": r["q"], "a": r["a"]})
+    _ensure_embeds()
+    for r in sql("SELECT article_id, seq, url FROM article_embeds "
+                 "ORDER BY article_id, seq"):
+        kids.setdefault(r["article_id"], {}).setdefault("embeds", []).append(r["url"])
     out = []
     for r in rows:
         a = dict(r)
@@ -773,7 +810,17 @@ def article_export(path=None):
     return len(doc["results"][0]["items"])
 
 
-def _article_children(aid, sources, faq, clubs):
+def _article_children(aid, sources, faq, clubs, embeds=None):
+    if embeds is not None:
+        _ensure_embeds()
+        keep = [u for u in embeds if embed_platform(u)]
+        for i, u in enumerate(keep):
+            sql("INSERT INTO article_embeds (article_id, seq, url, platform) "
+                "VALUES (?, ?, ?, ?) ON CONFLICT(article_id, seq) DO UPDATE SET "
+                "url = excluded.url, platform = excluded.platform",
+                [aid, i, u, embed_platform(u)])
+        sql("DELETE FROM article_embeds WHERE article_id = ? AND seq >= ?",
+            [aid, len(keep)])
     for i, s in enumerate(sources or []):
         sql("INSERT INTO article_sources (article_id, seq, name, url, note) "
             "VALUES (?, ?, ?, ?, ?) ON CONFLICT(article_id, seq) DO UPDATE SET "
@@ -821,7 +868,8 @@ def article_add(rec, clubs=None):
                 f"match {rec.get('match_id')} already has a {rec.get('kind')}")
         raise
     aid = str(got[0]["article_id"])
-    _article_children(aid, rec.get("sources"), rec.get("faq"), clubs or [])
+    _article_children(aid, rec.get("sources"), rec.get("faq"), clubs or [],
+                      rec.get("embeds") if "embeds" in rec else [])
     return aid
 
 
@@ -839,12 +887,14 @@ def article_update(aid, rec, clubs=None):
     if "body" in rec:
         sets.append("body_hash")
         params.append(_body_hash(rec.get("body") or ""))
-    if not sets:
-        return aid
-    sql(f"UPDATE articles SET {', '.join(c + ' = ?' for c in sets)} "
-        f"WHERE article_id = ?", params + [aid])
-    if "sources" in rec or "faq" in rec or clubs is not None:
-        _article_children(aid, rec.get("sources"), rec.get("faq"), clubs)
+    # children-only updates (sources / faq / embeds, no column) used to hit the
+    # early return below and silently write nothing - found by test 32 (2026-09-13)
+    if sets:
+        sql(f"UPDATE articles SET {', '.join(c + ' = ?' for c in sets)} "
+            f"WHERE article_id = ?", params + [aid])
+    if "sources" in rec or "faq" in rec or "embeds" in rec or clubs is not None:
+        _article_children(aid, rec.get("sources"), rec.get("faq"), clubs,
+                          rec.get("embeds") if "embeds" in rec else None)
     return aid
 
 

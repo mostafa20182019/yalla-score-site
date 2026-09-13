@@ -468,6 +468,31 @@ function words(html) {
           .filter(Boolean)).length;
 }
 
+/* official-post embeds (2026-09-13): the same host rule as store.embed_platform */
+const EMBED_HOSTS = { "x.com": "x", "twitter.com": "x", "mobile.twitter.com": "x",
+                      "instagram.com": "instagram", "facebook.com": "facebook",
+                      "m.facebook.com": "facebook", "fb.watch": "facebook" };
+function embedPlatform(u) {
+  try {
+    const h = new URL(String(u || ""));
+    if (h.protocol !== "https:" || !h.pathname || h.pathname === "/") return null;
+    return EMBED_HOSTS[h.hostname.toLowerCase().replace(/^www\./, "")] || null;
+  } catch (e) { return null; }
+}
+let embedsReady = false;
+async function ensureEmbeds(env) {
+  if (embedsReady) return;
+  await env.DB.prepare("CREATE TABLE IF NOT EXISTS article_embeds (article_id TEXT NOT NULL, " +
+    "seq INTEGER NOT NULL, url TEXT NOT NULL, platform TEXT, PRIMARY KEY (article_id, seq))").run();
+  embedsReady = true;
+}
+function badEmbeds(rec) {
+  if (!("embeds" in rec)) return null;
+  if (!Array.isArray(rec.embeds)) return "embeds must be a list of URLs";
+  const bad = rec.embeds.filter(u => !embedPlatform(u));
+  return bad.length ? `not an X/Instagram/Facebook post URL: ${bad[0]}` : null;
+}
+
 async function articleRow(env, id) {
   const a = await env.DB.prepare(
     "SELECT article_id, title, summary, body, author, pub_date, pub_ts, " +
@@ -475,20 +500,30 @@ async function articleRow(env, id) {
     "upgraded_ts, words, thin FROM articles WHERE article_id = ?"
   ).bind(String(id)).first();
   if (!a) return null;
+  await ensureEmbeds(env);
   const kids = await env.DB.batch([
     env.DB.prepare("SELECT name, url, note FROM article_sources WHERE article_id = ? ORDER BY seq").bind(String(id)),
     env.DB.prepare("SELECT q, a FROM article_faq WHERE article_id = ? ORDER BY seq").bind(String(id)),
+    env.DB.prepare("SELECT url FROM article_embeds WHERE article_id = ? ORDER BY seq").bind(String(id)),
   ]);
   a.sources = kids[0].results || [];
   a.faq = kids[1].results || [];
+  a.embeds = (kids[2].results || []).map(r => r.url);
   return a;
 }
 
-async function writeChildren(env, id, sources, faq) {
+async function writeChildren(env, id, sources, faq, embeds) {
   const stmts = [
     env.DB.prepare("DELETE FROM article_sources WHERE article_id = ?").bind(id),
     env.DB.prepare("DELETE FROM article_faq WHERE article_id = ?").bind(id),
   ];
+  if (embeds !== undefined) {
+    await ensureEmbeds(env);
+    stmts.push(env.DB.prepare("DELETE FROM article_embeds WHERE article_id = ?").bind(id));
+    (embeds || []).filter(embedPlatform).forEach((u, i) => stmts.push(env.DB.prepare(
+      "INSERT INTO article_embeds (article_id, seq, url, platform) VALUES (?, ?, ?, ?)"
+    ).bind(id, i, u, embedPlatform(u))));
+  }
   (sources || []).forEach((x, i) => stmts.push(env.DB.prepare(
     "INSERT INTO article_sources (article_id, seq, name, url, note) VALUES (?, ?, ?, ?, ?)"
   ).bind(id, i, x.name || null, x.url || null, x.note || null)));
@@ -568,6 +603,8 @@ async function adminApi(request, env, url) {
     if (!!rec.match_id !== !!rec.kind) {
       return jsonReply(request, { error: "match_id and kind go together" }, 400);
     }
+    const be = badEmbeds(rec);
+    if (be) return jsonReply(request, { error: be }, 400);
     const w = words(rec.body);
     const cols = ART_FIELDS.concat(["words", "thin", "has_sources", "has_faq"]);
     const vals = ART_FIELDS.map(f => (rec[f] === undefined || rec[f] === "" ? null : rec[f]))
@@ -593,7 +630,7 @@ async function adminApi(request, env, url) {
       return jsonReply(request, { error: m }, 500);
     }
     const id = String(row.article_id);
-    await writeChildren(env, id, rec.sources, rec.faq);
+    await writeChildren(env, id, rec.sources, rec.faq, rec.embeds || []);
     return jsonReply(request, {
       article_id: id, words: w, thin: w < 300,
       publish: await dispatchPublish(env),
@@ -611,6 +648,8 @@ async function adminApi(request, env, url) {
       "SELECT article_id FROM articles WHERE article_id = ?").bind(id).first();
     if (!exists) return jsonReply(request, { error: "no such article" }, 404);
 
+    const be2 = badEmbeds(rec);
+    if (be2) return jsonReply(request, { error: be2 }, 400);
     const sets = [], vals = [];
     for (const f of ART_FIELDS) {
       if (f in rec) { sets.push(`${f} = ?`); vals.push(rec[f] === "" ? null : rec[f]); }
@@ -638,8 +677,10 @@ async function adminApi(request, env, url) {
         return jsonReply(request, { error: m }, 500);
       }
     }
-    if ("sources" in rec || "faq" in rec) {
-      await writeChildren(env, id, rec.sources, rec.faq);
+    if ("sources" in rec || "faq" in rec || "embeds" in rec) {
+      // sources/faq are always rewritten together (as before); embeds only
+      // when the request carries the key, so a text-only edit keeps them
+      await writeChildren(env, id, rec.sources, rec.faq, "embeds" in rec ? rec.embeds : undefined);
     }
     return jsonReply(request, {
       article_id: id, words: w, publish: await dispatchPublish(env),

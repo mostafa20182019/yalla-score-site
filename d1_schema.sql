@@ -497,6 +497,19 @@ CREATE TABLE IF NOT EXISTS article_faq (
   PRIMARY KEY (article_id, seq)
 );
 
+-- Official posts embedded under an article (2026-09-13): the club's /
+-- federation's / player's own X, Instagram or Facebook post about the story.
+-- The site renders a click-to-load card, so the platform's script never loads
+-- before the reader asks. Created lazily by store.py and the Worker too, so an
+-- --init is not required for the feature to work.
+CREATE TABLE IF NOT EXISTS article_embeds (
+  article_id TEXT NOT NULL REFERENCES articles(article_id),
+  seq        INTEGER NOT NULL,
+  url        TEXT NOT NULL,
+  platform   TEXT,
+  PRIMARY KEY (article_id, seq)
+);
+
 -- The 11 curated clubs (build_site.TEAM_PAGES). They are site data, not
 -- configuration: each one is an indexed /team/<slug> page, and the slug is a
 -- published URL that must never change.
