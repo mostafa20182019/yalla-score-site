@@ -1329,8 +1329,69 @@ def fetch_transfers():
         return recent[:12]
     return out[:12]
 
+# ------------------------------------------------------------ fetch cadence
+# The lighter fetch (2026-09-13, user). Matches, live details, goal events and
+# lineups are fetched EVERY run - they are what changes minute to minute. The
+# standings tables and the player charts (scorers / assists) move only when a
+# match ends, so outside a match window they are refreshed once an hour: the
+# last committed files stay in place (the same keep-last path a failed fetch
+# takes). A window is "active" when any match in the fetched list is LIVE or
+# finished within the last SLOW_ACTIVE_H hours (kickoff + 2 h ~ full time).
+SLOW_EVERY_MIN = 60      # standings + charts at least this often
+SLOW_ACTIVE_H = 4        # kickoff within this many hours = a match may just have ended
+
+
+def _kickoff_dt(m):
+    try:
+        return datetime.fromisoformat(f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00").replace(tzinfo=CAIRO)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def match_window_active(matches, now=None):
+    """True when a match is live, or kicked off within SLOW_ACTIVE_H hours (so a
+    result - and with it a table or a scorer tally - may have just changed)."""
+    now = now or datetime.now(CAIRO)
+    for m in matches or []:
+        st = (m.get("status") or "").upper()
+        if st == "LIVE":
+            return True
+        ko = _kickoff_dt(m)
+        if ko is not None and st == "FINISHED" and timedelta(0) <= now - ko <= timedelta(hours=SLOW_ACTIVE_H):
+            return True
+    return False
+
+
+def slow_fetch_due(matches, prev_debug, now=None):
+    """Fetch standings + charts this run? Yes when the window is active, when we
+    never fetched them (or the record is unreadable), when the last fetch is
+    older than SLOW_EVERY_MIN, or when the match list itself failed (then we
+    know nothing and fetch everything, as before)."""
+    now = now or datetime.now(timezone.utc)
+    if matches is None or match_window_active(matches):
+        return True, "active window"
+    last = (prev_debug or {}).get("slow_fetched_at")
+    try:
+        last_dt = datetime.fromisoformat(last)
+        if last_dt.tzinfo is None:
+            last_dt = last_dt.replace(tzinfo=timezone.utc)
+    except (TypeError, ValueError):
+        return True, "no previous slow fetch"
+    age = (now - last_dt).total_seconds() / 60
+    if age >= SLOW_EVERY_MIN:
+        return True, f"last slow fetch {age:.0f} min ago"
+    return False, f"quiet window, last slow fetch {age:.0f} min ago"
+
+
 if __name__ == "__main__":
     os.makedirs(DATA, exist_ok=True)
+    # the previous run's record: it carries when standings/charts were last
+    # fetched, which decides the lighter fetch below
+    try:
+        with open(os.path.join(DATA, "fetch_debug.json"), encoding="utf-8") as _f:
+            _PREV_DBG = json.load(_f)
+    except Exception:                                   # noqa: BLE001
+        _PREV_DBG = {}
     # a transient upstream failure must NOT kill the whole deploy -
     # keep the last committed data file and continue.
     # _DBG lands in data/fetch_debug.json and is committed back by the Action,
@@ -1403,13 +1464,22 @@ if __name__ == "__main__":
     if reels_auto is not None:
         write_items("reels_auto.json", reels_auto)
         print(f"reels (auto): {len(reels_auto)}")
-    try:
-        standings = fetch_standings()
-        _DBG["standings"] = f"ok ({len(standings)})"
-    except Exception as e:
-        print(f"  ! standings fetch failed ({e}) - keeping existing standings.json")
-        _DBG["standings"] = f"FAIL: {e!r}"
-        standings = None
+    _slow, _why = slow_fetch_due(matches, _PREV_DBG)
+    _DBG["slow_fetch"] = ("full - " if _slow else "skipped - ") + _why
+    _DBG["slow_fetched_at"] = (datetime.now(timezone.utc).isoformat(timespec="seconds") if _slow
+                               else _PREV_DBG.get("slow_fetched_at"))
+    print(f"standings + charts: {_DBG['slow_fetch']}")
+    standings = None
+    if _slow:
+        try:
+            standings = fetch_standings()
+            _DBG["standings"] = f"ok ({len(standings)})"
+        except Exception as e:
+            print(f"  ! standings fetch failed ({e}) - keeping existing standings.json")
+            _DBG["standings"] = f"FAIL: {e!r}"
+            standings = None
+    else:
+        _DBG["standings"] = "skipped (quiet window) - keeping existing standings.json"
     if standings is not None:   # empty list is valid -> clears last-season tables
         standings.extend(s365_standings)
         write_items("standings.json", standings)
@@ -1417,20 +1487,23 @@ if __name__ == "__main__":
     # transfers feature removed 2026-09-01 (user decision — the home widget
     # is gone, FotMob-style news blocks took its place). fetch_transfers()
     # stays defined below for an easy return; nothing writes transfers.json.
-    try:
-        charts, chart_names = fetch_player_charts()
-        for key, field, fname in (("goals", "scorers", "scorers.json"),
-                                  ("assists", "assists", "assists.json")):
-            rows = charts[key]
-            _DBG[key] = "ok (" + ", ".join(
-                f"{r['competition']}:{len(r[field])}" for r in rows) + ")"
-            if rows:
-                write_items(fname, rows)
-                print(f"{key}: {len(rows)} leagues")
-        _DBG["s365_charts"] = chart_names
-    except Exception as e:
-        print(f"  ! player charts failed ({e}) - keeping existing files")
-        _DBG["goals"] = _DBG["assists"] = f"FAIL: {e!r}"
+    if _slow:
+        try:
+            charts, chart_names = fetch_player_charts()
+            for key, field, fname in (("goals", "scorers", "scorers.json"),
+                                      ("assists", "assists", "assists.json")):
+                rows = charts[key]
+                _DBG[key] = "ok (" + ", ".join(
+                    f"{r['competition']}:{len(r[field])}" for r in rows) + ")"
+                if rows:
+                    write_items(fname, rows)
+                    print(f"{key}: {len(rows)} leagues")
+            _DBG["s365_charts"] = chart_names
+        except Exception as e:
+            print(f"  ! player charts failed ({e}) - keeping existing files")
+            _DBG["goals"] = _DBG["assists"] = f"FAIL: {e!r}"
+    else:
+        _DBG["goals"] = _DBG["assists"] = "skipped (quiet window) - keeping existing files"
     try:
         goal_events, ge_dbg = fetch_goal_events()
         _DBG["goal_events"] = f"ok ({len(goal_events)} games)"
