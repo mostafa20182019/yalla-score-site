@@ -842,6 +842,11 @@ LIVE_JS = r"""<script>
       else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
       paintGoals(e,g);
       if(popped)flash(mid.querySelector('.score'));
+      /* the match page's info card: «الحالة» follows the row (2026-09-13) */
+      if(e.closest&&e.closest('.mp-hero')){
+        var sd=document.querySelector('[data-lv-state]');
+        if(sd){sd.textContent=g.live?('جارية الآن'+(g.min?' · '+g.min:'')):'انتهت';}
+      }
     }
   }
   /* favourite-club live card next to "آخر الأخبار" (home page only).
@@ -2796,7 +2801,11 @@ def build():
         mp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
                   f'<a href="/matches.html">المباريات</a> › {esc(comp)}</nav>')
         mp.append(f'<h1 class="page-h">مباراة {esc(h_ar)} و{esc(a_ar)}</h1>')
-        mp.append('<div class="mlist">')
+        # .mp-hero: LIVE_JS repaints THIS row's pill/score like any match row, and
+        # since 2026-09-13 also the «الحالة» line of the info card below (the
+        # user saw «لم تبدأ بعد» 18 min into a live match: the card was static
+        # build-time text while the row above it already said مباشر)
+        mp.append('<div class="mlist mp-hero">')
         mp.append(match_row(m, show_time=True, show_comp=True,
                             goals=_goals))
         mp.append('</div>')
@@ -2870,7 +2879,10 @@ def build():
             info.append(("الحالة", state_txt))
         mp.append('<section class="minfo"><h2>معلومات المباراة</h2><dl class="minfo-l">')
         for k, v in info:
-            mp.append(f'<div><dt>{esc(k)}</dt><dd>{esc(str(v))}</dd></div>')
+            # the live layer overwrites the state text while the match can still
+            # move (UPCOMING -> LIVE -> FINISHED); a finished page stays static
+            hook = ' data-lv-state' if k == "الحالة" and st in ("UPCOMING", "LIVE") else ''
+            mp.append(f'<div><dt>{esc(k)}</dt><dd{hook}>{esc(str(v))}</dd></div>')
         mp.append('</dl></section>')
         _clubs = [tp for tp in TEAM_PAGES if _team_match(tp, m)]
         if _clubs:
