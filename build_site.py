@@ -66,6 +66,37 @@ SHOW_STATS_PAGE = False
 # for headline cards whose source page offers no og:image.
 PLACEHOLDER_IMGS = ["/media/ph-pitch.svg", "/media/ph-ball.svg"]
 
+def resolve_missing_media(articles, media_dir=None, base=None):
+    """An article whose image_url points at OUR /media/ but whose file is not in
+    this checkout gets a placeholder FOR THIS BUILD (and no credit line, since
+    the placeholder needs none). Returns the list of missing file names.
+
+    Why (2026-09-13, article 497 «طرابزون سبور يستبعد جوارديولا»): D1 is written
+    by article_put.py BEFORE the image file reaches git, so a 15-minute refresh
+    run that starts inside that window builds the article from D1 with an image
+    its checkout does not have -> a blank card on the live site until the
+    article's own run deploys ~10 min later. Resolving it here, once, covers
+    every render site (home blocks, article page, club pages, RSS, OG image);
+    the next build has the file and heals itself without anyone touching it."""
+    import hashlib
+    media_dir = media_dir or os.path.join(HERE, "media")
+    base = SITE_BASE if base is None else base
+    missing = []
+    for a in articles or []:
+        u = a.get("image_url") or ""
+        if "/media/" not in u:
+            continue
+        name = u.split("/media/", 1)[1].split("?")[0]
+        if not name or os.path.exists(os.path.join(media_dir, name)):
+            continue
+        missing.append(name)
+        pick = int(hashlib.md5(str(a.get("article_id", "")).encode()).hexdigest(), 16) % len(PLACEHOLDER_IMGS)
+        a["_image_missing"] = u
+        a["image_url"] = base + PLACEHOLDER_IMGS[pick]
+        a["image_credit"] = ""
+    return missing
+
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 DIST = os.path.join(HERE, "dist")
@@ -1878,6 +1909,10 @@ def build():
     # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
     # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
     # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
+    _miss = resolve_missing_media(articles_all)
+    if _miss:
+        print(f'  ! {len(_miss)} article image(s) not in this checkout yet - placeholder for this build: '
+              + ', '.join(_miss[:5]))
     articles = [a for a in articles_all if not is_thin(a)]
     matches = load("matches.json")
     headlines = load("headlines.json")
