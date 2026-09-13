@@ -256,30 +256,62 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          # The three D1 exports are NOT ours to commit: article_put.py and the
-          # d1-admin export job own them. A publish run that started before an
-          # article landed still has the older file in its checkout, and staging
-          # it here would commit a REVERT of that article's export on top of main
-          # (the article itself is safe in D1, but the build's fallback copy would
-          # go backwards). fetch_data never writes these files anyway.
-          git add data/ ':!data/articles.json' ':!data/fb_posted.json' ':!data/predictions.json'
-          if ! git diff --cached --quiet; then
-            git commit -m "data refresh [skip ci]"
-            # RETRY, added 2026-09-07: a single attempt lost the race in 5 of
-            # 30 runs (17%). The Facebook state no longer rides this commit —
-            # it is in D1 — so a lost push can no longer cause a duplicate
-            # post. The retry stays for the DATA files (matches, standings,
-            # goal_events): losing it just means the fallback copy in the repo
-            # is one cycle staler than it should be.
-            pushed=""
-            for attempt in 1 2 3 4 5; do
-              if git pull --rebase origin main; then
-                if git push; then pushed="yes"; break; fi
-              else
-                git rebase --abort || true
-              fi
-              echo "  commit-back attempt $attempt lost the race - retrying in 5s"
-              sleep 5
-            done
-            [ -n "$pushed" ] || echo "::warning::data refresh could not be pushed after 5 attempts"
+          # REPLAY THE FILES, NOT THE COMMIT (2026-09-13). The old loop did
+          # `git pull --rebase` + `git push` five times and was losing ~75% of
+          # runs, up from the 17% measured on 2026-09-07: main now moves every
+          # few minutes (the Oracle task pushes every 15 min around the clock,
+          # and publish itself runs ~4 times an hour), so a commit built on an
+          # old tip rarely survives the replay before the tip moves again.
+          #
+          # Rebasing was never the right model anyway. data/ is a full SNAPSHOT
+          # of a fetch, not a delta, so the correct rule is simply "the newest
+          # fetch wins". Each attempt therefore lands on the newest tip, copies
+          # our files over it, and commits THERE. That cannot conflict, and a
+          # lost push costs one more cheap loop instead of a lost cycle.
+          KEEP="$(mktemp -d)"
+          cp -a data/. "$KEEP"/
+
+          pushed=""
+          for attempt in 1 2 3 4 5 6; do
+            git fetch --quiet origin main
+            git reset --quiet --hard origin/main
+            cp -a "$KEEP"/. data/
+            # The three D1 exports are NOT ours to commit: article_put.py and
+            # the d1-admin export job own them. A publish run that started
+            # before an article landed still holds the older file, and staging
+            # it would revert that article's export on top of main (the article
+            # is safe in D1, but the build's fallback copy would go backwards).
+            #
+            # They are EXCLUDED from the add rather than restored with a
+            # "git checkout --" of the three paths: a rehearsal of this loop
+            # showed that when one of them does not exist yet, the checkout
+            # fails for ALL of them and the stale copies go in - it reverted
+            # the article export in that test. An exclude cannot fail that way.
+            git add data/ ':!data/articles.json' ':!data/fb_posted.json' ':!data/predictions.json'
+            if git diff --cached --quiet; then
+              pushed="nothing to commit"
+              break
+            fi
+            git commit -q -m "data refresh [skip ci]"
+            # explicit refspec: after the reset above HEAD may have no
+            # upstream configured, and a bare `git push` then fails for a
+            # reason that has nothing to do with the race (caught in a local
+            # rehearsal of this loop)
+            if git push --quiet origin HEAD:main; then pushed="yes"; break; fi
+            echo "  attempt $attempt lost the race - landing on the new tip and retrying"
+            sleep $((attempt * 4))
+          done
+
+          # Say so where a human will see it. The step stays continue-on-error
+          # (a missed data commit must never fail a deploy) and GitHub reports
+          # such a step as "success" whatever happens, so the run page is the
+          # only honest place to put the outcome - a warning annotation alone
+          # was there for weeks and nobody saw it.
+          if [ "$pushed" = "yes" ]; then
+            echo "data refresh: pushed" >> "$GITHUB_STEP_SUMMARY"
+          elif [ -n "$pushed" ]; then
+            echo "data refresh: $pushed" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "::warning::data refresh could not be pushed after 6 attempts"
+            echo "**data refresh: NOT pushed** after 6 attempts - the repo copy of data/ is now staler than the deployed site." >> "$GITHUB_STEP_SUMMARY"
           fi
