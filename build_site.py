@@ -2758,6 +2758,10 @@ def build():
     # indexed URL doesn't 404 once the match leaves the day window. Pages get
     # the live layer for free: match_row emits data-lv, LIVE_JS ships in foot().
     os.makedirs(os.path.join(DIST, "m"), exist_ok=True)
+    # finished matches per competition (season pool ∪ fixtures) - table_after()
+    # uses it to prove the official table is describing THIS match and not a
+    # later round
+    _fin_by_comp = _finished_by_comp(fixtures, _bycomp)
     m_all = {m["match_id"]: m
              for m in load("matches_archive.json") if m.get("match_id")}
     for m in matches:
@@ -2853,6 +2857,17 @@ def build():
                           'المباراة — تُحدَّث هذه الصفحة تلقائيًا فور توفرها.</p>')
             mp.append('</section>')
         _det = match_details_for(md_idx, m)
+        # «قراءة المباراة» — the summary goes ABOVE the evidence: what happened
+        # and what it changed, then the timeline and the XI that prove it.
+        _faq_html = ""
+        if st == "FINISHED" and _det and hs is not None and as_ is not None:
+            _read, _faq_html = post_match_read(
+                m, _det[0], _det[1], h_ar, a_ar, hs, as_, comp,
+                st_by_comp.get(m.get("competition")),
+                forms.get(m.get("competition")) or {},
+                _fin_by_comp.get(m.get("competition")) or [])
+            if _read:
+                mp.append(_read)
         if _det:
             mp.append(match_details_html(_det[0], _det[1], h_ar, a_ar))
         else:
@@ -2905,6 +2920,8 @@ def build():
                                       form_map=forms.get(m.get("competition"), {}),
                                       embedded=True))
             mp.append('</section>')
+        if _faq_html:
+            mp.append(_faq_html)
         if articles:
             mp.append('<section class="minfo"><h2>آخر الأخبار</h2><ul class="mp-newslist">')
             for a in articles[:4]:
@@ -4334,6 +4351,336 @@ def _rt_class(rt):
         return None
     return "r8" if r >= 8 else "r7" if r >= 7 else "r65" if r >= 6.5 else "r6"
 
+# ===========================================================================
+# «قراءة المباراة» — layer 2 of the match-page rework (2026-09-14).
+#
+# The page had every number and said nothing. These functions read the data
+# that is already on it: the events timeline becomes a story, the rating
+# badges already printed on the pitch chips become "who decided this match",
+# and the official table becomes "what the result changed".
+#
+# Same discipline as standings_analysis(): every clause is a restatement of
+# data we publish, plus arithmetic on minutes, the running score and the
+# table. Nothing is inferred, nothing is generated - so this can run on all
+# 483 match pages without becoming scaled auto-written content, and a page
+# whose data is incomplete simply says less.
+# ===========================================================================
+_ORD_AR = {1: "الأول", 2: "الثاني", 3: "الثالث", 4: "الرابع", 5: "الخامس",
+           6: "السادس", 7: "السابع", 8: "الثامن", 9: "التاسع", 10: "العاشر",
+           11: "الحادي عشر", 12: "الثاني عشر", 13: "الثالث عشر", 14: "الرابع عشر",
+           15: "الخامس عشر", 16: "السادس عشر", 17: "السابع عشر", 18: "الثامن عشر",
+           19: "التاسع عشر", 20: "العشرين"}
+# «الخسارة» is feminine in Arabic: الخسارة الثانية, not الخسارة الثاني
+_ORD_AR_F = {n: (w + "ة") for n, w in _ORD_AR.items() if n <= 10}
+
+def _ord_ar(n, fem=False):
+    """Arabic ordinal, or the bare number for a place past the twentieth (the
+    36-club Champions League league phase) - never «المركز رقم 24»."""
+    n = int(n or 0)
+    return (_ORD_AR_F if fem else _ORD_AR).get(n, str(n))
+
+def _num(v):
+    try:
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return f if f > 0 else None
+
+def _lam(name):
+    """Arabic lam of possession before a club name: «الأهلي» -> «للأهلي»,
+    «نيوم» -> «لنيوم». Writing «لـالأهلي» is what a template does, not a writer."""
+    name = name or ""
+    return ("ل" + name[1:]) if name.startswith("ال") else ("ل" + name)
+
+
+def _played_names(e, flipped, side_key):
+    """Names that were ON THE PITCH for one side: the XI plus everyone involved
+    in a substitution. Used to tell a sent-off player from a sent-off manager."""
+    sd = _side_of(flipped)
+    lus = e.get("lineups") or {}
+    feed_key = ("a" if side_key == "h" else "h") if flipped else side_key
+    names = {(p.get("name") or "").strip()
+             for p in ((lus.get(feed_key) or {}).get("xi") or []) if p.get("name")}
+    for sub in (e.get("subs") or []):
+        if sd(sub.get("side")) == side_key:
+            names.update(x.strip() for x in (sub.get("in"), sub.get("out")) if x)
+    return names
+
+
+def _side_of(flipped):
+    """The details entry stores sides as the FEED saw them; `flipped` means the
+    feed's home is our away (the two sources disagree on who is at home)."""
+    return (lambda s: ("a" if s == "h" else "h")) if flipped else (lambda s: s)
+
+
+def match_story(e, flipped, h_ar, a_ar, hs, as_):
+    """The sentences a reader wants under the score: who opened, who turned it
+    around, which goal settled it, what the sending-off did. Returns a list of
+    plain-text sentences (the caller escapes them)."""
+    sd = _side_of(flipped)
+    nm = {"h": h_ar, "a": a_ar}
+    goals = [{"k": _min_key(g.get("minute")), "s": sd(g.get("side")),
+              "m": (g.get("minute") or "").strip(), "p": (g.get("player") or "").strip(),
+              "t": g.get("tag") or ""}
+             for g in (e.get("goals") or [])]
+    timed = sorted([g for g in goals if g["k"] > 0 and g["s"] in ("h", "a")],
+                   key=lambda g: g["k"])
+    reds = sorted([{"k": _min_key(c.get("minute")), "s": sd(c.get("side")),
+                    "m": (c.get("minute") or "").strip(),
+                    "p": (c.get("player") or "").strip()}
+                   for c in (e.get("cards") or []) if c.get("color") == "r"],
+                  key=lambda c: c["k"])
+    winner = "h" if (hs or 0) > (as_ or 0) else "a" if (as_ or 0) > (hs or 0) else None
+    other = {"h": "a", "a": "h"}
+    out = []
+
+    if not (hs or 0) and not (as_ or 0):
+        out.append(f"انتهت المباراة بالتعادل السلبي دون أهداف بين {h_ar} و{a_ar}.")
+    elif timed:
+        g0 = timed[0]
+        if "عكس" in g0["t"]:
+            out.append(f"تقدّم {nm[g0['s']]} بهدف عكسي سجله {g0['p']} في الدقيقة {g0['m']}.")
+        else:
+            pen = " من ركلة جزاء" if "ج" in g0["t"] else ""
+            out.append(f"افتتح {g0['p']} التسجيل {_lam(nm[g0['s']])}{pen} في الدقيقة {g0['m']}.")
+
+    # the running score: who led, who came back, which goal settled it
+    run = {"h": 0, "a": 0}
+    hist = []
+    for g in timed:
+        run[g["s"]] += 1
+        lead = "h" if run["h"] > run["a"] else "a" if run["a"] > run["h"] else None
+        hist.append((g, lead))
+    first_lead = next((l for _, l in hist if l), None)
+    if winner and first_lead and first_lead != winner:
+        out.append(f"قلب {nm[winner]} تأخره أمام {nm[other[winner]]} وحسم اللقاء "
+                   f"{max(hs, as_)}-{min(hs, as_)}.")
+    elif not winner and first_lead and timed:
+        out.append(f"أدرك {nm[other[first_lead]]} التعادل بعد تأخره أمام {nm[first_lead]}.")
+
+    if winner and len(timed) > 1:
+        dec, prev = None, None
+        for g, lead in hist:
+            if lead == winner and prev != winner:
+                dec = g
+            prev = lead
+        if dec is timed[0]:
+            dec = None          # already told: the opener was never caught
+        if dec:
+            if dec["k"] >= 80:
+                out.append(f"وجاء هدف الحسم متأخرًا عبر {dec['p']} في الدقيقة {dec['m']}.")
+            else:
+                out.append(f"وجاء هدف الحسم عبر {dec['p']} في الدقيقة {dec['m']}.")
+
+    # a player with more than one goal
+    tally = {}
+    for g in goals:
+        if g["p"] and "عكس" not in g["t"] and g["s"] in ("h", "a"):
+            tally[(g["p"], g["s"])] = tally.get((g["p"], g["s"]), 0) + 1
+    for (pl, sside), n in sorted(tally.items(), key=lambda kv: -kv[1]):
+        if n >= 3:
+            out.append(f"سجّل {pl} ثلاثية كاملة مع {nm[sside]}.")
+            break
+        if n == 2:
+            out.append(f"سجّل {pl} هدفين {_lam(nm[sside])}.")
+            break
+
+    if reds:
+        r = reds[0]
+        if r["s"] in ("h", "a"):
+            # a red card is shown to managers and bench staff too (Neom x
+            # Al-Fateh 2026: Christophe Galtier). Their name is not in the XI
+            # or the substitutions, and their dismissal does NOT leave the team
+            # a man short - so the ten-men sentence needs proof, not a guess.
+            played = _played_names(e, flipped, r["s"])
+            n_off = sum(1 for x in reds
+                        if x["s"] == r["s"] and x["p"] in played)
+            if r["p"] in played:
+                short = {1: "بعشرة لاعبين", 2: "بتسعة لاعبين"}.get(n_off, "منقوص العدد")
+                line = (f"أكمل {nm[r['s']]} المباراة {short} بعد طرد {r['p']} "
+                        f"في الدقيقة {r['m']}")
+                if winner == r["s"]:
+                    line += "، وخرج فائزًا رغم النقص العددي."
+                elif winner is None:
+                    line += "، ونجح في الخروج بالتعادل رغم النقص العددي."
+                else:
+                    line += "."
+            else:
+                line = f"وتلقى {r['p']} بطاقة حمراء في الدقيقة {r['m']}."
+            out.append(line)
+
+    if winner and not (as_ if winner == "h" else hs):
+        out.append(f"وحافظ {nm[winner]} على نظافة شباكه.")
+
+    if len(timed) >= 3:
+        if all(g["k"] >= 60 for g in timed):
+            out.append("كل أهداف اللقاء جاءت في الثلث الأخير من زمن المباراة.")
+        elif all(g["k"] <= 45 for g in timed):
+            out.append("كل أهداف اللقاء جاءت في الشوط الأول.")
+    return out[:6]
+
+
+def match_ratings(e, flipped, h_ar, a_ar):
+    """{best, best_other, low, sides} from the XI ratings the feed already
+    gives us, or None when either XI is not fully rated (an incomplete set
+    would name a 'best player' out of half a team)."""
+    lus = e.get("lineups") or {}
+    eh, ea = ("a", "h") if flipped else ("h", "a")
+    sides = []
+    for key, name in ((eh, h_ar), (ea, a_ar)):
+        xi = ((lus.get(key) or {}).get("xi")) or []
+        rated = [{"name": (p.get("name") or "").strip(), "rt": _num(p.get("rt")),
+                  "club": name}
+                 for p in xi if _num(p.get("rt")) and p.get("name")]
+        if len(rated) < 8:
+            return None
+        sides.append({"club": name, "players": rated,
+                      "avg": round(sum(p["rt"] for p in rated) / len(rated), 1)})
+    everyone = sides[0]["players"] + sides[1]["players"]
+    best = max(everyone, key=lambda p: p["rt"])
+    other = [p for p in everyone if p["club"] != best["club"]]
+    return {"best": best,
+            "best_other": max(other, key=lambda p: p["rt"]) if other else None,
+            "low": min(everyone, key=lambda p: p["rt"]),
+            "sides": sides}
+
+
+def _streak_ar(res):
+    """Trailing run in a chronological W/D/L list, as Arabic - or ''."""
+    if not res:
+        return ""
+    last, n = res[-1], 0
+    for r in reversed(res):
+        if r != last:
+            break
+        n += 1
+    if n > 10:            # past the ordinals: plain and plural
+        return f"{n} " + {"W": "انتصارات", "D": "تعادلات", "L": "خسائر"}[last] + " متتالية"
+    if n >= 2:
+        word = {"W": "الفوز", "D": "التعادل", "L": "الخسارة"}[last]
+        return f"{word} {_ord_ar(n, fem=last == 'L')} على التوالي"
+    unb = 0
+    for r in reversed(res):
+        if r == "L":
+            break
+        unb += 1
+    return f"{unb} مباريات دون خسارة" if unb >= 4 else ""
+
+
+def table_after(m, st, form_map, fin_comp, h_ar, a_ar):
+    """«ماذا تغيّر في الجدول»: the club's place and points AFTER this match,
+    read straight off the official table - never re-sorted by us (tie-break
+    rules differ per league and a home-made order could be wrong).
+
+    Only when the table describes THIS moment: the match must be the last
+    finished match of both clubs in the competition, and the official `played`
+    for each club must equal the finished matches we hold. Otherwise the
+    numbers belong to a later round and the sentence would be false."""
+    rows = (st or {}).get("table") or []
+    if not rows or (st or {}).get("zeroed") or (st or {}).get("past"):
+        return []
+    fin = fin_comp or []
+    pairs = []
+    for raw, ar in ((m.get("home"), h_ar), (m.get("away"), a_ar)):
+        played_by_club = [x for x in fin
+                          if raw in (x.get("home"), x.get("away"))]
+        if not played_by_club:
+            return []
+        last = played_by_club[-1]
+        if (last.get("kickoff"), last.get("home"), last.get("away")) != \
+           (m.get("kickoff"), m.get("home"), m.get("away")):
+            return []                      # a later match has been played since
+        row = next((r for r in rows if r.get("team") == raw), None)
+        if row is None or row.get("pos") is None:
+            return []
+        if int(row.get("played") or 0) != len(played_by_club):
+            return []                      # the table has not caught up (or is ahead)
+        pairs.append((row, ar, (form_map or {}).get(raw) or []))
+    out = []
+    for row, ar, form in pairs:
+        pos = int(row["pos"])
+        line = f"{ar} في المركز {_ord_ar(pos)} برصيد {_pts(row.get('pts'))}"
+        nb = next((r for r in rows if int(r.get("pos") or 0) == (pos - 1 if pos > 1 else 2)), None)
+        if nb and nb.get("pts") is not None and row.get("pts") is not None:
+            gap = abs(int(nb["pts"]) - int(row["pts"]))
+            who = f"{ar_team(nb.get('team'))} ({_ord_ar(int(nb['pos']))})"
+            if gap:
+                line += f"، بفارق {_pts(gap)} {'خلف' if pos > 1 else 'أمام'} {who}"
+            else:
+                line += f"، متساويًا في النقاط مع {who}"
+        streak = _streak_ar(form)
+        line += f" — {streak}." if streak else "."
+        out.append(line)
+    return out
+
+
+def post_match_read(m, e, flipped, h_ar, a_ar, hs, as_, comp_label_txt,
+                    st=None, form_map=None, fin_comp=None):
+    """(section_html, faq_html_plus_jsonld) for a finished match page."""
+    story = match_story(e, flipped, h_ar, a_ar, hs, as_)
+    rat = match_ratings(e, flipped, h_ar, a_ar)
+    tbl = table_after(m, st, form_map, fin_comp, h_ar, a_ar)
+    if not story and not rat and not tbl:
+        return "", ""
+    ps = []
+    if story:
+        ps.append("<p>" + " ".join(esc(x) for x in story) + "</p>")
+    if rat:
+        def chip(lbl, p):
+            cls = _rt_class(p["rt"]) or "r6"
+            return (f'<div class="mr-c"><span class="mr-l">{esc(lbl)}</span>'
+                    f'<b><bdi>{esc(p["name"])}</bdi></b>'
+                    f'<small><bdi>{esc(p["club"])}</bdi></small>'
+                    f'<span class="rt-b {cls}">{p["rt"]:.1f}</span></div>')
+        tie = rat["best_other"] and rat["best_other"]["rt"] >= rat["best"]["rt"]
+        cards = [chip(f'الأفضل في {rat["best"]["club"]}' if tie else "الأفضل في اللقاء",
+                      rat["best"])]
+        if rat["best_other"]:
+            cards.append(chip(f'الأفضل في {rat["best_other"]["club"]}', rat["best_other"]))
+        if rat["low"]["rt"] < rat["best"]["rt"]:
+            cards.append(chip("أقل تقييم", rat["low"]))
+        s1, s2 = rat["sides"]
+        ps.append('<div class="mr-grid">' + "".join(cards) + '</div>')
+        ps.append(f'<p class="mr-avg">متوسط تقييم التشكيلة الأساسية: '
+                  f'<bdi>{esc(s1["club"])}</bdi> <b>{s1["avg"]:.1f}</b> مقابل '
+                  f'<bdi>{esc(s2["club"])}</bdi> <b>{s2["avg"]:.1f}</b> '
+                  '<small>(تقييمات المصدر لكل لاعب، وهي نفسها الظاهرة على الملعب أدناه)</small></p>')
+    if tbl:
+        ps.append('<p><b>بعد هذه النتيجة:</b> ' + " ".join(esc(x) for x in tbl) + '</p>')
+    html = (f'<section class="minfo st-analysis mread"><h2>قراءة مباراة '
+            f'{esc(h_ar)} و{esc(a_ar)}</h2>' + "".join(ps) + '</section>')
+
+    # FAQ: the same facts as questions (the shape /standings pages already use)
+    sd = _side_of(flipped)
+    scorers = [g for g in (e.get("goals") or []) if g.get("player")]
+    faq = [(f"كم انتهت مباراة {h_ar} و{a_ar}؟",
+            f"انتهت {h_ar} {hs}-{as_} {a_ar} في {comp_label_txt}.")]
+    if scorers:
+        names = [f'{g["player"]} ({g["minute"]}\u2032)' if g.get("minute") else g["player"]
+                 for g in scorers]
+        faq.append((f"من سجل أهداف مباراة {h_ar} و{a_ar}؟", "، ".join(names) + "."))
+    if rat:
+        _bo = rat["best_other"]
+        if _bo and _bo["rt"] >= rat["best"]["rt"]:
+            ans = (f'تساوى {rat["best"]["name"]} ({rat["best"]["club"]}) و{_bo["name"]} '
+                   f'({_bo["club"]}) في أعلى تقييم بالمباراة بـ{rat["best"]["rt"]:.1f}.')
+        else:
+            ans = (f'{rat["best"]["name"]} لاعب {rat["best"]["club"]} بتقييم '
+                   f'{rat["best"]["rt"]:.1f}، وهو الأعلى بين لاعبي التشكيلتين الأساسيتين.')
+        faq.append((f"من أفضل لاعب في مباراة {h_ar} و{a_ar}؟", ans))
+    if tbl:
+        faq.append((f"ماذا تغيّر في الترتيب بعد مباراة {h_ar} و{a_ar}؟",
+                    " ".join(tbl)))
+    fhtml = ('<section class="minfo faq"><h2>أسئلة شائعة عن المباراة</h2>'
+             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>'
+                       for q, a in faq) + '</section>')
+    fld = jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                  "mainEntity": [{"@type": "Question", "name": q,
+                                  "acceptedAnswer": {"@type": "Answer", "text": a}}
+                                 for q, a in faq]})
+    return html, fhtml + fld
+
+
 def match_details_html(e, flipped, h_ar, a_ar):
     """'أحداث المباراة' timeline (goals+cards+subs) + 'التشكيلة' section."""
     def side(s):
@@ -5139,6 +5486,24 @@ a{color:inherit}
   border-radius:6px;padding:1px 4px;direction:ltr}
 .pp-rt.r8{background:#0ea5e9}.pp-rt.r7{background:#16a34a}
 .pp-rt.r65{background:#ca8a04}.pp-rt.r6{background:#ea580c}
+/* «قراءة المباراة» (post-match reading): the story paragraph, the rating
+   chips and the table line. Same .minfo card as every other section - the
+   reading is content, not a widget. */
+.mread p{line-height:1.9;margin:.4rem 0}
+.mread .mr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:.5rem;margin:.7rem 0}
+.mread .mr-c{display:flex;align-items:center;gap:.45rem;background:#f6f8fa;
+  border:1px solid #e2e8f0;border-radius:10px;padding:.5rem .6rem;position:relative}
+.mread .mr-l{position:absolute;top:-.55rem;inset-inline-start:.6rem;font-size:.62rem;
+  background:var(--card);padding:0 .3rem;color:var(--muted)}
+.mread .mr-c b{font-size:.85rem;line-height:1.2}
+.mread .mr-c small{color:var(--muted);font-size:.7rem;margin-inline-start:auto;
+  padding-inline-end:.3rem}
+.rt-b{font-size:.78rem;font-weight:900;color:#fff;border-radius:6px;padding:.12rem .34rem;
+  min-width:2.1rem;text-align:center;direction:ltr}
+.rt-b.r8{background:#0ea5e9}.rt-b.r7{background:#16a34a}
+.rt-b.r65{background:#ca8a04}.rt-b.r6{background:#ea580c}
+.mread .mr-avg small{color:var(--muted);font-weight:400}
 .pp-card{position:absolute;top:-5px;left:-6px;width:9px;height:13px;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.4)}
 .pp-card.y{background:#fbbf24}.pp-card.r{background:#dc2626}
 .pp-sub{position:absolute;bottom:-4px;left:-8px;width:15px;height:15px;border-radius:50%;
