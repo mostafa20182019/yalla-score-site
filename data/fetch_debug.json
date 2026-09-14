@@ -8,7 +8,7 @@
  "reconcile": "FAIL: <HTTPError 500: 'Internal Server Error'>",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 43 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 39 min ago",
  "slow_fetched_at": "2026-09-14T12:53:51+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
@@ -98,5 +98,5 @@
   "fails": 0
  },
  "match_details": "ok (321)",
- "utc": "2026-09-14T13:37:20Z"
+ "utc": "2026-09-14T13:33:58Z"
 }
