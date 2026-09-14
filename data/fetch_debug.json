@@ -9,7 +9,7 @@
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-14T19:04:27+00:00",
+ "slow_fetched_at": "2026-09-14T19:09:32+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -176,17 +176,17 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (46 games)",
+ "goal_events": "ok (47 games)",
  "goal_events_dbg": {
   "candidates": 74,
   "detail_fails": 0,
   "skipped": [
    "4805176:count-mismatch (0, 0) vs 5-1 []",
-   "4805164:count-mismatch (0, 0) vs 0-3 []",
-   "4805161:count-mismatch (0, 0) vs 6-1 []",
    "4805188:count-mismatch (0, 0) vs 2-2 []",
+   "4805183:count-mismatch (0, 0) vs 2-1 []",
+   "4805184:count-mismatch (0, 0) vs 1-0 []",
    "4805177:count-mismatch (0, 0) vs 3-0 []",
-   "4805183:count-mismatch (0, 0) vs 2-1 []"
+   "4805190:count-mismatch (0, 0) vs 3-1 []"
   ],
   "frozen_skipped": 140,
   "sample": {
@@ -261,5 +261,5 @@
   "fails": 0
  },
  "match_details": "ok (328)",
- "utc": "2026-09-14T19:08:20Z"
+ "utc": "2026-09-14T19:13:03Z"
 }
