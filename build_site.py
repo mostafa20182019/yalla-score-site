@@ -365,7 +365,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/analysis.html">تحليلات وتوقعات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a></p>
+  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/analysis.html">تحليلات وتوقعات</a> · <a href="/predictions.html">سجل التوقعات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
@@ -1631,7 +1631,7 @@ def pred_block(m, p, logged, comp_stats):
                 + prob_bar(fake) +
                 f'<p class="pd-line">رجّح النموذج <b>{esc(pick_ar)}</b> باحتمال {_pct(max(fake.values()))} '
                 f'ونتيجة <b>{esc(logged.get("score", ""))}</b>، وانتهت المباراة <b>{logged["hs"]}-{logged["as"]}</b>. {verdict}</p>'
-                f'<p class="pd-note">{AN_DISCLAIMER} <a href="/analysis.html#accuracy">سجل دقة التوقعات</a></p></section>')
+                f'<p class="pd-note">{AN_DISCLAIMER} <a href="/predictions.html">سجل التوقعات كاملًا (إصابةً وخطأ)</a></p></section>')
     return ""
 
 def AN_games(n):
@@ -1724,8 +1724,262 @@ def accuracy_html(acc, anchor=True):
                        f'توقعنا <b>{esc(pick_ar)}</b> ({_pct(max(e["ph"], e["pd"], e["pa"]))}) '
                        + ('<span class="hit ok">✔</span>' if e.get("hit") else '<span class="hit no">✘</span>') + '</li>')
         out.append('</ul>')
+    out.append('<p class="hintline"><a href="/predictions.html">السجل الكامل: كل توقع بإصابته '
+               'وخطئه، ومعايرة الاحتمالات ←</a></p>')
     out.append('</section>')
     return "".join(out)
+
+# ===========================================================================
+# «سجل التوقعات» — /predictions.html (2026-09-14)
+#
+# The user's ask: a full prediction history that shows the model FAILING as
+# loudly as it succeeds. The site already froze every prediction before
+# kick-off and scored it after; what it published was one number - 47%
+# direction accuracy - which is the weakest thing we measure and the least
+# informative. The record now leads with calibration (when we say 30%, does it
+# happen 30% of the time?), keeps the naive baseline next to the hit rate, and
+# prints the most confident MISSES beside the most confident hits.
+#
+# Everything is computed from the frozen log; nothing here can be edited after
+# a match, which is the only reason a record like this is worth anything.
+# ===========================================================================
+# Every row stays in the HTML - the record is meant to be complete, and a
+# crawler must see all of it - but the reader gets PAGE_STEP at a time; 151
+# rows already make a 30,000-pixel page and the record only grows.
+PRED_FILTER_JS = """<script>
+(function(){
+  var STEP=40;
+  var rows=[].slice.call(document.querySelectorAll('#predtable tbody tr'));
+  var chips=[].slice.call(document.querySelectorAll('.pf-chip'));
+  var sel=document.getElementById('pf-comp'), cnt=document.getElementById('pf-count');
+  var more=document.getElementById('pf-more'), state='all', limit=STEP;
+  function apply(){
+    var comp=sel?sel.value:'', matched=0, shown=0;
+    rows.forEach(function(r){
+      var okHit = state==='all' || (state==='hit') === (r.dataset.hit==='1');
+      var okComp = !comp || r.dataset.comp===comp;
+      if(okHit && okComp){ matched++; var on = shown<limit; if(on) shown++; r.hidden=!on; }
+      else r.hidden=true;
+    });
+    if(cnt) cnt.textContent=matched;
+    if(more){
+      more.hidden = matched<=shown;
+      more.textContent='عرض المزيد ('+(matched-shown)+' متبقية)';
+    }
+  }
+  chips.forEach(function(c){ c.addEventListener('click', function(){
+    chips.forEach(function(x){ x.classList.remove('on'); });
+    c.classList.add('on'); state=c.dataset.f; limit=STEP; apply(); }); });
+  if(sel) sel.addEventListener('change', function(){ limit=STEP; apply(); });
+  if(more) more.addEventListener('click', function(){ limit+=STEP; apply(); });
+  apply();
+})();
+</script>"""
+
+
+def calibration_html(cal):
+    """The reliability table: what we said vs what happened, per band."""
+    bs = [b for b in cal["buckets"] if b["n"] >= 10]
+    if not bs:
+        return ""
+    out = ['<section class="minfo" id="calibration"><h2>هل احتمالاتنا صادقة؟ (معايرة النموذج)</h2>',
+           '<p>كل توقع يقول ثلاثة أرقام: احتمال فوز الأرض، والتعادل، وفوز الضيف — '
+           f'أي <b>{cal["statements"]}</b> احتمالًا معلنًا في <b>{cal["matches"]}</b> مباراة. '
+           'هنا نجمع كل احتمال في نطاقه ونقارنه بما حدث فعلًا: لو قلنا «30%» في مئة حالة، '
+           'المفروض تقع نحو ثلاثين منها. هذا هو المقياس الحقيقي لنموذج احتمالي، '
+           'وليس عدد المرات التي أصاب فيها أعلى احتمال.</p>',
+           '<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">النطاق</th>'
+           '<th>عدد الحالات</th><th>قلنا (متوسط)</th><th>حدث فعلًا</th><th>الفارق</th>'
+           '</tr></thead><tbody>']
+    for b in bs:
+        diff = b["actual"] - b["stated"]
+        cls = "good" if abs(diff) <= 0.05 else "bad" if abs(diff) > 0.12 else ""
+        sign = "+" if diff > 0 else ""
+        out.append(f'<tr><td class="tl" dir="ltr">{b["lo"]}–{b["hi"]}%</td><td>{b["n"]}</td>'
+                   f'<td>{_pct(b["stated"])}</td><td><b>{_pct(b["actual"])}</b></td>'
+                   f'<td class="{cls}" dir="ltr">{sign}{diff * 100:.1f}</td></tr>')
+    out.append('</tbody></table></div>')
+    out.append(f'<p class="hintline">متوسط انحراف المعايرة (ECE): <b>{cal["ece"] * 100:.1f}</b> نقطة مئوية — '
+               'كلما اقترب من الصفر كانت الاحتمالات أصدق. النطاقات التي تقل حالاتها عن عشرة لا تُعرض '
+               'لأن عيّنتها أصغر من أن تقول شيئًا.</p>')
+    out.append('</section>')
+    return "".join(out)
+
+
+def _pred_row_html(e):
+    """One row of the full record."""
+    mid = e.get("match_id")
+    h, a = ar_team(e.get("home")), ar_team(e.get("away"))
+    pick_ar = {"H": h, "D": "تعادل", "A": a}.get(e.get("pick"), "—")
+    conf = max(e.get("ph") or 0, e.get("pd") or 0, e.get("pa") or 0)
+    hit = 1 if e.get("hit") else 0
+    mark = ('<span class="hit ok">✔ أصاب</span>' if hit
+            else '<span class="hit no">✘ أخطأ</span>')
+    score = f'{e.get("hs")}-{e.get("as")}'
+    match = f'<bdi>{esc(h)}</bdi> <b dir="ltr">{esc(score)}</b> <bdi>{esc(a)}</bdi>'
+    if mid:
+        match = f'<a href="/m/{esc(mid)}.html">{match}</a>'
+    exact = ' <span class="pf-exact" title="أصبنا النتيجة بالضبط">🎯</span>' if e.get("score_hit") else ""
+    return (f'<tr data-hit="{hit}" data-comp="{esc(e.get("comp") or "")}">'
+            f'<td class="tl" dir="ltr">{esc(e.get("kickoff") or "")}</td>'
+            f'<td class="tl">{match}{exact}</td>'
+            f'<td class="tl">{esc(comp_label(e.get("comp") or ""))}</td>'
+            f'<td class="tl"><bdi>{esc(pick_ar)}</bdi> <small>({_pct(conf)})</small></td>'
+            f'<td>{esc(e.get("score") or "—")}</td>'
+            f'<td>{mark}</td></tr>')
+
+
+def _calls_html(ex):
+    """The most confident hits and the most confident misses, side by side and
+    the same size. A record that shows only the hits is an advert."""
+    if not (ex["best"] or ex["worst"]):
+        return ""
+    def col(title, rows, cls):
+        if not rows:
+            return f'<div class="calls-c"><h3>{esc(title)}</h3><p class="hintline">لا شيء بعد.</p></div>'
+        items = []
+        for e in rows:
+            h, a = ar_team(e.get("home")), ar_team(e.get("away"))
+            pick_ar = {"H": h, "D": "تعادل", "A": a}.get(e.get("pick"), "—")
+            conf = max(e.get("ph") or 0, e.get("pd") or 0, e.get("pa") or 0)
+            items.append(f'<li><bdi>{esc(h)} <b dir="ltr">{e.get("hs")}-{e.get("as")}</b> {esc(a)}</bdi>'
+                         f'<span>قلنا <b><bdi>{esc(pick_ar)}</bdi></b> بنسبة {_pct(conf)}</span></li>')
+        return f'<div class="calls-c {cls}"><h3>{esc(title)}</h3><ul>{"".join(items)}</ul></div>'
+    return ('<section class="minfo"><h2>أوضح إصاباتنا وأوضح إخفاقاتنا</h2>'
+            '<div class="calls">'
+            + col("أصاب النموذج وهو واثق", ex["best"], "ok")
+            + col("أخطأ النموذج وهو واثق", ex["worst"], "no")
+            + '</div><p class="hintline">أعلى التوقعات ثقةً في الاتجاهين — تُعرض معًا بالحجم نفسه.</p></section>')
+
+
+def prediction_history_page(plog, acc):
+    """/predictions.html — every frozen prediction, scored, with the model's
+    calibration and its misses. Returns the url (or None when nothing scored)."""
+    a = (acc or {}).get("all")
+    rows = AN.history(plog)
+    if not a or not rows:
+        return None
+    cal = AN.calibration(plog)
+    ex = AN.extremes(plog)
+    first = min(r.get("kickoff") or "" for r in rows)
+    last = max(r.get("kickoff") or "" for r in rows)
+    title = f"سجل توقعات يلا سكور: الإصابات والإخفاقات كاملة — {SITE_NAME}"
+    desc = (f"كل توقع أصدره نموذج يلا سكور مُثبَّتًا قبل المباراة ومقارنًا بالنتيجة: "
+            f"{a['n']} مباراة مقيَّمة، نسبة إصابة الاتجاه {_pct(a['hit_rate'])} مقابل "
+            f"{_pct(a['home_baseline'])} لمعيار ساذج، ومعايرة الاحتمالات كاملة.")
+    url = "/predictions.html"
+    P = [head(title, desc, SITE_BASE + url, active="analysis")]
+    P.append('<nav class="crumbs"><a href="/">أخبار</a> › '
+             '<a href="/analysis.html">تحليلات وتوقعات</a> › سجل التوقعات</nav>')
+    P.append('<h1 class="page-h">سجل توقعات يلا سكور — بالإصابات والإخفاقات</h1>')
+    P.append('<section class="minfo"><p>يُثبَّت كل توقع في قاعدة البيانات <b>قبل انطلاق المباراة</b>، '
+             'ولا يُعدَّل ولا يُحذف بعد صافرة النهاية، ثم يُقارَن بالنتيجة تلقائيًا. '
+             f'هذه الصفحة تعرض السجل كاملًا منذ <b>{esc(first)}</b> وحتى <b>{esc(last)}</b> — '
+             'ما أصاب فيه النموذج وما أخطأ فيه، بالأرقام نفسها ودون انتقاء. '
+             'التوقعات احتمالات إحصائية من نتائج الموسم، وليست نصيحة للمراهنة.</p>')
+    P.append(f'<div class="acc-tiles"><div class="tile"><b>{a["n"]}</b><span>مباراة مقيَّمة</span></div>'
+             f'<div class="tile"><b>{_pct(a["hit_rate"])}</b><span>إصابة الاتجاه</span></div>'
+             f'<div class="tile"><b>{_pct(a["home_baseline"])}</b><span>معيار ساذج: فوز الأرض دائمًا</span></div>'
+             f'<div class="tile"><b>{a["brier"]:.3f}</b><span>Brier (الأقل أفضل · 0.667 عشوائي)</span></div>'
+             f'<div class="tile"><b>{a["score_hits"]}</b><span>نتيجة مضبوطة</span></div>'
+             f'<div class="tile"><b>{cal["ece"] * 100:.1f}</b><span>انحراف المعايرة (نقطة مئوية)</span></div>'
+             '</div></section>')
+    P.append(calibration_html(cal))
+    P.append(_calls_html(ex))
+
+    # per competition, with the sample size in front of every rate
+    comps = (acc or {}).get("comps") or {}
+    if comps:
+        P.append('<section class="minfo"><h2>حسب البطولة</h2>'
+                 '<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">البطولة</th>'
+                 '<th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead><tbody>')
+        for comp in COMP_ORDER + [c for c in comps if c not in COMP_ORDER]:
+            c = comps.get(comp)
+            if not c:
+                continue
+            small = ' <span class="pf-small">عيّنة صغيرة</span>' if c["n"] < 20 else ""
+            P.append(f'<tr><td class="tl">{esc(comp_label(comp))}{small}</td><td>{c["n"]}</td>'
+                     f'<td>{_pct(c["hit_rate"])}</td><td>{c["brier"]:.3f}</td></tr>')
+        P.append('</tbody></table></div><p class="hintline">مع عشر مباريات أو عشرين، فرق النسب بين '
+                 'بطولة وأخرى يقع كله داخل نطاق الصدفة — الأرقام هنا للعرض لا للترتيب.</p></section>')
+
+    # the two models, apart and NOT as a race
+    srcs = (acc or {}).get("by_src") or {}
+    if len(srcs) > 1:
+        P.append('<section class="minfo"><h2>النموذجان: بايثون وOracle</h2>'
+                 '<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">المصدر</th>'
+                 '<th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead><tbody>')
+        for k in sorted(srcs):
+            v = srcs[k]
+            if not v:
+                continue
+            nm = {"oracle": "نموذج Oracle (PL/SQL)", "python": "نموذج بايثون"}.get(k, k)
+            P.append(f'<tr><td class="tl">{esc(nm)}</td><td>{v["n"]}</td>'
+                     f'<td>{_pct(v["hit_rate"])}</td><td>{v["brier"]:.3f}</td></tr>')
+        P.append('</tbody></table></div><p class="hintline"><b>ليست مباراة بين النموذجين:</b> '
+                 'كل توقع يصدر من المصدر المتاح وقتها، فالمجموعتان ليستا نفس المباريات، '
+                 'والفارق بينهما عند هذا العدد يقع داخل نطاق الضوضاء. نعرضهما منفصلين حتى '
+                 'يظهر اليوم الذي يصبح فيه أحدهما أفضل فعلًا.</p></section>')
+
+    # the full record
+    comp_opts = "".join(f'<option value="{esc(c)}">{esc(comp_label(c))}</option>'
+                        for c in (COMP_ORDER + [c for c in comps if c not in COMP_ORDER])
+                        if c in comps)
+    P.append('<section class="minfo" id="record"><h2>السجل الكامل</h2>'
+             '<div class="pf-bar"><span class="pf-chip on" data-f="all">الكل</span>'
+             '<span class="pf-chip" data-f="hit">أصاب</span>'
+             '<span class="pf-chip" data-f="miss">أخطأ</span>'
+             f'<select id="pf-comp"><option value="">كل البطولات</option>{comp_opts}</select>'
+             '<span class="pf-n"><b id="pf-count">' + str(len(rows)) + '</b> مباراة</span></div>'
+             '<div class="tbl-wrap"><table class="ptable" id="predtable"><thead><tr>'
+             '<th class="tl">التاريخ</th><th class="tl">المباراة</th><th class="tl">البطولة</th>'
+             '<th class="tl">توقعنا</th><th>النتيجة المرجّحة</th><th>الحكم</th>'
+             '</tr></thead><tbody>')
+    P.extend(_pred_row_html(e) for e in rows)
+    P.append('</tbody></table></div>'
+             '<button type="button" id="pf-more" class="pf-more" hidden></button>'
+             '<p class="hintline">🎯 = أصبنا النتيجة بالضبط. «النتيجة المرجّحة» هي أعلى نتيجة '
+             'احتمالًا وقت التوقع، والحكم يقارن الاتجاه (فوز/تعادل/خسارة) بما حدث.</p></section>')
+
+    P.append('<section class="minfo"><h2>حدود هذا السجل</h2><ul class="lim">'
+             f'<li>يبدأ من <b>{esc(first)}</b> — أول يوم ثبّتنا فيه التوقعات آليًا، وليس من إطلاق الموقع.</li>'
+             '<li>يُحتفظ بالتوقعات 150 يومًا، فالسجل نافذة متحركة وليس أرشيفًا أبديًا.</li>'
+             '<li>العيّنة صغيرة: النسب لكل بطولة على عشرات المباريات، وتتحرك كثيرًا مع كل جولة.</li>'
+             '<li>النموذج لا يعرف الإصابات ولا الإيقافات ولا تغيّر المدرب، ويعتمد على الموسم الحالي فقط.</li>'
+             '<li>وسم الثقة الحالي لا يفصل بعد بين التوقعات الجيدة والضعيفة — نعرضه ونعمل على تحسينه.</li>'
+             '<li>هذه أرقام تحليلية للقارئ، وليست نصيحة للمراهنة بأي شكل.</li>'
+             '</ul><p><a href="/analysis.html#model">كيف يعمل النموذج؟ ←</a></p></section>')
+
+    faq = [
+        ("هل توقعات يلا سكور دقيقة؟",
+         f"على {a['n']} مباراة مقيَّمة أصاب النموذج اتجاه النتيجة في {_pct(a['hit_rate'])} من الحالات، "
+         f"مقابل {_pct(a['home_baseline'])} لو توقعنا فوز صاحب الأرض دائمًا. الأهم أن الاحتمالات "
+         f"نفسها مُعايَرة: متوسط انحرافها {cal['ece'] * 100:.1f} نقطة مئوية عمّا يحدث فعلًا."),
+        ("هل تُعدَّل التوقعات بعد المباراة؟",
+         "لا. يُثبَّت التوقع في قاعدة البيانات قبل انطلاق المباراة ولا يُعدَّل ولا يُحذف بعدها، "
+         "والسجل يعرض الإخفاقات كما يعرض الإصابات."),
+        ("ماذا يعني مؤشر Brier؟",
+         "قياس لجودة الاحتمالات: صفر يعني توقعًا مثاليًا، و0.667 يعني تخمينًا عشوائيًا بين ثلاث نتائج. "
+         f"النموذج عند {a['brier']:.3f} حاليًا."),
+        ("هل هذه نصيحة للمراهنة؟",
+         "لا. الأرقام تحليلية مبنية على نتائج الموسم الحالي فقط، ولا تصلح أساسًا لأي رهان."),
+    ]
+    P.append('<section class="minfo faq"><h2>أسئلة شائعة عن سجل التوقعات</h2>'
+             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(v)}</p></details>'
+                       for q, v in faq) + '</section>')
+    P.append(jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                     "mainEntity": [{"@type": "Question", "name": q,
+                                     "acceptedAnswer": {"@type": "Answer", "text": v}}
+                                    for q, v in faq]}))
+    P.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                            ("تحليلات وتوقعات", SITE_BASE + "/analysis.html"),
+                            ("سجل التوقعات", SITE_BASE + url)]))
+    P.append(foot())
+    P.append(PRED_FILTER_JS)
+    write("predictions.html", "".join(P))
+    _LASTMOD[url] = REF_TODAY
+    return url
+
 
 def model_explainer():
     return ('<section class="minfo explain" id="model"><h2>كيف يعمل نموذج يلا سكور؟</h2>'
@@ -3088,6 +3342,10 @@ def build():
 
     # ---- تحليلات: /analysis hub + /analysis/<league> ----
     os.makedirs(os.path.join(DIST, "analysis"), exist_ok=True)
+    _hist_url = prediction_history_page(_plog, _acc)
+    if _hist_url:
+        urls.append(_hist_url)
+        print(f"  + prediction history: {_acc['all']['n']} scored predictions")
     _an_urls = analysis_pages(matches, _upcoming, _preds, _plog, _acc, _tstats, _lparams,
                               _pins, _sins, forms)
     urls.extend(_an_urls)
@@ -5722,6 +5980,35 @@ a{color:inherit}
 .rt-b.r8{background:#0ea5e9}.rt-b.r7{background:#16a34a}
 .rt-b.r65{background:#ca8a04}.rt-b.r6{background:#ea580c}
 .mread .mr-avg small{color:var(--muted);font-weight:400}
+/* prediction record (/predictions.html): filter bar, the two call columns,
+   and the small-sample flag. Tables reuse .ptable. */
+.pf-bar{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin:.6rem 0}
+.pf-chip{cursor:pointer;border:1px solid #e2e8f0;background:#f6f8fa;border-radius:999px;
+  padding:.28rem .7rem;font-size:.8rem;font-weight:800;color:var(--ink)}
+.pf-chip.on{background:var(--green);border-color:var(--green);color:#fff;
+  box-shadow:0 0 0 2px #fff inset}
+.pf-bar select{border:1px solid #e2e8f0;border-radius:8px;padding:.28rem .5rem;
+  font-family:inherit;font-size:.8rem;font-weight:700;background:#fff;color:var(--ink)}
+.pf-n{color:var(--muted);font-size:.78rem;font-weight:700;margin-inline-start:auto}
+.pf-small{color:var(--muted);font-size:.65rem;font-weight:700;background:#f1f5f9;
+  border-radius:6px;padding:.05rem .3rem;white-space:nowrap}
+.pf-exact{font-size:.8rem}
+.pf-more{display:block;width:100%;margin:.5rem 0 0;padding:.55rem;border:1px solid #e2e8f0;
+  background:#f6f8fa;border-radius:10px;font-family:inherit;font-size:.85rem;font-weight:800;
+  color:var(--green-d);cursor:pointer}
+.pf-more:hover{background:#eef2f6}
+.calls{display:grid;grid-template-columns:1fr 1fr;gap:.7rem}
+.calls-c{border:1px solid #e2e8f0;border-radius:10px;padding:.6rem .7rem;background:#f8fafc}
+.calls-c h3{margin:0 0 .4rem;font-size:.9rem}
+.calls-c.ok h3{color:#16a34a}.calls-c.no h3{color:#e11d48}
+.calls-c ul{list-style:none;margin:0;padding:0}
+.calls-c li{display:flex;flex-direction:column;gap:.1rem;padding:.35rem 0;
+  border-bottom:1px solid #eef2f6;font-size:.85rem}
+.calls-c li:last-child{border-bottom:0}
+.calls-c li span{color:var(--muted);font-size:.75rem}
+.lim{margin:.3rem 0;padding-inline-start:1.1rem;line-height:1.9}
+.ptable td.good{color:#16a34a;font-weight:800}.ptable td.bad{color:#e11d48;font-weight:800}
+@media(max-width:620px){.calls{grid-template-columns:1fr}}
 .pp-card{position:absolute;top:-5px;left:-6px;width:9px;height:13px;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.4)}
 .pp-card.y{background:#fbbf24}.pp-card.r{background:#dc2626}
 .pp-sub{position:absolute;bottom:-4px;left:-8px;width:15px;height:15px;border-radius:50%;

@@ -514,6 +514,72 @@ def accuracy(log):
                              reverse=True)[:12]}
 
 
+def calibration(log, width=10):
+    """Reliability of the STATED probabilities: every prediction makes three
+    of them (home / draw / away), so 151 scored matches are 453 statements.
+    Bucket them by the stated percentage and compare with how often that
+    outcome actually happened.
+
+    This is the measure that judges a probabilistic model. Direction accuracy
+    ("did the highest bar win?") throws away everything the model said about
+    the other two outcomes - a model can be right about the world and look
+    poor on it, which is exactly what our own numbers do (47% direction,
+    almost perfect calibration).
+
+    Returns [{lo, hi, n, hits, stated, actual}] plus the expected calibration
+    error (mean |stated - actual| weighted by bucket size)."""
+    rows = [e for e in log.values() if e.get("hs") is not None]
+    buckets = {}
+    for e in rows:
+        for key, out in (("ph", "H"), ("pd", "D"), ("pa", "A")):
+            p_ = e.get(key)
+            if p_ is None:
+                continue
+            lo = min(int(p_ * 100) // width * width, 100 - width)
+            b = buckets.setdefault(lo, {"lo": lo, "hi": lo + width - 1, "n": 0,
+                                        "hits": 0, "psum": 0.0})
+            b["n"] += 1
+            b["psum"] += p_
+            b["hits"] += 1 if e.get("outcome") == out else 0
+    out = []
+    for lo in sorted(buckets):
+        b = buckets[lo]
+        b["stated"] = b["psum"] / b["n"]
+        b["actual"] = b["hits"] / b["n"]
+        del b["psum"]
+        out.append(b)
+    total = sum(b["n"] for b in out) or 1
+    ece = sum(b["n"] * abs(b["actual"] - b["stated"]) for b in out) / total
+    return {"buckets": out, "ece": ece, "statements": total, "matches": len(rows)}
+
+
+def extremes(log, n=3):
+    """The most confident calls that came off, and the most confident that did
+    not. Published side by side and at the same size - a record that shows only
+    the hits is a sales page, not a record."""
+    rows = [e for e in log.values() if e.get("hs") is not None]
+    def conf(e):
+        return max(e.get("ph") or 0, e.get("pd") or 0, e.get("pa") or 0)
+    # `hit` comes back from D1 as 0/1, not False/True - «is False» silently
+    # produced an empty miss list on the first run
+    hits = sorted([e for e in rows if e.get("hit")], key=conf, reverse=True)[:n]
+    miss = sorted([e for e in rows if not e.get("hit")], key=conf, reverse=True)[:n]
+    return {"best": hits, "worst": miss}
+
+
+def history(log):
+    """Every scored prediction, newest first, with its match id - the page's
+    table. The id is the log key, so each row can link to its match page."""
+    rows = []
+    for mid, e in log.items():
+        if e.get("hs") is None:
+            continue
+        rows.append(dict(e, match_id=str(mid)))
+    rows.sort(key=lambda e: (e.get("kickoff") or "", e.get("koff_time") or ""),
+              reverse=True)
+    return rows
+
+
 # ---------------------------------------------------------------- players
 def _minute(s):
     """'90+6' -> 96, '45+2' -> 47, '17' -> 17, junk -> None."""
