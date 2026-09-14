@@ -2762,6 +2762,10 @@ def build():
     # uses it to prove the official table is describing THIS match and not a
     # later round
     _fin_by_comp = _finished_by_comp(fixtures, _bycomp)
+    # h2h and rest days cross competitions (a club plays the league on Saturday
+    # and the CAF Champions League on Tuesday), so keep a flat chronological list
+    _fin_all = sorted((x for ms in _fin_by_comp.values() for x in ms),
+                      key=lambda x: (x.get("kickoff") or "", x.get("koff_time") or ""))
     m_all = {m["match_id"]: m
              for m in load("matches_archive.json") if m.get("match_id")}
     for m in matches:
@@ -2856,10 +2860,23 @@ def build():
                 mp.append('<p>لم تتوفر بعد معلومات القناة الناقلة لهذه '
                           'المباراة — تُحدَّث هذه الصفحة تلقائيًا فور توفرها.</p>')
             mp.append('</section>')
+        # «قراءة قبل المباراة» (layer 1): how the two clubs arrive - table,
+        # form, goals per game, the last meeting, a short turnaround, and what
+        # a win is worth. Sits under the time/TV answer and above the XI.
+        _pre_weight = 0
+        if st == "UPCOMING":
+            _pre, _pre_faq, _pre_weight = pre_match_read(
+                m, h_ar, a_ar, comp,
+                st_by_comp.get(m.get("competition")),
+                forms.get(m.get("competition")) or {},
+                _fin_by_comp.get(m.get("competition")) or [], _fin_all,
+                _preds.get(str(mid)))
+            if _pre:
+                mp.append(_pre)
         _det = match_details_for(md_idx, m)
         # «قراءة المباراة» — the summary goes ABOVE the evidence: what happened
         # and what it changed, then the timeline and the XI that prove it.
-        _faq_html = ""
+        _faq_html = _pre_faq if st == "UPCOMING" and _pre_weight else ""
         if st == "FINISHED" and _det and hs is not None and as_ is not None:
             _read, _faq_html = post_match_read(
                 m, _det[0], _det[1], h_ar, a_ar, hs, as_, comp,
@@ -2961,7 +2978,14 @@ def build():
         # real content yet (no scorers, no lineups/details) stays reachable
         # for visitors and links but is NOINDEXed and kept out of the
         # sitemap; it becomes indexable automatically once the data arrives.
-        _rich = bool(_goals) or bool(_det)
+        #
+        # 2026-09-14: a fixture page is no longer automatically thin. When the
+        # pre-match reading found at least four substantive facts (the table
+        # standing, both form lines, the goal averages, the stakes...) the page
+        # carries the kick-off answer, that reading, the model's numbers, the
+        # league table and an FAQ - which is a guide, not a stub. A fixture we
+        # know nothing about still scores below the bar and stays out.
+        _rich = bool(_goals) or bool(_det) or _pre_weight >= 4
         _html = "".join(mp)
         if not _rich:
             _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
@@ -4612,6 +4636,200 @@ def table_after(m, st, form_map, fin_comp, h_ar, a_ar):
         line += f" — {streak}." if streak else "."
         out.append(line)
     return out
+
+
+def _form_counts(res, n=5):
+    l = (res or [])[-n:]
+    return l, l.count("W"), l.count("D"), l.count("L")
+
+
+def _form_phrase(res, club):
+    """«الأهلي في آخر 5 مباريات: 3 انتصارات وتعادلان» (+ the current run)."""
+    l, w, d, ls = _form_counts(res)
+    if len(l) < 3:
+        return ""
+    bits = [x for x in (_wins(w) if w else "", _draws(d) if d else "",
+                        _losses(ls) if ls else "") if x]
+    out = f"{club} في آخر {_games(len(l))}: " + " و".join(bits)
+    st = _streak_ar(l)
+    return out + (f" ({st})" if st else "")
+
+
+def _pts_phrase(n):
+    """«برصيد 10 نقاط» / «دون أي نقاط» — _pts(0) alone gives «دون نقاط», which
+    reads wrong after «برصيد»."""
+    n = int(n or 0)
+    return f"برصيد {_pts(n)}" if n else "دون أي نقاط"
+
+
+def _per_game(row):
+    g = int(row.get("played") or 0)
+    if not g:
+        return None
+    return (int(row.get("gf") or 0) / g, int(row.get("ga") or 0) / g)
+
+
+def _club_pool(fin_all, raw):
+    return [x for x in (fin_all or []) if raw in (x.get("home"), x.get("away"))]
+
+
+def _days_between(d1, d2):
+    try:
+        a = datetime.date.fromisoformat(d1)
+        b_ = datetime.date.fromisoformat(d2)
+        return (a - b_).days
+    except Exception:
+        return None
+
+
+def pre_match_read(m, h_ar, a_ar, comp_label_txt, st=None, form_map=None,
+                   fin_comp=None, fin_all=None, pred=None):
+    """«قراءة قبل المباراة» — (html, faq_html, weight) for an UPCOMING match.
+
+    Layer 1 of the match-page rework (2026-09-14). The page could already tell
+    you WHEN the match is and what the model thinks; it could not tell you how
+    the two clubs arrive at it. Everything here is a restatement of the
+    official table, the form list and the finished matches in the season pool -
+    the same discipline as post_match_read(), so it can run on every fixture
+    without turning into generated content.
+
+    `weight` counts the substantive facts: the caller uses it to decide whether
+    the page is worth indexing (an empty fixture page was the thin content
+    AdSense rejected on 2026-09-04)."""
+    rows = (st or {}).get("table") or []
+    if (st or {}).get("zeroed") or (st or {}).get("past"):
+        rows = []
+    def row_of(raw):
+        r = next((x for x in rows if x.get("team") == raw), None)
+        return r if r and int(r.get("played") or 0) > 0 else None
+    rh, ra = row_of(m.get("home")), row_of(m.get("away"))
+    fm = form_map or {}
+    fh, fa = fm.get(m.get("home")) or [], fm.get(m.get("away")) or []
+    ps, weight = [], 0
+
+    # 1. where the two clubs stand right now
+    if rh and ra:
+        ps.append(f"يدخل {h_ar} المباراة في المركز {_ord_ar(int(rh['pos']))} "
+                  f"{_pts_phrase(rh.get('pts'))} من {_games(rh.get('played'))}، "
+                  f"بينما يحتل {a_ar} المركز {_ord_ar(int(ra['pos']))} "
+                  f"{_pts_phrase(ra.get('pts'))}.")
+        weight += 1
+
+    # 2. how they arrive: the last five, with the current run
+    forms = [x for x in (_form_phrase(fh, h_ar), _form_phrase(fa, a_ar)) if x]
+    if forms:
+        ps.append("، و".join(forms) + ".")
+        weight += len(forms)
+
+    # 3. the goals: scored and conceded per game this season
+    if rh and ra:
+        ph_, pa_ = _per_game(rh), _per_game(ra)
+        if ph_ and pa_:
+            ps.append(f"هجوميًا، سجّل {h_ar} بمعدل {ph_[0]:.1f} هدف في المباراة "
+                      f"واستقبل {ph_[1]:.1f}، مقابل {pa_[0]:.1f} و{pa_[1]:.1f} "
+                      f"{_lam(a_ar)}.")
+            weight += 1
+
+    # 4. clean sheets, counted off the season pool
+    for raw, club in ((m.get("home"), h_ar), (m.get("away"), a_ar)):
+        ms = _club_pool(fin_comp, raw)
+        if len(ms) >= 3:
+            cs = sum(1 for x in ms
+                     if (x["away_score"] if x.get("home") == raw else x["home_score"]) == 0)
+            if cs >= 2:
+                ps.append(f"حافظ {club} على نظافة شباكه في "
+                          f"{_cnt(cs, 'مباراة واحدة', 'مباراتين', 'مباريات', 'مباراة')} "
+                          f"من أصل {len(ms)} هذا الموسم.")
+                weight += 1
+                break
+
+    # 5. the last time they met (any competition in the season pool)
+    prev = sorted([x for x in (fin_all or [])
+                   if {x.get("home"), x.get("away")} == {m.get("home"), m.get("away")}],
+                  key=lambda x: x.get("kickoff") or "")
+    if prev:
+        lastm = prev[-1]
+        hs_, as_ = lastm.get("home_score"), lastm.get("away_score")
+        who = (ar_team(lastm.get("home")) if hs_ > as_
+               else ar_team(lastm.get("away")) if as_ > hs_ else None)
+        res = (f"بفوز {who} {max(hs_, as_)}-{min(hs_, as_)}" if who
+               else f"بالتعادل {hs_}-{as_}")
+        ps.append(f"آخر مواجهة بينهما كانت يوم {fmt_day(lastm['kickoff'])} "
+                  f"وانتهت {res}.")
+        weight += 1
+
+    # 6. a short turnaround is a fact worth knowing before kick-off
+    rest = []
+    for raw, club in ((m.get("home"), h_ar), (m.get("away"), a_ar)):
+        ms = _club_pool(fin_all, raw)
+        if not ms:
+            continue
+        gap = _days_between(m.get("kickoff"), ms[-1].get("kickoff"))
+        if gap is not None and 0 <= gap <= 3:
+            opp = ar_team(ms[-1]["away"] if ms[-1].get("home") == raw else ms[-1]["home"])
+            rest.append(f"{club} يلعب بعد {_cnt(gap, 'يوم واحد', 'يومين', 'أيام', 'يومًا')} "
+                        f"فقط من مباراته أمام {opp}")
+    if rest:
+        ps.append("، و".join(rest) + ".")
+        weight += 1
+
+    # 7. what a win is worth - arithmetic on the CURRENT points, never a
+    #    predicted position (other clubs play too, and tie-break rules differ)
+    if rh and ra:
+        stake = f"الفوز يرفع {h_ar} إلى {_pts(int(rh.get('pts') or 0) + 3)}"
+        pos = int(rh["pos"])
+        nb = next((r for r in rows if int(r.get("pos") or 0) == (pos - 1 if pos > 1 else 2)), None)
+        if nb and nb.get("pts") is not None:
+            diff = (int(rh.get("pts") or 0) + 3) - int(nb["pts"])
+            # the neighbour in the table is often the opponent itself - naming
+            # it twice in one sentence reads like two different clubs
+            who = (f"{a_ar} نفسه" if nb.get("team") == m.get("away")
+                   else f"{ar_team(nb.get('team'))} ({_ord_ar(int(nb['pos']))})")
+            if diff > 0:
+                stake += f"، أي {_pts(diff)} فوق {who} حاليًا"
+            elif diff < 0:
+                stake += f"، أي {_pts(-diff)} خلف {who} حاليًا"
+            else:
+                stake += f"، ليتساوى مع {who} حاليًا"
+        stake += (f"، بينما يرفع الفوز {a_ar} إلى "
+                  f"{_pts(int(ra.get('pts') or 0) + 3)}.")
+        ps.append(stake)
+        weight += 1
+
+    if not ps:
+        return "", "", 0
+    html = (f'<section class="minfo st-analysis mread"><h2>قراءة قبل مباراة '
+            f'{esc(h_ar)} و{esc(a_ar)}</h2><p>' + " ".join(esc(x) for x in ps)
+            + '</p><p class="pd-note">الأرقام من جدول البطولة الرسمي ونتائج '
+              'الموسم حتى تاريخ النشر، وتُحدَّث تلقائيًا حتى صافرة البداية.</p></section>')
+
+    faq = []
+    when = fmt_day(m["kickoff"]) + (f" في تمام {m['koff_time']} بتوقيت القاهرة"
+                                    if m.get("koff_time") else "")
+    faq.append((f"متى مباراة {h_ar} و{a_ar}؟",
+                f"تُقام يوم {when} ضمن {comp_label_txt}."))
+    ch = m.get("channel") or COMP_TV.get(m.get("competition"))
+    faq.append((f"ما القناة الناقلة لمباراة {h_ar} و{a_ar}؟",
+                f"تُنقل عبر {ch}." if ch else
+                "لم تتوفر بعد معلومات القناة الناقلة لهذه المباراة، وتُحدَّث الصفحة فور توفرها."))
+    if forms:
+        faq.append((f"كيف يدخل {h_ar} و{a_ar} المباراة؟", "، و".join(forms) + "."))
+    if pred:
+        pick = max((("H", pred["ph"]), ("D", pred["pd"]), ("A", pred["pa"])),
+                   key=lambda x: x[1])
+        pick_ar = {"H": f"فوز {h_ar}", "D": "التعادل", "A": f"فوز {a_ar}"}[pick[0]]
+        faq.append((f"ما توقع يلا سكور لمباراة {h_ar} و{a_ar}؟",
+                    f"يرجّح النموذج {pick_ar} باحتمال {_pct(pick[1])}، والأهداف "
+                    f"المتوقعة {pred['lh']:.1f} مقابل {pred['la']:.1f}. "
+                    "هذه احتمالات إحصائية وليست نصيحة للمراهنة."))
+    fhtml = ('<section class="minfo faq"><h2>أسئلة شائعة عن المباراة</h2>'
+             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>'
+                       for q, a in faq) + '</section>')
+    fld = jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                  "mainEntity": [{"@type": "Question", "name": q,
+                                  "acceptedAnswer": {"@type": "Answer", "text": a}}
+                                 for q, a in faq]})
+    return html, fhtml + fld, weight
 
 
 def post_match_read(m, e, flipped, h_ar, a_ar, hs, as_, comp_label_txt,
