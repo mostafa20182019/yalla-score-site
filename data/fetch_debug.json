@@ -5,10 +5,10 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 91 live games)",
+ "reconcile": "ok (0 row(s) corrected, 90 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 45 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 60 min ago",
  "slow_fetched_at": "2026-09-14T06:03:18+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
@@ -98,5 +98,5 @@
   "fails": 0
  },
  "match_details": "ok (320)",
- "utc": "2026-09-14T06:48:45Z"
+ "utc": "2026-09-14T07:03:45Z"
 }
