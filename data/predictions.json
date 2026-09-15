@@ -21,7 +21,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764281": {
   "as": 0,
@@ -116,25 +116,25 @@
   "ts": "2026-09-06"
  },
  "4764290": {
-  "as": null,
+  "as": 0,
   "away": "فنربخشة",
-  "brier": null,
+  "brier": 0.9039,
   "comp": "Turkish Super Lig",
   "conf": "low",
-  "hit": null,
+  "hit": 0,
   "home": "غازي عنتاب",
-  "hs": null,
+  "hs": 0,
   "kickoff": "2026-09-14",
   "koff_time": "20:00",
   "la": 1.534,
   "lh": 1.81,
-  "outcome": null,
+  "outcome": "D",
   "pa": 0.3293,
   "pd": 0.2266,
   "ph": 0.4442,
-  "pick": null,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
@@ -352,7 +352,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764300": {
   "as": null,
@@ -376,7 +376,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764301": {
   "as": null,
@@ -400,7 +400,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764302": {
   "as": null,
@@ -424,7 +424,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764303": {
   "as": null,
@@ -448,7 +448,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764304": {
   "as": null,
@@ -472,7 +472,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764305": {
   "as": null,
@@ -496,7 +496,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4764306": {
   "as": null,
@@ -520,7 +520,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4788276": {
   "as": 0,
@@ -1173,25 +1173,25 @@
   "ts": "2026-09-09"
  },
  "4804668": {
-  "as": null,
+  "as": 1,
   "away": "سموحة",
-  "brier": null,
+  "brier": 1.0716,
   "comp": "Egyptian Premier League",
   "conf": "mid",
-  "hit": null,
+  "hit": 0,
   "home": "طلائع الجيش",
-  "hs": null,
+  "hs": 0,
   "kickoff": "2026-09-14",
   "koff_time": "17:00",
   "la": 0.546,
   "lh": 1.227,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.165,
   "pd": 0.3041,
   "ph": 0.5309,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
@@ -1221,25 +1221,25 @@
   "ts": "2026-09-14"
  },
  "4804671": {
-  "as": null,
+  "as": 0,
   "away": "البنك الاهلي",
-  "brier": null,
+  "brier": 0.261,
   "comp": "Egyptian Premier League",
   "conf": "mid",
-  "hit": null,
+  "hit": 1,
   "home": "سيراميكا كليوباترا",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-14",
   "koff_time": "20:00",
   "la": 0.839,
   "lh": 1.726,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.18,
   "pd": 0.2358,
   "ph": 0.5841,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
@@ -1266,7 +1266,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4804673": {
   "as": null,
@@ -1290,7 +1290,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4804674": {
   "as": null,
@@ -1314,7 +1314,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4804675": {
   "as": null,
@@ -1338,7 +1338,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4804676": {
   "as": null,
@@ -1362,7 +1362,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4804677": {
   "as": null,
@@ -1386,7 +1386,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4804678": {
   "as": null,
@@ -1410,7 +1410,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "4805122": {
   "as": 0,
@@ -2356,7 +2356,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558589": {
   "as": null,
@@ -2380,7 +2380,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558590": {
   "as": null,
@@ -2404,7 +2404,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558591": {
   "as": null,
@@ -2428,7 +2428,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558592": {
   "as": null,
@@ -2452,7 +2452,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558593": {
   "as": null,
@@ -2476,7 +2476,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558594": {
   "as": null,
@@ -2500,7 +2500,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558595": {
   "as": null,
@@ -2524,7 +2524,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558596": {
   "as": null,
@@ -2548,7 +2548,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558597": {
   "as": null,
@@ -2572,7 +2572,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558598": {
   "as": null,
@@ -2596,7 +2596,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "558599": {
   "as": 0,
@@ -2647,73 +2647,73 @@
   "ts": "2026-09-12"
  },
  "558601": {
-  "as": null,
+  "as": 3,
   "away": "Udinese Calcio",
-  "brier": null,
+  "brier": 0.218,
   "comp": "Serie A",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "FC Internazionale Milano",
-  "hs": null,
+  "hs": 5,
   "kickoff": "2026-09-14",
   "koff_time": "21:45",
   "la": 1.185,
   "lh": 2.281,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.1875,
   "pd": 0.1936,
   "ph": 0.6188,
-  "pick": null,
+  "pick": "H",
   "score": "2-1",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
  },
  "558602": {
-  "as": null,
+  "as": 1,
   "away": "Parma Calcio 1913",
-  "brier": null,
+  "brier": 0.1864,
   "comp": "Serie A",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "Como 1907",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-09-14",
   "koff_time": "19:30",
   "la": 0.789,
   "lh": 1.965,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.1423,
   "pd": 0.2081,
   "ph": 0.6495,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
  },
  "558603": {
-  "as": null,
+  "as": 2,
   "away": "AS Roma",
-  "brier": null,
+  "brier": 0.1513,
   "comp": "Serie A",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "Torino FC",
-  "hs": null,
+  "hs": 0,
   "kickoff": "2026-09-14",
   "koff_time": "19:30",
   "la": 2.352,
   "lh": 0.958,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.6833,
   "pd": 0.1791,
   "ph": 0.1377,
-  "pick": null,
+  "pick": "A",
   "score": "0-2",
-  "score_hit": null,
+  "score_hit": 1,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
@@ -2951,7 +2951,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559676": {
   "as": null,
@@ -2975,7 +2975,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559677": {
   "as": null,
@@ -2999,7 +2999,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559678": {
   "as": null,
@@ -3023,7 +3023,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559679": {
   "as": null,
@@ -3047,7 +3047,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559680": {
   "as": null,
@@ -3071,7 +3071,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559681": {
   "as": null,
@@ -3095,7 +3095,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559682": {
   "as": null,
@@ -3119,7 +3119,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559683": {
   "as": null,
@@ -3143,7 +3143,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "559684": {
   "as": 2,
@@ -3598,25 +3598,25 @@
   "ts": "2026-09-13"
  },
  "560579": {
-  "as": null,
+  "as": 1,
   "away": "Newcastle United FC",
-  "brier": null,
+  "brier": 0.5461,
   "comp": "Premier League",
   "conf": "low",
-  "hit": null,
+  "hit": 1,
   "home": "Leeds United FC",
-  "hs": null,
+  "hs": 4,
   "kickoff": "2026-09-14",
   "koff_time": "22:00",
   "la": 1.194,
   "lh": 1.328,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.3342,
   "pd": 0.2679,
   "ph": 0.3978,
-  "pick": null,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
@@ -3691,7 +3691,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560583": {
   "as": null,
@@ -3715,7 +3715,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560584": {
   "as": null,
@@ -3739,7 +3739,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560585": {
   "as": null,
@@ -3763,7 +3763,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560586": {
   "as": null,
@@ -3787,7 +3787,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560587": {
   "as": null,
@@ -3811,7 +3811,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560588": {
   "as": null,
@@ -3835,7 +3835,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560589": {
   "as": null,
@@ -3859,7 +3859,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560590": {
   "as": null,
@@ -3883,7 +3883,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "560591": {
   "as": null,
@@ -3907,7 +3907,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564658": {
   "as": 3,
@@ -4119,25 +4119,25 @@
   "ts": "2026-09-12"
  },
  "564671": {
-  "as": null,
+  "as": 2,
   "away": "Real Betis Balompié",
-  "brier": null,
+  "brier": 0.673,
   "comp": "Primera Division",
   "conf": "mid",
-  "hit": null,
+  "hit": 0,
   "home": "Villarreal CF",
-  "hs": null,
+  "hs": 1,
   "kickoff": "2026-09-14",
   "koff_time": "22:00",
   "la": 1.385,
   "lh": 1.567,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.3377,
   "pd": 0.2442,
   "ph": 0.418,
-  "pick": null,
+  "pick": "H",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "oracle",
   "src_ts": null,
   "ts": "2026-09-14"
@@ -4308,7 +4308,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564679": {
   "as": null,
@@ -4332,7 +4332,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564680": {
   "as": null,
@@ -4356,7 +4356,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564681": {
   "as": null,
@@ -4380,7 +4380,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564683": {
   "as": null,
@@ -4404,7 +4404,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564684": {
   "as": null,
@@ -4428,7 +4428,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564685": {
   "as": null,
@@ -4452,7 +4452,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564686": {
   "as": null,
@@ -4476,7 +4476,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564687": {
   "as": null,
@@ -4500,7 +4500,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564688": {
   "as": null,
@@ -4524,7 +4524,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564689": {
   "as": null,
@@ -4548,7 +4548,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564690": {
   "as": null,
@@ -4572,7 +4572,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564691": {
   "as": null,
@@ -4596,7 +4596,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564692": {
   "as": null,
@@ -4620,7 +4620,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564693": {
   "as": null,
@@ -4644,7 +4644,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564694": {
   "as": null,
@@ -4668,7 +4668,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564695": {
   "as": null,
@@ -4692,7 +4692,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564696": {
   "as": null,
@@ -4716,7 +4716,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "564697": {
   "as": null,
@@ -4740,7 +4740,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565786": {
   "as": 4,
@@ -5002,7 +5002,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565804": {
   "as": null,
@@ -5026,7 +5026,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565805": {
   "as": null,
@@ -5050,7 +5050,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565806": {
   "as": null,
@@ -5074,7 +5074,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565807": {
   "as": null,
@@ -5098,7 +5098,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565808": {
   "as": null,
@@ -5122,7 +5122,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565809": {
   "as": null,
@@ -5146,7 +5146,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565810": {
   "as": null,
@@ -5170,7 +5170,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "565811": {
   "as": null,
@@ -5194,7 +5194,7 @@
   "score_hit": null,
   "src": "oracle",
   "src_ts": null,
-  "ts": "2026-09-14"
+  "ts": "2026-09-15"
  },
  "575325": {
   "as": 1,
