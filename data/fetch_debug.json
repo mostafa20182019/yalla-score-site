@@ -9,8 +9,8 @@
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-15T18:17:39+00:00",
- "standings": "ok (6)",
+ "slow_fetched_at": "2026-09-15T18:32:21+00:00",
+ "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
@@ -221,11 +221,12 @@
   },
   "sample_details": {
    "event_names": [
+    "Substitution",
     "بطاقة صفراء",
     "هدف"
    ],
    "card0": "{\"competitorId\": 8200, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 42.0, \"addedTime\": 0, \"gameTimeDisplay\": \"42'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67635813, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "null",
+   "sub0": "{\"competitorId\": 19480, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 67.0, \"addedTime\": 0, \"gameTimeDisplay\": \"67'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 71531441, \"extraPlayers\": [78214732], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -249,7 +250,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"51'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.0, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"67'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (1 with XI)",
@@ -260,5 +261,5 @@
   "fails": 0
  },
  "match_details": "ok (335)",
- "utc": "2026-09-15T18:21:18Z"
+ "utc": "2026-09-15T18:35:52Z"
 }
