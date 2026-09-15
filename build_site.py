@@ -2010,7 +2010,13 @@ def model_explainer():
             'فتكون عيّنته صغيرة في الجولات الأولى (نُشير إلى ذلك بوسم «عيّنة صغيرة»). لذلك تُقرأ التوقعات كاحتمالات '
             'وليست حقائق، وهي ليست نصيحة للمراهنة.</p></section>')
 
-def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, sins, forms):
+def comp_has_table(comp, has_table):
+    """Was a /standings page written for this competition this build?"""
+    return comp in (has_table or set())
+
+
+def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, sins,
+                   forms, has_table=None):
     """Write /analysis.html (hub) + /analysis/<slug>.html per league. Returns urls."""
     urls = []
     today = datetime.date.fromisoformat(REF_TODAY)
@@ -2139,7 +2145,12 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
             lp.append('</section>')
         ca = {"all": acc["comps"].get(c), "comps": {}, "recent": [e for e in acc.get("recent", []) if e.get("comp") == c]}
         lp.append(accuracy_html(ca, anchor=False))
-        lp.append(f'<p class="more-link"><a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a> · '
+        # the standings page exists only for a competition with ONE table; a
+        # cup (CAF CL) has group tables and no /standings page, so linking it
+        # unconditionally left a dead link on that league's analysis page
+        _st_link = (f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a> · '
+                    if (has_table or set()) and comp_has_table(c, has_table) else "")
+        lp.append(f'<p class="more-link">{_st_link}'
                   f'<a href="/analysis.html#model">كيف يعمل النموذج؟</a></p>')
         lp.append(foot())
         write(f"analysis/{slug}.html", "".join(lp))
@@ -3273,9 +3284,12 @@ def build():
     season = (f"{_n.year}-{_n.year + 1}" if _n.month >= 7
               else f"{_n.year - 1}-{_n.year}")
     n_lp = 0
+    _comps_with_table = set()
     for comp, slug in COMP_SLUG.items():
         label = comp_label(comp)
         st = st_by_comp.get(comp)
+        if st and st.get("table"):
+            _comps_with_table.add(comp)
         sc = sc_by_comp.get(comp) if sc_ok.get(comp) else None
         asst = as_by_comp.get(comp) if as_ok.get(comp) else None
         st_url, sc_url = f"/standings/{slug}.html", f"/scorers/{slug}.html"
@@ -3357,7 +3371,7 @@ def build():
         urls.append(_hist_url)
         print(f"  + prediction history: {_acc['all']['n']} scored predictions")
     _an_urls = analysis_pages(matches, _upcoming, _preds, _plog, _acc, _tstats, _lparams,
-                              _pins, _sins, forms)
+                              _pins, _sins, forms, _comps_with_table)
     urls.extend(_an_urls)
     print(f"  + analysis pages: {len(_an_urls)}")
 
