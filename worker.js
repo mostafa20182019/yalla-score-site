@@ -866,8 +866,22 @@ export default {
       const hit = await cache.match(key);
       if (hit) return hit;
       // the D1-backed store when the binding exists; the direct upstream
-      // read otherwise (local dev without D1, and the pre-store tests)
-      const res = env.DB ? await liveFromStore(env, ctx) : await liveScores();
+      // read otherwise (local dev without D1, and the pre-store tests).
+      // A store that throws must not become a 500 on every page that polls
+      // this endpoint: on 2026-09-15 the D1 daily write quota ran out and
+      // /live.json answered HTTP 500 instead of dashes. Fall back to reading
+      // upstream directly, then to fail-empty.
+      let res;
+      try {
+        res = env.DB ? await liveFromStore(env, ctx) : await liveScores();
+      } catch (e) {
+        console.log("live store unavailable:", e && e.message);
+        try {
+          res = await liveScores();
+        } catch (e2) {
+          res = liveResponse({ games: [], ok: false, src: "store-down" });
+        }
+      }
       if ((res.headers.get("cache-control") || "").includes("s-maxage")) {
         ctx.waitUntil(cache.put(key, res.clone()));
       }
@@ -882,8 +896,14 @@ export default {
     // list read a minute; needs no GitHub token.
     if (event.cron === "* * * * *") {
       if (!env.DB) return;
-      await ensureStore(env);
-      const r = await refreshLive(env);
+      let r = { ok: false };
+      try {
+        await ensureStore(env);
+        r = await refreshLive(env);
+      } catch (e) {          // a quota wall or an unreachable D1 skips a beat
+        console.log("live store refresh failed:", e && e.message);
+        return;
+      }
       console.log("live store refresh:", JSON.stringify(r));
       // and the matches that ended: the report queue (see THE REPORT QUEUE)
       try {
