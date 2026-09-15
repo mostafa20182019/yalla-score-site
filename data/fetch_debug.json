@@ -9,8 +9,8 @@
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-15T17:34:07+00:00",
- "standings": "ok (6)",
+ "slow_fetched_at": "2026-09-15T17:47:36+00:00",
+ "standings": "ok (5)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
@@ -208,22 +208,23 @@
     "gameTimeAndStatusDisplayType",
     "justEnded",
     "gameTime",
+    "addedTime",
     "gameTimeDisplay",
     "preciseGameTime",
     "hasLineups",
     "hasMissingPlayers",
     "hasFieldPositions",
-    "winDescription",
-    "homeCompetitor"
+    "winDescription"
    ],
    "event0": "{\"competitorId\": 8200, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 16.0, \"addedTime\": 0, \"gameTimeDisplay\": \"16'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 538177, \"extraPlayers\": [61124229], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
    "member0": "{\"competitorId\": 8200, \"id\": 3517810, \"athleteId\": 49891, \"name\": \"محمد الشناوي\", \"shortName\": \"الشناوي\", \"jerseyNumber\": 1, \"nameForURL\": \"mohamed-el-shenawy\", \"imageVersion\": 40, \"createdAt\": \"2017-07-16T10:45:02.78\"}"
   },
   "sample_details": {
    "event_names": [
+    "بطاقة صفراء",
     "هدف"
    ],
-   "card0": "null",
+   "card0": "{\"competitorId\": 8200, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 42.0, \"addedTime\": 0, \"gameTimeDisplay\": \"42'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67635813, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "sub0": "null",
    "hc_keys": [
     "id",
@@ -248,7 +249,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"32'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"ord"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"45'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"ord"
   }
  },
  "prematch_lineups": "ok (2 with XI)",
@@ -259,5 +260,5 @@
   "fails": 0
  },
  "match_details": "ok (335)",
- "utc": "2026-09-15T17:38:16Z"
+ "utc": "2026-09-15T17:51:17Z"
 }
