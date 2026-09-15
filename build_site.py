@@ -42,6 +42,17 @@ FB_PAGE_URL = "https://www.facebook.com/104238901487012"
 EDITOR_NAME = "مصطفى عبدالسلام"
 EDITOR_ROLE = "مدير التحرير"
 EDITOR_EMAIL = CONTACT_EMAIL
+# The bylines Google reads as a faceless publisher. An article carrying one of
+# these is signed by the named editor instead (2026-09-15): a person who can be
+# looked up, mailed and held responsible is the E-E-A-T signal a generic «فريق
+# التحرير» never gives, and it was one of the two decisions left open after the
+# content rejection. Rendering-level on purpose — the 466 stored rows are not
+# rewritten, so this is one constant away from being undone.
+GENERIC_BYLINES = (SITE_NAME, "فريق التحرير", "فريق يلا سكور", "")
+
+def byline(a):
+    """The name to print (and to put in schema) for one article."""
+    return EDITOR_NAME if (a.get("author") or "") in GENERIC_BYLINES else a["author"]
 # Cloudflare Web Analytics (cookie-less page views / referrers / top pages).
 # Paste the 32-char token from Cloudflare -> Analytics & Logs -> Web Analytics
 # -> Add a site (manual install). Empty = no beacon in the pages.
@@ -1230,12 +1241,12 @@ def news_card(a):
     t = art_reltime(a)
     return (f'<a class="card" href="/a/{a["article_id"]}.html">{thumb}'
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
-            f'<p class="meta">{esc(a.get("author"))}{" · " + t if t else ""}</p></div></a>')
+            f'<p class="meta">{esc(byline(a))}{" · " + t if t else ""}</p></div></a>')
 
 def _art_meta(a):
     """author · منذ X — the byline under FotMob-block titles."""
     t = art_reltime(a)
-    return esc(a.get("author") or SITE_NAME) + (f" · {t}" if t else "")
+    return esc(byline(a)) + (f" · {t}" if t else "")
 
 def club_crest(tp, standings, matches, fixtures):
     """Self-hosted crest URL for a TEAM_PAGES club: its standings row first,
@@ -2526,11 +2537,10 @@ def build():
               "inLanguage": "ar", "mainEntityOfPage": url, "url": url,
               "isAccessibleForFree": True, "articleSection": "كرة القدم",
               "wordCount": _words,
-              # a named person in `author` becomes a Person entity pointing at
-              # the editors page; the generic "فريق التحرير" stays an Organization
-              "author": {"@type": ("Organization" if (a.get("author") or SITE_NAME) in
-                                   (SITE_NAME, "فريق التحرير", "فريق يلا سكور") else "Person"),
-                         "name": a.get("author") or SITE_NAME,
+              # byline() resolves the generic team name to the named editor, so
+              # every article carries a Person entity that resolves to a page
+              # with a role, an email and a photo-less but real identity
+              "author": {"@type": "Person", "name": byline(a),
                          "url": SITE_BASE + "/editors.html"},
               "publisher": {"@type": "Organization", "@id": SITE_BASE + "/#org",
                             "name": SITE_NAME, "url": SITE_BASE + "/",
@@ -2561,7 +2571,7 @@ def build():
         if a.get("updated_ts"):
             _upd = (f' · <span class="a-upd">آخر تحديث <time datetime="{esc(a["updated_ts"])}">'
                     f'{esc(str(a["updated_ts"])[:10])}</time></span>')
-        p.append(f'<p class="a-meta"><a class="a-by" href="/editors.html">{esc(a.get("author"))}</a> · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
+        p.append(f'<p class="a-meta"><a class="a-by" href="/editors.html">{esc(byline(a))}</a> · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
                  f'{" · " + _t if _t else ""}{_upd}</p>')
         if img:
             p.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager">')
@@ -3565,7 +3575,7 @@ def build():
     ab.append(f'<p><b>{esc(SITE_NAME)}</b> موقع عربي متخصص في كرة القدم، يقدّم أخبار الكرة المصرية '
               'والعالمية، ومواعيد ونتائج المباريات، وجداول ترتيب أبرز البطولات — في مكان واحد وبواجهة سريعة وبسيطة.</p>')
     ab.append('<h2>ماذا نقدّم؟</h2><ul>'
-              '<li><b>أخبار بصياغتنا:</b> يكتب <a href="/editors.html">فريق التحرير</a> المقالات بصياغته الخاصة '
+              '<li><b>أخبار بصياغتنا:</b> يكتب <a href="/editors.html">مصطفى عبدالسلام</a>، مدير تحرير الموقع، المقالات '
               'من الحقائق التي أكّدها مصدران مستقلان على الأقل، مع تسمية المصدر داخل الخبر وإضافة الخلفية '
               'والأرقام وما يعنيه الخبر — دون نسخ نصوص المواقع الأخرى. '
               '<a href="/editorial.html">تفاصيل طريقة العمل في السياسة التحريرية</a>.</li>'
@@ -3598,7 +3608,8 @@ def build():
               f'<div class="ed-card"><div class="ed-name">{esc(EDITOR_NAME)}</div>'
               f'<div class="ed-role">{esc(EDITOR_ROLE)} ومؤسس {esc(SITE_NAME)}</div>'
               f'<p>مطوّر برمجيات مصري ومتابع للكرة المصرية والأوروبية. يضع السياسة التحريرية للموقع، '
-              'ويراجع ما يُنشر، ويردّ على طلبات التصحيح.</p>'
+              'ويراجع ما يُنشر، ويردّ على طلبات التصحيح. <b>كل مقال على الموقع يحمل توقيعه</b> '
+              'باعتباره المسؤول عن محتواه.</p>'
               f'<p class="ed-contact">البريد: <a href="mailto:{esc(EDITOR_EMAIL)}">{esc(EDITOR_EMAIL)}</a> · '
               f'<a href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener">صفحة الموقع على فيسبوك</a></p></div>')
     ed.append('<h2>كيف نعمل</h2><ul>'
@@ -3658,7 +3669,7 @@ def build():
               'ولا يتحمّل الموقع مسؤولية أي قرار يُتّخذ بناءً عليها.</li>'
               '<li>روابط عناوين الصحف تقود إلى مواقع خارجية لا نتحكم في محتواها ولا نتحمل مسؤوليته.</li></ul>')
     tm.append('<h2>حقوق المحتوى</h2><ul>'
-              '<li>المقالات المنشورة باسم فريق التحرير ملك للموقع؛ يُسمح بالاقتباس المختصر مع ذكر '
+              '<li>المقالات المنشورة على الموقع باسم محرره ملك للموقع؛ يُسمح بالاقتباس المختصر مع ذكر '
               'المصدر ورابط المقال، ولا يجوز إعادة النشر الكامل دون إذن.</li>'
               '<li>الصور المستخدمة مرخّصة للاستخدام الحر (Creative Commons / الملكية العامة) '
               'وتُنسب لأصحابها؛ شعارات الأندية والبطولات ملك لأصحابها وتُعرض لغرض التعريف فقط.</li></ul>')
@@ -3730,7 +3741,7 @@ def build():
                     f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
                     f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
                     f'<span class="al-s">{esc(strip_tags(a.get("summary") or ""))}</span>'
-                    f'<span class="al-m">{esc(a.get("author") or "")} · '
+                    f'<span class="al-m">{esc(byline(a))} · '
                     f'{art_reltime(a) or esc(a.get("pub_date") or "")}</span>'
                     f'</span></a>')
             np_.append('</div>')
