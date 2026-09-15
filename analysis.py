@@ -425,6 +425,11 @@ def _outcome(hs, aw):
     return "H" if hs > aw else "D" if hs == aw else "A"
 
 
+# what makes a stored prediction different from a freshly computed one
+PRED_FIELDS = ("comp", "home", "away", "kickoff", "koff_time",
+               "ph", "pd", "pa", "lh", "la", "score", "conf", "src")
+
+
 def update_log(log, upcoming, preds_by_id, finished, today):
     """Freeze/refresh predictions for upcoming matches, score finished ones.
     `upcoming`: matches with status UPCOMING within PRED_WINDOW_DAYS;
@@ -448,14 +453,22 @@ def update_log(log, upcoming, preds_by_id, finished, today):
         old = log.get(mid) or {}
         if old.get("hs") is not None:          # already scored — never re-predict
             continue
-        log[mid] = {"comp": m.get("competition"), "home": m.get("home"), "away": m.get("away"),
-                    "kickoff": m.get("kickoff"), "koff_time": m.get("koff_time"),
-                    "ph": round(p["ph"], 4), "pd": round(p["pd"], 4), "pa": round(p["pa"], 4),
-                    "lh": round(p["lh"], 3), "la": round(p["la"], 3),
-                    "score": f'{p["top"][0][0]}-{p["top"][0][1]}', "conf": p["conf"],
-                    "src": p.get("src") or "python",
-                    "ts": today.isoformat(), "hs": None, "as": None}
-        frozen.append(mid)
+        rec = {"comp": m.get("competition"), "home": m.get("home"), "away": m.get("away"),
+               "kickoff": m.get("kickoff"), "koff_time": m.get("koff_time"),
+               "ph": round(p["ph"], 4), "pd": round(p["pd"], 4), "pa": round(p["pa"], 4),
+               "lh": round(p["lh"], 3), "la": round(p["la"], 3),
+               "score": f'{p["top"][0][0]}-{p["top"][0][1]}', "conf": p["conf"],
+               "src": p.get("src") or "python",
+               "ts": today.isoformat(), "hs": None, "as": None}
+        log[mid] = rec
+        # Only report it as touched when something the store keeps has actually
+        # MOVED. Reporting every unplayed match on every build re-sent ~100
+        # rows 96 times a day (~19k of the 100k free-tier row writes) for
+        # numbers that were identical — and on 2026-09-15 the quota ran out and
+        # blocked the article pipeline. `ts` is deliberately NOT compared: it
+        # is the day we last recomputed, not part of the prediction.
+        if not old or any(old.get(k) != rec[k] for k in PRED_FIELDS):
+            frozen.append(mid)
     fin_by_id = {str(m.get("match_id")): m for m in finished if m.get("match_id") and _fin(m)}
     for mid, e in log.items():
         if e.get("hs") is not None:

@@ -4003,6 +4003,13 @@ def build():
         if n:
             print(f"  + media files: {n}")
 
+    try:
+        _rw, _st = store.writes()
+        if _st:
+            print(f"  · D1: {_rw} rows written in {_st} statements this run "
+                  f"(free tier: 100,000 rows/day, shared with every workflow)")
+    except Exception:                                        # noqa: BLE001
+        pass
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 

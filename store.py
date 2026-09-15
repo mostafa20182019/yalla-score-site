@@ -76,6 +76,10 @@ def _sqlite():
     return _sqlite_conn
 
 
+_ROWS_WRITTEN = 0
+_STATEMENTS = 0
+
+
 def sql(statement, params=None):
     """Run one statement. Returns a list of dict rows ([] for writes).
     Raises Conflict on a primary-key clash, RuntimeError on anything else."""
@@ -110,7 +114,22 @@ def sql(statement, params=None):
             raise Conflict(errs)
         raise RuntimeError(f"D1 error: {errs}")
     res = (out.get("result") or [{}])[0]
+    # D1's own count of rows written by THIS statement. The free tier gives
+    # 100k a day and the whole site shares one database, so a run that quietly
+    # writes tens of thousands has to be visible before it blocks something
+    # else (on 2026-09-15 it blocked the article upgrade run).
+    global _ROWS_WRITTEN, _STATEMENTS
+    _STATEMENTS += 1
+    try:
+        _ROWS_WRITTEN += int(((res.get("meta") or {}).get("rows_written")) or 0)
+    except (TypeError, ValueError):
+        pass
     return res.get("results") or []
+
+
+def writes():
+    """(rows written, statements sent) by this process so far."""
+    return _ROWS_WRITTEN, _STATEMENTS
 
 
 def upsert_many(table, columns, rows, key_cols, update_cols=None, chunk=None):

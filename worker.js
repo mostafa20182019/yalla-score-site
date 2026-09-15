@@ -256,7 +256,11 @@ async function liveScores() {
  * not make 365scores faster - it removes OUR waiting and OUR forgetting.
  * ======================================================================== */
 const REFRESH_SEC  = 12;   // background refresh cadence while visitors poll
-const LIVE_TTL_SEC = 90;   // a stored row older than this is not served
+const LIVE_TTL_SEC = 90;   // a snapshot older than this is not served
+const STATE_KEEP_MS = 2 * 24 * 3600 * 1000;   // drop state rows nobody lists any more
+// One refresh writes: the snapshot row, the games that CHANGED, and any new
+// goals. An unchanged game costs nothing - see storeRead for how freshness is
+// proved without touching every row.
 const STORE_SCHEMA = [
   "CREATE TABLE IF NOT EXISTS live_state (game_id INTEGER PRIMARY KEY, c INTEGER, h TEXT, a TEXT, " +
   "hs INTEGER, as_ INTEGER, live INTEGER, min TEXT, gt INTEGER, hf INTEGER, goals TEXT, " +
@@ -346,13 +350,20 @@ const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, sid
 const META_SET = "/*lm_set*/ INSERT INTO live_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v";
 
 async function storeRead(env, now) {
+  // reads are the cheap side of D1 (5M/day vs 100k writes), so the whole
+  // table comes back and the SNAPSHOT decides what is servable
   const [rows, meta] = await Promise.all([
-    env.DB.prepare("/*ls_rows*/ SELECT * FROM live_state WHERE seen_at >= ?")
-      .bind(now - LIVE_TTL_SEC * 1000).all(),
-    env.DB.prepare("/*ls_meta*/ SELECT v FROM live_meta WHERE k = 'last_refresh'").first(),
+    env.DB.prepare("/*ls_rows*/ SELECT * FROM live_state").all(),
+    env.DB.prepare("/*ls_snap*/ SELECT v FROM live_meta WHERE k = 'snapshot'").first(),
   ]);
-  const last = meta && meta.v ? Number(meta.v) : 0;
-  const games = (rows.results || []).map(r => ({
+  let snap = null;
+  try { snap = meta && meta.v ? JSON.parse(meta.v) : null; } catch (e) { snap = null; }
+  const last = snap && snap.ts ? Number(snap.ts) : 0;
+  // the age rule, once instead of per row: a row is shown only while the last
+  // upstream read is young AND that read still listed the game
+  const live = last && (now - last) <= LIVE_TTL_SEC * 1000;
+  const ids = new Set(live && Array.isArray(snap.ids) ? snap.ids : []);
+  const games = (rows.results || []).filter(r => ids.has(r.game_id)).map(r => ({
     id: r.game_id, h: r.h, a: r.a, hs: r.hs, as: r.as_, live: !!r.live,
     min: r.min || "", gt: r.gt || 0, hf: r.hf || 0, c: r.c || 0,
     ...(r.goals ? { goals: JSON.parse(r.goals) } : {}),
@@ -442,12 +453,16 @@ async function storeApply(env, fresh, now) {
         "gt=excluded.gt, hf=excluded.hf, goals=excluded.goals, seen_at=excluded.seen_at, changed_at=excluded.changed_at")
         .bind(g.id, g.c, g.h, g.a, g.hs, g.as, g.live ? 1 : 0, g.min || "", g.gt || 0, g.hf || 0, goalsJson, now, now, now));
       upserts += 1;
-    } else {
-      stmts.push(env.DB.prepare("/*ls_touch*/ UPDATE live_state SET seen_at = ? WHERE game_id = ?").bind(now, g.id));
     }
+    // an UNCHANGED game is no longer written at all - it is listed in the
+    // snapshot below, which is one row for the whole refresh instead of one
+    // per game (the 2026-09-15 quota wall)
   }
-  stmts.push(env.DB.prepare(META_SET).bind("last_refresh", String(now)));
-  stmts.push(env.DB.prepare(META_SET).bind("last_src", `${fresh.src}/${fresh.dt}`));
+  stmts.push(env.DB.prepare(META_SET).bind("snapshot", JSON.stringify({
+    ts: now, src: fresh.src, dt: fresh.dt, ids: fresh.games.map(g => g.id).filter(Boolean),
+  })));
+  stmts.push(env.DB.prepare("/*ls_purge*/ DELETE FROM live_state WHERE changed_at < ?")
+    .bind(now - STATE_KEEP_MS));
   for (let i = 0; i < stmts.length; i += 40) await env.DB.batch(stmts.slice(i, i + 40));   // D1 batch cap
   return { upserts, events, ended };
 }
