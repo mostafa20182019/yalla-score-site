@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 100 live games)",
+ "reconcile": "ok (2 row(s) corrected, 100 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-15T19:48:11+00:00",
+ "slow_fetched_at": "2026-09-15T20:02:16+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -158,9 +158,9 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (46 games)",
+ "goal_events": "ok (47 games)",
  "goal_events_dbg": {
-  "candidates": 67,
+  "candidates": 68,
   "detail_fails": 0,
   "skipped": [
    "4805176:count-mismatch (0, 0) vs 5-1 []",
@@ -209,7 +209,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 8200, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 42.0, \"addedTime\": 0, \"gameTimeDisplay\": \"42'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67635813, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 19480, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 67.0, \"addedTime\": 0, \"gameTimeDisplay\": \"67'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 53890867, \"extraPlayers\": [75453046], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 19480, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 67.0, \"addedTime\": 0, \"gameTimeDisplay\": \"67'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 71531441, \"extraPlayers\": [78214732], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -218,6 +218,7 @@
     "toQualify",
     "isWinner",
     "type",
+    "recentMatches",
     "lineups",
     "nameForURL",
     "imageVersion",
@@ -243,5 +244,5 @@
   "fails": 0
  },
  "match_details": "ok (335)",
- "utc": "2026-09-15T19:51:30Z"
+ "utc": "2026-09-15T20:06:06Z"
 }
