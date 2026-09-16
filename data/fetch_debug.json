@@ -1,15 +1,15 @@
 {
  "news": "skipped (FETCH_HEADLINES off)",
- "matches": "ok (105)",
+ "matches": "ok (101)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 50 live games)",
+ "reconcile": "ok (1 row(s) corrected, 50 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-16T20:56:37+00:00",
+ "slow_fetched_at": "2026-09-16T21:07:32+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -181,12 +181,12 @@
   "candidates": 34,
   "detail_fails": 0,
   "skipped": [
+   "4750855:count-mismatch (5, 2) vs 6-2 [h:g@8/h:g@25/a:g@30/h:g@36/h:g@42/a:g@65/h:g@67]",
    "4805176:count-mismatch (0, 0) vs 5-1 []",
    "4750854:count-mismatch (0, 0) vs -1--1 []",
    "4805164:count-mismatch (0, 0) vs 0-3 []",
    "4805161:count-mismatch (0, 0) vs 6-1 []",
-   "4805188:count-mismatch (0, 0) vs 2-2 []",
-   "4805177:count-mismatch (0, 0) vs 3-0 []"
+   "4805188:count-mismatch (0, 0) vs 2-2 []"
   ],
   "frozen_skipped": 149,
   "sample": {
@@ -263,5 +263,5 @@
   "fails": 0
  },
  "match_details": "ok (341)",
- "utc": "2026-09-16T20:59:24Z"
+ "utc": "2026-09-16T21:10:30Z"
 }
