@@ -350,12 +350,19 @@ const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, sid
 const META_SET = "/*lm_set*/ INSERT INTO live_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v";
 
 async function storeRead(env, now) {
-  // reads are the cheap side of D1 (5M/day vs 100k writes), so the whole
-  // table comes back and the SNAPSHOT decides what is servable
-  const [rows, meta] = await Promise.all([
+  // Reads LOOK like the cheap side of D1 (5M/day against 100k writes), which is
+  // why this scans the whole table and lets the SNAPSHOT decide what is
+  // servable. On 2026-09-16 the read limit ran out anyway and blocked article
+  // publishing, and nothing anywhere counted rows read - so every serve now
+  // reports its own cost (`rr` on /live.json, and the cron logs it). Measure
+  // first: a full scan per request is the prime suspect, not the proven cause.
+  const [rows, metaRows] = await Promise.all([
     env.DB.prepare("/*ls_rows*/ SELECT * FROM live_state").all(),
-    env.DB.prepare("/*ls_snap*/ SELECT v FROM live_meta WHERE k = 'snapshot'").first(),
+    env.DB.prepare("/*ls_snap*/ SELECT v FROM live_meta WHERE k = 'snapshot'").all(),
   ]);
+  const meta = ((metaRows.results || [])[0]) || null;
+  const rr = (((rows.meta || {}).rows_read) || 0)
+           + (((metaRows.meta || {}).rows_read) || 0);
   let snap = null;
   try { snap = meta && meta.v ? JSON.parse(meta.v) : null; } catch (e) { snap = null; }
   const last = snap && snap.ts ? Number(snap.ts) : 0;
@@ -368,7 +375,7 @@ async function storeRead(env, now) {
     min: r.min || "", gt: r.gt || 0, hf: r.hf || 0, c: r.c || 0,
     ...(r.goals ? { goals: JSON.parse(r.goals) } : {}),
   }));
-  return { games, last };
+  return { games, last, rr };
 }
 
 // the same goal on both sides: side + player + minute
@@ -537,17 +544,18 @@ async function closeReport(env, gameId, now, why) {
 async function liveFromStore(env, ctx) {
   await ensureStore(env);
   const now = Date.now();
-  let { games, last } = await storeRead(env, now);
+  let { games, last, rr } = await storeRead(env, now);
   const age = last ? (now - last) / 1000 : Infinity;
   if (age > LIVE_TTL_SEC) {
     // cold start or a stale store: fetch now, then serve what landed
     const r = await refreshLive(env);
     if (!r.ok && !games.length) return liveResponse({ games: [], ok: false, src: "store-cold" });
-    ({ games, last } = await storeRead(env, Date.now()));
-    return liveResponse({ games, ok: true, src: "store-fresh" }, { age: 0 });
+    let rr2;
+    ({ games, last, rr: rr2 } = await storeRead(env, Date.now()));
+    return liveResponse({ games, ok: true, src: "store-fresh" }, { age: 0, rr: rr + rr2 });
   }
   if (age > REFRESH_SEC && ctx && ctx.waitUntil) ctx.waitUntil(refreshLive(env));
-  return liveResponse({ games, ok: true, src: "store" }, { age: Math.round(age) });
+  return liveResponse({ games, ok: true, src: "store" }, { age: Math.round(age), rr });
 }
 
 /* ==========================================================================

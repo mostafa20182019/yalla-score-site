@@ -4514,9 +4514,11 @@ def build():
 
     try:
         _rw, _st = store.writes()
+        _rr, _ = store.reads()
         if _st:
-            print(f"  · D1: {_rw} rows written in {_st} statements this run "
-                  f"(free tier: 100,000 rows/day, shared with every workflow)")
+            print(f"  · D1: {_rw} rows written, {_rr} rows read in {_st} statements "
+                  f"this run (free tier per DAY, shared with every workflow and "
+                  f"the Worker: 100,000 written / 5,000,000 read)")
     except Exception:                                        # noqa: BLE001
         pass
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")

@@ -196,7 +196,9 @@ def main():
         # that starts costing thousands has to be visible in the run log before
         # it blocks the article pipeline (as it did on 2026-09-15)
         _rw, _st = store.writes()
-        print(f"D1 cost of this refresh: {_rw} rows written in {_st} statements")
+        _rr, _ = store.reads()
+        print(f"D1 cost of this refresh: {_rw} rows written, {_rr} rows read "
+              f"in {_st} statements")
 
     if "--articles-backfill" in args:
         import warehouse

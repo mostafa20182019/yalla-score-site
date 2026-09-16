@@ -77,6 +77,7 @@ def _sqlite():
 
 
 _ROWS_WRITTEN = 0
+_ROWS_READ = 0
 _STATEMENTS = 0
 
 
@@ -114,22 +115,42 @@ def sql(statement, params=None):
             raise Conflict(errs)
         raise RuntimeError(f"D1 error: {errs}")
     res = (out.get("result") or [{}])[0]
-    # D1's own count of rows written by THIS statement. The free tier gives
-    # 100k a day and the whole site shares one database, so a run that quietly
-    # writes tens of thousands has to be visible before it blocks something
-    # else (on 2026-09-15 it blocked the article upgrade run).
-    global _ROWS_WRITTEN, _STATEMENTS
+    # D1's own count of the rows THIS statement touched. The free tier limits
+    # BOTH sides - 100k rows written and 5M rows read a day - and the whole
+    # site shares one database, so a run that quietly costs tens of thousands
+    # has to be visible before it blocks something else. Both halves have now
+    # done exactly that: the write limit stopped the upgrade run on 2026-09-15,
+    # the READ limit stopped it again on 2026-09-16, and we could only guess at
+    # what was spending the reads because nothing counted them.
+    global _ROWS_WRITTEN, _ROWS_READ, _STATEMENTS
     _STATEMENTS += 1
-    try:
-        _ROWS_WRITTEN += int(((res.get("meta") or {}).get("rows_written")) or 0)
-    except (TypeError, ValueError):
-        pass
+    meta = res.get("meta") or {}
+    for key, add in (("rows_written", 0), ("rows_read", 1)):
+        try:
+            n = int(meta.get(key) or 0)
+        except (TypeError, ValueError):
+            continue
+        if add:
+            _ROWS_READ += n
+        else:
+            _ROWS_WRITTEN += n
     return res.get("results") or []
 
 
 def writes():
     """(rows written, statements sent) by this process so far."""
     return _ROWS_WRITTEN, _STATEMENTS
+
+
+def reads():
+    """(rows read, statements sent) by this process so far.
+
+    Rows READ is the quota nobody watches until it bites: a SELECT over a
+    small table is free-looking but costs one row per row scanned, every time,
+    from every caller. 5M a day sounds infinite until one endpoint scans a
+    150-row table on every request.
+    """
+    return _ROWS_READ, _STATEMENTS
 
 
 def upsert_many(table, columns, rows, key_cols, update_cols=None, chunk=None):
