@@ -1234,6 +1234,122 @@ def _goals(n): return _cnt(n, "هدف واحد", "هدفين", "أهداف", "ه
 def _wins(n):  return _cnt(n, "فوز واحد", "فوزين", "انتصارات", "فوزًا")
 def _draws(n): return _cnt(n, "تعادل واحد", "تعادلين", "تعادلات", "تعادلًا")
 def _losses(n): return _cnt(n, "خسارة واحدة", "خسارتين", "خسائر", "خسارة")
+def _assists(n): return _cnt(n, "تمريرة حاسمة واحدة", "تمريرتين حاسمتين",
+                             "تمريرات حاسمة", "تمريرة حاسمة")
+def _players(n): return _cnt(n, "لاعبًا واحدًا", "لاعبين", "لاعبين", "لاعبًا")
+
+def _lil(name):
+    """«لـ» before a club name, with the ل+ال elision Arabic requires:
+    القناة -> للقناة, not «لـالقناة»."""
+    name = (name or "").strip()
+    return ("لل" + name[2:]) if name.startswith("ال") else ("لـ" + name)
+
+def scorers_read(label, season, sc, asst, table, pool):
+    """Editorial reading of a top-scorer chart, computed from the numbers we
+    already publish — the same answer /standings got on 2026-09-06 when a bare
+    table was judged thin content.
+
+    Ten names is a list, not a page. What makes it a page is what the list
+    MEANS: who leads and by how much, how much of his club's season he is
+    carrying, whether one club owns the chart, who creates rather than
+    finishes, and where all of it sits against the league's own goal rate.
+
+    Every sentence restates data on this site (the chart, the official table,
+    the season pool). Nothing is estimated, and each fact is skipped when its
+    input is missing — which is also what decides whether the page is worth
+    indexing: returns (html, faq_html, weight).
+    """
+    sc = [x for x in (sc or []) if x.get("name")]
+    if not sc:
+        return "", "", 0
+    facts, faq = [], []
+    top_v = _pval(sc[0])
+    leaders = [x for x in sc if _pval(x) == top_v]
+    gf_by = {}
+    for r in (table or []):
+        if r.get("team"):
+            gf_by[_gnorm(r["team"])] = r
+
+    # 1. the lead, and what it is worth
+    if len(leaders) == 1:
+        nxt = next((_pval(x) for x in sc if _pval(x) < top_v), None)
+        gap = (f" بفارق {_goals(top_v - nxt)} عن أقرب منافسيه"
+               if nxt is not None and top_v > nxt else " بالتساوي مع أقرب منافسيه")
+        facts.append(f'يتصدر <b>{esc(sc[0]["name"])}</b> ({esc(sc[0].get("team") or "")}) '
+                     f'قائمة هدافي {esc(label)} بـ{_goals(top_v)}{gap}.')
+        faq.append((f"من هداف {label} الآن؟",
+                    f"{sc[0]['name']} ({sc[0].get('team') or ''}) برصيد {_goals(top_v)} "
+                    f"في موسم {season}."))
+    else:
+        names = "، ".join(esc(x["name"]) for x in leaders[:3])
+        facts.append(f'تُقسَم صدارة هدافي {esc(label)} بين {_players(len(leaders))} '
+                     f'({names}) برصيد {_goals(top_v)} لكل منهم.')
+        faq.append((f"من هداف {label} الآن؟",
+                    f"الصدارة مشتركة بين {_players(len(leaders))} برصيد {_goals(top_v)} لكل منهم: "
+                    + "، ".join(x["name"] for x in leaders[:3]) + "."))
+
+    # 2. how much of his club's season the leader is carrying
+    row = gf_by.get(_gnorm(sc[0].get("team")))
+    if row and (row.get("gf") or 0) > 0 and top_v <= row["gf"]:
+        share = round(top_v * 100 / row["gf"])
+        # named, never «وسجّل وحده»: the lead above may be shared, and an
+        # unnamed pronoun would then point at whichever name came first
+        facts.append(f'وسجّل <b>{esc(sc[0]["name"])}</b> {_goals(top_v)} من أصل '
+                     f'{_goals(row["gf"])} {esc(_lil(row["team"]))} هذا الموسم، '
+                     f'أي {share}% من أهداف ناديه.')
+
+    # 3. one club owning the chart
+    clubs = {}
+    for x in sc:
+        if x.get("team"):
+            clubs.setdefault(_gnorm(x["team"]), [x["team"], 0])[1] += 1
+    top_club = max(clubs.values(), key=lambda v: v[1]) if clubs else None
+    if top_club and top_club[1] >= 2:
+        facts.append(f'ويضع {esc(top_club[0])} {_players(top_club[1])} من صفوفه '
+                     f'داخل أعلى {len(sc)} هدافين.')
+
+    # 4. the creators, and anyone doing both
+    if asst:
+        a0 = asst[0]
+        facts.append(f'وفي صناعة الأهداف يتقدم <b>{esc(a0["name"])}</b> '
+                     f'({esc(a0.get("team") or "")}) بـ{_assists(_pval(a0))}.')
+        faq.append((f"من أكثر صانعي الأهداف في {label}؟",
+                    f"{a0['name']} ({a0.get('team') or ''}) برصيد {_assists(_pval(a0))}."))
+        both = [x["name"] for x in sc
+                if any(_gnorm(y.get("name")) == _gnorm(x.get("name")) for y in asst)]
+        if both:
+            facts.append('واللافت أن ' + "، ".join(esc(n) for n in both)
+                         + (' حاضر في القائمتين: بين الهدافين وصنّاع الأهداف معًا.'
+                            if len(both) == 1 else
+                            ' حاضرون في القائمتين معًا.'))
+
+    # 5. the league's own scale
+    if pool:
+        g = sum(int(m["home_score"]) + int(m["away_score"]) for m in pool)
+        n = len(pool)
+        if n and g:
+            top_sum = sum(_pval(x) for x in sc)
+            facts.append(f'وللمقارنة، سجّل {esc(label)} {g} هدفًا في {_games(n)} '
+                         f'هذا الموسم (بمعدل {g / n:.2f} للمباراة)، فأعلى {len(sc)} هدافين '
+                         f'يمثلون {round(top_sum * 100 / g)}% منها.')
+            faq.append((f"كم هدفًا سُجّل في {label} هذا الموسم؟",
+                        f"{g} هدفًا في {_games(n)} منتهية، بمعدل {g / n:.2f} هدف في المباراة "
+                        f"حتى تاريخ التحديث."))
+
+    faq.append(("متى تُحدَّث قائمة الهدافين؟",
+                "تُحدَّث تلقائيًا من مصدر بيانات المباريات كل ربع ساعة تقريبًا، "
+                "فتظهر أهداف كل جولة بعد نهايتها مباشرة."))
+
+    html = (f'<section class="minfo st-analysis"><h2>قراءة في صدارة هدافي {esc(label)}</h2>'
+            + "".join(f"<p>{t}</p>" for t in facts) + '</section>')
+    fhtml = ('<section class="minfo faq"><h2>أسئلة شائعة عن هدافي ' + esc(label) + '</h2>'
+             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>'
+                       for q, a in faq) + '</section>')
+    fld = jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                  "mainEntity": [{"@type": "Question", "name": q,
+                                  "acceptedAnswer": {"@type": "Answer", "text": a}}
+                                 for q, a in faq]})
+    return html, fhtml + fld, len(facts)
 
 def standings_analysis(comp, label, season, rows, form_map, scorers, up_next, zeroed=False):
     """Editorial reading of a league table, generated ONLY from the numbers we
@@ -3693,14 +3809,31 @@ def build():
             if asst:
                 cp.append('<section class="minfo"><h2>صناع الأهداف</h2>'
                           + scorers_list(asst, "صناعة") + '</section>')
+            # a list of ten names is not a page; the reading is what makes it
+            # one (2026-09-16, after an outside audit found /scorers/egypt
+            # empty — see scorers_read)
+            _sr, _sfaq, _sw = scorers_read(label, season, sc, asst,
+                                           (st or {}).get("table"), _bycomp.get(comp))
+            if _sr:
+                cp.append(_sr)
             if st and st.get("table"):
                 cp.append(f'<p class="hintline">شاهد أيضًا: '
                           f'<a href="{st_url}">جدول ترتيب {esc(label)} كاملًا</a></p>')
+            if _sfaq:
+                cp.append(_sfaq)
             cp.append(foot())
-            # ~80 words of names = thin content for a reviewer; keep the page
-            # for visitors/links but noindex it and leave it out of the sitemap
-            write(f"scorers/{slug}.html", "".join(cp).replace(
-                "<head>", '<head><meta name="robots" content="noindex">', 1))
+            # Indexable only once the page says something: the chart plus a
+            # reading of at least three facts. Under that it stays what it was
+            # before — a page for visitors and old links, out of the index and
+            # out of the sitemap — because ~80 words of names is exactly the
+            # thin content the AdSense rejection named.
+            _rich_sc = bool(sc) and _sw >= 3
+            _html = "".join(cp)
+            if not _rich_sc:
+                _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+            write(f"scorers/{slug}.html", _html)
+            if _rich_sc:
+                urls.append(sc_url)
             n_lp += 1
     print(f"  + league pages: {n_lp}")
 
