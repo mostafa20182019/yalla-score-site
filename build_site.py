@@ -1731,7 +1731,8 @@ def accuracy_html(acc, anchor=True):
         out.append('<h3>آخر المباريات المقيَّمة</h3><ul class="acc-list">')
         for e in acc["recent"]:
             pick_ar = {"H": ar_team(e["home"]), "D": "تعادل", "A": ar_team(e["away"])}[e["pick"]]
-            out.append(f'<li><bdi>{esc(ar_team(e["home"]))} {e["hs"]}-{e["as"]} {esc(ar_team(e["away"]))}</bdi> — '
+            out.append(f'<li><bdi>{esc(ar_team(e["home"]))} '
+                       f'{score_pill(e["hs"], e["as"], "sc-in")} {esc(ar_team(e["away"]))}</bdi> — '
                        f'توقعنا <b>{esc(pick_ar)}</b> ({_pct(max(e["ph"], e["pd"], e["pa"]))}) '
                        + ('<span class="hit ok">✔</span>' if e.get("hit") else '<span class="hit no">✘</span>') + '</li>')
         out.append('</ul>')
@@ -1826,8 +1827,11 @@ def _pred_row_html(e):
     hit = 1 if e.get("hit") else 0
     mark = ('<span class="hit ok">✔ أصاب</span>' if hit
             else '<span class="hit no">✘ أخطأ</span>')
-    score = f'{e.get("hs")}-{e.get("as")}'
-    match = f'<bdi>{esc(h)}</bdi> <b dir="ltr">{esc(score)}</b> <bdi>{esc(a)}</bdi>'
+    # score_pill, NOT "2-0" text: between two names in an RTL row a glued score
+    # is one LTR bidi run and lands home-score-left = next to the AWAY club.
+    # dir="ltr" here made it worse - it forced the reversal even after an
+    # Arabic name (measured 2026-09-16).
+    match = f'<bdi>{esc(h)}</bdi> {score_pill(e.get("hs"), e.get("as"), "sc-in")} <bdi>{esc(a)}</bdi>'
     if mid:
         match = f'<a href="/m/{esc(mid)}.html">{match}</a>'
     exact = ' <span class="pf-exact" title="أصبنا النتيجة بالضبط">🎯</span>' if e.get("score_hit") else ""
@@ -1853,7 +1857,7 @@ def _calls_html(ex):
             h, a = ar_team(e.get("home")), ar_team(e.get("away"))
             pick_ar = {"H": h, "D": "تعادل", "A": a}.get(e.get("pick"), "—")
             conf = max(e.get("ph") or 0, e.get("pd") or 0, e.get("pa") or 0)
-            items.append(f'<li><bdi>{esc(h)} <b dir="ltr">{e.get("hs")}-{e.get("as")}</b> {esc(a)}</bdi>'
+            items.append(f'<li><bdi>{esc(h)} {score_pill(e.get("hs"), e.get("as"), "sc-in")} {esc(a)}</bdi>'
                          f'<span>قلنا <b><bdi>{esc(pick_ar)}</bdi></b> بنسبة {_pct(conf)}</span></li>')
         return f'<div class="calls-c {cls}"><h3>{esc(title)}</h3><ul>{"".join(items)}</ul></div>'
     return ('<section class="minfo"><h2>أوضح إصاباتنا وأوضح إخفاقاتنا</h2>'
@@ -6189,9 +6193,12 @@ a{color:inherit}
   flex:1 1 auto;min-width:0}
 .fv-m bdi{white-space:nowrap}
 .fv-c{width:26px;height:26px;object-fit:contain;flex:0 0 auto}
-.fv-s,.tk-s{display:inline-flex;align-items:center;gap:1px}
-.fv-s span,.tk-s span{font-variant-numeric:tabular-nums}
-.fv-s i,.tk-s i{font-style:normal;opacity:.75}
+.fv-s,.tk-s,.sc-in{display:inline-flex;align-items:center;gap:1px}
+.fv-s span,.tk-s span,.sc-in span{font-variant-numeric:tabular-nums}
+.fv-s i,.tk-s i,.sc-in i{font-style:normal;opacity:.75}
+/* a score inside a sentence or a table cell: the inline-flex IS the fix -
+   it keeps the home number on the home side. Do not "simplify" to text. */
+.sc-in{font-weight:900;margin-inline:2px}
 .fv-s{background:var(--green-d);color:#fff;border-radius:8px;padding:2px 12px;
   font-size:.95rem;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
 .fv-min{background:#ffe4e9;color:var(--live);border-radius:999px;padding:3px 10px;
