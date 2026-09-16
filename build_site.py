@@ -1575,7 +1575,7 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
     return "".join(out)
 
 
-def pred_home_block(upcoming, preds, today, n=4):
+def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
     """«توقعات يلا سكور» on the home page (user ask 2026-09-12): the next few
     predicted fixtures, in the same card language as the FotMob blocks, with
     المزيد opening /analysis.html. Picks matches within 7 days that HAVE a
@@ -1595,9 +1595,25 @@ def pred_home_block(upcoming, preds, today, n=4):
     rows = [(m, p) for *_, m, p in cand[:n]]
     if not rows:
         return ""
+    # The record line (2026-09-16). Every scores site shows predictions; what
+    # separates this one is that it publishes how those predictions turned out,
+    # and that was two clicks away. Calibration leads because it is the measure
+    # that judges a probabilistic model - the same order /predictions uses - and
+    # the naive baseline sits next to the hit rate so the rate cannot flatter
+    # us. Silent until something has actually been scored.
+    a = (acc or {}).get("all")
+    rec = ""
+    if a and cal and cal.get("matches"):
+        rec = (f'<a class="pred-rec" href="/predictions.html">'
+               f'سجلنا مفتوح: <b>{cal["statements"]}</b> احتمالًا معلنًا على '
+               f'<b>{cal["matches"]}</b> مباراة — انحراف المعايرة '
+               f'<b>{cal["ece"] * 100:.1f}</b> نقطة، وإصابة الاتجاه '
+               f'<b>{_pct(a["hit_rate"])}</b> مقابل {_pct(a["home_baseline"])} '
+               f'لمعيار ساذج. إصاباتنا وأخطاؤنا كاملة ←</a>')
     return ('<section class="fmb fmb-pred" data-nf="pred">'
             '<div class="fmb-lh fmb-predh"><span>توقعات يلا سكور</span>'
             '<small>احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
+            + rec +
             '<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>'
             '<a class="fmb-more" href="/analysis.html">كل التوقعات والتحليلات ←</a></section>')
 
@@ -2747,7 +2763,8 @@ def build():
             used |= {a["article_id"] for a in eur[:5]}
     # «توقعات يلا سكور» under the news blocks (user ask 2026-09-12): four
     # predicted fixtures, المزيد -> /analysis.html
-    parts.append(pred_home_block(_upcoming, _preds, datetime.date.fromisoformat(REF_TODAY)))
+    parts.append(pred_home_block(_upcoming, _preds, datetime.date.fromisoformat(REF_TODAY),
+                                 acc=_acc, cal=_cal))
     # latest videos teaser (full library lives on /videos.html)
     if videos and SHOW_VIDEOS:
         parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
@@ -6087,6 +6104,9 @@ a{color:inherit}
 .pbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#e2e8f0;direction:ltr}
 .pb-seg{display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;min-width:0}
 .pb-h{background:var(--green)}.pb-d{background:#94a3b8}.pb-a{background:#334155}
+.pred-rec{display:block;margin:0 0 8px;padding:9px 12px;border-radius:10px;
+  background:#f1f5f9;color:var(--muted);font-size:.83rem;line-height:1.75;font-weight:600}
+.pred-rec b{color:var(--text);font-weight:800}
 .pr-probs b,.pd-probs b{color:var(--text)}
 .pd-probs{color:var(--muted);font-weight:700;font-size:.88rem}
 .conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800}
