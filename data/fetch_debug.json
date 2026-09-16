@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 46 live games)",
+ "reconcile": "ok (0 row(s) corrected, 49 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-16T16:47:48+00:00",
+ "slow_fetched_at": "2026-09-16T17:02:37+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -176,9 +176,9 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (22 games)",
+ "goal_events": "ok (25 games)",
  "goal_events_dbg": {
-  "candidates": 30,
+  "candidates": 33,
   "detail_fails": 0,
   "skipped": [
    "4805176:count-mismatch (0, 0) vs 5-1 []",
@@ -216,19 +216,13 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 131, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 4.0, \"addedTime\": 0, \"gameTimeDisplay\": \"4'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 77099314, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 156, \"id\": 462402, \"athleteId\": 39402, \"name\": \"ماتياس ديتورو\", \"shortName\": \"ديتورو\", \"jerseyNumber\": 1, \"nameForURL\": \"matias-dituro\", \"imageVersion\": 52, \"createdAt\": \"2014-02-20T01:15:47.757\"}"
+   "event0": "null",
+   "member0": "{\"competitorId\": 8610, \"id\": 3394727, \"athleteId\": 51587, \"name\": \"عامر محمد عامر\", \"shortName\": \"عامر\", \"jerseyNumber\": 16, \"nameForURL\": \"amer-amer\", \"imageVersion\": 15, \"createdAt\": \"2017-06-16T19:36:54.093\"}"
   },
   "sample_details": {
-   "event_names": [
-    "Substitution",
-    "Woodwork",
-    "الهدف الغي",
-    "بطاقة صفراء",
-    "هدف"
-   ],
-   "card0": "{\"competitorId\": 131, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 4.0, \"addedTime\": 0, \"gameTimeDisplay\": \"4'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 77099314, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 156, \"statusId\": 8, \"stageId\": 9, \"order\": 7, \"num\": 7, \"gameTime\": 58.0, \"addedTime\": 0, \"gameTimeDisplay\": \"58'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 399311, \"extraPlayers\": [52641513], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "event_names": [],
+   "card0": "null",
+   "sub0": "null",
    "hc_keys": [
     "id",
     "countryId",
@@ -252,16 +246,16 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 4.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"4'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"orde"
   }
  },
- "prematch_lineups": "ok (5 with XI)",
+ "prematch_lineups": "ok (2 with XI)",
  "prematch_dbg": {
-  "in_window": 5,
-  "fetched": 5,
-  "with_xi": 5,
+  "in_window": 2,
+  "fetched": 2,
+  "with_xi": 2,
   "fails": 0
  },
  "match_details": "ok (341)",
- "utc": "2026-09-16T16:50:40Z"
+ "utc": "2026-09-16T17:05:28Z"
 }
