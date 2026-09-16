@@ -1840,7 +1840,7 @@ def _pred_row_html(e):
             f'<td class="tl">{match}{exact}</td>'
             f'<td class="tl">{esc(comp_label(e.get("comp") or ""))}</td>'
             f'<td class="tl"><bdi>{esc(pick_ar)}</bdi> <small>({_pct(conf)})</small></td>'
-            f'<td>{esc(e.get("score") or "—")}</td>'
+            f'<td>{score_txt(e.get("score"))}</td>'
             f'<td>{mark}</td></tr>')
 
 
@@ -2787,7 +2787,6 @@ def build():
         big = max((m for _, m in fin),
                   key=lambda m: (m["home_score"] + m["away_score"],
                                  max(m["home_score"], m["away_score"])))
-        big_s = f'{big["home_score"]}-{big["away_score"]}'
         big_t = (f'{ar_team(big.get("home"))} {big["home_score"]}-{big["away_score"]} '
                  f'{ar_team(big.get("away"))}')
         # who played it: same home-first order as every match row on the site
@@ -2830,7 +2829,8 @@ def build():
                f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
                f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
                f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
-               f'<div class="tile tile-res" title="{esc(big_t)}"><b>{big_s}</b>'
+               f'<div class="tile tile-res" title="{esc(big_t)}">'
+               f'{score_pill(big["home_score"], big["away_score"], "sc-in")}'
                f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
                f'{sc_tile}'
                '</div>']
@@ -4244,9 +4244,10 @@ def fixture_mini(m):
     def cr(u):
         return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="fx-ph">⚽</span>'
     if st in ("FINISHED", "LIVE"):
-        h = "" if m.get("home_score") is None else m.get("home_score")
-        a = "" if m.get("away_score") is None else m.get("away_score")
-        mid = f'<b class="fx-sc">{h}-{a}</b>'
+        # the score is its own grid column here, so it needs the pill too -
+        # a bare "2-1" between the two columns puts the home goals on the
+        # away side (same bug as the record, 2026-09-16)
+        mid = score_pill(m.get("home_score"), m.get("away_score"), "fx-sc sc-in")
     else:
         mid = f'<span class="fx-time">{esc(m.get("koff_time") or "")}</span>'
     return (f'<div class="fx">'
@@ -4458,6 +4459,19 @@ def score_pill(hs, aws, cls):
     h = "-" if hs is None else hs
     a = "-" if aws is None else aws
     return (f'<b class="{cls}"><span>{h}</span><i>-</i><span>{a}</span></b>')
+
+
+def score_txt(s, cls="sc-in"):
+    """Same, for a score already stored as the string "H-A" (a frozen
+    prediction, a saved result). A bare "1-2" in a cell of its own is an
+    LTR run with no Arabic letter in front of it to turn the digits into
+    Arabic numerals, so an RTL reader meets the AWAY number first and reads
+    the prediction backwards (user, 2026-09-16)."""
+    s = "" if s is None else str(s).strip()
+    if "-" not in s:
+        return esc(s or "—")
+    h, a = s.split("-", 1)
+    return score_pill(esc(h.strip()), esc(a.strip()), cls)
 
 def _pval(x):
     """Chart value — "value" is the current key, "goals" the original one."""
@@ -5773,6 +5787,7 @@ a{color:inherit}
 .acc-tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-bottom:10px}
 .tile{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center}
 .tile b{display:block;font-size:1.4rem;color:var(--green-d)}
+.tile b.sc-in{display:inline-flex}   /* a score tile keeps the pill's ordering */
 .tile span{font-size:.74rem;color:var(--muted);font-weight:700}
 .acc-list{margin:0;padding-inline-start:18px;line-height:1.9;font-size:.9rem}
 .timing .tb{display:grid;grid-template-columns:64px 1fr 84px;align-items:center;gap:8px;margin:4px 0;font-size:.85rem}
