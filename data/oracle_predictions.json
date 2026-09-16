@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-16T10:26:23+03:00",
+    "generated_at" : "2026-09-16T10:41:20+03:00",
     "days" : 10,
     "n" : 68,
     "params" :
@@ -1990,6 +1990,15 @@
         "def" : 0.9363
       },
       {
+        "team" : "Aston Villa FC",
+        "elo" : 1516.78,
+        "played" : 1,
+        "gf" : 3,
+        "ga" : 2,
+        "att" : 1.1423,
+        "def" : 1.0393
+      },
+      {
         "team" : "Arsenal FC",
         "elo" : 1516.78,
         "played" : 1,
@@ -2009,15 +2018,6 @@
       },
       {
         "team" : "Racing Club de Lens",
-        "elo" : 1516.78,
-        "played" : 1,
-        "gf" : 3,
-        "ga" : 2,
-        "att" : 1.1423,
-        "def" : 1.0393
-      },
-      {
-        "team" : "Aston Villa FC",
         "elo" : 1516.78,
         "played" : 1,
         "gf" : 3,
@@ -2152,6 +2152,15 @@
         "def" : 1.1423
       },
       {
+        "team" : "Galatasaray SK",
+        "elo" : 1485.98,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 3,
+        "att" : 0.9363,
+        "def" : 1.1423
+      },
+      {
         "team" : "Viking FK",
         "elo" : 1485.98,
         "played" : 1,
@@ -2161,13 +2170,13 @@
         "def" : 1.1423
       },
       {
-        "team" : "Galatasaray SK",
-        "elo" : 1485.98,
+        "team" : "SSC Napoli",
+        "elo" : 1483.22,
         "played" : 1,
-        "gf" : 1,
-        "ga" : 3,
-        "att" : 0.9363,
-        "def" : 1.1423
+        "gf" : 0,
+        "ga" : 1,
+        "att" : 0.8333,
+        "def" : 0.9363
       },
       {
         "team" : "Lille OSC",
@@ -2195,15 +2204,6 @@
         "ga" : 3,
         "att" : 1.0393,
         "def" : 1.1423
-      },
-      {
-        "team" : "SSC Napoli",
-        "elo" : 1483.22,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 1,
-        "att" : 0.8333,
-        "def" : 0.9363
       },
       {
         "team" : "RB Leipzig",
