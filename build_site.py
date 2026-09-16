@@ -1738,24 +1738,36 @@ AN_DISCLAIMER = ('التوقعات احتمالات إحصائية من نموذ
 def _pct(x):
     return f"{round(x * 100)}%"
 
-def prob_bar(p, labels=True):
-    """Three-segment 1X2 bar (home = brand blue, draw = grey, away = slate)."""
+def prob_bar(p):
+    """Three-segment 1X2 bar (home = brand blue, draw = grey, away = slate).
+
+    PURELY VISUAL since 2026-09-16: the numbers used to be printed inside the
+    segments, but a number does not fit in a narrow one, so a lopsided
+    prediction rendered as "20% 72%" or "87%" — two outside reviewers read that
+    as a missing third probability, twice. A bar that states two of three
+    numbers and a line underneath that states all three is two partial
+    readings of one thing; if a reviewer is confused by it, a reader is too.
+    So the bar shows the shape and prob_legend() says the numbers, once.
+    """
     ph, pd, pa = p["ph"], p["pd"], p["pa"]
-    def seg(cls, v, txt):
-        return (f'<span class="pb-seg pb-{cls}" style="width:{v * 100:.1f}%">'
-                f'{("<b>" + txt + "</b>") if labels and v >= 0.14 else ""}</span>')
+    def seg(cls, v):
+        return f'<span class="pb-seg pb-{cls}" style="width:{v * 100:.1f}%"></span>' 
     return ('<div class="pbar" role="img" aria-label="'
             f'فوز الأرض {_pct(ph)}، تعادل {_pct(pd)}، فوز الضيف {_pct(pa)}">'
-            + seg("h", ph, _pct(ph)) + seg("d", pd, _pct(pd)) + seg("a", pa, _pct(pa)) + '</div>')
+            + seg("h", ph) + seg("d", pd) + seg("a", pa) + '</div>')
 
 def prob_legend(p, cls="pr-probs"):
-    """The three probabilities as text. prob_bar() drops the label of a segment
-    under 14% because the number does not fit inside it — so a reader of a
-    lopsided prediction saw «80%» and nothing else, and ChatGPT's site audit
-    (2026-09-16) read that as a missing third probability. The values were
-    always in the bar's aria-label; this puts them on the page for everyone."""
-    return (f'<span class="{cls}">الأرض <b>{_pct(p["ph"])}</b> · '
-            f'تعادل <b>{_pct(p["pd"])}</b> · الضيف <b>{_pct(p["pa"])}</b></span>')
+    """The three probabilities in words — and the bar's key.
+
+    Each one carries a swatch in its segment's colour, so the reader can see
+    which slice is which without a number being crammed into a 12-pixel
+    segment. This is the ONLY place the percentages are printed (see
+    prob_bar), which is the point: one statement, never a partial one."""
+    def one(k, label, cls_):
+        return (f'<span class="pp"><i class="pp-{cls_}"></i>{label} '
+                f'<b>{_pct(p[k])}</b></span>')
+    return (f'<span class="{cls}">' + one("ph", "الأرض", "h")
+            + one("pd", "تعادل", "d") + one("pa", "الضيف", "a") + '</span>')
 
 def conf_chip(conf):
     return f'<span class="conf conf-{esc(conf)}">{esc(AN.CONF_AR.get(conf, ""))}</span>'
@@ -1875,7 +1887,7 @@ def pred_block(m, p, logged, comp_stats, params=None, cal=None):
         return (f'<section class="minfo predict"><h2>توقع يلا سكور لمباراة {esc(h)} و{esc(a)}</h2>'
                 f'<div class="pd-heads"><span>{esc(h)} <b>{_pct(p["ph"])}</b></span>'
                 f'<span>تعادل <b>{_pct(p["pd"])}</b></span><span>{esc(a)} <b>{_pct(p["pa"])}</b></span></div>'
-                + prob_bar(p, labels=False) +
+                + prob_bar(p) +
                 f'<p class="pd-line">الأهداف المتوقعة: <b>{p["lh"]:.1f}</b> لـ{esc(h)} و<b>{p["la"]:.1f}</b> لـ{esc(a)} · '
                 f'أكثر من 2.5 هدف: <b>{_pct(p["over25"])}</b> · يسجل الفريقان: <b>{_pct(p["btts"])}</b></p>'
                 f'<p class="pd-line">النتائج الأكثر احتمالًا: {top}</p>'
@@ -6108,6 +6120,11 @@ a{color:inherit}
   background:#f1f5f9;color:var(--muted);font-size:.83rem;line-height:1.75;font-weight:600}
 .pred-rec b{color:var(--text);font-weight:800}
 .pr-probs b,.pd-probs b{color:var(--text)}
+.pr-probs .pp,.pd-probs .pp{white-space:nowrap}
+.pr-probs .pp+.pp,.pd-probs .pp+.pp{margin-inline-start:10px}
+.pr-probs i,.pd-probs i{display:inline-block;width:9px;height:9px;border-radius:2px;
+  margin-inline-end:5px}
+.pp-h{background:var(--green)}.pp-d{background:#94a3b8}.pp-a{background:#334155}
 .pd-probs{color:var(--muted);font-weight:700;font-size:.88rem}
 .conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800}
 .conf-low{background:#fef3c7;color:#92400e}.conf-mid{background:#e0f2fe;color:#075985}.conf-high{background:#dcfce7;color:#166534}
