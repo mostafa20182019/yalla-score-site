@@ -140,7 +140,12 @@ def article_pub_dt(art):
 
 
 def article_link(art):
-    # extensionless = the canonical URL form (build_site._clean_urls)
+    # extensionless = the canonical URL form (build_site._clean_urls).
+    # A match preview/report lives inside its match page since 2026-09-16
+    # (build_site.article_href) - posting /a/<id> would share a redirect, and
+    # Facebook would cache the redirect target's card under the wrong url.
+    if art.get("kind") in ("preview", "report") and art.get("match_id"):
+        return f"{SITE}/m/{str(art['match_id']).strip()}"
     return f"{SITE}/a/{str(art.get('article_id', '')).strip()}"
 
 
@@ -234,11 +239,12 @@ def try_post(token, art, og_verified=None):
 def heal_previews(token):
     """Re-scrape recently posted URLs whose preview was never confirmed good.
     Facebook refreshes the existing post's preview from the new scrape."""
+    by_id = {str(a.get("article_id")): a for a in load_articles()}
     for rec in store.unconfirmed("article", HEAL_WINDOW_H):
         aid = rec["ref_id"]
         if "seeded" in str(rec.get("post_id") or ""):
             continue
-        link = f"{SITE}/a/{aid}"
+        link = article_link(by_id.get(str(aid)) or {"article_id": aid})
         print(f"heal: re-scraping {link}")
         if og_ok(scrape(token, link)):
             store.set_og_ok("article", aid)

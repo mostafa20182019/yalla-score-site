@@ -11,7 +11,7 @@ Pages) - no credit card needed. Google indexes static HTML very well.
 IMPORTANT: set SITE_BASE to your final public URL before the last build,
 so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 """
-import base64, json, os, re, html, shutil, datetime, hashlib
+import base64, json, os, re, html, shutil, datetime, hashlib, io
 import analysis as AN     # تحليلات: strength model, predictions, accuracy, player insights
 import store              # prediction log (D1 when configured, else the json file)
 
@@ -53,6 +53,39 @@ GENERIC_BYLINES = (SITE_NAME, "فريق التحرير", "فريق يلا سكو
 def byline(a):
     """The name to print (and to put in schema) for one article."""
     return EDITOR_NAME if (a.get("author") or "") in GENERIC_BYLINES else a["author"]
+
+# The four competitions whose match data comes from 365scores; everything else
+# we cover gets its table and season numbers from football-data.org (match
+# details and goals come from 365scores for all of them). This mirrors
+# fetch_data.S365_LEAGUES, which cannot be imported here - fetch_data imports
+# THIS module.
+S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
+                     "Saudi Pro League", "CAF Champions League")
+
+def match_data_sources(a, comp):
+    """The data credit a match preview/report carries when its writer left the
+    `sources` field empty.
+
+    The match-article prompt asks for it, yet 23 of the pieces published since
+    2026-09-05 shipped with no sources at all - and an article with no source
+    line, under an editorial policy that promises one, is exactly the
+    contradiction a reviewer reads as a broken promise (ChatGPT's site audit,
+    2026-09-16, found it on /a/397). So the RENDERER guarantees the line, the
+    way byline() guarantees the signature: nothing stored is rewritten, and a
+    writer that does supply real sources still wins - this only fills a void.
+
+    Honest by competition: 365scores is always named because every match page
+    is built from its game data; football-data.org is added only for the
+    competitions we actually read from it.
+    """
+    url = f"{SITE_BASE}/m/{a['match_id']}.html" if a.get("match_id") else None
+    def entry(name, note):
+        return {"name": name, "url": url, "note": note} if url else {"name": name, "note": note}
+    out = [entry("بيانات المباريات — 365scores",
+                 "النتائج والتشكيلات وأهداف المباريات والمواجهات المباشرة")]
+    if comp and comp not in S365_COMPETITIONS:
+        out.append(entry("football-data.org", "ترتيب الدوري وأرقام الفريقين هذا الموسم"))
+    return out
 # Cloudflare Web Analytics (cookie-less page views / referrers / top pages).
 # Paste the 32-char token from Cloudflare -> Analytics & Logs -> Web Analytics
 # -> Add a site (manual install). Empty = no beacon in the pages.
@@ -1000,8 +1033,121 @@ LIVE_JS = r"""<script>
 })();
 </script>"""
 
+def article_href(a):
+    """Site-relative URL of an article.
+
+    A match preview/report lives INSIDE its match page (2026-09-16): one URL per
+    match carrying the story, the numbers, the XI and the result, instead of a
+    prose page at /a/ and a data page at /m/ competing for the same query with
+    half an answer each. Everything that links an article goes through here, so
+    the move is one function wide. The old /a/<id> URLs keep working as 301s
+    (see the _redirects file the build writes) - 43 of the 44 have a published
+    Facebook post pointing at them.
+    """
+    if a.get("kind") in ("preview", "report") and a.get("match_id"):
+        return f"/m/{a['match_id']}.html"
+    return f"/a/{a['article_id']}.html"
+
 def article_url(a):
-    return f"{SITE_BASE}/a/{a['article_id']}.html"
+    return SITE_BASE + article_href(a)
+
+def is_match_piece(a):
+    return bool(a.get("kind") in ("preview", "report") and a.get("match_id"))
+
+# article_id -> match page, for the pieces that moved (filled by build()).
+# An article body written before the move can link a piece as /a/<id>;
+# that still works through the 301, but an internal link should name the
+# destination, not a redirect to it.
+_MOVED_LINKS = {}
+_A_HREF = re.compile(r'href="/a/(\d+)(?:\.html)?"')
+
+def fix_moved_links(body):
+    if not _MOVED_LINKS or not body:
+        return body
+    return _A_HREF.sub(
+        lambda m: 'href="%s"' % _MOVED_LINKS.get(m.group(1), "/a/" + m.group(1)),
+        body)
+
+def match_article_block(a, comp):
+    """The AI preview/report, rendered inside its match page (layer 3).
+
+    Two pages about one match - prose with no numbers at /a/, numbers with no
+    prose at /m/ - is the thin, templated pattern that got the site rejected
+    twice. This puts the story, the photo, the named byline, the sources and
+    the computed readings on ONE url.
+
+    The FAQ is rendered WITHOUT its FAQPage schema on purpose: the match page
+    emits its own from the reading below, and two FAQPage blocks on one page
+    is a structured-data conflict. The visible questions still help a reader.
+    """
+    src = [x for x in (a.get("sources") or []) if isinstance(x, dict) and x.get("name")]
+    if not src:
+        src = match_data_sources(a, comp)
+    img = a.get("image_url")
+    out = ['<section class="minfo marticle">']
+    out.append(f'<h2>{esc(a["title"])}</h2>')
+    out.append(f'<p class="a-meta"><a class="a-by" href="/editors.html">{esc(byline(a))}</a>'
+               f' · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time></p>')
+    if img:
+        out.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" '
+                   f'alt="{esc(a["title"])}" loading="lazy">')
+        if a.get("image_credit"):
+            out.append(f'<figcaption class="a-credit">{esc(a["image_credit"])}</figcaption>')
+        out.append('</figure>')
+    if a.get("summary"):
+        out.append(f'<p class="lead">{esc(a["summary"])}</p>')
+    out.append(f'<div class="a-body">{fix_moved_links(a.get("body")) or ""}</div>')
+    faq = [f for f in (a.get("faq") or []) if isinstance(f, dict) and f.get("q") and f.get("a")]
+    if faq:
+        out.append('<div class="a-faq"><h3>أسئلة شائعة</h3>'
+                   + "".join(f'<details><summary>{esc(f["q"])}</summary><p>{esc(f["a"])}</p></details>'
+                             for f in faq) + '</div>')
+    out.append('<div class="a-sources"><h3>المصادر</h3><ul>'
+               + "".join((f'<li><a href="{esc(x["url"])}" target="_blank" rel="noopener nofollow">{esc(x["name"])}</a>'
+                          if x.get("url") else f'<li>{esc(x["name"])}')
+                         + (f' — {esc(x["note"])}' if x.get("note") else "") + '</li>' for x in src)
+               + '</ul></div>')
+    out.append(embeds_block(a.get("embeds")))
+    out.append('</section>')
+    out.append(jsonld({"@context": "https://schema.org", "@type": "NewsArticle",
+                       "headline": a["title"], "description": strip_tags(a.get("summary")),
+                       "datePublished": a.get("pub_ts") or a.get("pub_date"),
+                       "dateModified": a.get("updated_ts") or a.get("pub_ts") or a.get("pub_date"),
+                       "mainEntityOfPage": SITE_BASE + article_href(a),
+                       "author": {"@type": "Person", "name": byline(a),
+                                  "url": SITE_BASE + "/editors.html"},
+                       "publisher": {"@type": "Organization", "name": SITE_NAME,
+                                     "url": SITE_BASE}}))
+    return "".join(out)
+
+def pick_match_article(pieces, status):
+    """One piece per match page: the report once the match is over, otherwise
+    the preview. Both on one page would tell the same story twice."""
+    if not pieces:
+        return None
+    want = "report" if status == "FINISHED" else "preview"
+    return (next((a for a in pieces if a.get("kind") == want), None)
+            or sorted(pieces, key=lambda a: a.get("pub_ts") or "")[-1])
+
+def article_moved_stub(a):
+    """What stays at the old /a/ URL of a piece that moved into its match page.
+
+    The _redirects file should answer 301 long before this file is ever served.
+    It exists because 43 of the 44 moved pieces have a published Facebook post
+    pointing at /a/<id>, and a redirect rule that silently fails to apply would
+    turn all of them into 404s. Belt to that pair of braces: noindex so the URL
+    leaves the index, canonical so whatever signal it still holds is credited
+    to the match page, and a refresh plus a real link so a human always lands
+    in the right place.
+    """
+    to = article_href(a)
+    return (f'<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">'
+            f'<meta name="robots" content="noindex,follow">'
+            f'<link rel="canonical" href="{esc(SITE_BASE + to)}">'
+            f'<meta http-equiv="refresh" content="0;url={esc(to)}">'
+            f'<title>{esc(a.get("title") or "")}</title></head>'
+            f'<body><p>انتقلت هذه الصفحة إلى '
+            f'<a href="{esc(to)}">صفحة المباراة</a>.</p></body></html>')
 
 # sitemap <lastmod> per URL path (set where the page's real change date is
 # known: articles = publish time, match pages = kickoff/today). Pages that
@@ -1239,7 +1385,7 @@ def news_card(a):
     thumb = (f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>'
              if img else '<div class="card-img noimg">⚽</div>')
     t = art_reltime(a)
-    return (f'<a class="card" href="/a/{a["article_id"]}.html">{thumb}'
+    return (f'<a class="card" href="{article_href(a)}">{thumb}'
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
             f'<p class="meta">{esc(byline(a))}{" · " + t if t else ""}</p></div></a>')
 
@@ -1412,7 +1558,7 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
               if img else '<div class="fmb-img fmb-noimg"></div>')
     _nf = f' data-nf="{nf}"' if nf else ""     # news-filter key (NEWS_FILTER_JS)
     out = [f'<section class="fmb fmb-flip"{_nf}>' if flip else f'<section class="fmb"{_nf}>']
-    out.append(f'<a class="fmb-feat" href="/a/{feat_a["article_id"]}.html">'
+    out.append(f'<a class="fmb-feat" href="{article_href(feat_a)}">'
                + (f'<div class="fmb-banner">{banner}</div>' if banner else "")
                + imgdiv
                + f'<div class="fmb-fb"><h2>{esc(feat_a["title"])}</h2>'
@@ -1421,7 +1567,7 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
     for i, a in enumerate(list_items, 1):
         th = (f'<img class="fmb-th" src="{esc(a.get("image_url"))}" alt="" loading="lazy">'
               if a.get("image_url") else "")
-        out.append(f'<a class="fmb-row" href="/a/{a["article_id"]}.html">'
+        out.append(f'<a class="fmb-row" href="{article_href(a)}">'
                    f'<span class="fmb-num">{i}</span>'
                    f'<span class="fmb-rt"><b>{esc(a["title"])}</b>'
                    f'<small>{_art_meta(a)}</small></span>{th}</a>')
@@ -1586,6 +1732,15 @@ def prob_bar(p, labels=True):
             f'فوز الأرض {_pct(ph)}، تعادل {_pct(pd)}، فوز الضيف {_pct(pa)}">'
             + seg("h", ph, _pct(ph)) + seg("d", pd, _pct(pd)) + seg("a", pa, _pct(pa)) + '</div>')
 
+def prob_legend(p, cls="pr-probs"):
+    """The three probabilities as text. prob_bar() drops the label of a segment
+    under 14% because the number does not fit inside it — so a reader of a
+    lopsided prediction saw «80%» and nothing else, and ChatGPT's site audit
+    (2026-09-16) read that as a missing third probability. The values were
+    always in the bar's aria-label; this puts them on the page for everyone."""
+    return (f'<span class="{cls}">الأرض <b>{_pct(p["ph"])}</b> · '
+            f'تعادل <b>{_pct(p["pd"])}</b> · الضيف <b>{_pct(p["pa"])}</b></span>')
+
 def conf_chip(conf):
     return f'<span class="conf conf-{esc(conf)}">{esc(AN.CONF_AR.get(conf, ""))}</span>'
 
@@ -1604,7 +1759,8 @@ def pred_row(m, p):
             f'<span class="pr-vs">×</span>'
             f'<span class="pr-t">{crest(m.get("away_badge"))}<bdi>{esc(a)}</bdi></span></span>'
             + prob_bar(p) +
-            f'<span class="pr-meta"><span class="pr-fav">الأرجح: <b>{esc(fav)}</b></span>'
+            f'<span class="pr-meta">' + prob_legend(p) +
+            f'<span class="pr-fav">الأرجح: <b>{esc(fav)}</b></span>'
             f'<span class="pr-score">النتيجة الأكثر احتمالًا <b>{top[0]}-{top[1]}</b></span>'
             + conf_chip(p["conf"]) + '</span></a>')
 
@@ -1640,6 +1796,7 @@ def pred_block(m, p, logged, comp_stats):
         fake = {"ph": logged["ph"], "pd": logged["pd"], "pa": logged["pa"]}
         return (f'<section class="minfo predict"><h2>ماذا توقع نموذج يلا سكور قبل المباراة؟</h2>'
                 + prob_bar(fake) +
+                f'<p class="pd-line">{prob_legend(fake, "pd-probs")}</p>'
                 f'<p class="pd-line">رجّح النموذج <b>{esc(pick_ar)}</b> باحتمال {_pct(max(fake.values()))} '
                 f'ونتيجة <b>{esc(logged.get("score", ""))}</b>، وانتهت المباراة <b>{logged["hs"]}-{logged["as"]}</b>. {verdict}</p>'
                 f'<p class="pd-note">{AN_DISCLAIMER} <a href="/predictions.html">سجل التوقعات كاملًا (إصابةً وخطأ)</a></p></section>')
@@ -2564,8 +2721,24 @@ def build():
     write("index.html", "".join(parts))
 
     # ---- article pages ---- (every article, listed or not, keeps its page)
+    # match_id -> competition, so a match piece whose writer skipped `sources`
+    # still credits the right data provider (see match_data_sources)
+    _mcomp = {str(m["match_id"]): (m.get("competition") or "")
+              for m in (load("matches_archive.json") + matches) if m.get("match_id")}
+    # match previews/reports do not get a page of their own any more: they are
+    # rendered inside /m/<match_id> further down, and their old URL 301s there
+    _match_arts = {}
+    _moved = []
+    _MOVED_LINKS.clear()
+    _MOVED_LINKS.update({str(x["article_id"]): f"/m/{x['match_id']}"
+                         for x in articles_all if is_match_piece(x)})
     n_thin = 0
     for a in articles_all:
+        if is_match_piece(a):
+            _match_arts.setdefault(str(a["match_id"]), []).append(a)
+            _moved.append((f"/a/{a['article_id']}", article_href(a)))
+            write(f"a/{a['article_id']}.html", article_moved_stub(a))
+            continue
         url = article_url(a)
         img = a.get("image_url")
         _clubs = article_clubs(a)
@@ -2624,11 +2797,13 @@ def build():
             p.append('</figure>')
         if a.get("summary"):
             p.append(f'<p class="lead">{esc(a["summary"])}</p>')
-        p.append(f'<div class="a-body">{a.get("body") or ""}</div>')
+        p.append(f'<div class="a-body">{fix_moved_links(a.get("body")) or ""}</div>')
         # optional editorial blocks written by the article tasks since
         # 2026-09-06: named sources (transparency — "المصادر") and a short FAQ
         # answered from the body. Older articles simply have neither field.
         _src = [s for s in (a.get("sources") or []) if isinstance(s, dict) and s.get("name")]
+        if not _src and a.get("kind") in ("preview", "report"):
+            _src = match_data_sources(a, _mcomp.get(str(a.get("match_id")), ""))
         if _src:
             p.append('<section class="a-sources"><h2>المصادر</h2><ul>'
                      + "".join((f'<li><a href="{esc(s["url"])}" target="_blank" rel="noopener nofollow">{esc(s["name"])}</a>'
@@ -2659,7 +2834,7 @@ def build():
             p.append('<section class="minfo related"><h2>مقالات ذات صلة</h2><ul class="mp-newslist">')
             for b in _rel:
                 _bt = art_reltime(b)
-                p.append(f'<li><a href="/a/{b["article_id"]}.html">{esc(b["title"])}</a>'
+                p.append(f'<li><a href="{article_href(b)}">{esc(b["title"])}</a>'
                          + (f' <span class="club-when">({_bt})</span>' if _bt else "")
                          + '</li>')
             p.append('</ul></section>')
@@ -2675,6 +2850,7 @@ def build():
         if _words >= ARTICLE_MIN_WORDS:
             urls.append(f"/a/{a['article_id']}.html")
             _LASTMOD[f"/a/{a['article_id']}.html"] = _mod_iso
+    print(f"  + match pieces moved into their match page: {len(_moved)}")
     print(f"  + articles: {len(articles_all)} pages, {len(articles)} listed "
           f"({n_thin} unlisted: under {ARTICLE_MIN_WORDS} words, noindexed + out of every listing)")
 
@@ -3034,7 +3210,7 @@ def build():
     p.append('<div id="mpDefault">')
     if articles:
         fa = articles[0]
-        p.append(f'<a class="mp-feat" href="/a/{fa["article_id"]}.html">')
+        p.append(f'<a class="mp-feat" href="{article_href(fa)}">')
         if fa.get("image_url"):
             p.append(f'<img class="mp-feat-img" src="{esc(fa["image_url"])}" alt="" loading="lazy">')
         p.append(f'<b class="mp-feat-t">{esc(fa.get("title"))}</b>'
@@ -3044,7 +3220,7 @@ def build():
             img = a.get("image_url")
             th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
                   if img else '<span class="mn-th noimg">⚽</span>')
-            p.append(f'<a class="mn-item" href="/a/{a["article_id"]}.html">{th}'
+            p.append(f'<a class="mn-item" href="{article_href(a)}">{th}'
                      f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span>'
                      f'<span class="mn-d">{esc(a.get("pub_date") or "")}</span></span></a>')
         p.append('</div>')
@@ -3167,6 +3343,11 @@ def build():
                 mp.append('<p>لم تتوفر بعد معلومات القناة الناقلة لهذه '
                           'المباراة — تُحدَّث هذه الصفحة تلقائيًا فور توفرها.</p>')
             mp.append('</section>')
+        # the match's own article (layer 3, 2026-09-16): the story sits above
+        # the computed reading, which is what backs it with numbers
+        _art = pick_match_article(_match_arts.get(str(mid)) or [], st)
+        if _art:
+            mp.append(match_article_block(_art, m.get("competition") or ""))
         # «قراءة قبل المباراة» (layer 1): how the two clubs arrive - table,
         # form, goals per game, the last meeting, a short turnaround, and what
         # a win is worth. Sits under the time/TV answer and above the XI.
@@ -3249,7 +3430,7 @@ def build():
         if articles:
             mp.append('<section class="minfo"><h2>آخر الأخبار</h2><ul class="mp-newslist">')
             for a in articles[:4]:
-                mp.append(f'<li><a href="/a/{a["article_id"]}.html">{esc(a["title"])}</a></li>')
+                mp.append(f'<li><a href="{article_href(a)}">{esc(a["title"])}</a></li>')
             mp.append('</ul></section>')
         try:
             from zoneinfo import ZoneInfo
@@ -3292,7 +3473,7 @@ def build():
         # carries the kick-off answer, that reading, the model's numbers, the
         # league table and an FAQ - which is a guide, not a stub. A fixture we
         # know nothing about still scores below the bar and stays out.
-        _rich = bool(_goals) or bool(_det) or _pre_weight >= 4
+        _rich = bool(_art) or bool(_goals) or bool(_det) or _pre_weight >= 4
         _html = "".join(mp)
         if not _rich:
             _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
@@ -3300,7 +3481,11 @@ def build():
         n_mp += 1
         if _rich:
             n_mp_idx += 1
-            if m["kickoff"] >= sm_cut:      # keep the sitemap focused on ±30 days
+            # the ±30-day window keeps the sitemap focused on fixtures people
+            # are searching for — but a page carrying an original article is
+            # not a fixture listing any more, and dropping it would retire the
+            # very URL that replaced an article URL (2026-09-16)
+            if m["kickoff"] >= sm_cut or _art:
                 urls.append(murl)
     print(f"  + match pages: {n_mp} ({n_mp_idx} indexable with real content)")
 
@@ -3493,7 +3678,7 @@ def build():
             pt.append('<ul class="mp-newslist">')
             for a in news:
                 _t = art_reltime(a)
-                pt.append(f'<li><a href="/a/{a["article_id"]}.html">'
+                pt.append(f'<li><a href="{article_href(a)}">'
                           f'{esc(a["title"])}</a>'
                           + (f' <span class="club-when">({_t})</span>' if _t else "")
                           + '</li>')
@@ -3602,7 +3787,12 @@ def build():
     pv.append('<p>خصوصيتك تهمّنا. توضّح هذه الصفحة كيف يتعامل موقع <b>يلا سكور</b> مع المعلومات عند زيارتك له.</p>')
     pv.append('<h2>المعلومات التي نجمعها</h2><p>الموقع لا يطلب منك التسجيل أو إدخال بيانات شخصية. وقد تُجمَع بيانات تقنية بشكل تلقائي (مثل نوع المتصفح ونظام التشغيل والصفحات التي تزورها) عبر ملفات تعريف الارتباط وخدمات الطرف الثالث بهدف تشغيل الموقع وتحسينه.</p>')
     pv.append('<h2>ملفات تعريف الارتباط (Cookies)</h2><p>قد نستخدم ملفات تعريف الارتباط لحفظ تفضيلاتك وتحسين تجربتك ولعرض الإعلانات. يمكنك ضبط متصفحك لرفض ملفات تعريف الارتباط كليًا أو جزئيًا، مع العلم أن ذلك قد يؤثّر على بعض وظائف الموقع.</p>')
-    pv.append('<h2>إعلانات الطرف الثالث — Google AdSense</h2><p>قد نعرض إعلانات عبر خدمة <b>Google AdSense</b>. تستخدم Google والشركات الشريكة لها ملفات تعريف الارتباط (بما فيها ملف <span dir="ltr">DART cookie</span>) لعرض إعلانات مبنية على زياراتك لهذا الموقع ولمواقع أخرى على الإنترنت.</p>')
+    # 2026-09-16: the paragraph used to name the «DART cookie» — wording Google
+    # retired years ago and that survives only in copied templates. Replaced
+    # with how AdSense actually describes it today (first- and third-party
+    # cookies, doubleclick.net / googlesyndication.com), per
+    # support.google.com/adsense/answer/7549925.
+    pv.append('<h2>إعلانات الطرف الثالث — Google AdSense</h2><p>قد نعرض إعلانات عبر خدمة <b>Google AdSense</b>. تستخدم Google والشركات الشريكة لها ملفات تعريف ارتباط — بعضها من نطاق الموقع نفسه وبعضها من نطاقات خارجية مثل <span dir="ltr">doubleclick.net</span> و<span dir="ltr">googlesyndication.com</span> — لقياس أداء الإعلانات ومنع تكرارها واكتشاف الاحتيال، ولعرض إعلانات مبنية على زياراتك السابقة لهذا الموقع أو لمواقع أخرى.</p>')
     pv.append('<p>يمكنك تعطيل الإعلانات المخصّصة من خلال <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">إعدادات إعلانات Google</a>، ومعرفة المزيد عبر <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">سياسة Google بشأن الإعلانات</a>.</p>')
     pv.append('<h2>الروابط الخارجية</h2><p>يحتوي الموقع على روابط لمصادر إخبارية ومواقع خارجية. عند الضغط عليها تنتقل إلى مواقع لا نتحكّم فيها، ولا نتحمّل مسؤولية سياسات الخصوصية أو المحتوى الخاص بها.</p>')
     pv.append('<h2>خصوصية الأطفال</h2><p>الموقع غير موجَّه للأطفال دون 13 عامًا، ولا نجمع عمدًا أي بيانات منهم.</p>')
@@ -3808,7 +3998,7 @@ def build():
                 th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
                       if img else '<span class="al-th noimg">⚽</span>')
                 np_.append(
-                    f'<a class="al-row" href="/a/{a["article_id"]}.html">{th}'
+                    f'<a class="al-row" href="{article_href(a)}">{th}'
                     f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
                     f'<span class="al-s">{esc(strip_tags(a.get("summary") or ""))}</span>'
                     f'<span class="al-m">{esc(byline(a))} · '
@@ -3849,7 +4039,7 @@ def build():
         # teaser fallback (user rule 2026-08-31): no summary in the post —
         # the information lives on the site, the post only pulls the click
         return (f"⚽ {(a.get('title') or '').strip()}\n\n"
-                f"التفاصيل الكاملة على الموقع 👇\n{SITE_BASE}/a/{a['article_id']}.html\n\n#يلا_سكور")
+                f"التفاصيل الكاملة على الموقع 👇\n{article_url(a)}\n\n#يلا_سكور")
     fbp = [head(f"بوستات فيسبوك — {SITE_NAME}", "صفحة داخلية.",
                 SITE_BASE + "/fb.html")]
     fbp.append('<h1 class="page-h">بوستات فيسبوك جاهزة 📋</h1>'
@@ -4020,6 +4210,23 @@ def build():
             if os.path.isfile(src):
                 shutil.copy(src, os.path.join(DIST, fn))
                 print("  + root file:", fn)
+
+    # ---- _redirects: the match pieces that moved into their match page ----
+    # Cloudflare Workers static-asset routing reads this file. Both spellings
+    # are listed because the extensionless form is the official URL (write()
+    # normalizes every internal link) while published Facebook posts and old
+    # Google results can still carry either.
+    if _moved:
+        lines = []
+        for old_path, new_path in _moved:
+            # the extensionless form is the canonical one; targeting the .html
+            # name would make every redirect a 301 into a 307 (Workers assets
+            # redirect /x.html -> /x), the chain that cost us indexing once
+            new_path = new_path[:-5] if new_path.endswith(".html") else new_path
+            lines.append(f"{old_path} {new_path} 301")
+            lines.append(f"{old_path}.html {new_path} 301")
+        write_text("_redirects", NEWLINE.join(lines) + NEWLINE)
+        print(f"  + _redirects: {len(_moved)} match piece(s) 301 to their match page")
 
     # ---- mirrored crests (downloaded by local_crest during rendering) ----
     if _CREST_MAP:
@@ -5439,6 +5646,13 @@ _HTML_URL = re.compile(
 def _clean_urls(text):
     return _HTML_URL.sub(lambda m: m.group("pre") + m.group("path"), text)
 
+NEWLINE = chr(10)
+
+def write_text(rel, content):
+    """A raw file in dist/: no URL normalisation, no .html handling."""
+    with io.open(os.path.join(DIST, rel), "w", encoding="utf-8", newline="") as f:
+        f.write(content)
+
 def write(rel, content):
     path = os.path.join(DIST, rel)
     if rel.endswith((".html", ".xml")):
@@ -5790,6 +6004,8 @@ a{color:inherit}
 .pbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#e2e8f0;direction:ltr}
 .pb-seg{display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;min-width:0}
 .pb-h{background:var(--green)}.pb-d{background:#94a3b8}.pb-a{background:#334155}
+.pr-probs b,.pd-probs b{color:var(--text)}
+.pd-probs{color:var(--muted);font-weight:700;font-size:.88rem}
 .conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800}
 .conf-low{background:#fef3c7;color:#92400e}.conf-mid{background:#e0f2fe;color:#075985}.conf-high{background:#dcfce7;color:#166534}
 .predict .pd-heads{display:flex;justify-content:space-between;font-weight:800;font-size:.9rem;margin-bottom:6px}
@@ -5838,6 +6054,12 @@ a{color:inherit}
 .faq details,.a-faq details{border-top:1px solid #e2e8f0;padding:8px 0}
 .faq details:first-of-type,.a-faq details:first-of-type{border-top:0}
 .faq summary,.a-faq summary{cursor:pointer;font-weight:800;color:var(--ink)}
+.marticle .a-body{line-height:1.95}
+.marticle .a-fig{margin:12px 0}
+.marticle .a-sources,.marticle .a-faq{margin:18px 0 0;padding-top:12px;border-top:1px solid #e2e8f0}
+.marticle .a-sources h3,.marticle .a-faq h3{font-size:.98rem;margin:0 0 8px}
+.marticle .a-sources ul{margin:0;padding-inline-start:18px}
+.marticle .a-sources li{margin:4px 0;font-size:.9rem}
 .a-sources,.a-faq{margin:22px 0 0;padding-top:14px;border-top:1px solid #e2e8f0}
 .a-sources h2,.a-faq h2{font-size:1.05rem;margin:0 0 8px}
 .a-sources ul{margin:0;padding-inline-start:18px}

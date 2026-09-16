@@ -28,6 +28,7 @@ sources, faq, fb_post, and match_id + kind on a match piece.
 import json
 import os
 import sys
+import urllib.parse
 
 sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -37,6 +38,75 @@ import store               # noqa: E402
 
 REQUIRED = ("title", "summary", "body", "author", "pub_date")
 ALLOWED = set(store.ARTICLE_FIELDS) - {"article_id"}
+
+
+OUR_HOSTS = {"yallascore.site", "old-credit-e926.workers.dev"}
+
+
+def source_keys(rec):
+    """Distinct source identities in a draft.
+
+    The domain when the entry has a url, else the normalised name: two links
+    from the same outlet are ONE source, because what /editorial promises is
+    two INDEPENDENT ones. Our own pages never count - linking our match page
+    is a citation of ourselves.
+    """
+    keys = set()
+    for s in rec.get("sources") or []:
+        if not isinstance(s, dict):
+            continue
+        key = ""
+        url = (s.get("url") or "").strip()
+        if url:
+            host = urllib.parse.urlparse(url).netloc.lower()
+            key = host[4:] if host.startswith("www.") else host
+        if not key:
+            key = " ".join((s.get("name") or "").split()).casefold()
+        if key and key not in OUR_HOSTS:
+            keys.add(key)
+    return keys
+
+
+def source_problems(rec):
+    """The two-source rule, enforced where an article enters the site.
+
+    /editorial says, in Arabic, on a page a reviewer can read: «لا ننشر خبرًا
+    إلا بعد تطابقه لدى مصدرين مستقلين على الأقل». 37 news articles published
+    on 1-2 September carry no sources at all, and an outside audit of the live
+    site (2026-09-16) found the gap by simply comparing the policy page with an
+    article. A promise the pipeline cannot keep is worse than no promise, so
+    the pipeline keeps it.
+
+    Applies to NEWS only, and only when creating. A match preview/report is not
+    a news claim - it is built from our own match data, and one data credit is
+    the honest answer there (build_site.match_data_sources guarantees it). On
+    --update the draft carries only the changed fields, so `kind` is usually
+    absent and we cannot tell news from a match piece without a lookup; the
+    upgrade prompt adds sources anyway, and blocking a fix to an image over a
+    missing field would be the wrong trade.
+
+    The escape hatch is real editorial practice, not a loophole: a club's or
+    federation's OWN announcement is sufficient on its own. Mark it
+    {"official": true} and one source is enough.
+    """
+    out = []
+    for s in rec.get("sources") or []:
+        if not isinstance(s, dict) or not (s.get("name") or "").strip():
+            out.append(f"a source with no name is dropped silently when rendering: {s!r}")
+    if any(isinstance(s, dict) and s.get("official") for s in rec.get("sources") or []):
+        if not source_keys(rec):
+            out.append("a source marked official still needs a name or a url")
+        return out
+    n = len(source_keys(rec))
+    if n < 2:
+        out.append(
+            f"news with {n} independent source(s). /editorial promises the reader "
+            "«لا ننشر خبرًا إلا بعد تطابقه لدى مصدرين مستقلين على الأقل» - add a "
+            "second outlet (a different domain), or, when the story IS the club's "
+            "or federation's own announcement, mark that source {\"official\": true} "
+            "and one is enough."
+        )
+    return out
 
 
 def validate(rec, updating=False):
@@ -64,6 +134,8 @@ def validate(rec, updating=False):
         # club's own announcement, not a guess (the prompts say official only)
         if not isinstance(u, str) or not store.embed_platform(u):
             bad.append(f"embed is not an X/Instagram/Facebook post URL: {u!r}")
+    if not updating and not rec.get("kind"):
+        bad += source_problems(rec)
     words = len(b.strip_tags(rec.get("body") or "").split())
     if not updating and words < 300:
         bad.append(f"body is {words} words - under the {b.ARTICLE_MIN_WORDS}-word bar, "

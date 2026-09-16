@@ -300,7 +300,10 @@ def related_articles(d, names, n=5):
     for a in d["articles"]:
         t = a.get("title") or ""
         if any(nm and nm in t for nm in names):
-            out.append({"id": a["article_id"], "title": t, "url": f"/a/{a['article_id']}", "date": a.get("pub_date")})
+            # a match piece lives inside its match page (2026-09-16)
+            u = (f"/m/{a['match_id']}" if a.get("kind") in ("preview", "report")
+                 and a.get("match_id") else f"/a/{a['article_id']}")
+            out.append({"id": a["article_id"], "title": t, "url": u, "date": a.get("pub_date")})
         if len(out) >= n:
             break
     return out
