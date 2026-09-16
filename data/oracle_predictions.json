@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-16T19:11:20+03:00",
+    "generated_at" : "2026-09-16T18:56:20+03:00",
     "days" : 10,
     "n" : 67,
     "params" :
@@ -346,15 +346,6 @@
         "def" : 0.9629
       },
       {
-        "team" : "النادي الأفريقي",
-        "elo" : 1513.12,
-        "played" : 2,
-        "gf" : 3,
-        "ga" : 2,
-        "att" : 1.0872,
-        "def" : 0.9629
-      },
-      {
         "team" : "اسكتلندا",
         "elo" : 1513.12,
         "played" : 2,
@@ -362,6 +353,15 @@
         "ga" : 0,
         "att" : 0.8386,
         "def" : 0.7143
+      },
+      {
+        "team" : "النادي الأفريقي",
+        "elo" : 1513.12,
+        "played" : 2,
+        "gf" : 3,
+        "ga" : 2,
+        "att" : 1.0872,
+        "def" : 0.9629
       },
       {
         "team" : "بترو اتليتكو",
@@ -400,6 +400,24 @@
         "def" : 1.0872
       },
       {
+        "team" : "فايبرز",
+        "elo" : 1500.21,
+        "played" : 2,
+        "gf" : 1,
+        "ga" : 1,
+        "att" : 0.8386,
+        "def" : 0.8386
+      },
+      {
+        "team" : "أكاديمية ستار سبورت",
+        "elo" : 1500.21,
+        "played" : 2,
+        "gf" : 1,
+        "ga" : 1,
+        "att" : 0.8386,
+        "def" : 0.8386
+      },
+      {
         "team" : "كولومبي سبورتيف",
         "elo" : 1500.21,
         "played" : 2,
@@ -425,24 +443,6 @@
         "ga" : 3,
         "att" : 1.0872,
         "def" : 1.0872
-      },
-      {
-        "team" : "فايبرز",
-        "elo" : 1500.21,
-        "played" : 2,
-        "gf" : 1,
-        "ga" : 1,
-        "att" : 0.8386,
-        "def" : 0.8386
-      },
-      {
-        "team" : "أكاديمية ستار سبورت",
-        "elo" : 1500.21,
-        "played" : 2,
-        "gf" : 1,
-        "ga" : 1,
-        "att" : 0.8386,
-        "def" : 0.8386
       },
       {
         "team" : "سوبيماب",
@@ -544,7 +544,7 @@
         "def" : 0.8386
       },
       {
-        "team" : "غابورني يونايتد",
+        "team" : "كارا",
         "elo" : 1486.21,
         "played" : 2,
         "gf" : 2,
@@ -553,7 +553,7 @@
         "def" : 1.0872
       },
       {
-        "team" : "كارا",
+        "team" : "غابورني يونايتد",
         "elo" : 1486.21,
         "played" : 2,
         "gf" : 2,
@@ -714,7 +714,7 @@
         "played" : 4,
         "gf" : 7,
         "ga" : 0,
-        "att" : 1.2504,
+        "att" : 1.254,
         "def" : 0.5556
       },
       {
@@ -723,8 +723,8 @@
         "played" : 5,
         "gf" : 9,
         "ga" : 3,
-        "att" : 1.304,
-        "def" : 0.768
+        "att" : 1.3082,
+        "def" : 0.7694
       },
       {
         "team" : "سيراميكا كليوباترا",
@@ -732,8 +732,8 @@
         "played" : 5,
         "gf" : 10,
         "ga" : 3,
-        "att" : 1.3933,
-        "def" : 0.768
+        "att" : 1.398,
+        "def" : 0.7694
       },
       {
         "team" : "الزمالك",
@@ -741,8 +741,8 @@
         "played" : 4,
         "gf" : 7,
         "ga" : 1,
-        "att" : 1.2504,
-        "def" : 0.6548
+        "att" : 1.254,
+        "def" : 0.6553
       },
       {
         "team" : "الاتحاد السكندري",
@@ -750,8 +750,8 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 3,
-        "att" : 1.036,
-        "def" : 0.768
+        "att" : 1.0388,
+        "def" : 0.7694
       },
       {
         "team" : "مودرن سبورت",
@@ -759,8 +759,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 4,
-        "att" : 1.1253,
-        "def" : 0.8573
+        "att" : 1.1286,
+        "def" : 0.8592
       },
       {
         "team" : "القناة",
@@ -768,8 +768,8 @@
         "played" : 4,
         "gf" : 4,
         "ga" : 3,
-        "att" : 0.9526,
-        "def" : 0.8533
+        "att" : 0.9546,
+        "def" : 0.8549
       },
       {
         "team" : "المقاولون العرب",
@@ -777,17 +777,8 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 5,
-        "att" : 1.036,
-        "def" : 0.9467
-      },
-      {
-        "team" : "منتخب السويس بتروجت",
-        "elo" : 1505.23,
-        "played" : 5,
-        "gf" : 8,
-        "ga" : 8,
-        "att" : 1.2147,
-        "def" : 1.2147
+        "att" : 1.0388,
+        "def" : 0.949
       },
       {
         "team" : "طلائع الجيش",
@@ -795,8 +786,17 @@
         "played" : 5,
         "gf" : 5,
         "ga" : 5,
-        "att" : 0.9467,
-        "def" : 0.9467
+        "att" : 0.949,
+        "def" : 0.949
+      },
+      {
+        "team" : "منتخب السويس بتروجت",
+        "elo" : 1489.02,
+        "played" : 4,
+        "gf" : 6,
+        "ga" : 7,
+        "att" : 1.1542,
+        "def" : 1.254
       },
       {
         "team" : "زد",
@@ -804,8 +804,8 @@
         "played" : 4,
         "gf" : 2,
         "ga" : 4,
-        "att" : 0.7541,
-        "def" : 0.9526
+        "att" : 0.7551,
+        "def" : 0.9546
       },
       {
         "team" : "البنك الاهلي",
@@ -813,8 +813,8 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 7,
-        "att" : 0.8573,
-        "def" : 1.1253
+        "att" : 0.8592,
+        "def" : 1.1286
       },
       {
         "team" : "الشرقية إنبي",
@@ -822,8 +822,8 @@
         "played" : 4,
         "gf" : 5,
         "ga" : 7,
-        "att" : 1.0519,
-        "def" : 1.2504
+        "att" : 1.0544,
+        "def" : 1.254
       },
       {
         "team" : "وادي دجلة",
@@ -831,8 +831,8 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 5,
-        "att" : 0.8573,
-        "def" : 0.9467
+        "att" : 0.8592,
+        "def" : 0.949
       },
       {
         "team" : "المصري",
@@ -840,8 +840,8 @@
         "played" : 5,
         "gf" : 5,
         "ga" : 7,
-        "att" : 0.9467,
-        "def" : 1.1253
+        "att" : 0.949,
+        "def" : 1.1286
       },
       {
         "team" : "سموحة",
@@ -849,17 +849,17 @@
         "played" : 5,
         "gf" : 1,
         "ga" : 4,
-        "att" : 0.5893,
-        "def" : 0.8573
+        "att" : 0.5898,
+        "def" : 0.8592
       },
       {
         "team" : "الجونة",
-        "elo" : 1458.12,
-        "played" : 5,
-        "gf" : 3,
-        "ga" : 6,
-        "att" : 0.768,
-        "def" : 1.036
+        "elo" : 1474.33,
+        "played" : 4,
+        "gf" : 2,
+        "ga" : 4,
+        "att" : 0.7551,
+        "def" : 0.9546
       },
       {
         "team" : "ابو قير للاسمدة",
@@ -867,8 +867,8 @@
         "played" : 5,
         "gf" : 1,
         "ga" : 8,
-        "att" : 0.5893,
-        "def" : 1.2147
+        "att" : 0.5898,
+        "def" : 1.2184
       },
       {
         "team" : "بترول اسيوط",
@@ -876,8 +876,8 @@
         "played" : 5,
         "gf" : 1,
         "ga" : 5,
-        "att" : 0.5893,
-        "def" : 0.9467
+        "att" : 0.5898,
+        "def" : 0.949
       },
       {
         "team" : "غزل المحلة",
@@ -885,8 +885,8 @@
         "played" : 4,
         "gf" : 1,
         "ga" : 8,
-        "att" : 0.6548,
-        "def" : 1.3496
+        "att" : 0.6553,
+        "def" : 1.3537
       }
     ],
     "Ligue 1" :
@@ -1936,15 +1936,6 @@
     "UEFA Champions League" :
     [
       {
-        "team" : "FC Bayern München",
-        "elo" : 1522.43,
-        "played" : 1,
-        "gf" : 5,
-        "ga" : 0,
-        "att" : 1.3482,
-        "def" : 0.8333
-      },
-      {
         "team" : "Paris Saint-Germain FC",
         "elo" : 1522.43,
         "played" : 1,
@@ -1954,12 +1945,30 @@
         "def" : 0.9363
       },
       {
+        "team" : "FC Bayern München",
+        "elo" : 1522.43,
+        "played" : 1,
+        "gf" : 5,
+        "ga" : 0,
+        "att" : 1.3482,
+        "def" : 0.8333
+      },
+      {
         "team" : "Manchester City FC",
         "elo" : 1520.98,
         "played" : 1,
         "gf" : 2,
         "ga" : 0,
         "att" : 1.0393,
+        "def" : 0.8333
+      },
+      {
+        "team" : "Manchester United FC",
+        "elo" : 1519.63,
+        "played" : 1,
+        "gf" : 4,
+        "ga" : 0,
+        "att" : 1.2453,
         "def" : 0.8333
       },
       {
@@ -1972,15 +1981,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "Manchester United FC",
-        "elo" : 1519.63,
-        "played" : 1,
-        "gf" : 4,
-        "ga" : 0,
-        "att" : 1.2453,
-        "def" : 0.8333
-      },
-      {
         "team" : "Como 1907",
         "elo" : 1516.83,
         "played" : 1,
@@ -1988,15 +1988,6 @@
         "ga" : 1,
         "att" : 1.2453,
         "def" : 0.9363
-      },
-      {
-        "team" : "Arsenal FC",
-        "elo" : 1516.78,
-        "played" : 1,
-        "gf" : 1,
-        "ga" : 0,
-        "att" : 0.9363,
-        "def" : 0.8333
       },
       {
         "team" : "Real Betis Balompié",
@@ -2024,6 +2015,15 @@
         "ga" : 2,
         "att" : 1.1423,
         "def" : 1.0393
+      },
+      {
+        "team" : "Arsenal FC",
+        "elo" : 1516.78,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 0,
+        "att" : 0.9363,
+        "def" : 0.8333
       },
       {
         "team" : "Sporting Clube de Portugal",
@@ -2116,24 +2116,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "LASK Linz",
-        "elo" : 1488.78,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 1,
-        "att" : 0.8333,
-        "def" : 0.9363
-      },
-      {
-        "team" : "FC Internazionale Milano",
-        "elo" : 1488.78,
-        "played" : 1,
-        "gf" : 1,
-        "ga" : 2,
-        "att" : 0.9363,
-        "def" : 1.0393
-      },
-      {
         "team" : "Club Atlético de Madrid",
         "elo" : 1488.78,
         "played" : 1,
@@ -2150,6 +2132,24 @@
         "ga" : 3,
         "att" : 1.0393,
         "def" : 1.1423
+      },
+      {
+        "team" : "LASK Linz",
+        "elo" : 1488.78,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 1,
+        "att" : 0.8333,
+        "def" : 0.9363
+      },
+      {
+        "team" : "FC Internazionale Milano",
+        "elo" : 1488.78,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 2,
+        "att" : 0.9363,
+        "def" : 1.0393
       },
       {
         "team" : "Viking FK",
@@ -2242,15 +2242,6 @@
         "def" : 1.0393
       },
       {
-        "team" : "FK Bodø/Glimt",
-        "elo" : 1477.57,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 5,
-        "att" : 0.8333,
-        "def" : 1.3482
-      },
-      {
         "team" : "ŠK Slovan Bratislava",
         "elo" : 1477.57,
         "played" : 1,
@@ -2258,6 +2249,15 @@
         "ga" : 6,
         "att" : 0.9363,
         "def" : 1.4512
+      },
+      {
+        "team" : "FK Bodø/Glimt",
+        "elo" : 1477.57,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 5,
+        "att" : 0.8333,
+        "def" : 1.3482
       }
     ]
   },
@@ -2265,13 +2265,13 @@
   {
     "Egyptian Premier League" :
     {
-      "n" : 47,
-      "mu_home" : 1.1194,
-      "mu_away" : 1.1194,
-      "mu" : 1.1194,
-      "home_win" : 0.383,
-      "draw" : 0.2128,
-      "gpm" : 2.0426
+      "n" : 46,
+      "mu_home" : 1.1212,
+      "mu_away" : 1.1061,
+      "mu" : 1.1136,
+      "home_win" : 0.3913,
+      "draw" : 0.2174,
+      "gpm" : 2.0217
     },
     "Premier League" :
     {
@@ -4054,19 +4054,6 @@
       "away_score" : 0,
       "home_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v20/Competitors/8200",
       "away_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v1/Competitors/19480",
-      "status" : "FINISHED"
-    },
-    {
-      "match_id" : "4804676",
-      "competition" : "Egyptian Premier League",
-      "kickoff" : "2026-09-16",
-      "koff_time" : "17:00",
-      "home" : "الجونة",
-      "away" : "منتخب السويس بتروجت",
-      "home_score" : 1,
-      "away_score" : 2,
-      "home_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v1/Competitors/8308",
-      "away_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v4/Competitors/8302",
       "status" : "FINISHED"
     },
     {
@@ -7903,11 +7890,11 @@
       "away" : "القناة",
       "kickoff" : "2026-09-17",
       "koff_time" : "17:00",
-      "lh" : 0.736082,
-      "la" : 0.994017,
-      "ph" : 0.2623,
-      "pd" : 0.3327,
-      "pa" : 0.405,
+      "lh" : 0.739611,
+      "la" : 0.986413,
+      "ph" : 0.2649,
+      "pd" : 0.3335,
+      "pa" : 0.4016,
       "score" : "0-0",
       "conf" : "mid",
       "n_h" : 4,
@@ -7943,11 +7930,11 @@
       "away" : "بيراميدز",
       "kickoff" : "2026-09-17",
       "koff_time" : "20:00",
-      "lh" : 0.650916,
-      "la" : 1.758763,
-      "ph" : 0.1329,
-      "pd" : 0.2263,
-      "pa" : 0.6408,
+      "lh" : 0.653561,
+      "la" : 1.747816,
+      "ph" : 0.1346,
+      "pd" : 0.2278,
+      "pa" : 0.6377,
       "score" : "0-1",
       "conf" : "mid",
       "n_h" : 4,
