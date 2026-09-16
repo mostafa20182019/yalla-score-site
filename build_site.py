@@ -1880,7 +1880,9 @@ def prob_legend(p, cls="pr-probs"):
     segment. This is the ONLY place the percentages are printed (see
     prob_bar), which is the point: one statement, never a partial one."""
     def one(k, label, cls_):
-        return (f'<span class="pp"><i class="pp-{cls_}"></i>{label} '
+        # .prb, not .pp: «.pp» is already the player marker on the pitch
+        # graphic (position:absolute) and these three collapsed onto the bar
+        return (f'<span class="prb"><i class="prb-{cls_}"></i>{label} '
                 f'<b>{_pct(p[k])}</b></span>')
     return (f'<span class="{cls}">' + one("ph", "الأرض", "h")
             + one("pd", "تعادل", "d") + one("pa", "الضيف", "a") + '</span>')
@@ -6266,11 +6268,11 @@ a{color:inherit}
   background:#f1f5f9;color:var(--muted);font-size:.83rem;line-height:1.75;font-weight:600}
 .pred-rec b{color:var(--text);font-weight:800}
 .pr-probs b,.pd-probs b{color:var(--text)}
-.pr-probs .pp,.pd-probs .pp{white-space:nowrap}
-.pr-probs .pp+.pp,.pd-probs .pp+.pp{margin-inline-start:10px}
+.pr-probs .prb,.pd-probs .prb{white-space:nowrap}
+.pr-probs .prb+.prb,.pd-probs .prb+.prb{margin-inline-start:10px}
 .pr-probs i,.pd-probs i{display:inline-block;width:9px;height:9px;border-radius:2px;
   margin-inline-end:5px}
-.pp-h{background:var(--green)}.pp-d{background:#94a3b8}.pp-a{background:#334155}
+.prb-h{background:var(--green)}.prb-d{background:#94a3b8}.prb-a{background:#334155}
 .pd-probs{color:var(--muted);font-weight:700;font-size:.88rem}
 .conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800}
 .conf-low{background:#fef3c7;color:#92400e}.conf-mid{background:#e0f2fe;color:#075985}.conf-high{background:#dcfce7;color:#166534}
