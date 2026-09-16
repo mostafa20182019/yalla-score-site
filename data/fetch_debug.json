@@ -1,15 +1,15 @@
 {
  "news": "skipped (FETCH_HEADLINES off)",
- "matches": "ok (101)",
+ "matches": "ok (89)",
  "Egyptian Premier League": "ok (table 20 teams)",
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
  "reconcile": "ok (0 row(s) corrected, 50 live games)",
  "matches_archive": "ok (483)",
- "fixtures_merge": "none (every league complete)",
+ "fixtures_merge": "Primera Division: 17 fetched < 380 kept -> 380 merged",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-16T23:08:26+00:00",
+ "slow_fetched_at": "2026-09-16T23:18:01+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -263,5 +263,5 @@
   "fails": 0
  },
  "match_details": "ok (341)",
- "utc": "2026-09-16T23:11:17Z"
+ "utc": "2026-09-16T23:21:08Z"
 }
