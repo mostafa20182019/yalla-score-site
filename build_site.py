@@ -3061,7 +3061,18 @@ def build():
     comp_goals, comp_maxp = {}, {}
     for _c, _fx in fx_by_comp.items():
         _f = _fin_ms(_fx)
-        comp_goals[_c] = sum(m["home_score"] + m["away_score"] for _, m in _f)
+        # The denominator has to be the SEASON POOL, not this one file. For the
+        # 365scores leagues fixtures.json carries scores for only a few rounds
+        # (Egypt on 2026-09-16: 11 goals in the file against the 93 the season
+        # actually holds), and an understated denominator makes
+        # chart_is_current reject a perfectly current top-scorer list as "last
+        # season's": 13 goals across the top five > 11 for the whole league.
+        # That is what emptied /scorers/egypt - the guard was right about the
+        # arithmetic and wrong about the world. Found by an outside HTML audit
+        # of the live site, 2026-09-16.
+        comp_goals[_c] = max(
+            sum(int(m["home_score"]) + int(m["away_score"]) for m in (_bycomp.get(_c) or [])),
+            sum(m["home_score"] + m["away_score"] for _, m in _f))
         _tbl = (st_by_comp.get(_c) or {}).get("table") or []
         comp_maxp[_c] = (max((r.get("played") or 0) for r in _tbl) if _tbl
                          else max((r or 0 for r, _ in _f), default=0))
