@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 49 live games)",
+ "reconcile": "ok (1 row(s) corrected, 50 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-16T19:32:36+00:00",
+ "slow_fetched_at": "2026-09-16T19:48:01+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -176,17 +176,17 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (25 games)",
+ "goal_events": "ok (26 games)",
  "goal_events_dbg": {
-  "candidates": 33,
+  "candidates": 34,
   "detail_fails": 0,
   "skipped": [
    "4805176:count-mismatch (0, 0) vs 5-1 []",
+   "4750854:count-mismatch (0, 0) vs -1--1 []",
    "4805164:count-mismatch (0, 0) vs 0-3 []",
    "4805161:count-mismatch (0, 0) vs 6-1 []",
    "4805188:count-mismatch (0, 0) vs 2-2 []",
-   "4805177:count-mismatch (0, 0) vs 3-0 []",
-   "4805183:count-mismatch (0, 0) vs 2-1 []"
+   "4805177:count-mismatch (0, 0) vs 3-0 []"
   ],
   "frozen_skipped": 149,
   "sample": {
@@ -216,11 +216,13 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "null",
+   "event0": "{\"competitorId\": 132, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 8.0, \"addedTime\": 0, \"gameTimeDisplay\": \"8'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 384197, \"extraPlayers\": [67787784], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
    "member0": "{\"competitorId\": 132, \"id\": 52343752, \"athleteId\": 82341, \"name\": \"جوان جارسيا\", \"shortName\": \"جارسيا\", \"jerseyNumber\": 1, \"nameForURL\": \"joan-garcia\", \"imageVersion\": 34, \"createdAt\": \"2020-10-18T13:16:23.65\"}"
   },
   "sample_details": {
-   "event_names": [],
+   "event_names": [
+    "هدف"
+   ],
    "card0": "null",
    "sub0": "null",
    "hc_keys": [
@@ -246,7 +248,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": false, \"popularityRank\": 0, \"competitorId\": 0, \"nationalId\": 2, \"createdAt\": \"2020-10-18T13:16:23.65\", \"id\": 52343752}"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"16'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (0 with XI)",
@@ -257,5 +259,5 @@
   "fails": 0
  },
  "match_details": "ok (341)",
- "utc": "2026-09-16T19:35:34Z"
+ "utc": "2026-09-16T19:51:07Z"
 }
