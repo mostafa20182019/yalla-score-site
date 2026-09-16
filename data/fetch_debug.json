@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 45 live games)",
+ "reconcile": "ok (0 row(s) corrected, 13 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "full - last slow fetch 60 min ago",
- "slow_fetched_at": "2026-09-16T13:47:43+00:00",
+ "slow_fetch": "full - active window",
+ "slow_fetched_at": "2026-09-16T14:02:46+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -176,9 +176,9 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (22 games)",
+ "goal_events": "ok (23 games)",
  "goal_events_dbg": {
-  "candidates": 30,
+  "candidates": 31,
   "detail_fails": 0,
   "skipped": [
    "4805176:count-mismatch (0, 0) vs 5-1 []",
@@ -255,13 +255,13 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 4.5, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (1 with XI)",
+ "prematch_lineups": "ok (0 with XI)",
  "prematch_dbg": {
-  "in_window": 1,
-  "fetched": 1,
-  "with_xi": 1,
+  "in_window": 0,
+  "fetched": 0,
+  "with_xi": 0,
   "fails": 0
  },
  "match_details": "ok (336)",
- "utc": "2026-09-16T13:50:35Z"
+ "utc": "2026-09-16T14:05:38Z"
 }
