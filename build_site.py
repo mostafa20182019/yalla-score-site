@@ -1764,7 +1764,84 @@ def pred_row(m, p):
             f'<span class="pr-score">النتيجة الأكثر احتمالًا <b>{top[0]}-{top[1]}</b></span>'
             + conf_chip(p["conf"]) + '</span></a>')
 
-def pred_block(m, p, logged, comp_stats):
+def _signed_pct(x):
+    """+24% / -18%, for a factor's distance from the league average."""
+    return ("+" if x >= 0 else "−") + f"{abs(x) * 100:.0f}%"
+
+def why_block(m, p, ex, cal):
+    """«لماذا رجّح النموذج هذا التوقع؟» — the prediction taken apart.
+
+    Every site in this market shows a score and a table. What none of them
+    shows is the arithmetic behind its own number, and that is the one page
+    element here that cannot be copied from a feed: each line below is a term
+    that appears literally in analysis.lambdas(), printed with this match's
+    values (AN.explain returns them, it does not re-derive anything).
+
+    It also ends with the model's own track record AT THIS confidence — from
+    the frozen log, so a confident-looking prediction carries the rate at
+    which past confident predictions actually came true. A number that
+    explains itself and then admits how often it has been wrong is the
+    opposite of the scaled, templated page Google penalises.
+
+    Silent when the league has no finished matches to average (a pre-season
+    table tells us nothing) - the same rule the readings follow.
+    """
+    if not ex or not p or (ex["n_h"] == 0 and ex["n_a"] == 0):
+        return ""
+    # The published prediction may come from the ORACLE model (the nightly
+    # PL/SQL file, when it is fresh) while explain() re-derives python's
+    # lambdas. The two are meant to be identical - that is the standing rule,
+    # and 10/10 leagues matched when it was set. If they ever drift, the
+    # decomposition would be describing a DIFFERENT prediction than the one on
+    # the page, so say nothing rather than something that does not add up.
+    if abs(ex["lh"] - p.get("lh", ex["lh"])) > 0.05 or \
+       abs(ex["la"] - p.get("la", ex["la"])) > 0.05:
+        return ""
+    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+    li = []
+    li.append(f'<li><b>نقطة البداية — متوسط هذا الدوري:</b> صاحب الأرض يسجّل '
+              f'{ex["mu_home"]:.2f} هدف في المباراة والضيف {ex["mu_away"]:.2f}.</li>')
+    # the two clubs' own numbers, each against the league average
+    def side(club, d_att, d_def_other, other):
+        bits = []
+        if abs(d_att) >= 0.05:
+            bits.append(f'هجوم {esc(club)} {_signed_pct(d_att)} عن متوسط الدوري')
+        else:
+            bits.append(f'هجوم {esc(club)} عند متوسط الدوري تقريبًا')
+        if abs(d_def_other) >= 0.05:
+            # the word carries the direction, so the number must not carry it
+            # too ("يستقبل −14% أقل" is a double negative)
+            bits.append(f'ودفاع {esc(other)} يستقبل {abs(d_def_other) * 100:.0f}% '
+                        f'{"أكثر" if d_def_other > 0 else "أقل"} من المتوسط')
+        return " ".join(bits)
+    li.append(f'<li><b>{esc(h)}:</b> {side(h, ex["d_att_h"], ex["d_def_a"], a)}.</li>')
+    li.append(f'<li><b>{esc(a)}:</b> {side(a, ex["d_att_a"], ex["d_def_h"], h)}.</li>')
+    if abs(ex["elo_edge"]) >= 0.01:
+        li.append(f'<li><b>فارق القوة:</b> تقييم {esc(h)} {round(ex["elo_h"])} مقابل '
+                  f'{round(ex["elo_a"])} لـ{esc(a)}، ويضيف النموذج {round(ex["elo_hfa"])} '
+                  f'نقطة لعامل الأرض — الأثر {_signed_pct(ex["elo_edge"])} على أرقام '
+                  f'{esc(h)} ومثلها في الاتجاه المعاكس على أرقام {esc(a)}.</li>')
+    li.append(f'<li><b>الناتج:</b> {ex["lh"]:.1f} هدف متوقع لـ{esc(h)} و{ex["la"]:.1f} '
+              f'لـ{esc(a)}، ومن توزيع بواسون على هذين الرقمين تخرج النسب '
+              f'{_pct(p["ph"])} و{_pct(p["pd"])} و{_pct(p["pa"])}.</li>')
+    top = max(p["ph"], p["pd"], p["pa"])
+    b = AN.stated_bucket(cal, top)
+    rec = ""
+    if b:
+        rec = (f'<p class="pd-note">وللأمانة: في المرات السابقة التي قال فيها النموذج '
+               f'احتمالًا بين {b["lo"]}% و{b["hi"]}%، تحقّق ما قاله في '
+               f'<b>{b["hits"]}</b> من <b>{b["n"]}</b> مرة. '
+               f'<a href="/predictions.html">السجل كاملًا</a>.</p>')
+    small = ""
+    if min(ex["n_h"], ex["n_a"]) < 4:
+        small = ('<p class="pd-note">عدد المباريات المنتهية لأحد الفريقين هذا الموسم قليل، '
+                 'فالأرقام أعلاه تميل إلى متوسط الدوري أكثر من الطبيعي.</p>')
+    return (f'<section class="minfo predict why"><h2>لماذا رجّح النموذج هذا التوقع؟</h2>'
+            f'<p class="pd-line">النموذج لا يقرأ الأخبار — يحسب. وهذه هي الأرقام نفسها '
+            f'التي دخلت المعادلة:</p><ul class="why-list">' + "".join(li) + '</ul>'
+            + small + rec + '</section>')
+
+def pred_block(m, p, logged, comp_stats, params=None, cal=None):
     """«توقع يلا سكور» section on a match page. Upcoming: live model output.
     Finished (with a frozen prediction): what we said vs what happened."""
     h, a = ar_team(m.get("home")), ar_team(m.get("away"))
@@ -1788,7 +1865,9 @@ def pred_block(m, p, logged, comp_stats):
                 f'<p class="pd-line">النتائج الأكثر احتمالًا: {top}</p>'
                 + (f'<p class="pd-facts">{" — ".join(facts)}</p>' if facts else "")
                 + f'<p class="pd-note">{conf_chip(p["conf"])} {AN_DISCLAIMER} '
-                  '<a href="/analysis.html">كيف يعمل النموذج؟</a></p></section>')
+                  '<a href="/analysis.html">كيف يعمل النموذج؟</a></p></section>'
+                + (why_block(m, p, AN.explain(comp_stats, params, m.get("home"), m.get("away")),
+                             cal) if params else ""))
     if st == "FINISHED" and logged and logged.get("hs") is not None:
         pick_ar = {"H": f"فوز {h}", "D": "التعادل", "A": f"فوز {a}"}[logged["pick"]]
         verdict = ('<span class="hit ok">✔ أصاب التوقع</span>' if logged.get("hit")
@@ -2515,6 +2594,9 @@ def build():
         _pstore_ok = False
         print(f"  ! prediction store unreachable ({e}) - using the committed export")
         _plog = AN.load_log()
+    # the model's own track record per stated-probability band, computed once:
+    # every upcoming match page prints the band its top number falls in
+    _cal = AN.calibration(_plog)
     _pch = AN.update_log(_plog, _upcoming, _preds, matches + _archive, datetime.date.today())
     if _pstore_ok:
         try:
@@ -3384,7 +3466,8 @@ def build():
         # «توقع يلا سكور»: model probabilities for an upcoming match; for a
         # finished one, what the model said before kick-off vs the result
         _pb = pred_block(m, _preds.get(str(mid)) if st == "UPCOMING" else None,
-                         _plog.get(str(mid)), _tstats.get(m.get("competition"), {}))
+                         _plog.get(str(mid)), _tstats.get(m.get("competition"), {}),
+                         params=_lparams.get(m.get("competition")), cal=_cal)
         if _pb:
             mp.append(_pb)
         info = [("البطولة", comp)]
@@ -6011,6 +6094,9 @@ a{color:inherit}
 .predict .pd-heads{display:flex;justify-content:space-between;font-weight:800;font-size:.9rem;margin-bottom:6px}
 .predict .pd-heads b{color:var(--green-d)}
 .pd-line{margin:8px 0;line-height:1.8}
+.why-list{margin:10px 0 0;padding-inline-start:20px;line-height:1.95}
+.why-list li{margin:6px 0}
+.why-list b{color:var(--green-d)}
 .pd-facts{color:var(--muted);font-size:.88rem;line-height:1.8}
 .pd-note{color:var(--muted);font-size:.8rem;line-height:1.7;margin:10px 0 0}
 .hit{font-weight:900;border-radius:6px;padding:1px 8px}.hit.ok{background:#dcfce7;color:#166534}.hit.no{background:#fee2e2;color:#991b1b}

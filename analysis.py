@@ -232,6 +232,65 @@ def lambdas(comp_stats, params, home, away):
     return lh * math.sqrt(f), la / math.sqrt(f), h, a
 
 
+def explain(comp_stats, params, home, away):
+    """Take the two expected-goal numbers apart into the factors that made them.
+
+    This is NOT a second model and not a story about the prediction: every
+    number below is a term that literally appears in lambdas() above -
+
+        lh = mu_home * att_h * def_a * sqrt(f)
+        la = mu_away * att_a * def_h / sqrt(f)
+        f  = 10 ** ((elo_h + ELO_HFA - elo_a) / 400 / ELO_GOAL_EXP)
+
+    so the page can say WHY without anything being invented. Percentages are
+    each factor's distance from 1.0, i.e. from "an average club in this
+    league", which is exactly what strength() normalises to.
+
+    Returned with the raw values as well, so a caller can decide what is worth
+    saying: a factor sitting at league average is true but not interesting.
+    """
+    blank = {"elo": 1500.0, "played": 0, "gf": 0, "ga": 0}
+    h = comp_stats.get(home, blank)
+    a = comp_stats.get(away, blank)
+    mu = params["mu"]
+    att_h, def_h = strength(h, mu)
+    att_a, def_a = strength(a, mu)
+    gap = (h["elo"] + ELO_HFA - a["elo"]) / 400.0
+    f = 10 ** (gap / ELO_GOAL_EXP)
+    lh = params["mu_home"] * att_h * def_a * math.sqrt(f)
+    la = params["mu_away"] * att_a * def_h / math.sqrt(f)
+    return {
+        "mu_home": params["mu_home"], "mu_away": params["mu_away"],
+        "att_h": att_h, "def_h": def_h, "att_a": att_a, "def_a": def_a,
+        "elo_h": h["elo"], "elo_a": a["elo"], "elo_hfa": ELO_HFA,
+        "elo_edge": math.sqrt(f) - 1.0,     # what the strength gap does to lh
+        "lh": lh, "la": la,
+        "n_h": h["played"], "n_a": a["played"],
+        # each factor as a signed distance from the league average
+        "d_att_h": att_h - 1.0, "d_def_a": def_a - 1.0,
+        "d_att_a": att_a - 1.0, "d_def_h": def_h - 1.0,
+    }
+
+
+def stated_bucket(cal, p, width=10):
+    """How the model's PAST statements in this probability band turned out.
+
+    `cal` is calibration()'s output. Given a probability the model is stating
+    now, return the bucket it falls in - so a page can print "we have said
+    something this likely N times before, and it happened M of them" instead
+    of asking the reader to trust the number. Returns None when the band has
+    too few cases to mean anything (the same 10-case floor the record page
+    uses).
+    """
+    if not cal:
+        return None
+    lo = min(int(p * 100) // width * width, 100 - width)
+    for b in cal.get("buckets") or []:
+        if b["lo"] == lo and b["n"] >= 10:
+            return b
+    return None
+
+
 def predict(comp_stats, params, home, away):
     """Outcome probabilities for home vs away in one competition."""
     lh, la, h, a = lambdas(comp_stats, params, home, away)
