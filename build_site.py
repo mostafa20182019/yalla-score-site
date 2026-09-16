@@ -1761,19 +1761,25 @@ def accuracy_html(acc, anchor=True):
 PRED_FILTER_JS = """<script>
 (function(){
   var STEP=40;
-  var rows=[].slice.call(document.querySelectorAll('#predtable tbody tr'));
+  var rows=[].slice.call(document.querySelectorAll('#predlist .rec-i'));
+  var days=[].slice.call(document.querySelectorAll('#predlist .rec-day'));
   var chips=[].slice.call(document.querySelectorAll('.pf-chip'));
   var sel=document.getElementById('pf-comp'), cnt=document.getElementById('pf-count');
+  var none=document.getElementById('pf-none');
   var more=document.getElementById('pf-more'), state='all', limit=STEP;
   function apply(){
-    var comp=sel?sel.value:'', matched=0, shown=0;
+    var comp=sel?sel.value:'', matched=0, shown=0, live={};
     rows.forEach(function(r){
       var okHit = state==='all' || (state==='hit') === (r.dataset.hit==='1');
       var okComp = !comp || r.dataset.comp===comp;
-      if(okHit && okComp){ matched++; var on = shown<limit; if(on) shown++; r.hidden=!on; }
+      if(okHit && okComp){ matched++; var on = shown<limit; if(on){ shown++;
+          live[r.dataset.day]=1; } r.hidden=!on; }
       else r.hidden=true;
     });
+    /* a day header only belongs there while that day still has a visible match */
+    days.forEach(function(d){ d.hidden = !live[d.dataset.day]; });
     if(cnt) cnt.textContent=matched;
+    if(none) none.hidden = matched>0;
     if(more){
       more.hidden = matched<=shown;
       more.textContent='عرض المزيد ('+(matched-shown)+' متبقية)';
@@ -1818,30 +1824,48 @@ def calibration_html(cal):
     return "".join(out)
 
 
-def _pred_row_html(e):
-    """One row of the full record."""
+def _rec_day_label(d):
+    """«اليوم · 15 سبتمبر» for the record's day headers. The date belongs on
+    the group, not repeated on all 166 rows (user, 2026-09-16)."""
+    try:
+        dt = datetime.date.fromisoformat(d)
+    except Exception:
+        return esc(d or "")
+    today = datetime.date.fromisoformat(REF_TODAY)
+    lead = ("اليوم" if dt == today
+            else "أمس" if dt == today - datetime.timedelta(days=1)
+            else _AR_DAYS[dt.weekday()])
+    year = f" {dt.year}" if dt.year != today.year else ""
+    return f"{lead} · {dt.day} {_AR_MONTHS[dt.month]}{year}"
+
+
+def _pred_item_html(e):
+    """One prediction in the record: the verdict first (an RTL reader meets it
+    immediately), the match and its real score, then one muted line with what
+    we said. A six-column table put the verdict at the far end of the row and
+    repeated the date on every line - this reads instead of being decoded."""
     mid = e.get("match_id")
     h, a = ar_team(e.get("home")), ar_team(e.get("away"))
-    pick_ar = {"H": h, "D": "تعادل", "A": a}.get(e.get("pick"), "—")
+    pick_ar = {"H": f"فوز {h}", "D": "تعادل", "A": f"فوز {a}"}.get(e.get("pick"), "—")
     conf = max(e.get("ph") or 0, e.get("pd") or 0, e.get("pa") or 0)
     hit = 1 if e.get("hit") else 0
-    mark = ('<span class="hit ok">✔ أصاب</span>' if hit
-            else '<span class="hit no">✘ أخطأ</span>')
+    verdict = "أصاب" if hit else "أخطأ"
     # score_pill, NOT "2-0" text: between two names in an RTL row a glued score
-    # is one LTR bidi run and lands home-score-left = next to the AWAY club.
-    # dir="ltr" here made it worse - it forced the reversal even after an
-    # Arabic name (measured 2026-09-16).
-    match = f'<bdi>{esc(h)}</bdi> {score_pill(e.get("hs"), e.get("as"), "sc-in")} <bdi>{esc(a)}</bdi>'
-    if mid:
-        match = f'<a href="/m/{esc(mid)}.html">{match}</a>'
+    # is one LTR bidi run and lands home-score-left = next to the AWAY club
+    # (measured 2026-09-16).
+    score = score_pill(e.get("hs"), e.get("as"), "sc-in")
     exact = ' <span class="pf-exact" title="أصبنا النتيجة بالضبط">🎯</span>' if e.get("score_hit") else ""
-    return (f'<tr data-hit="{hit}" data-comp="{esc(e.get("comp") or "")}">'
-            f'<td class="tl" dir="ltr">{esc(e.get("kickoff") or "")}</td>'
-            f'<td class="tl">{match}{exact}</td>'
-            f'<td class="tl">{esc(comp_label(e.get("comp") or ""))}</td>'
-            f'<td class="tl"><bdi>{esc(pick_ar)}</bdi> <small>({_pct(conf)})</small></td>'
-            f'<td>{score_txt(e.get("score"))}</td>'
-            f'<td>{mark}</td></tr>')
+    tag, href = ("a", f' href="/m/{esc(mid)}.html"') if mid else ("div", "")
+    return (f'<{tag} class="rec-i {"ok" if hit else "no"}"{href} data-hit="{hit}" '
+            f'data-comp="{esc(e.get("comp") or "")}" data-day="{esc(e.get("kickoff") or "")}">'
+            f'<span class="rec-v" title="{verdict}" aria-label="{verdict}">{"✔" if hit else "✘"}</span>'
+            f'<span class="rec-m"><span class="rec-t"><bdi>{esc(h)}</bdi> {score} '
+            f'<bdi>{esc(a)}</bdi>{exact}</span>'
+            f'<span class="rec-s">قلنا <b>{esc(pick_ar)}</b> بنسبة {_pct(conf)} '
+            f'<i class="rec-d">· أقرب نتيجة {score_txt(e.get("score"), "sc-in sc-s")}</i>'
+            f'<i class="rec-lg">· {esc(comp_label(e.get("comp") or ""))}</i></span></span>'
+            f'<span class="rec-c">{esc(comp_label(e.get("comp") or ""))}</span>'
+            f'</{tag}>')
 
 
 def _calls_html(ex):
@@ -1946,15 +1970,19 @@ def prediction_history_page(plog, acc):
              '<span class="pf-chip" data-f="miss">أخطأ</span>'
              f'<select id="pf-comp"><option value="">كل البطولات</option>{comp_opts}</select>'
              '<span class="pf-n"><b id="pf-count">' + str(len(rows)) + '</b> مباراة</span></div>'
-             '<div class="tbl-wrap"><table class="ptable" id="predtable"><thead><tr>'
-             '<th class="tl">التاريخ</th><th class="tl">المباراة</th><th class="tl">البطولة</th>'
-             '<th class="tl">توقعنا</th><th>النتيجة المرجّحة</th><th>الحكم</th>'
-             '</tr></thead><tbody>')
-    P.extend(_pred_row_html(e) for e in rows)
-    P.append('</tbody></table></div>'
+             '<div class="rec" id="predlist">')
+    # grouped by day: the date is a header, not a column repeated on every line
+    last_day = None
+    for e in rows:
+        day = e.get("kickoff") or ""
+        if day != last_day:
+            P.append(f'<div class="rec-day" data-day="{esc(day)}">{_rec_day_label(day)}</div>')
+            last_day = day
+        P.append(_pred_item_html(e))
+    P.append('</div><p class="rec-none" id="pf-none" hidden>لا توجد مباريات بهذا الاختيار.</p>'
              '<button type="button" id="pf-more" class="pf-more" hidden></button>'
-             '<p class="hintline">🎯 = أصبنا النتيجة بالضبط. «النتيجة المرجّحة» هي أعلى نتيجة '
-             'احتمالًا وقت التوقع، والحكم يقارن الاتجاه (فوز/تعادل/خسارة) بما حدث.</p></section>')
+             '<p class="hintline">🎯 = أصبنا النتيجة بالضبط. «أقرب نتيجة» هي أعلى نتيجة '
+             'احتمالًا وقت التوقع، والعلامة ✔/✘ تقارن الاتجاه (فوز/تعادل/خسارة) بما حدث.</p></section>')
 
     P.append('<section class="minfo"><h2>حدود هذا السجل</h2><ul class="lim">'
              f'<li>يبدأ من <b>{esc(first)}</b> — أول يوم ثبّتنا فيه التوقعات آليًا، وليس من إطلاق الموقع.</li>'
@@ -6072,6 +6100,36 @@ a{color:inherit}
 .pf-small{color:var(--muted);font-size:.65rem;font-weight:700;background:#f1f5f9;
   border-radius:6px;padding:.05rem .3rem;white-space:nowrap}
 .pf-exact{font-size:.8rem}
+/* the record itself: a day-grouped list, not a six-column table. The verdict
+   sits at the RTL start so it is the first thing read; the date is a group
+   header instead of a column repeated on every line (user, 2026-09-16). */
+.rec{border:1px solid #e6ecf2;border-radius:12px;overflow:hidden;background:#fff}
+.rec-day{background:#f1f5f9;color:#41525f;font-weight:800;font-size:.76rem;
+  padding:.35rem .8rem;border-block:1px solid #e6ecf2}
+.rec-day:first-child{border-top:0}
+.rec-i{display:flex;align-items:center;gap:.6rem;padding:.5rem .7rem;
+  border-bottom:1px solid #f1f5f9;text-decoration:none;color:inherit}
+.rec-i:last-child{border-bottom:0}
+.rec-i:hover{background:#f8fafc}
+.rec-v{flex:0 0 auto;width:22px;height:22px;border-radius:50%;display:grid;
+  place-items:center;font-size:.78rem;font-weight:900}
+.rec-i.ok .rec-v{background:#dcfce7;color:#166534}
+.rec-i.no .rec-v{background:#fee2e2;color:#991b1b}
+.rec-m{flex:1 1 auto;min-width:0}
+.rec-t{display:block;font-weight:800;font-size:.92rem;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.rec-s{display:block;color:var(--muted);font-size:.76rem;margin-top:.1rem}
+.rec-s b{color:var(--ink);font-weight:800}
+.rec-s i{font-style:normal}
+.rec-s .sc-s{font-size:.76rem;font-weight:800;color:var(--ink);margin-inline:2px}
+.rec-c{flex:0 0 auto;color:var(--muted);font-size:.74rem;font-weight:700}
+.rec-lg{display:none}
+.rec-none{color:var(--muted);font-size:.85rem;text-align:center;padding:.8rem 0}
+@media(max-width:620px){
+  .rec-c{display:none}
+  .rec-lg{display:inline}
+  .rec-t{font-size:.86rem}
+}
 .pf-more{display:block;width:100%;margin:.5rem 0 0;padding:.55rem;border:1px solid #e2e8f0;
   background:#f6f8fa;border-radius:10px;font-family:inherit;font-size:.85rem;font-weight:800;
   color:var(--green-d);cursor:pointer}
