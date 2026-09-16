@@ -9,8 +9,8 @@
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-16T18:46:31+00:00",
- "standings": "ok (5)",
+ "slow_fetched_at": "2026-09-16T18:47:45+00:00",
+ "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "s365_charts": {
@@ -181,12 +181,12 @@
   "candidates": 33,
   "detail_fails": 0,
   "skipped": [
-   "4804678:count-mismatch (0, 0) vs 0-1 []",
    "4805176:count-mismatch (0, 0) vs 5-1 []",
    "4805164:count-mismatch (0, 0) vs 0-3 []",
    "4805161:count-mismatch (0, 0) vs 6-1 []",
    "4805188:count-mismatch (0, 0) vs 2-2 []",
-   "4805177:count-mismatch (0, 0) vs 3-0 []"
+   "4805177:count-mismatch (0, 0) vs 3-0 []",
+   "4805183:count-mismatch (0, 0) vs 2-1 []"
   ],
   "frozen_skipped": 148,
   "sample": {
@@ -226,7 +226,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 8201, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 24.0, \"addedTime\": 0, \"gameTimeDisplay\": \"24'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 50581497, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 8610, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 70952455, \"extraPlayers\": [69782486], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 8610, \"statusId\": 8, \"stageId\": 9, \"order\": 4, \"num\": 4, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"45+1'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 70952455, \"extraPlayers\": [69782486], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -250,7 +250,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.7, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"89'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.3, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (2 with XI)",
@@ -261,5 +261,5 @@
   "fails": 0
  },
  "match_details": "ok (341)",
- "utc": "2026-09-16T18:49:29Z"
+ "utc": "2026-09-16T18:52:05Z"
 }
