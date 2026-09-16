@@ -1904,8 +1904,8 @@ def pred_row(m, p):
             f'<span class="pr-teams"><span class="pr-t">{crest(m.get("home_badge"))}<bdi>{esc(h)}</bdi></span>'
             f'<span class="pr-vs">×</span>'
             f'<span class="pr-t">{crest(m.get("away_badge"))}<bdi>{esc(a)}</bdi></span></span>'
-            + prob_bar(p) +
-            f'<span class="pr-meta">' + prob_legend(p) +
+            + f'<span class="pr-bw">{prob_bar(p)}{prob_legend(p)}</span>' +
+            f'<span class="pr-meta">'
             f'<span class="pr-fav">الأرجح: <b>{esc(fav)}</b></span>'
             f'<span class="pr-score">النتيجة الأكثر احتمالًا <b>{top[0]}-{top[1]}</b></span>'
             + conf_chip(p["conf"]) + '</span></a>')
@@ -6252,14 +6252,16 @@ a{color:inherit}
 .an-comp{display:flex;align-items:center;gap:6px;font-size:1rem;margin:16px 0 8px}
 .an-comp a{color:var(--ink);text-decoration:none}
 .plist{display:flex;flex-direction:column;gap:8px}
-.prow{display:grid;grid-template-columns:96px 1fr 180px;grid-template-areas:"when teams bar" "when meta bar";gap:4px 14px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--ink)}
+.prow{display:grid;grid-template-columns:96px 1fr 268px;grid-template-areas:"when teams bar" "when meta bar";gap:4px 14px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--ink)}
 .prow:hover{border-color:var(--green)}
 .pr-when{grid-area:when;font-size:.8rem;font-weight:800;color:var(--muted)}
 .pr-teams{grid-area:teams;display:flex;align-items:center;gap:8px;font-weight:900;min-width:0}
 .pr-t{display:inline-flex;align-items:center;gap:6px;min-width:0}
 .pr-t img{width:22px;height:22px;object-fit:contain}
 .pr-vs{color:var(--muted);font-weight:600}
-.prow .pbar{grid-area:bar}
+.prow .pr-bw{grid-area:bar;display:flex;flex-direction:column;gap:5px;min-width:0}
+.prow .pr-probs{font-size:.72rem;line-height:1.6;white-space:nowrap}
+.prow .pr-probs .prb+.prb{margin-inline-start:8px}
 .pr-meta{grid-area:meta;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);font-weight:700}
 .pbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#e2e8f0;direction:ltr}
 .pb-seg{display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;min-width:0}
