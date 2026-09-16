@@ -5239,7 +5239,7 @@ def match_details_html(e, flipped, h_ar, a_ar):
                     s.get("minute"), "🔁", txt))
     evs.sort(key=lambda x: x[0])
     if evs:
-        parts.append('<section class="minfo"><h2>أحداث المباراة</h2><div class="tl">')
+        parts.append('<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl">')
         for _, sd, mn, ic, txt in evs:
             cell = f'{ic} {txt}'
             mn_t = f'<span dir="ltr">{esc(mn)}′</span>' if mn else ""
@@ -5959,8 +5959,12 @@ a{color:inherit}
 .mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#15658f}
 .mg small{font-size:.62rem}
 @media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.66rem}}
-/* match details: events timeline + starting lineups (/m/<id>.html) */
-.tl{display:flex;flex-direction:column}
+/* match details: events timeline + starting lineups (/m/<id>.html).
+   NOT «.tl» - that collided with the .tl text-start cells in every
+   .ptable (standings, scorers, ratings, the prediction record) and
+   turned those cells into flex boxes, which drops them out of the
+   table layout entirely. Measured 2026-09-16. */
+.mtl{display:flex;flex-direction:column}
 .tl-r{display:grid;grid-template-columns:1fr 52px 1fr;gap:6px;align-items:center;
   font-size:.85rem;padding:5px 0;border-bottom:1px solid #f1f5f9}
 .tl-r:last-child{border-bottom:0}
