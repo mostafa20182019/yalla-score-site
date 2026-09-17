@@ -458,10 +458,19 @@ async function storeApply(env, fresh, now) {
         .bind(g.id, g.c, g.h, g.a, g.hs, g.as, now, now + REPORT_DELAY_MS));
       ended += 1;
     }
-    // the state row: written only when something changed, touched otherwise
+    // The state row is written only when something MATERIAL changed. The
+    // minute is deliberately not in that test (2026-09-17): it ticks for every
+    // live game every minute, so including it cost one row write per live game
+    // per minute - about 28k on a busy evening, against a free tier of 100k a
+    // day that has already blocked article publishing twice this week.
+    //
+    // Nothing is lost by leaving it out. live_state exists to DIFF against
+    // (new goal, VAR reversal, final whistle) and none of that needs the
+    // clock; what visitors are served is the snapshot row below, which is
+    // rewritten every refresh and carries the fresh minute. The row's own
+    // min/gt/hf still update whenever anything else moves.
     const goalsJson = newGoals.length ? JSON.stringify(newGoals) : null;
     const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
-      || (p.min || "") !== (g.min || "") || (p.gt || 0) !== (g.gt || 0) || (p.hf || 0) !== (g.hf || 0)
       || (p.goals || null) !== goalsJson;
     if (changed) {
       stmts.push(env.DB.prepare("/*ls_upsert*/ INSERT INTO live_state (game_id, c, h, a, hs, as_, live, min, gt, hf, goals, " +

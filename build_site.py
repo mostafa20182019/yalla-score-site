@@ -5009,7 +5009,17 @@ def goal_events_index(goal_events):
     return idx
 
 def match_goals(idx, m):
-    if (m.get("status") or "").upper() not in ("FINISHED", "LIVE"):
+    """Scorer lines for a match row — FINISHED only.
+
+    A live match used to get them too, and that quietly broke the rule the
+    dashes exist for. The user saw «مالقا - - - فياريال» with one goal listed
+    at 12': the score was hidden as possibly-stale while the goal list, which
+    is exactly as stale, implied 1-0. It was 1-1 — the second goal had arrived
+    after the last build. Publishing half the picture is worse than publishing
+    none of it, so a live match now shows nothing until LIVE_JS paints the
+    score AND the goals together from /live.json, which carries both.
+    """
+    if (m.get("status") or "").upper() != "FINISHED":
         return None
     h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
     g = idx.get((f"{h}|{a}", m.get("kickoff")))
