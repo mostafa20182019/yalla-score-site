@@ -953,7 +953,7 @@ export default {
     //                      summer and the winter UTC hour of every slot)
     //   anything else   -> publish.yml (the 15-minute refresh)
     let workflow = "publish.yml";
-    if (event.cron === "0 6,8,10,12,14,15,17,18,19,20 * * *") {
+    if (event.cron === "0 6,8,11,14,17,19 * * *") {
       workflow = "daily-article.yml";
     } else if (MATCH_CRONS.has(event.cron)) {
       const slot = matchSlotCairo(new Date(event.scheduledTime || Date.now()));
