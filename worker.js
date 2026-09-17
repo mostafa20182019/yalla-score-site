@@ -350,31 +350,41 @@ const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, sid
 const META_SET = "/*lm_set*/ INSERT INTO live_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v";
 
 async function storeRead(env, now) {
-  // Reads LOOK like the cheap side of D1 (5M/day against 100k writes), which is
-  // why this scans the whole table and lets the SNAPSHOT decide what is
-  // servable. On 2026-09-16 the read limit ran out anyway and blocked article
-  // publishing, and nothing anywhere counted rows read - so every serve now
-  // reports its own cost (`rr` on /live.json, and the cron logs it). Measure
-  // first: a full scan per request is the prime suspect, not the proven cause.
-  const [rows, metaRows] = await Promise.all([
-    env.DB.prepare("/*ls_rows*/ SELECT * FROM live_state").all(),
-    env.DB.prepare("/*ls_snap*/ SELECT v FROM live_meta WHERE k = 'snapshot'").all(),
-  ]);
+  // ONE ROW. This used to scan live_state on every serve, which measured at
+  // 113 rows a request (two days of games) against a free tier of 5M a day -
+  // about 40% of the quota spent on re-assembling an answer the refresh had
+  // already assembled, and on 2026-09-16 the read limit ran out and stopped
+  // article publishing. So the snapshot now carries the payload it describes,
+  // exactly as the write side was fixed the day before: one row per refresh
+  // instead of one per game.
+  //
+  // live_state is still the record - storeApply diffs against it and the goal
+  // log hangs off it. It is simply no longer on the serving path.
+  const metaRows = await env.DB
+    .prepare("/*ls_snap*/ SELECT v FROM live_meta WHERE k = 'snapshot'").all();
   const meta = ((metaRows.results || [])[0]) || null;
-  const rr = (((rows.meta || {}).rows_read) || 0)
-           + (((metaRows.meta || {}).rows_read) || 0);
+  let rr = ((metaRows.meta || {}).rows_read) || 0;
   let snap = null;
   try { snap = meta && meta.v ? JSON.parse(meta.v) : null; } catch (e) { snap = null; }
   const last = snap && snap.ts ? Number(snap.ts) : 0;
-  // the age rule, once instead of per row: a row is shown only while the last
-  // upstream read is young AND that read still listed the game
+  // the age rule, once for the whole answer: serve only while the last
+  // upstream read is young enough to still be true
   const live = last && (now - last) <= LIVE_TTL_SEC * 1000;
-  const ids = new Set(live && Array.isArray(snap.ids) ? snap.ids : []);
-  const games = (rows.results || []).filter(r => ids.has(r.game_id)).map(r => ({
-    id: r.game_id, h: r.h, a: r.a, hs: r.hs, as: r.as_, live: !!r.live,
-    min: r.min || "", gt: r.gt || 0, hf: r.hf || 0, c: r.c || 0,
-    ...(r.goals ? { goals: JSON.parse(r.goals) } : {}),
-  }));
+  let games = live && Array.isArray(snap.games) ? snap.games : [];
+  if (live && !Array.isArray(snap.games) && Array.isArray(snap.ids)) {
+    // A snapshot written by the previous version: it names the ids but not the
+    // games. Rather than serve dashes for the minute until the next refresh,
+    // fall back to the old scan once. Nothing writes this shape any more, so
+    // this path disappears on its own.
+    const rows = await env.DB.prepare("/*ls_rows*/ SELECT * FROM live_state").all();
+    rr += ((rows.meta || {}).rows_read) || 0;
+    const ids = new Set(snap.ids);
+    games = (rows.results || []).filter(r => ids.has(r.game_id)).map(r => ({
+      id: r.game_id, h: r.h, a: r.a, hs: r.hs, as: r.as_, live: !!r.live,
+      min: r.min || "", gt: r.gt || 0, hf: r.hf || 0, c: r.c || 0,
+      ...(r.goals ? { goals: JSON.parse(r.goals) } : {}),
+    }));
+  }
   return { games, last, rr };
 }
 
@@ -465,8 +475,17 @@ async function storeApply(env, fresh, now) {
     // snapshot below, which is one row for the whole refresh instead of one
     // per game (the 2026-09-15 quota wall)
   }
+  // The snapshot IS the answer /live.json serves: one row, written once per
+  // refresh, read once per request (see storeRead). `ids` stays for the
+  // report queue and for anything that only needs to know what was listed.
+  const payload = fresh.games.filter(g => g.id).map(g => ({
+    id: g.id, h: g.h, a: g.a, hs: g.hs, as: g.as, live: !!g.live,
+    min: g.min || "", gt: g.gt || 0, hf: g.hf || 0, c: g.c || 0,
+    ...(g.goals && g.goals.length ? { goals: g.goals } : {}),
+  }));
   stmts.push(env.DB.prepare(META_SET).bind("snapshot", JSON.stringify({
-    ts: now, src: fresh.src, dt: fresh.dt, ids: fresh.games.map(g => g.id).filter(Boolean),
+    ts: now, src: fresh.src, dt: fresh.dt,
+    ids: payload.map(g => g.id), games: payload,
   })));
   stmts.push(env.DB.prepare("/*ls_purge*/ DELETE FROM live_state WHERE changed_at < ?")
     .bind(now - STATE_KEEP_MS));
