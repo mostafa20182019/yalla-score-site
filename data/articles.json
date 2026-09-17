@@ -5564,6 +5564,18 @@
           "pub_ts": "2026-09-05T20:30:12+03:00",
           "image_url": "https://yallascore.site/media/30-june-stadium-pyramids.jpg",
           "image_credit": "صورة: استاد 30 يونيو بالقاهرة، ملعب نادي بيراميدز — Crosskimo، رخصة الملك العام (ويكيميديا كومنز)",
+          "sources": [
+            {
+              "name": "بوابة الشروق",
+              "url": "http://www.shorouknews.com/news/view.aspx?cdate=05092026&id=1988fba5-940b-42b6-8ac6-94ea1b7fdcce",
+              "note": "تأكيد استدعاء بن بوعلي لمواجهتي زامبيا وبوروندي"
+            },
+            {
+              "name": "القاهرة 24",
+              "url": "https://www.cairo24.com/2489095",
+              "note": "تأكيد إخطار بيراميدز الرسمي من الاتحاد الجزائري"
+            }
+          ],
           "fb_post": "الجزائر تستدعي بن بوعلي مهاجم بيراميدز لمعسكر سبتمبر استعدادًا لتصفيات أمم أفريقيا\nhttps://yallascore.site/a/388.html\n#يلا_سكور #بيراميدز #منتخب_الجزائر"
         },
         {
