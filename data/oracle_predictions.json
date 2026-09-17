@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-17T00:15:06+03:00",
+    "generated_at" : "2026-09-17T03:39:12+03:00",
     "days" : 10,
     "n" : 61,
     "params" :
@@ -202,7 +202,7 @@
         "def" : 0.8386
       },
       {
-        "team" : "السويحلي",
+        "team" : "المريخ بنتو",
         "elo" : 1535.07,
         "played" : 2,
         "gf" : 4,
@@ -211,7 +211,7 @@
         "def" : 0.7143
       },
       {
-        "team" : "المريخ بنتو",
+        "team" : "السويحلي",
         "elo" : 1535.07,
         "played" : 2,
         "gf" : 4,
@@ -346,15 +346,6 @@
         "def" : 0.9629
       },
       {
-        "team" : "اسكتلندا",
-        "elo" : 1513.12,
-        "played" : 2,
-        "gf" : 1,
-        "ga" : 0,
-        "att" : 0.8386,
-        "def" : 0.7143
-      },
-      {
         "team" : "النادي الأفريقي",
         "elo" : 1513.12,
         "played" : 2,
@@ -362,6 +353,15 @@
         "ga" : 2,
         "att" : 1.0872,
         "def" : 0.9629
+      },
+      {
+        "team" : "اسكتلندا",
+        "elo" : 1513.12,
+        "played" : 2,
+        "gf" : 1,
+        "ga" : 0,
+        "att" : 0.8386,
+        "def" : 0.7143
       },
       {
         "team" : "بترو اتليتكو",
@@ -1241,12 +1241,12 @@
     [
       {
         "team" : "FC Barcelona",
-        "elo" : 1707.69,
-        "played" : 5,
-        "gf" : 21,
-        "ga" : 4,
-        "att" : 1.9509,
-        "def" : 0.7764
+        "elo" : 1715.36,
+        "played" : 6,
+        "gf" : 28,
+        "ga" : 6,
+        "att" : 2.1886,
+        "def" : 0.8261
       },
       {
         "team" : "Real Madrid CF",
@@ -1254,8 +1254,8 @@
         "played" : 6,
         "gf" : 17,
         "ga" : 6,
-        "att" : 1.5223,
-        "def" : 0.8314
+        "att" : 1.5073,
+        "def" : 0.8261
       },
       {
         "team" : "Club Atlético de Madrid",
@@ -1263,8 +1263,8 @@
         "played" : 6,
         "gf" : 14,
         "ga" : 6,
-        "att" : 1.3339,
-        "def" : 0.8314
+        "att" : 1.3216,
+        "def" : 0.8261
       },
       {
         "team" : "Real Betis Balompié",
@@ -1272,8 +1272,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 6,
-        "att" : 0.9836,
-        "def" : 0.9145
+        "att" : 0.9769,
+        "def" : 0.9087
       },
       {
         "team" : "Villarreal CF",
@@ -1281,8 +1281,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 10,
-        "att" : 0.9836,
-        "def" : 1.1909
+        "att" : 0.9769,
+        "def" : 1.1812
       },
       {
         "team" : "Sevilla FC",
@@ -1290,8 +1290,8 @@
         "played" : 6,
         "gf" : 9,
         "ga" : 6,
-        "att" : 1.0198,
-        "def" : 0.8314
+        "att" : 1.0119,
+        "def" : 0.8261
       },
       {
         "team" : "Rayo Vallecano de Madrid",
@@ -1299,8 +1299,8 @@
         "played" : 6,
         "gf" : 10,
         "ga" : 15,
-        "att" : 1.0826,
-        "def" : 1.3967
+        "att" : 1.0738,
+        "def" : 1.3835
       },
       {
         "team" : "Deportivo Alavés",
@@ -1308,17 +1308,26 @@
         "played" : 6,
         "gf" : 11,
         "ga" : 6,
-        "att" : 1.1455,
-        "def" : 0.8314
+        "att" : 1.1358,
+        "def" : 0.8261
       },
       {
         "team" : "Levante UD",
-        "elo" : 1479.32,
-        "played" : 5,
+        "elo" : 1476.26,
+        "played" : 6,
         "gf" : 7,
         "ga" : 9,
-        "att" : 0.9836,
-        "def" : 1.1218
+        "att" : 0.8881,
+        "def" : 1.0119
+      },
+      {
+        "team" : "Athletic Club",
+        "elo" : 1475.11,
+        "played" : 6,
+        "gf" : 7,
+        "ga" : 6,
+        "att" : 0.8881,
+        "def" : 0.8261
       },
       {
         "team" : "RC Deportivo La Coruña",
@@ -1326,17 +1335,8 @@
         "played" : 6,
         "gf" : 9,
         "ga" : 7,
-        "att" : 1.0198,
-        "def" : 0.8942
-      },
-      {
-        "team" : "Athletic Club",
-        "elo" : 1472.05,
-        "played" : 5,
-        "gf" : 7,
-        "ga" : 6,
-        "att" : 0.9836,
-        "def" : 0.9145
+        "att" : 1.0119,
+        "def" : 0.8881
       },
       {
         "team" : "Getafe CF",
@@ -1344,8 +1344,8 @@
         "played" : 5,
         "gf" : 3,
         "ga" : 6,
-        "att" : 0.7073,
-        "def" : 0.9145
+        "att" : 0.7044,
+        "def" : 0.9087
       },
       {
         "team" : "RC Celta de Vigo",
@@ -1353,8 +1353,8 @@
         "played" : 6,
         "gf" : 3,
         "ga" : 6,
-        "att" : 0.643,
-        "def" : 0.8314
+        "att" : 0.6403,
+        "def" : 0.8261
       },
       {
         "team" : "Valencia CF",
@@ -1362,8 +1362,8 @@
         "played" : 6,
         "gf" : 2,
         "ga" : 10,
-        "att" : 0.5802,
-        "def" : 1.0826
+        "att" : 0.5784,
+        "def" : 1.0738
       },
       {
         "team" : "Real Sociedad de Fútbol",
@@ -1371,8 +1371,8 @@
         "played" : 6,
         "gf" : 6,
         "ga" : 11,
-        "att" : 0.8314,
-        "def" : 1.1455
+        "att" : 0.8261,
+        "def" : 1.1358
       },
       {
         "team" : "RCD Espanyol de Barcelona",
@@ -1380,17 +1380,17 @@
         "played" : 6,
         "gf" : 9,
         "ga" : 7,
-        "att" : 1.0198,
-        "def" : 0.8942
+        "att" : 1.0119,
+        "def" : 0.8881
       },
       {
         "team" : "Real Racing Club de Santander",
-        "elo" : 1458.05,
-        "played" : 5,
-        "gf" : 9,
-        "ga" : 9,
-        "att" : 1.1218,
-        "def" : 1.1218
+        "elo" : 1450.38,
+        "played" : 6,
+        "gf" : 11,
+        "ga" : 16,
+        "att" : 1.1358,
+        "def" : 1.4454
       },
       {
         "team" : "Málaga CF",
@@ -1398,8 +1398,8 @@
         "played" : 5,
         "gf" : 2,
         "ga" : 8,
-        "att" : 0.6382,
-        "def" : 1.0527
+        "att" : 0.6362,
+        "def" : 1.045
       },
       {
         "team" : "CA Osasuna",
@@ -1407,8 +1407,8 @@
         "played" : 6,
         "gf" : 5,
         "ga" : 12,
-        "att" : 0.7686,
-        "def" : 1.2083
+        "att" : 0.7642,
+        "def" : 1.1977
       },
       {
         "team" : "Elche CF",
@@ -1416,8 +1416,8 @@
         "played" : 6,
         "gf" : 8,
         "ga" : 16,
-        "att" : 0.957,
-        "def" : 1.4595
+        "att" : 0.95,
+        "def" : 1.4454
       }
     ],
     "Saudi Pro League" :
@@ -2285,13 +2285,13 @@
     },
     "Primera Division" :
     {
-      "n" : 56,
-      "mu_home" : 1.6053,
-      "mu_away" : 1.2895,
-      "mu" : 1.4474,
-      "home_win" : 0.4464,
-      "draw" : 0.25,
-      "gpm" : 2.9643
+      "n" : 58,
+      "mu_home" : 1.6538,
+      "mu_away" : 1.2821,
+      "mu" : 1.4679,
+      "home_win" : 0.4483,
+      "draw" : 0.2586,
+      "gpm" : 3.0172
     },
     "Turkish Super Lig" :
     {
@@ -5799,6 +5799,32 @@
       "status" : "FINISHED"
     },
     {
+      "match_id" : "564685",
+      "competition" : "Primera Division",
+      "kickoff" : "2026-09-16",
+      "koff_time" : "22:30",
+      "home" : "Levante UD",
+      "away" : "Athletic Club",
+      "home_score" : 0,
+      "away_score" : 0,
+      "home_badge" : "https://crests.football-data.org/88.png",
+      "away_badge" : "https://crests.football-data.org/77.png",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "564687",
+      "competition" : "Primera Division",
+      "kickoff" : "2026-09-16",
+      "koff_time" : "22:30",
+      "home" : "FC Barcelona",
+      "away" : "Real Racing Club de Santander",
+      "home_score" : 7,
+      "away_score" : 2,
+      "home_badge" : "https://crests.football-data.org/81.png",
+      "away_badge" : "https://crests.football-data.org/5335.png",
+      "status" : "FINISHED"
+    },
+    {
       "match_id" : "4787096",
       "competition" : "Saudi Pro League",
       "kickoff" : "2026-08-13",
@@ -8722,11 +8748,11 @@
       "away" : "Elche CF",
       "kickoff" : "2026-09-18",
       "koff_time" : "22:00",
-      "lh" : 2.517557,
-      "la" : 1.04732,
-      "ph" : 0.6918,
-      "pd" : 0.1699,
-      "pa" : 0.1383,
+      "lh" : 2.54875,
+      "la" : 1.026502,
+      "ph" : 0.7014,
+      "pd" : 0.1665,
+      "pa" : 0.1321,
       "score" : "2-1",
       "conf" : "mid",
       "n_h" : 6,
@@ -8742,11 +8768,11 @@
       "away" : "Getafe CF",
       "kickoff" : "2026-09-17",
       "koff_time" : "20:00",
-      "lh" : 1.568244,
-      "la" : 0.768028,
-      "ph" : 0.564,
-      "pd" : 0.2533,
-      "pa" : 0.1826,
+      "lh" : 1.594372,
+      "la" : 0.755637,
+      "ph" : 0.5739,
+      "pd" : 0.2499,
+      "pa" : 0.1762,
       "score" : "1-0",
       "conf" : "mid",
       "n_h" : 5,
@@ -8762,17 +8788,17 @@
       "away" : "Levante UD",
       "kickoff" : "2026-09-20",
       "koff_time" : "19:30",
-      "lh" : 1.857574,
-      "la" : 1.440399,
-      "ph" : 0.4744,
-      "pd" : 0.2255,
-      "pa" : 0.3001,
+      "lh" : 1.716913,
+      "la" : 1.280542,
+      "ph" : 0.4766,
+      "pd" : 0.237,
+      "pa" : 0.2863,
       "score" : "1-1",
       "conf" : "mid",
       "n_h" : 5,
-      "n_a" : 5,
+      "n_a" : 6,
       "elo_h" : 1508.41,
-      "elo_a" : 1479.32,
+      "elo_a" : 1476.26,
       "ts" : "2026-09-17"
     },
     "564697" :
@@ -8782,11 +8808,11 @@
       "away" : "Málaga CF",
       "kickoff" : "2026-09-20",
       "koff_time" : "15:00",
-      "lh" : 1.257801,
-      "la" : 0.715153,
-      "ph" : 0.4932,
-      "pd" : 0.2952,
-      "pa" : 0.2116,
+      "lh" : 1.281044,
+      "la" : 0.704374,
+      "ph" : 0.5029,
+      "pd" : 0.2922,
+      "pa" : 0.2049,
       "score" : "1-0",
       "conf" : "mid",
       "n_h" : 5,
@@ -8802,17 +8828,17 @@
       "away" : "FC Barcelona",
       "kickoff" : "2026-09-19",
       "koff_time" : "22:00",
-      "lh" : 1.191251,
-      "la" : 2.231517,
-      "ph" : 0.1944,
-      "pd" : 0.1976,
-      "pa" : 0.608,
+      "lh" : 1.291052,
+      "la" : 2.482254,
+      "ph" : 0.1848,
+      "pd" : 0.1822,
+      "pa" : 0.6331,
       "score" : "1-2",
       "conf" : "mid",
       "n_h" : 6,
-      "n_a" : 5,
+      "n_a" : 6,
       "elo_h" : 1502.63,
-      "elo_a" : 1707.69,
+      "elo_a" : 1715.36,
       "ts" : "2026-09-17"
     },
     "564683" :
@@ -8822,11 +8848,11 @@
       "away" : "Villarreal CF",
       "kickoff" : "2026-09-17",
       "koff_time" : "22:30",
-      "lh" : 1.217032,
-      "la" : 1.338537,
-      "ph" : 0.3383,
-      "pd" : 0.266,
-      "pa" : 0.3956,
+      "lh" : 1.239891,
+      "la" : 1.311929,
+      "ph" : 0.3497,
+      "pd" : 0.2666,
+      "pa" : 0.3837,
       "score" : "1-1",
       "conf" : "mid",
       "n_h" : 5,
@@ -8842,11 +8868,11 @@
       "away" : "Real Madrid CF",
       "kickoff" : "2026-09-20",
       "koff_time" : "17:15",
-      "lh" : 1.778993,
-      "la" : 1.633172,
-      "ph" : 0.4174,
-      "pd" : 0.2256,
-      "pa" : 0.3571,
+      "lh" : 1.804355,
+      "la" : 1.597587,
+      "ph" : 0.4301,
+      "pd" : 0.2254,
+      "pa" : 0.3445,
       "score" : "1-1",
       "conf" : "mid",
       "n_h" : 6,
@@ -8862,16 +8888,16 @@
       "away" : "Deportivo Alavés",
       "kickoff" : "2026-09-19",
       "koff_time" : "17:15",
-      "lh" : 1.346698,
-      "la" : 1.316797,
-      "ph" : 0.3768,
-      "pd" : 0.2602,
-      "pa" : 0.363,
+      "lh" : 1.246499,
+      "la" : 1.170911,
+      "ph" : 0.3807,
+      "pd" : 0.2752,
+      "pa" : 0.3441,
       "score" : "1-1",
       "conf" : "mid",
-      "n_h" : 5,
+      "n_h" : 6,
       "n_a" : 6,
-      "elo_h" : 1472.05,
+      "elo_h" : 1475.11,
       "elo_a" : 1488.88,
       "ts" : "2026-09-17"
     },
@@ -8882,11 +8908,11 @@
       "away" : "Real Betis Balompié",
       "kickoff" : "2026-09-20",
       "koff_time" : "19:30",
-      "lh" : 1.476146,
-      "la" : 1.150379,
-      "ph" : 0.4464,
-      "pd" : 0.2583,
-      "pa" : 0.2953,
+      "lh" : 1.499414,
+      "la" : 1.128043,
+      "ph" : 0.4575,
+      "pd" : 0.257,
+      "pa" : 0.2854,
       "score" : "1-1",
       "conf" : "mid",
       "n_h" : 6,
@@ -8902,11 +8928,11 @@
       "away" : "Rayo Vallecano de Madrid",
       "kickoff" : "2026-09-19",
       "koff_time" : "15:00",
-      "lh" : 1.724138,
-      "la" : 1.685907,
-      "ph" : 0.3948,
-      "pd" : 0.2262,
-      "pa" : 0.379,
+      "lh" : 1.749441,
+      "la" : 1.648029,
+      "ph" : 0.4078,
+      "pd" : 0.2264,
+      "pa" : 0.3658,
       "score" : "1-1",
       "conf" : "mid",
       "n_h" : 6,
@@ -8922,11 +8948,11 @@
       "away" : "Real Sociedad de Fútbol",
       "kickoff" : "2026-09-20",
       "koff_time" : "22:00",
-      "lh" : 1.103994,
-      "la" : 1.121554,
-      "ph" : 0.3509,
-      "pd" : 0.2893,
-      "pa" : 0.3597,
+      "lh" : 1.124365,
+      "la" : 1.098999,
+      "ph" : 0.3616,
+      "pd" : 0.2895,
+      "pa" : 0.3489,
       "score" : "1-1",
       "conf" : "mid",
       "n_h" : 6,
@@ -8942,17 +8968,17 @@
       "away" : "Real Racing Club de Santander",
       "kickoff" : "2026-09-19",
       "koff_time" : "19:30",
-      "lh" : 1.203662,
-      "la" : 1.156927,
-      "ph" : 0.3718,
-      "pd" : 0.2793,
-      "pa" : 0.349,
+      "lh" : 1.597108,
+      "la" : 1.152918,
+      "ph" : 0.4765,
+      "pd" : 0.2484,
+      "pa" : 0.2752,
       "score" : "1-1",
       "conf" : "mid",
       "n_h" : 6,
-      "n_a" : 5,
+      "n_a" : 6,
       "elo_h" : 1468.89,
-      "elo_a" : 1458.05,
+      "elo_a" : 1450.38,
       "ts" : "2026-09-17"
     },
     "4763768" :
