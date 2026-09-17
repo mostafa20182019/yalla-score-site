@@ -2,9 +2,9 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-17T20:15:05+03:00",
+    "generated_at" : "2026-09-17T20:30:05+03:00",
     "days" : 10,
-    "n" : 59,
+    "n" : 58,
     "params" :
     {
       "elo_k" : 28,
@@ -8719,26 +8719,6 @@
       "n_a" : 6,
       "elo_h" : 1461.65,
       "elo_a" : 1422.7,
-      "ts" : "2026-09-17"
-    },
-    "564686" :
-    {
-      "comp" : "Primera Division",
-      "home" : "Real Betis Balompié",
-      "away" : "Getafe CF",
-      "kickoff" : "2026-09-17",
-      "koff_time" : "20:00",
-      "lh" : 1.595716,
-      "la" : 0.758206,
-      "ph" : 0.5735,
-      "pd" : 0.2498,
-      "pa" : 0.1767,
-      "score" : "1-0",
-      "conf" : "mid",
-      "n_h" : 5,
-      "n_a" : 5,
-      "elo_h" : 1571.64,
-      "elo_a" : 1469.67,
       "ts" : "2026-09-17"
     },
     "564696" :
