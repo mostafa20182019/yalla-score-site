@@ -1854,6 +1854,111 @@ AN_DISCLAIMER = ('التوقعات احتمالات إحصائية من نموذ
 def _pct(x):
     return f"{round(x * 100)}%"
 
+def pred_btn(p):
+    """«توقع يلا سكور» — the whole prediction on a match row, in ~110 bytes.
+
+    The site's one differentiator was reachable only from /m/<id> or
+    /analysis, and the numbers said nobody went: over 24 hours the home page
+    and /matches were ~85% of all traffic and exactly one match page showed
+    up at all, twice (2026-09-18). So the prediction now offers itself where
+    the reader already is.
+
+    What crosses the wire per row is five small numbers, not a rendered
+    block: three probabilities, the modal scoreline and the confidence key.
+    /matches is already a 1 MB page with 13% of its LCP samples in the
+    "poor" band, so ~110 bytes x ~90 rows (about 10 KB, below the fold and
+    behind a click) is the whole budget this feature gets. Everything else -
+    the team names, the bar, the link to the full reading - is read at click
+    time from markup the row already carries.
+    """
+    if not p:
+        return ""
+    top = p["top"][0]
+    return ('<button type="button" class="pbtn" data-pp="'
+            f'{round(p["ph"] * 100)},{round(p["pd"] * 100)},{round(p["pa"] * 100)}"'
+            f' data-ps="{top[0]}-{top[1]}" data-pc="{esc(p["conf"])}">'
+            'توقع يلا سكور</button>')
+
+
+# Everything here is namespaced ppop-*, NOT pp-*: «.pp» and its family
+# (.pp-ava, .pp-fb) are the player markers on the pitch graphic, and the last
+# two class collisions in this stylesheet (.tl, .pp) both shipped broken to
+# the user's phone. A JS hook that shares a prefix with a positioned element
+# is the same bug waiting.
+#
+# The dialog is ONE element per page, filled at click time from the button's
+# data- attributes and the row around it. It ends with a link to the match
+# page rather than restating what is there: the popup answers the question,
+# the page explains the answer, and the click that follows is earned instead
+# of being the only way in.
+PRED_POP = """<dialog id="ppop" class="ppop" aria-labelledby="ppop-ttl">
+<div class="ppop-in">
+  <div class="ppop-hd"><h3 id="ppop-ttl">توقع يلا سكور</h3>
+    <form method="dialog"><button class="ppop-x" aria-label="إغلاق">×</button></form></div>
+  <p class="ppop-t"><bdi class="ppop-nh"></bdi> <span>×</span> <bdi class="ppop-na"></bdi></p>
+  <div class="pbar"><span class="pb-seg pb-h"></span><span class="pb-seg pb-d"></span><span class="pb-seg pb-a"></span></div>
+  <p class="ppop-probs pr-probs"></p>
+  <p class="ppop-m"><span class="ppop-fav"></span><span class="ppop-cf"></span></p>
+  <p class="ppop-s">النتيجة الأكثر احتمالًا <b class="ppop-val sc-in"></b></p>
+  <p class="ppop-d">احتمالات إحصائية من نموذج يلا سكور مبنية على نتائج الموسم الحالي، وليست نصيحة للمراهنة.</p>
+  <a class="ppop-go" href="#">لماذا رجّح النموذج هذا التوقع؟ ←</a>
+</div>
+</dialog>
+<script>(function(){
+var d=document.getElementById("ppop");if(!d)return;
+var CF=__CONF_AR__;
+var q=function(s){return d.querySelector(s)};
+var seg=[q(".pb-h"),q(".pb-d"),q(".pb-a")];
+function shut(){if(d.close){d.close()}else{d.removeAttribute("open");d.classList.remove("ppop-open")}}
+document.addEventListener("click",function(e){
+  var b=e.target.closest?e.target.closest(".pbtn"):null;if(!b)return;
+  e.preventDefault();e.stopPropagation();
+  var r=b.closest(".mrow"),p=(b.getAttribute("data-pp")||"").split(",");
+  if(p.length<3)return;
+  var h=(r&&r.getAttribute("data-h"))||"الأرض",a=(r&&r.getAttribute("data-a"))||"الضيف";
+  q(".ppop-nh").textContent=h;q(".ppop-na").textContent=a;
+  for(var i=0;i<3;i++){seg[i].style.width=p[i]+"%"}
+  q(".ppop-probs").innerHTML=
+    '<span class="prb"><i class="prb-h"></i>'+h+' <b>'+p[0]+'%</b></span>'+
+    '<span class="prb"><i class="prb-d"></i>تعادل <b>'+p[1]+'%</b></span>'+
+    '<span class="prb"><i class="prb-a"></i>'+a+' <b>'+p[2]+'%</b></span>';
+  var ph=+p[0],pd=+p[1],pa=+p[2];
+  q(".ppop-fav").textContent="الأرجح: "+(ph>=pd&&ph>=pa?h:(pa>=pd?a:"التعادل"));
+  var c=b.getAttribute("data-pc")||"",cf=q(".ppop-cf");
+  // keep the hook class: assigning className wholesale used to drop
+  // "ppop-cf", so the very next lookup returned null, the handler threw
+  // before showModal() and NOTHING opened. Caught on a phone-width render.
+  cf.className="ppop-cf conf conf-"+c;cf.textContent=CF[c]||"";
+  // "2-1" as one text run reverses in RTL and the reader meets the AWAY
+  // number first (the standing score_pill() rule) - so build the same
+  // span/i/span pill the rest of the site uses. Seen on a phone render:
+  // the model's 2-1 for the home side displayed as 1-2.
+  var sc=(b.getAttribute("data-ps")||"").split("-");
+  q(".ppop-val").innerHTML=sc.length>1
+    ?"<span>"+sc[0]+"</span><i>-</i><span>"+sc[1]+"</span>":"";
+  var s=r&&r.querySelector(".mstretch"),g=q(".ppop-go");
+  if(s){g.href=s.getAttribute("href");g.hidden=false}else{g.hidden=true}
+  if(d.showModal){d.showModal()}else{d.setAttribute("open","");d.classList.add("ppop-open")}
+});
+d.addEventListener("click",function(e){if(e.target===d)shut()});
+// Escape: a modal <dialog> is supposed to close itself, and in the preview
+// pane it does not - the keydown arrives at the document and the dialog
+// stays open. Sixty bytes is cheaper than trusting that.
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&d.open)shut()});
+})();</script>"""
+PRED_POP = PRED_POP.replace("__CONF_AR__",
+                            json.dumps(AN.CONF_AR, ensure_ascii=False))
+
+
+def pred_pop(parts):
+    """The dialog — but only on a page that actually rendered a button.
+
+    A club page whose next fixture has no prediction, or a standings page in a
+    gap between rounds, would otherwise carry 2.6 KB of markup nothing can
+    open."""
+    return PRED_POP if any('class="pbtn"' in x for x in parts) else ""
+
+
 def prob_bar(p):
     """Three-segment 1X2 bar (home = brand blue, draw = grey, away = slate).
 
@@ -1907,7 +2012,13 @@ def pred_row(m, p):
             + f'<span class="pr-bw">{prob_bar(p)}{prob_legend(p)}</span>' +
             f'<span class="pr-meta">'
             f'<span class="pr-fav">الأرجح: <b>{esc(fav)}</b></span>'
-            f'<span class="pr-score">النتيجة الأكثر احتمالًا <b>{top[0]}-{top[1]}</b></span>'
+            # score_pill, not a bare "2-1": as one LTR run the HOME number
+            # lands on the away side and an RTL reader gets the prediction
+            # backwards. Same bug the record page was fixed for on
+            # 2026-09-16; measured still live here on 2026-09-18, the home
+            # 2 sitting under the away club.
+            f'<span class="pr-score">النتيجة الأكثر احتمالًا '
+            + score_pill(top[0], top[1], "sc-in") + '</span>'
             + conf_chip(p["conf"]) + '</span></a>')
 
 def _signed_pct(x):
@@ -3415,7 +3526,8 @@ def build():
             for m in ms:
                 row = match_row(m, show_time=True, show_comp=False,
                                 goals=match_goals(ge_idx, m),
-                                link=match_url(m))
+                                link=match_url(m),
+                                pred=_preds.get(str(m.get("match_id"))))
                 # filter hooks: "على التلفزيون" = a known broadcaster (per-match
                 # channel or the verified COMP_TV map); "حسب الوقت" sorts by data-ko
                 tv = "1" if (m.get("channel") or COMP_TV.get(comp)) else "0"
@@ -3470,6 +3582,7 @@ def build():
     p.append('</div>')  # /mpage
     p.append(MATCHES_JS)
     p.append(ROUNDS_JS)
+    p.append(pred_pop(p))
     p.append(foot())
     write("matches.html", "".join(p))
 
@@ -3785,9 +3898,11 @@ def build():
                            '<div class="mlist">')
                 for m in up_next:
                     sp2.append(match_row(m, show_time=True, show_comp=False,
-                                         link=match_url(m)))
+                                         link=match_url(m),
+                                         pred=_preds.get(str(m.get("match_id")))))
                 sp2.append('</div></section>')
             sp2.append(_faq)
+            sp2.append(pred_pop(sp2))
             sp2.append(foot())
             write(f"standings/{slug}.html", "".join(sp2))
             urls.append(st_url)
@@ -3922,7 +4037,8 @@ def build():
                       '<div class="mlist">')
             for m in up_next:
                 pt.append(match_row(m, show_time=True, show_comp=True,
-                                    link=match_url(m)))
+                                    link=match_url(m),
+                                    pred=_preds.get(str(m.get("match_id")))))
             pt.append('</div></section>')
         if last_res:
             pt.append(f'<section class="minfo"><h2>آخر نتائج {esc(name)}</h2>'
@@ -3968,6 +4084,7 @@ def build():
             **({"logo": img} if img else {}),
             "memberOf": {"@type": "SportsOrganization", "name": league_ar},
         }))
+        pt.append(pred_pop(pt))
         pt.append(foot())
         write(f"team/{slug}.html", "".join(pt))
         urls.append(t_url)
@@ -5851,7 +5968,8 @@ def match_url(m):
     """Canonical per-match page path, or None when the id is missing."""
     return f"/m/{m['match_id']}.html" if m.get("match_id") else None
 
-def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
+def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
+              pred=None):
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up"), "POSTPONED": ("", "pp")}.get(st, ("", "up"))
@@ -5889,6 +6007,10 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
         gblock = (f'<div class="mgoals"><div class="mg-side">{side_list("h")}</div>'
                   f'<div class="mg-gap"></div>'
                   f'<div class="mg-side">{side_list("a")}</div></div>')
+    # the prediction button rides its own full-width row under the teams.
+    # It sits ABOVE .mstretch (which covers the row) or the stretched link
+    # swallows the click and opens the match page instead of the popup.
+    pbtn = f'<div class="pbtn-row">{pred_btn(pred)}</div>' if pred else ""
     stretch = (f'<a class="mstretch" href="{esc(link)}" '
                f'aria-label="تفاصيل مباراة {esc(ar_team(m.get("home")))} و{esc(ar_team(m.get("away")))}"></a>'
                if link else "")
@@ -5898,6 +6020,7 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None):
   <div class="mid">{mid}</div>
   <div class="team ta">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>
   {comp}
+  {pbtn}
   {gblock}
 </div>"""
 
@@ -6498,6 +6621,44 @@ a{color:inherit}
 .fmb-flip .fmb-feat{grid-column:2;grid-row:1}
 @media(max-width:860px){.fmb{grid-template-columns:1fr;gap:12px;padding:12px}.fmb-fb h2{font-size:1.05rem}.fmb-th{width:76px;height:52px}
   .fmb-flip .fmb-feat,.fmb-flip .fmb-list{grid-column:auto;grid-row:auto}}
+/* «توقع يلا سكور» — the button on an upcoming match row, and its popup.
+   z-index:2 puts the button above .mstretch (z-index:1), which otherwise
+   covers the whole row and would swallow the click. */
+.pbtn-row{grid-column:1/-1;display:flex;justify-content:center;
+  margin-top:7px;padding-top:7px;border-top:1px solid #eef2f6}
+.pbtn{position:relative;z-index:2;font:inherit;font-size:.74rem;font-weight:800;
+  color:var(--green-d);background:#f1f7fb;border:1px solid #d7e7f2;
+  border-radius:999px;padding:3px 14px;cursor:pointer}
+.pbtn:hover{background:var(--green);border-color:var(--green);color:#fff}
+.ppop{border:0;border-radius:16px;padding:0;max-width:340px;
+  width:calc(100% - 32px);color:var(--ink);
+  box-shadow:0 12px 40px rgba(15,23,42,.28)}
+.ppop::backdrop{background:rgba(15,23,42,.45)}
+/* Safari < 15.4 has no showModal(): the script falls back to the open
+   attribute, which renders the dialog in flow — this re-centres it. */
+.ppop-open{position:fixed;top:50%;inset-inline-start:50%;
+  transform:translate(50%,-50%);z-index:50}
+.ppop-in{padding:14px 18px 16px}
+.ppop-hd{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ppop h3{margin:0;font-size:1rem;color:var(--green-d)}
+.ppop-x{border:0;background:none;font-size:1.4rem;line-height:1;
+  color:var(--muted);cursor:pointer;padding:0 2px}
+.ppop-t{margin:8px 0 10px;font-weight:900;font-size:.95rem}
+.ppop-t span{color:var(--muted);font-weight:600;margin:0 4px}
+.ppop .pbar{height:18px}
+.ppop-probs{margin:8px 0 0;font-size:.78rem;line-height:1.9}
+/* one per line: .prb is nowrap, and three full club names do not fit the
+   340px box side by side */
+.ppop-probs .prb{display:block}
+.ppop-probs .prb+.prb{margin-inline-start:0}
+.ppop-m{display:flex;flex-wrap:wrap;align-items:center;gap:8px;
+  margin:10px 0 0;font-size:.85rem;font-weight:800}
+.ppop-s{margin:6px 0 0;font-size:.85rem;color:var(--muted);font-weight:700}
+.ppop-s b{color:var(--ink);font-size:.95rem}
+.ppop-d{margin:10px 0 0;font-size:.7rem;line-height:1.7;color:var(--muted)}
+.ppop-go{display:inline-block;margin-top:10px;font-size:.82rem;font-weight:800;
+  color:var(--green-d);text-decoration:none}
+.ppop-go:hover{text-decoration:underline}
 /* scorers under a finished/live match row (/matches day view) */
 .mgoals{grid-column:1/-1;display:grid;grid-template-columns:1fr 40px 1fr;gap:2px 6px;
   margin-top:7px;padding-top:6px;border-top:1px dashed #e8eef4}
