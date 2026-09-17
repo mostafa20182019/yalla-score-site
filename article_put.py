@@ -144,12 +144,21 @@ def validate(rec, updating=False):
 
 
 def enrich(rec, words):
-    """Add what the DB stores but the json does not: the editorial counters."""
+    """Add what the DB stores but the json does not: the editorial counters.
+
+    Only for what the draft actually carries. A partial update (the
+    sources-only pass) has no body, and writing `words = 0, thin = 1` for it
+    would mark a 550-word article as thin in the warehouse - true of the draft,
+    false of the article.
+    """
     out = dict(rec)
-    out["words"] = words
-    out["thin"] = 1 if words < b.ARTICLE_MIN_WORDS else 0
-    out["has_sources"] = 1 if rec.get("sources") else 0
-    out["has_faq"] = 1 if rec.get("faq") else 0
+    if "body" in rec:
+        out["words"] = words
+        out["thin"] = 1 if words < b.ARTICLE_MIN_WORDS else 0
+    if "sources" in rec:
+        out["has_sources"] = 1 if rec.get("sources") else 0
+    if "faq" in rec:
+        out["has_faq"] = 1 if rec.get("faq") else 0
     if out.get("match_id") is not None:
         out["match_id"] = str(out["match_id"])
     return out
@@ -194,8 +203,10 @@ def main():
         for x in bad:
             print("  - " + x)
         return 1
-    clubs = clubs_of(rec)
-    print(f"ok: {words} words, clubs={clubs or ['-']}, "
+    # the club links are derived from the title/summary/body; a draft without
+    # them cannot recompute the list, and passing [] would DELETE it
+    clubs = clubs_of(rec) if ("body" in rec or "title" in rec) else None
+    print(f"ok: {words} words, clubs={clubs if clubs is not None else 'unchanged'}, "
           f"sources={len(rec.get('sources') or [])}, faq={len(rec.get('faq') or [])}")
     if mode == "--check":
         return 0

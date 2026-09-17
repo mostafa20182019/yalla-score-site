@@ -88,9 +88,15 @@ def main():
     ap.add_argument("--count", type=int, default=5)
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--stats", action="store_true")
+    # the sources-only pass (2026-09-17): the same queue, narrowed to the one
+    # thing /editorial promises out loud. Adding two named sources to an
+    # article costs a fraction of rewriting it, so a run clears many more.
+    ap.add_argument("--sources-only", action="store_true")
     args = ap.parse_args()
     items = load()
     cands = candidates(items)
+    if args.sources_only:
+        cands = [c for c in cands if c["why"] == "no sources"]
     if args.stats:
         up = sum(1 for a in items if a.get("upgraded_ts"))
         vis = sum(1 for c in cands if c["listed"])

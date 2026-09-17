@@ -1,0 +1,145 @@
+name: Add Sources (AI)
+
+# The sources-only pass (2026-09-17). /editorial promises the reader that a
+# news article names its sources; articles published 1-10 September carry none,
+# and thirteen of them are long enough that the upgrade queue was never going
+# to reach them. Adding two named sources costs a fraction of a rewrite, so a
+# run clears many more articles than an upgrade run does.
+#
+# NOTHING ELSE IS TOUCHED: the draft carries `sources` and nothing else, and a
+# partial update writes only what it carries (store._article_children, and
+# matches-guide/tools/test_partial_update.py which holds that line).
+# Prompt: .github/prompts/add-sources.md · queue: upgrade_pick.py --sources-only
+on:
+  workflow_dispatch:
+    inputs:
+      count:
+        description: "How many articles to source in this run"
+        type: string
+        default: "20"
+
+permissions:
+  contents: write
+  actions: write                 # dispatch publish.yml afterwards
+
+concurrency:
+  group: upgrade-articles   # shares the lane: both write articles
+  cancel-in-progress: false
+
+jobs:
+  upgrade:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      SOURCES_COUNT: ${{ github.event.inputs.count || '20' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          pip install googlenewsdecoder pillow
+
+      - name: Show the queue
+        id: queue
+        run: |
+          echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+          python upgrade_pick.py --stats | tee /tmp/stats.txt
+          python upgrade_pick.py --sources-only --count "$SOURCES_COUNT" | tee /tmp/queue.txt
+          N=$(python upgrade_pick.py --sources-only --count "$SOURCES_COUNT" --json | python -c "import sys,json; print(len(json.load(sys.stdin)))")
+          echo "n=$N" >> "$GITHUB_OUTPUT"
+          {
+            echo "Requested: **$SOURCES_COUNT**"
+            echo '```'
+            cat /tmp/stats.txt /tmp/queue.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@v4
+        if: steps.queue.outputs.n != '0'
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code
+        if: steps.queue.outputs.n != '0'
+        run: npm install -g @anthropic-ai/claude-code
+
+      # ONE Claude account since 2026-09-12 (second-account failover removed on
+      # the user's decision). continue-on-error keeps the run green when the
+      # account is out of quota: tomorrow's run resumes the queue (the picker
+      # skips articles that already carry upgraded_ts).
+      - name: Add the sources
+        id: write
+        if: steps.queue.outputs.n != '0'
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: |
+          set -o pipefail
+          claude -p "$(cat .github/prompts/add-sources.md)" \
+            --model claude-sonnet-5 \
+            --dangerously-skip-permissions | tee /tmp/claude.txt
+          {
+            echo "### تقرير Claude"
+            echo '```'
+            tail -n 60 /tmp/claude.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      # Each article is committed on its own, so a mid-run failure keeps the
+      # finished ones. Drop any half-written working-tree state so the push
+      # step below can rebase cleanly.
+      - name: Reset half-finished work
+        if: steps.write.outcome == 'failure'
+        run: |
+          git reset --hard HEAD
+          git clean -fd
+          echo "Articles committed before the failure: $(git rev-list --count "$HEAD_BEFORE"..HEAD)"
+
+      # Belt and braces: the prompt pushes at the end, but if a run died between
+      # the last commit and the push, push whatever is committed.
+      - name: Push whatever was committed
+        if: always() && steps.queue.outputs.n != '0'
+        run: |
+          git fetch origin main
+          if [ "$(git rev-list --count origin/main..HEAD)" != "0" ]; then
+            git pull --rebase origin main && git push origin main
+          fi
+
+      - name: Report outcome
+        if: always()
+        run: |
+          git fetch origin main >/dev/null 2>&1 || true
+          N=$(git rev-list --count "$HEAD_BEFORE"..HEAD 2>/dev/null || echo 0)
+          if [ "$N" != "0" ]; then
+            echo "## ✅ أُضيفت المصادر إلى $N مقال(ات)" >> "$GITHUB_STEP_SUMMARY"
+            git log --format='- %s' "$HEAD_BEFORE"..HEAD >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⏭ لم تُضَف مصادر لأي مقالة هذا التشغيل" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          python upgrade_pick.py --stats >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Flag a failed Claude step
+        if: steps.write.outcome == 'failure'
+        run: |
+          echo "::warning::Sources run incomplete - the Claude step failed; check the account's quota / token if this repeats."
+
+      # GITHUB_TOKEN pushes do not fire publish.yml's on:push — dispatch it so
+      # the upgraded pages deploy now instead of at the next 15-min slot.
+      - name: Dispatch publish workflow
+        if: always() && steps.queue.outputs.n != '0'
+        run: |
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish.yml/dispatches" \
+            -d '{"ref":"main","inputs":{"reason":"article"}}'

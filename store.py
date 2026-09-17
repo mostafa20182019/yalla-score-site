@@ -861,19 +861,25 @@ def _article_children(aid, sources, faq, clubs, embeds=None):
                 [aid, i, u, embed_platform(u)])
         sql("DELETE FROM article_embeds WHERE article_id = ? AND seq >= ?",
             [aid, len(keep)])
-    for i, s in enumerate(sources or []):
-        sql("INSERT INTO article_sources (article_id, seq, name, url, note) "
-            "VALUES (?, ?, ?, ?, ?) ON CONFLICT(article_id, seq) DO UPDATE SET "
-            "name = excluded.name, url = excluded.url, note = excluded.note",
-            [aid, i, s.get("name"), s.get("url"), s.get("note")])
-    sql("DELETE FROM article_sources WHERE article_id = ? AND seq >= ?",
-        [aid, len(sources or [])])
-    for i, q in enumerate(faq or []):
-        sql("INSERT INTO article_faq (article_id, seq, q, a) VALUES (?, ?, ?, ?) "
-            "ON CONFLICT(article_id, seq) DO UPDATE SET q = excluded.q, a = excluded.a",
-            [aid, i, q.get("q"), q.get("a")])
-    sql("DELETE FROM article_faq WHERE article_id = ? AND seq >= ?",
-        [aid, len(faq or [])])
+    # None means "this draft does not carry sources", which is NOT the same as
+    # an empty list. Before 2026-09-17 both wiped the rows, so a partial update
+    # (the sources-only pass) would have deleted the FAQ of every article it
+    # touched. Every child set follows the same rule now, as embeds already did.
+    if sources is not None:
+        for i, s in enumerate(sources):
+            sql("INSERT INTO article_sources (article_id, seq, name, url, note) "
+                "VALUES (?, ?, ?, ?, ?) ON CONFLICT(article_id, seq) DO UPDATE SET "
+                "name = excluded.name, url = excluded.url, note = excluded.note",
+                [aid, i, s.get("name"), s.get("url"), s.get("note")])
+        sql("DELETE FROM article_sources WHERE article_id = ? AND seq >= ?",
+            [aid, len(sources)])
+    if faq is not None:
+        for i, q in enumerate(faq):
+            sql("INSERT INTO article_faq (article_id, seq, q, a) VALUES (?, ?, ?, ?) "
+                "ON CONFLICT(article_id, seq) DO UPDATE SET q = excluded.q, a = excluded.a",
+                [aid, i, q.get("q"), q.get("a")])
+        sql("DELETE FROM article_faq WHERE article_id = ? AND seq >= ?",
+            [aid, len(faq)])
     if clubs is not None:
         sql("DELETE FROM article_clubs WHERE article_id = ?", [aid])
         for slug in clubs:
@@ -933,7 +939,9 @@ def article_update(aid, rec, clubs=None):
         sql(f"UPDATE articles SET {', '.join(c + ' = ?' for c in sets)} "
             f"WHERE article_id = ?", params + [aid])
     if "sources" in rec or "faq" in rec or "embeds" in rec or clubs is not None:
-        _article_children(aid, rec.get("sources"), rec.get("faq"), clubs,
+        _article_children(aid,
+                          rec.get("sources") if "sources" in rec else None,
+                          rec.get("faq") if "faq" in rec else None, clubs,
                           rec.get("embeds") if "embeds" in rec else None)
     return aid
 
