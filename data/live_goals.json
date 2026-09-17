@@ -2125,11 +2125,56 @@
    "seq": 3,
    "side": "a",
    "tag": null
+  },
+  {
+   "away": "منتخب السويس بتروجت",
+   "c": 552,
+   "cancelled": true,
+   "cancelled_at": "2026-09-16T14:33:50+00:00",
+   "game_id": "4804676",
+   "home": "الجونة",
+   "minute": "25",
+   "player": "مصطفى البدري",
+   "score": "0-1",
+   "seen_at": "2026-09-16T14:25:51+00:00",
+   "seq": 1,
+   "side": "a",
+   "tag": null
+  },
+  {
+   "away": "منتخب السويس بتروجت",
+   "c": 552,
+   "cancelled": true,
+   "cancelled_at": "2026-09-17T00:01:30+00:00",
+   "game_id": "4804676",
+   "home": "الجونة",
+   "minute": "25",
+   "player": "مصطفى البدري",
+   "score": "0-2",
+   "seen_at": "2026-09-16T14:35:50+00:00",
+   "seq": 2,
+   "side": "a",
+   "tag": null
+  },
+  {
+   "away": "منتخب السويس بتروجت",
+   "c": 552,
+   "cancelled": true,
+   "cancelled_at": "2026-09-17T00:01:30+00:00",
+   "game_id": "4804676",
+   "home": "الجونة",
+   "minute": "33",
+   "player": "محمد علي عكاشة",
+   "score": "0-2",
+   "seen_at": "2026-09-16T14:35:50+00:00",
+   "seq": 3,
+   "side": "a",
+   "tag": null
   }
  ],
  "meta": {
-  "exported_at": "2026-09-16T07:45:23+00:00",
-  "n": 143,
+  "exported_at": "2026-09-17T07:47:45+00:00",
+  "n": 146,
   "source": "worker live store"
  }
 }
