@@ -50,6 +50,11 @@ def load():
     return d["results"][0]["items"] if isinstance(d, dict) else d
 
 
+def has_sources(a):
+    return any(isinstance(x, dict) and (x.get("name") or "").strip()
+               for x in (a.get("sources") or []))
+
+
 def candidates(items, today=None):
     today = today or datetime.date.today()
     cut = (today - datetime.timedelta(days=MIN_AGE_DAYS)).isoformat()
@@ -60,10 +65,18 @@ def candidates(items, today=None):
         if (a.get("pub_date") or "") > cut:
             continue
         w = words(a)
-        if w >= MAX_WORDS:
+        # Two ways to qualify, and the second one was missing (2026-09-17):
+        # an article can be long enough to pass the word test and still carry
+        # NO sources - 13 of the 33 sourceless September articles were 450-560
+        # words, so the queue was never going to reach them and /editorial went
+        # on promising something those pages did not have. Length is not the
+        # point; the unkept promise is.
+        thin, unsourced = w < MAX_WORDS, not has_sources(a)
+        if not (thin or unsourced):
             continue
         out.append({"article_id": str(a.get("article_id")), "title": a.get("title"),
                     "pub_date": a.get("pub_date"), "words": w,
+                    "why": "thin" if thin else "no sources",
                     "listed": w >= LISTED_MIN})
     # items are newest-first in the file already, so a stable partition keeps
     # that order inside each group: what the site still shows, then the rest
@@ -81,10 +94,12 @@ def main():
     if args.stats:
         up = sum(1 for a in items if a.get("upgraded_ts"))
         vis = sum(1 for c in cands if c["listed"])
-        print(f"articles: {len(items)} | upgraded: {up} | "
-              f"still thin (<{MAX_WORDS} words, eligible): {len(cands)} "
+        nosrc = sum(1 for c in cands if c["why"] == "no sources")
+        print(f"articles: {len(items)} | upgraded: {up} | eligible: {len(cands)} "
               f"= {vis} still listed (>={LISTED_MIN}w, indexed) "
-              f"+ {len(cands) - vis} already unlisted")
+              f"+ {len(cands) - vis} already unlisted"
+              + (f"   [{len(cands) - nosrc} thin (<{MAX_WORDS}w), "
+                 f"{nosrc} long enough but with no sources]" if nosrc else ""))
         return
     pick = cands[:args.count]
     if args.json:
@@ -92,7 +107,8 @@ def main():
         return
     for p in pick:
         flag = "listed  " if p["listed"] else "unlisted"
-        print(f"{p['article_id']:>5}  {p['pub_date']}  {p['words']:>3}w  {flag}  {p['title']}")
+        print(f"{p['article_id']:>5}  {p['pub_date']}  {p['words']:>3}w  {flag}  "
+              f"{p['why']:<10}  {p['title']}")
     print(f"-- {len(pick)} of {len(cands)} eligible")
 
 
