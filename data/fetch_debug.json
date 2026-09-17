@@ -5,25 +5,20 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 50 live games)",
+ "reconcile": "ok (0 row(s) corrected, 26 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 31 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 46 min ago",
  "slow_fetched_at": "2026-09-16T23:16:57+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
  "assists": "skipped (quiet window) - keeping existing files",
- "goal_events": "ok (26 games)",
+ "goal_events": "ok (12 games)",
  "goal_events_dbg": {
-  "candidates": 34,
+  "candidates": 12,
   "detail_fails": 0,
   "skipped": [
-   "4805176:count-mismatch (0, 0) vs 5-1 []",
-   "4750854:count-mismatch (0, 0) vs -1--1 []",
-   "4805164:count-mismatch (0, 0) vs 0-3 []",
-   "4805161:count-mismatch (0, 0) vs 6-1 []",
-   "4805188:count-mismatch (0, 0) vs 2-2 []",
-   "4805177:count-mismatch (0, 0) vs 3-0 []"
+   "4750854:count-mismatch (0, 0) vs -1--1 []"
   ],
   "frozen_skipped": 149,
   "sample": {
@@ -65,7 +60,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 137, \"statusId\": 6, \"stageId\": 7, \"order\": 2, \"num\": 1, \"gameTime\": 23.0, \"addedTime\": 0, \"gameTimeDisplay\": \"23'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 77506408, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 132, \"statusId\": 8, \"stageId\": 9, \"order\": 9, \"num\": 9, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 202813, \"extraPlayers\": [52343752], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 132, \"statusId\": 8, \"stageId\": 9, \"order\": 9, \"num\": 9, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"45+1'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 202813, \"extraPlayers\": [52343752], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -100,5 +95,5 @@
   "fails": 0
  },
  "match_details": "ok (341)",
- "utc": "2026-09-16T23:48:03Z"
+ "utc": "2026-09-17T00:03:17Z"
 }
