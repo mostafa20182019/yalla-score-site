@@ -6456,7 +6456,13 @@ a{color:inherit}
 .prow .pr-probs{font-size:.72rem;line-height:1.6;white-space:nowrap}
 .prow .pr-probs .prb+.prb{margin-inline-start:8px}
 .pr-meta{grid-area:meta;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);font-weight:700}
-.pbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#e2e8f0;direction:ltr}
+/* RTL, like everything else on the page: the HOME segment sits on the
+   right, under the home club's name, and the away segment on the left.
+   This carried direction:ltr from the days when the percentages were
+   printed INSIDE the segments; those moved out to prob_legend on
+   2026-09-16 and the override was left behind, quietly putting the home
+   side on the wrong end of its own bar (user, 2026-09-18). */
+.pbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#e2e8f0;direction:rtl}
 .pb-seg{display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;min-width:0}
 .pb-h{background:var(--green)}.pb-d{background:#94a3b8}.pb-a{background:#334155}
 .pred-rec{display:block;margin:0 0 8px;padding:9px 12px;border-radius:10px;
