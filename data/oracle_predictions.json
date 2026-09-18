@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-18T13:00:05+03:00",
+    "generated_at" : "2026-09-18T13:15:08+03:00",
     "days" : 10,
     "n" : 57,
     "params" :
@@ -1990,15 +1990,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "Aston Villa FC",
-        "elo" : 1516.78,
-        "played" : 1,
-        "gf" : 3,
-        "ga" : 2,
-        "att" : 1.1423,
-        "def" : 1.0393
-      },
-      {
         "team" : "Arsenal FC",
         "elo" : 1516.78,
         "played" : 1,
@@ -2018,6 +2009,15 @@
       },
       {
         "team" : "Racing Club de Lens",
+        "elo" : 1516.78,
+        "played" : 1,
+        "gf" : 3,
+        "ga" : 2,
+        "att" : 1.1423,
+        "def" : 1.0393
+      },
+      {
+        "team" : "Aston Villa FC",
         "elo" : 1516.78,
         "played" : 1,
         "gf" : 3,
@@ -2179,15 +2179,6 @@
         "def" : 1.1423
       },
       {
-        "team" : "SSC Napoli",
-        "elo" : 1483.22,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 1,
-        "att" : 0.8333,
-        "def" : 0.9363
-      },
-      {
         "team" : "SK Slavia Praha",
         "elo" : 1483.22,
         "played" : 1,
@@ -2204,6 +2195,15 @@
         "ga" : 3,
         "att" : 1.0393,
         "def" : 1.1423
+      },
+      {
+        "team" : "SSC Napoli",
+        "elo" : 1483.22,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 1,
+        "att" : 0.8333,
+        "def" : 0.9363
       },
       {
         "team" : "RB Leipzig",
