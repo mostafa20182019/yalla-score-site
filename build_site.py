@@ -2031,7 +2031,7 @@ def prob_bar(p):
             f'فوز الأرض {_pct(ph)}، تعادل {_pct(pd)}، فوز الضيف {_pct(pa)}">'
             + seg("h", ph) + seg("d", pd) + seg("a", pa) + '</div>')
 
-def prob_legend(p, cls="pr-probs"):
+def prob_legend(p, cls="pr-probs", home=None, away=None):
     """The three probabilities in words — and the bar's key.
 
     Each one carries a swatch in its segment's colour, so the reader can see
@@ -2041,10 +2041,14 @@ def prob_legend(p, cls="pr-probs"):
     def one(k, label, cls_):
         # .prb, not .pp: «.pp» is already the player marker on the pitch
         # graphic (position:absolute) and these three collapsed onto the bar
-        return (f'<span class="prb"><i class="prb-{cls_}"></i>{label} '
+        return (f'<span class="prb"><i class="prb-{cls_}"></i>{esc(label)} '
                 f'<b>{_pct(p[k])}</b></span>')
-    return (f'<span class="{cls}">' + one("ph", "الأرض", "h")
-            + one("pd", "تعادل", "d") + one("pa", "الضيف", "a") + '</span>')
+    # The clubs by NAME whenever the caller knows them (user, 2026-09-18:
+    # «خلى هنا اسماء الفرق»). الأرض/الضيف is the fallback for a caller that
+    # has only the numbers — it makes the reader map a generic word onto a
+    # club that is written two lines up, which is work the page can do.
+    return (f'<span class="{cls}">' + one("ph", home or "الأرض", "h")
+            + one("pd", "تعادل", "d") + one("pa", away or "الضيف", "a") + '</span>')
 
 def conf_chip(conf):
     return f'<span class="conf conf-{esc(conf)}">{esc(AN.CONF_AR.get(conf, ""))}</span>'
@@ -2063,7 +2067,7 @@ def pred_row(m, p):
             f'<span class="pr-teams"><span class="pr-t">{crest(m.get("home_badge"))}<bdi>{esc(h)}</bdi></span>'
             f'<span class="pr-vs">×</span>'
             f'<span class="pr-t">{crest(m.get("away_badge"))}<bdi>{esc(a)}</bdi></span></span>'
-            + f'<span class="pr-bw">{prob_bar(p)}{prob_legend(p)}</span>' +
+            + f'<span class="pr-bw">{prob_bar(p)}{prob_legend(p, home=h, away=a)}</span>' +
             f'<span class="pr-meta">'
             f'<span class="pr-fav">الأرجح: <b>{esc(fav)}</b></span>'
             # score_pill, not a bare "2-1": as one LTR run the HOME number
@@ -2186,7 +2190,7 @@ def pred_block(m, p, logged, comp_stats, params=None, cal=None):
         fake = {"ph": logged["ph"], "pd": logged["pd"], "pa": logged["pa"]}
         return (f'<section class="minfo predict"><h2>ماذا توقع نموذج يلا سكور قبل المباراة؟</h2>'
                 + prob_bar(fake) +
-                f'<p class="pd-line">{prob_legend(fake, "pd-probs")}</p>'
+                f'<p class="pd-line">{prob_legend(fake, "pd-probs", h, a)}</p>'
                 f'<p class="pd-line">رجّح النموذج <b>{esc(pick_ar)}</b> باحتمال {_pct(max(fake.values()))} '
                 f'ونتيجة <b>{esc(logged.get("score", ""))}</b>، وانتهت المباراة <b>{logged["hs"]}-{logged["as"]}</b>. {verdict}</p>'
                 f'<p class="pd-note">{AN_DISCLAIMER} <a href="/predictions.html">سجل التوقعات كاملًا (إصابةً وخطأ)</a></p></section>')
@@ -6458,8 +6462,8 @@ a{color:inherit}
 .pr-teams>.pr-t:last-child bdi{color:#334155}
 .pr-vs{color:var(--muted);font-weight:600}
 .prow .pr-bw{grid-area:bar;display:flex;flex-direction:column;gap:5px;min-width:0}
-.prow .pr-probs{font-size:.72rem;line-height:1.6;white-space:nowrap}
-.prow .pr-probs .prb+.prb{margin-inline-start:8px}
+.prow .pr-probs{display:flex;flex-wrap:wrap;gap:0 10px;font-size:.72rem;line-height:1.6}
+.prow .pr-probs .prb+.prb{margin-inline-start:0}
 .pr-meta{grid-area:meta;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);font-weight:700}
 /* RTL, like everything else on the page: the HOME segment sits on the
    right, under the home club's name, and the away segment on the left.
