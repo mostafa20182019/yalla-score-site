@@ -128,9 +128,15 @@ jobs:
           BRIEF_MD: /tmp/brief/brief.md
         run: |
           set -o pipefail
+          # stream-json + claude_trace.py: a live one-line-per-tool-call trace
+          # in this log (so a hung or cancelled run still shows its last step),
+          # the raw events at /tmp/claude.jsonl, and the final report at
+          # /tmp/claude.txt exactly as the summary block below expects.
           claude -p "$(cat .github/prompts/match-article.md)" \
             --model claude-sonnet-5 \
-            --dangerously-skip-permissions | tee /tmp/claude.txt
+            --dangerously-skip-permissions \
+            --output-format stream-json --verbose \
+            | python .github/scripts/claude_trace.py
           { echo "### تقرير Claude"; echo '```'; tail -n 40 /tmp/claude.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
       - name: Report outcome

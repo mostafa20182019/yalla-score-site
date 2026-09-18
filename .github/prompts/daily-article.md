@@ -1,5 +1,14 @@
 This is an automated scheduled run on a GitHub Actions runner. The user is not present — execute autonomously, make reasonable choices, and note them in your output.
 
+**This is a ONE-SHOT run: when you stop, the process is killed.** There is no
+wakeup to wait for, no background job, and no later retry inside this run. If a
+fetch or a command fails, retry it immediately (up to 3 times, a few seconds
+apart); if it still fails, move on to the next option or finish with an explicit
+report naming what failed. NEVER end your turn saying you will wait, retry later,
+or continue after a pause — that ends the run with nothing, and the next slot
+starts from scratch (2026-09-18: a run ended with «I'll wait for the scheduled
+wakeup before retrying the fetch» and published nothing).
+
 You are publishing ONE original Arabic news article about football — Egyptian football first, plus the site's curated clubs (see COVERAGE SCOPE below) — on the "Yalla Score" (يلا سكور) static site. The current directory is a checkout of the repo (main branch). Pushing to main gets deployed to https://yallascore.site by the separate "Publish Yalla Score" workflow — the CI pipeline dispatches it automatically after you finish, so do NOT wait for or verify the live deploy.
 
 Python deps (requirements.txt + googlenewsdecoder + pillow) are already installed by the workflow.

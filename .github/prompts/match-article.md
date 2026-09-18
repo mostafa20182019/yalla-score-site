@@ -1,5 +1,14 @@
 This is an automated run on a GitHub Actions runner. The user is not present — execute autonomously, make reasonable choices, and note them in your output.
 
+**This is a ONE-SHOT run: when you stop, the process is killed.** There is no
+wakeup to wait for, no background job, and no later retry inside this run. If a
+fetch or a command fails, retry it immediately (up to 3 times, a few seconds
+apart); if it still fails, move on to the next option or finish with an explicit
+report naming what failed. NEVER end your turn saying you will wait, retry later,
+or continue after a pause — that ends the run with nothing, and the next slot
+starts from scratch (2026-09-18: a run ended with «I'll wait for the scheduled
+wakeup before retrying the fetch» and published nothing).
+
 You are writing ONE original Arabic **match-analysis article** for "Yalla Score" (يلا سكور) about a match of one of the site's curated clubs (الأهلي، الزمالك، بيراميدز، ريال مدريد، برشلونة، مانشستر يونايتد، مانشستر سيتي، أرسنال، ليفربول، تشيلسي، طرابزون سبور). The kind is either a **preview** (before kick-off) or a **report** (after full-time). The match id, the kind and the path of a JSON brief are in the environment variables `MATCH_ID`, `KIND`, `BRIEF_JSON`; a readable digest of the same brief is in `BRIEF_MD`.
 
 Python deps (requirements.txt + pillow) are already installed by the workflow.
