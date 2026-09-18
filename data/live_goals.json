@@ -2125,11 +2125,85 @@
    "seq": 3,
    "side": "a",
    "tag": null
+  },
+  {
+   "away": "منتخب السويس بتروجت",
+   "c": 552,
+   "cancelled": true,
+   "cancelled_at": "2026-09-16T14:33:50+00:00",
+   "game_id": "4804676",
+   "home": "الجونة",
+   "minute": "25",
+   "player": "مصطفى البدري",
+   "score": "0-1",
+   "seen_at": "2026-09-16T14:25:51+00:00",
+   "seq": 1,
+   "side": "a",
+   "tag": null
+  },
+  {
+   "away": "منتخب السويس بتروجت",
+   "c": 552,
+   "cancelled": true,
+   "cancelled_at": "2026-09-17T00:01:30+00:00",
+   "game_id": "4804676",
+   "home": "الجونة",
+   "minute": "25",
+   "player": "مصطفى البدري",
+   "score": "0-2",
+   "seen_at": "2026-09-16T14:35:50+00:00",
+   "seq": 2,
+   "side": "a",
+   "tag": null
+  },
+  {
+   "away": "منتخب السويس بتروجت",
+   "c": 552,
+   "cancelled": true,
+   "cancelled_at": "2026-09-17T00:01:30+00:00",
+   "game_id": "4804676",
+   "home": "الجونة",
+   "minute": "33",
+   "player": "محمد علي عكاشة",
+   "score": "0-2",
+   "seen_at": "2026-09-16T14:35:50+00:00",
+   "seq": 3,
+   "side": "a",
+   "tag": null
+  },
+  {
+   "away": "القناة",
+   "c": 552,
+   "cancelled": false,
+   "game_id": "4855394",
+   "home": "زد",
+   "minute": "50'",
+   "player": null,
+   "score": "1-0",
+   "seen_at": "2026-09-17T15:14:40+00:00",
+   "seq": 1,
+   "side": "h",
+   "tag": null
+  },
+  {
+   "away": "القناة",
+   "c": 552,
+   "cancelled": true,
+   "cancelled_at": "2026-09-18T00:01:19+00:00",
+   "game_id": "4855394",
+   "home": "زد",
+   "minute": "49",
+   "player": "أحمد عاطف",
+   "score": "1-0",
+   "seen_at": "2026-09-17T15:15:40+00:00",
+   "seq": 2,
+   "side": "h",
+   "tag": null
   }
  ],
  "meta": {
-  "exported_at": "2026-09-16T07:45:23+00:00",
-  "n": 143,
+  "exported_at": "2026-09-18T07:27:56+00:00",
+  "n": 148,
   "source": "worker live store"
  }
 }
