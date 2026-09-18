@@ -6712,6 +6712,11 @@ a{color:inherit}
 .ppop-x{border:0;background:none;font-size:1.4rem;line-height:1;
   color:var(--muted);cursor:pointer;padding:0 2px}
 .ppop-t{margin:8px 0 10px;font-weight:900;font-size:.95rem}
+/* the two names in the head take their own segment colours as well, so the
+   header line and the legend under the bar agree at a glance instead of
+   saying the same thing in two different colours (user, 2026-09-18) */
+.ppop-nh{color:var(--green)}
+.ppop-na{color:#334155}
 .ppop-t span{color:var(--muted);font-weight:600;margin:0 4px}
 .ppop .pbar{height:18px}
 .ppop-probs{margin:8px 0 0;font-size:.78rem;line-height:1.9}
