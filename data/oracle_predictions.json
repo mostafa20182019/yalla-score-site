@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-18T16:30:05+03:00",
+    "generated_at" : "2026-09-18T16:45:06+03:00",
     "days" : 10,
     "n" : 57,
     "params" :
@@ -544,7 +544,7 @@
         "def" : 0.8386
       },
       {
-        "team" : "غابورني يونايتد",
+        "team" : "كارا",
         "elo" : 1486.21,
         "played" : 2,
         "gf" : 2,
@@ -553,7 +553,7 @@
         "def" : 1.0872
       },
       {
-        "team" : "كارا",
+        "team" : "غابورني يونايتد",
         "elo" : 1486.21,
         "played" : 2,
         "gf" : 2,
