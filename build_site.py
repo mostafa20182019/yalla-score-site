@@ -6462,12 +6462,20 @@ a{color:inherit}
 .pred-rec{display:block;margin:0 0 8px;padding:9px 12px;border-radius:10px;
   background:#f1f5f9;color:var(--muted);font-size:.83rem;line-height:1.75;font-weight:600}
 .pred-rec b{color:var(--text);font-weight:800}
-.pr-probs b,.pd-probs b{color:var(--text)}
 .pr-probs .prb,.pd-probs .prb{white-space:nowrap}
 .pr-probs .prb+.prb,.pd-probs .prb+.prb{margin-inline-start:10px}
 .pr-probs i,.pd-probs i{display:inline-block;width:9px;height:9px;border-radius:2px;
   margin-inline-end:5px}
 .prb-h{background:var(--green)}.prb-d{background:#94a3b8}.prb-a{background:#334155}
+/* Each label wears its own segment's colour, so the eye pairs the word with
+   the slice instead of hunting for the swatch (user, 2026-09-18). :has()
+   keeps this in CSS - the markup already says which segment a label belongs
+   to, in the popup where the label is a CLUB NAME and on /analysis and /m/
+   where it is الأرض/تعادل/الضيف. A browser without :has() just gets the old
+   ink colour, which is why the swatch stays. The percentage inherits it. */
+.prb:has(.prb-h){color:var(--green)}
+.prb:has(.prb-d){color:#94a3b8}
+.prb:has(.prb-a){color:#334155}
 .pd-probs{color:var(--muted);font-weight:700;font-size:.88rem}
 .conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800}
 .conf-low{background:#fef3c7;color:#92400e}.conf-mid{background:#e0f2fe;color:#075985}.conf-high{background:#dcfce7;color:#166534}
