@@ -6451,6 +6451,11 @@ a{color:inherit}
 .pr-teams{grid-area:teams;display:flex;align-items:center;gap:8px;font-weight:900;min-width:0}
 .pr-t{display:inline-flex;align-items:center;gap:6px;min-width:0}
 .pr-t img{width:22px;height:22px;object-fit:contain}
+/* the two clubs in a prediction row wear their own segments' colours, the
+   same way the popup head does, so the name, the slice and the label under
+   it all agree instead of the name being the one neutral thing in the row */
+.pr-teams>.pr-t:first-child bdi{color:var(--green)}
+.pr-teams>.pr-t:last-child bdi{color:#334155}
 .pr-vs{color:var(--muted);font-weight:600}
 .prow .pr-bw{grid-area:bar;display:flex;flex-direction:column;gap:5px;min-width:0}
 .prow .pr-probs{font-size:.72rem;line-height:1.6;white-space:nowrap}
