@@ -5,17 +5,17 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (0 row(s) corrected, 30 live games)",
+ "reconcile": "ok (0 row(s) corrected, 24 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 30 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 46 min ago",
  "slow_fetched_at": "2026-09-17T23:17:43+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
  "assists": "skipped (quiet window) - keeping existing files",
- "goal_events": "ok (14 games)",
+ "goal_events": "ok (9 games)",
  "goal_events_dbg": {
-  "candidates": 14,
+  "candidates": 9,
   "detail_fails": 0,
   "skipped": [
    "4750854:count-mismatch (0, 0) vs -1--1 []"
@@ -95,5 +95,5 @@
   "fails": 0
  },
  "match_details": "ok (345)",
- "utc": "2026-09-17T23:48:19Z"
+ "utc": "2026-09-18T00:03:23Z"
 }
