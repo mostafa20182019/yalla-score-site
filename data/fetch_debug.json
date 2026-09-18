@@ -8,7 +8,7 @@
  "reconcile": "ok (0 row(s) corrected, 24 live games)",
  "matches_archive": "ok (483)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 30 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 45 min ago",
  "slow_fetched_at": "2026-09-18T13:47:51+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
@@ -87,13 +87,13 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.1, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"45'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (0 with XI)",
+ "prematch_lineups": "ok (1 with XI)",
  "prematch_dbg": {
-  "in_window": 0,
-  "fetched": 0,
-  "with_xi": 0,
+  "in_window": 1,
+  "fetched": 1,
+  "with_xi": 1,
   "fails": 0
  },
- "match_details": "ok (345)",
- "utc": "2026-09-18T14:17:33Z"
+ "match_details": "ok (346)",
+ "utc": "2026-09-18T14:33:08Z"
 }
