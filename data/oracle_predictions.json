@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-18T03:30:04+03:00",
+    "generated_at" : "2026-09-18T03:45:05+03:00",
     "days" : 10,
     "n" : 57,
     "params" :
@@ -2080,7 +2080,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "FK Shakhtar Donetsk",
+        "team" : "AS Roma",
         "elo" : 1502.78,
         "played" : 1,
         "gf" : 1,
@@ -2089,7 +2089,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "AS Roma",
+        "team" : "FK Shakhtar Donetsk",
         "elo" : 1502.78,
         "played" : 1,
         "gf" : 1,
