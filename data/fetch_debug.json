@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (1 row(s) corrected, 35 live games)",
+ "reconcile": "ok (1 row(s) corrected, 40 live games)",
  "matches_archive": "ok (484)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-19T13:47:19+00:00",
+ "slow_fetched_at": "2026-09-19T14:02:16+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -176,9 +176,9 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (19 games)",
+ "goal_events": "ok (24 games)",
  "goal_events_dbg": {
-  "candidates": 19,
+  "candidates": 24,
   "detail_fails": 0,
   "skipped": [
    "4750854:count-mismatch (0, 0) vs -1--1 []"
@@ -211,17 +211,13 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 63, \"statusId\": 8, \"stageId\": 9, \"order\": 1, \"num\": 1, \"gameTime\": 61.0, \"addedTime\": 0, \"gameTimeDisplay\": \"61'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 51263915, \"extraPlayers\": [77044444], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
-   "member0": "{\"competitorId\": 63, \"id\": 556319, \"athleteId\": 61951, \"name\": \"كاومهين كيليهر\", \"shortName\": \"كيليهر\", \"jerseyNumber\": 1, \"nameForURL\": \"caoimhin-kelleher\", \"imageVersion\": 66, \"createdAt\": \"2014-09-24T20:58:03.627\"}"
+   "event0": "null",
+   "member0": "{\"competitorId\": 38, \"id\": 35002742, \"athleteId\": 72103, \"name\": \"بارت فيربروجن\", \"shortName\": \"فيربروجن\", \"jerseyNumber\": 1, \"nameForURL\": \"bart-verbruggen\", \"imageVersion\": 66, \"createdAt\": \"2019-08-16T17:32:23.473\"}"
   },
   "sample_details": {
-   "event_names": [
-    "Substitution",
-    "بطاقة صفراء",
-    "هدف"
-   ],
-   "card0": "{\"competitorId\": 63, \"statusId\": 8, \"stageId\": 9, \"order\": 9, \"num\": 1, \"gameTime\": 84.0, \"addedTime\": 0, \"gameTimeDisplay\": \"84'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 72966, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 63, \"statusId\": 8, \"stageId\": 9, \"order\": 2, \"num\": 2, \"gameTime\": 69.0, \"addedTime\": 0, \"gameTimeDisplay\": \"69'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 12234457, \"extraPlayers\": [67428963], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "event_names": [],
+   "card0": "null",
+   "sub0": "null",
    "hc_keys": [
     "id",
     "countryId",
@@ -245,16 +241,16 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"5'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\", \"orde"
   }
  },
- "prematch_lineups": "ok (11 with XI)",
+ "prematch_lineups": "ok (6 with XI)",
  "prematch_dbg": {
-  "in_window": 11,
-  "fetched": 11,
-  "with_xi": 11,
+  "in_window": 6,
+  "fetched": 6,
+  "with_xi": 6,
   "fails": 0
  },
  "match_details": "ok (370)",
- "utc": "2026-09-19T13:50:24Z"
+ "utc": "2026-09-19T14:05:21Z"
 }
