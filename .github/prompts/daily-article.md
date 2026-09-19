@@ -43,9 +43,22 @@ Reference article "ياسر إبراهيم يوافق على تجديد عقده
 Match previews and post-match reports are handled by a SEPARATE task. Do NOT write preview-style ("موعد ومعاينة") or report-style ("انتهت.. النتيجة") pieces about matches of the covered clubs — transfer news, statements, injuries, crises etc. are yours. If today's only story is a match itself, report "no new story". NOTE: a same-day preview/report by the other task does NOT block a news article on a different topic — dedup is per topic, not per day.
 
 ## Steps
-1. Find candidate news from the last ~24h: fetch Google News RSS, e.g. https://news.google.com/rss/search?q=<urlencoded>&hl=ar&gl=EG&ceid=EG:ar. Start with the Egyptian queries (الدوري المصري، الأهلي، الزمالك، بيراميدز، منتخب مصر) — if a story qualifies, you usually stop there. Fetch the club queries (ريال مدريد، برشلونة، ليفربول، مانشستر يونايتد، مانشستر سيتي، أرسنال، تشيلسي، طرابزون سبور) when no Egyptian story qualifies, or spot-check them for a MAJOR club story per the COVERAGE SCOPE priority. Decode article links with googlenewsdecoder and read at least 2 independent sources to confirm the core facts agree; skip stories where reports contradict each other.
+1. **START FROM THE SHORTLIST.** `/tmp/story_candidates.json` was built
+   seconds ago by `story_scan.py`, before this run started: it is the same
+   Google News queries you would have fetched, clustered into distinct
+   stories, filtered to those carried by 3+ independent outlets, checked
+   against the last 4 days of `data/articles.json`, and sorted by how many
+   outlets carry them. Each entry has `title`, `outlets`, `n_outlets`,
+   `hours_ago` and up to 4 `links`. Read it FIRST and pick from it — the
+   fetching and clustering is already done and you do not need to repeat it.
+   Expect noise: match results and previews belong to the other task, and
+   other sports are out of scope entirely — skip those without comment.
+   If the file is missing, empty, or nothing in it qualifies, fall back to
+   fetching the queries yourself as described next.
 
-   **SEARCH BUDGET (2026-09-17).** Work the five Egyptian queries first, then at most THREE club queries. If nothing qualifies by then, STOP and report "no new story" — do not keep widening the search. A day with three articles already published usually has no fourth, and the runs that end empty are the ones that cost the most: on 2026-09-17 eight consecutive runs published nothing and the longest spent 21 minutes looking. Ending early with an honest "no new story" is the correct outcome, not a failure.
+   Find candidate news from the last ~24h: fetch Google News RSS, e.g. https://news.google.com/rss/search?q=<urlencoded>&hl=ar&gl=EG&ceid=EG:ar. Start with the Egyptian queries (الدوري المصري، الأهلي، الزمالك، بيراميدز، منتخب مصر) — if a story qualifies, you usually stop there. Fetch the club queries (ريال مدريد، برشلونة، ليفربول، مانشستر يونايتد، مانشستر سيتي، أرسنال، تشيلسي، طرابزون سبور) when no Egyptian story qualifies, or spot-check them for a MAJOR club story per the COVERAGE SCOPE priority. Decode article links with googlenewsdecoder and read at least 2 independent sources to confirm the core facts agree; skip stories where reports contradict each other.
+
+   **SEARCH BUDGET (2026-09-17, revised 2026-09-19).** Work from the shortlist first. If you do fetch queries yourself, work the five Egyptian ones, then at most THREE club queries, and STOP — do not keep widening the search. Ending early with an honest "no new story" is the correct outcome, not a failure: on 2026-09-18 five runs each spent the full 12-minute cap searching and published nothing, about an hour of quota the upgrade and sources passes also need. (The claim in the older version of this note that "a day with three articles already published usually has no fourth" was checked on 2026-09-19 and is FALSE — 09-14 and 09-17 both produced eight. Do not use the day's article count as a reason to stop; use the shortlist being genuinely empty of qualifying stories.)
 
 2. Read data/articles.json and verify the story is NOT already covered (compare topics/titles of recent items — the same topic may have been covered yesterday under a different headline).
 3. Write the article in Arabic: title (45-65 chars — Google truncates longer headlines; the site drops the brand suffix automatically), summary (1-2 sentences), body as HTML (<p>, plus <h2> subheadings, 500-700 words, the 7-part structure above), author "مصطفى عبدالسلام" (the site signs with its editor's name), pub_date = today in Africa/Cairo (`TZ=Africa/Cairo date +%F`), and pub_ts = the full ISO timestamp (`TZ=Africa/Cairo date -Iseconds`) — it powers the «منذ X دقيقة/ساعة» relative time shown on the site's cards.

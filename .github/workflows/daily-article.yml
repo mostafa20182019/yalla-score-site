@@ -65,19 +65,41 @@ jobs:
           echo "PREV_ARTICLE_ID=$PREV_ID" >> "$GITHUB_ENV"
           echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
+      # ~13 seconds, no model: the same thirteen Google News queries the
+      # prompt would fetch anyway, clustered with the site's own logic and
+      # checked against the archive, written to /tmp/story_candidates.json.
+      # The run starts from that shortlist instead of going to look.
+      #
+      # It is a BRIEFING, NOT A GATE - story_scan.py's docstring has the
+      # measurements for why a gate is not built: 64 stories carry 2+
+      # outlets and 63 are not on the site (no discrimination), and the
+      # articles-per-day counts 8/7/2/8/4 over 09-14..09-18 predict nothing.
+      # continue-on-error + the prompt's own fallback mean a failure here
+      # costs nothing: the run searches for itself exactly as before.
+      - name: Shortlist today's stories
+        continue-on-error: true
+        run: python story_scan.py
+
       # ONE Claude account since 2026-09-12 (the second-account failover was
       # removed on the user's decision). continue-on-error keeps the run green
       # when the account is out of quota: the next slot simply retries.
       - name: Write today's article
         id: write
         continue-on-error: true
-        # A run that finds its story is done in 5-7 minutes; a run still
-        # searching at 12 has not found one. Before 2026-09-17 nothing capped
-        # this step and only the 30-minute JOB timeout stood behind it - a
-        # fruitless search ran 21 minutes until the user cancelled it by hand.
-        # A timeout here fails the step, and continue-on-error above keeps the
-        # run green: the next slot simply tries again.
-        timeout-minutes: 12
+        # 15, not 12. The 12 was set on 2026-09-17 on the estimate that "a
+        # run that finds its story is done in 5-7 minutes" - and that estimate
+        # was wrong. Measured on 2026-09-18 by matching run starts to the
+        # commits they produced: the three runs that PUBLISHED took 8.4, 9.8
+        # and 10.6 minutes. A 12-minute cap left ~1.4 minutes of headroom over
+        # a normal successful run, which means the next slow-but-productive
+        # run gets killed after doing all of the work.
+        #
+        # The cap is not the cost lever anyway - it bounds the damage (an
+        # uncapped fruitless search ran 21.6 minutes on 09-17 before the user
+        # cancelled it by hand) while the shortlist step above is what should
+        # actually shorten the runs. A timeout here fails the step, and
+        # continue-on-error above keeps the run green: the next slot retries.
+        timeout-minutes: 15
         env:
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
