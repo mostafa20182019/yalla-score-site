@@ -8,7 +8,7 @@
  "reconcile": "ok (0 row(s) corrected, 54 live games)",
  "matches_archive": "ok (484)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 15 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 30 min ago",
  "slow_fetched_at": "2026-09-19T22:47:01+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
@@ -94,5 +94,5 @@
   "fails": 0
  },
  "match_details": "ok (378)",
- "utc": "2026-09-19T23:02:24Z"
+ "utc": "2026-09-19T23:17:43Z"
 }
