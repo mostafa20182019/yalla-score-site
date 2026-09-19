@@ -20,21 +20,45 @@ Usage
     python article_put.py --update 54 draft.json     # the upgrade path
     python article_put.py --export                   # rewrite the json from D1
     python article_put.py --check draft.json         # validate, write nothing
+    python article_put.py --retry-pending            # publish a rescued draft
 
 draft.json is one article object with the same field names the json uses:
 title, summary, body, author, pub_date, pub_ts, image_url, image_credit,
 sources, faq, fb_post, and match_id + kind on a match piece.
 """
+import glob
+import hashlib
 import json
 import os
 import sys
 import urllib.parse
+import datetime
 
 sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import build_site as b     # noqa: E402  - words/thin and the club matcher
 import store               # noqa: E402
+
+# A draft that passed every check and then lost to the database.
+#
+# D1's free tier has a daily row-READ limit as well as a write one, and it has
+# now run out twice (2026-09-16, 2026-09-19). The second time a run had already
+# found the story, written 545 words, cleared `--check` with 3 sources and 3
+# FAQ, and vetted an image - and `store.article_add` raised
+# «exceeded D1's free tier daily row read limit» on the INSERT. The article was
+# thrown away and the next slot started researching from scratch. Checked
+# afterwards: nothing partial landed either, so it was simply gone.
+#
+# Hand-editing data/articles.json is NOT the fallback (that is the race this
+# whole file exists to close). Instead the finished draft is parked here, the
+# workflow commits it, and the next run publishes it before it goes looking
+# for anything new. An outage then costs a DELAY, not an article.
+PENDING_DIR = os.path.join(HERE, "drafts")
+PENDING_MAX_H = 18      # news, not an archive: a draft older than this is
+                        # dropped rather than published stale. The read quota
+                        # resets at 00:00 UTC, so a draft parked at the worst
+                        # possible moment waits at most a few hours.
 
 REQUIRED = ("title", "summary", "body", "author", "pub_date")
 ALLOWED = set(store.ARTICLE_FIELDS) - {"article_id"}
@@ -168,6 +192,93 @@ def clubs_of(rec, aid="new"):
     return [tp["slug"] for tp in b.article_clubs(dict(rec, article_id=aid))]
 
 
+def save_pending(rec):
+    """Park a validated draft under drafts/. Returns the path.
+
+    The name is derived from the title, so a run that retries the same draft
+    overwrites its own file instead of leaving a second copy behind.
+    """
+    os.makedirs(PENDING_DIR, exist_ok=True)
+    key = hashlib.md5((rec.get("title") or "").encode("utf-8")).hexdigest()[:8]
+    path = os.path.join(PENDING_DIR,
+                        f"{rec.get('pub_date') or 'undated'}-{key}.json")
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(rec, f, ensure_ascii=False, indent=1)
+        f.write("\n")
+    try:
+        return os.path.relpath(path, HERE).replace(os.sep, "/")
+    except ValueError:
+        # Windows: relpath raises across drives. PENDING_DIR is under HERE in
+        # production, but a test pointing it at the temp dir must not crash
+        # the rescue path that exists to stop things being lost.
+        return path.replace(os.sep, "/")
+
+
+def _too_old(rec):
+    """A parked draft is news; past PENDING_MAX_H it is not."""
+    ts = (rec.get("pub_ts") or "").strip()
+    if not ts:
+        return False
+    try:
+        when = datetime.datetime.fromisoformat(ts)
+    except ValueError:
+        return False
+    now = datetime.datetime.now(when.tzinfo) if when.tzinfo else datetime.datetime.now()
+    return (now - when).total_seconds() / 3600 > PENDING_MAX_H
+
+
+def retry_pending():
+    """Publish the oldest parked draft. 0 = nothing to do or done, 2 = D1 still down.
+
+    Deliberately publishes AT MOST ONE: the site's rule is one article per
+    run, and a queue that empties itself all at once would dump three pieces
+    into the feed at the same minute.
+    """
+    files = sorted(glob.glob(os.path.join(PENDING_DIR, "*.json")))
+    if not files:
+        print("no parked draft")
+        return 0
+    for path in files:
+        name = os.path.basename(path)
+        try:
+            with open(path, encoding="utf-8") as f:
+                rec = json.load(f)
+        except Exception as e:                               # noqa: BLE001
+            print(f"{name}: unreadable ({e}) - removing")
+            os.remove(path)
+            continue
+        rec.pop("article_id", None)
+        if _too_old(rec):
+            print(f"{name}: older than {PENDING_MAX_H}h - dropping, "
+                  "it is no longer news")
+            os.remove(path)
+            continue
+        bad, words = validate(rec)
+        if bad:
+            # it validated when it was parked; if it does not now, something
+            # changed under it and a stuck file would block every future run
+            print(f"{name}: no longer valid ({bad[0]}) - removing")
+            os.remove(path)
+            continue
+        clubs = clubs_of(rec)
+        try:
+            aid = store.article_add(enrich(rec, words), clubs=clubs)
+        except store.DuplicateArticle:
+            print(f"{name}: the site already covers it - removing")
+            os.remove(path)
+            continue
+        except Exception as e:                               # noqa: BLE001
+            print(f"{name}: D1 still refusing ({e}) - left parked")
+            return 2
+        os.remove(path)
+        n = store.article_export()
+        print(f"parked draft {name} published as article {aid} "
+              f"(pub_ts {rec.get('pub_ts') or '?'}) - "
+              f"data/articles.json rewritten, {n} articles")
+        return 0
+    return 0
+
+
 def main():
     args = sys.argv[1:]
     if not args:
@@ -180,6 +291,9 @@ def main():
         print("   Refusing to publish: writing to data/articles.json by hand is")
         print("   the racy path this script exists to replace.")
         return 1
+
+    if mode == "--retry-pending":
+        return retry_pending()
 
     if mode == "--export":
         n = store.article_export()
@@ -222,6 +336,15 @@ def main():
             print(f"REFUSED: {e}")
             print("  the site already covers that match with a piece of this kind")
             return 1
+        except Exception as e:                               # noqa: BLE001
+            # NOT a bad draft and NOT a duplicate - the database refused it.
+            # The draft is good; park it instead of losing it.
+            saved = save_pending(rec)
+            print(f"D1 REFUSED THE INSERT: {e}")
+            print(f"  the finished draft is saved at {saved}")
+            print("  COMMIT IT (with any new media/ file) - the next run "
+                  "publishes it before looking for a new story.")
+            return 2
         print(f"article {aid} inserted in D1")
 
     n = store.article_export()

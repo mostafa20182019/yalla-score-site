@@ -65,6 +65,31 @@ jobs:
           echo "PREV_ARTICLE_ID=$PREV_ID" >> "$GITHUB_ENV"
           echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
 
+      # An earlier slot may have finished an article that D1 then refused -
+      # its free tier has a daily row-READ limit and it ran out on 2026-09-16
+      # and again on 2026-09-19, the second time discarding a validated
+      # 545-word piece at the INSERT. article_put.py parks such a draft under
+      # drafts/ (see PENDING_DIR there); this publishes it before the run goes
+      # looking for anything new. Deterministic, no model time, and a no-op on
+      # a normal run.
+      - name: Publish a parked draft
+        continue-on-error: true
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: |
+          python article_put.py --retry-pending
+          if [ -n "$(git status --porcelain data/articles.json drafts)" ]; then
+          git config user.name "yalla-score-bot"
+          git config user.email "actions@users.noreply.github.com"
+            git add data/articles.json drafts
+            git commit -m "Yalla Score: publish the draft D1 refused on an earlier slot"
+            git pull --rebase origin main
+            git push origin HEAD:main
+            echo "### 📤 نُشرت مسودة من تشغيل سابق" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
       # ~13 seconds, no model: the same thirteen Google News queries the
       # prompt would fetch anyway, clustered with the site's own logic and
       # checked against the archive, written to /tmp/story_candidates.json.
@@ -125,6 +150,28 @@ jobs:
             tail -n 40 /tmp/claude.txt
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # If D1 refused the INSERT, article_put.py parked the finished draft
+      # under drafts/ rather than losing it - but the runner is thrown away at
+      # the end of the job, so it has to be committed here, together with the
+      # image the article needs. On a normal run Claude has already committed
+      # and these paths are clean, so this does nothing.
+      - name: Keep a draft D1 refused
+        if: always()
+        continue-on-error: true
+        run: |
+          if [ -z "$(git status --porcelain drafts)" ]; then
+            echo "no parked draft this run"
+            exit 0
+          fi
+          git config user.name "yalla-score-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add drafts media
+          git commit -m "Yalla Score: park the article D1 refused (published next slot)"
+          git pull --rebase origin main
+          git push origin HEAD:main
+          echo "::warning::D1 refused the insert - the finished article is parked in drafts/ and the next slot publishes it."
+          echo "### 💾 مسودة محفوظة — تُنشر في التشغيل التالي" >> "$GITHUB_STEP_SUMMARY"
 
       # One-line verdict for the Summary page: new article (title) or none.
       - name: Report outcome
