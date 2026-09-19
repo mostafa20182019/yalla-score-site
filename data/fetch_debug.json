@@ -5,11 +5,11 @@
  "Turkish Super Lig": "ok (table 18 teams)",
  "Saudi Pro League": "ok (table 18 teams)",
  "CAF Champions League": "ok (no table)",
- "reconcile": "ok (2 row(s) corrected, 31 live games)",
+ "reconcile": "ok (0 row(s) corrected, 35 live games)",
  "matches_archive": "ok (484)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-19T13:17:43+00:00",
+ "slow_fetched_at": "2026-09-19T13:32:06+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -176,12 +176,11 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (15 games)",
+ "goal_events": "ok (19 games)",
  "goal_events_dbg": {
-  "candidates": 15,
+  "candidates": 19,
   "detail_fails": 0,
   "skipped": [
-   "4742054:count-mismatch (0, 3) vs 1-3 [a:g@45+4/a:g@67/a:g@79]",
    "4750854:count-mismatch (0, 0) vs -1--1 []"
   ],
   "frozen_skipped": 153,
@@ -249,13 +248,13 @@
    "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 7.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
- "prematch_lineups": "ok (12 with XI)",
+ "prematch_lineups": "ok (8 with XI)",
  "prematch_dbg": {
-  "in_window": 12,
-  "fetched": 12,
-  "with_xi": 12,
+  "in_window": 8,
+  "fetched": 8,
+  "with_xi": 8,
   "fails": 0
  },
  "match_details": "ok (367)",
- "utc": "2026-09-19T13:20:34Z"
+ "utc": "2026-09-19T13:34:59Z"
 }
