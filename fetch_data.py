@@ -661,6 +661,10 @@ S365_LEAGUES = [
     (78,  "Turkish Super Lig"),         # الدوري التركي (Salah's Trabzonspor)
     (649, "Saudi Pro League"),          # الدوري السعودي
     (624, "CAF Champions League"),      # دوري أبطال أفريقيا (user ask 2026-09-02)
+    # تصفيات كأس أمم إفريقيا (user ask 2026-09-20; AFCON 2027 group stage
+    # kicked off 2026-09-24). National teams: no analysis model, and the
+    # multi-group standings are skipped by the len(sts)==1 guard like CAF CL.
+    (588, "Africa Cup of Nations Qualification"),
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
@@ -788,6 +792,12 @@ def fetch_s365_league(matches_out, lid, comp_name):
         # rendering [0] alone would silently show group A as "the table" -
         # skip the table instead (site rule: never show possibly-wrong data)
         srows = (sts[0].get("rows") or []) if len(sts) == 1 else []
+        # ...and the AFCON qualifiers (588) return ONE entry with EVERY
+        # group's rows concatenated inside it (each row carries groupNum) -
+        # one 52-row "table" mixing nine groups. Same rule, second shape:
+        # rows from more than one group are not a league table.
+        if len({r.get("groupNum") for r in srows}) > 1:
+            srows = []
     except Exception as e:
         print(f"  ! 365scores standings failed: {e}")
         srows = []
@@ -829,7 +839,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588"
 
 def _goal_rows(game, fallback_home_id):
     """game detail -> (goals list, health) — tolerant of field-name drift."""

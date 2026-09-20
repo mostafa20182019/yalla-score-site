@@ -54,13 +54,14 @@ def byline(a):
     """The name to print (and to put in schema) for one article."""
     return EDITOR_NAME if (a.get("author") or "") in GENERIC_BYLINES else a["author"]
 
-# The four competitions whose match data comes from 365scores; everything else
+# The competitions whose match data comes from 365scores; everything else
 # we cover gets its table and season numbers from football-data.org (match
 # details and goals come from 365scores for all of them). This mirrors
 # fetch_data.S365_LEAGUES, which cannot be imported here - fetch_data imports
 # THIS module.
 S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
-                     "Saudi Pro League", "CAF Champions League")
+                     "Saudi Pro League", "CAF Champions League",
+                     "Africa Cup of Nations Qualification")
 
 def match_data_sources(a, comp):
     """The data credit a match preview/report carries when its writer left the
@@ -560,6 +561,7 @@ COMP_SLUG = {
     "Saudi Pro League": "saudi",
     "UEFA Champions League": "champions-league",
     "CAF Champions League": "caf-champions-league",
+    "Africa Cup of Nations Qualification": "afcon-qualifiers",
 }
 
 # MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
@@ -4946,10 +4948,14 @@ COMP_LOGO = {
     "Bundesliga":       "https://crests.football-data.org/BL1.png",
     "Ligue 1":          "https://crests.football-data.org/FL1.png",
     "UEFA Champions League": "https://crests.football-data.org/CL.png",
-    # 365scores competition emblem (self-hosted through local_crest at build)
+    # 365scores competition emblems (self-hosted through local_crest at build)
     "CAF Champions League": "https://imagecache.365scores.com/image/upload/"
                             "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
                             "d_Competitions:default1.png/v4/Competitions/624",
+    "Africa Cup of Nations Qualification":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/588",
 }
 # friendlier display names (data-comp keeps the raw API name for filtering)
 COMP_LABEL = {
@@ -4963,12 +4969,14 @@ COMP_LABEL = {
     "Bundesliga": "الدوري الألماني",
     "Serie A": "الدوري الإيطالي",
     "UEFA Champions League": "دوري أبطال أوروبا",
+    "Africa Cup of Nations Qualification": "تصفيات كأس أمم إفريقيا",
 }
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
 COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
               "Bundesliga", "Serie A", "UEFA Champions League",
-              "CAF Champions League"]   # last, after UCL (user pick 2026-09-02)
+              "CAF Champions League",   # after UCL (user pick 2026-09-02)
+              "Africa Cup of Nations Qualification"]  # user ask 2026-09-20
 
 def comp_label(name):
     return COMP_LABEL.get(name, name or "")
@@ -5136,12 +5144,13 @@ def fav_club_names(standings, fixtures):
     return names
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
-# must agree with LIVE_COMPS in worker.js (552,78,649,7,11,17,25,35,572,624).
+# must agree with LIVE_COMPS in worker.js (552,78,649,7,11,17,25,35,572,624,588).
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
     "Turkish Super Lig": 78,
     "Saudi Pro League": 649,
     "CAF Champions League": 624,
+    "Africa Cup of Nations Qualification": 588,
 }
 
 def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
