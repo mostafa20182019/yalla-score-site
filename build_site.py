@@ -3545,7 +3545,10 @@ def build():
                 season_label=st.get("season_label"), zeroed=st.get("zeroed"),
                 form_map=forms.get(c, {}), embedded=True)
         if c in fx_by_comp:
-            panes["rounds"] = league_rounds_panel(c, fx_by_comp[c], embedded=True)
+            _fxs = COMP_SLUG.get(c)
+            panes["rounds"] = league_rounds_panel(
+                c, fx_by_comp[c], embedded=True, only_current=True,
+                more_url=f"/fixtures/{_fxs}.html" if _fxs else None)
         live = [(k, lbl) for k, lbl in LEAGUE_TABS if panes.get(k)]
         if not live:
             continue
@@ -4013,6 +4016,50 @@ def build():
                 urls.append(sc_url)
             n_lp += 1
     print(f"  + league pages: {n_lp}")
+
+    # ---- per-league season fixtures (/fixtures/<slug>.html) ----
+    # These used to be INSIDE /matches, hidden behind the league filter: 2,206
+    # fixture rows and 4,955 crest tags that every visitor downloaded to look
+    # at the 82 rows of one day. As their own pages they cost nothing to the
+    # people who do not want them and answer a real query - «جدول مباريات
+    # الدوري المصري» - which a megabyte of hidden markup never could.
+    os.makedirs(os.path.join(DIST, "fixtures"), exist_ok=True)
+    n_fx = 0
+    for comp, slug in COMP_SLUG.items():
+        fx = fx_by_comp.get(comp)
+        rounds = (fx or {}).get("rounds") or []
+        if not rounds:
+            continue
+        label = comp_label(comp)
+        n_m = sum(len(r.get("matches") or []) for r in rounds)
+        fp = [head(f"جدول مباريات {label} {season} — كل الجولات | {SITE_NAME}",
+                   f"جدول مباريات {label} لموسم {season} كاملًا: {len(rounds)} جولة "
+                   f"و{n_m} مباراة بمواعيدها ونتائجها، محدّثًا تلقائيًا بعد كل جولة.",
+                   SITE_BASE + f"/fixtures/{slug}.html", active="matches")]
+        fp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
+                  f'<a href="/matches.html">المباريات</a> › جدول {esc(label)}</nav>')
+        fp.append(f'<h1 class="page-h">جدول مباريات {esc(label)} {esc(season)}</h1>')
+        fp.append(f'<section class="minfo"><p>كل جولات {esc(label)} لموسم {esc(season)} — '
+                  f'<b>{len(rounds)}</b> جولة و<b>{n_m}</b> مباراة. المباريات المنتهية '
+                  'تظهر بنتيجتها والقادمة بموعدها بتوقيت القاهرة، ويتحدّث الجدول تلقائيًا '
+                  'بعد كل مباراة. استخدم ‹ و› للتنقل بين الجولات.</p></section>')
+        fp.append(league_rounds_panel(comp, fx, embedded=True))
+        _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
+        if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
+            _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
+        if comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
+            _links.append(f'<a href="/analysis/{slug}.html">تحليلات وتوقعات {esc(label)} ←</a>')
+        fp.append('<p class="more-link">' + ' · '.join(_links) + '</p>')
+        fp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                 ("المباريات", SITE_BASE + "/matches.html"),
+                                 (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")]))
+        fp.append(foot())
+        fp.append(ROUNDS_JS)
+        write(f"fixtures/{slug}.html", "".join(fp))
+        urls.append(f"/fixtures/{slug}.html")
+        _LASTMOD[f"/fixtures/{slug}.html"] = REF_TODAY
+        n_fx += 1
+    print(f"  + season fixture pages: {n_fx}")
 
     # ---- تحليلات: /analysis hub + /analysis/<league> ----
     os.makedirs(os.path.join(DIST, "analysis"), exist_ok=True)
@@ -4928,7 +4975,7 @@ def fixture_mini(m):
             f'{mid}'
             f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(ar_team(m.get("away")))}</bdi></span></div>')
 
-def league_rounds_panel(comp, fx, embedded=False):
+def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=None):
     """FotMob-style rounds panel: a ‹ round › navigator + every round of the
     season, each round's matches grouped by day. JS shows one round at a time."""
     from collections import OrderedDict
@@ -4937,13 +4984,20 @@ def league_rounds_panel(comp, fx, embedded=False):
     parts = [f'<div class="lg-fix rounds-panel" data-comp="{esc(comp)}" '
              f'data-current="{current}"{"" if embedded else " hidden"}>',
              f'<div class="fx-head">{comp_icon(comp)} {esc(comp_label(comp))}</div>',
-             '<div class="rnav">'
-             '<button type="button" class="rn-prev" aria-label="الجولة السابقة">‹</button>'
-             '<span class="rn-label"></span>'
-             '<button type="button" class="rn-next" aria-label="الجولة التالية">›</button></div>',
+             ('' if only_current else
+              '<div class="rnav">'
+              '<button type="button" class="rn-prev" aria-label="الجولة السابقة">‹</button>'
+              '<span class="rn-label"></span>'
+              '<button type="button" class="rn-next" aria-label="الجولة التالية">›</button></div>'),
              '<div class="rounds">']
+    if only_current:
+        # /matches ships ONE round, not the season: the hidden rest was 2,206
+        # fixture rows and 4,955 crest tags on the site's second-busiest page
+        rounds = [r for r in rounds if r.get("round") == current] or rounds[:1]
     for r in rounds:
-        parts.append(f'<div class="round" data-round="{r["round"]}" data-label="الجولة {r["round"]}" hidden>')
+        _hid = "" if only_current else " hidden"
+        parts.append(f'<div class="round" data-round="{r["round"]}" '
+                     f'data-label="الجولة {r["round"]}"{_hid}>')
         days = OrderedDict()
         for m in r.get("matches", []):
             days.setdefault(m.get("kickoff") or "", []).append(m)
@@ -4952,7 +5006,11 @@ def league_rounds_panel(comp, fx, embedded=False):
             for m in days[d]:
                 parts.append(fixture_mini(m))
         parts.append('</div>')
-    parts.append('</div></div>')
+    parts.append('</div>')
+    if more_url:
+        parts.append(f'<p class="more-link"><a href="{esc(more_url)}">كل جولات '
+                     f'{esc(comp_label(comp))} ←</a></p>')
+    parts.append('</div>')
     return "".join(parts)
 
 def _scorer_face(sc):
@@ -7213,6 +7271,11 @@ ROUNDS_JS = """<script>
     if(!rounds.length) return;
     var label=panel.querySelector('.rn-label');
     var prev=panel.querySelector('.rn-prev'), next=panel.querySelector('.rn-next');
+    /* /matches ships ONE round and no navigator (the season lives on
+       /fixtures/<league> since 2026-09-20). Without this guard the missing
+       .rn-label threw on the first panel and killed the navigator on every
+       panel after it. */
+    if(!label||!prev||!next){ rounds.forEach(function(r){ r.hidden=false; }); return; }
     var cur=panel.getAttribute('data-current');
     var idx=0;
     for(var i=0;i<rounds.length;i++){ if(rounds[i].getAttribute('data-round')===cur){ idx=i; break; } }
