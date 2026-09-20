@@ -26,9 +26,83 @@ import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+import json              # noqa: E402
+import time              # noqa: E402
+
 import analysis as AN     # noqa: E402
 import build_site as b    # noqa: E402  - data loaders, ar_team, COMP_SLUG/ORDER
 import store              # noqa: E402
+
+
+# ---------------------------------------------------------------- signatures
+SIG_TABLE = ("CREATE TABLE IF NOT EXISTS warehouse_sig (name TEXT PRIMARY KEY, "
+             "sig TEXT, rows INTEGER, updated_at INTEGER)")
+_SIGS = None                 # every stored signature, read once per process
+_PENDING = {}                # written only after the upserts they describe land
+
+
+def full_refresh():
+    """Ignore every signature and read each table back. The escape hatch for a
+    warehouse edited outside this script (or a signature we stopped trusting):
+    WAREHOUSE_FULL=1, or d1_admin --warehouse-full."""
+    return (os.environ.get("WAREHOUSE_FULL", "").strip().lower()
+            in ("1", "true", "yes", "on"))
+
+
+def _sigs():
+    """All stored signatures in ONE query — a dozen rows, not a dozen tables."""
+    global _SIGS
+    if _SIGS is None:
+        if store.backend() == "json":
+            _SIGS = {}
+        else:
+            store.sql(SIG_TABLE)
+            _SIGS = {r["name"]: r["sig"]
+                     for r in store.sql("SELECT name, sig FROM warehouse_sig")}
+    return _SIGS
+
+
+def signature(*parts):
+    """A stable hash of a candidate write set.
+
+    The rows are sorted before hashing: two runs that produce the same rows in
+    a different order describe the same table, and an upsert is keyed anyway —
+    treating a reorder as a change would read the table back for nothing."""
+    h = hashlib.sha1()
+    for part in parts:
+        if isinstance(part, (list, tuple)) and part and isinstance(part[0], dict):
+            body = sorted(json.dumps(r, sort_keys=True, ensure_ascii=False, default=str)
+                          for r in part)
+        else:
+            body = [json.dumps(part, sort_keys=True, ensure_ascii=False, default=str)]
+        for line in body:
+            h.update(line.encode("utf-8"))
+            h.update(b"\x1e")
+        h.update(b"\x1d")
+    return h.hexdigest()
+
+
+def _sig_matches(name, sig):
+    return not full_refresh() and _sigs().get(name) == sig
+
+
+def commit_sigs():
+    """Store the signatures of everything written in this refresh — AFTER the
+    writes, in one statement. A run that dies before here leaves the old
+    signature, so the next run reads the table back and repairs whatever the
+    dead run left half-written."""
+    if not _PENDING or store.backend() == "json":
+        _PENDING.clear()
+        return 0
+    now = int(time.time())
+    rows = [{"name": k, "sig": v[0], "rows": v[1], "updated_at": now}
+            for k, v in _PENDING.items()]
+    store.sql(SIG_TABLE)
+    n = store.upsert_many("warehouse_sig", ["name", "sig", "rows", "updated_at"],
+                          rows, ["name"])
+    _sigs().update({r["name"]: r["sig"] for r in rows})
+    _PENDING.clear()
+    return n
 
 
 def _changed_only(table, key_cols, columns, rows):
@@ -39,9 +113,24 @@ def _changed_only(table, key_cols, columns, rows):
     blind upserts. A full match refresh is 2113 rows; on an hour when nothing
     was played, this makes it zero. That is the difference between fitting the
     quota with headroom and living at 62k/day.
+
+    THE HASH (2026-09-20). Reading the table back is the right price when
+    something moved and the wrong one when nothing did: a warm refresh was
+    returning 26,050 rows to discover that all 26,050 were identical, ~2.5M a
+    day against a 5M tier. So the candidate rows are hashed first — free, they
+    are already in memory — and when the hash matches the one stored from the
+    last successful write, the SELECT never happens.
+
+    It is safe because the signature is written AFTER the upserts (commit_sigs),
+    so a signature can only claim what the table actually holds. It can still
+    be wrong if the warehouse is edited from somewhere else: WAREHOUSE_FULL=1
+    ignores every signature and reads everything back.
     """
     if store.backend() == "json":
         return [], 0
+    sig = signature(table, list(key_cols), list(columns), rows)
+    if _sig_matches(table, sig):
+        return [], len(rows)                 # nothing read, nothing written
     sel = ", ".join(dict.fromkeys(list(key_cols) + list(columns)))
     have = {}
     for r in store.sql(f"SELECT {sel} FROM {table}"):
@@ -53,6 +142,7 @@ def _changed_only(table, key_cols, columns, rows):
             same += 1
             continue
         out.append(row)
+    _PENDING[table] = (sig, len(rows))
     return out, same
 
 
@@ -240,6 +330,7 @@ def refresh(verbose=True):
               f"(D1 free tier allows 100k/day)")
         if st_lost:
             print(f"  ! {st_lost} table rows name a club with no id - skipped")
+    commit_sigs()
     return counts
 
 # =========================================================== phase B: in-match
@@ -370,6 +461,17 @@ def refresh_details(verbose=True):
     """
     today = datetime.date.today().isoformat()
     pool = _detail_pool()
+    # THE WHOLE FUNCTION behind one hash. Everything below is derived from the
+    # pool, so an unchanged pool means unchanged lineups, goals, cards, subs,
+    # players and leaderboards — and skipping here also skips _resolve_matches
+    # and the GROUP BY scans in _trim, which _changed_only alone would not.
+    # That is ~21,600 of the 26,050 rows a warm refresh used to read.
+    pool_sig = signature("details_pool", sorted(pool), today)
+    if _sig_matches("details_pool", pool_sig):
+        if verbose:
+            print(f"details: {len(pool)} matches, nothing changed "
+                  f"(signature match, no rows read)")
+        return {"details_seen": len(pool), "skipped": 1}
     ids, rep = _resolve_matches(pool)
 
     players, lineups = {}, []
@@ -465,6 +567,7 @@ def refresh_details(verbose=True):
     n_tp = store.upsert_many("top_players", TCOLS + ["as_of"], t_write,
                              ["comp_id", "kind", "rank"])
 
+    _PENDING["details_pool"] = (pool_sig, len(pool))
     counts = {"details_seen": len(pool), **rep,
               "players_written": n_pl, "players_same": p_same,
               "lineups_written": n_lu, "lineups_same": l_same,
@@ -481,6 +584,7 @@ def refresh_details(verbose=True):
             print(f"  ! {rep['unmatched']} detail records could not be matched to a "
                   f"fixture and {rep['ambiguous']} were ambiguous - they are skipped, "
                   f"not guessed")
+    commit_sigs()
     return counts
 
 # ============================================================ phase C: articles
@@ -601,6 +705,7 @@ def refresh_articles(verbose=True, source="d1"):
         if lost and lost[0]["n"]:
             print(f"  note: {lost[0]['n']} match pieces point at a fixture that has "
                   f"aged out of `matches` - the article keeps its match_id")
+    commit_sigs()
     return counts
 
 

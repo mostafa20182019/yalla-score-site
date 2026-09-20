@@ -187,8 +187,14 @@ def main():
         n = store.import_json()
         print(f"migrated: {n} new rows inserted (rows already present are skipped)")
 
-    if "--warehouse" in args:
+    if "--warehouse" in args or "--warehouse-full" in args:
         import warehouse                      # imports build_site: only load it when asked
+        if "--warehouse-full" in args:
+            # ignore every table signature and read each table back. For a
+            # warehouse edited from somewhere else, or a signature we stopped
+            # trusting - the signatures only ever claim what THIS script wrote.
+            os.environ["WAREHOUSE_FULL"] = "1"
+            print("full refresh: signatures ignored, every table read back")
         try:
             warehouse.refresh()
             warehouse.refresh_details()       # needs matches/teams to exist first
