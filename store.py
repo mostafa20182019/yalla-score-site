@@ -253,9 +253,26 @@ def _fb_json():
     return st
 
 
+def _fb_bucket(st, kind):
+    """The bucket for `kind`, created on first use — a kind added later must
+    not KeyError against a file written before it existed."""
+    return st.setdefault(_bucket(kind), {})
+
+
 def _bucket(kind):
-    """Which json key holds this kind (the file predates the kind column)."""
-    return "articles" if kind == "article" else "posted"
+    """Which json key holds this kind (the file predates the kind column).
+
+    Everything that is not an article or a card gets a key of its own. They all
+    shared "posted" until 2026-09-20, when posted_ids("reel") came back holding
+    seven CARD ids: on this backend a match that already had a card looked as
+    though it already had a reel, so the reel would never be made. D1 has a kind
+    column and never had the collision — but the fallback is not hypothetical,
+    it is what runs when the D1 quota is gone."""
+    if kind == "article":
+        return "articles"
+    if kind == "card":
+        return "posted"
+    return f"posted_{kind}"
 
 
 # ---------------------------------------------------------------- facebook state
@@ -275,7 +292,7 @@ def claim(kind, ref_id, title=None, score=None):
         # record. Writing a placeholder here instead would add a failure mode
         # the current code does not have (a crashed run leaving a phantom claim
         # that silences the article forever, with no TTL to clear it).
-        return ref_id not in _fb_json()[_bucket(kind)]
+        return ref_id not in _fb_bucket(_fb_json(), kind)
     try:
         sql("INSERT INTO fb_posted (kind, ref_id, title, score, claimed_at) "
             "VALUES (?, ?, ?, ?, ?)", [kind, ref_id, title, score, now])
@@ -303,7 +320,7 @@ def record_post(kind, ref_id, post_id, title=None, score=None, og_ok=False):
             rec["s"] = score
         if og_ok:
             rec["og_ok"] = True
-        st[_bucket(kind)][ref_id] = rec
+        _fb_bucket(st, kind)[ref_id] = rec
         _jsave(FB_JSON, st)
         return
     # UPSERT, not a bare UPDATE: auto() always claims first, but the legacy
@@ -335,7 +352,7 @@ def posted_ids(kind):
     """Everything already published for this kind (open claims excluded)."""
     if backend() == "json":
         st = _fb_json()
-        return {k for k, v in st[_bucket(kind)].items() if (v or {}).get("post_id")}
+        return {k for k, v in _fb_bucket(st, kind).items() if (v or {}).get("post_id")}
     rows = sql("SELECT ref_id FROM fb_posted WHERE kind = ? AND post_id IS NOT NULL",
                [kind])
     return {r["ref_id"] for r in rows}
@@ -345,7 +362,7 @@ def get_post(kind, ref_id):
     """The stored record, or None."""
     ref_id = str(ref_id)
     if backend() == "json":
-        return _fb_json()[_bucket(kind)].get(ref_id)
+        return _fb_bucket(_fb_json(), kind).get(ref_id)
     rows = sql("SELECT * FROM fb_posted WHERE kind = ? AND ref_id = ?", [kind, ref_id])
     return rows[0] if rows else None
 
@@ -354,7 +371,7 @@ def set_og_ok(kind, ref_id):
     ref_id = str(ref_id)
     if backend() == "json":
         st = _fb_json()
-        rec = st[_bucket(kind)].get(ref_id)
+        rec = _fb_bucket(st, kind).get(ref_id)
         if rec:
             rec["og_ok"] = True
             _jsave(FB_JSON, st)
@@ -368,7 +385,7 @@ def unconfirmed(kind, within_hours):
     if backend() == "json":
         st = _fb_json()
         return [{"ref_id": k, "post_id": (v or {}).get("post_id")}
-                for k, v in st[_bucket(kind)].items()
+                for k, v in _fb_bucket(st, kind).items()
                 if (v or {}).get("post_id") and not (v or {}).get("og_ok")
                 and (v or {}).get("ts", 0) >= cut]
     return sql("SELECT ref_id, post_id FROM fb_posted WHERE kind = ? AND og_ok = 0 "
@@ -583,7 +600,7 @@ def export_json():
             rec["s"] = r["score"]
         if r.get("og_ok"):
             rec["og_ok"] = True
-        fb[_bucket(r["kind"])][r["ref_id"]] = rec
+        fb.setdefault(_bucket(r["kind"]), {})[r["ref_id"]] = rec
     for r in sql("SELECT * FROM fb_failed", []):
         fb["failed"][r["ref_id"]] = r["attempts"]
     for r in sql("SELECT * FROM fb_seen", []):
