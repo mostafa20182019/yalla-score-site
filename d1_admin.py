@@ -189,16 +189,26 @@ def main():
 
     if "--warehouse" in args:
         import warehouse                      # imports build_site: only load it when asked
-        warehouse.refresh()
-        warehouse.refresh_details()           # needs matches/teams to exist first
-        warehouse.refresh_articles()
-        # the free tier is 100k row writes a day for the WHOLE site; a refresh
-        # that starts costing thousands has to be visible in the run log before
-        # it blocks the article pipeline (as it did on 2026-09-15)
-        _rw, _st = store.writes()
-        _rr, _ = store.reads()
-        print(f"D1 cost of this refresh: {_rw} rows written, {_rr} rows read "
-              f"in {_st} statements")
+        try:
+            warehouse.refresh()
+            warehouse.refresh_details()       # needs matches/teams to exist first
+            warehouse.refresh_articles()
+        finally:
+            # the free tier is 100k row writes and 5M rows READ a day for the
+            # WHOLE site; a refresh that starts costing thousands has to be
+            # visible in the run log before it blocks the article pipeline (as
+            # the write side did on 2026-09-15 and the read side on 2026-09-16
+            # and again on 2026-09-20).
+            #
+            # In a FINALLY because this used to print only on success — and the
+            # run that most needs to say what it spent is the one that died
+            # holding the empty bag. On 2026-09-20 the refresh raised
+            # «exceeded D1's free tier daily row read limit» on its first
+            # upsert and the cost line never ran.
+            _rw, _st = store.writes()
+            _rr, _ = store.reads()
+            print(f"D1 cost of this refresh: {_rw} rows written, {_rr} rows read "
+                  f"in {_st} statements")
 
     if "--articles-backfill" in args:
         import warehouse

@@ -462,7 +462,9 @@ def auto(dry=False, out_dir=None):
     publish. Silent and exit 0 when the switch is off or the token is absent."""
     out_dir = out_dir or os.path.join(HERE, "media", "reels")
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
-    posted = store.posted_ids(KIND)
+    posted = _posted()
+    if posted is None:
+        return 0                     # no dedup, no post - the next run tries again
     todo = [(m, c) for m, c in candidates() if str(m["match_id"]) not in posted]
     if not todo:
         print("reel: nothing new")
@@ -508,11 +510,26 @@ def auto(dry=False, out_dir=None):
     return 0
 
 
+def _posted():
+    """The set of matches already reeled, or None when the store cannot say.
+
+    None is not an empty set. Treating an unreachable store as "nothing posted
+    yet" would publish a second reel of a match that already has one — and the
+    store IS unreachable sometimes: on 2026-09-20 D1's free-tier daily row-read
+    limit refused every query from 15:00 Cairo onward."""
+    try:
+        return store.posted_ids(KIND)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"reel: the store cannot be read ({str(e)[:120]}) - deferring")
+        return None
+
+
 def plan():
     """One line for the workflow: is there a reel to make this run? Printing an
     answer costs nothing; installing ffmpeg on every publish run would."""
-    posted = store.posted_ids(KIND)
-    todo = [m for m, _ in candidates() if str(m["match_id"]) not in posted]
+    posted = _posted()
+    todo = [] if posted is None else [m for m, _ in candidates()
+                                      if str(m["match_id"]) not in posted]
     print("yes" if (todo and enabled()) else "no")
     return 0
 
