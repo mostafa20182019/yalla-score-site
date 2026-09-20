@@ -79,6 +79,17 @@ jobs:
           FD_TOKEN: ${{ secrets.FD_TOKEN }}
         run: python fetch_data.py
 
+      # A photo the article pipeline downloads from Wikimedia arrives at full
+      # size - the library had reached 75 MB, averaging 323 KB with a 4544px,
+      # 3.2 MB hero (2026-09-20). shrink_media.py caps width at 1600 and
+      # re-encodes at q82 IN PLACE, never renaming a file (every image_url,
+      # CC credit and scraped Facebook preview points at the name) and never
+      # re-encoding what it cannot actually shrink. Idempotent, so on a run
+      # with no new photos it does nothing and costs a second.
+      - name: Shrink new photos
+        continue-on-error: true
+        run: python shrink_media.py --quiet
+
       - name: Build the static site
         env:
           # build_site freezes/scores the prediction log through store.py. Without
@@ -299,7 +310,9 @@ jobs:
             # showed that when one of them does not exist yet, the checkout
             # fails for ALL of them and the stale copies go in - it reverted
             # the article export in that test. An exclude cannot fail that way.
-            git add data/ ':!data/articles.json' ':!data/fb_posted.json' ':!data/predictions.json'
+            # media/ rides along so a photo shrunk above is stored small
+            # once, not re-shrunk on every run for ever
+            git add data/ ':!data/articles.json' ':!data/fb_posted.json' ':!data/predictions.json' media/
             if git diff --cached --quiet; then
               pushed="nothing to commit"
               break
