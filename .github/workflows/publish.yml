@@ -316,16 +316,34 @@ jobs:
       # the minute gate keeps it to the first run of each hour. ~30 s, upserts
       # only what changed, and never fails the publish. On demand: the
       # d1-admin workflow's `warehouse` task.
-      # EVERY run since 2026-09-13 (user: «الداتا تتخزن عندنا ويعمل update للي
-      # اتغير بس»): the refresh is an upsert of what changed, ~30 s, so D1 is
-      # now the always-fresh store of the site's data rather than an hourly one.
-      - name: Refresh the analytics warehouse
+      # BACK TO HOURLY on 2026-09-20, with a measurement behind it. It ran on
+      # EVERY run from 2026-09-13 (user: «الداتا تتخزن عندنا ويعمل update للي
+      # اتغير بس»), and three days later D1's daily ROW READ limit started
+      # running out every evening - it killed three steps of every run and, on
+      # 2026-09-20, the first Facebook reel.
+      #
+      # The refresh only WRITES what changed, but to know what changed it READS
+      # everything: one warm refresh (nothing changed at all) returns 26,050
+      # rows - match_lineups 8,448, match_subs 3,510, players 2,548, matches
+      # 2,274 three times over. At ~96 runs a day that is ~2.5M rows read, half
+      # the free tier, and a floor: D1 counts rows SCANNED, not returned.
+      # Hourly costs ~625k and gives ~1.9M back.
+      #
+      # Freshness lost: up to an hour on /analysis and the user's own SQL. The
+      # SITE does not read the warehouse - it builds from data/*.json - so
+      # nothing a visitor sees is slower. On demand: the d1-admin `warehouse`
+      # task. If the reads still run out, the next thing to cut is the diff
+      # itself (read one hash per table, not every row).
+      - name: Refresh the analytics warehouse (first run of each hour)
         continue-on-error: true
         env:
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
-        run: python d1_admin.py --warehouse
+        run: |
+          M=$(date -u +%M)
+          if [ "$M" -ge 15 ]; then echo "minute $M - not this run"; exit 0; fi
+          python d1_admin.py --warehouse
 
       # Keep the repo copy of data/ fresh (caps the failed-fetch fallback at
       # ~30 min of staleness). This step runs AFTER build+deploy on purpose:
