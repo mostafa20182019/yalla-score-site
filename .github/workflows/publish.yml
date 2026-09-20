@@ -309,41 +309,29 @@ jobs:
       # Cairo times (13:00 / 17:00 / 20:00 / 23:30, see wrangler.toml). A run
       # every 15 minutes had produced six previews in seventy minutes.
 
-      # The analytics warehouse in D1 (teams/matches/strength/lineups/articles
-      # - what /analysis and the user's own SQL read). It used to refresh on
-      # an hourly cron in d1-admin.yml that GitHub fired ~once a day. Here it
-      # rides the runs the Worker cron reliably starts (:01/:16/:31/:46) and
-      # the minute gate keeps it to the first run of each hour. ~30 s, upserts
-      # only what changed, and never fails the publish. On demand: the
-      # d1-admin workflow's `warehouse` task.
-      # BACK TO HOURLY on 2026-09-20, with a measurement behind it. It ran on
-      # EVERY run from 2026-09-13 (user: «الداتا تتخزن عندنا ويعمل update للي
-      # اتغير بس»), and three days later D1's daily ROW READ limit started
-      # running out every evening - it killed three steps of every run and, on
-      # 2026-09-20, the first Facebook reel.
+      # THE ANALYTICS WAREHOUSE LEFT THIS PIPELINE on 2026-09-20.
       #
-      # The refresh only WRITES what changed, but to know what changed it READS
-      # everything: one warm refresh (nothing changed at all) returns 26,050
-      # rows - match_lineups 8,448, match_subs 3,510, players 2,548, matches
-      # 2,274 three times over. At ~96 runs a day that is ~2.5M rows read, half
-      # the free tier, and a floor: D1 counts rows SCANNED, not returned.
-      # Hourly costs ~625k and gives ~1.9M back.
+      # It used to refresh here every run (and hourly before that). It is gone
+      # because nothing reads it: build_site.py issues ZERO store.sql() — the
+      # site builds from data/*.json — and worker.js touches only articles and
+      # their children, live_* and report_queue. match_lineups, match_goals,
+      # match_cards, match_subs, players, teams, standings, team_strength,
+      # top_players and competitions had exactly one consumer: hand-written
+      # SQL. Schema YALLA on the Oracle sandbox already holds all of them and
+      # reloads every 15 minutes (yalla_refresh: fixtures, players, lineups,
+      # events, articles), so the analytics copy lives there now — real SQL,
+      # APEX on top of it, and no quota.
       #
-      # Freshness lost: up to an hour on /analysis and the user's own SQL. The
-      # SITE does not read the warehouse - it builds from data/*.json - so
-      # nothing a visitor sees is slower. On demand: the d1-admin `warehouse`
-      # task. If the reads still run out, the next thing to cut is the diff
-      # itself (read one hash per table, not every row).
-      - name: Refresh the analytics warehouse (first run of each hour)
-        continue-on-error: true
-        env:
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
-          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
-          CF_D1_ID: ${{ secrets.CF_D1_ID }}
-        run: |
-          M=$(date -u +%M)
-          if [ "$M" -ge 15 ]; then echo "minute $M - not this run"; exit 0; fi
-          python d1_admin.py --warehouse
+      # What this gives back: ~68k D1 row reads a day and ~30 s an hour. It
+      # was the single biggest reader — 26,050 rows per warm refresh before the
+      # table signatures, ~2.5M a day, which is what exhausted the free tier
+      # every evening and killed three steps of every run (and the first reel)
+      # on 2026-09-20.
+      #
+      # The D1 tables are LEFT IN PLACE, frozen at today's data — their as_of
+      # columns say so. To bring them current by hand: the d1-admin workflow's
+      # `warehouse` task, or `python d1_admin.py --warehouse` (`--warehouse-full`
+      # ignores the signatures). Nothing else in the site changes.
 
       # Keep the repo copy of data/ fresh (caps the failed-fetch fallback at
       # ~30 min of staleness). This step runs AFTER build+deploy on purpose:
