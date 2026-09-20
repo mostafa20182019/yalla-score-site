@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-20T11:30:12+03:00",
+    "generated_at" : "2026-09-20T11:45:12+03:00",
     "days" : 10,
     "n" : 24,
     "params" :
@@ -1936,15 +1936,6 @@
     "UEFA Champions League" :
     [
       {
-        "team" : "FC Bayern München",
-        "elo" : 1522.43,
-        "played" : 1,
-        "gf" : 5,
-        "ga" : 0,
-        "att" : 1.3482,
-        "def" : 0.8333
-      },
-      {
         "team" : "Paris Saint-Germain FC",
         "elo" : 1522.43,
         "played" : 1,
@@ -1952,6 +1943,15 @@
         "ga" : 1,
         "att" : 1.4512,
         "def" : 0.9363
+      },
+      {
+        "team" : "FC Bayern München",
+        "elo" : 1522.43,
+        "played" : 1,
+        "gf" : 5,
+        "ga" : 0,
+        "att" : 1.3482,
+        "def" : 0.8333
       },
       {
         "team" : "Manchester City FC",
@@ -2044,24 +2044,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "Real Madrid CF",
-        "elo" : 1511.22,
-        "played" : 1,
-        "gf" : 2,
-        "ga" : 1,
-        "att" : 1.0393,
-        "def" : 0.9363
-      },
-      {
-        "team" : "Liverpool FC",
-        "elo" : 1511.22,
-        "played" : 1,
-        "gf" : 2,
-        "ga" : 1,
-        "att" : 1.0393,
-        "def" : 0.9363
-      },
-      {
         "team" : "PAE AEK",
         "elo" : 1511.22,
         "played" : 1,
@@ -2078,6 +2060,24 @@
         "ga" : 2,
         "att" : 1.1423,
         "def" : 1.0393
+      },
+      {
+        "team" : "Real Madrid CF",
+        "elo" : 1511.22,
+        "played" : 1,
+        "gf" : 2,
+        "ga" : 1,
+        "att" : 1.0393,
+        "def" : 0.9363
+      },
+      {
+        "team" : "Liverpool FC",
+        "elo" : 1511.22,
+        "played" : 1,
+        "gf" : 2,
+        "ga" : 1,
+        "att" : 1.0393,
+        "def" : 0.9363
       },
       {
         "team" : "FK Shakhtar Donetsk",
@@ -2098,7 +2098,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "Fenerbahçe SK",
+        "team" : "PSV",
         "elo" : 1497.22,
         "played" : 1,
         "gf" : 1,
@@ -2107,7 +2107,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "PSV",
+        "team" : "Fenerbahçe SK",
         "elo" : 1497.22,
         "played" : 1,
         "gf" : 1,
@@ -2152,6 +2152,15 @@
         "def" : 1.0393
       },
       {
+        "team" : "Viking FK",
+        "elo" : 1485.98,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 3,
+        "att" : 0.9363,
+        "def" : 1.1423
+      },
+      {
         "team" : "Galatasaray SK",
         "elo" : 1485.98,
         "played" : 1,
@@ -2161,12 +2170,12 @@
         "def" : 1.1423
       },
       {
-        "team" : "Viking FK",
-        "elo" : 1485.98,
+        "team" : "Lille OSC",
+        "elo" : 1483.22,
         "played" : 1,
-        "gf" : 1,
+        "gf" : 2,
         "ga" : 3,
-        "att" : 0.9363,
+        "att" : 1.0393,
         "def" : 1.1423
       },
       {
@@ -2195,15 +2204,6 @@
         "ga" : 1,
         "att" : 0.8333,
         "def" : 0.9363
-      },
-      {
-        "team" : "Lille OSC",
-        "elo" : 1483.22,
-        "played" : 1,
-        "gf" : 2,
-        "ga" : 3,
-        "att" : 1.0393,
-        "def" : 1.1423
       },
       {
         "team" : "RB Leipzig",
