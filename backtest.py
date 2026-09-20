@@ -194,13 +194,19 @@ def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None, only_active=False):
                     lh, la = lh * fh, la * fa
                 if only_active and not moved:
                     continue
-                p = A.outcome_from_lambdas(lh, la)
+                p = (cfg["grid"](lh, la) if cfg.get("grid")
+                     else A.outcome_from_lambdas(lh, la))
                 probs = {"H": p["ph"], "D": p["pd"], "A": p["pa"]}
                 real = outcome(m["home_score"], m["away_score"])
+                # the exact scoreline the model called, for the score-hit rate
+                # (the metric Dixon-Coles is supposed to move)
+                top = (p.get("top") or [(None, None, 0)])[0]
+                called = f"{top[0]}-{top[1]}"
                 overall.add(probs, real)
                 per[comp].add(probs, real)
                 rows.append({"comp": comp, "date": m["kickoff"], "home": m["home"],
                              "away": m["away"], "real": real, "probs": probs,
+                             "called": called,
                              "score": f'{m["home_score"]}-{m["away_score"]}'})
     finally:
         for k, v in saved.items():
@@ -269,6 +275,53 @@ def carry(shrink):
     return {"seeds": seeds}
 
 
+def dixon_coles(rho):
+    """Dixon & Coles (1997) low-score correction, as a grid hook.
+
+    An independent Poisson treats the two scorelines as unrelated, and the
+    literature (and our own record) says it underrates the low draws. tau
+    multiplies four cells before renormalising:
+
+        (0,0): 1 - lh*la*rho      (1,1): 1 - rho
+        (0,1): 1 + lh*rho         (1,0): 1 + la*rho
+
+    A NEGATIVE rho therefore lifts 0-0 and 1-1 and lowers 1-0 and 0-1. Dixon
+    and Coles fitted about -0.13 on English league data.
+
+    Why this matters to us: over the 209 scored predictions to 2026-09-19 the
+    live model named a draw ONCE while 54 matches (25.8%) were drawn - the
+    draw is almost never the single highest cell in an independent Poisson,
+    so a quarter of all matches are unreachable for the direction metric."""
+    def grid(lh, la):
+        lh, la = max(0.15, min(lh, 4.5)), max(0.15, min(la, 4.5))
+        ph = pd = pa = over25 = btts = 0.0
+        cells = []
+        for i in range(A.MAX_GOALS + 1):
+            for j in range(A.MAX_GOALS + 1):
+                q = A._pois(lh, i) * A._pois(la, j)
+                if i == 0 and j == 0:
+                    q *= 1 - lh * la * rho
+                elif i == 0 and j == 1:
+                    q *= 1 + lh * rho
+                elif i == 1 and j == 0:
+                    q *= 1 + la * rho
+                elif i == 1 and j == 1:
+                    q *= 1 - rho
+                q = max(q, 0.0)                  # tau can go negative for extreme rho
+                cells.append((q, i, j))
+                if i > j: ph += q
+                elif i == j: pd += q
+                else: pa += q
+                if i + j >= 3: over25 += q
+                if i and j: btts += q
+        tot = ph + pd + pa or 1.0
+        cells.sort(reverse=True)
+        return {"ph": ph / tot, "pd": pd / tot, "pa": pa / tot, "lh": lh, "la": la,
+                "top": [(i, j, q / tot) for q, i, j in cells[:3]],
+                "over25": over25 / tot, "btts": btts / tot}
+    return grid
+
+
 VARIANTS = {
     "live": lambda: {},
     "carry-over": lambda: carry(1 / 3),          # keep 2/3 of last season's edge (the proposal)
@@ -285,6 +338,12 @@ VARIANTS = {
     "absence": lambda: {"factor": f_absence()},
     "absence-strong": lambda: {"factor": f_absence(0.45, 0.30)},
     "red-card-penalty": lambda: {"factor": f_red()},
+    # roadmap factor 2 - the draw correction, tested 2026-09-20
+    "dixon-coles": lambda: {"grid": dixon_coles(-0.13)},      # the literature value
+    "dc-05": lambda: {"grid": dixon_coles(-0.05)},
+    "dc-10": lambda: {"grid": dixon_coles(-0.10)},
+    "dc-18": lambda: {"grid": dixon_coles(-0.18)},
+    "dc-25": lambda: {"grid": dixon_coles(-0.25)},
 }
 
 SWEEPS = {
