@@ -2,9 +2,9 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-20T13:45:12+03:00",
+    "generated_at" : "2026-09-20T14:00:13+03:00",
     "days" : 10,
-    "n" : 24,
+    "n" : 23,
     "params" :
     {
       "elo_k" : 28,
@@ -8487,26 +8487,6 @@
       "n_a" : 4,
       "elo_h" : 1437.31,
       "elo_a" : 1423.61,
-      "ts" : "2026-09-20"
-    },
-    "558591" :
-    {
-      "comp" : "Serie A",
-      "home" : "ACF Fiorentina",
-      "away" : "SSC Napoli",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "13:30",
-      "lh" : 1.25492,
-      "la" : 2.094043,
-      "ph" : 0.2246,
-      "pd" : 0.2093,
-      "pa" : 0.5661,
-      "score" : "1-2",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1452.36,
-      "elo_a" : 1567.9,
       "ts" : "2026-09-20"
     },
     "558595" :
