@@ -262,6 +262,48 @@ jobs:
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: python fb_cards.py --post --hours 6
 
+      # Facebook REEL of a finished curated match (2026-09-20). Reels is the
+      # one surface on a page this size with organic reach left, and the site's
+      # bottleneck is distribution, not content (7 pages indexed, 732
+      # «Discovered – not indexed»). fb_reel.py renders it from OUR data and
+      # design — score, scorers, ratings, the table line, the same numbers the
+      # match page shows. No broadcast footage, ever: match video belongs to the
+      # rights holders.
+      #
+      # OFF BY DEFAULT. Publishing to the page is the user's call, so this needs
+      # the repo variable FB_REELS = 1 (Settings > Secrets and variables >
+      # Actions > Variables) on top of the existing FB_PAGE_TOKEN. Until then
+      # --plan answers "no" and neither step does anything.
+      #
+      # Two steps because installing ffmpeg costs ~30 s of apt and a curated
+      # match finishes a few times a week, while this workflow runs four times
+      # an hour.
+      - name: Is there a reel to make?
+        id: reel
+        if: steps.tip.outputs.fresh == 'true' && vars.FB_REELS == '1'
+        continue-on-error: true
+        env:
+          FB_REELS: ${{ vars.FB_REELS }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: echo "make=$(python fb_reel.py --plan)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish the reel
+        if: steps.reel.outputs.make == 'yes'
+        continue-on-error: true
+        env:
+          FB_REELS: ${{ vars.FB_REELS }}
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          # the reel claims in the same store as the cards (kind='reel'), so
+          # two overlapping runs cannot both publish the same match
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: |
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+          python fb_reel.py --auto
+
       # Match-analysis articles are no longer dispatched from here (2026-09-12):
       # the Cloudflare Worker cron starts match-article.yml at four fixed
       # Cairo times (13:00 / 17:00 / 20:00 / 23:30, see wrangler.toml). A run

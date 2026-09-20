@@ -8,3 +8,5 @@ __pycache__/
 media/cards/
 # match-analysis briefs are per-run scratch (match_brief.py)
 data/briefs/
+# reels are generated video (fb_reel.py) - rendered on the runner, never stored
+media/reels/
