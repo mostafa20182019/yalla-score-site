@@ -158,6 +158,33 @@ def load(name):
         print("  ! could not parse %s (%s) - skipping" % (name, e))
         return []
 
+def articles_current():
+    """(articles, source label) - the committed export when it is provably
+    current, the store otherwise.
+
+    A full store.article_all() scans the articles table plus three child
+    tables on EVERY build (~48-96 runs/day), and D1's free tier bills rows
+    scanned - the read quota ran out on 2026-09-16, 09-19 and 09-20. So the
+    build first reads the ONE-ROW change marker every article write replaces
+    (store.articles_sig) and, when it equals the sig recorded inside the
+    committed export, uses the export as-is. An admin-page edit bumps the
+    marker without rewriting the export, so those builds pull the full set
+    until the next article_put/d1-admin export re-syncs the file - correct,
+    just briefly more expensive. ARTICLES_FULL=1 is the escape hatch if a
+    writer is ever suspected of forgetting the bump."""
+    if store.backend() != "json" and not os.environ.get("ARTICLES_FULL"):
+        sig = store.articles_sig()          # one row read
+        if sig:
+            try:
+                with open(os.path.join(DATA, "articles.json"), encoding="utf-8") as f:
+                    doc = json.load(f)
+                if doc.get("sig") == sig:
+                    return (doc["results"][0]["items"],
+                            "the committed export (sig match, 1 row read)")
+            except Exception:                               # noqa: BLE001
+                pass                # unreadable export -> pull everything
+    return store.article_all(), f"the {store.backend()} store"
+
 def esc(s):
     return html.escape(s or "", quote=True)
 
@@ -2763,8 +2790,8 @@ def build():
     # page when the store is unreachable. It can only ever be BEHIND, never
     # wrong - article_put.py rewrites it in the same commit as the article.
     try:
-        articles_all = store.article_all()
-        print(f"  articles: {len(articles_all)} from the {store.backend()} store")
+        articles_all, _asrc = articles_current()
+        print(f"  articles: {len(articles_all)} from {_asrc}")
     except Exception as e:                                  # noqa: BLE001
         articles_all = load("articles.json")
         print(f"  ! article store unreachable ({e}) - using the committed "

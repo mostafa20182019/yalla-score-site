@@ -707,6 +707,15 @@ async function writeChildren(env, id, sources, faq, embeds) {
   await env.DB.batch(stmts);
 }
 
+/* the one-row change marker the BUILD reads before pulling every article
+ * table (store.articles_sig on the python side, which bumps it the same way
+ * from article_put.py). Every admin write replaces it, so a build whose
+ * committed export still matches can skip the full pull. */
+async function bumpArticlesSig(env) {
+  await ensureStore(env);   // live_meta lives in the live store's schema
+  await env.DB.prepare(META_SET).bind("articles_sig", crypto.randomUUID()).run();
+}
+
 /* ask GitHub to rebuild: writing to D1 makes the article EXIST, but the site
  * is static HTML - it only appears once publish.yml has rebuilt the pages.
  * reason=article marks the run uncancellable (it carries new content). */
@@ -812,6 +821,7 @@ async function adminApi(request, env, url) {
     }
     const id = String(row.article_id);
     await writeChildren(env, id, rec.sources, rec.faq, rec.embeds || []);
+    await bumpArticlesSig(env);   // before the dispatch, so that build sees it
     return jsonReply(request, {
       article_id: id, words: w, thin: w < 300,
       publish: await dispatchPublish(env),
@@ -863,6 +873,7 @@ async function adminApi(request, env, url) {
       // when the request carries the key, so a text-only edit keeps them
       await writeChildren(env, id, rec.sources, rec.faq, "embeds" in rec ? rec.embeds : undefined);
     }
+    await bumpArticlesSig(env);   // before the dispatch, so that build sees it
     return jsonReply(request, {
       article_id: id, words: w, publish: await dispatchPublish(env),
     });

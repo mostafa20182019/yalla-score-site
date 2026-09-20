@@ -802,6 +802,46 @@ def _ensure_embeds():
     _embeds_ready = True
 
 
+ARTICLES_SIG_KEY = "articles_sig"
+_meta_ready = False
+
+
+def _ensure_meta():
+    """live_meta is the Worker's k/v table (its schema creates it in
+    production); create it here too so the sqlite backend and a fresh D1
+    both have it before the first bump."""
+    global _meta_ready
+    if _meta_ready or backend() == "json":
+        return
+    sql("CREATE TABLE IF NOT EXISTS live_meta (k TEXT PRIMARY KEY, v TEXT)")
+    _meta_ready = True
+
+
+def articles_sig():
+    """The articles change marker: ONE row that every article write replaces.
+
+    The build compares it to the sig recorded in the committed export and
+    skips the full article_all() pull (four tables, thousands of scanned
+    rows, every half hour) when they match. D1 bills rows SCANNED and the
+    free tier ran out of reads on 2026-09-16, 09-19 and 09-20 - this is the
+    articles' share of that bill. None means json backend or nothing has
+    bumped yet; callers treat it as "unknown, pull everything"."""
+    if backend() == "json":
+        return None
+    _ensure_meta()
+    rows = sql("SELECT v FROM live_meta WHERE k = ?", [ARTICLES_SIG_KEY])
+    return rows[0]["v"] if rows else None
+
+
+def _bump_articles_sig():
+    if backend() == "json":
+        return
+    _ensure_meta()
+    sql("INSERT INTO live_meta (k, v) VALUES (?, ?) "
+        "ON CONFLICT(k) DO UPDATE SET v = excluded.v",
+        [ARTICLES_SIG_KEY, os.urandom(8).hex()])
+
+
 def article_all(with_body=True):
     """Every article, newest id first, shaped like data/articles.json items.
 
@@ -839,8 +879,13 @@ def article_all(with_body=True):
 
 
 def article_doc():
-    """data/articles.json as a document, ready for _jsave."""
-    return {"results": [{"items": article_all()}]}
+    """data/articles.json as a document, ready for _jsave.
+
+    Carries the store's articles_sig (when one exists) so the build can
+    tell whether this export is still current with a one-row read."""
+    doc = {"results": [{"items": article_all()}]}
+    sig = articles_sig()
+    return {"sig": sig, **doc} if sig else doc
 
 
 ARTICLES_JSON = os.path.join(HERE, "data", "articles.json")
@@ -933,6 +978,7 @@ def article_add(rec, clubs=None):
     aid = str(got[0]["article_id"])
     _article_children(aid, rec.get("sources"), rec.get("faq"), clubs or [],
                       rec.get("embeds") if "embeds" in rec else [])
+    _bump_articles_sig()
     return aid
 
 
@@ -960,6 +1006,7 @@ def article_update(aid, rec, clubs=None):
                           rec.get("sources") if "sources" in rec else None,
                           rec.get("faq") if "faq" in rec else None, clubs,
                           rec.get("embeds") if "embeds" in rec else None)
+    _bump_articles_sig()
     return aid
 
 
