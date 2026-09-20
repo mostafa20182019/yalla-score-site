@@ -2,9 +2,9 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-20T16:15:12+03:00",
+    "generated_at" : "2026-09-20T16:30:12+03:00",
     "days" : 10,
-    "n" : 22,
+    "n" : 16,
     "params" :
     {
       "elo_k" : 28,
@@ -8402,26 +8402,6 @@
       "elo_a" : 1591.21,
       "ts" : "2026-09-20"
     },
-    "559676" :
-    {
-      "comp" : "Ligue 1",
-      "home" : "AJ Auxerre",
-      "away" : "Stade Brestois 29",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "16:00",
-      "lh" : 1.55547,
-      "la" : 1.807039,
-      "ph" : 0.3346,
-      "pd" : 0.2262,
-      "pa" : 0.4392,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1451.67,
-      "elo_a" : 1460.11,
-      "ts" : "2026-09-20"
-    },
     "559675" :
     {
       "comp" : "Ligue 1",
@@ -8460,46 +8440,6 @@
       "n_a" : 4,
       "elo_h" : 1562.78,
       "elo_a" : 1448.45,
-      "ts" : "2026-09-20"
-    },
-    "558592" :
-    {
-      "comp" : "Serie A",
-      "home" : "Frosinone Calcio",
-      "away" : "Como 1907",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "16:00",
-      "lh" : 1.282371,
-      "la" : 1.653516,
-      "ph" : 0.2974,
-      "pd" : 0.2415,
-      "pa" : 0.4611,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1418.55,
-      "elo_a" : 1627.23,
-      "ts" : "2026-09-20"
-    },
-    "558590" :
-    {
-      "comp" : "Serie A",
-      "home" : "Parma Calcio 1913",
-      "away" : "Genoa CFC",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "16:00",
-      "lh" : 1.254351,
-      "la" : 0.994479,
-      "ph" : 0.4224,
-      "pd" : 0.2844,
-      "pa" : 0.2932,
-      "score" : "1-0",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1437.31,
-      "elo_a" : 1423.61,
       "ts" : "2026-09-20"
     },
     "558595" :
@@ -8580,66 +8520,6 @@
       "n_a" : 3,
       "elo_h" : 1404.3,
       "elo_a" : 1518.52,
-      "ts" : "2026-09-20"
-    },
-    "560582" :
-    {
-      "comp" : "Premier League",
-      "home" : "AFC Bournemouth",
-      "away" : "Liverpool FC",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "16:00",
-      "lh" : 1.421181,
-      "la" : 1.412009,
-      "ph" : 0.3765,
-      "pd" : 0.2512,
-      "pa" : 0.3724,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1531.82,
-      "elo_a" : 1524.82,
-      "ts" : "2026-09-20"
-    },
-    "560590" :
-    {
-      "comp" : "Premier League",
-      "home" : "Manchester City FC",
-      "away" : "Sunderland AFC",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "16:00",
-      "lh" : 1.933532,
-      "la" : 0.645135,
-      "ph" : 0.6799,
-      "pd" : 0.2046,
-      "pa" : 0.1155,
-      "score" : "1-0",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1647.09,
-      "elo_a" : 1479.14,
-      "ts" : "2026-09-20"
-    },
-    "560585" :
-    {
-      "comp" : "Premier League",
-      "home" : "Leeds United FC",
-      "away" : "Crystal Palace FC",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "16:00",
-      "lh" : 2.620931,
-      "la" : 0.964117,
-      "ph" : 0.7263,
-      "pd" : 0.1576,
-      "pa" : 0.1161,
-      "score" : "2-0",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1531.97,
-      "elo_a" : 1432.8,
       "ts" : "2026-09-20"
     },
     "560583" :
