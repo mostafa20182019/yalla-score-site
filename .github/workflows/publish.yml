@@ -160,6 +160,18 @@ jobs:
           fi
           npx --yes wrangler@4 deploy
 
+      # IndexNow: push today's changed URLs to Bing/Yandex/Seznam the moment
+      # they are live (2026-09-20). Google does not participate and this buys
+      # nothing there — it exists because Search Console says 732 of our URLs
+      # are «Discovered – currently not indexed» on a domain whose previous
+      # owner ran a made-for-AdSense site, and those engines carry none of that
+      # history. No account, no secret: the key file ships from root-extras/
+      # and the script refuses to submit unless it is live.
+      - name: Tell IndexNow what changed
+        if: steps.tip.outputs.fresh == 'true'
+        continue-on-error: true
+        run: python indexnow.py
+
       # New-article Facebook post. Lives HERE (after Deploy) and not in
       # daily-article.yml on purpose: posting the moment the article was
       # committed let Facebook scrape the link before the page existed, and

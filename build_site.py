@@ -3670,9 +3670,11 @@ def build():
     for m in matches:
         if m.get("match_id"):
             m_all[m["match_id"]] = m      # day-window copy is always fresher
-    sm_cut = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
+    # ±7 days, not ±30: see the sitemap note at the match-page append below
+    sm_cut = (datetime.date.today() - datetime.timedelta(days=7)).isoformat()
     n_mp = 0
     n_mp_idx = 0
+    n_mp_sm = 0
     for mid, m in sorted(m_all.items(), key=lambda kv: kv[1].get("kickoff") or ""):
         if not (m.get("home") and m.get("away") and m.get("kickoff")):
             continue
@@ -3898,13 +3900,20 @@ def build():
         n_mp += 1
         if _rich:
             n_mp_idx += 1
-            # the ±30-day window keeps the sitemap focused on fixtures people
-            # are searching for — but a page carrying an original article is
-            # not a fixture listing any more, and dropping it would retire the
-            # very URL that replaced an article URL (2026-09-16)
-            if m["kickoff"] >= sm_cut or _art:
+            # WHAT WE ADVERTISE vs what we publish (2026-09-20). Every rich
+            # match page stays indexable and linked; the sitemap carries only
+            # the ones worth a crawl while the budget is what it is:
+            #   - the last 7 days and everything still to come, which is what
+            #     people actually search for;
+            #   - any match of the eleven curated clubs, our own audience;
+            #   - any page carrying an original article, because that URL
+            #     replaced an article URL (2026-09-16).
+            # The rest keep working for visitors and for links; they are just
+            # not the pages we ask Google to spend its crawl on.
+            if m["kickoff"] >= sm_cut or _art or _clubs:
                 urls.append(murl)
-    print(f"  + match pages: {n_mp} ({n_mp_idx} indexable with real content)")
+                n_mp_sm += 1
+    print(f"  + match pages: {n_mp} ({n_mp_idx} indexable, {n_mp_sm} in the sitemap)")
 
     # ---- per-league standings + top-scorers pages ----
     # Evergreen SEO landing pages with their own URLs: "ترتيب الدوري المصري"
