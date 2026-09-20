@@ -2,9 +2,9 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-20T17:30:12+03:00",
+    "generated_at" : "2026-09-20T19:46:43+03:00",
     "days" : 10,
-    "n" : 13,
+    "n" : 8,
     "params" :
     {
       "elo_k" : 28,
@@ -24,8 +24,8 @@
         "played" : 4,
         "gf" : 14,
         "ga" : 2,
-        "att" : 1.4468,
-        "def" : 0.6829
+        "att" : 1.454,
+        "def" : 0.6839
       },
       {
         "team" : "Borussia Dortmund",
@@ -33,26 +33,26 @@
         "played" : 4,
         "gf" : 9,
         "ga" : 2,
-        "att" : 1.1285,
-        "def" : 0.6829
-      },
-      {
-        "team" : "RB Leipzig",
-        "elo" : 1562.98,
-        "played" : 3,
-        "gf" : 9,
-        "ga" : 3,
-        "att" : 1.2696,
-        "def" : 0.8399
+        "att" : 1.1331,
+        "def" : 0.6839
       },
       {
         "team" : "Bayer 04 Leverkusen",
-        "elo" : 1551.27,
-        "played" : 3,
-        "gf" : 8,
+        "elo" : 1565.86,
+        "played" : 4,
+        "gf" : 10,
         "ga" : 5,
-        "att" : 1.198,
-        "def" : 0.9831
+        "att" : 1.1973,
+        "def" : 0.8764
+      },
+      {
+        "team" : "RB Leipzig",
+        "elo" : 1548.39,
+        "played" : 4,
+        "gf" : 9,
+        "ga" : 5,
+        "att" : 1.1331,
+        "def" : 0.8764
       },
       {
         "team" : "SC Freiburg",
@@ -60,8 +60,8 @@
         "played" : 4,
         "gf" : 12,
         "ga" : 3,
-        "att" : 1.3195,
-        "def" : 0.7465
+        "att" : 1.3256,
+        "def" : 0.7481
       },
       {
         "team" : "VfB Stuttgart",
@@ -69,8 +69,8 @@
         "played" : 4,
         "gf" : 6,
         "ga" : 9,
-        "att" : 0.9375,
-        "def" : 1.1285
+        "att" : 0.9406,
+        "def" : 1.1331
       },
       {
         "team" : "TSG 1899 Hoffenheim",
@@ -78,8 +78,8 @@
         "played" : 3,
         "gf" : 6,
         "ga" : 7,
-        "att" : 1.0547,
-        "def" : 1.1264
+        "att" : 1.0582,
+        "def" : 1.1303
       },
       {
         "team" : "1. FSV Mainz 05",
@@ -87,8 +87,8 @@
         "played" : 4,
         "gf" : 10,
         "ga" : 6,
-        "att" : 1.1922,
-        "def" : 0.9375
+        "att" : 1.1973,
+        "def" : 0.9406
       },
       {
         "team" : "FC Augsburg",
@@ -96,8 +96,8 @@
         "played" : 4,
         "gf" : 11,
         "ga" : 6,
-        "att" : 1.2559,
-        "def" : 0.9375
+        "att" : 1.2614,
+        "def" : 0.9406
       },
       {
         "team" : "Eintracht Frankfurt",
@@ -105,8 +105,8 @@
         "played" : 4,
         "gf" : 9,
         "ga" : 10,
-        "att" : 1.1285,
-        "def" : 1.1922
+        "att" : 1.1331,
+        "def" : 1.1973
       },
       {
         "team" : "SV Werder Bremen",
@@ -114,8 +114,8 @@
         "played" : 4,
         "gf" : 8,
         "ga" : 8,
-        "att" : 1.0649,
-        "def" : 1.0649
+        "att" : 1.0689,
+        "def" : 1.0689
       },
       {
         "team" : "SV 07 Elversberg",
@@ -123,8 +123,8 @@
         "played" : 3,
         "gf" : 8,
         "ga" : 7,
-        "att" : 1.198,
-        "def" : 1.1264
+        "att" : 1.2025,
+        "def" : 1.1303
       },
       {
         "team" : "FC Schalke 04",
@@ -132,8 +132,8 @@
         "played" : 3,
         "gf" : 3,
         "ga" : 4,
-        "att" : 0.8399,
-        "def" : 0.9115
+        "att" : 0.8416,
+        "def" : 0.9138
       },
       {
         "team" : "Hamburger SV",
@@ -141,8 +141,8 @@
         "played" : 4,
         "gf" : 2,
         "ga" : 13,
-        "att" : 0.6829,
-        "def" : 1.3832
+        "att" : 0.6839,
+        "def" : 1.3898
       },
       {
         "team" : "1. FC Köln",
@@ -150,8 +150,8 @@
         "played" : 4,
         "gf" : 6,
         "ga" : 9,
-        "att" : 0.9375,
-        "def" : 1.1285
+        "att" : 0.9406,
+        "def" : 1.1331
       },
       {
         "team" : "Borussia Mönchengladbach",
@@ -159,8 +159,8 @@
         "played" : 4,
         "gf" : 6,
         "ga" : 16,
-        "att" : 0.9375,
-        "def" : 1.5742
+        "att" : 0.9406,
+        "def" : 1.5823
       },
       {
         "team" : "1. FC Union Berlin",
@@ -168,8 +168,8 @@
         "played" : 4,
         "gf" : 4,
         "ga" : 17,
-        "att" : 0.8102,
-        "def" : 1.6378
+        "att" : 0.8122,
+        "def" : 1.6465
       },
       {
         "team" : "SC Paderborn 07",
@@ -178,7 +178,7 @@
         "gf" : 0,
         "ga" : 4,
         "att" : 0.625,
-        "def" : 0.9115
+        "def" : 0.9138
       }
     ],
     "CAF Champions League" :
@@ -897,8 +897,8 @@
         "played" : 4,
         "gf" : 6,
         "ga" : 6,
-        "att" : 1.0334,
-        "def" : 1.0334
+        "att" : 1.0328,
+        "def" : 1.0328
       },
       {
         "team" : "Lille OSC",
@@ -906,8 +906,8 @@
         "played" : 4,
         "gf" : 7,
         "ga" : 2,
-        "att" : 1.113,
-        "def" : 0.7148
+        "att" : 1.1124,
+        "def" : 0.7146
       },
       {
         "team" : "AS Monaco FC",
@@ -915,8 +915,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 3,
-        "att" : 1.0734,
-        "def" : 0.715
+        "att" : 1.0727,
+        "def" : 0.7148
       },
       {
         "team" : "Olympique Lyonnais",
@@ -924,8 +924,8 @@
         "played" : 5,
         "gf" : 10,
         "ga" : 2,
-        "att" : 1.2168,
-        "def" : 0.6434
+        "att" : 1.2159,
+        "def" : 0.6432
       },
       {
         "team" : "Stade Rennais FC 1901",
@@ -933,8 +933,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 9,
-        "att" : 1.0734,
-        "def" : 1.1451
+        "att" : 1.0727,
+        "def" : 1.1443
       },
       {
         "team" : "Paris FC",
@@ -942,8 +942,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 3,
-        "att" : 1.0734,
-        "def" : 0.715
+        "att" : 1.0727,
+        "def" : 0.7148
       },
       {
         "team" : "Racing Club de Lens",
@@ -951,8 +951,8 @@
         "played" : 5,
         "gf" : 9,
         "ga" : 9,
-        "att" : 1.1451,
-        "def" : 1.1451
+        "att" : 1.1443,
+        "def" : 1.1443
       },
       {
         "team" : "RC Strasbourg Alsace",
@@ -960,8 +960,8 @@
         "played" : 5,
         "gf" : 10,
         "ga" : 10,
-        "att" : 1.2168,
-        "def" : 1.2168
+        "att" : 1.2159,
+        "def" : 1.2159
       },
       {
         "team" : "Olympique de Marseille",
@@ -969,8 +969,8 @@
         "played" : 4,
         "gf" : 6,
         "ga" : 6,
-        "att" : 1.0334,
-        "def" : 1.0334
+        "att" : 1.0328,
+        "def" : 1.0328
       },
       {
         "team" : "Toulouse FC",
@@ -978,8 +978,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 9,
-        "att" : 1.0017,
-        "def" : 1.1451
+        "att" : 1.0011,
+        "def" : 1.1443
       },
       {
         "team" : "FC Lorient",
@@ -987,26 +987,26 @@
         "played" : 5,
         "gf" : 5,
         "ga" : 6,
-        "att" : 0.8584,
-        "def" : 0.9301
-      },
-      {
-        "team" : "Stade Brestois 29",
-        "elo" : 1460.11,
-        "played" : 4,
-        "gf" : 6,
-        "ga" : 6,
-        "att" : 1.0334,
-        "def" : 1.0334
+        "att" : 0.858,
+        "def" : 0.9295
       },
       {
         "team" : "AJ Auxerre",
-        "elo" : 1451.67,
-        "played" : 4,
-        "gf" : 5,
-        "ga" : 11,
-        "att" : 0.9538,
-        "def" : 1.4316
+        "elo" : 1463.21,
+        "played" : 5,
+        "gf" : 7,
+        "ga" : 12,
+        "att" : 1.0011,
+        "def" : 1.3591
+      },
+      {
+        "team" : "Stade Brestois 29",
+        "elo" : 1448.57,
+        "played" : 5,
+        "gf" : 7,
+        "ga" : 8,
+        "att" : 1.0011,
+        "def" : 1.0727
       },
       {
         "team" : "Angers SCO",
@@ -1014,8 +1014,8 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 5,
-        "att" : 0.9301,
-        "def" : 0.8584
+        "att" : 0.9295,
+        "def" : 0.858
       },
       {
         "team" : "Le Havre AC",
@@ -1023,8 +1023,8 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 7,
-        "att" : 0.7867,
-        "def" : 1.0017
+        "att" : 0.7864,
+        "def" : 1.0011
       },
       {
         "team" : "Le Mans FC",
@@ -1032,8 +1032,8 @@
         "played" : 5,
         "gf" : 9,
         "ga" : 9,
-        "att" : 1.1451,
-        "def" : 1.1451
+        "att" : 1.1443,
+        "def" : 1.1443
       },
       {
         "team" : "OGC Nice",
@@ -1041,8 +1041,8 @@
         "played" : 4,
         "gf" : 1,
         "ga" : 5,
-        "att" : 0.6352,
-        "def" : 0.9538
+        "att" : 0.6351,
+        "def" : 0.9533
       },
       {
         "team" : "ES Troyes AC",
@@ -1050,20 +1050,20 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 11,
-        "att" : 0.7867,
-        "def" : 1.2884
+        "att" : 0.7864,
+        "def" : 1.2875
       }
     ],
     "Premier League" :
     [
       {
         "team" : "Manchester City FC",
-        "elo" : 1647.09,
-        "played" : 4,
-        "gf" : 8,
-        "ga" : 2,
-        "att" : 1.1932,
-        "def" : 0.715
+        "elo" : 1654.18,
+        "played" : 5,
+        "gf" : 13,
+        "ga" : 5,
+        "att" : 1.4295,
+        "def" : 0.8575
       },
       {
         "team" : "Arsenal FC",
@@ -1071,8 +1071,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 4,
-        "att" : 1.0739,
-        "def" : 0.787
+        "att" : 1.072,
+        "def" : 0.786
       },
       {
         "team" : "Manchester United FC",
@@ -1080,8 +1080,8 @@
         "played" : 4,
         "gf" : 7,
         "ga" : 7,
-        "att" : 1.1135,
-        "def" : 1.1135
+        "att" : 1.1117,
+        "def" : 1.1117
       },
       {
         "team" : "Brighton & Hove Albion FC",
@@ -1089,8 +1089,17 @@
         "played" : 5,
         "gf" : 16,
         "ga" : 5,
-        "att" : 1.6478,
-        "def" : 0.8587
+        "att" : 1.644,
+        "def" : 0.8575
+      },
+      {
+        "team" : "Liverpool FC",
+        "elo" : 1541.87,
+        "played" : 5,
+        "gf" : 7,
+        "ga" : 4,
+        "att" : 1.0005,
+        "def" : 0.786
       },
       {
         "team" : "Brentford FC",
@@ -1098,35 +1107,26 @@
         "played" : 5,
         "gf" : 10,
         "ga" : 4,
-        "att" : 1.2174,
-        "def" : 0.787
+        "att" : 1.215,
+        "def" : 0.786
       },
       {
         "team" : "Leeds United FC",
-        "elo" : 1531.97,
-        "played" : 4,
+        "elo" : 1525.64,
+        "played" : 5,
         "gf" : 7,
         "ga" : 3,
-        "att" : 1.1135,
-        "def" : 0.7947
+        "att" : 1.0005,
+        "def" : 0.7145
       },
       {
         "team" : "AFC Bournemouth",
-        "elo" : 1531.82,
-        "played" : 4,
+        "elo" : 1514.76,
+        "played" : 5,
         "gf" : 6,
-        "ga" : 7,
-        "att" : 1.0338,
-        "def" : 1.1135
-      },
-      {
-        "team" : "Liverpool FC",
-        "elo" : 1524.82,
-        "played" : 4,
-        "gf" : 6,
-        "ga" : 4,
-        "att" : 1.0338,
-        "def" : 0.8744
+        "ga" : 8,
+        "att" : 0.929,
+        "def" : 1.072
       },
       {
         "team" : "Everton FC",
@@ -1134,8 +1134,8 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 3,
-        "att" : 0.9304,
-        "def" : 0.7152
+        "att" : 0.929,
+        "def" : 0.7145
       },
       {
         "team" : "Newcastle United FC",
@@ -1143,8 +1143,8 @@
         "played" : 5,
         "gf" : 9,
         "ga" : 9,
-        "att" : 1.1457,
-        "def" : 1.1457
+        "att" : 1.1435,
+        "def" : 1.1435
       },
       {
         "team" : "Aston Villa FC",
@@ -1152,8 +1152,8 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 9,
-        "att" : 0.787,
-        "def" : 1.1457
+        "att" : 0.786,
+        "def" : 1.1435
       },
       {
         "team" : "Chelsea FC",
@@ -1161,8 +1161,8 @@
         "played" : 5,
         "gf" : 10,
         "ga" : 12,
-        "att" : 1.2174,
-        "def" : 1.3609
+        "att" : 1.215,
+        "def" : 1.358
       },
       {
         "team" : "Nottingham Forest FC",
@@ -1170,17 +1170,17 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 5,
-        "att" : 0.787,
-        "def" : 0.8587
+        "att" : 0.786,
+        "def" : 0.8575
       },
       {
         "team" : "Sunderland AFC",
-        "elo" : 1479.14,
-        "played" : 4,
-        "gf" : 3,
-        "ga" : 5,
-        "att" : 0.7947,
-        "def" : 0.9541
+        "elo" : 1472.05,
+        "played" : 5,
+        "gf" : 6,
+        "ga" : 10,
+        "att" : 0.929,
+        "def" : 1.215
       },
       {
         "team" : "Fulham FC",
@@ -1188,8 +1188,8 @@
         "played" : 4,
         "gf" : 4,
         "ga" : 7,
-        "att" : 0.8744,
-        "def" : 1.1135
+        "att" : 0.8733,
+        "def" : 1.1117
       },
       {
         "team" : "Hull City AFC",
@@ -1197,17 +1197,17 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 4,
-        "att" : 0.9304,
-        "def" : 0.787
+        "att" : 0.929,
+        "def" : 0.786
       },
       {
         "team" : "Crystal Palace FC",
-        "elo" : 1432.8,
-        "played" : 4,
+        "elo" : 1439.12,
+        "played" : 5,
         "gf" : 6,
         "ga" : 11,
-        "att" : 1.0338,
-        "def" : 1.4324
+        "att" : 0.929,
+        "def" : 1.2865
       },
       {
         "team" : "Ipswich Town FC",
@@ -1215,8 +1215,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 11,
-        "att" : 1.0022,
-        "def" : 1.2891
+        "att" : 1.0005,
+        "def" : 1.2865
       },
       {
         "team" : "Tottenham Hotspur FC",
@@ -1224,8 +1224,8 @@
         "played" : 5,
         "gf" : 2,
         "ga" : 8,
-        "att" : 0.6435,
-        "def" : 1.0739
+        "att" : 0.643,
+        "def" : 1.072
       },
       {
         "team" : "Coventry City FC",
@@ -1233,8 +1233,8 @@
         "played" : 5,
         "gf" : 1,
         "ga" : 10,
-        "att" : 0.5717,
-        "def" : 1.2174
+        "att" : 0.5715,
+        "def" : 1.215
       }
     ],
     "Primera Division" :
@@ -1245,17 +1245,26 @@
         "played" : 7,
         "gf" : 31,
         "ga" : 7,
-        "att" : 2.1733,
-        "def" : 0.8133
+        "att" : 2.1729,
+        "def" : 0.8132
       },
       {
         "team" : "Real Madrid CF",
-        "elo" : 1644.4,
-        "played" : 6,
-        "gf" : 17,
-        "ga" : 6,
-        "att" : 1.5055,
-        "def" : 0.8255
+        "elo" : 1630.34,
+        "played" : 7,
+        "gf" : 18,
+        "ga" : 8,
+        "att" : 1.4364,
+        "def" : 0.8699
+      },
+      {
+        "team" : "Club Atlético de Madrid",
+        "elo" : 1587,
+        "played" : 7,
+        "gf" : 16,
+        "ga" : 7,
+        "att" : 1.3231,
+        "def" : 0.8132
       },
       {
         "team" : "Real Betis Balompié",
@@ -1263,17 +1272,8 @@
         "played" : 6,
         "gf" : 8,
         "ga" : 6,
-        "att" : 0.9491,
-        "def" : 0.8255
-      },
-      {
-        "team" : "Club Atlético de Madrid",
-        "elo" : 1572.94,
-        "played" : 6,
-        "gf" : 14,
-        "ga" : 6,
-        "att" : 1.32,
-        "def" : 0.8255
+        "att" : 0.949,
+        "def" : 0.8254
       },
       {
         "team" : "Villarreal CF",
@@ -1281,8 +1281,8 @@
         "played" : 6,
         "gf" : 10,
         "ga" : 11,
-        "att" : 1.0727,
-        "def" : 1.1345
+        "att" : 1.0726,
+        "def" : 1.1344
       },
       {
         "team" : "Rayo Vallecano de Madrid",
@@ -1290,8 +1290,8 @@
         "played" : 7,
         "gf" : 11,
         "ga" : 16,
-        "att" : 1.04,
-        "def" : 1.3233
+        "att" : 1.0399,
+        "def" : 1.3231
       },
       {
         "team" : "Sevilla FC",
@@ -1299,8 +1299,8 @@
         "played" : 7,
         "gf" : 10,
         "ga" : 9,
-        "att" : 0.9833,
-        "def" : 0.9267
+        "att" : 0.9832,
+        "def" : 0.9265
       },
       {
         "team" : "Deportivo Alavés",
@@ -1308,8 +1308,8 @@
         "played" : 7,
         "gf" : 11,
         "ga" : 6,
-        "att" : 1.04,
-        "def" : 0.7567
+        "att" : 1.0399,
+        "def" : 0.7566
       },
       {
         "team" : "RC Celta de Vigo",
@@ -1317,8 +1317,8 @@
         "played" : 7,
         "gf" : 8,
         "ga" : 6,
-        "att" : 0.87,
-        "def" : 0.7567
+        "att" : 0.8699,
+        "def" : 0.7566
       },
       {
         "team" : "Levante UD",
@@ -1326,8 +1326,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 9,
-        "att" : 0.976,
-        "def" : 1.112
+        "att" : 0.9759,
+        "def" : 1.1119
       },
       {
         "team" : "RC Deportivo La Coruña",
@@ -1335,8 +1335,8 @@
         "played" : 6,
         "gf" : 9,
         "ga" : 7,
-        "att" : 1.0109,
-        "def" : 0.8873
+        "att" : 1.0108,
+        "def" : 0.8872
       },
       {
         "team" : "Getafe CF",
@@ -1345,7 +1345,7 @@
         "gf" : 4,
         "ga" : 7,
         "att" : 0.6433,
-        "def" : 0.8133
+        "def" : 0.8132
       },
       {
         "team" : "Athletic Club",
@@ -1353,8 +1353,8 @@
         "played" : 6,
         "gf" : 7,
         "ga" : 6,
-        "att" : 0.8873,
-        "def" : 0.8255
+        "att" : 0.8872,
+        "def" : 0.8254
       },
       {
         "team" : "Valencia CF",
@@ -1363,7 +1363,7 @@
         "gf" : 2,
         "ga" : 10,
         "att" : 0.5782,
-        "def" : 1.0727
+        "def" : 1.0726
       },
       {
         "team" : "Real Sociedad de Fútbol",
@@ -1371,8 +1371,8 @@
         "played" : 6,
         "gf" : 6,
         "ga" : 11,
-        "att" : 0.8255,
-        "def" : 1.1345
+        "att" : 0.8254,
+        "def" : 1.1344
       },
       {
         "team" : "Elche CF",
@@ -1380,8 +1380,8 @@
         "played" : 7,
         "gf" : 11,
         "ga" : 17,
-        "att" : 1.04,
-        "def" : 1.38
+        "att" : 1.0399,
+        "def" : 1.3798
       },
       {
         "team" : "RCD Espanyol de Barcelona",
@@ -1389,8 +1389,8 @@
         "played" : 7,
         "gf" : 10,
         "ga" : 10,
-        "att" : 0.9833,
-        "def" : 0.9833
+        "att" : 0.9832,
+        "def" : 0.9832
       },
       {
         "team" : "CA Osasuna",
@@ -1398,8 +1398,8 @@
         "played" : 7,
         "gf" : 6,
         "ga" : 13,
-        "att" : 0.7567,
-        "def" : 1.1533
+        "att" : 0.7566,
+        "def" : 1.1532
       },
       {
         "team" : "Real Racing Club de Santander",
@@ -1407,8 +1407,8 @@
         "played" : 7,
         "gf" : 11,
         "ga" : 21,
-        "att" : 1.04,
-        "def" : 1.6067
+        "att" : 1.0399,
+        "def" : 1.6064
       },
       {
         "team" : "Málaga CF",
@@ -1416,8 +1416,8 @@
         "played" : 7,
         "gf" : 3,
         "ga" : 12,
-        "att" : 0.5867,
-        "def" : 1.0967
+        "att" : 0.5866,
+        "def" : 1.0965
       }
     ],
     "Saudi Pro League" :
@@ -1593,8 +1593,8 @@
         "played" : 5,
         "gf" : 15,
         "ga" : 8,
-        "att" : 1.5476,
-        "def" : 1.0587
+        "att" : 1.5515,
+        "def" : 1.0608
       },
       {
         "team" : "AS Roma",
@@ -1602,17 +1602,17 @@
         "played" : 5,
         "gf" : 14,
         "ga" : 3,
-        "att" : 1.4778,
-        "def" : 0.7095
+        "att" : 1.4814,
+        "def" : 0.7103
       },
       {
         "team" : "Como 1907",
-        "elo" : 1627.23,
-        "played" : 4,
+        "elo" : 1603.09,
+        "played" : 5,
         "gf" : 9,
-        "ga" : 4,
-        "att" : 1.254,
-        "def" : 0.866
+        "ga" : 6,
+        "att" : 1.1309,
+        "def" : 0.9206
       },
       {
         "team" : "SSC Napoli",
@@ -1620,8 +1620,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 6,
-        "att" : 0.9889,
-        "def" : 0.919
+        "att" : 0.9907,
+        "def" : 0.9206
       },
       {
         "team" : "Juventus FC",
@@ -1629,8 +1629,8 @@
         "played" : 4,
         "gf" : 6,
         "ga" : 4,
-        "att" : 1.0212,
-        "def" : 0.866
+        "att" : 1.0229,
+        "def" : 0.8671
       },
       {
         "team" : "AC Milan",
@@ -1638,8 +1638,8 @@
         "played" : 4,
         "gf" : 7,
         "ga" : 4,
-        "att" : 1.0988,
-        "def" : 0.866
+        "att" : 1.1008,
+        "def" : 0.8671
       },
       {
         "team" : "SS Lazio",
@@ -1647,8 +1647,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 3,
-        "att" : 1.0587,
-        "def" : 0.7095
+        "att" : 1.0608,
+        "def" : 0.7103
       },
       {
         "team" : "Atalanta BC",
@@ -1656,8 +1656,8 @@
         "played" : 4,
         "gf" : 5,
         "ga" : 5,
-        "att" : 0.9436,
-        "def" : 0.9436
+        "att" : 0.945,
+        "def" : 0.945
       },
       {
         "team" : "Cagliari Calcio",
@@ -1665,8 +1665,8 @@
         "played" : 5,
         "gf" : 5,
         "ga" : 2,
-        "att" : 0.8492,
-        "def" : 0.6397
+        "att" : 0.8505,
+        "def" : 0.6402
       },
       {
         "team" : "US Sassuolo Calcio",
@@ -1674,8 +1674,8 @@
         "played" : 5,
         "gf" : 9,
         "ga" : 9,
-        "att" : 1.1286,
-        "def" : 1.1286
+        "att" : 1.1309,
+        "def" : 1.1309
       },
       {
         "team" : "Udinese Calcio",
@@ -1683,8 +1683,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 11,
-        "att" : 1.0587,
-        "def" : 1.2683
+        "att" : 1.0608,
+        "def" : 1.2711
       },
       {
         "team" : "Bologna FC 1909",
@@ -1692,8 +1692,8 @@
         "played" : 5,
         "gf" : 3,
         "ga" : 6,
-        "att" : 0.7095,
-        "def" : 0.919
+        "att" : 0.7103,
+        "def" : 0.9206
       },
       {
         "team" : "ACF Fiorentina",
@@ -1701,8 +1701,8 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 12,
-        "att" : 0.919,
-        "def" : 1.3381
+        "att" : 0.9206,
+        "def" : 1.3412
       },
       {
         "team" : "Torino FC",
@@ -1710,8 +1710,8 @@
         "played" : 5,
         "gf" : 5,
         "ga" : 8,
-        "att" : 0.8492,
-        "def" : 1.0587
+        "att" : 0.8505,
+        "def" : 1.0608
       },
       {
         "team" : "US Lecce",
@@ -1719,35 +1719,35 @@
         "played" : 4,
         "gf" : 5,
         "ga" : 7,
-        "att" : 0.9436,
-        "def" : 1.0988
+        "att" : 0.945,
+        "def" : 1.1008
       },
       {
         "team" : "Parma Calcio 1913",
-        "elo" : 1437.31,
-        "played" : 4,
-        "gf" : 2,
-        "ga" : 6,
-        "att" : 0.7108,
-        "def" : 1.0212
-      },
-      {
-        "team" : "Genoa CFC",
-        "elo" : 1423.61,
-        "played" : 4,
-        "gf" : 2,
-        "ga" : 8,
-        "att" : 0.7108,
-        "def" : 1.1764
+        "elo" : 1448,
+        "played" : 5,
+        "gf" : 4,
+        "ga" : 7,
+        "att" : 0.7804,
+        "def" : 0.9907
       },
       {
         "team" : "Frosinone Calcio",
-        "elo" : 1418.55,
-        "played" : 4,
-        "gf" : 7,
+        "elo" : 1442.69,
+        "played" : 5,
+        "gf" : 9,
         "ga" : 4,
-        "att" : 1.0988,
-        "def" : 0.866
+        "att" : 1.1309,
+        "def" : 0.7804
+      },
+      {
+        "team" : "Genoa CFC",
+        "elo" : 1412.92,
+        "played" : 5,
+        "gf" : 3,
+        "ga" : 10,
+        "att" : 0.7103,
+        "def" : 1.201
       },
       {
         "team" : "AC Monza",
@@ -1755,8 +1755,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 12,
-        "att" : 1.0587,
-        "def" : 1.3381
+        "att" : 1.0608,
+        "def" : 1.3412
       },
       {
         "team" : "Venezia FC",
@@ -1764,20 +1764,29 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 13,
-        "att" : 0.7794,
-        "def" : 1.4079
+        "att" : 0.7804,
+        "def" : 1.4113
       }
     ],
     "Turkish Super Lig" :
     [
+      {
+        "team" : "فنربخشة",
+        "elo" : 1544.55,
+        "played" : 5,
+        "gf" : 15,
+        "ga" : 4,
+        "att" : 1.5213,
+        "def" : 0.7723
+      },
       {
         "team" : "كوجا يلي سبور",
         "elo" : 1542.39,
         "played" : 5,
         "gf" : 7,
         "ga" : 2,
-        "att" : 0.9849,
-        "def" : 0.6385
+        "att" : 0.9766,
+        "def" : 0.6362
       },
       {
         "team" : "غلطة سراي",
@@ -1785,8 +1794,8 @@
         "played" : 5,
         "gf" : 11,
         "ga" : 8,
-        "att" : 1.262,
-        "def" : 1.0542
+        "att" : 1.2489,
+        "def" : 1.0447
       },
       {
         "team" : "بشكتاش",
@@ -1794,8 +1803,8 @@
         "played" : 4,
         "gf" : 11,
         "ga" : 4,
-        "att" : 1.4022,
-        "def" : 0.8634
+        "att" : 1.3877,
+        "def" : 0.8582
       },
       {
         "team" : "طرابزون سبور",
@@ -1803,8 +1812,8 @@
         "played" : 5,
         "gf" : 12,
         "ga" : 4,
-        "att" : 1.3313,
-        "def" : 0.7771
+        "att" : 1.317,
+        "def" : 0.7723
       },
       {
         "team" : "ألانيا سبور",
@@ -1812,8 +1821,8 @@
         "played" : 5,
         "gf" : 7,
         "ga" : 5,
-        "att" : 0.9849,
-        "def" : 0.8464
+        "att" : 0.9766,
+        "def" : 0.8404
       },
       {
         "team" : "قاسم باشا",
@@ -1821,8 +1830,8 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 4,
-        "att" : 0.9156,
-        "def" : 0.7771
+        "att" : 0.9085,
+        "def" : 0.7723
       },
       {
         "team" : "آمد سبور",
@@ -1830,17 +1839,8 @@
         "played" : 4,
         "gf" : 9,
         "ga" : 5,
-        "att" : 1.2483,
-        "def" : 0.9404
-      },
-      {
-        "team" : "فنربخشة",
-        "elo" : 1520.22,
-        "played" : 4,
-        "gf" : 7,
-        "ga" : 4,
-        "att" : 1.0944,
-        "def" : 0.8634
+        "att" : 1.2364,
+        "def" : 0.9338
       },
       {
         "team" : "غازي عنتاب",
@@ -1848,8 +1848,8 @@
         "played" : 5,
         "gf" : 6,
         "ga" : 6,
-        "att" : 0.9156,
-        "def" : 0.9156
+        "att" : 0.9085,
+        "def" : 0.9085
       },
       {
         "team" : "ريزة سبور",
@@ -1857,8 +1857,8 @@
         "played" : 4,
         "gf" : 4,
         "ga" : 4,
-        "att" : 0.8634,
-        "def" : 0.8634
+        "att" : 0.8582,
+        "def" : 0.8582
       },
       {
         "team" : "كورام بيليديسبور",
@@ -1866,8 +1866,17 @@
         "played" : 5,
         "gf" : 11,
         "ga" : 10,
-        "att" : 1.262,
-        "def" : 1.1927
+        "att" : 1.2489,
+        "def" : 1.1809
+      },
+      {
+        "team" : "إيرزوروم سبور",
+        "elo" : 1482.27,
+        "played" : 5,
+        "gf" : 3,
+        "ga" : 8,
+        "att" : 0.7043,
+        "def" : 1.0447
       },
       {
         "team" : "قونيا سبور",
@@ -1875,8 +1884,8 @@
         "played" : 5,
         "gf" : 4,
         "ga" : 7,
-        "att" : 0.7771,
-        "def" : 0.9849
+        "att" : 0.7723,
+        "def" : 0.9766
       },
       {
         "team" : "باشاك شهير",
@@ -1884,17 +1893,8 @@
         "played" : 5,
         "gf" : 8,
         "ga" : 11,
-        "att" : 1.0542,
-        "def" : 1.262
-      },
-      {
-        "team" : "إيرزوروم سبور",
-        "elo" : 1471.59,
-        "played" : 4,
-        "gf" : 2,
-        "ga" : 8,
-        "att" : 0.7095,
-        "def" : 1.1713
+        "att" : 1.0447,
+        "def" : 1.2489
       },
       {
         "team" : "غوز تبة",
@@ -1902,26 +1902,8 @@
         "played" : 5,
         "gf" : 9,
         "ga" : 13,
-        "att" : 1.1235,
-        "def" : 1.4006
-      },
-      {
-        "team" : "سامسون سبور",
-        "elo" : 1457.48,
-        "played" : 5,
-        "gf" : 6,
-        "ga" : 11,
-        "att" : 0.9156,
-        "def" : 1.262
-      },
-      {
-        "team" : "أيوب سبور",
-        "elo" : 1456.04,
-        "played" : 4,
-        "gf" : 2,
-        "ga" : 7,
-        "att" : 0.7095,
-        "def" : 1.0944
+        "att" : 1.1128,
+        "def" : 1.3851
       },
       {
         "team" : "غنتشلربيرليغي",
@@ -1929,8 +1911,26 @@
         "played" : 5,
         "gf" : 3,
         "ga" : 12,
-        "att" : 0.7078,
-        "def" : 1.3313
+        "att" : 0.7043,
+        "def" : 1.317
+      },
+      {
+        "team" : "سامسون سبور",
+        "elo" : 1446.81,
+        "played" : 6,
+        "gf" : 6,
+        "ga" : 12,
+        "att" : 0.8259,
+        "def" : 1.1973
+      },
+      {
+        "team" : "أيوب سبور",
+        "elo" : 1431.71,
+        "played" : 5,
+        "gf" : 2,
+        "ga" : 15,
+        "att" : 0.6362,
+        "def" : 1.5213
       }
     ],
     "UEFA Champions League" :
@@ -2275,33 +2275,33 @@
     },
     "Premier League" :
     {
-      "n" : 46,
-      "mu_home" : 1.5152,
-      "mu_away" : 1.2727,
-      "mu" : 1.3939,
-      "home_win" : 0.3696,
-      "draw" : 0.3043,
-      "gpm" : 2.8261
+      "n" : 49,
+      "mu_home" : 1.5217,
+      "mu_away" : 1.2754,
+      "mu" : 1.3986,
+      "home_win" : 0.3673,
+      "draw" : 0.3061,
+      "gpm" : 2.8367
     },
     "Primera Division" :
     {
-      "n" : 65,
-      "mu_home" : 1.6471,
-      "mu_away" : 1.2941,
-      "mu" : 1.4706,
-      "home_win" : 0.4462,
-      "draw" : 0.2462,
-      "gpm" : 3.0154
+      "n" : 66,
+      "mu_home" : 1.6512,
+      "mu_away" : 1.2907,
+      "mu" : 1.4709,
+      "home_win" : 0.4545,
+      "draw" : 0.2424,
+      "gpm" : 3.0152
     },
     "Turkish Super Lig" :
     {
-      "n" : 42,
-      "mu_home" : 1.629,
-      "mu_away" : 1.2581,
-      "mu" : 1.4435,
-      "home_win" : 0.4524,
-      "draw" : 0.1667,
-      "gpm" : 2.9762
+      "n" : 44,
+      "mu_home" : 1.7188,
+      "mu_away" : 1.2188,
+      "mu" : 1.4688,
+      "home_win" : 0.4773,
+      "draw" : 0.1591,
+      "gpm" : 3.0455
     },
     "Saudi Pro League" :
     {
@@ -2315,33 +2315,33 @@
     },
     "Ligue 1" :
     {
-      "n" : 42,
-      "mu_home" : 1.5323,
-      "mu_away" : 1.2581,
-      "mu" : 1.3952,
-      "home_win" : 0.381,
-      "draw" : 0.3095,
-      "gpm" : 2.8333
+      "n" : 43,
+      "mu_home" : 1.5397,
+      "mu_away" : 1.254,
+      "mu" : 1.3968,
+      "home_win" : 0.3953,
+      "draw" : 0.3023,
+      "gpm" : 2.8372
     },
     "Bundesliga" :
     {
-      "n" : 33,
-      "mu_home" : 2.0943,
-      "mu_away" : 1.3962,
-      "mu" : 1.7453,
-      "home_win" : 0.5152,
-      "draw" : 0.1818,
-      "gpm" : 3.9697
+      "n" : 34,
+      "mu_home" : 2.0926,
+      "mu_away" : 1.3704,
+      "mu" : 1.7315,
+      "home_win" : 0.5294,
+      "draw" : 0.1765,
+      "gpm" : 3.9118
     },
     "Serie A" :
     {
-      "n" : 46,
-      "mu_home" : 1.4394,
-      "mu_away" : 1.4242,
-      "mu" : 1.4318,
-      "home_win" : 0.3913,
-      "draw" : 0.1957,
-      "gpm" : 2.9348
+      "n" : 48,
+      "mu_home" : 1.4559,
+      "mu_away" : 1.3971,
+      "mu" : 1.4265,
+      "home_win" : 0.4167,
+      "draw" : 0.1875,
+      "gpm" : 2.9167
     },
     "UEFA Champions League" :
     {
@@ -2793,6 +2793,19 @@
       "away_score" : 1,
       "home_badge" : "https://crests.football-data.org/10.png",
       "away_badge" : "https://crests.football-data.org/4.png",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "565807",
+      "competition" : "Bundesliga",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "16:30",
+      "home" : "Bayer 04 Leverkusen",
+      "away" : "RB Leipzig",
+      "home_score" : 2,
+      "away_score" : 0,
+      "home_badge" : "https://crests.football-data.org/3.png",
+      "away_badge" : "https://crests.football-data.org/721.png",
       "status" : "FINISHED"
     },
     {
@@ -4733,6 +4746,19 @@
       "status" : "FINISHED"
     },
     {
+      "match_id" : "559676",
+      "competition" : "Ligue 1",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "16:00",
+      "home" : "AJ Auxerre",
+      "away" : "Stade Brestois 29",
+      "home_score" : 2,
+      "away_score" : 1,
+      "home_badge" : "https://crests.football-data.org/519.png",
+      "away_badge" : "https://crests.football-data.org/512.png",
+      "status" : "FINISHED"
+    },
+    {
       "match_id" : "560542",
       "competition" : "Premier League",
       "kickoff" : "2026-08-21",
@@ -5328,6 +5354,45 @@
       "away_score" : 1,
       "home_badge" : "https://crests.football-data.org/351.png",
       "away_badge" : "https://crests.football-data.org/1076.png",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "560582",
+      "competition" : "Premier League",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "16:00",
+      "home" : "AFC Bournemouth",
+      "away" : "Liverpool FC",
+      "home_score" : 0,
+      "away_score" : 1,
+      "home_badge" : "https://crests.football-data.org/bournemouth.png",
+      "away_badge" : "https://crests.football-data.org/64.png",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "560585",
+      "competition" : "Premier League",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "16:00",
+      "home" : "Leeds United FC",
+      "away" : "Crystal Palace FC",
+      "home_score" : 0,
+      "away_score" : 0,
+      "home_badge" : "https://crests.football-data.org/341.png",
+      "away_badge" : "https://crests.football-data.org/354.png",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "560590",
+      "competition" : "Premier League",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "16:00",
+      "home" : "Manchester City FC",
+      "away" : "Sunderland AFC",
+      "home_score" : 5,
+      "away_score" : 3,
+      "home_badge" : "https://crests.football-data.org/65.png",
+      "away_badge" : "https://crests.football-data.org/71.png",
       "status" : "FINISHED"
     },
     {
@@ -6173,6 +6238,19 @@
       "away_score" : 0,
       "home_badge" : "https://crests.football-data.org/82.png",
       "away_badge" : "https://crests.football-data.org/84.png",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "564688",
+      "competition" : "Primera Division",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "17:15",
+      "home" : "Club Atlético de Madrid",
+      "away" : "Real Madrid CF",
+      "home_score" : 2,
+      "away_score" : 1,
+      "home_badge" : "https://crests.football-data.org/78.png",
+      "away_badge" : "https://crests.football-data.org/86.png",
       "status" : "FINISHED"
     },
     {
@@ -7593,6 +7671,32 @@
       "status" : "FINISHED"
     },
     {
+      "match_id" : "558590",
+      "competition" : "Serie A",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "16:00",
+      "home" : "Parma Calcio 1913",
+      "away" : "Genoa CFC",
+      "home_score" : 2,
+      "away_score" : 1,
+      "home_badge" : "https://crests.football-data.org/112.png",
+      "away_badge" : "https://crests.football-data.org/107.png",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "558592",
+      "competition" : "Serie A",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "16:00",
+      "home" : "Frosinone Calcio",
+      "away" : "Como 1907",
+      "home_score" : 2,
+      "away_score" : 0,
+      "home_badge" : "https://crests.football-data.org/470.png",
+      "away_badge" : "https://crests.football-data.org/7397.png",
+      "status" : "FINISHED"
+    },
+    {
       "match_id" : "4764261",
       "competition" : "Turkish Super Lig",
       "kickoff" : "2026-08-17",
@@ -8139,6 +8243,32 @@
       "status" : "FINISHED"
     },
     {
+      "match_id" : "4764304",
+      "competition" : "Turkish Super Lig",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "17:00",
+      "home" : "فنربخشة",
+      "away" : "أيوب سبور",
+      "home_score" : 8,
+      "away_score" : 0,
+      "home_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v9/Competitors/946",
+      "away_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v1/Competitors/6174",
+      "status" : "FINISHED"
+    },
+    {
+      "match_id" : "4764306",
+      "competition" : "Turkish Super Lig",
+      "kickoff" : "2026-09-20",
+      "koff_time" : "17:00",
+      "home" : "إيرزوروم سبور",
+      "away" : "سامسون سبور",
+      "home_score" : 1,
+      "away_score" : 0,
+      "home_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v1/Competitors/14693",
+      "away_badge" : "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v5/Competitors/997",
+      "status" : "FINISHED"
+    },
+    {
       "match_id" : "575323",
       "competition" : "UEFA Champions League",
       "kickoff" : "2026-09-08",
@@ -8375,26 +8505,6 @@
   ],
   "predictions" :
   {
-    "559678" :
-    {
-      "comp" : "Ligue 1",
-      "home" : "OGC Nice",
-      "away" : "Lille OSC",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "18:15",
-      "lh" : 0.659749,
-      "la" : 1.408374,
-      "ph" : 0.1747,
-      "pd" : 0.2742,
-      "pa" : 0.5511,
-      "score" : "0-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1410.49,
-      "elo_a" : 1591.21,
-      "ts" : "2026-09-20"
-    },
     "559675" :
     {
       "comp" : "Ligue 1",
@@ -8435,46 +8545,6 @@
       "elo_a" : 1448.45,
       "ts" : "2026-09-20"
     },
-    "558595" :
-    {
-      "comp" : "Serie A",
-      "home" : "Juventus FC",
-      "away" : "Atalanta BC",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "19:00",
-      "lh" : 1.461488,
-      "la" : 1.106211,
-      "ph" : 0.4528,
-      "pd" : 0.2609,
-      "pa" : 0.2864,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1565.03,
-      "elo_a" : 1527.25,
-      "ts" : "2026-09-20"
-    },
-    "565805" :
-    {
-      "comp" : "Bundesliga",
-      "home" : "FC Schalke 04",
-      "away" : "SV 07 Elversberg",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "18:30",
-      "lh" : 2.039392,
-      "la" : 1.481095,
-      "ph" : 0.5055,
-      "pd" : 0.2142,
-      "pa" : 0.2803,
-      "score" : "2-1",
-      "conf" : "low",
-      "n_h" : 3,
-      "n_a" : 3,
-      "elo_h" : 1435.91,
-      "elo_a" : 1445.57,
-      "ts" : "2026-09-20"
-    },
     "565803" :
     {
       "comp" : "Bundesliga",
@@ -8495,26 +8565,6 @@
       "elo_a" : 1518.52,
       "ts" : "2026-09-20"
     },
-    "560583" :
-    {
-      "comp" : "Premier League",
-      "home" : "Fulham FC",
-      "away" : "Manchester United FC",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "18:30",
-      "lh" : 1.44981,
-      "la" : 1.605796,
-      "ph" : 0.3462,
-      "pd" : 0.2398,
-      "pa" : 0.414,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 4,
-      "n_a" : 4,
-      "elo_h" : 1452.76,
-      "elo_a" : 1559.02,
-      "ts" : "2026-09-20"
-    },
     "564696" :
     {
       "comp" : "Primera Division",
@@ -8533,26 +8583,6 @@
       "n_a" : 5,
       "elo_h" : 1525.65,
       "elo_a" : 1479.32,
-      "ts" : "2026-09-20"
-    },
-    "564688" :
-    {
-      "comp" : "Primera Division",
-      "home" : "Club Atlético de Madrid",
-      "away" : "Real Madrid CF",
-      "kickoff" : "2026-09-20",
-      "koff_time" : "17:15",
-      "lh" : 1.786284,
-      "la" : 1.613924,
-      "ph" : 0.4228,
-      "pd" : 0.2258,
-      "pa" : 0.3514,
-      "score" : "1-1",
-      "conf" : "mid",
-      "n_h" : 6,
-      "n_a" : 6,
-      "elo_h" : 1572.94,
-      "elo_a" : 1644.4,
       "ts" : "2026-09-20"
     },
     "564695" :
