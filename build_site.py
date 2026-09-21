@@ -61,7 +61,8 @@ def byline(a):
 # THIS module.
 S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
                      "Saudi Pro League", "CAF Champions League",
-                     "Africa Cup of Nations Qualification")
+                     "Africa Cup of Nations Qualification",
+                     "UEFA Nations League")
 
 def match_data_sources(a, comp):
     """The data credit a match preview/report carries when its writer left the
@@ -562,6 +563,7 @@ COMP_SLUG = {
     "UEFA Champions League": "champions-league",
     "CAF Champions League": "caf-champions-league",
     "Africa Cup of Nations Qualification": "afcon-qualifiers",
+    "UEFA Nations League": "nations-league",
 }
 
 # MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
@@ -4956,6 +4958,10 @@ COMP_LOGO = {
         "https://imagecache.365scores.com/image/upload/"
         "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
         "d_Competitions:default1.png/v4/Competitions/588",
+    "UEFA Nations League":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/7016",
 }
 # friendlier display names (data-comp keeps the raw API name for filtering)
 COMP_LABEL = {
@@ -4970,13 +4976,15 @@ COMP_LABEL = {
     "Serie A": "الدوري الإيطالي",
     "UEFA Champions League": "دوري أبطال أوروبا",
     "Africa Cup of Nations Qualification": "تصفيات كأس أمم إفريقيا",
+    "UEFA Nations League": "دوري الأمم الأوروبية",
 }
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
 COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
               "Bundesliga", "Serie A", "UEFA Champions League",
               "CAF Champions League",   # after UCL (user pick 2026-09-02)
-              "Africa Cup of Nations Qualification"]  # user ask 2026-09-20
+              "Africa Cup of Nations Qualification",  # user ask 2026-09-20
+              "UEFA Nations League"]                  # user ask 2026-09-21
 
 def comp_label(name):
     return COMP_LABEL.get(name, name or "")
@@ -5144,13 +5152,15 @@ def fav_club_names(standings, fixtures):
     return names
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
-# must agree with LIVE_COMPS in worker.js (552,78,649,7,11,17,25,35,572,624,588).
+# must agree with LIVE_COMPS in worker.js
+# (552,78,649,7,11,17,25,35,572,624,588,7016).
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
     "Turkish Super Lig": 78,
     "Saudi Pro League": 649,
     "CAF Champions League": 624,
     "Africa Cup of Nations Qualification": 588,
+    "UEFA Nations League": 7016,
 }
 
 def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):

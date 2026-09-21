@@ -665,6 +665,11 @@ S365_LEAGUES = [
     # kicked off 2026-09-24). National teams: no analysis model, and the
     # multi-group standings are skipped by the len(sts)==1 guard like CAF CL.
     (588, "Africa Cup of Nations Qualification"),
+    # دوري الأمم الأوروبية (user ask 2026-09-21; 2026/27 edition, first window
+    # 2026-09-24 — Netherlands x Germany). id verified against 365scores' own
+    # URLs (uefa-nations-league-7016; the women's edition is 7995). National
+    # teams again: no model, multi-group standings skipped by the guards.
+    (7016, "UEFA Nations League"),
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
@@ -839,7 +844,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016"
 
 def _goal_rows(game, fallback_home_id):
     """game detail -> (goals list, health) — tolerant of field-name drift."""
