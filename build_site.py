@@ -1312,12 +1312,22 @@ def scorers_read(label, season, sc, asst, table, pool):
                     f"{sc[0]['name']} ({sc[0].get('team') or ''}) برصيد {_goals(top_v)} "
                     f"في موسم {season}."))
     else:
-        names = "، ".join(esc(x["name"]) for x in leaders[:3])
+        # name EVERY leader while they fit in a sentence: capping at three
+        # under a count of four read «بين 4 لاعبين (a، b، c)» and dropped
+        # Zizo from his own shared lead (ChatGPT site audit, 2026-09-21).
+        # Past five names, say «منهم» so the sentence stops claiming to be
+        # the full list instead of silently contradicting the count.
+        if len(leaders) <= 5:
+            names, pre = "، ".join(esc(x["name"]) for x in leaders), ""
+        else:
+            names, pre = "، ".join(esc(x["name"]) for x in leaders[:3]), "منهم "
         facts.append(f'تُقسَم صدارة هدافي {esc(label)} بين {_players(len(leaders))} '
-                     f'({names}) برصيد {_goals(top_v)} لكل منهم.')
+                     f'({pre}{names}) برصيد {_goals(top_v)} لكل منهم.')
+        faq_names = ("، ".join(x["name"] for x in leaders) if len(leaders) <= 5
+                     else "، ".join(x["name"] for x in leaders[:3]) + " وآخرون")
         faq.append((f"من هداف {label} الآن؟",
                     f"الصدارة مشتركة بين {_players(len(leaders))} برصيد {_goals(top_v)} لكل منهم: "
-                    + "، ".join(x["name"] for x in leaders[:3]) + "."))
+                    + faq_names + "."))
 
     # 2. how much of his club's season the leader is carrying
     row = gf_by.get(_gnorm(sc[0].get("team")))
