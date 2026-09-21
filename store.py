@@ -764,6 +764,20 @@ class DuplicateArticle(Exception):
     """A second preview/report for a match the site already covered."""
 
 
+class PartialPublish(Exception):
+    """The article ROW landed but its children (sources/faq/embeds) did not.
+
+    Retrying such a draft must UPDATE `aid`, never insert again: on
+    2026-09-20 the read quota killed the children writes after three inserts
+    of the same news draft, and the generic "D1 refusing" handler re-parked
+    it each time - the Shenawy article published as 565, 566 AND 571."""
+
+    def __init__(self, aid, cause):
+        super().__init__(f"article {aid} inserted, children failed: {cause}")
+        self.aid = aid
+        self.cause = cause
+
+
 def _is_conflict(e):
     m = str(e).lower()
     return "unique" in m or "constraint" in m
@@ -976,9 +990,14 @@ def article_add(rec, clubs=None):
                 f"match {rec.get('match_id')} already has a {rec.get('kind')}")
         raise
     aid = str(got[0]["article_id"])
-    _article_children(aid, rec.get("sources"), rec.get("faq"), clubs or [],
-                      rec.get("embeds") if "embeds" in rec else [])
-    _bump_articles_sig()
+    # from here the article EXISTS - a failure below must carry the id out,
+    # or the caller re-parks the draft and the next retry inserts a duplicate
+    try:
+        _article_children(aid, rec.get("sources"), rec.get("faq"), clubs or [],
+                          rec.get("embeds") if "embeds" in rec else [])
+        _bump_articles_sig()
+    except Exception as e:                                     # noqa: BLE001
+        raise PartialPublish(aid, e) from e
     return aid
 
 
@@ -1008,6 +1027,28 @@ def article_update(aid, rec, clubs=None):
                           rec.get("embeds") if "embeds" in rec else None)
     _bump_articles_sig()
     return aid
+
+
+def article_delete(aid):
+    """Remove an article and its children. Returns the deleted title.
+
+    Written for the Shenawy triple-publish of 2026-09-20 (a parked draft
+    republished by every retry while the read quota was exhausted). Raises
+    KeyError on an unknown id - a delete that finds nothing is a wrong id,
+    not a success. Bumps articles_sig so the next build re-pulls."""
+    if backend() == "json":
+        raise RuntimeError("article_delete needs D1 - refusing to edit json")
+    aid = str(aid)
+    rows = sql("SELECT title FROM articles WHERE article_id = ?", [aid])
+    if not rows:
+        raise KeyError(f"article {aid} does not exist")
+    _ensure_embeds()
+    for t in ("article_sources", "article_faq", "article_embeds",
+              "article_clubs"):
+        sql(f"DELETE FROM {t} WHERE article_id = ?", [aid])
+    sql("DELETE FROM articles WHERE article_id = ?", [aid])
+    _bump_articles_sig()
+    return rows[0]["title"]
 
 
 def article_get(aid):

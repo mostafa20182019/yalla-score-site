@@ -37,7 +37,11 @@ on:
         type: choice
         default: "status"
         options: [ "status", "init", "migrate", "export", "verify", "warehouse",
-                   "sample", "articles-backfill", "fix-images" ]
+                   "sample", "articles-backfill", "fix-images", "delete-article" ]
+      args:
+        description: "delete-article only: the ids, comma-separated (e.g. 565,566)"
+        type: string
+        default: ""
 
 permissions:
   contents: write          # the export task commits data/*.json
@@ -54,6 +58,7 @@ jobs:
       # `inputs.task` is empty on a schedule trigger, and the only schedule
       # left is the daily export
       TASK: ${{ inputs.task || 'export' }}
+      ARGS: ${{ inputs.args || '' }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -70,7 +75,7 @@ jobs:
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: |
           set -o pipefail
-          python d1_admin.py --"$TASK" | tee /tmp/d1.txt
+          python d1_admin.py --"$TASK" $ARGS | tee /tmp/d1.txt
           {
             echo "### D1 · $TASK"
             echo '```'
@@ -78,11 +83,11 @@ jobs:
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
 
-      # Only the export task changes files. Committing it keeps the ability to
-      # walk the state's history in git, which is how the duplicate-post bug
-      # was found in the first place.
+      # Only the export and delete-article tasks change files. Committing keeps
+      # the ability to walk the state's history in git, which is how the
+      # duplicate-post bug was found in the first place.
       - name: Commit the export
-        if: env.TASK == 'export'
+        if: env.TASK == 'export' || env.TASK == 'delete-article'
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

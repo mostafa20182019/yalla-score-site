@@ -171,7 +171,7 @@ def main():
     be = store.backend()
     print(f"backend: {be}")
     WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse",
-               "--sample", "--fix-images")
+               "--sample", "--fix-images", "--delete-article")
     if be == "json" and any(a in args for a in WRITERS):
         print("!! D1 is NOT configured (CF_API_TOKEN / CF_ACCOUNT_ID / CF_D1_ID missing).")
         print("   Nothing was written. Add the three secrets and re-run.")
@@ -222,6 +222,25 @@ def main():
 
     if "--fix-images" in args:
         _fix_images()
+
+    if "--delete-article" in args:
+        # ids come as the next argument, comma-separated: --delete-article 565,566
+        # (the Shenawy triple-publish, 2026-09-20). Deletion is exact-id and
+        # loud; an unknown id fails the whole task rather than half-running.
+        try:
+            raw = args[args.index("--delete-article") + 1]
+        except IndexError:
+            print("!! --delete-article needs ids, e.g. --delete-article 565,566")
+            return 1
+        ids = [s.strip() for s in raw.split(",") if s.strip()]
+        for aid in ids:
+            title = store.article_delete(aid)
+            print(f"deleted article {aid}: {title}")
+        # re-cut the export in the same run so the build's articles_sig gate
+        # sees a CURRENT file (the sig was bumped by every delete above); the
+        # workflow commits data/articles.json for this task like for --export
+        n = store.article_export()
+        print(f"exported D1 -> data/articles.json ({n} articles)")
 
     if "--export" in args:
         ok = store.export_json()

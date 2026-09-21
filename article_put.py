@@ -262,11 +262,24 @@ def retry_pending():
             continue
         clubs = clubs_of(rec)
         try:
-            aid = store.article_add(enrich(rec, words), clubs=clubs)
+            if rec.get("published_id"):
+                # an earlier retry got the ROW in and died on the children
+                # (PartialPublish below) - finish THAT article, never insert
+                # a second one. This is the Shenawy-triple fix (2026-09-20).
+                aid = rec["published_id"]
+                store.article_update(aid, enrich(rec, words), clubs=clubs)
+            else:
+                aid = store.article_add(enrich(rec, words), clubs=clubs)
         except store.DuplicateArticle:
             print(f"{name}: the site already covers it - removing")
             os.remove(path)
             continue
+        except store.PartialPublish as e:
+            rec["published_id"] = e.aid
+            save_pending(rec)
+            print(f"{name}: article {e.aid} inserted but its children failed "
+                  f"({e.cause}) - parked as an UPDATE for the next run")
+            return 2
         except Exception as e:                               # noqa: BLE001
             print(f"{name}: D1 still refusing ({e}) - left parked")
             return 2
@@ -336,6 +349,15 @@ def main():
             print(f"REFUSED: {e}")
             print("  the site already covers that match with a piece of this kind")
             return 1
+        except store.PartialPublish as e:
+            # the ROW landed - park the draft WITH its id so the retry
+            # finishes it as an update instead of inserting a duplicate
+            rec["published_id"] = e.aid
+            saved = save_pending(rec)
+            print(f"ARTICLE {e.aid} INSERTED, its children failed: {e.cause}")
+            print(f"  the draft is saved at {saved} carrying published_id")
+            print("  COMMIT IT - the next run completes the article in place.")
+            return 2
         except Exception as e:                               # noqa: BLE001
             # NOT a bad draft and NOT a duplicate - the database refused it.
             # The draft is good; park it instead of losing it.
