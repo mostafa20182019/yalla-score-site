@@ -3217,7 +3217,12 @@ def build():
             _iw, _ih = _og_dims(img)
             ld["image"] = ([{"@type": "ImageObject", "url": img, "width": _iw, "height": _ih}]
                            if _iw else [img])
-        p = [head(f"{a['title']} — {SITE_NAME}", a.get("summary"), url, image=img, og_type="article")]
+        # 56 older match articles shipped without a summary and their pages
+        # went out with an EMPTY meta description (audit 2026-09-22) - the
+        # search snippet then falls to whatever Google scrapes. The body's
+        # opening is the article's own lead; seo_desc trims it to size.
+        _desc = a.get("summary") or strip_tags(a.get("body") or "")[:220]
+        p = [head(f"{a['title']} — {SITE_NAME}", _desc, url, image=img, og_type="article")]
         p.append(jsonld(ld))
         _crumbs = [("أخبار", SITE_BASE + "/"), ("كل الأخبار", SITE_BASE + "/news.html")]
         if _clubs:
