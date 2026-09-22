@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-23T00:00:05+03:00",
+    "generated_at" : "2026-09-23T01:17:15+03:00",
     "days" : 10,
     "n" : 0,
     "params" :
@@ -2080,15 +2080,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "AS Roma",
-        "elo" : 1502.78,
-        "played" : 1,
-        "gf" : 1,
-        "ga" : 1,
-        "att" : 0.9363,
-        "def" : 0.9363
-      },
-      {
         "team" : "FK Shakhtar Donetsk",
         "elo" : 1502.78,
         "played" : 1,
@@ -2098,8 +2089,8 @@
         "def" : 0.9363
       },
       {
-        "team" : "PSV",
-        "elo" : 1497.22,
+        "team" : "AS Roma",
+        "elo" : 1502.78,
         "played" : 1,
         "gf" : 1,
         "ga" : 1,
@@ -2108,6 +2099,15 @@
       },
       {
         "team" : "Fenerbahçe SK",
+        "elo" : 1497.22,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 1,
+        "att" : 0.9363,
+        "def" : 0.9363
+      },
+      {
+        "team" : "PSV",
         "elo" : 1497.22,
         "played" : 1,
         "gf" : 1,
