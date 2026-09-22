@@ -147,6 +147,28 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 DIST = os.path.join(HERE, "dist")
 
+def thumb_url(url):
+    """The 640px card copy of one of OUR photos, when it exists on disk.
+
+    Lighthouse (2026-09-22) measured ~3 MB of the 3.9 MB home page as the
+    full 1600px article photos rendered inside card slots. shrink_media.py
+    writes media/thumbs/<same name> at 640px; every CARD slot goes through
+    here, while the article hero, og:image and RSS keep the original.
+    Anything not ours passes through untouched: external hotlinks (headline
+    cards), the SVG placeholders, and a photo whose thumb is not in this
+    checkout yet (same race as resolve_missing_media - the next run heals it;
+    in publish.yml shrink_media runs BEFORE the build, so it never happens
+    there)."""
+    u = str(url or "")
+    path = u[len(SITE_BASE):] if u.startswith(SITE_BASE) else u
+    if not path.startswith("/media/") or path.lower().endswith(".svg") \
+            or path.startswith("/media/thumbs/"):
+        return url
+    name = path.split("/media/", 1)[1].split("?")[0]
+    if not os.path.exists(os.path.join(HERE, "media", "thumbs", name)):
+        return url
+    return (SITE_BASE if u.startswith(SITE_BASE) else "") + "/media/thumbs/" + name
+
 def load(name):
     """Load a SQLcl `set sqlformat json` export -> list of row dicts (tolerant)."""
     p = os.path.join(DATA, name)
@@ -1552,7 +1574,7 @@ def headline_card(h):
 
 def news_card(a):
     """One article card (used by the home shelf and the /news.html archive)."""
-    img = a.get("image_url")
+    img = thumb_url(a.get("image_url"))
     thumb = (f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>'
              if img else '<div class="card-img noimg">⚽</div>')
     t = art_reltime(a)
@@ -1724,7 +1746,7 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
     numbered trending-list column with thumbnails and 'منذ X' bylines.
     flip=True mirrors the columns (featured LEFT, list RIGHT) for visual
     alternation between consecutive blocks."""
-    img = feat_a.get("image_url")
+    img = thumb_url(feat_a.get("image_url"))
     imgdiv = (f'<div class="fmb-img" style="background-image:url(\'{esc(img)}\')"></div>'
               if img else '<div class="fmb-img fmb-noimg"></div>')
     _nf = f' data-nf="{nf}"' if nf else ""     # news-filter key (NEWS_FILTER_JS)
@@ -1736,7 +1758,7 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
                + f'<p class="fmb-meta">{_art_meta(feat_a)}</p></div></a>')
     out.append(f'<div class="fmb-list"><div class="fmb-lh">{esc(list_head)}</div>')
     for i, a in enumerate(list_items, 1):
-        th = (f'<img class="fmb-th" src="{esc(a.get("image_url"))}" alt="" loading="lazy">'
+        th = (f'<img class="fmb-th" src="{esc(thumb_url(a.get("image_url")))}" alt="" loading="lazy">'
               if a.get("image_url") else "")
         out.append(f'<a class="fmb-row" href="{article_href(a)}">'
                    f'<span class="fmb-num">{i}</span>'
@@ -3060,7 +3082,9 @@ def build():
     feat = articles[0] if articles else None    # og:image source
     parts = [head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
                   image=(feat and feat.get("image_url")) or None, active="home",
-                  preload_img=(feat and feat.get("image_url")) or None)]
+                  # the hero block renders the THUMB now - preloading the
+                  # full 1600 would fetch a file the page never uses
+                  preload_img=thumb_url(feat and feat.get("image_url")) or None)]
     # Organization (publisher identity: logo + Facebook page + contact) and
     # WebSite in one graph — the entity Google ties every NewsArticle's
     # `publisher` and the brand-name query to.
@@ -3688,12 +3712,12 @@ def build():
         fa = articles[0]
         p.append(f'<a class="mp-feat" href="{article_href(fa)}">')
         if fa.get("image_url"):
-            p.append(f'<img class="mp-feat-img" src="{esc(fa["image_url"])}" alt="" loading="lazy">')
+            p.append(f'<img class="mp-feat-img" src="{esc(thumb_url(fa["image_url"]))}" alt="" loading="lazy">')
         p.append(f'<b class="mp-feat-t">{esc(fa.get("title"))}</b>'
                  '<span class="mp-feat-cta">اقرأ الخبر ←</span></a>')
         p.append('<div class="mp-news">')
         for a in articles[1:4]:
-            img = a.get("image_url")
+            img = thumb_url(a.get("image_url"))
             th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
                   if img else '<span class="mn-th noimg">⚽</span>')
             p.append(f'<a class="mn-item" href="{article_href(a)}">{th}'
@@ -4547,7 +4571,7 @@ def build():
         if arts:
             np_.append('<div class="alist">')
             for a in arts:
-                img = a.get("image_url")
+                img = thumb_url(a.get("image_url"))
                 th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
                       if img else '<span class="al-th noimg">⚽</span>')
                 np_.append(
@@ -4806,6 +4830,14 @@ def build():
             if os.path.isfile(src):
                 shutil.copy(src, os.path.join(DIST, "media", fn))
                 n += 1
+        thumbs = os.path.join(media, "thumbs")
+        if os.path.isdir(thumbs):                 # the 640px card copies
+            os.makedirs(os.path.join(DIST, "media", "thumbs"), exist_ok=True)
+            for fn in os.listdir(thumbs):
+                src = os.path.join(thumbs, fn)
+                if os.path.isfile(src):
+                    shutil.copy(src, os.path.join(DIST, "media", "thumbs", fn))
+                    n += 1
         if n:
             print(f"  + media files: {n}")
 

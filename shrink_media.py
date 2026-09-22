@@ -42,6 +42,19 @@ QUALITY = 82          # visually indistinguishable from 95 on photographs
 BAR = 250 * 1024      # a photo bigger than this is worth a look
 MIN_GAIN = 0.05       # skip a rewrite that saves less than 5%
 
+# Card thumbnails (2026-09-22). Lighthouse measured ~3 MB of the home page's
+# 3.9 MB as full-size photos squeezed into card slots: every card rendered
+# the SAME 1600px file the article hero uses. media/thumbs/<same name> is a
+# 640px copy for the card slots (640 covers a ~320px slot at 2x DPR); the
+# hero, og:image and the RSS keep the 1600. Same filename, one directory
+# down, so the mapping needs no table — and the ORIGINAL is never touched.
+THUMBS = os.path.join(MEDIA, "thumbs")
+THUMB_W = 640
+THUMB_Q = 80
+# preserve the source format: JPEG bytes under a .png name would lie about
+# their content type (all 250 files are .jpg today, but the guard is free)
+_FMT = {".jpg": "JPEG", ".jpeg": "JPEG", ".png": "PNG", ".webp": "WEBP"}
+
 
 def plan(path):
     """(needs_work, width, height, bytes) without decoding the whole file."""
@@ -74,6 +87,35 @@ def shrink(path, dry=False):
     return before, after
 
 
+def thumb(path, dry=False):
+    """Write media/thumbs/<name> at THUMB_W. Returns its size in bytes,
+    0 when it already exists (idempotent, like shrink)."""
+    name = os.path.basename(path)
+    out = os.path.join(THUMBS, name)
+    if os.path.exists(out):
+        return 0
+    fmt = _FMT[os.path.splitext(name)[1].lower()]
+    with Image.open(path) as im:
+        im = ImageOps.exif_transpose(im)
+        if fmt == "JPEG" and im.mode not in ("RGB", "L"):
+            im = im.convert("RGB")                # JPEG has no alpha
+        if im.width > THUMB_W:
+            im = im.resize((THUMB_W, round(im.height * THUMB_W / im.width)),
+                           Image.LANCZOS)
+        buf = io.BytesIO()
+        if fmt == "JPEG":
+            im.save(buf, fmt, quality=THUMB_Q, optimize=True, progressive=True)
+        elif fmt == "WEBP":
+            im.save(buf, fmt, quality=THUMB_Q)
+        else:
+            im.save(buf, fmt, optimize=True)
+    if not dry:
+        os.makedirs(THUMBS, exist_ok=True)
+        with open(out, "wb") as f:
+            f.write(buf.getvalue())
+    return buf.getbuffer().nbytes
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--dry", action="store_true")
@@ -97,6 +139,15 @@ def main():
     print(f"{verb} {done} of {len(files)} photos: "
           f"{total_before / 1048576:.1f} MB → {(total_before - saved) / 1048576:.1f} MB "
           f"(saved {saved / 1048576:.1f} MB, {saved / total_before:.0%})")
+    tn = tb = 0
+    for f in files:
+        b = thumb(f, args.dry)
+        if b:
+            tn += 1
+            tb += b
+    if tn:
+        print(f"{'would write' if args.dry else 'wrote'} {tn} card thumbs "
+              f"({THUMB_W}px) → media/thumbs/, {tb / 1048576:.1f} MB")
     return 0
 
 
