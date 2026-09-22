@@ -330,7 +330,12 @@ def seo_title(title, limit=62):
             return t[:-len(suf)]
     return t
 
-def head(title, desc, url, image=None, og_type="website", active=""):
+def head(title, desc, url, image=None, og_type="website", active="",
+         preload_img=None):
+    # preload_img: the page's LCP image (the home hero is a CSS background,
+    # so the browser only discovers it after the stylesheet - Lighthouse
+    # 2026-09-22 measured the discovery delay inside an 8.2s local LCP).
+    # Only the LCP image belongs here; preloading more steals its bandwidth.
     og_desc = strip_tags(desc)[:300]
     desc = seo_desc(desc)
     title = seo_title(title)
@@ -357,6 +362,8 @@ def head(title, desc, url, image=None, og_type="website", active=""):
         f'\n<meta property="og:image:height" content="{ogh}">'
         f'\n<meta property="og:image:type" content="image/{og_type_img}">'
     ) if ogw else ""
+    preload = (f'\n<link rel="preload" as="image" href="{esc(preload_img)}">'
+               if preload_img else "")
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
     aa = " is-active" if active == "analysis" else ""
@@ -380,7 +387,7 @@ def head(title, desc, url, image=None, og_type="website", active=""):
 <script>try{{window.__livePromise=fetch('/live.json?b='+Math.floor(Date.now()/1e4),{{cache:'no-store'}})}}catch(e){{}}</script>
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
-<link rel="canonical" href="{esc(url)}">
+<link rel="canonical" href="{esc(url)}">{preload}
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <meta name="google-site-verification" content="mMvVRBkeRXu37K-dU3QCrngUUJs9a2FfwpJNX3CHcpk">
 <meta property="og:type" content="{og_type}">
@@ -3045,7 +3052,8 @@ def build():
     # ---- home ----
     feat = articles[0] if articles else None    # og:image source
     parts = [head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
-                  image=(feat and feat.get("image_url")) or None, active="home")]
+                  image=(feat and feat.get("image_url")) or None, active="home",
+                  preload_img=(feat and feat.get("image_url")) or None)]
     # Organization (publisher identity: logo + Facebook page + contact) and
     # WebSite in one graph — the entity Google ties every NewsArticle's
     # `publisher` and the brand-name query to.
@@ -3229,7 +3237,7 @@ def build():
         p.append(f'<p class="a-meta"><a class="a-by" href="/editors.html">{esc(byline(a))}</a> · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
                  f'{" · " + _t if _t else ""}{_upd}</p>')
         if img:
-            p.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager">')
+            p.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" alt="{esc(a["title"])}" loading="eager" fetchpriority="high">')
             cr = a.get("image_credit")
             if cr:
                 p.append(f'<figcaption class="a-credit">{esc(cr)}</figcaption>')
@@ -6598,7 +6606,10 @@ a{color:inherit}
 .pb-seg{display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;min-width:0}
 .pb-h{background:var(--green)}.pb-d{background:#94a3b8}.pb-a{background:#334155}
 .pred-rec{display:block;margin:0 0 8px;padding:9px 12px;border-radius:10px;
-  background:#f1f5f9;color:var(--muted);font-size:.83rem;line-height:1.75;font-weight:600}
+  /* #475569, not var(--muted): the muted grey reads 4.34 against this pill's
+     #f1f5f9 and WCAG AA wants 4.5 - the one contrast failure on the site
+     (Lighthouse 2026-09-22) */
+  background:#f1f5f9;color:#475569;font-size:.83rem;line-height:1.75;font-weight:600}
 .pred-rec b{color:var(--text);font-weight:800}
 .pr-probs .prb,.pd-probs .prb{white-space:nowrap}
 .pr-probs .prb+.prb,.pd-probs .prb+.prb{margin-inline-start:10px}
