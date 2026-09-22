@@ -10,7 +10,7 @@
  "reconcile": "ok (0 row(s) corrected, 73 live games)",
  "matches_archive": "ok (636)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 30 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 45 min ago",
  "slow_fetched_at": "2026-09-22T01:47:19+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
@@ -49,7 +49,7 @@
     "homeCompetitor"
    ],
    "event0": "{\"competitorId\": 117, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 8.0, \"addedTime\": 0, \"gameTimeDisplay\": \"8'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 75390596, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 48, \"createdAt\": \"2015-02-22T13:37:43.157\"}"
+   "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 48, \"createdAt\": \"2015-02-22T13:37:43.157Z\"}"
   },
   "sample_details": {
    "event_names": [
@@ -94,5 +94,5 @@
   "fails": 0
  },
  "match_details": "ok (402)",
- "utc": "2026-09-22T02:17:37Z"
+ "utc": "2026-09-22T02:33:34Z"
 }
