@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-22T20:32:04+03:00",
+    "generated_at" : "2026-09-22T21:17:04+03:00",
     "days" : 10,
     "n" : 0,
     "params" :
@@ -1963,15 +1963,6 @@
         "def" : 0.8333
       },
       {
-        "team" : "FC Barcelona",
-        "elo" : 1519.63,
-        "played" : 1,
-        "gf" : 5,
-        "ga" : 1,
-        "att" : 1.3482,
-        "def" : 0.9363
-      },
-      {
         "team" : "Manchester United FC",
         "elo" : 1519.63,
         "played" : 1,
@@ -1981,6 +1972,15 @@
         "def" : 0.8333
       },
       {
+        "team" : "FC Barcelona",
+        "elo" : 1519.63,
+        "played" : 1,
+        "gf" : 5,
+        "ga" : 1,
+        "att" : 1.3482,
+        "def" : 0.9363
+      },
+      {
         "team" : "Como 1907",
         "elo" : 1516.83,
         "played" : 1,
@@ -1988,24 +1988,6 @@
         "ga" : 1,
         "att" : 1.2453,
         "def" : 0.9363
-      },
-      {
-        "team" : "Arsenal FC",
-        "elo" : 1516.78,
-        "played" : 1,
-        "gf" : 1,
-        "ga" : 0,
-        "att" : 0.9363,
-        "def" : 0.8333
-      },
-      {
-        "team" : "Real Betis Balompié",
-        "elo" : 1516.78,
-        "played" : 1,
-        "gf" : 3,
-        "ga" : 2,
-        "att" : 1.1423,
-        "def" : 1.0393
       },
       {
         "team" : "Racing Club de Lens",
@@ -2026,13 +2008,22 @@
         "def" : 1.0393
       },
       {
-        "team" : "VfB Stuttgart",
-        "elo" : 1514.02,
+        "team" : "Arsenal FC",
+        "elo" : 1516.78,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 0,
+        "att" : 0.9363,
+        "def" : 0.8333
+      },
+      {
+        "team" : "Real Betis Balompié",
+        "elo" : 1516.78,
         "played" : 1,
         "gf" : 3,
-        "ga" : 1,
+        "ga" : 2,
         "att" : 1.1423,
-        "def" : 0.9363
+        "def" : 1.0393
       },
       {
         "team" : "Sporting Clube de Portugal",
@@ -2044,13 +2035,13 @@
         "def" : 0.9363
       },
       {
-        "team" : "PAE AEK",
-        "elo" : 1511.22,
+        "team" : "VfB Stuttgart",
+        "elo" : 1514.02,
         "played" : 1,
-        "gf" : 1,
-        "ga" : 0,
-        "att" : 0.9363,
-        "def" : 0.8333
+        "gf" : 3,
+        "ga" : 1,
+        "att" : 1.1423,
+        "def" : 0.9363
       },
       {
         "team" : "Borussia Dortmund",
@@ -2080,7 +2071,16 @@
         "def" : 0.9363
       },
       {
-        "team" : "AS Roma",
+        "team" : "PAE AEK",
+        "elo" : 1511.22,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 0,
+        "att" : 0.9363,
+        "def" : 0.8333
+      },
+      {
+        "team" : "FK Shakhtar Donetsk",
         "elo" : 1502.78,
         "played" : 1,
         "gf" : 1,
@@ -2089,7 +2089,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "FK Shakhtar Donetsk",
+        "team" : "AS Roma",
         "elo" : 1502.78,
         "played" : 1,
         "gf" : 1,
@@ -2116,24 +2116,6 @@
         "def" : 0.9363
       },
       {
-        "team" : "LASK Linz",
-        "elo" : 1488.78,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 1,
-        "att" : 0.8333,
-        "def" : 0.9363
-      },
-      {
-        "team" : "FC Internazionale Milano",
-        "elo" : 1488.78,
-        "played" : 1,
-        "gf" : 1,
-        "ga" : 2,
-        "att" : 0.9363,
-        "def" : 1.0393
-      },
-      {
         "team" : "Club Atlético de Madrid",
         "elo" : 1488.78,
         "played" : 1,
@@ -2152,6 +2134,24 @@
         "def" : 1.1423
       },
       {
+        "team" : "LASK Linz",
+        "elo" : 1488.78,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 1,
+        "att" : 0.8333,
+        "def" : 0.9363
+      },
+      {
+        "team" : "FC Internazionale Milano",
+        "elo" : 1488.78,
+        "played" : 1,
+        "gf" : 1,
+        "ga" : 2,
+        "att" : 0.9363,
+        "def" : 1.0393
+      },
+      {
         "team" : "Viking FK",
         "elo" : 1485.98,
         "played" : 1,
@@ -2167,15 +2167,6 @@
         "gf" : 1,
         "ga" : 3,
         "att" : 0.9363,
-        "def" : 1.1423
-      },
-      {
-        "team" : "Lille OSC",
-        "elo" : 1483.22,
-        "played" : 1,
-        "gf" : 2,
-        "ga" : 3,
-        "att" : 1.0393,
         "def" : 1.1423
       },
       {
@@ -2206,21 +2197,21 @@
         "def" : 0.9363
       },
       {
+        "team" : "Lille OSC",
+        "elo" : 1483.22,
+        "played" : 1,
+        "gf" : 2,
+        "ga" : 3,
+        "att" : 1.0393,
+        "def" : 1.1423
+      },
+      {
         "team" : "RB Leipzig",
         "elo" : 1483.17,
         "played" : 1,
         "gf" : 1,
         "ga" : 4,
         "att" : 0.9363,
-        "def" : 1.2453
-      },
-      {
-        "team" : "Sabah FK",
-        "elo" : 1480.37,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 4,
-        "att" : 0.8333,
         "def" : 1.2453
       },
       {
@@ -2233,6 +2224,15 @@
         "def" : 1.3482
       },
       {
+        "team" : "Sabah FK",
+        "elo" : 1480.37,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 4,
+        "att" : 0.8333,
+        "def" : 1.2453
+      },
+      {
         "team" : "FC Porto",
         "elo" : 1479.02,
         "played" : 1,
@@ -2242,15 +2242,6 @@
         "def" : 1.0393
       },
       {
-        "team" : "FK Bodø/Glimt",
-        "elo" : 1477.57,
-        "played" : 1,
-        "gf" : 0,
-        "ga" : 5,
-        "att" : 0.8333,
-        "def" : 1.3482
-      },
-      {
         "team" : "ŠK Slovan Bratislava",
         "elo" : 1477.57,
         "played" : 1,
@@ -2258,6 +2249,15 @@
         "ga" : 6,
         "att" : 0.9363,
         "def" : 1.4512
+      },
+      {
+        "team" : "FK Bodø/Glimt",
+        "elo" : 1477.57,
+        "played" : 1,
+        "gf" : 0,
+        "ga" : 5,
+        "att" : 0.8333,
+        "def" : 1.3482
       }
     ]
   },
