@@ -10,8 +10,8 @@
  "reconcile": "ok (0 row(s) corrected, 73 live games)",
  "matches_archive": "ok (636)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "full - last slow fetch 70 min ago",
- "slow_fetched_at": "2026-09-22T08:58:32+00:00",
+ "slow_fetch": "full - last slow fetch 74 min ago",
+ "slow_fetched_at": "2026-09-22T09:02:07+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -257,5 +257,5 @@
   "fails": 0
  },
  "match_details": "ok (402)",
- "utc": "2026-09-22T09:01:28Z"
+ "utc": "2026-09-22T09:05:00Z"
 }
