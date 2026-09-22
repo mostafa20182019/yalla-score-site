@@ -1124,8 +1124,15 @@ def match_article_block(a, comp):
     img = a.get("image_url")
     out = ['<section class="minfo marticle">']
     out.append(f'<h2>{esc(a["title"])}</h2>')
+    # «بمعلومات وقت النشر»: a report written the night Al Ahly topped the
+    # table sits on the same page as a reading computed from TODAY's table
+    # (3rd, level with Zamalek) - both are right, and without the label they
+    # read as a contradiction (outside audit, 2026-09-22). The article is a
+    # dated snapshot BY POLICY (published pieces are never rewritten); the
+    # computed reading is the current state.
     out.append(f'<p class="a-meta"><a class="a-by" href="/editors.html">{esc(byline(a))}</a>'
-               f' · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time></p>')
+               f' · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
+               f' · <span class="a-tnote">بمعلومات وقت النشر</span></p>')
     if img:
         out.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" '
                    f'alt="{esc(a["title"])}" loading="lazy">')
@@ -6330,6 +6337,7 @@ a{color:inherit}
 .article{background:#fff;border-radius:16px;padding:24px 28px;box-shadow:0 6px 22px rgba(15,23,42,.10);margin-bottom:24px}
 .article h1{font-size:1.7rem;font-weight:900;line-height:1.3;margin:.2em 0 .3em}
 .a-meta{color:var(--muted);font-weight:700;font-size:.85rem;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
+.a-tnote{font-weight:600;opacity:.85}
 .a-fig{margin:14px 0}
 .a-img{width:100%;max-height:400px;object-fit:cover;object-position:50% 18%;border-radius:14px;display:block}
 .a-credit{color:var(--muted);font-size:.72rem;font-weight:600;margin-top:6px;text-align:center}
