@@ -2,7 +2,7 @@
   "meta" :
   {
     "model" : "yalla_model (PL/SQL, Oracle side copy)",
-    "generated_at" : "2026-09-23T16:30:05+03:00",
+    "generated_at" : "2026-09-23T16:45:05+03:00",
     "days" : 10,
     "n" : 0,
     "params" :
@@ -2026,7 +2026,7 @@
         "def" : 1.0393
       },
       {
-        "team" : "Sporting Clube de Portugal",
+        "team" : "VfB Stuttgart",
         "elo" : 1514.02,
         "played" : 1,
         "gf" : 3,
@@ -2035,7 +2035,7 @@
         "def" : 0.9363
       },
       {
-        "team" : "VfB Stuttgart",
+        "team" : "Sporting Clube de Portugal",
         "elo" : 1514.02,
         "played" : 1,
         "gf" : 3,
