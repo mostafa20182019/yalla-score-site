@@ -1691,14 +1691,13 @@ def news_filter_bar():
         f'aria-label="{esc(t)}" aria-pressed="false">{ico}</button>' for k, t, ico in chips)
     # Facebook follow button on the far end of the title row (user ask
     # 2026-09-04): the site's Google visitors don't know the page exists.
+    # icon-only, both of them (user ask 2026-09-23: «شيل كلمة تابعنا») — the
+    # title/aria keep the words for hover and screen readers
     fb = (f'<a class="nf-fb" href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener" '
           'title="تابعنا على فيسبوك" aria-label="تابعنا على فيسبوك">'
           '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" '
           'd="M13.5 22v-8.2h2.8l.4-3.3h-3.2V8.4c0-.9.3-1.6 1.6-1.6h1.7V3.9c-.3 0-1.3-.1-2.5-.1'
-          '-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.3h2.8V22h3.4z"/></svg><span class="nf-fbt">تابعنا</span></a>')
-    # the Telegram twin (channel live 2026-09-23): same pill, Telegram blue,
-    # paper-plane glyph; the WORD goes on the Facebook pill only so the row
-    # does not read «تابعنا تابعنا»
+          '-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.3h2.8V22h3.4z"/></svg></a>')
     tg = (f'<a class="nf-tg" href="{esc(TG_CHANNEL_URL)}" target="_blank" rel="noopener" '
           'title="قناتنا على تيليجرام" aria-label="قناتنا على تيليجرام">'
           '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" '
@@ -6849,11 +6848,12 @@ a{color:inherit}
 .nf-bar .page-h{margin:0}
 .nf-chips{display:flex;align-items:center;gap:10px}
 /* Facebook follow pill — pushed to the row END (left in RTL) */
-.nf-fb{margin-inline-start:auto;display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 14px 0 10px;border-radius:22px;background:#1877f2;color:#fff;font-weight:800;font-size:.85rem;text-decoration:none;box-shadow:0 1px 3px rgba(15,23,42,.12);transition:transform .12s,background .12s}
+.nf-fb,.nf-tg{display:inline-flex;align-items:center;justify-content:center;height:44px;width:44px;border-radius:50%;color:#fff;text-decoration:none;box-shadow:0 1px 3px rgba(15,23,42,.12);transition:transform .12s,background .12s;flex:none}
+.nf-fb{margin-inline-start:auto;background:#1877f2}
 .nf-fb:hover{background:#166fe5;transform:translateY(-1px)}
-.nf-tg{margin-inline-start:8px;display:inline-flex;align-items:center;justify-content:center;height:44px;width:44px;border-radius:50%;background:#229ed9;color:#fff;text-decoration:none;box-shadow:0 1px 3px rgba(15,23,42,.12);transition:transform .12s,background .12s;flex:none}
+.nf-tg{margin-inline-start:8px;background:#229ed9}
 .nf-tg:hover{background:#1c8dc3;transform:translateY(-1px)}
-@media(max-width:560px){.nf-fb{height:36px;width:36px;padding:0;justify-content:center;border-radius:50%;flex:none}.nf-fb .nf-fbt{display:none}.nf-fb svg{width:19px;height:19px}.nf-tg{height:36px;width:36px}.nf-tg svg{width:19px;height:19px}}
+@media(max-width:560px){.nf-fb,.nf-tg{height:36px;width:36px}.nf-fb svg,.nf-tg svg{width:19px;height:19px}}
 /* /editors.html — editor card */
 .ed-card{border:1px solid #e2e8f0;border-radius:14px;padding:16px 18px;background:#f8fafc;margin:8px 0 18px}
 .ed-name{font-weight:900;font-size:1.25rem;color:var(--green-d)}
