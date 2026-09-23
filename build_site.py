@@ -3936,26 +3936,16 @@ def build():
             for a in articles[:4]:
                 mp.append(f'<li><a href="{article_href(a)}">{esc(a["title"])}</a></li>')
             mp.append('</ul></section>')
-        try:
-            from zoneinfo import ZoneInfo
-            start_iso = datetime.datetime.fromisoformat(
-                f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00"
-            ).replace(tzinfo=ZoneInfo("Africa/Cairo")).isoformat()
-        except Exception:
-            start_iso = m["kickoff"]
-        mp.append(jsonld({
-            "@context": "https://schema.org", "@type": "SportsEvent",
-            "name": f"{h_ar} ضد {a_ar} — {comp}",
-            "description": strip_tags(desc),
-            "url": SITE_BASE + murl,
-            "startDate": start_iso,
-            "eventStatus": ("https://schema.org/EventPostponed"
-                            if st == "POSTPONED"
-                            else "https://schema.org/EventScheduled"),
-            "homeTeam": {"@type": "SportsTeam", "name": h_ar},
-            "awayTeam": {"@type": "SportsTeam", "name": a_ar},
-            "organizer": {"@type": "SportsOrganization", "name": comp},
-        }))
+        # NO SportsEvent markup (removed 2026-09-23). Google's Event rich
+        # result REQUIRES location (a Place with an address) and Search
+        # Console flagged every match page critical for it: «Missing field
+        # location» plus five recommended fields (offers, endDate, performer,
+        # organizer.url, image). We hold NO venue data at all (0 mentions in
+        # 402 detail entries) and inventing a stadium breaks the firm
+        # never-show-possibly-wrong-data rule - so the markup could only ever
+        # be invalid: all the GSC nagging, none of the rich result. The pages
+        # keep BreadcrumbList and the embedded article's NewsArticle. If a
+        # venue field is ever fetched from 365scores, revisit.
         mp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
                                  ("المباريات", SITE_BASE + "/matches.html"),
                                  (comp, SITE_BASE + murl)]))
