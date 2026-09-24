@@ -403,7 +403,7 @@ def main():
     args = ap.parse_args()
 
     matches = b.load("matches.json")
-    ge_idx = b.goal_events_index(b.load("goal_events.json"))
+    ge_idx = b.goals_index()
     if args.match:
         picked = [m for m in matches if m.get("match_id") == args.match]
     elif args.all_finished:

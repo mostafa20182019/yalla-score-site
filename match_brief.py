@@ -137,7 +137,7 @@ def has_room(articles, kind):
 def candidates(d, now=None):
     now = now or _now()
     done = existing_kinds(d["articles"])
-    ge_idx = b.goal_events_index(d["goal_events"])
+    ge_idx = b.goals_index(d["goal_events"], d["details"])
     md_idx = b.match_details_index(d["details"])
     out = []
     for m in d["matches"]:
@@ -314,7 +314,7 @@ def build_brief(d, m, kind):
     h_raw, a_raw = m.get("home"), m.get("away")
     h_ar, a_ar = b.ar_team(h_raw), b.ar_team(a_raw)
     ko = _kick(m)
-    ge_idx = b.goal_events_index(d["goal_events"])
+    ge_idx = b.goals_index(d["goal_events"], d["details"])
     md_idx = b.match_details_index(d["details"])
     clubs = curated_clubs(m)
     brief = {

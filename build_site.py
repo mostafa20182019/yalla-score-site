@@ -2907,9 +2907,7 @@ def build():
     # the SCORE of a finished match comes from the archive too, not only its
     # scorers - both halves of "النتيجة ومسجلي الأهداف"
     _sc_fill, _sc_chg = apply_oracle_scores(matches, oracle_results_index(_orc_res))
-    ge_idx = goal_events_index(_details_raw)
-    ge_idx.update(goal_events_index(goal_events))
-    ge_idx.update(goal_events_index(_orc_res))      # frozen wins
+    ge_idx = goals_index(goal_events, _details_raw, _orc_res)
     _n_orc_goals = len(goal_events_index(_orc_res))
     print("  + Oracle archive (%s): %d match(es); scores taken for %d"
           "%s; scorers %d of %d rows from Oracle, the rest from the python files"
@@ -5364,6 +5362,29 @@ def goal_events_index(goal_events):
     for e in goal_events:
         if e.get("goals"):
             idx[(f'{_gnorm(e.get("home"))}|{_gnorm(e.get("away"))}', e.get("date"))] = e["goals"]
+    return idx
+
+def goals_index(goal_events=None, details=None, frozen=None):
+    """THE scorers index - every consumer must use this one (2026-09-24).
+
+    Three sources, later ones winning: match_details.json (ACCUMULATING - every
+    finished match we ever fetched), goal_events.json (a ROLLING window, the
+    freshest word on the last few hours) and the frozen archive (complete by
+    construction). The page switched to this merge on 2026-09-13 after the
+    rolling file alone made scorers vanish hours after the whistle; fb_reel,
+    fb_cards and match_brief kept reading goal_events.json alone, so the reel
+    found ZERO candidates (every curated match with goals looked scorer-less
+    once it left the window) - caught by test_fb_reel 8 when the tests moved
+    into CI. Arguments default to loading the files."""
+    if details is None:
+        details = load("match_details.json")
+    if goal_events is None:
+        goal_events = load("goal_events.json")
+    if frozen is None:
+        frozen = AN.load_oracle_results()[0]
+    idx = goal_events_index(details)
+    idx.update(goal_events_index(goal_events))
+    idx.update(goal_events_index(frozen))      # frozen wins
     return idx
 
 def match_goals(idx, m):

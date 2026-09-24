@@ -368,12 +368,22 @@ jobs:
           # lost push costs one more cheap loop instead of a lost cycle.
           KEEP="$(mktemp -d)"
           cp -a data/. "$KEEP"/
+          # The photos shrink_media.py rewrote this run, and ONLY those
+          # (2026-09-24). The replay below resets to the newest tip, which used
+          # to throw them away: `git add media/` then found nothing, every run
+          # re-shrank the same photos, and the repo kept the 4200px originals
+          # (caught by test_shrink_media when the tests moved into CI). Only
+          # files modified here are carried - never the whole folder, which
+          # could put back a photo another run has since replaced.
+          KEEP_MEDIA="$(mktemp -d)"
+          git diff --name-only -z -- media/ | xargs -0 -r cp --parents -t "$KEEP_MEDIA"
 
           pushed=""
           for attempt in 1 2 3 4 5 6; do
             git fetch --quiet origin main
             git reset --quiet --hard origin/main
             cp -a "$KEEP"/. data/
+            cp -a "$KEEP_MEDIA"/. .
             # The three D1 exports are NOT ours to commit: article_put.py and
             # the d1-admin export job own them. A publish run that started
             # before an article landed still holds the older file, and staging

@@ -1,0 +1,65 @@
+name: Tests
+
+# Every code push runs the whole suite in tests/ (2026-09-24).
+#
+# Until today ~50 tests lived in the other repo's mirror and ran only when
+# someone remembered. Moving them here and running them found two real bugs on
+# the first pass (the reel never finding a match; shrunk photos never being
+# committed) - tests that nobody runs protect nothing.
+#
+# NOT A DEPLOY GATE YET, on purpose. publish.yml deploys every 15 minutes from
+# data refreshes, so a flaky or data-dependent test wired into it would freeze
+# the whole site. The plan: watch this workflow for a week; once it has stayed
+# green on its own, the stable tests become a step before Deploy in
+# publish.yml. Until then a red run here is an email to the user and a fix,
+# not a blocked site.
+#
+# Data-only pushes are skipped: the bots' commits carry the CI-skip marker
+# anyway, and an article commit changes content, not code.
+on:
+  push:
+    branches: [ main ]
+    paths-ignore:
+      - "data/**"
+      - "media/**"
+      - "drafts/**"
+      - "assets-src/crests/**"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install deps
+        run: |
+          pip install -r requirements.txt
+          # fb_reel's MP4 test needs it (publish.yml installs it the same way)
+          command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+
+      # Several tests read the built pages (dist/). No Cloudflare secrets are
+      # given to this job: the build falls back to the committed json exports,
+      # and nothing here can write to the real database.
+      - name: Build the site
+        run: python build_site.py > build.log 2>&1 || { tail -40 build.log; exit 1; }
+
+      - name: Run the tests
+        run: python tests/run_all.py

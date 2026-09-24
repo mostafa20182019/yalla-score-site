@@ -283,7 +283,7 @@ def context(match_id):
     m = ms.get(str(match_id))
     if not m:
         raise SystemExit(f"match {match_id} not in the data")
-    ge = b.goal_events_index(b.load("goal_events.json"))
+    ge = b.goals_index()
     md = b.match_details_index(b.load("match_details.json"))
     det = b.match_details_for(md, m)
     home, away = b.ar_team(m.get("home")), b.ar_team(m.get("away"))
