@@ -1,8 +1,8 @@
 {
 "meta": {
-"generated_at": "2026-09-24T20:52:20Z",
-"count": 501,
-"frozen": 415
+"generated_at": "2026-09-24T21:05:38Z",
+"count": 505,
+"frozen": 419
 },
 "results": [
 {
@@ -15522,6 +15522,156 @@
 "frozen": true,
 "src": "python",
 "frozen_at": "2026-09-24T20:40:16Z"
+},
+{
+"match_id": "4847361",
+"competition": "Africa Cup of Nations Qualification",
+"kickoff": "2026-09-24",
+"koff_time": "22:00",
+"home": "سيراليون",
+"away": "زيمبابوي",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5603",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v3/Competitors/5417",
+"home_score": 2,
+"away_score": 3,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "علي كونتيه",
+"minute": "7",
+"tag": ""
+},
+{
+"side": "h",
+"player": "سالييو تاراوالي",
+"minute": "27",
+"tag": ""
+},
+{
+"side": "a",
+"player": "مارشال مونيتسي",
+"minute": "72",
+"tag": ""
+},
+{
+"side": "a",
+"player": "تاواندا شيريوا",
+"minute": "76",
+"tag": ""
+},
+{
+"side": "a",
+"player": "مارشال مونيتسي",
+"minute": "88",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T21:05:38Z"
+},
+{
+"match_id": "4847451",
+"competition": "Africa Cup of Nations Qualification",
+"kickoff": "2026-09-24",
+"koff_time": "22:00",
+"home": "كوت ديفوار",
+"away": "غانا",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/2385",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5094",
+"home_score": 2,
+"away_score": 0,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "مالك جونيور يالكويي",
+"minute": "44",
+"tag": ""
+},
+{
+"side": "h",
+"player": "فرانك كيسي",
+"minute": "58",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T21:05:38Z"
+},
+{
+"match_id": "4847452",
+"competition": "Africa Cup of Nations Qualification",
+"kickoff": "2026-09-24",
+"koff_time": "22:00",
+"home": "الكاميرون",
+"away": "جزر القمر",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/2387",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/8445",
+"home_score": 3,
+"away_score": 1,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "دافيد روى نينجو",
+"minute": "39",
+"tag": ""
+},
+{
+"side": "h",
+"player": "بريان مبيومو",
+"minute": "48",
+"tag": ""
+},
+{
+"side": "a",
+"player": "وارمد عمري",
+"minute": "51",
+"tag": ""
+},
+{
+"side": "h",
+"player": "داني لوودر",
+"minute": "81",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T21:05:38Z"
+},
+{
+"match_id": "4847453",
+"competition": "Africa Cup of Nations Qualification",
+"kickoff": "2026-09-24",
+"koff_time": "22:00",
+"home": "تونس",
+"away": "أوغندا",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5104",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5107",
+"home_score": 1,
+"away_score": 1,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "آدم العروس",
+"minute": "12",
+"tag": ""
+},
+{
+"side": "a",
+"player": "ماتو روجرز",
+"minute": "68",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T21:05:38Z"
 }
 ]
 }
