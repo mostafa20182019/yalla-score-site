@@ -10,7 +10,7 @@
  "reconcile": "ok (0 row(s) corrected, 46 live games)",
  "matches_archive": "ok (637)",
  "fixtures_merge": "none (every league complete)",
- "slow_fetch": "skipped - quiet window, last slow fetch 29 min ago",
+ "slow_fetch": "skipped - quiet window, last slow fetch 45 min ago",
  "slow_fetched_at": "2026-09-23T23:17:44+00:00",
  "standings": "skipped (quiet window) - keeping existing standings.json",
  "goals": "skipped (quiet window) - keeping existing files",
@@ -48,8 +48,8 @@
     "winDescription",
     "homeCompetitor"
    ],
-   "event0": "{\"competitorId\": 117, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 8.0, \"addedTime\": 0, \"gameTimeDisplay\": \"8'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 75390596, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 110, \"id\": 620429, \"athleteId\": 14478, \"name\": \"جيانلويجي دوناروما\\t\", \"shortName\": \"دوناروما\\t\", \"jerseyNumber\": 1, \"nameForURL\": \"gianluigi-donnarumma\", \"imageVersion\": 48, \"createdAt\": \"2015-02-22T13:37:43.157\"}"
+   "event0": "{\"competitorId\": 105, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 25.0, \"addedTime\": 0, \"gameTimeDisplay\": \"25'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 435334, \"isMajor\": false, \"eventType\": {\"id\": 12, \"name\": \"Woodwork\", \"subTypeId\": -1}}",
+   "member0": "{\"competitorId\": 120, \"id\": 334784, \"athleteId\": 1812, \"name\": \"بيرنارد لينو\", \"shortName\": \"لينو\", \"jerseyNumber\": 1, \"nameForURL\": \"bernd-leno\", \"imageVersion\": 43}"
   },
   "sample_details": {
    "event_names": [
@@ -58,8 +58,8 @@
     "بطاقة صفراء",
     "هدف"
    ],
-   "card0": "{\"competitorId\": 117, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 8.0, \"addedTime\": 0, \"gameTimeDisplay\": \"8'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 75390596, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 117, \"statusId\": 8, \"stageId\": 9, \"order\": 10, \"num\": 10, \"gameTime\": 60.0, \"addedTime\": 0, \"gameTimeDisplay\": \"60'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 65655970, \"extraPlayers\": [59993290], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "card0": "{\"competitorId\": 120, \"statusId\": 6, \"stageId\": 7, \"order\": 3, \"num\": 1, \"gameTime\": 45.0, \"addedTime\": 0, \"gameTimeDisplay\": \"45'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 75402193, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 120, \"statusId\": 8, \"stageId\": 9, \"order\": 6, \"num\": 6, \"gameTime\": 71.0, \"addedTime\": 0, \"gameTimeDisplay\": \"71'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 61481981, \"extraPlayers\": [61717953], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -83,7 +83,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 5.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.8, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (0 with XI)",
@@ -94,5 +94,5 @@
   "fails": 0
  },
  "match_details": "ok (402)",
- "utc": "2026-09-23T23:47:29Z"
+ "utc": "2026-09-24T00:02:58Z"
 }
