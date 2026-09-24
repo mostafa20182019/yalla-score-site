@@ -14,6 +14,7 @@ so canonical/Open-Graph/sitemap URLs are correct. You can rebuild anytime.
 import base64, json, os, re, html, shutil, datetime, hashlib, io
 import analysis as AN     # تحليلات: strength model, predictions, accuracy, player insights
 import store              # prediction log (D1 when configured, else the json file)
+import results_archive as RA   # every finished match of the season, frozen once complete
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
@@ -2584,7 +2585,10 @@ def prediction_history_page(plog, acc):
     # the two models, apart and NOT as a race
     srcs = (acc or {}).get("by_src") or {}
     if len(srcs) > 1:
-        P.append('<section class="minfo"><h2>النموذجان: بايثون وOracle</h2>'
+        # since 2026-09-24 every new prediction is python's (one model, the
+        # user's decision); the Oracle rows are its record before that date,
+        # kept exactly as scored - history is not rewritten
+        P.append('<section class="minfo"><h2>مصدر التوقعات: بايثون وOracle</h2>'
                  '<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">المصدر</th>'
                  '<th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead><tbody>')
         for k in sorted(srcs):
@@ -2594,7 +2598,9 @@ def prediction_history_page(plog, acc):
             nm = {"oracle": "نموذج Oracle (PL/SQL)", "python": "نموذج بايثون"}.get(k, k)
             P.append(f'<tr><td class="tl">{esc(nm)}</td><td>{v["n"]}</td>'
                      f'<td>{_pct(v["hit_rate"])}</td><td>{v["brier"]:.3f}</td></tr>')
-        P.append('</tbody></table></div><p class="hintline"><b>ليست مباراة بين النموذجين:</b> '
+        P.append('</tbody></table></div><p class="hintline">منذ 24 سبتمبر 2026 تصدر كل التوقعات '
+                 'من نموذج بايثون وحده، وصف Oracle هو سجل توقعاته قبل ذلك التاريخ، باقٍ كما حُسب. '
+                 '<b>ليست مباراة بين النموذجين:</b> '
                  'كل توقع يصدر من المصدر المتاح وقتها، فالمجموعتان ليستا نفس المباريات، '
                  'والفارق بينهما عند هذا العدد يقع داخل نطاق الضوضاء. نعرضهما منفصلين حتى '
                  'يظهر اليوم الذي يصبح فيه أحدهما أفضل فعلًا.</p></section>')
@@ -2877,55 +2883,35 @@ def build():
     # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
     _details_raw = load("match_details.json")
     md_idx = match_details_index(_details_raw)
-    # ONE rule for a finished match, and it is the user's: ask the Oracle
-    # archive first, and fall back to the python files only when Oracle has
-    # nothing to say. The score already worked that way; the scorers did not,
-    # because these are dict.update() layers and the LAST one wins - so the
-    # archive being applied first made it the loser, the exact opposite of
-    # what the comment claimed. The archive is applied LAST now.
-    #
-    # Reading bottom-up, the fallback chain is:
-    #   match_details.json  - the site's own 45-day store, the deepest python
-    #                         source
-    #   goal_events.json    - a ROLLING window: fetch_data rewrites it with
-    #                         whatever 365scores still returns, so a finished
-    #                         match drops out within hours. That is what made
-    #                         the Premier League Saturday of 2026-09-12 show
-    #                         bare scores by midnight. Fresher than the store
-    #                         while it lasts, which is why it sits above it.
-    #   oracle_results.json - the frozen archive, and the winner wherever it
-    #                         has the match.
-    #
-    # Letting frozen beat fresh is safe BECAUSE of the freeze gate in
-    # yalla_results.freeze: a match is only ever frozen once its scorers
-    # account for its score, so if Oracle has it, the list is complete. A live
-    # or just-finished match is not in the archive at all and falls straight
-    # through to the feed. The cost, stated plainly: if a complete-but-wrong
-    # list ever gets frozen, a later correction from the feed will NOT
-    # overwrite it - that is what "frozen" means, and it is what was asked for.
-    _orc_res, _orc_res_st = AN.load_oracle_results()
+    # ONE rule for a finished match: the frozen archive first (results_archive.py,
+    # 2026-09-24 - python's heir to Oracle's MATCH_RESULTS), the feed files below
+    # it. These are dict.update() layers and the LAST one wins, so the archive is
+    # applied last. Reading bottom-up:
+    #   match_details.json  - the 45-day store, the deepest feed source
+    #   goal_events.json    - a ROLLING window, fresher while it lasts; a
+    #                         finished match drops out within hours
+    #   results_archive     - frozen once the scorers account for the score,
+    #                         never overwritten after that
+    # Letting frozen beat fresh is safe BECAUSE of that gate. The cost, stated
+    # plainly: a complete-but-wrong list, once frozen, is not corrected by a
+    # later feed - that is what "frozen" means.
+    _res_arch = RA.load()
+    _frozen = RA.frozen_entries(_res_arch)
     # the SCORE of a finished match comes from the archive too, not only its
     # scorers - both halves of "النتيجة ومسجلي الأهداف"
-    _sc_fill, _sc_chg = apply_oracle_scores(matches, oracle_results_index(_orc_res))
-    ge_idx = goals_index(goal_events, _details_raw, _orc_res)
-    _n_orc_goals = len(goal_events_index(_orc_res))
-    print("  + Oracle archive (%s): %d match(es); scores taken for %d"
-          "%s; scorers %d of %d rows from Oracle, the rest from the python files"
-          % (_orc_res_st.get("status"), _orc_res_st.get("count", 0), _sc_fill,
-             (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else "",
-             _n_orc_goals, len(ge_idx)))
+    _sc_fill, _sc_chg = apply_frozen_scores(matches, frozen_scores_index(_frozen))
+    ge_idx = goals_index(goal_events, _details_raw, _frozen)
+    print("  + results archive: %d finished match(es), %d frozen; scores taken for %d%s"
+          % (len(_res_arch), len(_frozen), _sc_fill,
+             (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else ""))
 
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
-    # Oracle first for the match pool too (user rule 2026-09-13): the finished
-    # matches the Oracle copy accumulated go into the pool AHEAD of the feed's
-    # rolling files, so both models replay the same season and a score Oracle
-    # holds wins a conflict. season_matches() de-duplicates by fixture, so a
-    # match present on both sides is counted once. No file = the feed alone.
-    _orc_season, _orc_season_st = AN.load_oracle_season()
-    if _orc_season:
-        print(f'  + season pool: {len(_orc_season)} finished matches from the Oracle copy ahead of the feed files')
-    _bycomp = AN.season_matches(fixtures, _orc_season + _archive)
+    # The season pool: the results archive AHEAD of the feed's rolling files, so
+    # the opening rounds the feed has forgotten still count (the Saudi 51-vs-60
+    # drift of 2026-09-13) and a frozen score wins a conflict. season_matches()
+    # de-duplicates by fixture, so a match on both sides is counted once.
+    _bycomp = AN.season_matches(fixtures, RA.season_rows(_res_arch) + _archive)
     # season carry-over (roadmap factor 1): the five European leagues start from
     # last season's carried Elo (data/elo_seeds.json, season_carry.py); absent
     # file = flat 1500 as before. The Oracle copy reads the same seeds.
@@ -2946,38 +2932,7 @@ def build():
         if p:
             p["src"] = "python"
             _preds[str(m["match_id"])] = p
-    # The Oracle side copy's model, when its nightly file is fresh. It replaces
-    # the python number for the fixtures it covers and is silently absent
-    # otherwise - the build never waits on, or fails because of, the laptop
-    # that produced it. Which source each frozen prediction came from is kept
-    # (src), so the two can be scored apart.
-    _orc, _orc_st = AN.load_oracle()
-    _n_orc = 0
-    for _mid in list(_preds):
-        if _mid in _orc:
-            _preds[_mid] = _orc[_mid]
-            _n_orc += 1
-    if _orc_st.get("status") == "ok":
-        print(f'  + predictions: {_n_orc} of {len(_preds)} from the Oracle model '
-              f'(file {_orc_st.get("age_h")}h old, {_orc_st.get("n")} fixtures in it), '
-              f'{len(_preds) - _n_orc} from python')
-    else:
-        print(f'  + predictions: all {len(_preds)} from python '
-              f'(oracle file {_orc_st.get("status")}'
-              + (f', {_orc_st.get("age_h")}h old' if _orc_st.get("age_h") else '') + ')')
-    # The clubs' Elo table («أقوى الأندية», the per-league strength tables, the
-    # facts on a match page) from the same fresh file - laid over the python
-    # rows AFTER the python fallback predictions above were computed, so those
-    # stay pure python. Stale or missing file = python's table, as before.
-    if _orc_st.get("status") == "ok" and _orc_st.get("strength"):
-        _n_ap, _n_un = AN.apply_oracle_strength(_tstats, _orc_st["strength"])
-        print(f'  + strength: {_n_ap} club rows from the Oracle model, {_n_un} unmatched kept on python')
-    # the per-league header numbers (finished matches, goals per match, home-win
-    # and draw shares, the league mean behind the attack/defence indices) -
-    # Oracle first, python's league_params() when the file is stale or absent
-    if _orc_st.get("status") == "ok" and _orc_st.get("league"):
-        _n_lg, _n_lu = AN.apply_oracle_league(_lparams, _orc_st["league"])
-        print(f'  + league params: {_n_lg} competitions from the Oracle model, {_n_lu} unmatched')
+    print(f'  + predictions: {len(_preds)} upcoming fixtures, python model')
     # The prediction log lives in the store (D1 when configured). A frozen
     # prediction that gets re-frozen with newer data would silently inflate the
     # published accuracy, which is the one thing the accuracy page exists to
@@ -4841,7 +4796,7 @@ def build():
         if n:
             print(f"  + media files: {n}")
 
-    write_text("build-info.json", json.dumps(build_info(articles, _preds, _n_orc),
+    write_text("build-info.json", json.dumps(build_info(articles, _preds),
                                              ensure_ascii=False))
 
     try:
@@ -4863,8 +4818,8 @@ def _scored(m):
 def _finished_by_comp(fixtures, pool=None):
     """competition -> chronological FINISHED matches with scores.
 
-    From the season pool when the build has one (fixtures ∪ archive ∪ the
-    Oracle copy's season rows, de-duplicated by analysis.season_matches - the
+    From the season pool when the build has one (fixtures ∪ matches_archive ∪
+    results_archive, de-duplicated by analysis.season_matches - the
     very matches the Elo model replays), from the rounds data alone otherwise.
 
     2026-09-13: fixtures.json arrived with La Liga cut to rounds [4, 5] after a
@@ -5381,7 +5336,7 @@ def goals_index(goal_events=None, details=None, frozen=None):
     if goal_events is None:
         goal_events = load("goal_events.json")
     if frozen is None:
-        frozen = AN.load_oracle_results()[0]
+        frozen = RA.frozen_entries(RA.load())
     idx = goal_events_index(details)
     idx.update(goal_events_index(goal_events))
     idx.update(goal_events_index(frozen))      # frozen wins
@@ -5426,7 +5381,7 @@ def _epoch_ms(iso):
     return int(d.timestamp() * 1000)
 
 
-def build_info(articles, preds, n_oracle):
+def build_info(articles, preds):
     """build-info.json - what THIS deploy contains, read by the Worker's /health
     and its 15-minute watchdog (2026-09-24).
 
@@ -5452,11 +5407,10 @@ def build_info(articles, preds, n_oracle):
         "articles": len(articles),
         "newest_article_at": newest,
         "predictions": len(preds),
-        "predictions_oracle": n_oracle,
     }
 
 
-def oracle_results_index(entries):
+def frozen_scores_index(entries):
     """(normalized home|away, date) -> (home_score, away_score), from the frozen
     archive. Keyed by NAMES and date like the scorer index above, not by
     match_id: the site's matches come from football-data for the European
@@ -5470,11 +5424,10 @@ def oracle_results_index(entries):
     return idx
 
 
-def apply_oracle_scores(matches, idx):
+def apply_frozen_scores(matches, idx):
     """Overlay the frozen score onto every FINISHED match the archive owns.
 
-    Oracle wins here, which is the point: the user asked that a finished match
-    be read from his own tables. It should never actually differ - both numbers
+    The archive wins here, which is the point of freezing. It should never actually differ - both numbers
     come from the same feed and a finished match does not get corrected - so
     any disagreement is worth seeing rather than hiding, and the count is
     printed in the build log. Matches the archive does not hold keep the site's

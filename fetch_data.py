@@ -1026,14 +1026,13 @@ def update_match_details(entries):
     return len(out)
 
 def _frozen_match_ids():
-    """Ids of matches the Oracle archive already owns, so we never ask
-    365scores about them again. Missing file = empty set = fetch everything,
-    which is what makes this an optimisation and not a dependency."""
+    """Ids of matches the results archive has FROZEN (results_archive.py - it
+    took over from Oracle's archive on 2026-09-24), so we never ask 365scores
+    about them again. Missing file = empty set = fetch everything, which is
+    what makes this an optimisation and not a dependency."""
     try:
-        with open(os.path.join(DATA, "oracle_results.json"), encoding="utf-8") as f:
-            d = json.load(f)
-        return {str(r.get("match_id")) for r in (d.get("results") or [])
-                if r.get("match_id") is not None}
+        import results_archive
+        return {mid for mid, r in results_archive.load().items() if r.get("frozen")}
     except Exception:                                       # noqa: BLE001
         return set()
 

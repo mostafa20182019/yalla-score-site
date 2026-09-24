@@ -80,6 +80,18 @@ jobs:
           FD_TOKEN: ${{ secrets.FD_TOKEN }}
         run: python fetch_data.py
 
+      # Every finished match of the season, frozen once its scorers account for
+      # its score (results_archive.py, 2026-09-24 - python's heir to Oracle's
+      # MATCH_RESULTS, the user chose one model). The build reads the season
+      # pool and the frozen scorers from it. continue-on-error so a bug here
+      # can never block a deploy (the build then uses the archive as committed),
+      # but CRITICAL in the verdict below: an archive that silently stops
+      # growing loses scorers for good once the 45-day details window passes.
+      - name: Keep the finished matches
+        id: archive
+        continue-on-error: true
+        run: python results_archive.py
+
       # A photo the article pipeline downloads from Wikimedia arrives at full
       # size - the library had reached 75 MB, averaging 323 KB with a 4544px,
       # 3.2 MB hero (2026-09-20). shrink_media.py caps width at 1600 and
@@ -432,7 +444,7 @@ jobs:
       # fetch or a lost data commit could go unseen for days. Its REAL result is
       # only readable here (steps.<id>.outcome), so this step reads all of them:
       #
-      #   critical (fetch, build, deploy, commit-back) -> the run turns RED,
+      #   critical (fetch, archive, build, deploy, commit-back) -> the run turns RED,
       #     after every side effect above has already happened, so nothing is
       #     lost by failing here; the next run retries as always.
       #   soft (photos, IndexNow, Telegram, Facebook, reel) -> a warning and a
@@ -450,6 +462,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
           O_FETCH: ${{ steps.fetch.outcome }}
+          O_ARCHIVE: ${{ steps.archive.outcome }}
           O_BUILD: ${{ steps.build.outcome }}
           O_DEPLOY: ${{ steps.deploy.outcome }}
           O_COMMIT: ${{ steps.commit.outcome }}
@@ -463,6 +476,7 @@ jobs:
         run: |
           CRIT=""
           [ "$O_FETCH" = "failure" ] && CRIT="$CRIT fetch"
+          [ "$O_ARCHIVE" = "failure" ] && CRIT="$CRIT archive"
           # build must have RUN and passed; skipped here means install failed
           [ "$O_BUILD" != "success" ] && CRIT="$CRIT build"
           [ "$O_DEPLOY" = "failure" ] && CRIT="$CRIT deploy"
@@ -478,6 +492,7 @@ jobs:
             echo "| step | outcome |"
             echo "|---|---|"
             echo "| fetch | $O_FETCH |"
+            echo "| results archive | $O_ARCHIVE |"
             echo "| build | $O_BUILD |"
             echo "| deploy | ${O_DEPLOY:-skipped} (fresh=${DEPLOY_FRESH:-?}) |"
             echo "| commit-back | $O_COMMIT |"

@@ -33,8 +33,12 @@ n_m = sum(1 for u in locs if kind(u) == "match")
 n_a = sum(1 for u in locs if kind(u) == "article")
 
 # ------------------------------------------------------------ the sitemap
-ck("1 the sitemap is a short list now, not everything we publish",
-   len(locs) < 500, f"{len(locs)} URLs (was 670)")
+# 2026-09-24: this was `len(locs) < 500`, and it tripped at 504 - on ARTICLES
+# (305 of them), which are exactly what the sitemap exists to advertise and
+# grow ~10 a day. The cut that took it from 670 was the thin MATCH pages, so
+# that is what is capped now; articles are free to grow.
+ck("1 the sitemap is a selection: match pages capped, articles free to grow",
+   n_m <= 200, f"{len(locs)} URLs, {n_m} match pages (was 670 total)")
 ck("2 articles outnumber match pages in what we advertise",
    n_a > n_m, f"{n_a} articles vs {n_m} match pages")
 ck("3 the templated share is well under half",

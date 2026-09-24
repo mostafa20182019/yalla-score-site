@@ -10,3 +10,9 @@ media/cards/
 data/briefs/
 # reels are generated video (fb_reel.py) - rendered on the runner, never stored
 media/reels/
+# The Oracle side copy's exports (oracle-yalla/predict.cmd) - still written on
+# the laptop for the user's APEX work, but no longer part of the site since
+# 2026-09-24 (one model, python; results_archive.py took over the frozen
+# results). Ignored so the laptop can never push them back into the build.
+data/oracle_predictions.json
+data/oracle_results.json

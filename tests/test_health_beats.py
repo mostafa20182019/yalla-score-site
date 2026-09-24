@@ -92,16 +92,16 @@ arts = [{"pub_ts": "2026-09-24T21:10:00+03:00"},     # 18:10Z
         {"pub_ts": "2026-09-24T18:20:00Z"},           # 18:20Z  <- newest
         {"pub_date": "2026-09-23"},                   # noon Cairo the day before
         {"title": "no time at all"}]
-info = B.build_info(arts, {"1": {}, "2": {}}, 0)
+info = B.build_info(arts, {"1": {}, "2": {}})
 assert info["fetch_failed"] == ["goals", "standings"], info["fetch_failed"]
 assert info["fetch_at"] == 1790274929000, info["fetch_at"]
 assert info["newest_article_at"] == 1790274000000, info["newest_article_at"]
-assert info["articles"] == 4 and info["predictions"] == 2 and info["predictions_oracle"] == 0
+assert info["articles"] == 4 and info["predictions"] == 2 and "predictions_oracle" not in info
 assert abs(info["built_at"] / 1000 - __import__("time").time()) < 60
 print("5 OK: build_info names the FAIL sources and finds the newest article across time zones")
 
 B.DATA = tempfile.mkdtemp()                                  # no fetch_debug.json at all
-info = B.build_info([], {}, 0)
+info = B.build_info([], {})
 assert info["fetch_at"] is None and info["fetch_failed"] == [] and info["newest_article_at"] is None
 print("6 OK: a missing fetch_debug / empty site gives nulls, not a crash")
 

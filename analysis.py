@@ -34,12 +34,14 @@ import re
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 PRED_LOG = os.path.join(HERE, "data", "predictions.json")
-# Written by the Oracle side copy (oracle-yalla/predict.cmd, nightly at 00:20)
-# and committed like any other export. An INPUT, never a dependency: missing or
-# older than ORACLE_MAX_AGE_H -> the python model below is used, as before.
-ORACLE_PREDS = os.path.join(HERE, "data", "oracle_predictions.json")
-ORACLE_RESULTS = os.path.join(HERE, "data", "oracle_results.json")
-ORACLE_MAX_AGE_H = 30
+# The Oracle side copy used to be an INPUT here (oracle_predictions.json:
+# predictions, Elo table, league params, the season pool; oracle_results.json:
+# the frozen archive). Retired 2026-09-24 on the user's decision - ONE model,
+# python, and no laptop in the site's path. What Oracle uniquely held (the
+# opening-weekend matches and the frozen scorers) was handed over to
+# results_archive.py first; python's numbers were proven identical on all 138
+# upcoming fixtures before the switch. The accuracy page still scores the old
+# predictions whose src is "oracle" - history is not rewritten.
 
 ELO_K, ELO_HFA = 28.0, 70.0
 PRIOR_TEAM = 5.0        # matches of league-average strength blended into each club
@@ -302,181 +304,7 @@ def predict(comp_stats, params, home, away):
     return out
 
 
-def load_oracle_results(path=ORACLE_RESULTS):
-    """The finished-match archive Oracle owns: [{home, away, date, hs, as,
-    goals:[...]}] plus a status dict for the build log.
-
-    Deliberately NOT age-gated, and that is the whole difference from
-    load_oracle() above. A prediction goes stale because the world moves; a
-    FINISHED match never changes again, so a file written three days ago is
-    exactly as true today. Gating it would throw away the archive every time
-    the laptop stayed off, which is the opposite of why it exists.
-
-    Entries come out shaped like goal_events rows so the caller can index them
-    with the same function. Returns ([], status) when the file is missing or
-    unreadable: the site then falls back to its own stores and nothing breaks.
-    """
-    try:
-        with open(path, encoding="utf-8") as f:
-            d = json.load(f)
-    except Exception as e:                                  # noqa: BLE001
-        return [], {"status": "missing", "why": str(e)[:80]}
-    rows = d.get("results") or []
-    out = []
-    for r in rows:
-        out.append({"home": r.get("home"), "away": r.get("away"),
-                    "date": r.get("date"), "match_id": r.get("match_id"),
-                    "hs": r.get("hs"), "as": r.get("as"),
-                    "goals": r.get("goals") or []})
-    meta = d.get("meta") or {}
-    return out, {"status": "ok", "count": len(out),
-                 "scorers": sum(len(x["goals"]) for x in out),
-                 "generated_at": meta.get("generated_at")}
-
-
 CONF_AR = {"low": "عيّنة صغيرة", "mid": "ثقة متوسطة", "high": "ثقة جيدة"}
-
-
-def load_oracle(path=ORACLE_PREDS, now=None, max_age_h=ORACLE_MAX_AGE_H):
-    """match_id -> predict()-shaped dict built from the Oracle model's expected
-    goals, plus a small status dict for the build log.
-
-    Oracle exports the two lambdas per fixture (6 decimals) and this rebuilds
-    the SAME Poisson grid from them - so ph/pd/pa/top/over25/btts all exist and
-    agree with what the schema stored to ~1e-6, and the pages need no special
-    case. The confidence chip is recomputed here from n_h/n_a with the one rule
-    (predict() above) so the two sources can never define it differently.
-
-    Returns ({}, status) - i.e. "use python" - when the file is missing,
-    unreadable, or its meta.generated_at is older than max_age_h. That
-    fallback is the whole design: the laptop that runs Oracle is off most of
-    the day, and the build must not care."""
-    try:
-        with open(path, encoding="utf-8") as f:
-            d = json.load(f)
-        meta = d.get("meta") or {}
-        gen = datetime.datetime.fromisoformat(str(meta.get("generated_at")))
-        if gen.tzinfo is None:
-            gen = gen.replace(tzinfo=datetime.timezone.utc)
-    except Exception as e:                                  # noqa: BLE001
-        return {}, {"status": "missing", "why": str(e)[:80]}
-    now = now or datetime.datetime.now(datetime.timezone.utc)
-    age_h = (now - gen).total_seconds() / 3600.0
-    if age_h > max_age_h:
-        return {}, {"status": "stale", "age_h": round(age_h, 1), "generated_at": meta.get("generated_at")}
-    out = {}
-    for mid, r in (d.get("predictions") or {}).items():
-        try:
-            lh, la = float(r["lh"]), float(r["la"])
-            n_h, n_a = int(r.get("n_h") or 0), int(r.get("n_a") or 0)
-        except (KeyError, TypeError, ValueError):
-            continue
-        p = outcome_from_lambdas(lh, la)
-        n_min = min(n_h, n_a)
-        p.update({"home": r.get("home"), "away": r.get("away"),
-                  "elo_h": r.get("elo_h"), "elo_a": r.get("elo_a"), "n_h": n_h, "n_a": n_a,
-                  "conf": "low" if n_min < 4 else "mid" if n_min < 10 else "high",
-                  "src": "oracle", "src_ts": r.get("ts")})
-        out[str(mid)] = p
-    # "strength" (since 2026-09-12): {competition: [{team, elo, played, gf, ga,
-    # att, def}]} - the clubs' current Elo table from the same replay the
-    # predictions stand on. Parsed here so it shares the freshness verdict;
-    # apply_oracle_strength() lays it over team_stats().
-    strength = {}
-    for comp, rows in (d.get("strength") or {}).items():
-        for r in rows or []:
-            try:
-                strength.setdefault(str(comp), {})[str(r["team"])] = {
-                    "elo": float(r["elo"]), "played": int(r["played"]),
-                    "gf": int(r["gf"]), "ga": int(r["ga"])}
-            except (KeyError, TypeError, ValueError):
-                continue
-    # "league" (2026-09-13): per competition the finished-match count, goal means
-    # with the prior, home-win / draw shares and goals per match - the numbers
-    # league_params() computes and the per-league page prints. Same freshness
-    # verdict; apply_oracle_league() lays it over league_params() output.
-    league = {}
-    for comp, r in (d.get("league") or {}).items():
-        try:
-            league[str(comp)] = {"n": int(r["n"]), "mu_home": float(r["mu_home"]),
-                                 "mu_away": float(r["mu_away"]), "mu": float(r["mu"]),
-                                 "home_win": None if r.get("home_win") is None else float(r["home_win"]),
-                                 "draw": None if r.get("draw") is None else float(r["draw"]),
-                                 "gpm": None if r.get("gpm") is None else float(r["gpm"])}
-        except (KeyError, TypeError, ValueError):
-            continue
-    return out, {"status": "ok", "n": len(out), "age_h": round(age_h, 1),
-                 "generated_at": meta.get("generated_at"), "params": meta.get("params"),
-                 "strength": strength, "league": league}
-
-
-def apply_oracle_league(lparams, league):
-    """Overlay the Oracle copy's league parameters onto league_params() dicts,
-    for the competitions both sides know. Same rule as the strength overlay:
-    call it AFTER the python fallback predictions are computed, so only the
-    DISPLAY changes source. Returns (applied, unmatched)."""
-    applied = unmatched = 0
-    for comp, r in (league or {}).items():
-        if comp in lparams:
-            lparams[comp].update(r); lparams[comp]["src"] = "oracle"; applied += 1
-        else:
-            unmatched += 1
-    return applied, unmatched
-
-
-def load_oracle_season(path=ORACLE_PREDS):
-    """Every FINISHED match of the season the Oracle copy knows (the "season" key
-    of oracle_predictions.json), in matches.json shape, so season_matches() can
-    put it in the pool both models replay. NOT age-gated - a finished match never
-    changes - and the whole point (2026-09-13, user: «عايز الاثنين متطابقين»):
-    the site's rolling files forget a league's opening rounds, Oracle's MATCHES
-    keeps them, so without this python's Elo and Oracle's drift apart (Saudi
-    league, 60 vs 51 matches). Returns ([], status) when the file or key is
-    absent: the pool is then the feed's files, as before."""
-    try:
-        with open(path, encoding="utf-8") as f:
-            rows = json.load(f).get("season") or []
-    except Exception as e:                                  # noqa: BLE001
-        return [], {"status": "missing", "why": str(e)[:80]}
-    out = []
-    for r in rows:
-        try:
-            out.append({"match_id": r.get("match_id"), "competition": r["competition"],
-                        "kickoff": r["kickoff"], "koff_time": r.get("koff_time"),
-                        "home": r["home"], "away": r["away"],
-                        "home_score": int(r["home_score"]), "away_score": int(r["away_score"]),
-                        "home_badge": r.get("home_badge"), "away_badge": r.get("away_badge"),
-                        "status": "FINISHED", "src": "oracle"})
-        except (KeyError, TypeError, ValueError):
-            continue
-    return out, {"status": "ok", "n": len(out)}
-
-
-def apply_oracle_strength(tstats, strength):
-    """Overlay the Oracle model's elo / played / gf / ga onto team_stats() rows.
-
-    Only clubs python already has get the four model numbers - the row keeps
-    its badge, form, points and home/away splits (plain counts python has
-    anyway). A club Oracle knows and python does not is skipped, and vice
-    versa; both are counted so the build log shows the overlap. Call it AFTER
-    the python predictions are computed, so the python fallback forecast stays
-    pure python and only the strength DISPLAY changes source.
-    Returns (applied, unmatched)."""
-    applied = unmatched = 0
-    for comp, rows in (strength or {}).items():
-        ts = tstats.get(comp)
-        if not ts:
-            unmatched += len(rows)
-            continue
-        for team, r in rows.items():
-            row = ts.get(team)
-            if not row:
-                unmatched += 1
-                continue
-            row.update({"elo": r["elo"], "played": r["played"], "gf": r["gf"], "ga": r["ga"],
-                        "src": "oracle"})
-            applied += 1
-    return applied, unmatched
 
 
 # ---------------------------------------------------------------- prediction log
