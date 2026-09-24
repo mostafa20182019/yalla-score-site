@@ -11,7 +11,7 @@
  "matches_archive": "ok (637)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-24T20:32:45+00:00",
+ "slow_fetched_at": "2026-09-24T20:37:30+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -178,12 +178,14 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (16 games)",
+ "goal_events": "ok (11 games)",
  "goal_events_dbg": {
-  "candidates": 16,
+  "candidates": 11,
   "detail_fails": 0,
-  "skipped": [],
-  "frozen_skipped": 164,
+  "skipped": [
+   "4672058:count-mismatch (1, 1) vs 1-2 [h:g@4/a:g@74]"
+  ],
+  "frozen_skipped": 408,
   "sample": {
    "game_keys": [
     "lineTypesIds",
@@ -198,7 +200,6 @@
     "roundName",
     "groupName",
     "competitionDisplayName",
-    "competitionGroupByName",
     "startTime",
     "statusGroup",
     "statusText",
@@ -209,19 +210,22 @@
     "gameTimeDisplay",
     "preciseGameTime",
     "hasLineups",
+    "hasMissingPlayers",
     "hasFieldPositions"
    ],
-   "event0": "{\"competitorId\": 5096, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 40.0, \"addedTime\": 0, \"gameTimeDisplay\": \"40'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67878352, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 5096, \"id\": 68309346, \"athleteId\": 139194, \"name\": \"أبروشيس بيتروس\", \"shortName\": \"بيتروس\", \"jerseyNumber\": 18, \"nameForURL\": \"aprocius-petrus\", \"imageVersion\": 15, \"createdAt\": \"2023-06-20T13:17:43.363\"}"
+   "event0": "{\"competitorId\": 2376, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 14.0, \"addedTime\": 0, \"gameTimeDisplay\": \"14'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 61717953, \"extraPlayers\": [513371], \"isMajor\": true, \"eventType\": {\"id\": 1, \"name\": \"هدف\", \"subTypeId\": 1, \"subTypeName\": \"هدف ميداني\"}}",
+   "member0": "{\"competitorId\": 2376, \"id\": 548126, \"athleteId\": 9214, \"name\": \"أورجان نايلاند\", \"shortName\": \"نايلاند\", \"jerseyNumber\": 1, \"nameForURL\": \"orjan-nyland\", \"imageVersion\": 58, \"createdAt\": \"2014-09-03T08:46:49.96\"}"
   },
   "sample_details": {
    "event_names": [
     "Substitution",
+    "Woodwork",
+    "بطاقة حمراء",
     "بطاقة صفراء",
     "هدف"
    ],
-   "card0": "{\"competitorId\": 5096, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 40.0, \"addedTime\": 0, \"gameTimeDisplay\": \"40'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67878352, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 5110, \"statusId\": 8, \"stageId\": 9, \"order\": 2, \"num\": 2, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 58126795, \"extraPlayers\": [71105172], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "card0": "{\"competitorId\": 5027, \"statusId\": 6, \"stageId\": 7, \"order\": 4, \"num\": 1, \"gameTime\": 38.0, \"addedTime\": 0, \"gameTimeDisplay\": \"38'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 2722318, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 2376, \"statusId\": 8, \"stageId\": 9, \"order\": 6, \"num\": 6, \"gameTime\": 66.0, \"addedTime\": 0, \"gameTimeDisplay\": \"66'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 58801584, \"extraPlayers\": [248241], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -246,7 +250,7 @@
     "members",
     "statsCategory"
    ],
-   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 3, \"name\": \"الوسط\", \"shortName\": \"Midfielder\"}, \"formation\": {\"id\": 4, \"name\": \"وسط دفاعي\", \"shortName\": \"Defensive Midfield\"}, \"yardFormation\": {\"line\": 3, \"fieldPosition\": 6, \"fieldLine\": 50, \"fieldSide\": 20}, \"hasStats\": false, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName\": \"دقيقة\""
+   "lineup_member0": "{\"status\": 1, \"statusText\": \"Starting\", \"position\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"formation\": {\"id\": 1, \"name\": \"حارس مرمى\", \"shortName\": \"Goalkeeper\"}, \"yardFormation\": {\"line\": 1, \"fieldPosition\": 1, \"fieldLine\": 0, \"fieldSide\": 50}, \"ranking\": 6.9, \"hasStats\": true, \"stats\": [{\"type\": 30, \"value\": \"90'\", \"isTop\": true, \"categoryId\": 2, \"name\": \"الدقائق\", \"shortName"
   }
  },
  "prematch_lineups": "ok (0 with XI)",
@@ -257,5 +261,5 @@
   "fails": 0
  },
  "match_details": "ok (418)",
- "utc": "2026-09-24T20:35:24Z"
+ "utc": "2026-09-24T20:40:16Z"
 }

@@ -1,8 +1,8 @@
 {
 "meta": {
-"generated_at": "2026-09-24T20:15:53Z",
-"count": 494,
-"frozen": 408
+"generated_at": "2026-09-24T20:40:16Z",
+"count": 496,
+"frozen": 410
 },
 "results": [
 {
@@ -15288,6 +15288,60 @@
 "frozen": true,
 "src": "python",
 "frozen_at": "2026-09-24T20:15:53Z"
+},
+{
+"match_id": "4672062",
+"competition": "UEFA Nations League",
+"kickoff": "2026-09-24",
+"koff_time": "21:45",
+"home": "كوسوفو",
+"away": "أيرلندا",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/19414",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v3/Competitors/5064",
+"home_score": 1,
+"away_score": 0,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "فيدات موريكي",
+"minute": "83",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T20:40:16Z"
+},
+{
+"match_id": "4672063",
+"competition": "UEFA Nations League",
+"kickoff": "2026-09-24",
+"koff_time": "21:45",
+"home": "ليختنشتاين",
+"away": "ليتوانيا",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v3/Competitors/5046",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/2312",
+"home_score": 0,
+"away_score": 2,
+"round": 1,
+"goals": [
+{
+"side": "a",
+"player": "لوكاس ميشيلبرينك",
+"minute": "53",
+"tag": ""
+},
+{
+"side": "a",
+"player": "أرتور دولزنيكوف",
+"minute": "66",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T20:40:16Z"
 }
 ]
 }
