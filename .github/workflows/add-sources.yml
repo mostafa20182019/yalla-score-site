@@ -133,6 +133,20 @@ jobs:
         run: |
           echo "::warning::Sources run incomplete - the Claude step failed; check the account's quota / token if this repeats."
 
+      # Carry the Claude step's REAL outcome to the Worker's watchdog (health.js).
+      # This run stays green on a failure (the next slot retries - the user's
+      # rule), and GitHub reports a failed continue-on-error step as "success"
+      # everywhere, so without this nobody sees three failures in a row until
+      # the site stops getting articles. The watchdog pages at three.
+      - name: Heartbeat
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: python heartbeat.py article:sources --outcome "${{ steps.write.outcome }}"
+
       # GITHUB_TOKEN pushes do not fire publish.yml's on:push — dispatch it so
       # the upgraded pages deploy now instead of at the next 15-min slot.
       - name: Dispatch publish workflow

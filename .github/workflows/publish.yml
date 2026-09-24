@@ -74,6 +74,7 @@ jobs:
       # fetch_data.py keeps the previous file per source on failure, so the
       # build below still has usable data - just not newer data.
       - name: Fetch latest content (news + matches)
+        id: fetch
         continue-on-error: true
         env:
           FD_TOKEN: ${{ secrets.FD_TOKEN }}
@@ -87,10 +88,12 @@ jobs:
       # re-encoding what it cannot actually shrink. Idempotent, so on a run
       # with no new photos it does nothing and costs a second.
       - name: Shrink new photos
+        id: shrink
         continue-on-error: true
         run: python shrink_media.py --quiet
 
       - name: Build the static site
+        id: build
         env:
           # build_site freezes/scores the prediction log through store.py. Without
           # these it falls back to data/predictions.json and the log stops being
@@ -152,6 +155,7 @@ jobs:
           fi
 
       - name: Deploy to Cloudflare
+        id: deploy
         if: steps.tip.outputs.fresh == 'true'
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -179,6 +183,7 @@ jobs:
       # history. No account, no secret: the key file ships from root-extras/
       # and the script refuses to submit unless it is live.
       - name: Tell IndexNow what changed
+        id: indexnow
         if: steps.tip.outputs.fresh == 'true'
         continue-on-error: true
         run: python indexnow.py
@@ -190,6 +195,7 @@ jobs:
       # secrets are absent, so this step is a no-op until the user creates the
       # bot and the channel.
       - name: Post new articles to Telegram
+        id: tg
         if: steps.tip.outputs.fresh == 'true'
         continue-on-error: true
         env:
@@ -222,6 +228,7 @@ jobs:
       # claim INSERT in D1, not by this dispatch. Dispatched only when something
       # is actually pending, so a quiet cycle costs no extra run.
       - name: Dispatch the Facebook post when an article is pending
+        id: fbdispatch
         if: steps.tip.outputs.fresh == 'true' && vars.FB_POST_ARTICLES == 'on'
         continue-on-error: true
         env:
@@ -248,6 +255,7 @@ jobs:
       # FB_PAGE_TOKEN secret exists (same token as fb_post.py); never fails the
       # publish over a social error.
       - name: Post result cards to Facebook
+        id: cards
         # gated like the article post: a card links to /m/<id> and must not go
         # out from a run that skipped its deploy (the page would still say LIVE)
         if: steps.tip.outputs.fresh == 'true'
@@ -290,6 +298,7 @@ jobs:
         run: echo "make=$(python fb_reel.py --plan)" >> "$GITHUB_OUTPUT"
 
       - name: Publish the reel
+        id: reelpub
         if: steps.reel.outputs.make == 'yes'
         continue-on-error: true
         env:
@@ -340,6 +349,7 @@ jobs:
       # broken JSON -> the live home page lost its headlines section. Down
       # here, a git race can only affect this commit - never the deployed site.
       - name: Commit refreshed data back to the repo
+        id: commit
         continue-on-error: true
         run: |
           git config user.name "github-actions[bot]"
@@ -405,3 +415,69 @@ jobs:
             echo "::warning::data refresh could not be pushed after 6 attempts"
             echo "**data refresh: NOT pushed** after 6 attempts - the repo copy of data/ is now staler than the deployed site." >> "$GITHUB_STEP_SUMMARY"
           fi
+
+      # THE VERDICT (2026-09-24). Every step above that may fail without
+      # stopping the run is continue-on-error, and GitHub then reports it as
+      # "success" - in this list, in the API, everywhere. That is how a failed
+      # fetch or a lost data commit could go unseen for days. Its REAL result is
+      # only readable here (steps.<id>.outcome), so this step reads all of them:
+      #
+      #   critical (fetch, build, deploy, commit-back) -> the run turns RED,
+      #     after every side effect above has already happened, so nothing is
+      #     lost by failing here; the next run retries as always.
+      #   soft (photos, IndexNow, Telegram, Facebook, reel) -> a warning and a
+      #     line in the Summary; a social hiccup is not a broken pipeline.
+      #
+      # Either way the verdict goes to D1 (heartbeat.py), where the Worker's
+      # watchdog (health.js) pages the user after three red runs in a row, or
+      # when no run has reported at all for 90 minutes.
+      # !cancelled(): a refresh superseded by the next one says nothing about
+      # health, and must not count as a failure.
+      - name: Verdict and heartbeat
+        if: ${{ !cancelled() }}
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+          O_FETCH: ${{ steps.fetch.outcome }}
+          O_BUILD: ${{ steps.build.outcome }}
+          O_DEPLOY: ${{ steps.deploy.outcome }}
+          O_COMMIT: ${{ steps.commit.outcome }}
+          O_SHRINK: ${{ steps.shrink.outcome }}
+          O_INDEXNOW: ${{ steps.indexnow.outcome }}
+          O_TG: ${{ steps.tg.outcome }}
+          O_FBDISPATCH: ${{ steps.fbdispatch.outcome }}
+          O_CARDS: ${{ steps.cards.outcome }}
+          O_REEL: ${{ steps.reelpub.outcome }}
+          DEPLOY_FRESH: ${{ steps.tip.outputs.fresh }}
+        run: |
+          CRIT=""
+          [ "$O_FETCH" = "failure" ] && CRIT="$CRIT fetch"
+          # build must have RUN and passed; skipped here means install failed
+          [ "$O_BUILD" != "success" ] && CRIT="$CRIT build"
+          [ "$O_DEPLOY" = "failure" ] && CRIT="$CRIT deploy"
+          [ "$O_COMMIT" = "failure" ] && CRIT="$CRIT commit"
+          SOFT=""
+          for p in shrink:$O_SHRINK indexnow:$O_INDEXNOW telegram:$O_TG \
+                   fb-dispatch:$O_FBDISPATCH fb-cards:$O_CARDS reel:$O_REEL; do
+            [ "${p#*:}" = "failure" ] && SOFT="$SOFT ${p%%:*}"
+          done
+          CRIT="${CRIT# }"; SOFT="${SOFT# }"
+          {
+            echo "### Verdict"
+            echo "| step | outcome |"
+            echo "|---|---|"
+            echo "| fetch | $O_FETCH |"
+            echo "| build | $O_BUILD |"
+            echo "| deploy | ${O_DEPLOY:-skipped} (fresh=${DEPLOY_FRESH:-?}) |"
+            echo "| commit-back | $O_COMMIT |"
+            if [ -n "$SOFT" ]; then echo "| soft failures | $SOFT |"; fi
+          } >> "$GITHUB_STEP_SUMMARY"
+          if [ -n "$SOFT" ]; then echo "::warning::soft steps failed: $SOFT"; fi
+          if [ -z "$CRIT" ]; then
+            python heartbeat.py publish --ok --detail "${SOFT:+soft: $SOFT}"
+            exit 0
+          fi
+          python heartbeat.py publish --fail --detail "$CRIT"
+          echo "::error::critical steps failed: $CRIT"
+          exit 1

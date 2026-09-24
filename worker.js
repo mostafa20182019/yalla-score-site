@@ -5,6 +5,9 @@
 //   30 minutes even though GitHub's own free-tier cron is best-effort/delayed.
 //   Requires a `GH_TOKEN` secret on the Worker (fine-grained PAT with
 //   Actions: Read & write on mostafa20182019/yalla-score-site).
+// - /health + the 15-minute watchdog live in health.js (see its header).
+
+import { healthResponse, watchdog } from "./health.js";
 
 // Live-scores edge endpoint (/live.json): proxies 365scores' current-games
 // feed with a 30s edge cache, so every visitor polls US (cheap, same-origin)
@@ -909,6 +912,9 @@ export default {
     if (url.pathname === "/admin/api" || url.pathname.startsWith("/admin/api/")) {
       return adminApi(request, env, url);
     }
+    if (url.pathname === "/health") {
+      return healthResponse(env, ctx);
+    }
     if (url.pathname === "/live.json") {
       const cache = caches.default;
       const key = new Request("https://yallascore.site/live.json");
@@ -962,6 +968,11 @@ export default {
         console.log("report queue failed:", e && e.message);   // never break the live refresh
       }
       return;
+    }
+    // cron 1 (the 15-minute refresh) also runs the watchdog. In waitUntil and
+    // behind its own catch: a watchdog failure must never cost a dispatch.
+    if (event.cron === "1,16,31,46 * * * *" && env.DB && env.ASSETS && ctx && ctx.waitUntil) {
+      ctx.waitUntil(watchdog(env).catch(e => console.log("watchdog failed:", e && e.message)));
     }
     if (!env.GH_TOKEN) {
       console.log("GH_TOKEN secret not set yet; skipping workflow dispatch");

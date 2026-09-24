@@ -4843,6 +4843,9 @@ def build():
         if n:
             print(f"  + media files: {n}")
 
+    write_text("build-info.json", json.dumps(build_info(articles, _preds, _n_orc),
+                                             ensure_ascii=False))
+
     try:
         _rw, _st = store.writes()
         _rr, _ = store.reads()
@@ -5388,6 +5391,49 @@ def match_goals(idx, m):
             g = [{**x, "side": "a" if x.get("side") == "h" else "h"}
                  for x in rg]
     return g
+
+def _epoch_ms(iso):
+    """ISO timestamp (any offset, or a bare date) -> epoch ms, None if unreadable."""
+    if not iso:
+        return None
+    try:
+        d = datetime.datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    if d.tzinfo is None:                     # a bare pub_date: noon Cairo, as the RSS does
+        d = d.replace(hour=12, tzinfo=datetime.timezone(datetime.timedelta(hours=3)))
+    return int(d.timestamp() * 1000)
+
+
+def build_info(articles, preds, n_oracle):
+    """build-info.json - what THIS deploy contains, read by the Worker's /health
+    and its 15-minute watchdog (2026-09-24).
+
+    It answers from the DEPLOYED copy on purpose: a green publish run can skip
+    its deploy (main moved) and a fetch step can fail under continue-on-error,
+    and in both cases every signal inside GitHub still said «success». The file
+    the reader is actually being served cannot lie about its own age.
+    Epoch ms everywhere, so the Worker never parses a time zone."""
+    try:
+        with io.open(os.path.join(DATA, "fetch_debug.json"), encoding="utf-8") as f:
+            fd = json.load(f)
+    except (OSError, ValueError):
+        fd = {}
+    # fetch_data.py writes "FAIL: <repr>" for a source that raised, and keeps
+    # the previous file for it - the site still builds, just not newer data
+    bad = sorted(k for k, v in fd.items() if isinstance(v, str) and v.startswith("FAIL"))
+    newest = max((t for t in (_epoch_ms(a.get("pub_ts") or a.get("pub_date"))
+                              for a in articles) if t), default=None)
+    return {
+        "built_at": int(datetime.datetime.now(datetime.timezone.utc).timestamp() * 1000),
+        "fetch_at": _epoch_ms(fd.get("utc")),
+        "fetch_failed": bad,
+        "articles": len(articles),
+        "newest_article_at": newest,
+        "predictions": len(preds),
+        "predictions_oracle": n_oracle,
+    }
+
 
 def oracle_results_index(entries):
     """(normalized home|away, date) -> (home_score, away_score), from the frozen

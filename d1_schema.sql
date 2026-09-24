@@ -580,3 +580,17 @@ SELECT article_id, pub_date, words, title, upgraded_ts
 CREATE UNIQUE INDEX IF NOT EXISTS articles_match_kind
     ON articles (match_id, kind)
  WHERE match_id IS NOT NULL AND kind IS NOT NULL;
+
+-- Workflow heartbeats (2026-09-24): one row per workflow, written by
+-- heartbeat.py at the end of every run with the step's REAL outcome (GitHub
+-- reports a failed continue-on-error step as "success"). fails = consecutive
+-- failures, reset on a success. Read by the Worker's watchdog (health.js),
+-- which pages the user on Telegram at 3 in a row or when a beat goes stale.
+-- Both writers also CREATE IF NOT EXISTS, so this line is documentation.
+CREATE TABLE IF NOT EXISTS health_beats (
+  name    TEXT PRIMARY KEY,               -- 'publish', 'article:daily', ...
+  ts      INTEGER NOT NULL,               -- epoch ms of the run's end
+  ok      INTEGER NOT NULL,               -- 1 / 0
+  fails   INTEGER NOT NULL DEFAULT 0,
+  detail  TEXT                            -- failed step names
+);

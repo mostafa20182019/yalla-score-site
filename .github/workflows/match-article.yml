@@ -155,6 +155,20 @@ jobs:
           echo "::warning::The Claude step failed (exit code non-zero) - check the account's quota / token if this repeats."
           echo "### ⚠️ Claude step failed this run" >> "$GITHUB_STEP_SUMMARY"
 
+      # Carry the Claude step's REAL outcome to the Worker's watchdog (health.js).
+      # This run stays green on a failure (the next slot retries - the user's
+      # rule), and GitHub reports a failed continue-on-error step as "success"
+      # everywhere, so without this nobody sees three failures in a row until
+      # the site stops getting articles. The watchdog pages at three.
+      - name: Heartbeat
+        if: ${{ !cancelled() }}
+        continue-on-error: true
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: python heartbeat.py article:match --outcome "${{ steps.write.outcome }}"
+
       # publish.yml deploys main; a GITHUB_TOKEN push doesn't fire on:push, so
       # dispatch it (the article's Facebook post happens there, after Deploy).
       # ONLY when an article was actually committed (2026-09-12). Dispatching
