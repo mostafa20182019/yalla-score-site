@@ -1,8 +1,8 @@
 {
 "meta": {
-"generated_at": "2026-09-24T20:40:16Z",
-"count": 496,
-"frozen": 410
+"generated_at": "2026-09-24T20:52:20Z",
+"count": 501,
+"frozen": 415
 },
 "results": [
 {
@@ -15288,6 +15288,186 @@
 "frozen": true,
 "src": "python",
 "frozen_at": "2026-09-24T20:15:53Z"
+},
+{
+"match_id": "4672057",
+"competition": "UEFA Nations League",
+"kickoff": "2026-09-24",
+"koff_time": "21:45",
+"home": "هولندا",
+"away": "ألمانيا",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/2377",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/2372",
+"home_score": 1,
+"away_score": 1,
+"round": 1,
+"goals": [
+{
+"side": "a",
+"player": "فيليكس نميشا",
+"minute": "32",
+"tag": ""
+},
+{
+"side": "h",
+"player": "كودي جاكبو",
+"minute": "90+2",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T20:52:20Z"
+},
+{
+"match_id": "4672058",
+"competition": "UEFA Nations League",
+"kickoff": "2026-09-24",
+"koff_time": "21:45",
+"home": "صربيا",
+"away": "اليونان",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/2374",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5030",
+"home_score": 1,
+"away_score": 2,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "أندريجا زيفكوفيتش",
+"minute": "4",
+"tag": ""
+},
+{
+"side": "a",
+"player": "كريستوس تزوليس",
+"minute": "74",
+"tag": ""
+},
+{
+"side": "a",
+"player": "أناستاسيوس دوفيكاس",
+"minute": "90+4",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T20:52:20Z"
+},
+{
+"match_id": "4672059",
+"competition": "UEFA Nations League",
+"kickoff": "2026-09-24",
+"koff_time": "21:45",
+"home": "النرويج",
+"away": "الدنمارك",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/2376",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5027",
+"home_score": 3,
+"away_score": 2,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "أوسكار بوب",
+"minute": "14",
+"tag": ""
+},
+{
+"side": "h",
+"player": "إيرلينج هالاند",
+"minute": "18",
+"tag": ""
+},
+{
+"side": "a",
+"player": "ميكيل دامسجارد",
+"minute": "25",
+"tag": ""
+},
+{
+"side": "a",
+"player": "راسموس هويلوند",
+"minute": "60",
+"tag": ""
+},
+{
+"side": "h",
+"player": "إيرلينج هالاند",
+"minute": "74",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T20:52:20Z"
+},
+{
+"match_id": "4672060",
+"competition": "UEFA Nations League",
+"kickoff": "2026-09-24",
+"koff_time": "21:45",
+"home": "البرتغال",
+"away": "ويلز",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5028",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v3/Competitors/5043",
+"home_score": 1,
+"away_score": 0,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "جواو فيليكس",
+"minute": "22",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T20:52:20Z"
+},
+{
+"match_id": "4672061",
+"competition": "UEFA Nations League",
+"kickoff": "2026-09-24",
+"koff_time": "21:45",
+"home": "النمسا",
+"away": "اسرائيل",
+"home_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v6/Competitors/5059",
+"away_badge": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v3/Competitors/5034",
+"home_score": 3,
+"away_score": 1,
+"round": 1,
+"goals": [
+{
+"side": "h",
+"player": "رومانو شميد",
+"minute": "43",
+"tag": ""
+},
+{
+"side": "a",
+"player": "سيد ابو فرحي",
+"minute": "55",
+"tag": ""
+},
+{
+"side": "h",
+"player": "فيليب موني",
+"minute": "90",
+"tag": ""
+},
+{
+"side": "h",
+"player": "ساسا كالادزيتش",
+"minute": "90+3",
+"tag": ""
+}
+],
+"frozen": true,
+"src": "python",
+"frozen_at": "2026-09-24T20:52:20Z"
 },
 {
 "match_id": "4672062",
