@@ -11,7 +11,7 @@
  "matches_archive": "ok (637)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-24T17:18:40+00:00",
+ "slow_fetched_at": "2026-09-24T17:34:30+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -182,7 +182,9 @@
  "goal_events_dbg": {
   "candidates": 5,
   "detail_fails": 0,
-  "skipped": [],
+  "skipped": [
+   "4847359:count-mismatch (1, 0) vs 2-0 [h:g@4]"
+  ],
   "frozen_skipped": 164,
   "sample": {
    "game_keys": [
@@ -212,7 +214,7 @@
     "hasFieldPositions"
    ],
    "event0": "{\"competitorId\": 5096, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 40.0, \"addedTime\": 0, \"gameTimeDisplay\": \"40'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67878352, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "member0": "{\"competitorId\": 5096, \"id\": 68309346, \"athleteId\": 139194, \"name\": \"أبروشيس بيتروس\", \"shortName\": \"بيتروس\", \"jerseyNumber\": 18, \"nameForURL\": \"aprocius-petrus\", \"imageVersion\": 15, \"createdAt\": \"2023-06-20T13:17:43.363Z\"}"
+   "member0": "{\"competitorId\": 5096, \"id\": 68309346, \"athleteId\": 139194, \"name\": \"أبروشيس بيتروس\", \"shortName\": \"بيتروس\", \"jerseyNumber\": 18, \"nameForURL\": \"aprocius-petrus\", \"imageVersion\": 15, \"createdAt\": \"2023-06-20T13:17:43.363\"}"
   },
   "sample_details": {
    "event_names": [
@@ -221,7 +223,7 @@
     "هدف"
    ],
    "card0": "{\"competitorId\": 5096, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 40.0, \"addedTime\": 0, \"gameTimeDisplay\": \"40'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67878352, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
-   "sub0": "{\"competitorId\": 5110, \"statusId\": 8, \"stageId\": 9, \"order\": 2, \"num\": 2, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 58126795, \"extraPlayers\": [71105172], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
+   "sub0": "{\"competitorId\": 5110, \"statusId\": 8, \"stageId\": 9, \"order\": 2, \"num\": 2, \"gameTime\": 46.0, \"addedTime\": 0, \"gameTimeDisplay\": \"46'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 58126795, \"extraPlayers\": [3212694], \"isMajor\": false, \"eventType\": {\"id\": 1000, \"name\": \"Substitution\", \"subTypeId\": -1}}",
    "hc_keys": [
     "id",
     "countryId",
@@ -257,5 +259,5 @@
   "fails": 0
  },
  "match_details": "ok (414)",
- "utc": "2026-09-24T17:21:42Z"
+ "utc": "2026-09-24T17:37:10Z"
 }
