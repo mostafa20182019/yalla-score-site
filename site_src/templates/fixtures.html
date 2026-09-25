@@ -1,0 +1,13 @@
+{# /fixtures/<slug> - a league's whole season, round by round (moved out of /matches) - templated 2026-09-26. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/matches.html">المباريات</a> › جدول {{ label }}</nav>
+<h1 class="page-h">جدول مباريات {{ label }} {{ season }}</h1>
+<section class="minfo">
+  <p>كل جولات {{ label }} لموسم {{ season }} — <b>{{ n_rounds }}</b> جولة و<b>{{ n_matches }}</b> مباراة. المباريات المنتهية تظهر بنتيجتها والقادمة بموعدها بتوقيت القاهرة، ويتحدّث الجدول تلقائيًا بعد كل مباراة. استخدم ‹ و› للتنقل بين الجولات.</p>
+</section>
+{{ rounds_panel }}
+<p class="more-link">{% for link in links %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
+{{ crumbs_ld }}
+{{ page_foot }}
+{{ rounds_js }}

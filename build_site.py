@@ -2409,43 +2409,16 @@ def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_
     return {k: _l[k] for k in ('_h', '_html', '_slug', 'a', 'comp', 'desc', 'img', 'm', 'm_all', 'st', 'title', 'v', 'when') if k in _l}
 
 
-def _page_per_league_standings_top_scorers_pages(_bycomp=_UNSET, _faq=_UNSET, _html=_UNSET, _preds=_UNSET, as_by_comp=_UNSET, as_ok=_UNSET, comp=_UNSET, forms=_UNSET, m=_UNSET, matches=_UNSET, sc_by_comp=_UNSET, sc_ok=_UNSET, st=_UNSET, st_by_comp=_UNSET, urls=_UNSET):
-    if _bycomp is _UNSET:
-        del _bycomp
-    if _faq is _UNSET:
-        del _faq
-    if _html is _UNSET:
-        del _html
-    if _preds is _UNSET:
-        del _preds
-    if as_by_comp is _UNSET:
-        del as_by_comp
-    if as_ok is _UNSET:
-        del as_ok
-    if comp is _UNSET:
-        del comp
-    if forms is _UNSET:
-        del forms
-    if m is _UNSET:
-        del m
-    if matches is _UNSET:
-        del matches
-    if sc_by_comp is _UNSET:
-        del sc_by_comp
-    if sc_ok is _UNSET:
-        del sc_ok
-    if st is _UNSET:
-        del st
-    if st_by_comp is _UNSET:
-        del st_by_comp
-    if urls is _UNSET:
-        del urls
-    # ---- per-league standings + top-scorers pages ----
-    # Evergreen SEO landing pages with their own URLs: "ترتيب الدوري المصري"
-    # and "هدافو الدوري المصري" are huge monthly queries that a tab inside
-    # /matches.html can never rank for. One /standings/<slug>.html per league
-    # with a table, and one /scorers/<slug>.html when the charts are current
-    # (the stale-last-season guard sc_ok/as_ok gates them, same as /matches).
+def _page_per_league_standings_top_scorers_pages(_bycomp, _preds, as_by_comp, as_ok, forms,
+                                                 matches, sc_by_comp, sc_ok, st_by_comp, urls):
+    """Evergreen SEO landing pages with their own URLs: «ترتيب الدوري المصري» and
+    «هدافو الدوري المصري» are huge monthly queries that a tab inside /matches can
+    never rank for. One /standings/<slug> per league with a table, and one
+    /scorers/<slug> when the charts are current (the stale-last-season guard
+    sc_ok/as_ok gates them, same as /matches). Markup: templates standings.html
+    + scorers.html (2026-09-26); the pieces are built here in the same order as
+    before. The loop's last comp/label/slug/st/m/up_next are returned under the
+    same names, as when this lived inside build()."""
     os.makedirs(os.path.join(DIST, "standings"), exist_ok=True)
     os.makedirs(os.path.join(DIST, "scorers"), exist_ok=True)
     _n = datetime.date.today()
@@ -2465,84 +2438,64 @@ def _page_per_league_standings_top_scorers_pages(_bycomp=_UNSET, _faq=_UNSET, _h
                    if m.get("competition") == comp
                    and (m.get("status") or "").upper() in ("UPCOMING", "LIVE")][:6]
         if st and st.get("table"):
-            sp2 = [head(f"ترتيب {label} {season} — جدول الترتيب الكامل | {SITE_NAME}",
-                        f"جدول ترتيب {label} لموسم {season} محدثًا تلقائيًا: "
-                        "النقاط والمباريات والأهداف وفارق الأهداف "
-                        "ونتائج آخر 5 مباريات لكل فريق.",
-                        SITE_BASE + st_url, active="matches")]
-            sp2.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                                      ("المباريات", SITE_BASE + "/matches.html"),
-                                      (f"ترتيب {label}", SITE_BASE + st_url)]))
-            sp2.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
-                       f'<a href="/matches.html">المباريات</a> › ترتيب {esc(label)}</nav>')
-            sp2.append(f'<h1 class="page-h">ترتيب {esc(label)} {esc(season)}</h1>')
-            sp2.append(f'<p class="hintline">جدول {esc(label)} الكامل — يتحدّث '
-                       'تلقائيًا بعد كل مباراة، مع نتائج آخر 5 مباريات لكل فريق.</p>')
-            sp2.append(standings_table(comp, st["table"], past=st.get("past"),
-                                       season_label=st.get("season_label"),
-                                       zeroed=st.get("zeroed"),
-                                       form_map=forms.get(comp, {}), embedded=True))
+            page_head = Markup(head(f"ترتيب {label} {season} — جدول الترتيب الكامل | {SITE_NAME}",
+                                    f"جدول ترتيب {label} لموسم {season} محدثًا تلقائيًا: "
+                                    "النقاط والمباريات والأهداف وفارق الأهداف "
+                                    "ونتائج آخر 5 مباريات لكل فريق.",
+                                    SITE_BASE + st_url, active="matches"))
+            crumbs_ld = Markup(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                              ("المباريات", SITE_BASE + "/matches.html"),
+                                              (f"ترتيب {label}", SITE_BASE + st_url)]))
+            table = standings_table(comp, st["table"], past=st.get("past"),
+                                    season_label=st.get("season_label"),
+                                    zeroed=st.get("zeroed"),
+                                    form_map=forms.get(comp, {}), embedded=True)
             _an, _faq = standings_analysis(comp, label, season, st["table"],
                                            forms.get(comp, {}), sc or [], up_next,
                                            zeroed=st.get("zeroed"))
-            sp2.append(_an)
-            if sc:
-                sp2.append(f'<section class="minfo"><h2>'
-                           f'<a href="{sc_url}">هدافو {esc(label)} ←</a></h2>'
-                           + scorers_list(sc, "أهداف") + '</section>')
-            if up_next:
-                sp2.append(f'<section class="minfo"><h2>مباريات {esc(label)} القادمة</h2>'
-                           '<div class="mlist">')
-                for m in up_next:
-                    sp2.append(match_row(m, show_time=True, show_comp=False,
-                                         link=match_url(m),
-                                         pred=_preds.get(str(m.get("match_id")))))
-                sp2.append('</div></section>')
-            sp2.append(_faq)
-            sp2.append(pred_pop(sp2))
-            sp2.append(foot())
-            write(f"standings/{slug}.html", "".join(sp2))
+            scorers = scorers_list(sc, "أهداف") if sc else ""
+            next_rows = []
+            for m in up_next:
+                next_rows.append(match_row(m, show_time=True, show_comp=False,
+                                           link=match_url(m),
+                                           pred=_preds.get(str(m.get("match_id")))))
+            # the popup is added only when a row carries a prediction button
+            popup = pred_pop([table, _an, scorers] + next_rows + [_faq])
+            write(f"standings/{slug}.html", render(
+                "standings.html", page_head=page_head, crumbs_ld=crumbs_ld, label=label,
+                season=season, table=Markup(table), analysis=Markup(_an), has_sc=bool(sc),
+                sc_url=Markup(sc_url), scorers=Markup(scorers),
+                next_rows=[Markup(r) for r in next_rows], faq=Markup(_faq),
+                popup=Markup(popup), page_foot=Markup(foot())))
             urls.append(st_url)
             n_lp += 1
         if sc or (st and st.get("table")):
             # the page must exist whenever the league is active (the footer
-            # links to /scorers/egypt.html sitewide) — a stale-gated chart
+            # links to /scorers/egypt.html sitewide) - a stale-gated chart
             # gets a placeholder, never last season's names
-            cp = [head(f"هدافو {label} {season} — ترتيب الهدافين وصناع الأهداف | {SITE_NAME}",
-                       f"قائمة هدافي {label} لموسم {season} محدثة تلقائيًا بعد كل "
-                       "جولة، مع ترتيب صناع الأهداف (التمريرات الحاسمة).",
-                       SITE_BASE + sc_url, active="matches")]
-            cp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
-                      f'<a href="/matches.html">المباريات</a> › هدافو {esc(label)}</nav>')
-            cp.append(f'<h1 class="page-h">هدافو {esc(label)} {esc(season)}</h1>')
-            cp.append('<section class="minfo"><h2>ترتيب الهدافين</h2>'
-                      + (scorers_list(sc, "أهداف") if sc else
-                         '<p class="hintline">تُحدَّث قائمة الهدافين تلقائيًا '
-                         'مع انطلاق جولات الموسم الجديد.</p>')
-                      + '</section>')
-            if asst:
-                cp.append('<section class="minfo"><h2>صناع الأهداف</h2>'
-                          + scorers_list(asst, "صناعة") + '</section>')
+            page_head = Markup(head(f"هدافو {label} {season} — ترتيب الهدافين وصناع الأهداف | {SITE_NAME}",
+                                    f"قائمة هدافي {label} لموسم {season} محدثة تلقائيًا بعد كل "
+                                    "جولة، مع ترتيب صناع الأهداف (التمريرات الحاسمة).",
+                                    SITE_BASE + sc_url, active="matches"))
+            scorers = scorers_list(sc, "أهداف") if sc else ""
+            assists = scorers_list(asst, "صناعة") if asst else ""
             # a list of ten names is not a page; the reading is what makes it
             # one (2026-09-16, after an outside audit found /scorers/egypt
-            # empty — see scorers_read)
+            # empty - see scorers_read)
             _sr, _sfaq, _sw = scorers_read(label, season, sc, asst,
                                            (st or {}).get("table"), _bycomp.get(comp))
-            if _sr:
-                cp.append(_sr)
-            if st and st.get("table"):
-                cp.append(f'<p class="hintline">شاهد أيضًا: '
-                          f'<a href="{st_url}">جدول ترتيب {esc(label)} كاملًا</a></p>')
-            if _sfaq:
-                cp.append(_sfaq)
-            cp.append(foot())
+            _html = render(
+                "scorers.html", page_head=page_head, label=label, season=season,
+                has_sc=bool(sc), scorers=Markup(scorers), has_asst=bool(asst),
+                assists=Markup(assists), reading=Markup(_sr or ""),
+                has_table=bool(st and st.get("table")), st_url=Markup(st_url),
+                reading_faq=Markup(_sfaq or ""), page_foot=Markup(foot()))
             # Indexable only once the page says something: the chart plus a
             # reading of at least three facts. Under that it stays what it was
-            # before — a page for visitors and old links, out of the index and
-            # out of the sitemap — because ~80 words of names is exactly the
+            # before - a page for visitors and old links, out of the index and
+            # out of the sitemap - because ~80 words of names is exactly the
             # thin content the AdSense rejection named.
             _rich_sc = bool(sc) and _sw >= 3
-            _html = "".join(cp)
             if not _rich_sc:
                 _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
             write(f"scorers/{slug}.html", _html)
@@ -2554,27 +2507,13 @@ def _page_per_league_standings_top_scorers_pages(_bycomp=_UNSET, _faq=_UNSET, _h
     return {k: _l[k] for k in ('_comps_with_table', 'comp', 'label', 'm', 'season', 'slug', 'st', 'up_next') if k in _l}
 
 
-def _page_per_league_season_fixtures(comp=_UNSET, fx_by_comp=_UNSET, label=_UNSET, season=_UNSET, slug=_UNSET, st_by_comp=_UNSET, urls=_UNSET):
-    if comp is _UNSET:
-        del comp
-    if fx_by_comp is _UNSET:
-        del fx_by_comp
-    if label is _UNSET:
-        del label
-    if season is _UNSET:
-        del season
-    if slug is _UNSET:
-        del slug
-    if st_by_comp is _UNSET:
-        del st_by_comp
-    if urls is _UNSET:
-        del urls
-    # ---- per-league season fixtures (/fixtures/<slug>.html) ----
-    # These used to be INSIDE /matches, hidden behind the league filter: 2,206
-    # fixture rows and 4,955 crest tags that every visitor downloaded to look
-    # at the 82 rows of one day. As their own pages they cost nothing to the
-    # people who do not want them and answer a real query - «جدول مباريات
-    # الدوري المصري» - which a megabyte of hidden markup never could.
+def _page_per_league_season_fixtures(fx_by_comp, season, st_by_comp, urls):
+    """/fixtures/<slug> - a league's whole season. These used to be INSIDE
+    /matches, hidden behind the league filter: 2,206 fixture rows and 4,955
+    crest tags that every visitor downloaded to look at the 82 rows of one day.
+    As their own pages they cost nothing to the people who do not want them and
+    answer a real query - «جدول مباريات الدوري المصري». Markup: fixtures.html
+    (templated 2026-09-26). Returns the loop's last comp/label/slug, as before."""
     os.makedirs(os.path.join(DIST, "fixtures"), exist_ok=True)
     n_fx = 0
     for comp, slug in COMP_SLUG.items():
@@ -2584,30 +2523,24 @@ def _page_per_league_season_fixtures(comp=_UNSET, fx_by_comp=_UNSET, label=_UNSE
             continue
         label = comp_label(comp)
         n_m = sum(len(r.get("matches") or []) for r in rounds)
-        fp = [head(f"جدول مباريات {label} {season} — كل الجولات | {SITE_NAME}",
-                   f"جدول مباريات {label} لموسم {season} كاملًا: {len(rounds)} جولة "
-                   f"و{n_m} مباراة بمواعيدها ونتائجها، محدّثًا تلقائيًا بعد كل جولة.",
-                   SITE_BASE + f"/fixtures/{slug}.html", active="matches")]
-        fp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
-                  f'<a href="/matches.html">المباريات</a> › جدول {esc(label)}</nav>')
-        fp.append(f'<h1 class="page-h">جدول مباريات {esc(label)} {esc(season)}</h1>')
-        fp.append(f'<section class="minfo"><p>كل جولات {esc(label)} لموسم {esc(season)} — '
-                  f'<b>{len(rounds)}</b> جولة و<b>{n_m}</b> مباراة. المباريات المنتهية '
-                  'تظهر بنتيجتها والقادمة بموعدها بتوقيت القاهرة، ويتحدّث الجدول تلقائيًا '
-                  'بعد كل مباراة. استخدم ‹ و› للتنقل بين الجولات.</p></section>')
-        fp.append(league_rounds_panel(comp, fx, embedded=True))
+        page_head = Markup(head(f"جدول مباريات {label} {season} — كل الجولات | {SITE_NAME}",
+                                f"جدول مباريات {label} لموسم {season} كاملًا: {len(rounds)} جولة "
+                                f"و{n_m} مباراة بمواعيدها ونتائجها، محدّثًا تلقائيًا بعد كل جولة.",
+                                SITE_BASE + f"/fixtures/{slug}.html", active="matches"))
+        rounds_panel = league_rounds_panel(comp, fx, embedded=True)
         _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
         if comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
             _links.append(f'<a href="/analysis/{slug}.html">تحليلات وتوقعات {esc(label)} ←</a>')
-        fp.append('<p class="more-link">' + ' · '.join(_links) + '</p>')
-        fp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                                 ("المباريات", SITE_BASE + "/matches.html"),
-                                 (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")]))
-        fp.append(foot())
-        fp.append(ROUNDS_JS)
-        write(f"fixtures/{slug}.html", "".join(fp))
+        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                   ("المباريات", SITE_BASE + "/matches.html"),
+                                   (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")])
+        write(f"fixtures/{slug}.html", render(
+            "fixtures.html", page_head=page_head, label=label, season=season,
+            n_rounds=len(rounds), n_matches=n_m, rounds_panel=Markup(rounds_panel),
+            links=[Markup(x) for x in _links], crumbs_ld=Markup(crumbs_ld),
+            page_foot=Markup(foot()), rounds_js=Markup(ROUNDS_JS)))
         urls.append(f"/fixtures/{slug}.html")
         _LASTMOD[f"/fixtures/{slug}.html"] = REF_TODAY
         n_fx += 1
@@ -3940,7 +3873,8 @@ def build():
         when = _r['when']
 
     # per-league standings + top-scorers pages -> _page_per_league_standings_top_scorers_pages() (moved out of build(), slice 4)
-    _r = _page_per_league_standings_top_scorers_pages(**_bound(locals(), ('_bycomp', '_faq', '_html', '_preds', 'as_by_comp', 'as_ok', 'comp', 'forms', 'm', 'matches', 'sc_by_comp', 'sc_ok', 'st', 'st_by_comp', 'urls')))
+    _r = _page_per_league_standings_top_scorers_pages(_bycomp, _preds, as_by_comp, as_ok, forms,
+                                                      matches, sc_by_comp, sc_ok, st_by_comp, urls)
     if '_comps_with_table' in _r:
         _comps_with_table = _r['_comps_with_table']
     if 'comp' in _r:
@@ -3959,7 +3893,7 @@ def build():
         up_next = _r['up_next']
 
     # per-league season fixtures (/fixtures/<slug>.html) -> _page_per_league_season_fixtures() (moved out of build(), slice 4)
-    _r = _page_per_league_season_fixtures(**_bound(locals(), ('comp', 'fx_by_comp', 'label', 'season', 'slug', 'st_by_comp', 'urls')))
+    _r = _page_per_league_season_fixtures(fx_by_comp, season, st_by_comp, urls)
     if 'comp' in _r:
         comp = _r['comp']
     if 'label' in _r:

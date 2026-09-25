@@ -1,0 +1,25 @@
+{# /scorers/<slug> - scorers + assists + the reading (indexable only when rich) - templated 2026-09-26. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/matches.html">المباريات</a> › هدافو {{ label }}</nav>
+<h1 class="page-h">هدافو {{ label }} {{ season }}</h1>
+<section class="minfo">
+  <h2>ترتيب الهدافين</h2>
+  {% if has_sc %}
+  {{ scorers }}
+  {% else %}
+  <p class="hintline">تُحدَّث قائمة الهدافين تلقائيًا مع انطلاق جولات الموسم الجديد.</p>
+  {% endif %}
+</section>
+{% if has_asst %}
+<section class="minfo">
+  <h2>صناع الأهداف</h2>
+  {{ assists }}
+</section>
+{% endif %}
+{{ reading }}
+{% if has_table %}
+<p class="hintline">شاهد أيضًا: <a href="{{ st_url }}">جدول ترتيب {{ label }} كاملًا</a></p>
+{% endif %}
+{{ reading_faq }}
+{{ page_foot }}
