@@ -11,7 +11,7 @@
  "matches_archive": "ok (644)",
  "fixtures_merge": "none (every league complete)",
  "slow_fetch": "full - active window",
- "slow_fetched_at": "2026-09-25T13:24:05+00:00",
+ "slow_fetched_at": "2026-09-25T13:32:49+00:00",
  "standings": "ok (6)",
  "goals": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
  "assists": "ok (Egyptian Premier League:5, Turkish Super Lig:5, Saudi Pro League:5, Premier League:5, Primera Division:5, Serie A:5, Bundesliga:5, Ligue 1:5, UEFA Champions League:5)",
@@ -178,7 +178,7 @@
    "15:تصديات في المباراة"
   ]
  },
- "goal_events": "ok (1 games)",
+ "goal_events": "ok (2 games)",
  "goal_events_dbg": {
   "candidates": 2,
   "detail_fails": 0,
@@ -216,7 +216,8 @@
   },
   "sample_details": {
    "event_names": [
-    "بطاقة صفراء"
+    "بطاقة صفراء",
+    "هدف"
    ],
    "card0": "{\"competitorId\": 5407, \"statusId\": 6, \"stageId\": 7, \"order\": 1, \"num\": 1, \"gameTime\": 22.0, \"addedTime\": 0, \"gameTimeDisplay\": \"22'\", \"gameTimeAndStatusDisplayType\": 2, \"playerId\": 67630383, \"isMajor\": false, \"eventType\": {\"id\": 2, \"name\": \"بطاقة صفراء\", \"subTypeId\": -1}}",
    "sub0": "null",
@@ -254,6 +255,6 @@
   "with_xi": 2,
   "fails": 0
  },
- "match_details": "ok (421)",
- "utc": "2026-09-25T13:26:43Z"
+ "match_details": "ok (422)",
+ "utc": "2026-09-25T13:35:28Z"
 }
