@@ -3552,77 +3552,33 @@ def _page_uploaded_media(_preds=_UNSET, articles=_UNSET, fn=_UNSET, matches=_UNS
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
 
-def build():
-    # Clear dist CONTENTS rather than the folder itself, so an open handle on
-    # dist (e.g. a running preview server) doesn't block the rebuild.
-    if os.path.exists(DIST):
-        for name in os.listdir(DIST):
-            p = os.path.join(DIST, name)
-            if os.path.isdir(p):
-                shutil.rmtree(p, ignore_errors=True)
-            else:
-                try:
-                    os.remove(p)
-                except OSError:
-                    pass
-    else:
-        os.makedirs(DIST)
-    os.makedirs(os.path.join(DIST, "a"), exist_ok=True)
-    os.makedirs(os.path.join(DIST, "assets"), exist_ok=True)
+# ---- slice 4: build()'s page sections as functions (tools/extract_sections.py) ----
+_UNSET = object()      # 'this build() variable was not bound at the call'
 
-    # Articles come from D1 (the writer since 2026-09-10). The committed
-    # export is the fallback, and it is a real one: a build must render every
-    # page when the store is unreachable. It can only ever be BEHIND, never
-    # wrong - article_put.py rewrites it in the same commit as the article.
-    try:
-        articles_all, _asrc = articles_current()
-        print(f"  articles: {len(articles_all)} from {_asrc}")
-    except Exception as e:                                  # noqa: BLE001
-        articles_all = load("articles.json")
-        print(f"  ! article store unreachable ({e}) - using the committed "
-              f"export ({len(articles_all)} articles)")
-    # `articles_all` -> every piece still gets its own page at its own URL.
-    # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
-    # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
-    # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
-    _miss = resolve_missing_media(articles_all)
-    if _miss:
-        print(f'  ! {len(_miss)} article image(s) not in this checkout yet - placeholder for this build: '
-              + ', '.join(_miss[:5]))
-    articles = [a for a in articles_all if not is_thin(a)]
-    matches = load("matches.json")
-    headlines = load("headlines.json")
-    videos = load("videos.json")
-    standings = load("standings.json")   # [{competition, table:[...]}]
-    scorers = load("scorers.json")       # [{competition, scorers:[{name,team,goals,...}]}]
-    assists = load("assists.json")       # same shape, key "assists"
-    fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
-    goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
-    # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
-    _details_raw = load("match_details.json")
-    md_idx = match_details_index(_details_raw)
-    # ONE rule for a finished match: the frozen archive first (results_archive.py,
-    # 2026-09-24 - python's heir to Oracle's MATCH_RESULTS), the feed files below
-    # it. These are dict.update() layers and the LAST one wins, so the archive is
-    # applied last. Reading bottom-up:
-    #   match_details.json  - the 45-day store, the deepest feed source
-    #   goal_events.json    - a ROLLING window, fresher while it lasts; a
-    #                         finished match drops out within hours
-    #   results_archive     - frozen once the scorers account for the score,
-    #                         never overwritten after that
-    # Letting frozen beat fresh is safe BECAUSE of that gate. The cost, stated
-    # plainly: a complete-but-wrong list, once frozen, is not corrected by a
-    # later feed - that is what "frozen" means.
-    _res_arch = RA.load()
-    _frozen = RA.frozen_entries(_res_arch)
-    # the SCORE of a finished match comes from the archive too, not only its
-    # scorers - both halves of "النتيجة ومسجلي الأهداف"
-    _sc_fill, _sc_chg = apply_frozen_scores(matches, frozen_scores_index(_frozen))
-    ge_idx = goals_index(goal_events, _details_raw, _frozen)
-    print("  + results archive: %d finished match(es), %d frozen; scores taken for %d%s"
-          % (len(_res_arch), len(_frozen), _sc_fill,
-             (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else ""))
 
+def _bound(scope, names):
+    return {k: scope[k] for k in names if k in scope}
+
+
+def _page_strength_model_predictions_accuracy_play(_details_raw=_UNSET, _res_arch=_UNSET, assists=_UNSET, e=_UNSET, fixtures=_UNSET, matches=_UNSET, p=_UNSET, scorers=_UNSET, standings=_UNSET):
+    if _details_raw is _UNSET:
+        del _details_raw
+    if _res_arch is _UNSET:
+        del _res_arch
+    if assists is _UNSET:
+        del assists
+    if e is _UNSET:
+        del e
+    if fixtures is _UNSET:
+        del fixtures
+    if matches is _UNSET:
+        del matches
+    if p is _UNSET:
+        del p
+    if scorers is _UNSET:
+        del scorers
+    if standings is _UNSET:
+        del standings
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
     # The season pool: the results archive AHEAD of the feed's rolling files, so
@@ -3734,7 +3690,11 @@ def build():
                      if _kos else "")
     except Exception:
         KO_SCRIPT = ""
+    _l = locals()
+    return {k: _l[k] for k in ('ZoneInfo', '_acc', '_bycomp', '_cal', '_dt', '_lparams', '_mid', '_pins', '_plog', '_preds', '_sins', '_squad', '_tstats', '_upcoming', 'm', 'p', 'r', 'reels') if k in _l}
 
+
+def _page_assets_css_logo():
     # ---- assets: css + logo ----
     global CSS_VER
     _css = CSS + "\n" + LEGENDS_CSS
@@ -3759,35 +3719,21 @@ def build():
             break
 
     urls = ["/", "/matches.html"]
+    _l = locals()
+    return {k: _l[k] for k in ('f', 'urls') if k in _l}
 
-    # home -> _page_home() (moved out of build(), slice 4)
-    _r = _page_home(**_bound(locals(), ('_acc', '_cal', '_preds', '_upcoming', 'articles', 'fixtures', 'headlines', 'm', 'matches', 'reels', 'standings', 'videos')))
-    if 'h' in _r:
-        h = _r['h']
-    if 'm' in _r:
-        m = _r['m']
-    if 'v' in _r:
-        v = _r['v']
 
-    # article pages -> _page_article_pages() (moved out of build(), slice 4)
-    _r = _page_article_pages(**_bound(locals(), ('articles', 'articles_all', 'matches', 'p', 'urls')))
-    if '_clubs' in _r:
-        _clubs = _r['_clubs']
-    if '_faq' in _r:
-        _faq = _r['_faq']
-    if '_match_arts' in _r:
-        _match_arts = _r['_match_arts']
-    if '_moved' in _r:
-        _moved = _r['_moved']
-    if '_t' in _r:
-        _t = _r['_t']
-    if 'a' in _r:
-        a = _r['a']
-    if 'img' in _r:
-        img = _r['img']
-    if 'p' in _r:
-        p = _r['p']
-
+def _page_shared_per_league_data_stats_machinery(_bycomp=_UNSET, assists=_UNSET, fixtures=_UNSET, scorers=_UNSET, standings=_UNSET):
+    if _bycomp is _UNSET:
+        del _bycomp
+    if assists is _UNSET:
+        del assists
+    if fixtures is _UNSET:
+        del fixtures
+    if scorers is _UNSET:
+        del scorers
+    if standings is _UNSET:
+        del standings
     # ---- shared per-league data + stats machinery (matches page + /stats) ----
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
     sc_by_comp = {s.get("competition"): (s.get("scorers") or [])
@@ -4020,6 +3966,175 @@ def build():
                      if heading else "")
         body = "".join(panes.get(k, "") for k in ("numbers", "scorers", "trend"))
         return f'<section class="stats-sec">{head_html}{body}</section>' 
+    _l = locals()
+    return {k: _l[k] for k in ('as_by_comp', 'as_ok', 'forms', 'fx_by_comp', 'league_stats_parts', 'league_stats_sec', 'sc_by_comp', 'sc_ok', 'st_by_comp') if k in _l}
+
+
+def build():
+    # Clear dist CONTENTS rather than the folder itself, so an open handle on
+    # dist (e.g. a running preview server) doesn't block the rebuild.
+    if os.path.exists(DIST):
+        for name in os.listdir(DIST):
+            p = os.path.join(DIST, name)
+            if os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+            else:
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
+    else:
+        os.makedirs(DIST)
+    os.makedirs(os.path.join(DIST, "a"), exist_ok=True)
+    os.makedirs(os.path.join(DIST, "assets"), exist_ok=True)
+
+    # Articles come from D1 (the writer since 2026-09-10). The committed
+    # export is the fallback, and it is a real one: a build must render every
+    # page when the store is unreachable. It can only ever be BEHIND, never
+    # wrong - article_put.py rewrites it in the same commit as the article.
+    try:
+        articles_all, _asrc = articles_current()
+        print(f"  articles: {len(articles_all)} from {_asrc}")
+    except Exception as e:                                  # noqa: BLE001
+        articles_all = load("articles.json")
+        print(f"  ! article store unreachable ({e}) - using the committed "
+              f"export ({len(articles_all)} articles)")
+    # `articles_all` -> every piece still gets its own page at its own URL.
+    # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
+    # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
+    # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
+    _miss = resolve_missing_media(articles_all)
+    if _miss:
+        print(f'  ! {len(_miss)} article image(s) not in this checkout yet - placeholder for this build: '
+              + ', '.join(_miss[:5]))
+    articles = [a for a in articles_all if not is_thin(a)]
+    matches = load("matches.json")
+    headlines = load("headlines.json")
+    videos = load("videos.json")
+    standings = load("standings.json")   # [{competition, table:[...]}]
+    scorers = load("scorers.json")       # [{competition, scorers:[{name,team,goals,...}]}]
+    assists = load("assists.json")       # same shape, key "assists"
+    fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
+    goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
+    # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
+    _details_raw = load("match_details.json")
+    md_idx = match_details_index(_details_raw)
+    # ONE rule for a finished match: the frozen archive first (results_archive.py,
+    # 2026-09-24 - python's heir to Oracle's MATCH_RESULTS), the feed files below
+    # it. These are dict.update() layers and the LAST one wins, so the archive is
+    # applied last. Reading bottom-up:
+    #   match_details.json  - the 45-day store, the deepest feed source
+    #   goal_events.json    - a ROLLING window, fresher while it lasts; a
+    #                         finished match drops out within hours
+    #   results_archive     - frozen once the scorers account for the score,
+    #                         never overwritten after that
+    # Letting frozen beat fresh is safe BECAUSE of that gate. The cost, stated
+    # plainly: a complete-but-wrong list, once frozen, is not corrected by a
+    # later feed - that is what "frozen" means.
+    _res_arch = RA.load()
+    _frozen = RA.frozen_entries(_res_arch)
+    # the SCORE of a finished match comes from the archive too, not only its
+    # scorers - both halves of "النتيجة ومسجلي الأهداف"
+    _sc_fill, _sc_chg = apply_frozen_scores(matches, frozen_scores_index(_frozen))
+    ge_idx = goals_index(goal_events, _details_raw, _frozen)
+    print("  + results archive: %d finished match(es), %d frozen; scores taken for %d%s"
+          % (len(_res_arch), len(_frozen), _sc_fill,
+             (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else ""))
+
+    # تحليلات: strength model + predictions + accuracy + player insights -> _page_strength_model_predictions_accuracy_play() (moved out of build(), slice 4)
+    _r = _page_strength_model_predictions_accuracy_play(**_bound(locals(), ('_details_raw', '_res_arch', 'assists', 'e', 'fixtures', 'matches', 'p', 'scorers', 'standings')))
+    if 'ZoneInfo' in _r:
+        ZoneInfo = _r['ZoneInfo']
+    if '_acc' in _r:
+        _acc = _r['_acc']
+    if '_bycomp' in _r:
+        _bycomp = _r['_bycomp']
+    if '_cal' in _r:
+        _cal = _r['_cal']
+    if '_dt' in _r:
+        _dt = _r['_dt']
+    if '_lparams' in _r:
+        _lparams = _r['_lparams']
+    if '_mid' in _r:
+        _mid = _r['_mid']
+    if '_pins' in _r:
+        _pins = _r['_pins']
+    if '_plog' in _r:
+        _plog = _r['_plog']
+    if '_preds' in _r:
+        _preds = _r['_preds']
+    if '_sins' in _r:
+        _sins = _r['_sins']
+    if '_squad' in _r:
+        _squad = _r['_squad']
+    if '_tstats' in _r:
+        _tstats = _r['_tstats']
+    if '_upcoming' in _r:
+        _upcoming = _r['_upcoming']
+    if 'm' in _r:
+        m = _r['m']
+    if 'p' in _r:
+        p = _r['p']
+    if 'r' in _r:
+        r = _r['r']
+    if 'reels' in _r:
+        reels = _r['reels']
+
+    # assets: css + logo -> _page_assets_css_logo() (moved out of build(), slice 4)
+    _r = _page_assets_css_logo()
+    if 'f' in _r:
+        f = _r['f']
+    if 'urls' in _r:
+        urls = _r['urls']
+
+    # home -> _page_home() (moved out of build(), slice 4)
+    _r = _page_home(**_bound(locals(), ('_acc', '_cal', '_preds', '_upcoming', 'articles', 'fixtures', 'headlines', 'm', 'matches', 'reels', 'standings', 'videos')))
+    if 'h' in _r:
+        h = _r['h']
+    if 'm' in _r:
+        m = _r['m']
+    if 'v' in _r:
+        v = _r['v']
+
+    # article pages -> _page_article_pages() (moved out of build(), slice 4)
+    _r = _page_article_pages(**_bound(locals(), ('articles', 'articles_all', 'matches', 'p', 'urls')))
+    if '_clubs' in _r:
+        _clubs = _r['_clubs']
+    if '_faq' in _r:
+        _faq = _r['_faq']
+    if '_match_arts' in _r:
+        _match_arts = _r['_match_arts']
+    if '_moved' in _r:
+        _moved = _r['_moved']
+    if '_t' in _r:
+        _t = _r['_t']
+    if 'a' in _r:
+        a = _r['a']
+    if 'img' in _r:
+        img = _r['img']
+    if 'p' in _r:
+        p = _r['p']
+
+    # shared per-league data + stats machinery (matches page + /stats) -> _page_shared_per_league_data_stats_machinery() (moved out of build(), slice 4)
+    _r = _page_shared_per_league_data_stats_machinery(**_bound(locals(), ('_bycomp', 'assists', 'fixtures', 'scorers', 'standings')))
+    if 'as_by_comp' in _r:
+        as_by_comp = _r['as_by_comp']
+    if 'as_ok' in _r:
+        as_ok = _r['as_ok']
+    if 'forms' in _r:
+        forms = _r['forms']
+    if 'fx_by_comp' in _r:
+        fx_by_comp = _r['fx_by_comp']
+    if 'league_stats_parts' in _r:
+        league_stats_parts = _r['league_stats_parts']
+    if 'league_stats_sec' in _r:
+        league_stats_sec = _r['league_stats_sec']
+    if 'sc_by_comp' in _r:
+        sc_by_comp = _r['sc_by_comp']
+    if 'sc_ok' in _r:
+        sc_ok = _r['sc_ok']
+    if 'st_by_comp' in _r:
+        st_by_comp = _r['st_by_comp']
 
     # matches page (per-day navigator, like the live app) -> _page_matches_page() (moved out of build(), slice 4)
     _r = _page_matches_page(**_bound(locals(), ('_mid', '_plog', '_preds', 'a', 'articles', 'f', 'fixtures', 'forms', 'fx_by_comp', 'ge_idx', 'img', 'league_stats_parts', 'm', 'matches', 'p', 'st_by_comp', 'standings')))

@@ -34,6 +34,8 @@ import sys
 
 PATH = "build_site.py"
 HEADER = re.compile(r"^    # ---- (.+?) ----")
+# a section already turned into a call (slice 4) - a boundary, never re-extracted
+CALLED = re.compile(r"^    # (.+?) -> (_page_\w+)\(\) \(moved out of build\(\), slice 4\)")
 
 
 def slug(title):
@@ -124,6 +126,16 @@ def scope_of(stmts):
     s = Scope()
     for st in stmts:
         s.visit(st)
+    # A slice-4 call passes build() variables BY NAME: `_page_x(**_bound(
+    # locals(), ('a', 'b')))`. Those strings are reads of a and b - without
+    # this, a section feeding a later call looked output-free, and moving it
+    # would have dropped every variable the call needs.
+    for st in stmts:
+        for x in ast.walk(st):
+            if (isinstance(x, ast.Call) and isinstance(x.func, ast.Name) and x.func.id == "_bound"
+                    and len(x.args) == 2 and isinstance(x.args[1], ast.Tuple)):
+                s.loads |= {e.value for e in x.args[1].elts
+                            if isinstance(e, ast.Constant) and isinstance(e.value, str)}
     return s
 
 
@@ -132,8 +144,13 @@ def plan(src):
     tree = ast.parse(src)
     build = next(n for n in tree.body if isinstance(n, ast.FunctionDef) and n.name == "build")
     body = build.body
-    heads = [(i + 1, HEADER.match(l).group(1)) for i, l in enumerate(lines)
-             if build.lineno <= i + 1 <= build.end_lineno and HEADER.match(l)]
+    heads = []
+    for i, l in enumerate(lines):
+        if build.lineno <= i + 1 <= build.end_lineno:
+            if HEADER.match(l):
+                heads.append((i + 1, HEADER.match(l).group(1)))
+            elif CALLED.match(l):
+                heads.append((i + 1, "CALL " + CALLED.match(l).group(2)))
     sections = []
     for k, (ln, title) in enumerate(heads):
         end = heads[k + 1][0] if k + 1 < len(heads) else build.end_lineno + 1
@@ -149,12 +166,25 @@ def plan(src):
         sc = scope_of(sec["stmts"])
         bound_before = scope_of(before).stores
         read_after = scope_of(after).loads
-        inputs = sorted((sc.loads & build_locals & bound_before))
-        outputs = sorted(sc.stores & read_after)
+        # names the section declares `global` are module names, not build() locals
+        G = {n for st in sec["stmts"] for x in ast.walk(st) if isinstance(x, ast.Global) for n in x.names}
+        inputs = sorted((sc.loads & build_locals & bound_before) - G)
+        outputs = sorted((sc.stores & read_after) - G)
         inputs = sorted(set(inputs) | (set(outputs) & bound_before))
         why = []
-        if sc.flags:
-            why.append("has " + "/".join(sorted(sc.flags)))
+        if sec["title"].startswith("CALL "):
+            why.append("already a call")
+        flags = set(sc.flags)
+        if "global" in flags:
+            # safe to move with it iff build() binds those names nowhere else
+            # (in build() the declaration covers the WHOLE function)
+            rest = [st for st in body if st not in sec["stmts"]]
+            clash = G & scope_of(rest).stores
+            if clash:
+                why.append(f"global {sorted(clash)} is also bound elsewhere in build()")
+            flags.discard("global")
+        if flags:
+            why.append("has " + "/".join(sorted(flags)))
         unbound = (sc.loads & build_locals) - bound_before - sc.stores
         if unbound:
             why.append(f"reads build() names not bound before it: {sorted(unbound)}")
@@ -164,8 +194,22 @@ def plan(src):
                 fn_out.add(st.name)
             if isinstance(st, ast.Assign) and isinstance(st.value, ast.Lambda):
                 fn_out |= {t.id for t in st.targets if isinstance(t, ast.Name)}
-        if fn_out & set(outputs):
-            why.append(f"hands out a closure: {sorted(fn_out & set(outputs))}")
+        # A closure handed to later code captures, once moved, the EXTRACTED
+        # function's variables. That is only equivalent if build() never rebinds
+        # any variable the closure reads after this section.
+        stores_after = scope_of(after).stores
+        for st in sec["stmts"]:
+            if isinstance(st, ast.FunctionDef) and st.name in outputs:
+                inner = scope_of(st.body)
+                args = {a.arg for a in st.args.args + st.args.kwonlyargs + st.args.posonlyargs}
+                args |= {a.arg for a in (st.args.vararg, st.args.kwarg) if a}
+                risky = (inner.loads - inner.stores - args) & stores_after
+                if risky:
+                    why.append(f"closure {st.name} reads {sorted(risky)}, rebound later in build()")
+        lam = {t for st in sec["stmts"] if isinstance(st, ast.Assign) and isinstance(st.value, ast.Lambda)
+               for t in (x.id for x in st.targets if isinstance(x, ast.Name))}
+        if lam & set(outputs):
+            why.append(f"hands out a lambda: {sorted(lam & set(outputs))}")
         out.append(dict(sec, inputs=inputs, outputs=outputs, why=why,
                         body_from=sec["head"], body_to=last.end_lineno))
     return out, build
