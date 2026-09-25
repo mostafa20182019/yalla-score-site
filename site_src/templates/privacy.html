@@ -1,0 +1,31 @@
+{# /privacy - required for AdSense. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<article class="article legal">
+  <h1>سياسة الخصوصية</h1>
+  <p class="a-meta">آخر تحديث: {{ ref_today }}</p>
+  <div class="a-body">
+    <p>خصوصيتك تهمّنا. توضّح هذه الصفحة كيف يتعامل موقع <b>يلا سكور</b> مع المعلومات عند زيارتك له.</p>
+    <h2>المعلومات التي نجمعها</h2>
+    <p>الموقع لا يطلب منك التسجيل أو إدخال بيانات شخصية. وقد تُجمَع بيانات تقنية بشكل تلقائي (مثل نوع المتصفح ونظام التشغيل والصفحات التي تزورها) عبر ملفات تعريف الارتباط وخدمات الطرف الثالث بهدف تشغيل الموقع وتحسينه.</p>
+    <h2>ملفات تعريف الارتباط (Cookies)</h2>
+    <p>قد نستخدم ملفات تعريف الارتباط لحفظ تفضيلاتك وتحسين تجربتك ولعرض الإعلانات. يمكنك ضبط متصفحك لرفض ملفات تعريف الارتباط كليًا أو جزئيًا، مع العلم أن ذلك قد يؤثّر على بعض وظائف الموقع.</p>
+    {# 2026-09-16: this paragraph used to name the «DART cookie» - wording Google
+       retired years ago and that survives only in copied templates. It now says
+       what AdSense actually describes today (first- and third-party cookies,
+       doubleclick.net / googlesyndication.com), per
+       support.google.com/adsense/answer/7549925. #}
+    <h2>إعلانات الطرف الثالث — Google AdSense</h2>
+    <p>قد نعرض إعلانات عبر خدمة <b>Google AdSense</b>. تستخدم Google والشركات الشريكة لها ملفات تعريف ارتباط — بعضها من نطاق الموقع نفسه وبعضها من نطاقات خارجية مثل <span dir="ltr">doubleclick.net</span> و<span dir="ltr">googlesyndication.com</span> — لقياس أداء الإعلانات ومنع تكرارها واكتشاف الاحتيال، ولعرض إعلانات مبنية على زياراتك السابقة لهذا الموقع أو لمواقع أخرى.</p>
+    <p>يمكنك تعطيل الإعلانات المخصّصة من خلال <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">إعدادات إعلانات Google</a>، ومعرفة المزيد عبر <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">سياسة Google بشأن الإعلانات</a>.</p>
+    <h2>الروابط الخارجية</h2>
+    <p>يحتوي الموقع على روابط لمصادر إخبارية ومواقع خارجية. عند الضغط عليها تنتقل إلى مواقع لا نتحكّم فيها، ولا نتحمّل مسؤولية سياسات الخصوصية أو المحتوى الخاص بها.</p>
+    <h2>خصوصية الأطفال</h2>
+    <p>الموقع غير موجَّه للأطفال دون 13 عامًا، ولا نجمع عمدًا أي بيانات منهم.</p>
+    <h2>التعديلات على هذه السياسة</h2>
+    <p>قد نُحدّث هذه السياسة من وقت لآخر، ويُشير تاريخ «آخر تحديث» أعلاه إلى أحدث نسخة.</p>
+    <h2>التواصل</h2>
+    <p>لأي استفسار بخصوص سياسة الخصوصية، {{ contact }}</p>
+  </div>
+</article>
+{{ page_foot }}

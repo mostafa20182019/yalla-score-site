@@ -3,3 +3,4 @@ googlenewsdecoder
 Pillow
 arabic-reshaper
 python-bidi
+Jinja2>=3.1

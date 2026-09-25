@@ -1,0 +1,21 @@
+{# /contact - templated 2026-09-25. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<article class="article legal">
+  <h1>اتصل بنا</h1>
+  <div class="a-body">
+    <p>يسعدنا تواصلك معنا في أي من الحالات التالية:</p>
+    <ul>
+      <li>تصحيح معلومة وردت في خبر منشور.</li>
+      <li>ملاحظات على حقوق صورة أو محتوى.</li>
+      <li>استفسارات الإعلانات والشراكات.</li>
+      <li>اقتراحات لتطوير الموقع.</li>
+    </ul>
+    {% if contact_email %}
+    <p>راسلنا على البريد الإلكتروني: <a href="mailto:{{ contact_email }}"><b>{{ contact_email }}</b></a> وسنرد في أقرب وقت ممكن.</p>
+    {% else %}
+    <p>سيتم إضافة بريد التواصل الرسمي قريبًا.</p>
+    {% endif %}
+  </div>
+</article>
+{{ page_foot }}

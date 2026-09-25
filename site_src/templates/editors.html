@@ -1,0 +1,29 @@
+{# /about + /editors (editors.html) - generated 2026-09-25 from the Python that used to build
+   this page, so not one word changed. Lines are joined with NO separator
+   by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<article class="article legal">
+  <h1>فريق التحرير</h1>
+  <div class="a-body">
+    <p>{{ site_name }} موقع مصري مستقل لأخبار كرة القدم ونتائج المباريات. يشرف على المحتوى مدير تحرير واحد مسؤول عن كل ما يُنشر، ويتلقى التصحيحات والملاحظات مباشرة.</p>
+    <h2>مدير التحرير</h2>
+    <div class="ed-card">
+      <div class="ed-name">{{ editor_name }}</div>
+      <div class="ed-role">{{ editor_role }} ومؤسس {{ site_name }}</div>
+      <p>مطوّر برمجيات مصري ومتابع للكرة المصرية والأوروبية. يضع السياسة التحريرية للموقع، ويراجع ما يُنشر، ويردّ على طلبات التصحيح. <b>كل مقال على الموقع يحمل توقيعه</b> باعتباره المسؤول عن محتواه.</p>
+      <p class="ed-contact">البريد: <a href="mailto:{{ editor_email }}">{{ editor_email }}</a> · <a href="{{ fb_page_url }}" target="_blank" rel="noopener">صفحة الموقع على فيسبوك</a> · <a href="{{ tg_channel_url }}" target="_blank" rel="noopener">قناة الموقع على تيليجرام</a></p>
+    </div>
+    <h2>كيف نعمل</h2>
+    <ul>
+      <li><b>التحقق أولًا:</b> لا يُنشر خبر إلا بعد تأكيده من مصدرين مستقلين على الأقل، ونتجاهل الشائعات المتضاربة حتى تُحسم.</li>
+      <li><b>صياغة أصلية:</b> كل مقال مكتوب بصياغتنا، مع نسبة المعلومات إلى مصادرها ودون اختلاق تصريحات أو أرقام.</li>
+      <li><b>إفصاح:</b> تُصاغ المقالات بمساعدة أدوات ذكاء اصطناعي من حقائق تحقّقنا منها، تحت إشرافي ومراجعتي، وأنا المسؤول عن كل ما يُنشر — <a href="/editorial.html">التفاصيل في السياسة التحريرية</a>.</li>
+      <li><b>بيانات المباريات:</b> النتائج وجداول الترتيب والهدافون تُحدَّث آليًا من مزوّدي بيانات متخصصين، وتُراجع قواعد سلامتها باستمرار حتى لا يظهر رقم غير مؤكد.</li>
+      <li><b>الصور:</b> نستخدم صورًا مرخّصة للاستخدام الحر فقط، مع ذكر المصوّر والرخصة تحت كل صورة.</li>
+      <li><b>التصحيح:</b> عند اكتشاف خطأ نصحّحه في المقال نفسه في أسرع وقت. أبلغنا عبر <a href="mailto:{{ editor_email }}">{{ editor_email }}</a> أو صفحة <a href="/contact.html">اتصل بنا</a>.</li>
+    </ul>
+    <p>التفاصيل الكاملة في <a href="/editorial.html">السياسة التحريرية</a>.</p>
+  </div>
+</article>
+{{ page_ld }}
+{{ page_foot }}

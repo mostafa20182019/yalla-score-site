@@ -15,6 +15,7 @@ import base64, json, os, re, html, shutil, datetime, hashlib, io
 import analysis as AN     # تحليلات: strength model, predictions, accuracy, player insights
 import store              # prediction log (D1 when configured, else the json file)
 import results_archive as RA   # every finished match of the season, frozen once complete
+from site_lib.render import render, Markup   # Jinja2 page templates (site_src/templates/)
 # Football reference tables (competitions, clubs, Arabic spellings, legends,
 # calendar words) live in site_lib/ since slice 2 of the split - edit them
 # there. Imported under the same names, so b.AR_TEAM & co. still work.
@@ -2939,231 +2940,85 @@ def _page_404_page():
     write("404.html", "".join(nf))
 
 
-def _page_privacy_policy(urls=_UNSET):
-    if urls is _UNSET:
-        del urls
-    # ---- privacy policy (required for AdSense) ----
-    contact = (f'راسِلنا على <a href="mailto:{esc(CONTACT_EMAIL)}">{esc(CONTACT_EMAIL)}</a>.'
+def _page_privacy_policy(urls):
+    """/privacy (required for AdSense). The text is site_src/templates/privacy.html;
+    this function only hands it the pieces that change (templated 2026-09-25)."""
+    contact = (Markup(f'راسِلنا على <a href="mailto:{esc(CONTACT_EMAIL)}">{esc(CONTACT_EMAIL)}</a>.')
                if CONTACT_EMAIL else 'يمكنك التواصل معنا عبر قنواتنا الرسمية.')
-    pv = [head("سياسة الخصوصية — " + SITE_NAME,
-               "سياسة الخصوصية وملفات تعريف الارتباط والإعلانات في موقع يلا سكور.",
-               SITE_BASE + "/privacy.html")]
-    pv.append('<article class="article legal"><h1>سياسة الخصوصية</h1>')
-    pv.append(f'<p class="a-meta">آخر تحديث: {REF_TODAY}</p><div class="a-body">')
-    pv.append('<p>خصوصيتك تهمّنا. توضّح هذه الصفحة كيف يتعامل موقع <b>يلا سكور</b> مع المعلومات عند زيارتك له.</p>')
-    pv.append('<h2>المعلومات التي نجمعها</h2><p>الموقع لا يطلب منك التسجيل أو إدخال بيانات شخصية. وقد تُجمَع بيانات تقنية بشكل تلقائي (مثل نوع المتصفح ونظام التشغيل والصفحات التي تزورها) عبر ملفات تعريف الارتباط وخدمات الطرف الثالث بهدف تشغيل الموقع وتحسينه.</p>')
-    pv.append('<h2>ملفات تعريف الارتباط (Cookies)</h2><p>قد نستخدم ملفات تعريف الارتباط لحفظ تفضيلاتك وتحسين تجربتك ولعرض الإعلانات. يمكنك ضبط متصفحك لرفض ملفات تعريف الارتباط كليًا أو جزئيًا، مع العلم أن ذلك قد يؤثّر على بعض وظائف الموقع.</p>')
-    # 2026-09-16: the paragraph used to name the «DART cookie» — wording Google
-    # retired years ago and that survives only in copied templates. Replaced
-    # with how AdSense actually describes it today (first- and third-party
-    # cookies, doubleclick.net / googlesyndication.com), per
-    # support.google.com/adsense/answer/7549925.
-    pv.append('<h2>إعلانات الطرف الثالث — Google AdSense</h2><p>قد نعرض إعلانات عبر خدمة <b>Google AdSense</b>. تستخدم Google والشركات الشريكة لها ملفات تعريف ارتباط — بعضها من نطاق الموقع نفسه وبعضها من نطاقات خارجية مثل <span dir="ltr">doubleclick.net</span> و<span dir="ltr">googlesyndication.com</span> — لقياس أداء الإعلانات ومنع تكرارها واكتشاف الاحتيال، ولعرض إعلانات مبنية على زياراتك السابقة لهذا الموقع أو لمواقع أخرى.</p>')
-    pv.append('<p>يمكنك تعطيل الإعلانات المخصّصة من خلال <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener">إعدادات إعلانات Google</a>، ومعرفة المزيد عبر <a href="https://policies.google.com/technologies/ads" target="_blank" rel="noopener">سياسة Google بشأن الإعلانات</a>.</p>')
-    pv.append('<h2>الروابط الخارجية</h2><p>يحتوي الموقع على روابط لمصادر إخبارية ومواقع خارجية. عند الضغط عليها تنتقل إلى مواقع لا نتحكّم فيها، ولا نتحمّل مسؤولية سياسات الخصوصية أو المحتوى الخاص بها.</p>')
-    pv.append('<h2>خصوصية الأطفال</h2><p>الموقع غير موجَّه للأطفال دون 13 عامًا، ولا نجمع عمدًا أي بيانات منهم.</p>')
-    pv.append('<h2>التعديلات على هذه السياسة</h2><p>قد نُحدّث هذه السياسة من وقت لآخر، ويُشير تاريخ «آخر تحديث» أعلاه إلى أحدث نسخة.</p>')
-    pv.append(f'<h2>التواصل</h2><p>لأي استفسار بخصوص سياسة الخصوصية، {contact}</p>')
-    pv.append('</div></article>')
-    pv.append(foot())
-    write("privacy.html", "".join(pv))
+    write("privacy.html", render(
+        "privacy.html",
+        page_head=Markup(head("سياسة الخصوصية — " + SITE_NAME,
+                              "سياسة الخصوصية وملفات تعريف الارتباط والإعلانات في موقع يلا سكور.",
+                              SITE_BASE + "/privacy.html")),
+        ref_today=REF_TODAY,
+        contact=contact,
+        page_foot=Markup(foot())))
     urls.append("/privacy.html")
 
 
-def _page_about_page_helps_adsense_e_e_a_t_review(urls=_UNSET):
-    if urls is _UNSET:
-        del urls
-    # ---- about page (من نحن) — helps AdSense/E-E-A-T review ----
-    ab = [head("من نحن — " + SITE_NAME,
-               "تعرّف على يلا سكور: موقع عربي لأخبار كرة القدم ونتائج المباريات وجداول الترتيب.",
-               SITE_BASE + "/about.html")]
-    ab.append('<article class="article legal"><h1>من نحن</h1><div class="a-body">')
-    ab.append(f'<p><b>{esc(SITE_NAME)}</b> موقع عربي متخصص في كرة القدم، يقدّم أخبار الكرة المصرية '
-              'والعالمية، ومواعيد ونتائج المباريات، وجداول ترتيب أبرز البطولات — في مكان واحد وبواجهة سريعة وبسيطة.</p>')
-    ab.append('<h2>ماذا نقدّم؟</h2><ul>'
-              '<li><b>أخبار بصياغتنا:</b> يُعِدّ <a href="/editors.html">مصطفى عبدالسلام</a>، مدير تحرير الموقع، المقالات '
-              '(بمساعدة أدوات ذكاء اصطناعي في الصياغة وتحت مراجعته — '
-              '<a href="/editorial.html">إفصاح كامل هنا</a>) '
-              'من الحقائق التي أكّدها مصدران مستقلان على الأقل، مع تسمية المصدر داخل الخبر وإضافة الخلفية '
-              'والأرقام وما يعنيه الخبر — دون نسخ نصوص المواقع الأخرى. '
-              '<a href="/editorial.html">تفاصيل طريقة العمل في السياسة التحريرية</a>.</li>'
-              '<li><b>عناوين من المصادر:</b> نجمع أحدث عناوين الصحف والمواقع الرياضية مع رابط مباشر إلى المصدر الأصلي '
-              'لقراءة التفاصيل كاملة على موقعه.</li>'
-              '<li><b>مباريات وترتيب:</b> مواعيد ونتائج المباريات وجداول الترتيب لأبرز الدوريات والبطولات، '
-              'تُحدَّث تلقائيًا على مدار اليوم من مصادر بيانات موثوقة.</li></ul>')
-    ab.append('<h2>معاييرنا التحريرية</h2><ul>'
-              '<li>لا ننشر خبرًا إلا بعد تأكيده من أكثر من مصدر، ونتجنّب الشائعات المتضاربة.</li>'
-              '<li>ننسب المعلومات إلى مصادرها ("بحسب تقارير صحفية") ولا نختلق تصريحات أو أرقامًا.</li>'
-              '<li>نستخدم صورًا مرخّصة للاستخدام الحر فقط (Creative Commons / الملكية العامة) مع ذكر صاحب الصورة والرخصة.</li></ul>')
-    ab.append(f'<h2>تواصل معنا</h2><p>لأي ملاحظة أو تصحيح أو استفسار، تفضّل بزيارة صفحة '
-              f'<a href="/contact.html">اتصل بنا</a>.</p>')
-    ab.append('</div></article>')
-    ab.append(foot())
-    write("about.html", "".join(ab))
+def _page_about(urls):
+    """/about and /editors (AdSense / E-E-A-T identity pages). Text:
+    site_src/templates/about.html + editors.html (templated 2026-09-25)."""
+    common = dict(site_name=SITE_NAME)
+    write("about.html", render(
+        "about.html",
+        page_head=Markup(head("من نحن — " + SITE_NAME,
+                              "تعرّف على يلا سكور: موقع عربي لأخبار كرة القدم ونتائج المباريات وجداول الترتيب.",
+                              SITE_BASE + "/about.html")),
+        page_foot=Markup(foot()), **common))
     urls.append("/about.html")
 
-
-    # ---- editorial team page (فريق التحرير) — publisher identity for the
-    # AdSense / E-E-A-T review (2nd rejection 2026-09-04 cited low value
-    # content); linked from every article byline, the footer and /about ----
-    ed = [head("فريق التحرير — " + SITE_NAME,
-               f"من يقف خلف {SITE_NAME}: مدير التحرير، طريقة عملنا في التحقق من الأخبار، وكيف تتواصل معنا للتصحيح.",
-               SITE_BASE + "/editors.html")]
-    ed.append('<article class="article legal"><h1>فريق التحرير</h1><div class="a-body">')
-    ed.append(f'<p>{esc(SITE_NAME)} موقع مصري مستقل لأخبار كرة القدم ونتائج المباريات. '
-              'يشرف على المحتوى مدير تحرير واحد مسؤول عن كل ما يُنشر، ويتلقى التصحيحات والملاحظات مباشرة.</p>')
-    ed.append('<h2>مدير التحرير</h2>'
-              f'<div class="ed-card"><div class="ed-name">{esc(EDITOR_NAME)}</div>'
-              f'<div class="ed-role">{esc(EDITOR_ROLE)} ومؤسس {esc(SITE_NAME)}</div>'
-              f'<p>مطوّر برمجيات مصري ومتابع للكرة المصرية والأوروبية. يضع السياسة التحريرية للموقع، '
-              'ويراجع ما يُنشر، ويردّ على طلبات التصحيح. <b>كل مقال على الموقع يحمل توقيعه</b> '
-              'باعتباره المسؤول عن محتواه.</p>'
-              f'<p class="ed-contact">البريد: <a href="mailto:{esc(EDITOR_EMAIL)}">{esc(EDITOR_EMAIL)}</a> · '
-              f'<a href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener">صفحة الموقع على فيسبوك</a> · '
-              f'<a href="{esc(TG_CHANNEL_URL)}" target="_blank" rel="noopener">قناة الموقع على تيليجرام</a></p></div>')
-    ed.append('<h2>كيف نعمل</h2><ul>'
-              '<li><b>التحقق أولًا:</b> لا يُنشر خبر إلا بعد تأكيده من مصدرين مستقلين على الأقل، '
-              'ونتجاهل الشائعات المتضاربة حتى تُحسم.</li>'
-              '<li><b>صياغة أصلية:</b> كل مقال مكتوب بصياغتنا، مع نسبة المعلومات إلى مصادرها ودون اختلاق تصريحات أو أرقام.</li>'
-              '<li><b>إفصاح:</b> تُصاغ المقالات بمساعدة أدوات ذكاء اصطناعي من حقائق تحقّقنا منها، '
-              'تحت إشرافي ومراجعتي، وأنا المسؤول عن كل ما يُنشر — '
-              '<a href="/editorial.html">التفاصيل في السياسة التحريرية</a>.</li>'
-              '<li><b>بيانات المباريات:</b> النتائج وجداول الترتيب والهدافون تُحدَّث آليًا من مزوّدي بيانات متخصصين، '
-              'وتُراجع قواعد سلامتها باستمرار حتى لا يظهر رقم غير مؤكد.</li>'
-              '<li><b>الصور:</b> نستخدم صورًا مرخّصة للاستخدام الحر فقط، مع ذكر المصوّر والرخصة تحت كل صورة.</li>'
-              '<li><b>التصحيح:</b> عند اكتشاف خطأ نصحّحه في المقال نفسه في أسرع وقت. '
-              f'أبلغنا عبر <a href="mailto:{esc(EDITOR_EMAIL)}">{esc(EDITOR_EMAIL)}</a> أو صفحة '
-              '<a href="/contact.html">اتصل بنا</a>.</li></ul>')
-    ed.append('<p>التفاصيل الكاملة في <a href="/editorial.html">السياسة التحريرية</a>.</p>')
-    ed.append('</div></article>')
-    ed.append(jsonld({
+    # /editors - publisher identity for the AdSense / E-E-A-T review (2nd
+    # rejection 2026-09-04 cited low value content); linked from every
+    # article byline, the footer and /about
+    page_head = Markup(head("فريق التحرير — " + SITE_NAME,
+                            f"من يقف خلف {SITE_NAME}: مدير التحرير، طريقة عملنا في التحقق من الأخبار، وكيف تتواصل معنا للتصحيح.",
+                            SITE_BASE + "/editors.html"))
+    page_ld = Markup(jsonld({
         "@context": "https://schema.org", "@type": "ProfilePage",
         "name": f"فريق التحرير — {SITE_NAME}", "url": SITE_BASE + "/editors.html",
         "mainEntity": {"@type": "Person", "name": EDITOR_NAME, "jobTitle": EDITOR_ROLE,
                        "email": f"mailto:{EDITOR_EMAIL}", "url": SITE_BASE + "/editors.html",
                        "worksFor": {"@type": "Organization", "name": SITE_NAME, "url": SITE_BASE}},
     }))
-    ed.append(foot())
-    write("editors.html", "".join(ed))
+    write("editors.html", render(
+        "editors.html", page_head=page_head, page_ld=page_ld, page_foot=Markup(foot()),
+        editor_name=EDITOR_NAME, editor_role=EDITOR_ROLE, editor_email=EDITOR_EMAIL,
+        fb_page_url=FB_PAGE_URL, tg_channel_url=TG_CHANNEL_URL, **common))
     urls.append("/editors.html")
-    _l = locals()
-    return {k: _l[k] for k in ('ed',) if k in _l}
 
 
-def _page_contact_page(urls=_UNSET):
-    if urls is _UNSET:
-        del urls
-    # ---- contact page (اتصل بنا) ----
-    ct = [head("اتصل بنا — " + SITE_NAME,
-               "تواصل مع فريق يلا سكور للاستفسارات والتصحيحات والإعلانات.",
-               SITE_BASE + "/contact.html")]
-    ct.append('<article class="article legal"><h1>اتصل بنا</h1><div class="a-body">')
-    ct.append('<p>يسعدنا تواصلك معنا في أي من الحالات التالية:</p><ul>'
-              '<li>تصحيح معلومة وردت في خبر منشور.</li>'
-              '<li>ملاحظات على حقوق صورة أو محتوى.</li>'
-              '<li>استفسارات الإعلانات والشراكات.</li>'
-              '<li>اقتراحات لتطوير الموقع.</li></ul>')
-    if CONTACT_EMAIL:
-        ct.append(f'<p>راسلنا على البريد الإلكتروني: '
-                  f'<a href="mailto:{esc(CONTACT_EMAIL)}"><b>{esc(CONTACT_EMAIL)}</b></a> '
-                  'وسنرد في أقرب وقت ممكن.</p>')
-    else:
-        ct.append('<p>سيتم إضافة بريد التواصل الرسمي قريبًا.</p>')
-    ct.append('</div></article>')
-    ct.append(foot())
-    write("contact.html", "".join(ct))
+def _page_contact(urls):
+    """/contact - text in site_src/templates/contact.html (templated 2026-09-25)."""
+    write("contact.html", render(
+        "contact.html",
+        page_head=Markup(head("اتصل بنا — " + SITE_NAME,
+                              "تواصل مع فريق يلا سكور للاستفسارات والتصحيحات والإعلانات.",
+                              SITE_BASE + "/contact.html")),
+        contact_email=CONTACT_EMAIL, page_foot=Markup(foot())))
     urls.append("/contact.html")
 
 
-def _page_terms_of_use(urls=_UNSET):
-    if urls is _UNSET:
-        del urls
-    # ---- terms of use (شروط الاستخدام) ----
-    tm = [head("شروط الاستخدام — " + SITE_NAME,
-               "شروط استخدام موقع يلا سكور: حدود المسؤولية وقواعد استخدام المحتوى.",
-               SITE_BASE + "/terms.html")]
-    tm.append('<article class="article legal"><h1>شروط الاستخدام</h1><div class="a-body">')
-    tm.append(f'<p>باستخدامك موقع <b>{esc(SITE_NAME)}</b> فأنت توافق على الشروط التالية:</p>')
-    tm.append('<h2>طبيعة المحتوى</h2><ul>'
-              '<li>الموقع يقدّم أخبارًا ونتائج ومواعيد مباريات لأغراض إعلامية عامة.</li>'
-              '<li>نبذل جهدًا دائمًا لضمان دقة النتائج والمواعيد المعروضة، إلا أنها تصل من مصادر '
-              'بيانات خارجية وقد يطرأ عليها تأخير أو تعديل، لذا لا نضمن خلوّها من الخطأ، '
-              'ولا يتحمّل الموقع مسؤولية أي قرار يُتّخذ بناءً عليها.</li>'
-              '<li>روابط عناوين الصحف تقود إلى مواقع خارجية لا نتحكم في محتواها ولا نتحمل مسؤوليته.</li></ul>')
-    tm.append('<h2>حقوق المحتوى</h2><ul>'
-              '<li>المقالات المنشورة على الموقع باسم محرره ملك للموقع؛ يُسمح بالاقتباس المختصر مع ذكر '
-              'المصدر ورابط المقال، ولا يجوز إعادة النشر الكامل دون إذن.</li>'
-              '<li>الصور المستخدمة مرخّصة للاستخدام الحر (Creative Commons / الملكية العامة) '
-              'وتُنسب لأصحابها؛ شعارات الأندية والبطولات ملك لأصحابها وتُعرض لغرض التعريف فقط.</li></ul>')
-    tm.append('<h2>الإعلانات</h2>'
-              '<p>قد يعرض الموقع إعلانات عبر Google AdSense؛ راجع <a href="/privacy.html">سياسة الخصوصية</a> '
-              'لتفاصيل ملفات تعريف الارتباط.</p>')
-    tm.append('<h2>تعديل الشروط</h2>'
-              '<p>قد نُحدّث هذه الشروط من وقت لآخر، ويُعد استمرارك في استخدام الموقع موافقةً على النسخة الأحدث.</p>')
-    tm.append('</div></article>')
-    tm.append(foot())
-    write("terms.html", "".join(tm))
+def _page_terms(urls):
+    """/terms - text in site_src/templates/terms.html (templated 2026-09-25)."""
+    write("terms.html", render(
+        "terms.html",
+        page_head=Markup(head("شروط الاستخدام — " + SITE_NAME,
+                              "شروط استخدام موقع يلا سكور: حدود المسؤولية وقواعد استخدام المحتوى.",
+                              SITE_BASE + "/terms.html")),
+        site_name=SITE_NAME, page_foot=Markup(foot())))
     urls.append("/terms.html")
 
 
-def _page_editorial_policy_e_e_a_t_signal(ed=_UNSET, urls=_UNSET):
-    if ed is _UNSET:
-        del ed
-    if urls is _UNSET:
-        del urls
-    # ---- editorial policy (السياسة التحريرية) — E-E-A-T signal ----
-    ed = [head("السياسة التحريرية — " + SITE_NAME,
-               "منهج يلا سكور التحريري: التحقق من مصادر متعددة، صياغة أصلية، صور مرخصة، وتصحيح علني للأخطاء.",
-               SITE_BASE + "/editorial.html")]
-    ed.append('<article class="article legal"><h1>السياسة التحريرية</h1><div class="a-body">')
-    ed.append('<p>نلتزم في تغطيتنا الإخبارية بمعايير ثابتة نطبّقها على كل مقال ننشره:</p>')
-    ed.append('<h2>التحقق قبل النشر</h2><ul>'
-              '<li>لا ننشر خبرًا إلا بعد تطابقه لدى <b>مصدرين مستقلين على الأقل</b>.</li>'
-              '<li>نتجنّب نشر الشائعات والتقارير المتضاربة حتى تتضح، ونميّز دائمًا بين الخبر '
-              'المؤكد والمنسوب ("بحسب تقارير صحفية").</li>'
-              '<li>لا نختلق تصريحات أو أرقامًا أو تفاصيل تعاقدية غير معلنة.</li></ul>')
-    ed.append('<h2>كيف نُعِدّ الخبر؟</h2><ul>'
-              '<li><b>مصادر الخبر:</b> نبدأ من المصدر الرسمي حين يتوفر (النادي، الاتحاد، اللاعب عبر '
-              'حساباته الرسمية) ثم نقارنه بما نشرته وسائل إعلام رياضية موثوقة، ولا نكتب إلا ما اتفق عليه '
-              'مصدران مستقلان على الأقل. نسمّي المصدر داخل الخبر، ونذكر المصادر التي اعتمدنا عليها في '
-              'نهاية المقال في المقالات المنشورة منذ سبتمبر 2026.</li>'
-              '<li><b>الكتابة:</b> نكتب المقال بصياغتنا الخاصة من الحقائق المؤكدة، ولا ننسخ نصوص المواقع '
-              'الأخرى. نحرص على أن يضيف كل مقال ما يفيد القارئ فعلًا: خلفية القصة، الأرقام ذات الصلة '
-              '(المباريات، الأهداف، الترتيب، التواريخ)، ماذا يعني الخبر للنادي أو اللاعب، وما الخطوة '
-              'التالية المتوقعة، مع الربط بمقالاتنا السابقة عن الموضوع نفسه.</li>'
-              '<li><b>البيانات:</b> النتائج والمواعيد وجداول الترتيب والهدافون تأتي من مزوّدي بيانات '
-              'المباريات وتتحدّث تلقائيًا، ولا نعرض نتيجة مباشرة إلا بعد تأكدها من المصدر.</li>'
-              f'<li><b>إعداد ومراجعة:</b> <a href="/editors.html">{esc(EDITOR_NAME)}</a>، '
-              'ويظهر وقت النشر على كل مقال. عن دور أدوات الذكاء الاصطناعي في الصياغة، '
-              'انظر القسم أدناه.</li>'
-              '<li>قسم "عناوين الصحف" تجميعي بطبيعته: يعرض العنوان ويحيل مباشرةً إلى المصدر الأصلي.</li></ul>')
-    ed.append('<h2>استخدام الذكاء الاصطناعي</h2>'
-              '<p>نفصح عن ذلك صراحةً: <b>تُصاغ مقالات الموقع بمساعدة أدوات ذكاء اصطناعي</b>، '
-              'انطلاقًا من حقائق تحقّقنا منها ومن أرقام مباريات حقيقية، وتحت إشراف ومراجعة '
-              f'<a href="/editors.html">{esc(EDITOR_NAME)}</a> الذي يوقّع المقالات ويتحمّل '
-              'المسؤولية الكاملة عن كل ما يُنشر. الأداة تساعد في الصياغة والترتيب، ولا تقرّر '
-              'ما يُنشر ولا تُسنِد خبرًا إلى مصدر لم نراجعه.</p>'
-              '<p>وللتفريق بين ثلاثة أشياء مختلفة على الموقع:</p><ul>'
-              '<li><b>المقالات:</b> صياغة بمساعدة الذكاء الاصطناعي من حقائق مؤكدة، بمراجعة بشرية '
-              'قبل النشر، ومع تسمية المصادر داخل المقال وفي نهايته.</li>'
-              '<li><b>قراءات المباريات وتحليل الترتيب:</b> ليست مكتوبة بالذكاء الاصطناعي إطلاقًا — '
-              'جُمَل تُبنى حسابيًا من الأرقام المعروضة على الصفحة نفسها (الترتيب، الشكل الأخير، '
-              'أحداث المباراة، تقييمات اللاعبين)، فإن غابت البيانات لا تُكتب الجملة.</li>'
-              '<li><b>النتائج والجداول والتوقعات:</b> بيانات تصل آليًا من مزوّدي بيانات المباريات، '
-              'والتوقعات مخرجات نموذج إحصائي مفتوح الشرح في '
-              '<a href="/analysis.html#model">صفحة التحليلات</a>، وسجلّه كاملًا بإصاباته وإخفاقاته '
-              'في <a href="/predictions.html">سجل التوقعات</a>.</li></ul>'
-              '<p>إن وجدت في أي مقال معلومة تبدو غير دقيقة، '
-              f'<a href="/contact.html">أبلغنا</a> وسنراجعها ونصحّحها علنًا.</p>')
-    ed.append('<h2>الصور</h2><ul>'
-              '<li>نستخدم صورًا مرخّصة للاستخدام الحر فقط، وثيقة الصلة بموضوع الخبر، '
-              'مع ذكر المصوِّر والرخصة أسفل كل صورة.</li></ul>')
-    ed.append('<h2>التصحيح</h2>'
-              '<p>إذا اكتشفنا خطأً في مقال منشور نصحّحه فور التثبت منه، ونرحّب بأي تصحيح عبر صفحة '
-              '<a href="/contact.html">اتصل بنا</a>.</p>')
-    ed.append('</div></article>')
-    ed.append(foot())
-    write("editorial.html", "".join(ed))
+def _page_editorial(urls):
+    """/editorial (the E-E-A-T editorial policy, incl. the AI disclosure) - text in
+    site_src/templates/editorial.html (templated 2026-09-25)."""
+    write("editorial.html", render(
+        "editorial.html",
+        page_head=Markup(head("السياسة التحريرية — " + SITE_NAME,
+                              "منهج يلا سكور التحريري: التحقق من مصادر متعددة، صياغة أصلية، صور مرخصة، وتصحيح علني للأخطاء.",
+                              SITE_BASE + "/editorial.html")),
+        editor_name=EDITOR_NAME, page_foot=Markup(foot())))
     urls.append("/editorial.html")
 
 
@@ -4233,21 +4088,19 @@ def build():
     _page_404_page()
 
     # privacy policy (required for AdSense) -> _page_privacy_policy() (moved out of build(), slice 4)
-    _page_privacy_policy(**_bound(locals(), ('urls',)))
+    _page_privacy_policy(urls)
 
     # about page (من نحن) — helps AdSense/E-E-A-T review -> _page_about_page_helps_adsense_e_e_a_t_review() (moved out of build(), slice 4)
-    _r = _page_about_page_helps_adsense_e_e_a_t_review(**_bound(locals(), ('urls',)))
-    if 'ed' in _r:
-        ed = _r['ed']
+    _page_about(urls)
 
     # contact page (اتصل بنا) -> _page_contact_page() (moved out of build(), slice 4)
-    _page_contact_page(**_bound(locals(), ('urls',)))
+    _page_contact(urls)
 
     # terms of use (شروط الاستخدام) -> _page_terms_of_use() (moved out of build(), slice 4)
-    _page_terms_of_use(**_bound(locals(), ('urls',)))
+    _page_terms(urls)
 
     # editorial policy (السياسة التحريرية) — E-E-A-T signal -> _page_editorial_policy_e_e_a_t_signal() (moved out of build(), slice 4)
-    _page_editorial_policy_e_e_a_t_signal(**_bound(locals(), ('ed', 'urls')))
+    _page_editorial(urls)
 
     # news archive pages -> _page_news_archive_pages() (moved out of build(), slice 4)
     _page_news_archive_pages(**_bound(locals(), ('articles', 'urls')))

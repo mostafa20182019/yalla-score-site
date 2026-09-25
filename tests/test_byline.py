@@ -50,8 +50,13 @@ ck("8 no render path still prints the raw stored author",
    'esc(a.get("author"))' not in src and 'a.get("author") or SITE_NAME' not in src, )
 ck("9 the schema no longer emits an Organization author for articles",
    '"author": {"@type": "Person", "name": byline(a)' in src)
+# (2026-09-25: the static pages' wording moved into site_src/templates/ -
+# the checks below read it there; the rendered pages are byte-identical)
+TPL = "site_src/templates/"
+tpl = {n: open(TPL + n, encoding="utf-8").read()
+       for n in ("editors.html", "editorial.html", "about.html")}
 ck("10 the editors page states that every article carries his signature",
-   "كل مقال على الموقع يحمل توقيعه" in src)
+   "كل مقال على الموقع يحمل توقيعه" in tpl["editors.html"])
 
 # the prompts must write the name into new rows too, or the data drifts from
 # what the site renders
@@ -68,13 +73,13 @@ for f in (".github/prompts/daily-article.md", ".github/prompts/match-article.md"
 # can be split across two lines in the SOURCE while being one sentence in the
 # OUTPUT - join them before asserting on wording
 import re as _re
-flat = _re.sub(r"'\s*\n\s*'", "", src)
-ed = flat[flat.index("السياسة التحريرية</h1>"):flat.index('write("editorial.html"')]
+flat = _re.sub(r"'\s*\n\s*'", "", src) + "".join(tpl.values())
+ed = tpl["editorial.html"]
 ck("12 the editorial policy has its own AI section",
    "استخدام الذكاء الاصطناعي" in ed and "نفصح عن ذلك صراحةً" in ed)
 ck("13 it says the articles are AI-ASSISTED, under the named editor's review",
    "تُصاغ مقالات الموقع بمساعدة أدوات ذكاء اصطناعي" in ed
-   and "تحت إشراف ومراجعة" in ed and "EDITOR_NAME" in ed)
+   and "تحت إشراف ومراجعة" in ed and "{{ editor_name }}" in ed)
 ck("14 it says the tool does not decide what is published",
    "لا تقرّر ما يُنشر" in ed and "لا تُسنِد خبرًا إلى مصدر لم نراجعه" in ed)
 ck("15 the computed readings are explicitly NOT AI-written",
