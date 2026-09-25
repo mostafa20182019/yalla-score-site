@@ -1,0 +1,16 @@
+{# /404 (served by Cloudflare for any missing asset; not in the sitemap) - templated 2026-09-25. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<div class="nf">
+  <div class="nf-emoji">⚽</div>
+  <h1 class="page-h">الصفحة غير موجودة</h1>
+  <p class="nf-p">يبدو أن الرابط غير صحيح أو أن الصفحة لم تعد متاحة.</p>
+  <p class="nf-p nf-wait" id="nfWait" hidden>لو ده خبر نُشر حالًا فهو يتجهّز الآن — الصفحة ستفتح تلقائيًا خلال لحظات <span class="nf-spin"></span></p>
+  <p class="nf-links">
+    <a class="nf-btn" href="/">الصفحة الرئيسية</a>
+    <a class="nf-btn nf-btn2" href="/matches.html">المباريات</a>
+    <a class="nf-btn nf-btn2" href="/news.html">كل الأخبار</a>
+  </p>
+</div>
+{{ retry_js }}
+{{ page_foot }}

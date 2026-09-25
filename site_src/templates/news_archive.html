@@ -1,0 +1,23 @@
+{# /news, /news/egypt, /news/europe - the calm list rows every archive uses - templated 2026-09-25. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<h1 class="page-h">{{ h1 }}</h1>
+{% if crumbs %}
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/news.html">كل الأخبار</a> › {{ h1 }}</nav>
+{% endif %}
+{% if rows %}
+<div class="alist">
+  {% for r in rows %}
+  <a class="al-row" href="{{ r.href }}">{{ r.th }}
+    <span class="al-b">
+      <b class="al-t">{{ r.title }}</b>
+      <span class="al-s">{{ r.summary }}</span>
+      <span class="al-m">{{ r.byline }} · {{ r.when }}</span>
+    </span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="empty-note">لا توجد أخبار بعد.</p>
+{% endif %}
+{{ page_foot }}

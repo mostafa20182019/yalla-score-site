@@ -1,0 +1,18 @@
+{# /videos, grouped by competition (empty groups are skipped) - templated 2026-09-25. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<h1 class="page-h">فيديوهات</h1>
+{% if has_videos %}
+{% for label, facades in groups %}
+<h2 class="page-h vcat-h">{{ label }}</h2>
+<div class="vgrid">
+  {% for facade in facades %}
+  {{ facade }}
+  {% endfor %}
+</div>
+{% endfor %}
+{{ video_js }}
+{% else %}
+<p class="empty-note">الفيديوهات قريبًا — تابعونا.</p>
+{% endif %}
+{{ page_foot }}

@@ -1,0 +1,22 @@
+{# /reels (vertical shorts; data/reels.json + reels_auto.json) - templated 2026-09-25. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<h1 class="page-h">⚡ ريلز</h1>
+{% if slides %}
+<div class="rwrap">
+  <div class="rfeed" id="rfeed">
+    {% for slide in slides %}
+    {{ slide }}
+    {% endfor %}
+  </div>
+  <div class="rarrows">
+    <button type="button" id="rUp" aria-label="الريل السابق">⬆</button>
+    <button type="button" id="rDn" aria-label="الريل التالي">⬇</button>
+  </div>
+</div>
+{{ video_js }}
+{{ reels_js }}
+{% else %}
+<p class="empty-note">الريلز قريبًا — تابعونا.</p>
+{% endif %}
+{{ page_foot }}

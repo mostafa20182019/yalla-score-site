@@ -20,10 +20,12 @@ caught by a byte comparison of one page before anything shipped.
 
 Autoescape is ON: a value passed in is escaped unless it is already HTML, in
 which case the caller wraps it with Markup() (head(), foot() and similar
-pre-built pieces). html.escape (the site's esc()) and markupsafe differ only
-in how they write a quote (&#x27; vs &#39;) - both are the same character to
-every browser.
+pre-built pieces). The escaping is the site's own - html.escape, what esc()
+has always done - through `finalize`, not markupsafe's: the two write quotes
+differently (&quot; vs &#34;), and article titles do contain quotes. Same
+safety, same bytes. None prints as nothing, like esc(None).
 """
+import html
 import os
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined
@@ -41,9 +43,18 @@ class _JoinedLinesLoader(FileSystemLoader):
         return "".join(line.strip() for line in src.splitlines()), filename, uptodate
 
 
+def _finalize(value):
+    if value is None:
+        return ""
+    if hasattr(value, "__html__"):
+        return value
+    return Markup(html.escape(str(value), quote=True))
+
+
 _env = Environment(
     loader=_JoinedLinesLoader(TEMPLATES, encoding="utf-8"),
     autoescape=True,
+    finalize=_finalize,
     # a missing variable is a bug in the page function, not an empty string on
     # the live site
     undefined=StrictUndefined,

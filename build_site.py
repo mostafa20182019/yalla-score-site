@@ -2901,43 +2901,19 @@ def _page_stats_dashboard(comp=_UNSET, comp_order=_UNSET, fixtures=_UNSET, forms
         urls.append("/stats.html")
 
 
-def _page_404_page():
-    # ---- 404 page (served by Cloudflare for any missing asset) ----
-    # Not in the sitemap on purpose. The auto-retry exists for one real case:
-    # an article page can 404 for a minute or two right around a deploy while
-    # the reader already holds a newer home page — the page re-checks itself
-    # and reloads the moment the URL starts resolving, so that reader never
-    # has to do anything. Bounded retries: a genuinely dead link stops
-    # polling after ~2 minutes and stays a normal 404.
-    nf = [head(f"الصفحة غير موجودة — {SITE_NAME}",
-               "الصفحة التي تبحث عنها غير موجودة.",
-               SITE_BASE + "/404.html")]
-    nf.append('<div class="nf"><div class="nf-emoji">⚽</div>')
-    nf.append('<h1 class="page-h">الصفحة غير موجودة</h1>')
-    nf.append('<p class="nf-p">يبدو أن الرابط غير صحيح أو أن الصفحة لم تعد متاحة.</p>')
-    nf.append('<p class="nf-p nf-wait" id="nfWait" hidden>لو ده خبر نُشر حالًا فهو '
-              'يتجهّز الآن — الصفحة ستفتح تلقائيًا خلال لحظات <span class="nf-spin"></span></p>')
-    nf.append('<p class="nf-links"><a class="nf-btn" href="/">الصفحة الرئيسية</a>'
-              '<a class="nf-btn nf-btn2" href="/matches.html">المباريات</a>'
-              '<a class="nf-btn nf-btn2" href="/news.html">كل الأخبار</a></p>')
-    nf.append('</div>')
-    nf.append(r"""<script>
-(function(){
-  /* auto-retry only where it can help: article pages right after a deploy */
-  if(!/^\/a\//.test(location.pathname)||!window.fetch)return;
-  var w=document.getElementById('nfWait'); if(w)w.hidden=false;
-  var tries=0;
-  function again(){
-    if(++tries>6){if(w)w.hidden=true;return;}   /* ~2 min then give up */
-    fetch(location.href,{cache:'no-store'}).then(function(r){
-      if(r.ok){location.reload();}else{setTimeout(again,20000);}
-    }).catch(function(){setTimeout(again,20000);});
-  }
-  setTimeout(again,15000);
-})();
-</script>""")
-    nf.append(foot())
-    write("404.html", "".join(nf))
+def _page_404():
+    """/404 - served by Cloudflare for any missing asset; not in the sitemap on
+    purpose. Text: site_src/templates/404.html. The auto-retry (snippets/
+    nf_retry_js.html) exists for one real case: an article page can 404 for a
+    minute or two right around a deploy while the reader already holds a newer
+    home page - the page re-checks itself and reloads the moment the URL starts
+    resolving. Bounded: a genuinely dead link stops polling after ~2 minutes."""
+    page_head = Markup(head(f"الصفحة غير موجودة — {SITE_NAME}",
+                            "الصفحة التي تبحث عنها غير موجودة.",
+                            SITE_BASE + "/404.html"))
+    write("404.html", render("404.html", page_head=page_head,
+                             retry_js=Markup(_src("snippets/nf_retry_js.html")),
+                             page_foot=Markup(foot())))
 
 
 def _page_privacy_policy(urls):
@@ -3022,41 +2998,28 @@ def _page_editorial(urls):
     urls.append("/editorial.html")
 
 
-def _page_news_archive_pages(articles=_UNSET, urls=_UNSET):
-    if articles is _UNSET:
-        del articles
-    if urls is _UNSET:
-        del urls
-    # ---- news archive pages ----
-    # /news.html = everything; /news/egypt.html + /news/europe.html = the
-    # section archives each home block's «المزيد» opens (user 2026-09-01:
-    # the blocks stay at 4 rows — the rest lives behind المزيد). Same calm
-    # list rows everywhere - the old card grid read as scattered ("شتات").
+def _page_news_archive(articles, urls):
+    """/news = everything; /news/egypt + /news/europe = the section archives each
+    home block's «المزيد» opens (user 2026-09-01: the blocks stay at 4 rows - the
+    rest lives behind المزيد). Same calm list rows everywhere - the old card grid
+    read as scattered ("شتات"). Template: site_src/templates/news_archive.html."""
     def news_archive(fname, h1, title, desc, arts):
-        np_ = [head(f"{title} — {SITE_NAME}", desc,
-                    SITE_BASE + "/" + fname, active="home")]
-        np_.append(f'<h1 class="page-h">{esc(h1)}</h1>')
-        if fname != "news.html":
-            np_.append('<nav class="crumbs"><a href="/">أخبار</a> › '
-                       f'<a href="/news.html">كل الأخبار</a> › {esc(h1)}</nav>')
-        if arts:
-            np_.append('<div class="alist">')
-            for a in arts:
-                img = thumb_url(a.get("image_url"))
-                th = (f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
-                      if img else '<span class="al-th noimg">⚽</span>')
-                np_.append(
-                    f'<a class="al-row" href="{article_href(a)}">{th}'
-                    f'<span class="al-b"><b class="al-t">{esc(a.get("title"))}</b>'
-                    f'<span class="al-s">{esc(strip_tags(a.get("summary") or ""))}</span>'
-                    f'<span class="al-m">{esc(byline(a))} · '
-                    f'{art_reltime(a) or esc(a.get("pub_date") or "")}</span>'
-                    f'</span></a>')
-            np_.append('</div>')
-        else:
-            np_.append('<p class="empty-note">لا توجد أخبار بعد.</p>')
-        np_.append(foot())
-        write(fname, "".join(np_))
+        page_head = Markup(head(f"{title} — {SITE_NAME}", desc,
+                                SITE_BASE + "/" + fname, active="home"))
+        rows = []
+        for a in arts:
+            img = thumb_url(a.get("image_url"))
+            rows.append({
+                "href": Markup(article_href(a)),
+                "th": Markup(f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                             if img else '<span class="al-th noimg">⚽</span>'),
+                "title": a.get("title"),
+                "summary": strip_tags(a.get("summary") or ""),
+                "byline": byline(a),
+                "when": Markup(art_reltime(a) or esc(a.get("pub_date") or "")),
+            })
+        write(fname, render("news_archive.html", page_head=page_head, h1=h1,
+                            crumbs=(fname != "news.html"), rows=rows, page_foot=Markup(foot())))
         urls.append("/" + fname)
 
     news_archive("news.html", "كل الأخبار", "كل الأخبار",
@@ -3156,72 +3119,39 @@ def _page_headlines_page(h=_UNSET, headlines=_UNSET, img=_UNSET, urls=_UNSET, wh
         urls.append("/headlines.html")
 
 
-def _page_reels_page(i=_UNSET, r=_UNSET, reels=_UNSET, urls=_UNSET):
-    if i is _UNSET:
-        del i
-    if r is _UNSET:
-        del r
-    if reels is _UNSET:
-        del reels
-    if urls is _UNSET:
-        del urls
-    # ---- reels page (vertical shorts; data/reels.json + reels_auto.json) ----
-    rp = [head(f"ريلز كرة القدم — {SITE_NAME}",
-               "ريلز كرة القدم — مقاطع قصيرة: مهارات وأهداف ولقطات ممتعة بالفيديو.",
-               SITE_BASE + "/reels.html", active="reels")]
-    rp.append('<h1 class="page-h">⚡ ريلز</h1>')
-    if reels:
-        rp.append('<div class="rwrap"><div class="rfeed" id="rfeed">')
-        for i, r in enumerate(reels):
-            rp.append(reel_slide(r, first=(i == 0)))
-        rp.append('</div>')
-        rp.append('<div class="rarrows">'
-                  '<button type="button" id="rUp" aria-label="الريل السابق">⬆</button>'
-                  '<button type="button" id="rDn" aria-label="الريل التالي">⬇</button></div>')
-        rp.append('</div>')
-        rp.append(VIDEO_JS)
-        rp.append(REELS_FEED_JS)
-    else:
-        rp.append('<p class="empty-note">الريلز قريبًا — تابعونا.</p>')
-    rp.append(foot())
+def _page_reels(reels, urls):
+    """/reels - vertical shorts. Template: site_src/templates/reels.html."""
+    page_head = Markup(head(f"ريلز كرة القدم — {SITE_NAME}",
+                            "ريلز كرة القدم — مقاطع قصيرة: مهارات وأهداف ولقطات ممتعة بالفيديو.",
+                            SITE_BASE + "/reels.html", active="reels"))
+    slides = [Markup(reel_slide(r, first=(i == 0))) for i, r in enumerate(reels or [])]
+    html_ = render("reels.html", page_head=page_head, slides=slides,
+                   video_js=Markup(VIDEO_JS), reels_js=Markup(REELS_FEED_JS),
+                   page_foot=Markup(foot()))
     if SHOW_REELS:
-        write("reels.html", "".join(rp))
+        write("reels.html", html_)
         urls.append("/reels.html")
 
 
-def _page_videos_page_grouped_by_competition(label=_UNSET, urls=_UNSET, v=_UNSET, videos=_UNSET):
-    if label is _UNSET:
-        del label
-    if urls is _UNSET:
-        del urls
-    if v is _UNSET:
-        del v
-    if videos is _UNSET:
-        del videos
-    # ---- videos page: grouped by competition (empty sections auto-hide) ----
-    # item.cat: "wc" | "epl" | "laliga" | absent -> "misc"
-    vp = [head(f"فيديوهات كرة القدم — {SITE_NAME}",
-               "فيديوهات كأس العالم 2026 والدوري الإنجليزي والدوري الإسباني على يلا سكور.",
-               SITE_BASE + "/videos.html", active="videos")]
-    vp.append('<h1 class="page-h">فيديوهات</h1>')
+def _page_videos(videos, urls):
+    """/videos, grouped by competition (item.cat: "wc" | "epl" | "laliga" | absent
+    -> "misc"); empty groups are skipped. Template: site_src/templates/videos.html."""
+    page_head = Markup(head(f"فيديوهات كرة القدم — {SITE_NAME}",
+                            "فيديوهات كأس العالم 2026 والدوري الإنجليزي والدوري الإسباني على يلا سكور.",
+                            SITE_BASE + "/videos.html", active="videos"))
+    groups = []
     if videos:
         by_cat = {}
         for v in videos:
             by_cat.setdefault((v.get("cat") or "misc"), []).append(v)
         for key, label in VIDEO_CATS:
-            vs = by_cat.get(key)
-            if not vs:
-                continue
-            vp.append(f'<h2 class="page-h vcat-h">{label}</h2><div class="vgrid">')
-            for v in vs:
-                vp.append(video_facade(v))
-            vp.append('</div>')
-        vp.append(VIDEO_JS)
-    else:
-        vp.append('<p class="empty-note">الفيديوهات قريبًا — تابعونا.</p>')
-    vp.append(foot())
+            if by_cat.get(key):
+                # the label was always printed raw (it is our own constant)
+                groups.append((Markup(label), [Markup(video_facade(v)) for v in by_cat[key]]))
+    html_ = render("videos.html", page_head=page_head, has_videos=bool(videos),
+                   groups=groups, video_js=Markup(VIDEO_JS), page_foot=Markup(foot()))
     if SHOW_VIDEOS:
-        write("videos.html", "".join(vp))
+        write("videos.html", html_)
         urls.append("/videos.html")
 
 
@@ -4085,7 +4015,7 @@ def build():
     _page_stats_dashboard(**_bound(locals(), ('comp', 'comp_order', 'fixtures', 'forms', 'league_stats_sec', 'matches', 'sc_by_comp', 'sc_ok', 'st_by_comp', 'urls')))
 
     # 404 page (served by Cloudflare for any missing asset) -> _page_404_page() (moved out of build(), slice 4)
-    _page_404_page()
+    _page_404()
 
     # privacy policy (required for AdSense) -> _page_privacy_policy() (moved out of build(), slice 4)
     _page_privacy_policy(urls)
@@ -4103,7 +4033,7 @@ def build():
     _page_editorial(urls)
 
     # news archive pages -> _page_news_archive_pages() (moved out of build(), slice 4)
-    _page_news_archive_pages(**_bound(locals(), ('articles', 'urls')))
+    _page_news_archive(articles, urls)
 
     # fb.html — INTERNAL helper: ready-to-paste Facebook posts -> _page_fb_html_internal_helper_ready_to_paste_f() (moved out of build(), slice 4)
     _r = _page_fb_html_internal_helper_ready_to_paste_f(**_bound(locals(), ('a', 'articles')))
@@ -4115,10 +4045,10 @@ def build():
     _page_headlines_page(**_bound(locals(), ('h', 'headlines', 'img', 'urls', 'when')))
 
     # reels page (vertical shorts; data/reels.json + reels_auto.json) -> _page_reels_page() (moved out of build(), slice 4)
-    _page_reels_page(**_bound(locals(), ('i', 'r', 'reels', 'urls')))
+    _page_reels(reels, urls)
 
     # videos page: grouped by competition (empty sections auto-hide) -> _page_videos_page_grouped_by_competition() (moved out of build(), slice 4)
-    _page_videos_page_grouped_by_competition(**_bound(locals(), ('label', 'urls', 'v', 'videos')))
+    _page_videos(videos, urls)
 
     # robots + sitemap + ads.txt -> _page_robots_sitemap_ads_txt() (moved out of build(), slice 4)
     _page_robots_sitemap_ads_txt(**_bound(locals(), ('_img', 'a', 'articles', 'urls')))

@@ -1,0 +1,15 @@
+<script>
+(function(){
+  /* auto-retry only where it can help: article pages right after a deploy */
+  if(!/^\/a\//.test(location.pathname)||!window.fetch)return;
+  var w=document.getElementById('nfWait'); if(w)w.hidden=false;
+  var tries=0;
+  function again(){
+    if(++tries>6){if(w)w.hidden=true;return;}   /* ~2 min then give up */
+    fetch(location.href,{cache:'no-store'}).then(function(r){
+      if(r.ok){location.reload();}else{setTimeout(again,20000);}
+    }).catch(function(){setTimeout(again,20000);});
+  }
+  setTimeout(again,15000);
+})();
+</script>
