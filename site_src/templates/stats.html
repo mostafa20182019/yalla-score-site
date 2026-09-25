@@ -1,0 +1,14 @@
+{# /stats - the visual stats board (points race, goals per round, season
+   numbers). Templated 2026-09-26. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ page_title }}
+{{ clubs }}
+{% if sections %}
+{% for section in sections %}
+{{ section }}
+{% endfor %}
+{% else %}
+<p class="hintline">لا توجد بيانات كافية بعد — تعود اللوحة للعمل مع انطلاق الجولات.</p>
+{% endif %}
+{{ page_foot }}

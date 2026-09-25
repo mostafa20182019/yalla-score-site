@@ -1,0 +1,60 @@
+{# / - the home page. Templated 2026-09-26. Lines are joined with NO separator
+   by site_lib.render: break between tags, never inside a sentence.
+   The user's standing rules for this page live next to what they govern. #}
+{{ page_head }}
+{# Organization (publisher identity: logo + Facebook page + contact) and
+   WebSite in one graph - the entity Google ties every NewsArticle's
+   `publisher` and the brand-name query to. #}
+{{ org_ld }}
+{# single-column home since 2026-09-01. The ad strip keeps its place ABOVE
+   آخر الأخبار - FIRM USER RULE: never move the ad slot. #}
+<div class="home-topad">{{ ad }}</div>
+{# the LIVE card for one of the curated clubs, filled by LIVE_JS in the
+   visitor's browser - a 15-minute-old build cannot know what is live now.
+   NO static seed (removed 2026-08-31, USER RULE: never show data that may be
+   wrong - a build-time "live" snapshot once showed a finished match as
+   مباشر الآن with a stale score). It renders only from the first fresh
+   /live.json reply, ~1 s after load. #}
+<div id="favLive" class="fav-wrap" hidden></div>
+{# «آخر الأخبار» + FotMob-style chips (2026-09-02): a chip scrolls to its
+   block and the highlight follows the block in view - nothing is hidden #}
+{{ news_filter }}
+{# FotMob-style blocks (2026-09-01): newest article featured + the next 4;
+   then the same shape for Egyptian and for European football, each skipping
+   what an earlier block showed. USER RULE: the home shows ONLY these blocks
+   (4 rows each) - no «من أخبارنا أيضًا»; older news lives behind المزيد.
+   Matches are NOT on the home page - they live on /matches. #}
+{% for block in blocks %}
+{{ block }}
+{% endfor %}
+{# «توقعات يلا سكور» under the news blocks (2026-09-12): four predicted
+   fixtures, المزيد -> /analysis #}
+{{ predictions }}
+{% if show_videos %}
+<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2><a class="see-all" href="/videos.html">كل الفيديوهات ←</a></div>
+<div class="vstrip">
+  {% for facade in video_facades %}
+  {{ facade }}
+  {% endfor %}
+</div>
+{{ video_js }}
+{% endif %}
+{# reels teaser: ONE banner -> the swipe feed on /reels (built in Python: its
+   markup is multi-line and the line-join would change it) #}
+{{ reels_banner }}
+{# external headlines (24 = 8 rows, matches IMG_ENRICH_TOP so every card
+   gets a thumbnail; the full list lives on /headlines) #}
+{% if show_headlines %}
+<div class="sec-h"><h2 class="page-h">عناوين</h2><a class="see-all" href="/headlines.html">كل العناوين ←</a></div>
+<div class="hgrid">
+  {% for card in headline_cards %}
+  {{ card }}
+  {% endfor %}
+</div>
+{% endif %}
+{# the curated-clubs crest strip closes the page (2026-09-02): each crest
+   opens the club's /team/ page #}
+{{ clubs_strip }}
+{# crests + match URL for the live card, curated clubs only #}
+{{ fav_script }}
+{{ page_foot }}

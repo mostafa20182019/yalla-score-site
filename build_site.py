@@ -1624,42 +1624,19 @@ def _bound(scope, names):
     return {k: scope[k] for k in names if k in scope}
 
 
-def _page_home(_acc=_UNSET, _cal=_UNSET, _preds=_UNSET, _upcoming=_UNSET, articles=_UNSET, fixtures=_UNSET, headlines=_UNSET, m=_UNSET, matches=_UNSET, reels=_UNSET, standings=_UNSET, videos=_UNSET):
-    if _acc is _UNSET:
-        del _acc
-    if _cal is _UNSET:
-        del _cal
-    if _preds is _UNSET:
-        del _preds
-    if _upcoming is _UNSET:
-        del _upcoming
-    if articles is _UNSET:
-        del articles
-    if fixtures is _UNSET:
-        del fixtures
-    if headlines is _UNSET:
-        del headlines
-    if m is _UNSET:
-        del m
-    if matches is _UNSET:
-        del matches
-    if reels is _UNSET:
-        del reels
-    if standings is _UNSET:
-        del standings
-    if videos is _UNSET:
-        del videos
-    # ---- home ----
+def _page_home(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matches, reels,
+               standings, videos):
+    """/ - markup and the user's standing rules for it: site_src/templates/
+    home.html (templated 2026-09-26). The pieces are built here in the same
+    order as before; the loops' last h / m / v keep their names, as when this
+    lived inside build()."""
     feat = articles[0] if articles else None    # og:image source
-    parts = [head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
-                  image=(feat and feat.get("image_url")) or None, active="home",
-                  # the hero block renders the THUMB now - preloading the
-                  # full 1600 would fetch a file the page never uses
-                  preload_img=thumb_url(feat and feat.get("image_url")) or None)]
-    # Organization (publisher identity: logo + Facebook page + contact) and
-    # WebSite in one graph — the entity Google ties every NewsArticle's
-    # `publisher` and the brand-name query to.
-    parts.append(jsonld({
+    page_head = head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
+                     image=(feat and feat.get("image_url")) or None, active="home",
+                     # the hero block renders the THUMB now - preloading the
+                     # full 1600 would fetch a file the page never uses
+                     preload_img=thumb_url(feat and feat.get("image_url")) or None)
+    org_ld = jsonld({
         "@context": "https://schema.org",
         "@graph": [
             {"@type": "Organization", "@id": SITE_BASE + "/#org",
@@ -1670,90 +1647,54 @@ def _page_home(_acc=_UNSET, _cal=_UNSET, _preds=_UNSET, _upcoming=_UNSET, articl
             {"@type": "WebSite", "@id": SITE_BASE + "/#website",
              "name": SITE_NAME, "url": SITE_BASE + "/",
              "inLanguage": "ar", "description": strip_tags(SITE_DESC),
-             "publisher": {"@id": SITE_BASE + "/#org"}}]}))
-    # single-column home since 2026-09-01 (the transfers rail — the only
-    # left-column tenant — was removed by user decision, replaced by the
-    # FotMob-style blocks). The ad strip keeps its place ABOVE آخر الأخبار
-    # (firm user rule: never move the ad slot).
-    parts.append(f'<div class="home-topad">{adsense_slot()}</div>')
-    # heading row: title on the start side, a LIVE card for one of the curated
-    # clubs on the end side. The card is filled by LIVE_JS in the visitor's
-    # browser — a 15-minute-old build can't know what is live right now.
-    # between the ad slot and the heading — user's chosen order; the ad keeps
-    # its place inside the column, so the bar takes the column's width
-    # NO static seed (removed 2026-08-31, user rule: never show data that may
-    # be wrong — a build-time "live" snapshot showed a finished match as
-    # مباشر الآن with a stale score). The card renders EXCLUSIVELY from the
-    # first fresh /live.json reply, ~1s after load.
-    parts.append('<div id="favLive" class="fav-wrap" hidden></div>')
-    # «آخر الأخبار» + FotMob-style chips (user ask 2026-09-02): a chip scrolls
-    # to its block (trend / egy / eur) and the highlight follows the block in
-    # view — nothing is hidden (user corrected the first hide-others version)
-    parts.append(news_filter_bar())
-    # FotMob-style blocks (2026-09-01, replaced the hero + horizontal shelf):
-    # block 1 = newest article featured + the next 4 as a numbered trending
-    # list; block 2 = the same shape scoped to Egyptian football (green
-    # banner), skipping anything block 1 already showed.
+             "publisher": {"@id": SITE_BASE + "/#org"}}]})
+    ad = adsense_slot()
+    news_filter = news_filter_bar()
+    blocks = []
     used = set()
     if articles:
         b1 = articles[:5]
         used = {a["article_id"] for a in b1}
-        parts.append(fmb_block(b1[0], b1[1:], "الأكثر تداولًا", "/news.html", nf="trend"))
+        blocks.append(fmb_block(b1[0], b1[1:], "الأكثر تداولًا", "/news.html", nf="trend"))
         egy = [a for a in articles
                if a["article_id"] not in used and _egy_article(a)]
         if len(egy) >= 2:
-            parts.append(fmb_block(egy[0], egy[1:5], "أخبار الكرة المصرية",
-                                   "/news/egypt.html", nf="egy"))
+            blocks.append(fmb_block(egy[0], egy[1:5], "أخبار الكرة المصرية",
+                                    "/news/egypt.html", nf="egy"))
             used |= {a["article_id"] for a in egy[:5]}
         eur = [a for a in articles
                if a["article_id"] not in used and _eur_article(a)]
         if len(eur) >= 2:
-            parts.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
-                                   "/news/europe.html", flip=True, nf="eur"))
+            blocks.append(fmb_block(eur[0], eur[1:5], "أخبار الكرة الأوروبية",
+                                    "/news/europe.html", flip=True, nf="eur"))
             used |= {a["article_id"] for a in eur[:5]}
-    # «توقعات يلا سكور» under the news blocks (user ask 2026-09-12): four
-    # predicted fixtures, المزيد -> /analysis.html
-    parts.append(pred_home_block(_upcoming, _preds, datetime.date.fromisoformat(REF_TODAY),
-                                 acc=_acc, cal=_cal))
-    # latest videos teaser (full library lives on /videos.html)
-    if videos and SHOW_VIDEOS:
-        parts.append('<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2>'
-                     '<a class="see-all" href="/videos.html">كل الفيديوهات ←</a></div>')
-        parts.append('<div class="vstrip">')
+    predictions = pred_home_block(_upcoming, _preds, datetime.date.fromisoformat(REF_TODAY),
+                                  acc=_acc, cal=_cal)
+    show_videos = bool(videos and SHOW_VIDEOS)
+    video_facades = []
+    if show_videos:
         for v in videos[:3]:
-            parts.append(video_facade(v))
-        parts.append('</div>')
-        parts.append(VIDEO_JS)
-    # reels teaser: ONE banner -> the swipe feed on /reels.html
+            video_facades.append(video_facade(v))
+    reels_banner = ""
     if reels and SHOW_REELS:
         r0 = reels[0]
         rthumb = f"https://i.ytimg.com/vi/{esc(r0.get('video_id'))}/oar2.jpg"
         rfb = f"https://i.ytimg.com/vi/{esc(r0.get('video_id'))}/hqdefault.jpg"
-        parts.append(f"""<a class="reels-banner" href="/reels.html">
+        reels_banner = f"""<a class="reels-banner" href="/reels.html">
   <img src="{rthumb}" alt="" loading="lazy" onerror="this.onerror=null;this.src='{rfb}'">
   <div class="rb-body">
     <h2>⚡ ريلز يلا سكور</h2>
     <p>مقاطع قصيرة ممتعة — اضغط للمشاهدة، واسحب لفوق تجيب اللي بعده</p>
     <span class="rb-cta">شاهد الآن ▶</span>
-  </div></a>""")
-    # external headlines teaser (24 = 8 rows, matches IMG_ENRICH_TOP so every
-    # card gets a thumbnail; the full list lives on /headlines.html)
-    if headlines and SHOW_HEADLINES:
-        parts.append('<div class="sec-h"><h2 class="page-h">عناوين</h2>'
-                     '<a class="see-all" href="/headlines.html">كل العناوين ←</a></div>')
-        parts.append('<div class="hgrid">')
+  </div></a>"""
+    show_headlines = bool(headlines and SHOW_HEADLINES)
+    headline_cards = []
+    if show_headlines:
         for h in headlines[:24]:
-            parts.append(headline_card(h))
-        parts.append('</div>')
-    # NOTE (2026-09-01, user): no leftover "من أخبارنا أيضًا" section — home
-    # shows ONLY the three FotMob blocks (featured + 4 each, keep the lists
-    # at 4); everything older lives on /news.html via each block's المزيد.
-    # (matches are NOT shown on the home page - they live on /matches.html)
-    # curated-clubs crest strip closes the news page (user ask 2026-09-02):
-    # each crest opens the club's /team/ page
-    parts.append(clubs_strip(standings, matches, fixtures))
+            headline_cards.append(headline_card(h))
+    strip = clubs_strip(standings, matches, fixtures)
     # crests + per-match page URL for the live card, curated clubs only
-    # (keyed by the Arabic name pair — LIVE_JS normalizes both sides)
+    # (keyed by the Arabic name pair - LIVE_JS normalizes both sides)
     fav_meta = {}
     for m in matches:
         if _is_ticker_team(m) and m.get("match_id"):
@@ -1761,13 +1702,19 @@ def _page_home(_acc=_UNSET, _cal=_UNSET, _preds=_UNSET, _upcoming=_UNSET, articl
                 "hb": local_crest(m["home_badge"]) if m.get("home_badge") else "",
                 "ab": local_crest(m["away_badge"]) if m.get("away_badge") else "",
                 "u": match_url(m)}
-    parts.append('<script>window.__favClubs='
-                 + json.dumps(fav_club_names(standings, fixtures), ensure_ascii=False)
-                 + ';window.__favMeta='
-                 + json.dumps(fav_meta, ensure_ascii=False)
-                 + ';</script>')
-    parts.append(foot())
-    write("index.html", "".join(parts))
+    fav_script = ('<script>window.__favClubs='
+                  + json.dumps(fav_club_names(standings, fixtures), ensure_ascii=False)
+                  + ';window.__favMeta='
+                  + json.dumps(fav_meta, ensure_ascii=False)
+                  + ';</script>')
+    write("index.html", render(
+        "home.html", page_head=Markup(page_head), org_ld=Markup(org_ld), ad=Markup(ad),
+        news_filter=Markup(news_filter), blocks=[Markup(b) for b in blocks],
+        predictions=Markup(predictions), show_videos=show_videos,
+        video_facades=[Markup(f) for f in video_facades], video_js=Markup(VIDEO_JS),
+        reels_banner=Markup(reels_banner), show_headlines=show_headlines,
+        headline_cards=[Markup(c) for c in headline_cards], clubs_strip=Markup(strip),
+        fav_script=Markup(fav_script), page_foot=Markup(foot())))
     _l = locals()
     return {k: _l[k] for k in ('h', 'm', 'v') if k in _l}
 
@@ -2549,32 +2496,11 @@ def _page_per_league_season_fixtures(fx_by_comp, season, st_by_comp, urls):
     return {k: _l[k] for k in ('comp', 'label', 'slug') if k in _l}
 
 
-def _page_analysis_hub_analysis_league(_acc=_UNSET, _comps_with_table=_UNSET, _lparams=_UNSET, _pins=_UNSET, _plog=_UNSET, _preds=_UNSET, _sins=_UNSET, _tstats=_UNSET, _upcoming=_UNSET, forms=_UNSET, matches=_UNSET, urls=_UNSET):
-    if _acc is _UNSET:
-        del _acc
-    if _comps_with_table is _UNSET:
-        del _comps_with_table
-    if _lparams is _UNSET:
-        del _lparams
-    if _pins is _UNSET:
-        del _pins
-    if _plog is _UNSET:
-        del _plog
-    if _preds is _UNSET:
-        del _preds
-    if _sins is _UNSET:
-        del _sins
-    if _tstats is _UNSET:
-        del _tstats
-    if _upcoming is _UNSET:
-        del _upcoming
-    if forms is _UNSET:
-        del forms
-    if matches is _UNSET:
-        del matches
-    if urls is _UNSET:
-        del urls
-    # ---- تحليلات: /analysis hub + /analysis/<league> ----
+def _page_analysis_hub_analysis_league(_acc, _comps_with_table, _lparams, _pins, _plog, _preds,
+                                       _sins, _tstats, _upcoming, forms, matches, urls):
+    """/analysis hub + /analysis/<league> + /predictions (the markup still lives
+    in analysis_pages() and prediction_history_page() - their own templating
+    step)."""
     os.makedirs(os.path.join(DIST, "analysis"), exist_ok=True)
     _hist_url = prediction_history_page(_plog, _acc)
     if _hist_url:
@@ -2698,45 +2624,24 @@ def _page_per_club_pages(_plog, _preds, articles, forms, m_all, season, st_by_co
     return {k: _l[k] for k in ('_img', 'a', 'img', 'r') if k in _l}
 
 
-def _page_stats_dashboard(comp=_UNSET, comp_order=_UNSET, fixtures=_UNSET, forms=_UNSET, league_stats_sec=_UNSET, matches=_UNSET, sc_by_comp=_UNSET, sc_ok=_UNSET, st_by_comp=_UNSET, urls=_UNSET):
-    if comp is _UNSET:
-        del comp
-    if comp_order is _UNSET:
-        del comp_order
-    if fixtures is _UNSET:
-        del fixtures
-    if forms is _UNSET:
-        del forms
-    if league_stats_sec is _UNSET:
-        del league_stats_sec
-    if matches is _UNSET:
-        del matches
-    if sc_by_comp is _UNSET:
-        del sc_by_comp
-    if sc_ok is _UNSET:
-        del sc_ok
-    if st_by_comp is _UNSET:
-        del st_by_comp
-    if urls is _UNSET:
-        del urls
-    # ---- stats dashboard (/stats.html) ----
-    sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
-               "لوحة إحصائيات مرئية: سباق النقاط، الأهداف في كل جولة، وأرقام الموسم لكل بطولة.",
-               SITE_BASE + "/stats.html", active="stats")]
-    sp.append(page_head_ad(
+def _page_stats_dashboard(comp_order, fixtures, forms, league_stats_sec, matches, sc_by_comp,
+                          sc_ok, st_by_comp, urls):
+    """/stats - the visual stats board. Markup: site_src/templates/stats.html
+    (templated 2026-09-26). Noindexed unless SHOW_STATS_PAGE."""
+    page_head = head(f"إحصائيات وتحليلات — {SITE_NAME}",
+                     "لوحة إحصائيات مرئية: سباق النقاط، الأهداف في كل جولة، وأرقام الموسم لكل بطولة.",
+                     SITE_BASE + "/stats.html", active="stats")
+    page_title = page_head_ad(
         '<h1 class="page-h">📊 إحصائيات وتحليلات</h1>',
-        'أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.'))
-    sp.append(clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures))
-    any_stats = False
+        'أرقام محسوبة من نتائج الموسم الحالي — تتحدّث تلقائيًا بعد كل جولة.')
+    clubs = clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures)
+    sections = []
     for comp in comp_order:
         sec = league_stats_sec(comp)
         if sec:
-            any_stats = True
-            sp.append(sec)
-    if not any_stats:
-        sp.append('<p class="hintline">لا توجد بيانات كافية بعد — تعود اللوحة للعمل مع انطلاق الجولات.</p>')
-    sp.append(foot())
-    html_out = "".join(sp)
+            sections.append(Markup(sec))
+    html_out = render("stats.html", page_head=Markup(page_head), page_title=Markup(page_title),
+                      clubs=Markup(clubs), sections=sections, page_foot=Markup(foot()))
     if not SHOW_STATS_PAGE:
         html_out = html_out.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
     write("stats.html", html_out)
@@ -3715,7 +3620,8 @@ def build():
         urls = _r['urls']
 
     # home -> _page_home() (moved out of build(), slice 4)
-    _r = _page_home(**_bound(locals(), ('_acc', '_cal', '_preds', '_upcoming', 'articles', 'fixtures', 'headlines', 'm', 'matches', 'reels', 'standings', 'videos')))
+    _r = _page_home(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matches, reels,
+                    standings, videos)
     if 'h' in _r:
         h = _r['h']
     if 'm' in _r:
@@ -3841,7 +3747,8 @@ def build():
         slug = _r['slug']
 
     # تحليلات: /analysis hub + /analysis/<league> -> _page_analysis_hub_analysis_league() (moved out of build(), slice 4)
-    _page_analysis_hub_analysis_league(**_bound(locals(), ('_acc', '_comps_with_table', '_lparams', '_pins', '_plog', '_preds', '_sins', '_tstats', '_upcoming', 'forms', 'matches', 'urls')))
+    _page_analysis_hub_analysis_league(_acc, _comps_with_table, _lparams, _pins, _plog, _preds,
+                                       _sins, _tstats, _upcoming, forms, matches, urls)
 
     # per-club pages (/team/<slug>) -> _page_per_club_pages() (moved out of build(), slice 4)
     _r = _page_per_club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
@@ -3855,7 +3762,8 @@ def build():
         r = _r['r']
 
     # stats dashboard (/stats.html) -> _page_stats_dashboard() (moved out of build(), slice 4)
-    _page_stats_dashboard(**_bound(locals(), ('comp', 'comp_order', 'fixtures', 'forms', 'league_stats_sec', 'matches', 'sc_by_comp', 'sc_ok', 'st_by_comp', 'urls')))
+    _page_stats_dashboard(comp_order, fixtures, forms, league_stats_sec, matches, sc_by_comp,
+                          sc_ok, st_by_comp, urls)
 
     # 404 page (served by Cloudflare for any missing asset) -> _page_404_page() (moved out of build(), slice 4)
     _page_404()
