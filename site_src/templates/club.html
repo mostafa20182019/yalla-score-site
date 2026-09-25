@@ -1,0 +1,60 @@
+{# /team/<slug> - one hub per curated club: news, next matches, results, the
+   league table. Templated 2026-09-26. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/matches.html">المباريات</a> › {{ name }}</nav>
+<header class="club-hero">{{ crest_img }}
+  <div>
+    <h1 class="page-h">أخبار {{ name }}</h1>
+    <p class="hintline">كل جديد {{ name }}: الأخبار والمباريات والنتائج والترتيب في مكان واحد — تتحدّث تلقائيًا.</p>
+    {{ position }}
+  </div>
+</header>
+{% if up_rows %}
+<section class="minfo">
+  <h2>مباريات {{ name }} القادمة</h2>
+  <div class="mlist">
+    {% for row in up_rows %}
+    {{ row }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{% if last_rows %}
+<section class="minfo">
+  <h2>آخر نتائج {{ name }}</h2>
+  <div class="mlist">
+    {% for row in last_rows %}
+    {{ row }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+<section class="minfo">
+  <h2>آخر أخبار {{ name }}</h2>
+  {% if news %}
+  <ul class="mp-newslist">
+    {% for n in news %}
+    <li><a href="{{ n.href }}">{{ n.title }}</a>{% if n.when %} <span class="club-when">({{ n.when }})</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p class="hintline">تُنشر أخبار {{ name }} هنا فور ورودها.</p>
+  {% endif %}
+</section>
+{% if has_table %}
+<section class="minfo">
+  <h2>{{ table_heading }}</h2>
+  {{ table }}
+</section>
+{% endif %}
+<nav class="club-chips">
+  <span>أندية أخرى:</span>
+  {% for o in others %}
+  <a href="/team/{{ o.slug }}.html">{{ o.name }}</a>
+  {% endfor %}
+</nav>
+{{ club_ld }}
+{{ popup }}
+{{ page_foot }}

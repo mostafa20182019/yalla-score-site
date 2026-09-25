@@ -257,14 +257,21 @@ def apply(src, secs, build):
     at = build.lineno - 1
     while at > 0 and lines[at - 1].lstrip().startswith("#"):
         at -= 1
-    blob = ["# ---- slice 4: build()'s page sections as functions (tools/extract_sections.py) ----",
-            "_UNSET = object()      # 'this build() variable was not bound at the call'",
-            "",
-            "",
-            "def _bound(scope, names):",
-            "    return {k: scope[k] for k in names if k in scope}",
-            "",
-            ""]
+    # _UNSET/_bound exist ONCE per module. A second run of this tool used to
+    # insert them again: functions from the first run then bound defaults to
+    # the first _UNSET but compared `is _UNSET` against the second, so the
+    # delete never fired (caught 2026-09-26; tests/test_build_split.py).
+    if any(l.startswith("_UNSET = object()") for l in lines):
+        blob = []
+    else:
+        blob = ["# ---- slice 4: build()'s page sections as functions (tools/extract_sections.py) ----",
+                "_UNSET = object()      # 'this build() variable was not bound at the call'",
+                "",
+                "",
+                "def _bound(scope, names):",
+                "    return {k: scope[k] for k in names if k in scope}",
+                "",
+                ""]
     for fn in new_funcs:
         blob += fn + ["", ""]
     lines[at:at] = blob

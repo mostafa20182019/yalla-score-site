@@ -70,5 +70,15 @@ finally:
 ck("7 template lines are joined with no separator, values keep their newlines",
    out == "<div><p>a</p></div>line1\nline2", repr(out))
 
+# a page may pass a variable called `name` (the club page does) or `template`
+tmp2 = os.path.join(R.TEMPLATES, "_test_names.html")
+open(tmp2, "w", encoding="utf-8").write("<p>{{ name }}|{{ template }}</p>")
+try:
+    out2 = R.render("_test_names.html", name="الأهلي", template="x")
+finally:
+    os.remove(tmp2)
+ck("8 variables called `name` or `template` do not collide with render()'s own argument",
+   out2 == "<p>الأهلي|x</p>", repr(out2))
+
 print(f"\n{len(fails)} FAILED: {fails}" if fails else "\nALL OK")
 sys.exit(1 if fails else 0)

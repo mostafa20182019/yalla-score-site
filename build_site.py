@@ -2586,55 +2586,14 @@ def _page_analysis_hub_analysis_league(_acc=_UNSET, _comps_with_table=_UNSET, _l
     print(f"  + analysis pages: {len(_an_urls)}")
 
 
-def _page_per_club_pages(_h=_UNSET, _plog=_UNSET, _preds=_UNSET, _slug=_UNSET, _t=_UNSET, a=_UNSET, articles=_UNSET, desc=_UNSET, forms=_UNSET, img=_UNSET, m=_UNSET, m_all=_UNSET, name=_UNSET, r=_UNSET, season=_UNSET, slug=_UNSET, st=_UNSET, st_by_comp=_UNSET, title=_UNSET, up_next=_UNSET, urls=_UNSET):
-    if _h is _UNSET:
-        del _h
-    if _plog is _UNSET:
-        del _plog
-    if _preds is _UNSET:
-        del _preds
-    if _slug is _UNSET:
-        del _slug
-    if _t is _UNSET:
-        del _t
-    if a is _UNSET:
-        del a
-    if articles is _UNSET:
-        del articles
-    if desc is _UNSET:
-        del desc
-    if forms is _UNSET:
-        del forms
-    if img is _UNSET:
-        del img
-    if m is _UNSET:
-        del m
-    if m_all is _UNSET:
-        del m_all
-    if name is _UNSET:
-        del name
-    if r is _UNSET:
-        del r
-    if season is _UNSET:
-        del season
-    if slug is _UNSET:
-        del slug
-    if st is _UNSET:
-        del st
-    if st_by_comp is _UNSET:
-        del st_by_comp
-    if title is _UNSET:
-        del title
-    if up_next is _UNSET:
-        del up_next
-    if urls is _UNSET:
-        del urls
-    # ---- per-club pages (/team/<slug>) ----
-    # Evergreen SEO hubs for the highest-volume Arabic query family we don't
-    # cover: "أخبار الأهلي اليوم"، "مباريات الزمالك القادمة"، "نتيجة ريال
-    # مدريد". One page per curated club: latest club news + next matches +
-    # recent results + league standing, refreshed every publish cycle.
-    # Cross-linked from article pages + match pages (club-chips) + footer.
+def _page_per_club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
+    """/team/<slug> - evergreen SEO hubs for the highest-volume Arabic query
+    family: «أخبار الأهلي اليوم»، «مباريات الزمالك القادمة»، «نتيجة ريال مدريد».
+    One page per curated club: latest news + next matches + recent results +
+    league standing, refreshed every publish cycle; cross-linked from article
+    pages, match pages (club-chips) and the footer. Markup: club.html
+    (templated 2026-09-26); the pieces are built here in the same order as
+    before. Returns the loop's last _img / a / img / r under the same names."""
     os.makedirs(os.path.join(DIST, "team"), exist_ok=True)
     club_matches_src = sorted(m_all.values(),
                               key=lambda m: m.get("kickoff") or "")
@@ -2678,12 +2637,10 @@ def _page_per_club_pages(_h=_UNSET, _plog=_UNSET, _preds=_UNSET, _slug=_UNSET, _
                 "تتحدّث الصفحة تلقائيًا على مدار اليوم.")
         img = (crest if crest.startswith("http")
                else SITE_BASE + crest) if crest else None
-        pt = [head(title, desc, SITE_BASE + t_url, image=img)]
-        pt.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                                 ("المباريات", SITE_BASE + "/matches.html"),
-                                 (name, SITE_BASE + t_url)]))
-        pt.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
-                  f'<a href="/matches.html">المباريات</a> › {esc(name)}</nav>')
+        page_head = head(title, desc, SITE_BASE + t_url, image=img)
+        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                   ("المباريات", SITE_BASE + "/matches.html"),
+                                   (name, SITE_BASE + t_url)])
         _img = (f'<img class="club-crest" src="{esc(crest)}" alt="{esc(name)}" '
                 'width="64" height="64" loading="eager">' if crest else "")
         _pos = ""
@@ -2691,67 +2648,50 @@ def _page_per_club_pages(_h=_UNSET, _plog=_UNSET, _preds=_UNSET, _slug=_UNSET, _
             _pos = (f'<p class="club-pos">المركز <b>{srow.get("pos")}</b> في '
                     f'{esc(league_ar)} برصيد <b>{srow.get("pts")}</b> نقطة '
                     f'من {srow.get("played")} مباراة</p>')
-        pt.append(f'<header class="club-hero">{_img}<div>'
-                  f'<h1 class="page-h">أخبار {esc(name)}</h1>'
-                  f'<p class="hintline">كل جديد {esc(name)}: الأخبار والمباريات '
-                  f'والنتائج والترتيب في مكان واحد — تتحدّث تلقائيًا.</p>'
-                  f'{_pos}</div></header>')
-        if up_next:
-            pt.append(f'<section class="minfo"><h2>مباريات {esc(name)} القادمة</h2>'
-                      '<div class="mlist">')
-            for m in up_next:
-                pt.append(match_row(m, show_time=True, show_comp=True,
-                                    link=match_url(m),
-                                    pred=_preds.get(str(m.get("match_id")))))
-            pt.append('</div></section>')
-        if last_res:
-            pt.append(f'<section class="minfo"><h2>آخر نتائج {esc(name)}</h2>'
-                      '<div class="mlist">')
-            for m in last_res:
-                pt.append(match_row(m, show_time=False, show_comp=True,
-                                    link=match_url(m),
-                                    done=_plog.get(str(m.get("match_id")))))
-            pt.append('</div></section>')
-        pt.append(f'<section class="minfo"><h2>آخر أخبار {esc(name)}</h2>')
-        if news:
-            pt.append('<ul class="mp-newslist">')
-            for a in news:
-                _t = art_reltime(a)
-                pt.append(f'<li><a href="{article_href(a)}">'
-                          f'{esc(a["title"])}</a>'
-                          + (f' <span class="club-when">({_t})</span>' if _t else "")
-                          + '</li>')
-            pt.append('</ul>')
-        else:
-            pt.append('<p class="hintline">تُنشر أخبار '
-                      f'{esc(name)} هنا فور ورودها.</p>')
-        pt.append('</section>')
+        up_rows = []
+        for m in up_next:
+            up_rows.append(match_row(m, show_time=True, show_comp=True,
+                                     link=match_url(m),
+                                     pred=_preds.get(str(m.get("match_id")))))
+        last_rows = []
+        for m in last_res:
+            last_rows.append(match_row(m, show_time=False, show_comp=True,
+                                       link=match_url(m),
+                                       done=_plog.get(str(m.get("match_id")))))
+        news_items = []
+        for a in news:
+            _t = art_reltime(a)
+            news_items.append({"href": Markup(article_href(a)), "title": a["title"],
+                               "when": Markup(_t) if _t else ""})
+        table = table_heading = ""
         if st and st.get("table"):
             _slug = COMP_SLUG.get(tp["league"])
-            _h = (f'<a href="/standings/{_slug}.html">ترتيب {esc(league_ar)} ←</a>'
-                  if _slug else f'ترتيب {esc(league_ar)}')
-            pt.append(f'<section class="minfo"><h2>{_h}</h2>')
-            pt.append(standings_table(tp["league"], st["table"],
-                                      past=st.get("past"),
-                                      season_label=st.get("season_label"),
-                                      zeroed=st.get("zeroed"),
-                                      form_map=forms.get(tp["league"], {}),
-                                      embedded=True))
-            pt.append('</section>')
+            table_heading = (f'<a href="/standings/{_slug}.html">ترتيب {esc(league_ar)} ←</a>'
+                             if _slug else f'ترتيب {esc(league_ar)}')
+            table = standings_table(tp["league"], st["table"],
+                                    past=st.get("past"),
+                                    season_label=st.get("season_label"),
+                                    zeroed=st.get("zeroed"),
+                                    form_map=forms.get(tp["league"], {}),
+                                    embedded=True)
         others = [o for o in TEAM_PAGES if o["slug"] != slug]
-        pt.append('<nav class="club-chips"><span>أندية أخرى:</span>'
-                  + "".join(f'<a href="/team/{o["slug"]}.html">{esc(o["name"])}</a>'
-                            for o in others)
-                  + '</nav>')
-        pt.append(jsonld({
+        club_ld = jsonld({
             "@context": "https://schema.org", "@type": "SportsTeam",
             "name": name, "sport": "Football", "url": SITE_BASE + t_url,
             **({"logo": img} if img else {}),
             "memberOf": {"@type": "SportsOrganization", "name": league_ar},
-        }))
-        pt.append(pred_pop(pt))
-        pt.append(foot())
-        write(f"team/{slug}.html", "".join(pt))
+        })
+        # the popup is added only when a row carries a prediction button
+        popup = pred_pop([page_head, crumbs_ld, _img, _pos] + up_rows + last_rows
+                         + [table_heading, table, club_ld])
+        write(f"team/{slug}.html", render(
+            "club.html", page_head=Markup(page_head), crumbs_ld=Markup(crumbs_ld),
+            name=name, crest_img=Markup(_img), position=Markup(_pos),
+            up_rows=[Markup(x) for x in up_rows], last_rows=[Markup(x) for x in last_rows],
+            news=news_items, has_table=bool(st and st.get("table")),
+            table_heading=Markup(table_heading), table=Markup(table),
+            others=[{"slug": Markup(o["slug"]), "name": o["name"]} for o in others],
+            club_ld=Markup(club_ld), popup=Markup(popup), page_foot=Markup(foot())))
         urls.append(t_url)
     print(f"  + club pages: {len(TEAM_PAGES)}")
     _l = locals()
@@ -3240,12 +3180,11 @@ def _page_uploaded_media(_preds=_UNSET, articles=_UNSET, fn=_UNSET, matches=_UNS
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
 
-# ---- slice 4: build()'s page sections as functions (tools/extract_sections.py) ----
-_UNSET = object()      # 'this build() variable was not bound at the call'
-
-
-def _bound(scope, names):
-    return {k: scope[k] for k in names if k in scope}
+# (slice 4b's page functions - they use the ONE _UNSET/_bound defined above
+# the slice-4 functions. A second definition used to sit here: the 25 earlier
+# functions then bound their defaults to the first _UNSET but compared against
+# the second, so an unset variable kept the sentinel instead of being deleted.
+# Removed 2026-09-26; tests/test_build_split.py keeps it at one.)
 
 
 def _page_strength_model_predictions_accuracy_play(_details_raw=_UNSET, _res_arch=_UNSET, assists=_UNSET, e=_UNSET, fixtures=_UNSET, matches=_UNSET, p=_UNSET, scorers=_UNSET, standings=_UNSET):
@@ -3905,7 +3844,7 @@ def build():
     _page_analysis_hub_analysis_league(**_bound(locals(), ('_acc', '_comps_with_table', '_lparams', '_pins', '_plog', '_preds', '_sins', '_tstats', '_upcoming', 'forms', 'matches', 'urls')))
 
     # per-club pages (/team/<slug>) -> _page_per_club_pages() (moved out of build(), slice 4)
-    _r = _page_per_club_pages(**_bound(locals(), ('_h', '_plog', '_preds', '_slug', '_t', 'a', 'articles', 'desc', 'forms', 'img', 'm', 'm_all', 'name', 'r', 'season', 'slug', 'st', 'st_by_comp', 'title', 'up_next', 'urls')))
+    _r = _page_per_club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
     if '_img' in _r:
         _img = _r['_img']
     if 'a' in _r:

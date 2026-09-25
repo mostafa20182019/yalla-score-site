@@ -62,6 +62,9 @@ _env = Environment(
 )
 
 
-def render(name, **ctx):
-    """Render site_src/templates/<name> with ctx."""
-    return _env.get_template(name).render(**ctx)
+def render(template, /, **ctx):
+    """Render site_src/templates/<template> with ctx. The template name is
+    positional-only so a page may pass a variable of ANY name - the club page
+    passes `name` (the club), which collided with this argument when it was
+    called `name` (caught before shipping, 2026-09-26)."""
+    return _env.get_template(template).render(**ctx)
