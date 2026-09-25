@@ -32,8 +32,17 @@ print("multipart round-trip OK")
 
 # 2) post_cards with a fake token + mocked upload: posts once, dedups, records failures
 os.environ["FB_PAGE_TOKEN"] = "fake"
-matches = fc.b.load("matches.json")
-ge_idx = fc.b.goal_events_index(fc.b.load("goal_events.json"))
+# From the season, not from today's window: matches.json can hold zero finished
+# curated matches right after midnight, and the test then failed on the
+# calendar instead of on the code (2026-09-26, 00:30 Cairo). The accumulating
+# archive always has the season's; goals from the one shared index (fb_cards
+# itself reads goals_index() since 2026-09-24).
+_by_id = {}
+for _m in fc.b.load("matches_archive.json") + fc.b.load("matches.json"):
+    if _m.get("match_id") is not None:
+        _by_id[_m["match_id"]] = _m                 # matches.json last: freshest copy wins
+matches = list(_by_id.values())
+ge_idx = fc.b.goals_index()
 picked = fc.finished_matches(matches, None)[:3]
 assert len(picked) == 3, "need 3 finished curated matches in data"
 
