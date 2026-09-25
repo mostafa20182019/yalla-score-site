@@ -890,6 +890,30 @@ async function adminApi(request, env, url) {
 // The match-article slots, on the Cairo clock. Exported for the test.
 const MATCH_SLOTS = ["13:00", "17:00", "20:00", "23:30"];
 const MATCH_CRONS = new Set(["0 9,10,13,14,16,17 * * *", "30 19,20 * * *"]);
+/* /data/bundle (2026-09-24, step 3): the site's working data - the gzip bundle
+ * data_store.py pushes into Workers KV after every publish run - for the
+ * machines that hold no Cloudflare token: the user's laptop (the Oracle copy
+ * loads from it), the secret-less test job and a local checkout. Read-only,
+ * public (it is the same football data the pages show), edge-cached for 60 s
+ * so a burst of pulls costs one KV read. 404 until the first push. */
+async function dataBundle(env, ctx) {
+  if (!env.DATA) return new Response("no data store bound", { status: 404 });
+  const cache = caches.default;
+  const key = new Request("https://yallascore.site/data/bundle");
+  const hit = await cache.match(key);
+  if (hit) return hit;
+  const blob = await env.DATA.get("bundle-v1", "arrayBuffer");
+  if (!blob) return new Response("the data store is empty", { status: 404 });
+  const res = new Response(blob, {
+    headers: {
+      "content-type": "application/octet-stream",
+      "cache-control": "public, max-age=0, s-maxage=60",
+    },
+  });
+  if (ctx && ctx.waitUntil) ctx.waitUntil(cache.put(key, res.clone()));
+  return res;
+}
+
 export function matchSlotCairo(date) {
   const hm = new Intl.DateTimeFormat("en-GB", {
     timeZone: "Africa/Cairo", hour: "2-digit", minute: "2-digit", hour12: false,
@@ -914,6 +938,9 @@ export default {
     }
     if (url.pathname === "/health") {
       return healthResponse(env, ctx);
+    }
+    if (url.pathname === "/data/bundle") {
+      return dataBundle(env, ctx);
     }
     if (url.pathname === "/live.json") {
       const cache = caches.default;
