@@ -1,0 +1,78 @@
+<dialog id="ppop" class="ppop" aria-labelledby="ppop-ttl">
+<div class="ppop-in">
+  <div class="ppop-hd"><h3 id="ppop-ttl">توقع يلا سكور</h3>
+    <form method="dialog"><button class="ppop-x" aria-label="إغلاق">×</button></form></div>
+  <p class="ppop-t"><bdi class="ppop-nh"></bdi> <span>×</span> <bdi class="ppop-na"></bdi></p>
+  <p class="ppop-m"><span class="ppop-fav"></span><span class="ppop-cf"></span></p>
+  <div class="pbar"><span class="pb-seg pb-h"></span><span class="pb-seg pb-d"></span><span class="pb-seg pb-a"></span></div>
+  <p class="ppop-probs pr-probs"></p>
+  <p class="ppop-res" hidden>النتيجة <b class="ppop-rv sc-in"></b></p>
+  <p class="ppop-s"><span class="ppop-slab">النتيجة الأكثر احتمالًا</span> <b class="ppop-val sc-in"></b></p>
+  <p class="ppop-d">احتمالات إحصائية من نموذج يلا سكور مبنية على نتائج الموسم الحالي، وليست نصيحة للمراهنة.</p>
+  <a class="ppop-go" href="#">لماذا رجّح النموذج هذا التوقع؟ ←</a>
+  <a class="ppop-rec" href="/predictions.html" hidden>السجل الكامل، إصابةً وخطأ ←</a>
+</div>
+</dialog>
+<script>(function(){
+var d=document.getElementById("ppop");if(!d)return;
+var CF=__CONF_AR__;
+var q=function(s){return d.querySelector(s)};
+var seg=[q(".pb-h"),q(".pb-d"),q(".pb-a")];
+// "2-1" as one text run reverses in RTL and the reader meets the AWAY
+// number first (the standing score_pill() rule) - so build the same
+// span/i/span pill the rest of the site uses. Seen on a phone render:
+// the model's 2-1 for the home side displayed as 1-2.
+function pill(el,s){var x=(s||"").split("-");
+  el.innerHTML=x.length>1?"<span>"+x[0]+"</span><i>-</i><span>"+x[1]+"</span>":"";}
+function shut(){if(d.close){d.close()}else{d.removeAttribute("open");d.classList.remove("ppop-open")}}
+document.addEventListener("click",function(e){
+  var b=e.target.closest?e.target.closest(".pbtn"):null;if(!b)return;
+  e.preventDefault();e.stopPropagation();
+  var r=b.closest(".mrow"),p=(b.getAttribute("data-pp")||"").split(",");
+  if(p.length<3)return;
+  var h=(r&&r.getAttribute("data-h"))||"الأرض",a=(r&&r.getAttribute("data-a"))||"الضيف";
+  q(".ppop-nh").textContent=h;q(".ppop-na").textContent=a;
+  for(var i=0;i<3;i++){seg[i].style.width=p[i]+"%"}
+  q(".ppop-probs").innerHTML=
+    '<span class="prb"><i class="prb-h"></i>'+h+' <b>'+p[0]+'%</b></span>'+
+    '<span class="prb"><i class="prb-d"></i>تعادل <b>'+p[1]+'%</b></span>'+
+    '<span class="prb"><i class="prb-a"></i>'+a+' <b>'+p[2]+'%</b></span>';
+  var ph=+p[0],pd=+p[1],pa=+p[2],top=Math.max(ph,pd,pa);
+  var fav=ph>=pd&&ph>=pa?h:(pa>=pd?a:null);      // null = the draw
+  // A finished row carries the real result; that attribute IS the switch
+  // between "here is what we think" and "here is what we said, check us".
+  var res=b.getAttribute("data-pr"),fin=!!res,cf=q(".ppop-cf");
+  q("#ppop-ttl").textContent=fin?"توقعنا قبل المباراة":"توقع يلا سكور";
+  // The verdict is on the OUTCOME, never on the scoreline. 42% on the home
+  // win that then happened is a hit even though the 1-1 we called closest
+  // ended 3-2 - and a green tick beside "توقعنا 1-1 · 3-2" reads like a
+  // joke at the reader's expense. So the claim line states the outcome and
+  // its probability, and the scoreline is demoted and relabelled below.
+  q(".ppop-fav").textContent=fin
+    ?("قلنا: "+(fav===null?"التعادل":"فوز "+fav)+" "+top+"%")
+    :("الأرجح: "+(fav===null?"التعادل":fav));
+  // keep the hook class: assigning className wholesale used to drop
+  // "ppop-cf", so the very next lookup returned null, the handler threw
+  // before showModal() and NOTHING opened. Caught on a phone-width render.
+  if(fin){var w=b.getAttribute("data-hit")==="1";
+    cf.className="ppop-cf hit "+(w?"ok":"no");cf.textContent=w?"✔ أصاب":"✘ لم يُصب"}
+  else{var c=b.getAttribute("data-pc")||"";
+    cf.className="ppop-cf conf conf-"+c;cf.textContent=CF[c]||""}
+  pill(q(".ppop-rv"),res);q(".ppop-res").hidden=!fin;
+  q(".ppop-slab").textContent=fin?"أقرب نتيجة رجّحها النموذج":"النتيجة الأكثر احتمالًا";
+  pill(q(".ppop-val"),b.getAttribute("data-ps"));
+  var s=r&&r.querySelector(".mstretch"),g=q(".ppop-go");
+  g.textContent=fin?"قراءة المباراة ←":"لماذا رجّح النموذج هذا التوقع؟ ←";
+  if(s){g.href=s.getAttribute("href");g.hidden=false}else{g.hidden=true}
+  // one week of 33 right out of 54 is not the record (the season is
+  // 45-54%). The way out to the full log is what stops a lucky window
+  // being read as the performance.
+  q(".ppop-rec").hidden=!fin;
+  if(d.showModal){d.showModal()}else{d.setAttribute("open","");d.classList.add("ppop-open")}
+});
+d.addEventListener("click",function(e){if(e.target===d)shut()});
+// Escape: a modal <dialog> is supposed to close itself, and in the preview
+// pane it does not - the keydown arrives at the document and the dialog
+// stays open. Sixty bytes is cheaper than trusting that.
+document.addEventListener("keydown",function(e){if(e.key==="Escape"&&d.open)shut()});
+})();</script>

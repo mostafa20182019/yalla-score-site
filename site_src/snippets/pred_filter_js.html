@@ -1,0 +1,35 @@
+<script>
+(function(){
+  var STEP=40;
+  var rows=[].slice.call(document.querySelectorAll('#predlist .rec-i'));
+  var days=[].slice.call(document.querySelectorAll('#predlist .rec-day'));
+  var chips=[].slice.call(document.querySelectorAll('.pf-chip'));
+  var sel=document.getElementById('pf-comp'), cnt=document.getElementById('pf-count');
+  var none=document.getElementById('pf-none');
+  var more=document.getElementById('pf-more'), state='all', limit=STEP;
+  function apply(){
+    var comp=sel?sel.value:'', matched=0, shown=0, live={};
+    rows.forEach(function(r){
+      var okHit = state==='all' || (state==='hit') === (r.dataset.hit==='1');
+      var okComp = !comp || r.dataset.comp===comp;
+      if(okHit && okComp){ matched++; var on = shown<limit; if(on){ shown++;
+          live[r.dataset.day]=1; } r.hidden=!on; }
+      else r.hidden=true;
+    });
+    /* a day header only belongs there while that day still has a visible match */
+    days.forEach(function(d){ d.hidden = !live[d.dataset.day]; });
+    if(cnt) cnt.textContent=matched;
+    if(none) none.hidden = matched>0;
+    if(more){
+      more.hidden = matched<=shown;
+      more.textContent='عرض المزيد ('+(matched-shown)+' متبقية)';
+    }
+  }
+  chips.forEach(function(c){ c.addEventListener('click', function(){
+    chips.forEach(function(x){ x.classList.remove('on'); });
+    c.classList.add('on'); state=c.dataset.f; limit=STEP; apply(); }); });
+  if(sel) sel.addEventListener('change', function(){ limit=STEP; apply(); });
+  if(more) more.addEventListener('click', function(){ limit+=STEP; apply(); });
+  apply();
+})();
+</script>

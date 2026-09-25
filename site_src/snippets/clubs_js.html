@@ -1,0 +1,20 @@
+<script>
+(function(){
+  var sh=document.getElementById('clubsStrip'); if(!sh) return;
+  var l=document.querySelector('.cs-l'), r=document.querySelector('.cs-r');
+  function fits(){ return sh.scrollWidth <= sh.clientWidth + 2; }
+  function sync(){ var h=fits(); if(l) l.hidden=h; if(r) r.hidden=h; }
+  function step(){ var c=sh.querySelector('.cs-item'); return (c ? c.offsetWidth + 22 : 110) * 3; }
+  /* rAF glide, same reason as SHELF_JS: Chromium mis-clamps RTL smooth scrollBy */
+  function glide(delta){
+    var start=sh.scrollLeft, min=-(sh.scrollWidth-sh.clientWidth), max=0;
+    var target=Math.min(max, Math.max(min, start+delta)), t0=performance.now();
+    function f(t){ var k=Math.min(1,(t-t0)/300); k=1-Math.pow(1-k,3);
+      sh.scrollLeft=start+(target-start)*k; if(k<1) requestAnimationFrame(f); }
+    requestAnimationFrame(f);
+  }
+  if(l) l.addEventListener('click',function(){ glide(-step()); });
+  if(r) r.addEventListener('click',function(){ glide( step()); });
+  sync(); window.addEventListener('resize', sync);
+})();
+</script>

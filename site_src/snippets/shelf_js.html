@@ -1,0 +1,21 @@
+<script>
+(function(){
+  var sh=document.getElementById('newsShelf'); if(!sh) return;
+  function step(){ var c=sh.querySelector('.card'); return c ? c.offsetWidth + 15 : 265; }
+  /* rAF glide: Chromium's smooth scrollBy mis-clamps negative (RTL) targets */
+  function glide(delta){
+    var start=sh.scrollLeft, min=-(sh.scrollWidth-sh.clientWidth), max=0;
+    var target=Math.min(max, Math.max(min, start+delta));
+    var t0=performance.now();
+    function f(t){
+      var k=Math.min(1,(t-t0)/300); k=1-Math.pow(1-k,3);
+      sh.scrollLeft=start+(target-start)*k;
+      if(k<1) requestAnimationFrame(f);
+    }
+    requestAnimationFrame(f);
+  }
+  var l=document.querySelector('.sh-l'), r=document.querySelector('.sh-r');
+  if(l) l.addEventListener('click',function(){ glide(-step()); });
+  if(r) r.addEventListener('click',function(){ glide( step()); });
+})();
+</script>

@@ -1,0 +1,27 @@
+<script>
+(function(){
+  [].slice.call(document.querySelectorAll('.rounds-panel')).forEach(function(panel){
+    var rounds=[].slice.call(panel.querySelectorAll('.round'));
+    if(!rounds.length) return;
+    var label=panel.querySelector('.rn-label');
+    var prev=panel.querySelector('.rn-prev'), next=panel.querySelector('.rn-next');
+    /* /matches ships ONE round and no navigator (the season lives on
+       /fixtures/<league> since 2026-09-20). Without this guard the missing
+       .rn-label threw on the first panel and killed the navigator on every
+       panel after it. */
+    if(!label||!prev||!next){ rounds.forEach(function(r){ r.hidden=false; }); return; }
+    var cur=panel.getAttribute('data-current');
+    var idx=0;
+    for(var i=0;i<rounds.length;i++){ if(rounds[i].getAttribute('data-round')===cur){ idx=i; break; } }
+    function show(i){
+      idx=Math.max(0,Math.min(rounds.length-1,i));
+      rounds.forEach(function(r,j){ r.hidden = j!==idx; });
+      label.textContent=rounds[idx].getAttribute('data-label');
+      prev.disabled=(idx<=0); next.disabled=(idx>=rounds.length-1);
+    }
+    prev.addEventListener('click',function(){ show(idx-1); });
+    next.addEventListener('click',function(){ show(idx+1); });
+    show(idx);
+  });
+})();
+</script>

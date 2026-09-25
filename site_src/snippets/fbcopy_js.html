@@ -1,0 +1,14 @@
+<script>
+(function(){
+  document.querySelectorAll('.fbp-c').forEach(function(b){
+    b.addEventListener('click',function(){
+      var t=b.parentNode.querySelector('.fbp-t');
+      t.select();t.setSelectionRange(0,999999);
+      function ok(){b.textContent='✓ اتنسخ';setTimeout(function(){b.textContent='📋 نسخ';},1500);}
+      if(navigator.clipboard&&navigator.clipboard.writeText){
+        navigator.clipboard.writeText(t.value).then(ok,function(){document.execCommand('copy');ok();});
+      }else{document.execCommand('copy');ok();}
+    });
+  });
+})();
+</script>

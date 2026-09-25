@@ -1,0 +1,148 @@
+<script>
+(function(){
+  var wrap=document.getElementById('days'); if(!wrap) return;
+  var sections=Array.prototype.slice.call(wrap.querySelectorAll('.day'));
+  if(!sections.length) return;
+  var days=sections.map(function(s){return s.getAttribute('data-day');});
+  var today=wrap.getAttribute('data-today')||days[0];
+  var idx=days.indexOf(today);
+  if(idx<0){ for(var i=0;i<days.length;i++){ if(days[i]>=today){idx=i;break;} } }
+  if(idx<0) idx=days.length-1;
+  var nav=document.getElementById('daynav'); nav.hidden=false;
+  var label=document.getElementById('dayLabel');
+  var prev=document.getElementById('prevDay'), next=document.getElementById('nextDay');
+  sections.forEach(function(s){ var h=s.querySelector('.day-h'); if(h) h.style.display='none'; });
+  var filter='';   /* competition name; '' = all */
+  /* ---- FotMob-style filters: live / on TV / by time / text ---- */
+  var mf=document.getElementById('mfilters'); if(mf) mf.hidden=false;
+  var fLive=false, fTime=false, q='';   /* the on-TV chip was removed by the user 2026-09-02 */
+  function norm(t){ return (t||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase().replace(/ +/g,' ').trim(); }
+  /* remember each row's league + original list/position: "by time" moves
+     rows out of their .comp blocks and must put them back in order */
+  var rowIdx=0;
+  [].slice.call(wrap.querySelectorAll('.comp')).forEach(function(c){
+    var cn=c.getAttribute('data-comp')||'', cl=c.getAttribute('data-label')||'', list=c.querySelector('.mlist');
+    [].slice.call(c.querySelectorAll('.mrow')).forEach(function(r){ r.__cname=cn; r.__clabel=cl; r.__home=list; r.__idx=rowIdx++; });
+  });
+  function rowOk(r){
+    if(fLive && !r.classList.contains('mrow-live')) return false;
+    if(filter && r.__cname!==filter) return false;
+    if(q){ var hay=norm(r.getAttribute('data-h')+' '+r.getAttribute('data-a')+' '+r.__clabel+' '+r.__cname); if(hay.indexOf(q)<0) return false; }
+    return true;
+  }
+  function byTimeList(sec){
+    var bt=sec.querySelector('.bytime');
+    if(!bt){ bt=document.createElement('div'); bt.className='mlist bytime'; bt.hidden=true; sec.insertBefore(bt, sec.querySelector('.no-comp')); }
+    return bt;
+  }
+  function applyFilter(sec){
+    var rows=[].slice.call(sec.querySelectorAll('.mrow')), comps=[].slice.call(sec.querySelectorAll('.comp'));
+    var bt=byTimeList(sec), any=false;
+    if(fTime){
+      rows.sort(function(a,b){ return (a.getAttribute('data-ko')||'').localeCompare(b.getAttribute('data-ko')||''); });
+      rows.forEach(function(r){
+        if(!r.querySelector('.mf-comp')){ var d=document.createElement('div'); d.className='mcomp mf-comp'; d.textContent=r.__clabel||r.__cname; r.appendChild(d); }
+        bt.appendChild(r);
+      });
+      comps.forEach(function(c){ c.style.display='none'; });
+      bt.hidden=false;
+    } else {
+      rows.slice().sort(function(a,b){ return a.__idx-b.__idx; }).forEach(function(r){
+        var d=r.querySelector('.mf-comp'); if(d) d.parentNode.removeChild(d);
+        if(r.__home && r.parentNode!==r.__home) r.__home.appendChild(r);
+      });
+      bt.hidden=true;
+    }
+    rows.forEach(function(r){ var ok=rowOk(r); r.style.display=ok?'':'none'; if(ok) any=true; });
+    if(!fTime){
+      comps.forEach(function(c){
+        var vis=[].slice.call(c.querySelectorAll('.mrow')).some(function(r){ return r.style.display!=='none'; });
+        c.style.display=vis?'':'none';
+      });
+    }
+    var note=sec.querySelector('.no-comp');
+    if(note){ note.hidden=any; note.textContent=(fLive||q)?'لا مباريات تطابق الفلتر في هذا اليوم.':'لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.'; }
+  }
+  if(mf){
+    [].slice.call(mf.querySelectorAll('.mf-chip')).forEach(function(b){
+      b.addEventListener('click',function(){
+        var f=b.getAttribute('data-f'), on=!b.classList.contains('is-on');
+        b.classList.toggle('is-on',on); b.setAttribute('aria-pressed',on?'true':'false');
+        if(f==='live') fLive=on; else if(f==='time') fTime=on;
+        applyFilter(sections[idx]);
+      });
+    });
+    var qi=document.getElementById('mfQ');
+    if(qi) qi.addEventListener('input',function(){ q=norm(qi.value); applyFilter(sections[idx]); });
+  }
+  function show(i){
+    idx=i;
+    sections.forEach(function(s,j){ s.style.display=(j===idx)?'block':'none'; });
+    label.textContent=sections[idx].querySelector('.day-h').textContent;
+    prev.disabled=(idx<=0); next.disabled=(idx>=sections.length-1);
+    applyFilter(sections[idx]);
+  }
+  prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
+  next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
+  var lviews=[].slice.call(document.querySelectorAll('.lview'));
+  var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
+  var pane='table';                /* remembered across league switches */
+  function showPane(view,key){
+    var tabs=[].slice.call(view.querySelectorAll('.ltab'));
+    var panes=[].slice.call(view.querySelectorAll('.lpane'));
+    var has=tabs.some(function(t){return t.getAttribute('data-pane')===key;});
+    if(!has) key=tabs.length?tabs[0].getAttribute('data-pane'):'';
+    tabs.forEach(function(t){ t.classList.toggle('is-on',t.getAttribute('data-pane')===key); });
+    panes.forEach(function(x){ x.hidden = x.getAttribute('data-pane')!==key; });
+    return key;
+  }
+  lviews.forEach(function(view){
+    view.addEventListener('click',function(e){
+      var t=e.target.closest('.ltab'); if(!t) return;
+      pane=showPane(view,t.getAttribute('data-pane'));
+      if(history.replaceState) history.replaceState(null,'','#'+pane);
+    });
+  });
+  /* the daynav has CSS display:flex which overrides the [hidden] attribute,
+     so toggle it via inline style.display instead */
+  var noTable=document.getElementById('noTable');
+  var mpDefault=document.getElementById('mpDefault');
+  /* RAIL panels only - the rounds panels now also live inside .lpane tabs,
+     and a bare '.lg-fix' selector would fight the tab logic for them */
+  var fixPanels=[].slice.call(document.querySelectorAll('.mp-extra .lg-fix'));
+  var mpage=document.querySelector('.mpage');
+  function matchesShown(on){ nav.style.display = on ? '' : 'none'; wrap.style.display = on ? '' : 'none'; if(mf) mf.style.display = on ? '' : 'none'; }
+  function reset(){                 /* all-matches view (default / top nav tab) */
+    filter='';
+    lgItems.forEach(function(x){ x.classList.remove('is-active'); });
+    lviews.forEach(function(v){ v.hidden=true; });
+    fixPanels.forEach(function(f){ f.hidden=true; });
+    if(noTable) noTable.hidden=true;
+    if(mpDefault) mpDefault.hidden=false;
+    if(mpage) mpage.classList.remove('league-view');
+    matchesShown(true);
+    applyFilter(sections[idx]);
+  }
+  function selectLeague(b){
+    filter=b.getAttribute('data-comp')||'';
+    lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
+    var view=lviews.filter(function(v){return v.getAttribute('data-comp')===filter;})[0];
+    lviews.forEach(function(v){ v.hidden = v!==view; });
+    if(view) pane=showPane(view,pane);                /* keep the reader on the same tab */
+    matchesShown(false);                              /* never show fixtures in the centre */
+    if(noTable) noTable.hidden = !!view;              /* nothing for this league -> placeholder */
+    /* left rail: this league's fixtures instead of news */
+    var fx=fixPanels.filter(function(f){return f.getAttribute('data-comp')===filter;})[0];
+    fixPanels.forEach(function(f){ f.hidden = f!==fx; });
+    if(mpDefault) mpDefault.hidden = !!fx;            /* has fixtures -> hide news */
+    if(mpage) mpage.classList.add('league-view');
+    window.scrollTo({top:0,behavior:'smooth'});
+  }
+  var h=(location.hash||'').replace('#','');
+  if(h) pane=h;                    /* deep link: /matches.html#scorers */
+  lgItems.forEach(function(b){ b.addEventListener('click',function(){ selectLeague(b); }); });
+  var mTab=document.querySelector('a.navtab[href="/matches.html"]');
+  if(mTab) mTab.addEventListener('click',function(e){ e.preventDefault(); reset(); window.scrollTo({top:0,behavior:'smooth'}); });
+  show(idx);
+})();
+</script>

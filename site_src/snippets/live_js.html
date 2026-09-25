@@ -1,0 +1,227 @@
+<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll('[data-lv]'));
+  if((!els.length&&!document.getElementById('favLive'))||!window.fetch)return;
+  function norm(s){return(s||'').replace(/[أإآ]/g,'ا')
+    .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
+  /* rows register under BOTH name orders: the sources can disagree on who
+     is at home (FD: PSG x Rennes vs 365scores: Rennes x PSG) — a reversed
+     hit paints with home/away swapped so the numbers stay correct. */
+  var map={};
+  els.forEach(function(e){
+    var h=norm(e.getAttribute('data-h')),a=norm(e.getAttribute('data-a'));
+    (map[h+'|'+a]=map[h+'|'+a]||[]).push({e:e,sw:false});
+    (map[a+'|'+h]=map[a+'|'+h]||[]).push({e:e,sw:true});
+  });
+  function swap(g){
+    var gl=(g.goals||[]).map(function(x){
+      return {s:x.s==='h'?'a':'h',p:x.p,m:x.m,t:x.t};});
+    return {h:g.a,a:g.h,hs:g.as,as:g.hs,live:g.live,min:g.min,c:g.c,
+            goals:g.goals?gl:undefined};
+  }
+  /* home score on the home side - see score_pill() in build_site.py.
+     Named sPill: paint() declares `var pill` for the status badge, and var
+     hoisting would shadow a helper called pill across the WHOLE function. */
+  function sPill(cls,hs,as_){
+    return '<b class="'+cls+'"><span>'+hs+'</span><i>-</i><span>'+as_+'</span></b>';
+  }
+  function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  /* live scorer lines - same markup as match_row()'s gblock so the static
+     block and the live-painted one are indistinguishable. Only ever painted
+     when the reply carries goals; an absent goals field must NOT clear an
+     existing (static) list. */
+  function paintGoals(e,g){
+    if(!g.goals||!g.goals.length)return;
+    var gh='',ga='';
+    g.goals.forEach(function(x){
+      var it='<span class="mg">⚽ <bdi>'+escH(x.p)+'</bdi>'
+        +(x.m?' <i class="mg-m">'+escH(x.m)+'′</i>':'')
+        +(x.t?' <small>('+escH(x.t)+')</small>':'')+'</span>';
+      if(x.s==='h')gh+=it;else ga+=it;
+    });
+    var inner='<div class="mg-side">'+gh+'</div><div class="mg-gap"></div>'
+      +'<div class="mg-side">'+ga+'</div>';
+    var gb=e.querySelector('.mgoals');
+    if(gb)gb.innerHTML=inner;
+    else e.insertAdjacentHTML('beforeend','<div class="mgoals">'+inner+'</div>');
+  }
+  /* replay the CSS animation on an element that may already carry the class:
+     removing it is not enough, the browser needs a reflow in between. */
+  function flash(el){
+    if(!el)return;
+    el.classList.remove('sc-pop');
+    void el.offsetWidth;
+    el.classList.add('sc-pop');
+    setTimeout(function(){el.classList.remove('sc-pop');},1500);
+  }
+  function paint(e,g){
+    var sc=g.hs+' - '+g.as;
+    /* a goal = the number differs from the LAST PAINTED one. data-sc is absent
+       on the first paint, so a visitor arriving mid-match never sees a flash
+       for a goal that was already on the screen when the page was built. */
+    var prev=e.getAttribute('data-sc'), popped=(prev!==null&&prev!==sc);
+    e.setAttribute('data-sc',sc);
+    if(e.classList.contains('tk-item')){
+      var mid=e.querySelector('.tk-mid'); if(!mid)return;
+      mid.innerHTML=sPill('tk-s'+(g.live?' tk-live':''),g.hs,g.as)
+        +(g.live?'<span class="tk-dot"></span>':'');
+      if(popped)flash(mid.querySelector('.tk-s'));
+    }else{
+      var mid=e.querySelector('.mid'); if(!mid)return;
+      mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
+      e.classList.remove('mrow-up','mrow-live','mrow-fin');
+      e.classList.add(g.live?'mrow-live':'mrow-fin');
+      var pill=e.querySelector('.pill');
+      var txt=g.live?'مباشر':'انتهت';
+      var cls=g.live?'live':'fin';
+      if(pill){pill.className='pill pill-'+cls;pill.textContent=txt;}
+      else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
+      paintGoals(e,g);
+      if(popped)flash(mid.querySelector('.score'));
+      /* the match page's info card: «الحالة» follows the row (2026-09-13) */
+      if(e.closest&&e.closest('.mp-hero')){
+        var sd=document.querySelector('[data-lv-state]');
+        if(sd){sd.textContent=g.live?('جارية الآن'+(g.min?' · '+g.min:'')):'انتهت';}
+      }
+    }
+  }
+  /* favourite-club live card next to "آخر الأخبار" (home page only).
+     Entries are {n:name, c:competitionId|null}; a scoped entry (c set) only
+     matches a game from that league — "الأهلي" is both Al Ahly Egypt AND
+     Al-Ahli Saudi in the 365scores feed, and name-only matching once put
+     the Saudi club's match in the card. */
+  var favBox=document.getElementById('favLive');
+  var FAV=(window.__favClubs||[]).map(function(e){
+    return {n:norm(e&&e.n!==undefined?e.n:e), c:(e&&e.c)||null};
+  });
+  /* build-time extras for the card: crests + the match's own page URL,
+     keyed by the normalized Arabic name pair (emitted as __favMeta) */
+  var FMETA={};
+  (function(){var raw=window.__favMeta||{};
+    for(var k in raw){var p=k.split('|');
+      if(p.length===2){
+        FMETA[norm(p[0])+'|'+norm(p[1])]=raw[k];
+        /* reversed too — same home/away source-disagreement as `map` */
+        FMETA[norm(p[1])+'|'+norm(p[0])]={hb:raw[k].ab,ab:raw[k].hb,u:raw[k].u};
+      }}})();
+  /* ALL live curated-club matches, one card each (user rule 2026-08-23 —
+     showing only the first hit hid Al Ahly while Trabzonspor was live) */
+  function favRender(gs){
+    if(!favBox)return;
+    var hits=[];
+    for(var i=0;i<gs.length;i++){
+      var g=gs[i];
+      if(!g.live)continue;
+      var nh=norm(g.h),na=norm(g.a);
+      for(var j=0;j<FAV.length;j++){
+        var f=FAV[j];
+        if((f.n===nh||f.n===na)&&(!f.c||f.c===g.c)){hits.push(g);break;}
+      }
+    }
+    if(!hits.length){favBox.hidden=true;favBox.innerHTML='';return;}
+    var html='';
+    hits.forEach(function(hit){
+      var mt=FMETA[norm(hit.h)+'|'+norm(hit.a)]||{};
+      var hc=mt.hb?'<img class="fv-c" src="'+mt.hb+'" alt="" loading="lazy">':'';
+      var ac=mt.ab?'<img class="fv-c" src="'+mt.ab+'" alt="" loading="lazy">':'';
+      html+='<a class="fav-live" href="'+(mt.u||'/matches.html')+'">'
+        +'<span class="fv-live"><span class="fv-dot"></span><span class="fv-lt">مباشر الآن</span></span>'
+        +'<span class="fv-m">'+hc+'<bdi>'+hit.h+'</bdi>'
+        +sPill('fv-s',hit.hs,hit.as)
+        +'<bdi>'+hit.a+'</bdi>'+ac+'</span>'
+        +(hit.min?'<span class="fv-min">'+hit.min+'</span>':'');
+      html+='</a>';
+    });
+    favBox.innerHTML=html;
+    favBox.hidden=false;
+  }
+  /* grace = how many more polls stay on the fast-ish 60s cadence after the
+     last LIVE sighting. Without it ONE transient "nothing live" reply (an
+     edge-cache entry built a second earlier, a match the source hasn't
+     registered yet) dropped the page straight to 5-minute polling mid-match,
+     and two in a row left a score ~10 minutes stale. */
+  var timer=null,hadLive=!!document.querySelector('.mrow-live,.tk-dot'),
+      grace=hadLive?3:0;
+  /* the <head> starts the first /live.json request in parallel with the
+     page load (window.__livePromise) — consume it once, then fetch fresh.
+     ?b= = 10s-bucket cache-buster: Cloudflare's zone Browser-Cache-TTL
+     rewrites our max-age to 4 HOURS, and mobile browsers/WebViews that
+     ignore fetch's no-store hint then serve an hours-old cached copy on
+     page open (user saw stale scores on open, 2026-08-30). A unique URL
+     per 10s makes the local cache unusable; the worker keys its edge cache
+     on the bare pathname, so edge caching is unaffected. */
+  function liveReq(){
+    var p=window.__livePromise;window.__livePromise=null;
+    return p||fetch('/live.json?b='+Math.floor(Date.now()/1e4),{cache:'no-store'});
+  }
+  /* local minute clock: the worker sends each live game's numeric minute
+     (gt) + half (hf) and the reply's build time (ts). The browser advances
+     the minute itself between polls, so the shown minute never stalls on
+     the poll/cache cadence. Past 45/90 it shows 45+ / 90+ (convention). */
+  var last=null;
+  function calcMin(g,at){
+    if(!g.live||g.min==='استراحة'||!(g.gt>0))return;
+    var est=Math.floor(g.gt+(Date.now()-at)/60000);
+    if(g.hf===2)g.min=est>90?'90+':est+"'";
+    else g.min=est>45?'45+':est+"'";
+  }
+  function render(){
+    if(!last)return false;
+    var any=false;
+    last.gs.forEach(function(g){calcMin(g,last.at);});
+    favRender(last.gs);
+    last.gs.forEach(function(g){
+      var arr=map[norm(g.h)+'|'+norm(g.a)];
+      if(arr){arr.forEach(function(x){paint(x.e,x.sw?swap(g):g);});}
+      if(g.live)any=true;
+    });
+    return any;
+  }
+  /* kickoff-aware cadence: __koTs (build-time epochs of nearby kickoffs)
+     wakes an idle page right before a match starts instead of letting it
+     sleep through kickoff on the 5-minute cadence. */
+  var KO=window.__koTs||[];
+  function nextDelay(any){
+    if(any)return 30000;
+    if(grace>0)return 60000;
+    var now=Date.now(),wait=Infinity;
+    for(var i=0;i<KO.length;i++){
+      var dt=KO[i]-now;
+      if(dt<=120000&&dt>=-300000)return 25000; /* KO-2min .. KO+5min */
+      if(dt>120000)wait=Math.min(wait,dt-120000);
+    }
+    return wait===Infinity?300000:Math.min(300000,Math.max(25000,wait));
+  }
+  function tick(){
+    liveReq().then(function(r){return r.json();}).then(function(d){
+      /* age = how stale the (edge-cached) reply already is, so the minute
+         baseline includes cache staleness; clamped so a wrong client clock
+         cannot warp the minute by more than 3 minutes */
+      var age=Math.max(0,Math.min(180000,Date.now()-(d.ts||Date.now())));
+      last={gs:d.games||[],at:Date.now()-age};
+      var any=render();
+      if(d.ok===false){schedule(hadLive?60000:120000);return;}
+      if(any)grace=3;else if(grace>0)grace--;
+      hadLive=any;
+      schedule(nextDelay(any));
+    }).catch(function(){schedule(hadLive?60000:120000);});
+  }
+  /* re-render the local minute between polls. paint() only flashes when the
+     SCORE string changes, so this repaint can never trigger a goal flash. */
+  setInterval(function(){
+    if(hadLive&&document.visibilityState==='visible')render();
+  },20000);
+  function schedule(ms){clearTimeout(timer);timer=setTimeout(tick,ms);}
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='visible'){clearTimeout(timer);tick();}
+    else clearTimeout(timer);
+  });
+  /* bfcache/tab-restore on mobile can bring a page back without firing
+     visibilitychange — refresh immediately on that path too */
+  window.addEventListener('pageshow',function(e){
+    if(e.persisted){clearTimeout(timer);tick();}
+  });
+  tick();
+})();
+</script>

@@ -1,0 +1,77 @@
+<script>
+(function(){
+  var feed=document.getElementById('rfeed'); if(!feed) return;
+  var slides=[].slice.call(feed.querySelectorAll('.rslide'));
+  slides.forEach(function(s){ s.__facade = s.querySelector('.rstage').innerHTML; });
+  var userSound = localStorage.getItem('ys_reels_sound')==='1';
+
+  function pm(f,func,args){ try{
+    f.contentWindow.postMessage(JSON.stringify({event:'command',func:func,args:args||[]}),'*');
+  }catch(e){} }
+  function unmute(f){ pm(f,'unMute'); pm(f,'setVolume',[100]); }
+
+  function soundBtn(st,f){
+    var b=document.createElement('button');
+    b.className='sndbtn'; b.type='button';
+    b.textContent = userSound ? '\uD83D\uDD0A' : '\uD83D\uDD07';
+    b.setAttribute('aria-label','\u0627\u0644\u0635\u0648\u062a');
+    b.addEventListener('click',function(ev){
+      ev.stopPropagation();
+      userSound=!userSound;
+      localStorage.setItem('ys_reels_sound',userSound?'1':'0');
+      if(userSound){ unmute(f); b.textContent='\uD83D\uDD0A'; }
+      else{ pm(f,'mute'); b.textContent='\uD83D\uDD07'; }
+    });
+    st.appendChild(b);
+  }
+
+  /* autoplay (muted - browser policy) the reel of slide i; kill all others */
+  function activate(i){
+    i=Math.max(0,Math.min(slides.length-1,i));
+    slides.forEach(function(s,j){
+      var st=s.querySelector('.rstage');
+      if(j!==i){ if(st.querySelector('iframe')) st.innerHTML=s.__facade; return; }
+      if(st.querySelector('iframe')) return;              // already playing
+      var btn=st.querySelector('.vthumb'); if(!btn) return;
+      var id=st.getAttribute('data-vid');
+      var f=document.createElement('iframe');
+      f.className='vframe';
+      f.src='https://www.youtube-nocookie.com/embed/'+id+
+            '?autoplay=1&mute=1&playsinline=1&rel=0&enablejsapi=1&loop=1&playlist='+id;
+      f.title='reel';
+      f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+      f.setAttribute('allowfullscreen','');
+      btn.replaceWith(f);
+      soundBtn(st,f);
+      if(userSound) setTimeout(function(){ unmute(f); },800);
+    });
+  }
+
+  function idx(){ return Math.round(feed.scrollTop / feed.clientHeight); }
+  function go(i){ feed.scrollTo({top:Math.max(0,Math.min(slides.length-1,i))*feed.clientHeight,behavior:'smooth'}); }
+
+  /* swipe/scroll -> activate the reel you landed on */
+  var st_;
+  feed.addEventListener('scroll',function(){
+    clearTimeout(st_); st_=setTimeout(function(){ activate(idx()); },300);
+  });
+  /* backup trigger in browsers where the scroll event is throttled */
+  var io=new IntersectionObserver(function(es){
+    es.forEach(function(en){ if(en.isIntersecting) activate(slides.indexOf(en.target)); });
+  },{root:feed,threshold:.6});
+  slides.forEach(function(s){ io.observe(s); });
+  /* manual tap on a facade (autoplay blocked?) - play THAT slide with sound */
+  feed.addEventListener('click',function(e){
+    var btn=e.target.closest('.vthumb'); if(!btn) return;
+    e.stopPropagation();
+    userSound=true; localStorage.setItem('ys_reels_sound','1');
+    activate(slides.indexOf(e.target.closest('.rslide')));
+  },true);
+  /* desktop arrows */
+  var up=document.getElementById('rUp'), dn=document.getElementById('rDn');
+  if(up) up.addEventListener('click',function(){ go(idx()-1); });
+  if(dn) dn.addEventListener('click',function(){ go(idx()+1); });
+  /* start: first reel plays by itself */
+  activate(0);
+})();
+</script>

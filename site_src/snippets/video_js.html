@@ -1,0 +1,21 @@
+<script>
+(function(){
+  if(window.__yv) return; window.__yv=1;  // idempotent (page may include twice)
+  document.addEventListener('click',function(e){
+    var btn=e.target.closest('.vthumb'); if(!btn) return;
+    var card=btn.closest('.vcard'); if(!card) return;
+    var id=card.getAttribute('data-vid'); if(!id) return;
+    var src=card.getAttribute('data-src')||'youtube';
+    var h3=card.querySelector('h3');
+    var f=document.createElement('iframe');
+    f.className='vframe';
+    f.src = (src==='dailymotion')
+      ? 'https://www.dailymotion.com/embed/video/'+id+'?autoplay=1'
+      : 'https://www.youtube-nocookie.com/embed/'+id+'?autoplay=1&rel=0';
+    f.title=h3?h3.textContent:'video';
+    f.allow='accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    f.setAttribute('allowfullscreen','');
+    btn.replaceWith(f);
+  });
+})();
+</script>

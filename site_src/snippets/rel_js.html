@@ -1,0 +1,26 @@
+<script>
+(function(){
+  function unit(n,one,two,few){
+    if(n===1)return 'منذ '+one;
+    if(n===2)return 'منذ '+two;
+    if(n>=3&&n<=10)return 'منذ '+n+' '+few;
+    return 'منذ '+n+' '+one;
+  }
+  function rel(iso){
+    var d=new Date(iso); if(isNaN(d.getTime())) return null;
+    var s=Math.floor((Date.now()-d.getTime())/1000); if(s<0) s=0;
+    if(s<60) return 'منذ لحظات';
+    var m=Math.floor(s/60); if(m<60) return unit(m,'دقيقة','دقيقتين','دقائق');
+    var h=Math.floor(m/60); if(h<24) return unit(h,'ساعة','ساعتين','ساعات');
+    return unit(Math.floor(h/24),'يوم','يومين','أيام');
+  }
+  function sweep(){
+    document.querySelectorAll('time.reltime').forEach(function(el){
+      var t=rel(el.getAttribute('datetime'));
+      if(t) el.textContent=t;
+    });
+  }
+  sweep();
+  setInterval(sweep,60000); /* keep 'منذ 5 دقائق' honest on a page left open */
+})();
+</script>
