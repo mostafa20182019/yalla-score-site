@@ -90,7 +90,9 @@ ck("11 a failure never takes the publish down",
    "Shrink new photos" in wf and "continue-on-error: true" in
    wf[wf.index("Shrink new photos"):wf.index("Shrink new photos") + 200])
 ck("12 the smaller bytes are committed back, or every run would redo the work",
-   "':!data/predictions.json' media/" in wf)
+   # (2026-09-24, step 3: the commit-back carries ONLY the photos now - data/
+   # lives in the data store - so the line is a plain `git add media/`)
+   "git add media/" in wf and "KEEP_MEDIA" in wf)
 
 shutil.rmtree(tmp, ignore_errors=True)
 print()

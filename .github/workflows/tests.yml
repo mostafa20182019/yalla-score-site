@@ -55,6 +55,12 @@ jobs:
           # fb_reel's MP4 test needs it (publish.yml installs it the same way)
           command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
 
+      # data/'s fetch outputs live in the data store, not in git (step 3). This
+      # job holds no Cloudflare secret, so data_store.py reads the Worker's
+      # public read-only /data/bundle instead.
+      - name: Pull the working data
+        run: python data_store.py pull
+
       # Several tests read the built pages (dist/). No Cloudflare secrets are
       # given to this job: the build falls back to the committed json exports,
       # and nothing here can write to the real database.

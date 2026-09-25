@@ -134,3 +134,15 @@ $env:JAVA_HOME="F:\tools\jdk-21.0.11"
   are used as the Open-Graph share images.
 - `data/*.json` is UTF-8 (Arabic verified). Don't edit by hand — regenerate.
 - Keep the free-image + attribution discipline for any new article images.
+
+## Working data (since 2026-09-24)
+
+`data/`'s fetch outputs and archives (matches, fixtures, standings, details,
+the results archive…) are **not in git** any more — they live in the site's
+data store (Workers KV, see `data_store.py`). Before building locally:
+
+    python data_store.py pull      # no token needed: reads https://yallascore.site/data/bundle
+    python build_site.py
+
+Every workflow that reads `data/` runs the same pull first; only `publish.yml`
+pushes (`python data_store.py push`).

@@ -124,6 +124,23 @@ merged = json.loads(DS.merge("matches_archive.json", a, b))
 ck("7 matches_archive merge unions the write_items shape",
    sorted(e["match_id"] for e in merged["results"][0]["items"]) == [0, 1, 2, 7])
 
+# 8) the wiring: the rules only hold if the workflows and git agree with them
+root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ign = open(os.path.join(root, ".gitignore"), encoding="utf-8").read().split()
+ck("8a every STORE_FILE is gitignored (git can never carry a stale copy back)",
+   all(f"data/{n}" in ign for n in DS.STORE_FILES) and "data/.store_state.json" in ign)
+wf = open(os.path.join(root, ".github", "workflows", "publish.yml"), encoding="utf-8").read()
+i_pull, i_fetch = wf.find("name: Pull the working data"), wf.find("name: Fetch latest content")
+pull_block = wf[i_pull:wf.find(chr(10) * 2, i_pull)]      # the step itself, up to its blank line
+ck("8b publish pulls BEFORE it fetches, and the pull is not continue-on-error",
+   0 < i_pull < i_fetch and "continue-on-error" not in pull_block)
+ck("8c publish saves the data (no --seed) and never commits data/ back to git",
+   "run: python data_store.py push" + chr(10) in wf and "--seed" not in wf and "git add data/" not in wf)
+for n in ("daily-article.yml", "match-article.yml", "upgrade-articles.yml", "add-sources.yml",
+          "season-carry.yml", "d1-admin.yml", "tests.yml"):
+    ck(f"8d {n} pulls the working data", "python data_store.py pull" in
+       open(os.path.join(root, ".github", "workflows", n), encoding="utf-8").read())
+
 shutil.rmtree(tmp, ignore_errors=True)
 print(f"\n{len(fails)} FAILED: {fails}" if fails else "\nALL OK")
 sys.exit(1 if fails else 0)

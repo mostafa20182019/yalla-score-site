@@ -16,3 +16,20 @@ media/reels/
 # results). Ignored so the laptop can never push them back into the build.
 data/oracle_predictions.json
 data/oracle_results.json
+# The site's WORKING DATA lives in the data store (Workers KV), not in git
+# (step 3, 2026-09-24 - data_store.py). `python data_store.py pull` fills these
+# in; every workflow that reads them pulls first. Keep this list equal to
+# data_store.STORE_FILES (tests/test_data_store.py checks it).
+data/matches.json
+data/matches_archive.json
+data/fixtures.json
+data/standings.json
+data/scorers.json
+data/assists.json
+data/goal_events.json
+data/match_details.json
+data/headlines.json
+data/fetch_debug.json
+data/results_archive.json
+data/reels_auto.json
+data/.store_state.json
