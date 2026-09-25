@@ -15,6 +15,17 @@ import base64, json, os, re, html, shutil, datetime, hashlib, io
 import analysis as AN     # تحليلات: strength model, predictions, accuracy, player insights
 import store              # prediction log (D1 when configured, else the json file)
 import results_archive as RA   # every finished match of the season, frozen once complete
+# Football reference tables (competitions, clubs, Arabic spellings, legends,
+# calendar words) live in site_lib/ since slice 2 of the split - edit them
+# there. Imported under the same names, so b.AR_TEAM & co. still work.
+from site_lib.competitions import (  # noqa: E402,F401
+    S365_COMPETITIONS, COMP_SLUG, COMP_TV, COMP_LOGO, COMP_LABEL, COMP_ORDER, S365_COMP_IDS)
+from site_lib.clubs import (  # noqa: E402,F401
+    EGY_SCOPE, TICKER_TEAMS, TEAM_PAGES, AR_TEAM, LEGENDS, _EGY_TOKENS, _EUR_TOKENS)
+from site_lib.arabic import (  # noqa: E402,F401
+    _AR_DAYS, _AR_MONTHS, _ORD_AR)
+from site_lib.media import (  # noqa: E402,F401
+    VIDEO_CATS, EMBED_LABEL)
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
@@ -58,15 +69,6 @@ def byline(a):
     """The name to print (and to put in schema) for one article."""
     return EDITOR_NAME if (a.get("author") or "") in GENERIC_BYLINES else a["author"]
 
-# The competitions whose match data comes from 365scores; everything else
-# we cover gets its table and season numbers from football-data.org (match
-# details and goals come from 365scores for all of them). This mirrors
-# fetch_data.S365_LEAGUES, which cannot be imported here - fetch_data imports
-# THIS module.
-S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
-                     "Saudi Pro League", "CAF Champions League",
-                     "Africa Cup of Nations Qualification",
-                     "UEFA Nations League")
 
 def match_data_sources(a, comp):
     """The data credit a match preview/report carries when its writer left the
@@ -239,9 +241,6 @@ def strip_src(title, source):
     return t
 
 REF_TODAY = datetime.date.today().isoformat()  # machine clock (the sandbox is set to Jul 2026)
-_AR_DAYS = ["الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت", "الأحد"]  # weekday() 0..6
-_AR_MONTHS = ["", "يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو",
-              "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"]
 def fmt_day(d):
     try:
         dt = datetime.date.fromisoformat(d)
@@ -585,109 +584,20 @@ def local_crest(url):
     _CREST_MAP[url] = "/assets/crests/" + name
     return _CREST_MAP[url]
 
-# The header ticker shows ONLY these clubs' matches (user pick 2026-08-08).
-# Tokens are substring-matched against football-data team names, so keep them
-# unambiguous — "FC Barcelona", NOT "Barcelona" (that would also match
-# "RCD Espanyol de Barcelona").
-# (token, competition-or-None): 365scores leagues use native Arabic names,
-# and "الأهلي" alone is AMBIGUOUS since the Saudi league joined (Saudi
-# Al-Ahli is also "الأهلي") - so Arabic tokens are scoped to their league.
-# URL slugs for the per-league standings/scorers landing pages
-# (/standings/<slug>.html, /scorers/<slug>.html). Keys must match the
-# competition names as they appear in standings.json / scorers.json.
-COMP_SLUG = {
-    "Egyptian Premier League": "egypt",
-    "Premier League": "england",
-    "Primera Division": "spain",
-    "Serie A": "italy",
-    "Bundesliga": "germany",
-    "Ligue 1": "france",
-    "Turkish Super Lig": "turkey",
-    "Saudi Pro League": "saudi",
-    "UEFA Champions League": "champions-league",
-    "CAF Champions League": "caf-champions-league",
-    "Africa Cup of Nations Qualification": "afcon-qualifiers",
-    "UEFA Nations League": "nations-league",
-}
 
-# MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
-# on /m/ pages. ONLY entries verified for the current season belong here
-# (firm site rule: never show possibly-wrong data). A missing league gets an
-# honest "لم تتوفر معلومات القناة" line instead. Per-match m["channel"]
-# (if a data source ever provides it) overrides this map.
-COMP_TV = {
-    "Egyptian Premier League": "أون سبورت (OnTime Sports)",
-    "Premier League": "beIN Sports",
-    "Primera Division": "beIN Sports",
-    "Ligue 1": "beIN Sports",
-    "UEFA Champions League": "beIN Sports",
-    "CAF Champions League": "beIN Sports",     # confirmed by the user 2026-09-02
-    # Serie A / Bundesliga / Turkish / Saudi: rights unverified — add when confirmed.
-}
 
-# a scope is None (any competition), one competition name, or a tuple of
-# names — the Egyptian clubs must count in Africa too (CAF CL, 2026-09-02),
-# while bare "الأهلي" must still never match Saudi Al-Ahli
-EGY_SCOPE = ("Egyptian Premier League", "CAF Champions League")
 
 def _in_scope(scope, comp):
     if scope is None:
         return True
     return comp in scope if isinstance(scope, tuple) else comp == scope
 
-TICKER_TEAMS = [
-    ("Real Madrid", None), ("FC Barcelona", None), ("Manchester United", None),
-    ("Manchester City", None), ("Arsenal FC", None), ("Liverpool FC", None),
-    ("Chelsea FC", None),
-    ("الأهلي", EGY_SCOPE),
-    ("الزمالك", EGY_SCOPE),
-    ("بيراميدز", EGY_SCOPE),
-    ("طرابزون سبور", "Turkish Super Lig"),
-]
 
 def _is_ticker_team(m):
     ha = (m.get("home") or "") + "|" + (m.get("away") or "")
     comp = m.get("competition") or ""
     return any(t in ha and _in_scope(c, comp) for t, c in TICKER_TEAMS)
 
-# Evergreen club pages (/team/<slug>) — one per curated club, targeting
-# "أخبار الأهلي اليوم" / "مباريات الزمالك القادمة" query families.
-# match_tokens follow the TICKER_TEAMS convention: (substring token,
-# competition-scope-or-None) — FD English tokens for European clubs
-# ("FC Barcelona" not "Barcelona": Espanyol collision), Arabic clubs scoped
-# to their league (bare "الأهلي" also matches Saudi Al-Ahli). news_tokens
-# are searched in article title+summary; news_excl vetoes false positives.
-TEAM_PAGES = [
-    {"slug": "al-ahly", "name": "الأهلي", "league": "Egyptian Premier League",
-     "match_tokens": [("الأهلي", EGY_SCOPE)],
-     "news_tokens": ["الأهلي"],
-     "news_excl": ["الأهلي السعودي", "أهلي جدة", "شباب الأهلي دبي", "شباب أهلي دبي"]},
-    {"slug": "zamalek", "name": "الزمالك", "league": "Egyptian Premier League",
-     "match_tokens": [("الزمالك", EGY_SCOPE)],
-     "news_tokens": ["الزمالك"]},
-    {"slug": "pyramids", "name": "بيراميدز", "league": "Egyptian Premier League",
-     "match_tokens": [("بيراميدز", EGY_SCOPE)],
-     "news_tokens": ["بيراميدز"]},
-    {"slug": "real-madrid", "name": "ريال مدريد", "league": "Primera Division",
-     "match_tokens": [("Real Madrid", None)], "news_tokens": ["ريال مدريد"]},
-    {"slug": "barcelona", "name": "برشلونة", "league": "Primera Division",
-     "match_tokens": [("FC Barcelona", None)], "news_tokens": ["برشلونة"]},
-    {"slug": "man-united", "name": "مانشستر يونايتد", "league": "Premier League",
-     "match_tokens": [("Manchester United", None)],
-     "news_tokens": ["مانشستر يونايتد"]},
-    {"slug": "man-city", "name": "مانشستر سيتي", "league": "Premier League",
-     "match_tokens": [("Manchester City", None)],
-     "news_tokens": ["مانشستر سيتي"]},
-    {"slug": "arsenal", "name": "أرسنال", "league": "Premier League",
-     "match_tokens": [("Arsenal FC", None)], "news_tokens": ["أرسنال", "آرسنال"]},
-    {"slug": "liverpool", "name": "ليفربول", "league": "Premier League",
-     "match_tokens": [("Liverpool FC", None)], "news_tokens": ["ليفربول"]},
-    {"slug": "chelsea", "name": "تشيلسي", "league": "Premier League",
-     "match_tokens": [("Chelsea FC", None)], "news_tokens": ["تشيلسي"]},
-    {"slug": "trabzonspor", "name": "طرابزون سبور", "league": "Turkish Super Lig",
-     "match_tokens": [("طرابزون سبور", "Turkish Super Lig")],
-     "news_tokens": ["طرابزون", "محمد صلاح"]},
-]
 
 def _team_match(tp, m):
     """Does match m involve club tp? Same token+scope rule as the ticker."""
@@ -719,71 +629,6 @@ def _tk_date(kick):
         return "غدًا"
     return f"{d.day:02d}/{d.month:02d}"
 
-# Arabic display names for football-data's Latin team names (365scores
-# leagues arrive Arabic-native). Unmapped names fall through unchanged.
-AR_TEAM = {
-    "1. FC Köln": "كولن", "1. FC Union Berlin": "يونيون برلين",
-    "1. FSV Mainz 05": "ماينز 05", "AC Milan": "ميلان", "AC Monza": "مونزا",
-    "ACF Fiorentina": "فيورنتينا", "AFC Ajax": "أياكس",
-    "AFC Bournemouth": "بورنموث", "AJ Auxerre": "أوكسير",
-    "AS Monaco FC": "موناكو", "AS Roma": "روما", "Angers SCO": "أنجيه",
-    "Arsenal FC": "أرسنال", "Aston Villa FC": "أستون فيلا",
-    "Atalanta BC": "أتالانتا", "Athletic Club": "أتلتيك بلباو",
-    "Bayer 04 Leverkusen": "باير ليفركوزن", "Bologna FC 1909": "بولونيا",
-    "Borussia Dortmund": "بوروسيا دورتموند",
-    "Borussia Mönchengladbach": "بوروسيا مونشنجلادباخ",
-    "Brentford FC": "برينتفورد", "Brighton & Hove Albion FC": "برايتون",
-    "CA Osasuna": "أوساسونا", "Cagliari Calcio": "كالياري",
-    "Chelsea FC": "تشيلسي", "Club Atlético de Madrid": "أتلتيكو مدريد",
-    "Club Brugge KV": "كلوب بروج", "Como 1907": "كومو",
-    "Coventry City FC": "كوفنتري سيتي", "Crystal Palace FC": "كريستال بالاس",
-    "Deportivo Alavés": "ألافيس", "ES Troyes AC": "تروا",
-    "Eintracht Frankfurt": "آينتراخت فرانكفورت", "Elche CF": "إلتشي",
-    "Everton FC": "إيفرتون", "FC Augsburg": "أوغسبورغ",
-    "FC Barcelona": "برشلونة", "FC Bayern München": "بايرن ميونخ",
-    "FC Internazionale Milano": "إنتر ميلان", "FC København": "كوبنهاجن",
-    "FC Lorient": "لوريان", "FC Schalke 04": "شالكه",
-    "FK Bodø/Glimt": "بودو جليمت", "FK Kairat": "كايرات",
-    "Frosinone Calcio": "فروزينوني", "Fulham FC": "فولهام",
-    "Galatasaray SK": "جالطة سراي", "Genoa CFC": "جنوى",
-    "Getafe CF": "خيتافي", "Hamburger SV": "هامبورج",
-    "Hull City AFC": "هال سيتي", "Ipswich Town FC": "إبسويتش تاون",
-    "Juventus FC": "يوفنتوس", "Le Havre AC": "لو آفر",
-    "Le Mans FC": "لومان", "Leeds United FC": "ليدز يونايتد",
-    "Levante UD": "ليفانتي", "Lille OSC": "ليل", "Liverpool FC": "ليفربول",
-    "Manchester City FC": "مانشستر سيتي",
-    "Manchester United FC": "مانشستر يونايتد", "Málaga CF": "مالقا",
-    "Newcastle United FC": "نيوكاسل يونايتد",
-    "Nottingham Forest FC": "نوتنجهام فورست", "OGC Nice": "نيس",
-    "Olympique Lyonnais": "أولمبيك ليون", "Olympique de Marseille": "أولمبيك مارسيليا",
-    "PAE Olympiakos SFP": "أولمبياكوس", "PSV": "آيندهوفن",
-    "Paphos FC": "بافوس", "Paris FC": "باريس أف.سي.",
-    "Paris Saint-Germain FC": "باريس سان جيرمان",
-    "Parma Calcio 1913": "بارما", "Qarabağ Ağdam FK": "قره باغ",
-    "RB Leipzig": "لايبزيج", "RC Celta de Vigo": "سيلتا فيجو",
-    "RC Deportivo La Coruña": "ديبورتيفو لاكورونيا",
-    "RC Strasbourg Alsace": "ستراسبورج",
-    "RCD Espanyol de Barcelona": "إسبانيول",
-    "Racing Club de Lens": "لانس",
-    "Rayo Vallecano de Madrid": "رايو فاييكانو",
-    "Real Betis Balompié": "ريال بيتيس", "Real Madrid CF": "ريال مدريد",
-    "Real Racing Club de Santander": "راسينج سانتاندير",
-    "Real Sociedad de Fútbol": "ريال سوسيداد",
-    "Royale Union Saint-Gilloise": "يونيون سان جيلواز",
-    "SC Freiburg": "فرايبورج", "SC Paderborn 07": "بادربورن",
-    "SK Slavia Praha": "سلافيا براج", "SS Lazio": "لاتسيو",
-    "SSC Napoli": "نابولي", "SV 07 Elversberg": "إلفيرسبيرغ",
-    "SV Werder Bremen": "فيردر بريمن", "Sevilla FC": "إشبيلية",
-    "Sport Lisboa e Benfica": "بنفيكا",
-    "Sporting Clube de Portugal": "سبورتينج لشبونة",
-    "Stade Brestois 29": "بريست", "Stade Rennais FC 1901": "ستاد رين",
-    "Sunderland AFC": "سندرلاند", "TSG 1899 Hoffenheim": "هوفنهايم",
-    "Torino FC": "تورينو", "Tottenham Hotspur FC": "توتنهام هوتسبر",
-    "Toulouse FC": "تولوز", "US Lecce": "ليتشي",
-    "US Sassuolo Calcio": "ساسولو", "Udinese Calcio": "أودينيزي",
-    "Valencia CF": "فالنسيا", "Venezia FC": "فينيزيا",
-    "VfB Stuttgart": "شتوتجارت", "Villarreal CF": "فياريال",
-}
 
 def ar_team(name):
     return AR_TEAM.get(name or "", name or "")
@@ -1546,9 +1391,6 @@ def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
             '<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>'
             '<a class="fmb-more" href="/analysis.html">كل التوقعات والتحليلات ←</a></section>')
 
-# home block 2 filter: Egyptian-football stories (clubs, league, NT)
-_EGY_TOKENS = ["الأهلي", "الزمالك", "بيراميدز", "الدوري المصري",
-               "منتخب مصر", "كأس مصر"]
 
 def _egy_article(a):
     txt = (a.get("title") or "") + " " + (a.get("summary") or "")
@@ -1556,17 +1398,6 @@ def _egy_article(a):
         return False
     return any(t in txt for t in _EGY_TOKENS)
 
-# home block 3 filter: European-football stories (big clubs + leagues).
-# Runs AFTER the Egyptian block, so a story naming both (بيراميدز يفاوض
-# لاعب برشلونة) lands in the Egyptian block and never duplicates here.
-_EUR_TOKENS = ["ريال مدريد", "برشلونة", "مانشستر يونايتد", "مانشستر سيتي",
-               "أرسنال", "آرسنال", "ليفربول", "تشيلسي", "توتنهام",
-               "نيوكاسل", "بايرن ميونخ", "بوروسيا دورتموند",
-               "باريس سان جيرمان", "يوفنتوس", "إنتر ميلان", "ميلان",
-               "نابولي", "أتلتيكو مدريد", "الدوري الإنجليزي",
-               "الدوري الإسباني", "الدوري الإيطالي", "الدوري الألماني",
-               "الدوري الفرنسي", "دوري أبطال أوروبا", "الدوري الأوروبي",
-               "طرابزون سبور"]
 
 def _eur_article(a):
     txt = (a.get("title") or "") + " " + (a.get("summary") or "")
@@ -1589,13 +1420,6 @@ def reel_slide(r, first=False):
             f'<div class="rtitle">{title}</div>{hint}'
             f'</div></section>')
 
-# fixed section order on /videos.html; a section with no videos is not rendered
-VIDEO_CATS = [
-    ("wc",     "🏆 فيديوهات كأس العالم 2026"),
-    ("epl",    "🦁 فيديوهات الدوري الإنجليزي 2026-2027"),
-    ("laliga", "🇪🇸 فيديوهات الدوري الإسباني 2026-2027"),
-    ("misc",   "⚽ متنوعات كروية"),
-]
 
 def video_facade(v):
     """A lightweight video 'facade': thumbnail + play button; the real iframe
@@ -1618,15 +1442,6 @@ def video_facade(v):
             f'<span class="vplay" aria-hidden="true">▶</span></button>'
             f'<div class="vb"><h3>{title}</h3>{meta}</div></div>')
 
-# ---------------------------------------------------------------- build
-# ---------------------------------------------------------------- تحليلات (rendering)
-# Official-post embeds under an article (user ask 2026-09-13: «النقطة 1» -
-# the club's own X / Instagram / Facebook post, the one legal way to show a
-# professional photo of the event without a licence: the platform serves it).
-# Rendered as a CARD that loads the platform's script only when the reader
-# clicks - nothing third-party on page load (speed, AdSense, privacy). Without
-# JS the card is a plain link to the post.
-EMBED_LABEL = {"x": "X (تويتر)", "instagram": "إنستغرام", "facebook": "فيسبوك"}
 
 
 def embed_platform(url):
@@ -4575,49 +4390,6 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'<th title="الفارق">+/-</th><th class="lt-pts">نقاط</th></tr></thead>'
             f'<tbody>{"".join(body)}</tbody></table></div></div>')
 
-# official competition emblems (same host as the team crests already used)
-COMP_LOGO = {
-    "Premier League":   "https://crests.football-data.org/PL.png",
-    "Primera Division": "https://crests.football-data.org/PD.png",
-    "Serie A":          "https://crests.football-data.org/SA.png",
-    "Bundesliga":       "https://crests.football-data.org/BL1.png",
-    "Ligue 1":          "https://crests.football-data.org/FL1.png",
-    "UEFA Champions League": "https://crests.football-data.org/CL.png",
-    # 365scores competition emblems (self-hosted through local_crest at build)
-    "CAF Champions League": "https://imagecache.365scores.com/image/upload/"
-                            "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
-                            "d_Competitions:default1.png/v4/Competitions/624",
-    "Africa Cup of Nations Qualification":
-        "https://imagecache.365scores.com/image/upload/"
-        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
-        "d_Competitions:default1.png/v4/Competitions/588",
-    "UEFA Nations League":
-        "https://imagecache.365scores.com/image/upload/"
-        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
-        "d_Competitions:default1.png/v4/Competitions/7016",
-}
-# friendlier display names (data-comp keeps the raw API name for filtering)
-COMP_LABEL = {
-    "Egyptian Premier League": "الدوري المصري",
-    "CAF Champions League": "دوري أبطال أفريقيا",
-    "Premier League": "الدوري الإنجليزي",
-    "Primera Division": "الدوري الإسباني",
-    "Turkish Super Lig": "الدوري التركي",
-    "Saudi Pro League": "الدوري السعودي",
-    "Ligue 1": "الدوري الفرنسي",
-    "Bundesliga": "الدوري الألماني",
-    "Serie A": "الدوري الإيطالي",
-    "UEFA Champions League": "دوري أبطال أوروبا",
-    "Africa Cup of Nations Qualification": "تصفيات كأس أمم إفريقيا",
-    "UEFA Nations League": "دوري الأمم الأوروبية",
-}
-# fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
-COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
-              "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
-              "Bundesliga", "Serie A", "UEFA Champions League",
-              "CAF Champions League",   # after UCL (user pick 2026-09-02)
-              "Africa Cup of Nations Qualification",  # user ask 2026-09-20
-              "UEFA Nations League"]                  # user ask 2026-09-21
 
 def comp_label(name):
     return COMP_LABEL.get(name, name or "")
@@ -4784,17 +4556,6 @@ def fav_club_names(standings, fixtures):
                 names.append({"n": nm, "c": cid})
     return names
 
-# 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
-# must agree with LIVE_COMPS in worker.js
-# (552,78,649,7,11,17,25,35,572,624,588,7016).
-S365_COMP_IDS = {
-    "Egyptian Premier League": 552,
-    "Turkish Super Lig": 78,
-    "Saudi Pro League": 649,
-    "CAF Champions League": 624,
-    "Africa Cup of Nations Qualification": 588,
-    "UEFA Nations League": 7016,
-}
 
 def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
     """The curated clubs (TICKER_TEAMS) at a glance: position, points, last 5,
@@ -5200,25 +4961,6 @@ def _rt_class(rt):
         return None
     return "r8" if r >= 8 else "r7" if r >= 7 else "r65" if r >= 6.5 else "r6"
 
-# ===========================================================================
-# «قراءة المباراة» — layer 2 of the match-page rework (2026-09-14).
-#
-# The page had every number and said nothing. These functions read the data
-# that is already on it: the events timeline becomes a story, the rating
-# badges already printed on the pitch chips become "who decided this match",
-# and the official table becomes "what the result changed".
-#
-# Same discipline as standings_analysis(): every clause is a restatement of
-# data we publish, plus arithmetic on minutes, the running score and the
-# table. Nothing is inferred, nothing is generated - so this can run on all
-# 483 match pages without becoming scaled auto-written content, and a page
-# whose data is incomplete simply says less.
-# ===========================================================================
-_ORD_AR = {1: "الأول", 2: "الثاني", 3: "الثالث", 4: "الرابع", 5: "الخامس",
-           6: "السادس", 7: "السابع", 8: "الثامن", 9: "التاسع", 10: "العاشر",
-           11: "الحادي عشر", 12: "الثاني عشر", 13: "الثالث عشر", 14: "الرابع عشر",
-           15: "الخامس عشر", 16: "السادس عشر", 17: "السابع عشر", 18: "الثامن عشر",
-           19: "التاسع عشر", 20: "العشرين"}
 # «الخسارة» is feminine in Arabic: الخسارة الثانية, not الخسارة الثاني
 _ORD_AR_F = {n: (w + "ة") for n, w in _ORD_AR.items() if n <= 10}
 
@@ -5930,22 +5672,6 @@ def write(rel, content):
 # ---------------------------------------------------------------- styles
 CSS = _src("style.css")
 
-# ---- legends header strip (free CC / public-domain photos, same as the app) ----
-# 8 hand-picked legends (name for tooltip/alt, 200px Wikimedia thumb).
-# Every photo was visually reviewed 2026-07-25 — face-centered, good quality.
-# (name, url, face position "x% y%", zoom) — the July-2026 NT photos are
-# half-body shots, so each avatar is hand-cropped to a tight face close-up:
-# object-position centres the face, transform:scale zooms in on it.
-LEGENDS = [
-  # uniform crops: every face ~same size in the circle, eyes on one line
-  # (head + a hint of shoulders; was a mix of tight/loose zooms)
-  ("محمد صلاح",         "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_Salah_Argentina_v_Egypt_7_July_2026-161.jpg?width=200", "50% 18%", 1.7),
-  ("إمام عاشور",        "https://commons.wikimedia.org/wiki/Special:FilePath/Emam_Ashour_Argentina_v_Egypt_7_July_2026-099.jpg?width=200", "48% 16%", 1.8),
-  ("شيكابالا",          "https://commons.wikimedia.org/wiki/Special:FilePath/Shikabala_2024_(cropped).jpg?width=200", "42% 14%", 1.9),
-  ("عمر مرموش",         "https://commons.wikimedia.org/wiki/Special:FilePath/Omar_Marmoush_Argentina_v_Egypt_7_July_2026-102.jpg?width=200", "52% 17%", 1.6),
-  ("محمد الشناوي",      "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_El_Shenawy_Argentina_v_Egypt_7_July_2026-015.jpg?width=200", "50% 17%", 1.7),
-  ("تريزيجيه",          "https://commons.wikimedia.org/wiki/Special:FilePath/Trezeguet_Argentina_v_Egypt_7_July_2026-267.jpg?width=200", "50% 15%", 1.7),
-]
 # static face-circle tiles: name tooltip via title/alt.
 LEGENDS_HTML = "".join(
     f'<span class="lg-ava"><img src="{u}" alt="{n}" title="{n}" loading="lazy"'
