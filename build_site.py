@@ -1615,214 +1615,39 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
         urls.append(f"/analysis/{slug}.html")
     return urls
 
-def build():
-    # Clear dist CONTENTS rather than the folder itself, so an open handle on
-    # dist (e.g. a running preview server) doesn't block the rebuild.
-    if os.path.exists(DIST):
-        for name in os.listdir(DIST):
-            p = os.path.join(DIST, name)
-            if os.path.isdir(p):
-                shutil.rmtree(p, ignore_errors=True)
-            else:
-                try:
-                    os.remove(p)
-                except OSError:
-                    pass
-    else:
-        os.makedirs(DIST)
-    os.makedirs(os.path.join(DIST, "a"), exist_ok=True)
-    os.makedirs(os.path.join(DIST, "assets"), exist_ok=True)
+# ---- slice 4: build()'s page sections as functions (tools/extract_sections.py) ----
+_UNSET = object()      # 'this build() variable was not bound at the call'
 
-    # Articles come from D1 (the writer since 2026-09-10). The committed
-    # export is the fallback, and it is a real one: a build must render every
-    # page when the store is unreachable. It can only ever be BEHIND, never
-    # wrong - article_put.py rewrites it in the same commit as the article.
-    try:
-        articles_all, _asrc = articles_current()
-        print(f"  articles: {len(articles_all)} from {_asrc}")
-    except Exception as e:                                  # noqa: BLE001
-        articles_all = load("articles.json")
-        print(f"  ! article store unreachable ({e}) - using the committed "
-              f"export ({len(articles_all)} articles)")
-    # `articles_all` -> every piece still gets its own page at its own URL.
-    # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
-    # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
-    # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
-    _miss = resolve_missing_media(articles_all)
-    if _miss:
-        print(f'  ! {len(_miss)} article image(s) not in this checkout yet - placeholder for this build: '
-              + ', '.join(_miss[:5]))
-    articles = [a for a in articles_all if not is_thin(a)]
-    matches = load("matches.json")
-    headlines = load("headlines.json")
-    videos = load("videos.json")
-    standings = load("standings.json")   # [{competition, table:[...]}]
-    scorers = load("scorers.json")       # [{competition, scorers:[{name,team,goals,...}]}]
-    assists = load("assists.json")       # same shape, key "assists"
-    fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
-    goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
-    # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
-    _details_raw = load("match_details.json")
-    md_idx = match_details_index(_details_raw)
-    # ONE rule for a finished match: the frozen archive first (results_archive.py,
-    # 2026-09-24 - python's heir to Oracle's MATCH_RESULTS), the feed files below
-    # it. These are dict.update() layers and the LAST one wins, so the archive is
-    # applied last. Reading bottom-up:
-    #   match_details.json  - the 45-day store, the deepest feed source
-    #   goal_events.json    - a ROLLING window, fresher while it lasts; a
-    #                         finished match drops out within hours
-    #   results_archive     - frozen once the scorers account for the score,
-    #                         never overwritten after that
-    # Letting frozen beat fresh is safe BECAUSE of that gate. The cost, stated
-    # plainly: a complete-but-wrong list, once frozen, is not corrected by a
-    # later feed - that is what "frozen" means.
-    _res_arch = RA.load()
-    _frozen = RA.frozen_entries(_res_arch)
-    # the SCORE of a finished match comes from the archive too, not only its
-    # scorers - both halves of "النتيجة ومسجلي الأهداف"
-    _sc_fill, _sc_chg = apply_frozen_scores(matches, frozen_scores_index(_frozen))
-    ge_idx = goals_index(goal_events, _details_raw, _frozen)
-    print("  + results archive: %d finished match(es), %d frozen; scores taken for %d%s"
-          % (len(_res_arch), len(_frozen), _sc_fill,
-             (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else ""))
 
-    # ---- تحليلات: strength model + predictions + accuracy + player insights ----
-    _archive = load("matches_archive.json")
-    # The season pool: the results archive AHEAD of the feed's rolling files, so
-    # the opening rounds the feed has forgotten still count (the Saudi 51-vs-60
-    # drift of 2026-09-13) and a frozen score wins a conflict. season_matches()
-    # de-duplicates by fixture, so a match on both sides is counted once.
-    _bycomp = AN.season_matches(fixtures, RA.season_rows(_res_arch) + _archive)
-    # season carry-over (roadmap factor 1): the five European leagues start from
-    # last season's carried Elo (data/elo_seeds.json, season_carry.py); absent
-    # file = flat 1500 as before. The Oracle copy reads the same seeds.
-    _seeds = AN.load_elo_seeds()
-    if _seeds:
-        print(f'  + elo seeds: {sum(len(v) for v in _seeds.values())} clubs in {len(_seeds)} leagues')
-    _tstats = AN.team_stats(_bycomp, _seeds)
-    _lparams = {c: AN.league_params(ms) for c, ms in _bycomp.items()}
-    def _pred(m):
-        comp = m.get("competition")
-        if comp not in _tstats or not m.get("home") or not m.get("away"):
-            return None
-        return AN.predict(_tstats[comp], _lparams[comp], m["home"], m["away"])
-    _upcoming = [m for m in matches if (m.get("status") or "").upper() == "UPCOMING" and m.get("match_id")]
-    _preds = {}
-    for m in _upcoming:
-        p = _pred(m)
-        if p:
-            p["src"] = "python"
-            _preds[str(m["match_id"])] = p
-    print(f'  + predictions: {len(_preds)} upcoming fixtures, python model')
-    # The prediction log lives in the store (D1 when configured). A frozen
-    # prediction that gets re-frozen with newer data would silently inflate the
-    # published accuracy, which is the one thing the accuracy page exists to
-    # prevent - so the freeze has to be atomic, and store.pred_freeze refuses
-    # to touch a row that is already scored.
-    #
-    # THE BUILD MUST NOT DEPEND ON A LIVE SERVICE: if the store is unreachable,
-    # fall back to the last committed export, skip persisting, and still render
-    # every page. A dead database may cost us one cycle of the log; it must
-    # never cost us the site.
-    _plog, _pstore_ok = {}, True
-    try:
-        _plog = store.pred_all()
-    except Exception as e:                                  # noqa: BLE001
-        _pstore_ok = False
-        print(f"  ! prediction store unreachable ({e}) - using the committed export")
-        _plog = AN.load_log()
-    # the model's own track record per stated-probability band, computed once:
-    # every upcoming match page prints the band its top number falls in
-    _cal = AN.calibration(_plog)
-    _pch = AN.update_log(_plog, _upcoming, _preds, matches + _archive, datetime.date.today())
-    if _pstore_ok:
-        try:
-            for _mid in _pch["frozen"]:
-                store.pred_freeze(_mid, _plog[_mid])
-            for _mid in _pch["scored"]:
-                _e = _plog[_mid]
-                store.pred_score(_mid, _e["hs"], _e["as"], _e["outcome"], _e["pick"],
-                                 _e["hit"], _e["brier"], _e["score_hit"])
-            if _pch["pruned"]:
-                store.pred_prune(AN.PRUNE_DAYS)
-            if any(_pch.values()):
-                print(f'  + predictions: {len(_pch["frozen"])} frozen, '
-                      f'{len(_pch["scored"])} scored, {len(_pch["pruned"])} pruned '
-                      f'({len(_plog)} in the log, backend {store.backend()})')
-        except Exception as e:                              # noqa: BLE001
-            print(f"  ! could not persist predictions ({e}) - pages still build")
-    _acc = AN.accuracy(_plog)
-    for _k, _v in sorted((_acc.get("by_src") or {}).items()):
-        if _v:
-            print(f'  + accuracy [{_k}]: n={_v["n"]} hit={_v["hit_rate"]:.1%} brier={_v["brier"]:.4f}')
-    _comp_idx = {}
-    for m in matches + _archive + [mm for f in fixtures for rd in f.get("rounds", []) for mm in rd.get("matches", [])]:
-        if m.get("home") and m.get("away"):
-            _comp_idx[(ar_team(m["home"]), ar_team(m["away"]), m.get("kickoff"))] = m.get("competition")
-    _pins = AN.player_insights(_details_raw, lambda h, a, d: _comp_idx.get((h, a, d)), ar_team)
-    # who each club normally starts -> «من غاب ومن عاد» on the match pages
-    _squad = AN.SquadIndex(_details_raw, lambda h, a, d: _comp_idx.get((h, a, d)))
-    _sins = AN.scorer_insights(scorers, assists, {s.get("competition"): s["table"] for s in standings if s.get("table")})
-    # reels: hand-picked first, then auto-pulled channel uploads (deduped)
-    reels = load("reels.json")
-    seen_r = {r.get("video_id") for r in reels}
-    for r in load("reels_auto.json"):
-        if r.get("video_id") not in seen_r:
-            reels.append(r)
-            seen_r.add(r.get("video_id"))
+def _bound(scope, names):
+    return {k: scope[k] for k in names if k in scope}
 
-    global TICKER_HTML
-    TICKER_HTML = make_ticker(matches)
 
-    # kickoff epochs for LIVE_JS's kickoff-aware polling (see KO_SCRIPT)
-    global KO_SCRIPT
-    try:
-        from zoneinfo import ZoneInfo
-        _cairo = ZoneInfo("Africa/Cairo")
-        _now = datetime.datetime.now(_cairo)
-        _kos = set()
-        for _m in matches:
-            if not (_m.get("kickoff") and _m.get("koff_time")):
-                continue
-            try:
-                _dt = datetime.datetime.fromisoformat(
-                    f"{_m['kickoff']}T{_m['koff_time']}:00").replace(tzinfo=_cairo)
-            except ValueError:
-                continue
-            _delta = (_dt - _now).total_seconds()
-            # recent past too: a match may already be live at build time
-            if -4 * 3600 <= _delta <= 36 * 3600:
-                _kos.add(int(_dt.timestamp() * 1000))
-        KO_SCRIPT = (f"<script>window.__koTs={json.dumps(sorted(_kos))}</script>"
-                     if _kos else "")
-    except Exception:
-        KO_SCRIPT = ""
-
-    # ---- assets: css + logo ----
-    global CSS_VER
-    _css = CSS + "\n" + LEGENDS_CSS
-    CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
-    with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
-        f.write(_css)
-    # /favicon.ico at the site root — the legacy fallback path some crawlers
-    # (and Google's favicon fetcher) request directly; was a 404 before
-    _ico = os.path.join(HERE, "assets-src", "favicon.ico")
-    if os.path.exists(_ico):
-        shutil.copy(_ico, os.path.join(DIST, "favicon.ico"))
-    _fav = os.path.join(HERE, "assets-src", "favicon.png")
-    if os.path.exists(_fav):
-        shutil.copy(_fav, os.path.join(DIST, "assets", "favicon.png"))
-    _ogb = os.path.join(HERE, "assets-src", "og-banner.png")
-    if os.path.exists(_ogb):
-        shutil.copy(_ogb, os.path.join(DIST, "assets", "og-banner.png"))
-    for _logo in (os.path.join(HERE, "assets-src", "logo.png"),
-                  os.path.join(HERE, "..", "shared-components", "static-files", "icons", "app-icon-192.png")):
-        if os.path.exists(_logo):
-            shutil.copy(_logo, os.path.join(DIST, "assets", "logo.png"))
-            break
-
-    urls = ["/", "/matches.html"]
-
+def _page_home(_acc=_UNSET, _cal=_UNSET, _preds=_UNSET, _upcoming=_UNSET, articles=_UNSET, fixtures=_UNSET, headlines=_UNSET, m=_UNSET, matches=_UNSET, reels=_UNSET, standings=_UNSET, videos=_UNSET):
+    if _acc is _UNSET:
+        del _acc
+    if _cal is _UNSET:
+        del _cal
+    if _preds is _UNSET:
+        del _preds
+    if _upcoming is _UNSET:
+        del _upcoming
+    if articles is _UNSET:
+        del articles
+    if fixtures is _UNSET:
+        del fixtures
+    if headlines is _UNSET:
+        del headlines
+    if m is _UNSET:
+        del m
+    if matches is _UNSET:
+        del matches
+    if reels is _UNSET:
+        del reels
+    if standings is _UNSET:
+        del standings
+    if videos is _UNSET:
+        del videos
     # ---- home ----
     feat = articles[0] if articles else None    # og:image source
     parts = [head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
@@ -1942,7 +1767,21 @@ def build():
                  + ';</script>')
     parts.append(foot())
     write("index.html", "".join(parts))
+    _l = locals()
+    return {k: _l[k] for k in ('h', 'm', 'v') if k in _l}
 
+
+def _page_article_pages(articles=_UNSET, articles_all=_UNSET, matches=_UNSET, p=_UNSET, urls=_UNSET):
+    if articles is _UNSET:
+        del articles
+    if articles_all is _UNSET:
+        del articles_all
+    if matches is _UNSET:
+        del matches
+    if p is _UNSET:
+        del p
+    if urls is _UNSET:
+        del urls
     # ---- article pages ---- (every article, listed or not, keeps its page)
     # match_id -> competition, so a match piece whose writer skipped `sources`
     # still credits the right data provider (see match_data_sources)
@@ -2081,240 +1920,45 @@ def build():
     print(f"  + match pieces moved into their match page: {len(_moved)}")
     print(f"  + articles: {len(articles_all)} pages, {len(articles)} listed "
           f"({n_thin} unlisted: under {ARTICLE_MIN_WORDS} words, noindexed + out of every listing)")
+    _l = locals()
+    return {k: _l[k] for k in ('_clubs', '_faq', '_match_arts', '_moved', '_t', 'a', 'img', 'p') if k in _l}
 
-    # ---- shared per-league data + stats machinery (matches page + /stats) ----
-    st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
-    sc_by_comp = {s.get("competition"): (s.get("scorers") or [])
-                  for s in scorers if s.get("scorers")}
-    as_by_comp = {s.get("competition"): (s.get("assists") or [])
-                  for s in assists if s.get("assists")}
-    # both read the season pool (_bycomp) so a truncated fixtures.json cannot
-    # empty the «آخر 5» column or the tile fallback (2026-09-13)
-    forms = team_form(fixtures, standings, _bycomp)
-    elos = compute_elo(fixtures, _bycomp)
-    fx_by_comp = {f.get("competition"): f for f in fixtures if f.get("rounds")}
-    STAT_PAL = ["#1f94d3", "#e11d48", "#f59e0b", "#7c3aed", "#334155"]
 
-    def _fin_ms(fx):
-        """(round, match) pairs for finished matches with scores, chronological."""
-        ms = []
-        for rd in fx.get("rounds", []):
-            for m in rd.get("matches", []):
-                if (m.get("status") == "FINISHED"
-                        and m.get("home_score") is not None
-                        and m.get("away_score") is not None):
-                    ms.append((rd.get("round"), m))
-        ms.sort(key=lambda t: (t[1].get("kickoff") or "", t[1].get("koff_time") or ""))
-        return ms
-
-    def _pts_race_svg(fin, top_teams):
-        """Cumulative points per round for the leading teams, inline SVG line chart."""
-        rounds = sorted({r for r, _ in fin if r is not None})
-        top_teams = [t for t in top_teams if t]
-        if len(rounds) < 2 or not top_teams:
-            return ""
-        per = {}
-        for r, m in fin:
-            if r is None:
-                continue
-            hs, aw = m["home_score"], m["away_score"]
-            d = per.setdefault(r, {})
-            d[m.get("home")] = d.get(m.get("home"), 0) + (3 if hs > aw else 1 if hs == aw else 0)
-            d[m.get("away")] = d.get(m.get("away"), 0) + (3 if aw > hs else 1 if hs == aw else 0)
-        series = {}
-        for t in top_teams:
-            c, vals = 0, []
-            for r in rounds:
-                c += per.get(r, {}).get(t, 0)
-                vals.append(c)
-            series[t] = vals
-        w, h, ml, mr, mt, mb = 680, 240, 30, 12, 12, 26
-        ymax = max(max(v) for v in series.values()) or 1
-        def x(i): return ml + (w - ml - mr) * (i / max(1, len(rounds) - 1))
-        def y(v): return mt + (h - mt - mb) * (1 - v / ymax)
-        parts = [f'<svg class="chart" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="سباق النقاط">']
-        step = max(1, ymax // 4)
-        for g in range(0, ymax + 1, step):
-            parts.append(f'<line x1="{ml}" y1="{y(g):.1f}" x2="{w - mr}" y2="{y(g):.1f}" stroke="#eef2f6"/>')
-            parts.append(f'<text x="{ml - 5}" y="{y(g) + 4:.1f}" font-size="10" fill="#94a3b8" text-anchor="end">{g}</text>')
-        for i, r in enumerate(rounds):
-            parts.append(f'<text x="{x(i):.1f}" y="{h - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">{r}</text>')
-        for k, (t, vals) in enumerate(series.items()):
-            col = STAT_PAL[k % len(STAT_PAL)]
-            pl = " ".join(f"{x(i):.1f},{y(v):.1f}" for i, v in enumerate(vals))
-            parts.append(f'<polyline points="{pl}" fill="none" stroke="{col}" stroke-width="2.5" stroke-linejoin="round"/>')
-            parts.append(f'<circle cx="{x(len(vals) - 1):.1f}" cy="{y(vals[-1]):.1f}" r="3.5" fill="{col}"/>')
-        parts.append('</svg>')
-        legend = "".join(
-            f'<span class="lgd"><i style="background:{STAT_PAL[k % len(STAT_PAL)]}"></i><bdi>{esc(ar_team(t))}</bdi></span>'
-            for k, t in enumerate(series))
-        return f'<div class="chart-wrap">{"".join(parts)}</div><div class="legend">{legend}</div>'
-
-    def _goals_svg(fin):
-        """Total goals per round, inline SVG bar chart (needs 2+ rounds —
-        a single bar just repeats the season-total tile)."""
-        rounds = sorted({r for r, _ in fin if r is not None})
-        if len(rounds) < 2:
-            return ""
-        goals = {r: 0 for r in rounds}
-        for r, m in fin:
-            if r is not None:
-                goals[r] += m["home_score"] + m["away_score"]
-        w, h, ml, mr, mt, mb = 680, 200, 30, 12, 14, 26
-        ymax = max(goals.values()) or 1
-        bw = min((w - ml - mr) / len(rounds) * 0.6, 64)
-        parts = [f'<svg class="chart" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الأهداف في كل جولة">']
-        for i, r in enumerate(rounds):
-            cx = ml + (w - ml - mr) * ((i + .5) / len(rounds))
-            bh = (h - mt - mb) * goals[r] / ymax
-            parts.append(f'<rect x="{cx - bw / 2:.1f}" y="{h - mb - bh:.1f}" width="{bw:.1f}" height="{max(bh, 1):.1f}" rx="3" fill="#1f94d3" opacity="0.85"/>')
-            parts.append(f'<text x="{cx:.1f}" y="{h - mb - bh - 4:.1f}" font-size="10" fill="#475569" text-anchor="middle">{goals[r]}</text>')
-            parts.append(f'<text x="{cx:.1f}" y="{h - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">{r}</text>')
-        parts.append('</svg>')
-        return f'<div class="chart-wrap">{"".join(parts)}</div>'
-
-    # season totals per competition, so the player charts can be checked
-    # against the season they claim to describe (see chart_is_current)
-    comp_goals, comp_maxp = {}, {}
-    for _c, _fx in fx_by_comp.items():
-        _f = _fin_ms(_fx)
-        # The denominator has to be the SEASON POOL, not this one file. For the
-        # 365scores leagues fixtures.json carries scores for only a few rounds
-        # (Egypt on 2026-09-16: 11 goals in the file against the 93 the season
-        # actually holds), and an understated denominator makes
-        # chart_is_current reject a perfectly current top-scorer list as "last
-        # season's": 13 goals across the top five > 11 for the whole league.
-        # That is what emptied /scorers/egypt - the guard was right about the
-        # arithmetic and wrong about the world. Found by an outside HTML audit
-        # of the live site, 2026-09-16.
-        comp_goals[_c] = max(
-            sum(int(m["home_score"]) + int(m["away_score"]) for m in (_bycomp.get(_c) or [])),
-            sum(m["home_score"] + m["away_score"] for _, m in _f))
-        _tbl = (st_by_comp.get(_c) or {}).get("table") or []
-        comp_maxp[_c] = (max((r.get("played") or 0) for r in _tbl) if _tbl
-                         else max((r or 0 for r, _ in _f), default=0))
-    sc_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
-             for c, rows in sc_by_comp.items()}
-    as_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
-             for c, rows in as_by_comp.items()}
-    stats_cutoff = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
-
-    def league_stats_parts(comp):
-        """One league's stats, split into the tab panes the matches page uses:
-        {"numbers": tiles + percentages, "scorers": scorers + assists charts,
-         "trend": points race + goals per round}. Missing pieces are absent.
-        /stats.html stitches them back into one section."""
-        parts = []
-        fx = fx_by_comp.get(comp)
-        if not fx:
-            return {}
-        fin = _fin_ms(fx)
-        if not fin:
-            return {}
-        fx = fx_by_comp.get(comp)
-        if not fx:
-            return ""
-        fin = _fin_ms(fx)
-        if not fin:
-            return ""
-        # a season that ended long ago (e.g. last season's Champions League
-        # rounds still in the feed) must not pose as current-season numbers:
-        # skip when nothing is left to play AND the last match is >30 days old
-        all_ms = [m for rd in fx.get("rounds", []) for m in rd.get("matches", [])]
-        pending = any((m.get("status") or "").upper() != "FINISHED" for m in all_ms)
-        last_day = max((m.get("kickoff") or "" for m in all_ms), default="")
-        if not pending and last_day and last_day < stats_cutoff:
-            return {}
-        played = len(fin)
-        goals = sum(m["home_score"] + m["away_score"] for _, m in fin)
-        big = max((m for _, m in fin),
-                  key=lambda m: (m["home_score"] + m["away_score"],
-                                 max(m["home_score"], m["away_score"])))
-        big_t = (f'{ar_team(big.get("home"))} {big["home_score"]}-{big["away_score"]} '
-                 f'{ar_team(big.get("away"))}')
-        # who played it: same home-first order as every match row on the site
-        def _tile_side(name, badge):
-            img = (f'<img src="{esc(local_crest(badge))}" alt="" loading="lazy">'
-                   if badge else '<span class="ph">⚽</span>')
-            return f'<span class="tm">{img}<bdi>{esc(ar_team(name))}</bdi></span>'
-        big_ms = (f'<div class="tile-ms">{_tile_side(big.get("home"), big.get("home_badge"))}'
-                  f'<i>×</i>{_tile_side(big.get("away"), big.get("away_badge"))}</div>')
-        big_bits = []
-        if big.get("round") is not None:
-            big_bits.append(f'الجولة {esc(str(big["round"]))}')
-        if big.get("kickoff"):
-            try:
-                _d = datetime.date.fromisoformat(big["kickoff"])
-                big_bits.append(f'{_d.day:02d}/{_d.month:02d}/{_d.year}')
-            except Exception:
-                pass
-        big_when = (f'<div class="tile-when">{" · ".join(big_bits)}</div>'
-                    if big_bits else "")
-        top_rows = (st_by_comp.get(comp) or {}).get("table") or []
-        top_teams = [r.get("team") for r in top_rows[:5]]
-        if not top_teams:
-            er = elos.get(comp, {})
-            top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
-        panes = {}
-        # player charts, only when they describe THIS season (chart_is_current)
-        sc = sc_by_comp.get(comp) or [] if sc_ok.get(comp) else []
-        asst = as_by_comp.get(comp) or [] if as_ok.get(comp) else []
-        sc_tile = ""
-        if sc:
-            lead = sc[0]
-            sc_tile = (f'<div class="tile tile-sc" title="{esc(lead.get("name"))}'
-                       f' - {esc(lead.get("team"))}"><b>{lead.get("goals")}</b>'
-                       f'<span>هداف الدوري</span>'
-                       f'<div class="tile-ms">{_scorer_face(lead)}'
-                       f'<span class="tm"><bdi>{esc(lead.get("name"))}</bdi></span></div>'
-                       f'<div class="tile-when">{esc(lead.get("team"))}</div></div>')
-        num = ['<div class="stat-tiles">'
-               f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
-               f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
-               f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
-               f'<div class="tile tile-res" title="{esc(big_t)}">'
-               f'{score_pill(big["home_score"], big["away_score"], "sc-in")}'
-               f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
-               f'{sc_tile}'
-               '</div>']
-        pcts = league_pcts(fin)
-        if pcts:
-            num.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
-            num.append(pcts)
-        panes["numbers"] = "".join(num)
-        if sc or asst:
-            chart = ['<div class="chart-cols">']
-            if sc:
-                chart.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
-                             + scorers_list(sc, "أهداف") + '</div>')
-            if asst:
-                chart.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
-                             + scorers_list(asst, "صناعة") + '</div>')
-            chart.append('</div>')
-            panes["scorers"] = "".join(chart)
-        trend = []
-        race = _pts_race_svg(fin, top_teams)
-        if race:
-            trend.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
-            trend.append(race)
-        gsvg = _goals_svg(fin)
-        if gsvg:
-            trend.append('<h3 class="stats-h3">الأهداف في كل جولة</h3>')
-            trend.append(gsvg)
-        if trend:
-            panes["trend"] = "".join(trend)
-        return panes
-
-    def league_stats_sec(comp, heading=True):
-        """All of a league's stats as one section — used by /stats.html."""
-        panes = league_stats_parts(comp)
-        if not panes:
-            return ""
-        head_html = (f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>'
-                     if heading else "")
-        body = "".join(panes.get(k, "") for k in ("numbers", "scorers", "trend"))
-        return f'<section class="stats-sec">{head_html}{body}</section>' 
-
+def _page_matches_page(_mid=_UNSET, _plog=_UNSET, _preds=_UNSET, a=_UNSET, articles=_UNSET, f=_UNSET, fixtures=_UNSET, forms=_UNSET, fx_by_comp=_UNSET, ge_idx=_UNSET, img=_UNSET, league_stats_parts=_UNSET, m=_UNSET, matches=_UNSET, p=_UNSET, st_by_comp=_UNSET, standings=_UNSET):
+    if _mid is _UNSET:
+        del _mid
+    if _plog is _UNSET:
+        del _plog
+    if _preds is _UNSET:
+        del _preds
+    if a is _UNSET:
+        del a
+    if articles is _UNSET:
+        del articles
+    if f is _UNSET:
+        del f
+    if fixtures is _UNSET:
+        del fixtures
+    if forms is _UNSET:
+        del forms
+    if fx_by_comp is _UNSET:
+        del fx_by_comp
+    if ge_idx is _UNSET:
+        del ge_idx
+    if img is _UNSET:
+        del img
+    if league_stats_parts is _UNSET:
+        del league_stats_parts
+    if m is _UNSET:
+        del m
+    if matches is _UNSET:
+        del matches
+    if p is _UNSET:
+        del p
+    if st_by_comp is _UNSET:
+        del st_by_comp
+    if standings is _UNSET:
+        del standings
     # ---- matches page (per-day navigator, like the live app) ----
     from collections import OrderedDict
     daymap = OrderedDict()
@@ -2478,7 +2122,63 @@ def build():
     p.append(pred_pop(p))
     p.append(foot())
     write("matches.html", "".join(p))
+    _l = locals()
+    return {k: _l[k] for k in ('a', 'comp', 'comp_order', 'i', 'img', 'k', 'm', 'st') if k in _l}
 
+
+def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_UNSET, _dt=_UNSET, _lparams=_UNSET, _match_arts=_UNSET, _plog=_UNSET, _preds=_UNSET, _squad=_UNSET, _tstats=_UNSET, a=_UNSET, articles=_UNSET, comp=_UNSET, fixtures=_UNSET, forms=_UNSET, ge_idx=_UNSET, img=_UNSET, k=_UNSET, m=_UNSET, matches=_UNSET, md_idx=_UNSET, st=_UNSET, st_by_comp=_UNSET, urls=_UNSET, v=_UNSET):
+    if ZoneInfo is _UNSET:
+        del ZoneInfo
+    if _bycomp is _UNSET:
+        del _bycomp
+    if _cal is _UNSET:
+        del _cal
+    if _clubs is _UNSET:
+        del _clubs
+    if _dt is _UNSET:
+        del _dt
+    if _lparams is _UNSET:
+        del _lparams
+    if _match_arts is _UNSET:
+        del _match_arts
+    if _plog is _UNSET:
+        del _plog
+    if _preds is _UNSET:
+        del _preds
+    if _squad is _UNSET:
+        del _squad
+    if _tstats is _UNSET:
+        del _tstats
+    if a is _UNSET:
+        del a
+    if articles is _UNSET:
+        del articles
+    if comp is _UNSET:
+        del comp
+    if fixtures is _UNSET:
+        del fixtures
+    if forms is _UNSET:
+        del forms
+    if ge_idx is _UNSET:
+        del ge_idx
+    if img is _UNSET:
+        del img
+    if k is _UNSET:
+        del k
+    if m is _UNSET:
+        del m
+    if matches is _UNSET:
+        del matches
+    if md_idx is _UNSET:
+        del md_idx
+    if st is _UNSET:
+        del st
+    if st_by_comp is _UNSET:
+        del st_by_comp
+    if urls is _UNSET:
+        del urls
+    if v is _UNSET:
+        del v
     # ---- per-match pages (/m/<id>.html) ----
     # One landing page per match (archive ∪ current window): these target the
     # long-tail queries a single /matches.html can never rank for ("نتيجة
@@ -2734,7 +2434,41 @@ def build():
                 urls.append(murl)
                 n_mp_sm += 1
     print(f"  + match pages: {n_mp} ({n_mp_idx} indexable, {n_mp_sm} in the sitemap)")
+    _l = locals()
+    return {k: _l[k] for k in ('_h', '_html', '_slug', 'a', 'comp', 'desc', 'img', 'm', 'm_all', 'st', 'title', 'v', 'when') if k in _l}
 
+
+def _page_per_league_standings_top_scorers_pages(_bycomp=_UNSET, _faq=_UNSET, _html=_UNSET, _preds=_UNSET, as_by_comp=_UNSET, as_ok=_UNSET, comp=_UNSET, forms=_UNSET, m=_UNSET, matches=_UNSET, sc_by_comp=_UNSET, sc_ok=_UNSET, st=_UNSET, st_by_comp=_UNSET, urls=_UNSET):
+    if _bycomp is _UNSET:
+        del _bycomp
+    if _faq is _UNSET:
+        del _faq
+    if _html is _UNSET:
+        del _html
+    if _preds is _UNSET:
+        del _preds
+    if as_by_comp is _UNSET:
+        del as_by_comp
+    if as_ok is _UNSET:
+        del as_ok
+    if comp is _UNSET:
+        del comp
+    if forms is _UNSET:
+        del forms
+    if m is _UNSET:
+        del m
+    if matches is _UNSET:
+        del matches
+    if sc_by_comp is _UNSET:
+        del sc_by_comp
+    if sc_ok is _UNSET:
+        del sc_ok
+    if st is _UNSET:
+        del st
+    if st_by_comp is _UNSET:
+        del st_by_comp
+    if urls is _UNSET:
+        del urls
     # ---- per-league standings + top-scorers pages ----
     # Evergreen SEO landing pages with their own URLs: "ترتيب الدوري المصري"
     # and "هدافو الدوري المصري" are huge monthly queries that a tab inside
@@ -2845,7 +2579,25 @@ def build():
                 urls.append(sc_url)
             n_lp += 1
     print(f"  + league pages: {n_lp}")
+    _l = locals()
+    return {k: _l[k] for k in ('_comps_with_table', 'comp', 'label', 'm', 'season', 'slug', 'st', 'up_next') if k in _l}
 
+
+def _page_per_league_season_fixtures(comp=_UNSET, fx_by_comp=_UNSET, label=_UNSET, season=_UNSET, slug=_UNSET, st_by_comp=_UNSET, urls=_UNSET):
+    if comp is _UNSET:
+        del comp
+    if fx_by_comp is _UNSET:
+        del fx_by_comp
+    if label is _UNSET:
+        del label
+    if season is _UNSET:
+        del season
+    if slug is _UNSET:
+        del slug
+    if st_by_comp is _UNSET:
+        del st_by_comp
+    if urls is _UNSET:
+        del urls
     # ---- per-league season fixtures (/fixtures/<slug>.html) ----
     # These used to be INSIDE /matches, hidden behind the league filter: 2,206
     # fixture rows and 4,955 crest tags that every visitor downloaded to look
@@ -2889,7 +2641,35 @@ def build():
         _LASTMOD[f"/fixtures/{slug}.html"] = REF_TODAY
         n_fx += 1
     print(f"  + season fixture pages: {n_fx}")
+    _l = locals()
+    return {k: _l[k] for k in ('comp', 'label', 'slug') if k in _l}
 
+
+def _page_analysis_hub_analysis_league(_acc=_UNSET, _comps_with_table=_UNSET, _lparams=_UNSET, _pins=_UNSET, _plog=_UNSET, _preds=_UNSET, _sins=_UNSET, _tstats=_UNSET, _upcoming=_UNSET, forms=_UNSET, matches=_UNSET, urls=_UNSET):
+    if _acc is _UNSET:
+        del _acc
+    if _comps_with_table is _UNSET:
+        del _comps_with_table
+    if _lparams is _UNSET:
+        del _lparams
+    if _pins is _UNSET:
+        del _pins
+    if _plog is _UNSET:
+        del _plog
+    if _preds is _UNSET:
+        del _preds
+    if _sins is _UNSET:
+        del _sins
+    if _tstats is _UNSET:
+        del _tstats
+    if _upcoming is _UNSET:
+        del _upcoming
+    if forms is _UNSET:
+        del forms
+    if matches is _UNSET:
+        del matches
+    if urls is _UNSET:
+        del urls
     # ---- تحليلات: /analysis hub + /analysis/<league> ----
     os.makedirs(os.path.join(DIST, "analysis"), exist_ok=True)
     _hist_url = prediction_history_page(_plog, _acc)
@@ -2901,6 +2681,50 @@ def build():
     urls.extend(_an_urls)
     print(f"  + analysis pages: {len(_an_urls)}")
 
+
+def _page_per_club_pages(_h=_UNSET, _plog=_UNSET, _preds=_UNSET, _slug=_UNSET, _t=_UNSET, a=_UNSET, articles=_UNSET, desc=_UNSET, forms=_UNSET, img=_UNSET, m=_UNSET, m_all=_UNSET, name=_UNSET, r=_UNSET, season=_UNSET, slug=_UNSET, st=_UNSET, st_by_comp=_UNSET, title=_UNSET, up_next=_UNSET, urls=_UNSET):
+    if _h is _UNSET:
+        del _h
+    if _plog is _UNSET:
+        del _plog
+    if _preds is _UNSET:
+        del _preds
+    if _slug is _UNSET:
+        del _slug
+    if _t is _UNSET:
+        del _t
+    if a is _UNSET:
+        del a
+    if articles is _UNSET:
+        del articles
+    if desc is _UNSET:
+        del desc
+    if forms is _UNSET:
+        del forms
+    if img is _UNSET:
+        del img
+    if m is _UNSET:
+        del m
+    if m_all is _UNSET:
+        del m_all
+    if name is _UNSET:
+        del name
+    if r is _UNSET:
+        del r
+    if season is _UNSET:
+        del season
+    if slug is _UNSET:
+        del slug
+    if st is _UNSET:
+        del st
+    if st_by_comp is _UNSET:
+        del st_by_comp
+    if title is _UNSET:
+        del title
+    if up_next is _UNSET:
+        del up_next
+    if urls is _UNSET:
+        del urls
     # ---- per-club pages (/team/<slug>) ----
     # Evergreen SEO hubs for the highest-volume Arabic query family we don't
     # cover: "أخبار الأهلي اليوم"، "مباريات الزمالك القادمة"، "نتيجة ريال
@@ -3026,7 +2850,31 @@ def build():
         write(f"team/{slug}.html", "".join(pt))
         urls.append(t_url)
     print(f"  + club pages: {len(TEAM_PAGES)}")
+    _l = locals()
+    return {k: _l[k] for k in ('_img', 'a', 'img', 'r') if k in _l}
 
+
+def _page_stats_dashboard(comp=_UNSET, comp_order=_UNSET, fixtures=_UNSET, forms=_UNSET, league_stats_sec=_UNSET, matches=_UNSET, sc_by_comp=_UNSET, sc_ok=_UNSET, st_by_comp=_UNSET, urls=_UNSET):
+    if comp is _UNSET:
+        del comp
+    if comp_order is _UNSET:
+        del comp_order
+    if fixtures is _UNSET:
+        del fixtures
+    if forms is _UNSET:
+        del forms
+    if league_stats_sec is _UNSET:
+        del league_stats_sec
+    if matches is _UNSET:
+        del matches
+    if sc_by_comp is _UNSET:
+        del sc_by_comp
+    if sc_ok is _UNSET:
+        del sc_ok
+    if st_by_comp is _UNSET:
+        del st_by_comp
+    if urls is _UNSET:
+        del urls
     # ---- stats dashboard (/stats.html) ----
     sp = [head(f"إحصائيات وتحليلات — {SITE_NAME}",
                "لوحة إحصائيات مرئية: سباق النقاط، الأهداف في كل جولة، وأرقام الموسم لكل بطولة.",
@@ -3051,6 +2899,8 @@ def build():
     if SHOW_STATS_PAGE:
         urls.append("/stats.html")
 
+
+def _page_404_page():
     # ---- 404 page (served by Cloudflare for any missing asset) ----
     # Not in the sitemap on purpose. The auto-retry exists for one real case:
     # an article page can 404 for a minute or two right around a deploy while
@@ -3088,6 +2938,10 @@ def build():
     nf.append(foot())
     write("404.html", "".join(nf))
 
+
+def _page_privacy_policy(urls=_UNSET):
+    if urls is _UNSET:
+        del urls
     # ---- privacy policy (required for AdSense) ----
     contact = (f'راسِلنا على <a href="mailto:{esc(CONTACT_EMAIL)}">{esc(CONTACT_EMAIL)}</a>.'
                if CONTACT_EMAIL else 'يمكنك التواصل معنا عبر قنواتنا الرسمية.')
@@ -3115,6 +2969,10 @@ def build():
     write("privacy.html", "".join(pv))
     urls.append("/privacy.html")
 
+
+def _page_about_page_helps_adsense_e_e_a_t_review(urls=_UNSET):
+    if urls is _UNSET:
+        del urls
     # ---- about page (من نحن) — helps AdSense/E-E-A-T review ----
     ab = [head("من نحن — " + SITE_NAME,
                "تعرّف على يلا سكور: موقع عربي لأخبار كرة القدم ونتائج المباريات وجداول الترتيب.",
@@ -3188,7 +3046,13 @@ def build():
     ed.append(foot())
     write("editors.html", "".join(ed))
     urls.append("/editors.html")
+    _l = locals()
+    return {k: _l[k] for k in ('ed',) if k in _l}
 
+
+def _page_contact_page(urls=_UNSET):
+    if urls is _UNSET:
+        del urls
     # ---- contact page (اتصل بنا) ----
     ct = [head("اتصل بنا — " + SITE_NAME,
                "تواصل مع فريق يلا سكور للاستفسارات والتصحيحات والإعلانات.",
@@ -3210,6 +3074,10 @@ def build():
     write("contact.html", "".join(ct))
     urls.append("/contact.html")
 
+
+def _page_terms_of_use(urls=_UNSET):
+    if urls is _UNSET:
+        del urls
     # ---- terms of use (شروط الاستخدام) ----
     tm = [head("شروط الاستخدام — " + SITE_NAME,
                "شروط استخدام موقع يلا سكور: حدود المسؤولية وقواعد استخدام المحتوى.",
@@ -3237,6 +3105,12 @@ def build():
     write("terms.html", "".join(tm))
     urls.append("/terms.html")
 
+
+def _page_editorial_policy_e_e_a_t_signal(ed=_UNSET, urls=_UNSET):
+    if ed is _UNSET:
+        del ed
+    if urls is _UNSET:
+        del urls
     # ---- editorial policy (السياسة التحريرية) — E-E-A-T signal ----
     ed = [head("السياسة التحريرية — " + SITE_NAME,
                "منهج يلا سكور التحريري: التحقق من مصادر متعددة، صياغة أصلية، صور مرخصة، وتصحيح علني للأخطاء.",
@@ -3292,6 +3166,12 @@ def build():
     write("editorial.html", "".join(ed))
     urls.append("/editorial.html")
 
+
+def _page_news_archive_pages(articles=_UNSET, urls=_UNSET):
+    if articles is _UNSET:
+        del articles
+    if urls is _UNSET:
+        del urls
     # ---- news archive pages ----
     # /news.html = everything; /news/egypt.html + /news/europe.html = the
     # section archives each home block's «المزيد» opens (user 2026-09-01:
@@ -3339,6 +3219,12 @@ def build():
                  "والإسباني ودوري الأبطال وكبار الأندية — تتحدّث على مدار اليوم.",
                  [a for a in articles if _eur_article(a)])
 
+
+def _page_fb_html_internal_helper_ready_to_paste_f(a=_UNSET, articles=_UNSET):
+    if a is _UNSET:
+        del a
+    if articles is _UNSET:
+        del articles
     # ---- fb.html — INTERNAL helper: ready-to-paste Facebook posts ----
     # Unlinked, out of the sitemap, noindexed. The user opens it directly
     # (bookmark) and copies each new article's post until FB auto-posting
@@ -3368,8 +3254,21 @@ def build():
     fbp.append(foot())
     write("fb.html", "".join(fbp).replace(
         "<head>", '<head><meta name="robots" content="noindex">', 1))
-    # deliberately NOT appended to urls (sitemap) and linked from nowhere
+    _l = locals()
+    return {k: _l[k] for k in ('a',) if k in _l}
 
+
+def _page_headlines_page(h=_UNSET, headlines=_UNSET, img=_UNSET, urls=_UNSET, when=_UNSET):
+    if h is _UNSET:
+        del h
+    if headlines is _UNSET:
+        del headlines
+    if img is _UNSET:
+        del img
+    if urls is _UNSET:
+        del urls
+    if when is _UNSET:
+        del when
     # ---- headlines page (full aggregated list; gated by SHOW_HEADLINES) ----
     if SHOW_HEADLINES:
         hp = [head(f"عناوين الصحف — {SITE_NAME}",
@@ -3401,6 +3300,16 @@ def build():
         write("headlines.html", "".join(hp))
         urls.append("/headlines.html")
 
+
+def _page_reels_page(i=_UNSET, r=_UNSET, reels=_UNSET, urls=_UNSET):
+    if i is _UNSET:
+        del i
+    if r is _UNSET:
+        del r
+    if reels is _UNSET:
+        del reels
+    if urls is _UNSET:
+        del urls
     # ---- reels page (vertical shorts; data/reels.json + reels_auto.json) ----
     rp = [head(f"ريلز كرة القدم — {SITE_NAME}",
                "ريلز كرة القدم — مقاطع قصيرة: مهارات وأهداف ولقطات ممتعة بالفيديو.",
@@ -3424,6 +3333,16 @@ def build():
         write("reels.html", "".join(rp))
         urls.append("/reels.html")
 
+
+def _page_videos_page_grouped_by_competition(label=_UNSET, urls=_UNSET, v=_UNSET, videos=_UNSET):
+    if label is _UNSET:
+        del label
+    if urls is _UNSET:
+        del urls
+    if v is _UNSET:
+        del v
+    if videos is _UNSET:
+        del videos
     # ---- videos page: grouped by competition (empty sections auto-hide) ----
     # item.cat: "wc" | "epl" | "laliga" | absent -> "misc"
     vp = [head(f"فيديوهات كرة القدم — {SITE_NAME}",
@@ -3450,6 +3369,16 @@ def build():
         write("videos.html", "".join(vp))
         urls.append("/videos.html")
 
+
+def _page_robots_sitemap_ads_txt(_img=_UNSET, a=_UNSET, articles=_UNSET, urls=_UNSET):
+    if _img is _UNSET:
+        del _img
+    if a is _UNSET:
+        del a
+    if articles is _UNSET:
+        del articles
+    if urls is _UNSET:
+        del urls
     # ---- robots + sitemap + ads.txt ----
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE}/sitemap.xml\n"
                         f"Sitemap: {SITE_BASE}/sitemap-news.xml\n")
@@ -3515,6 +3444,8 @@ def build():
     sm.append("</urlset>")
     write("sitemap.xml", "\n".join(sm))
 
+
+def _page_passthrough_root_files():
     # ---- passthrough root files (Google Search Console verification, etc.) ----
     extras = os.path.join(HERE, "root-extras")
     if os.path.isdir(extras):
@@ -3523,7 +3454,13 @@ def build():
             if os.path.isfile(src):
                 shutil.copy(src, os.path.join(DIST, fn))
                 print("  + root file:", fn)
+    _l = locals()
+    return {k: _l[k] for k in ('fn', 'src') if k in _l}
 
+
+def _page_redirects_the_match_pieces_that_moved_in(_moved=_UNSET):
+    if _moved is _UNSET:
+        del _moved
     # ---- _redirects: the match pieces that moved into their match page ----
     # Cloudflare Workers static-asset routing reads this file. Both spellings
     # are listed because the extensionless form is the official URL (write()
@@ -3541,6 +3478,12 @@ def build():
         write_text("_redirects", NEWLINE.join(lines) + NEWLINE)
         print(f"  + _redirects: {len(_moved)} match piece(s) 301 to their match page")
 
+
+def _page_mirrored_crests(fn=_UNSET, src=_UNSET):
+    if fn is _UNSET:
+        del fn
+    if src is _UNSET:
+        del src
     # ---- mirrored crests (downloaded by local_crest during rendering) ----
     if _CREST_MAP:
         dest = os.path.join(DIST, "assets", "crests")
@@ -3555,7 +3498,23 @@ def build():
                 shutil.copy(src, os.path.join(dest, fn))
                 n += 1
         print(f"  + crests mirrored: {n}")
+    _l = locals()
+    return {k: _l[k] for k in ('fn', 'n', 'src') if k in _l}
 
+
+def _page_uploaded_media(_preds=_UNSET, articles=_UNSET, fn=_UNSET, matches=_UNSET, n=_UNSET, src=_UNSET):
+    if _preds is _UNSET:
+        del _preds
+    if articles is _UNSET:
+        del articles
+    if fn is _UNSET:
+        del fn
+    if matches is _UNSET:
+        del matches
+    if n is _UNSET:
+        del n
+    if src is _UNSET:
+        del src
     # ---- uploaded media (article images added via the admin page) ----
     media = os.path.join(HERE, "media")
     if os.path.isdir(media):
@@ -3591,6 +3550,632 @@ def build():
         pass
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
+
+
+def build():
+    # Clear dist CONTENTS rather than the folder itself, so an open handle on
+    # dist (e.g. a running preview server) doesn't block the rebuild.
+    if os.path.exists(DIST):
+        for name in os.listdir(DIST):
+            p = os.path.join(DIST, name)
+            if os.path.isdir(p):
+                shutil.rmtree(p, ignore_errors=True)
+            else:
+                try:
+                    os.remove(p)
+                except OSError:
+                    pass
+    else:
+        os.makedirs(DIST)
+    os.makedirs(os.path.join(DIST, "a"), exist_ok=True)
+    os.makedirs(os.path.join(DIST, "assets"), exist_ok=True)
+
+    # Articles come from D1 (the writer since 2026-09-10). The committed
+    # export is the fallback, and it is a real one: a build must render every
+    # page when the store is unreachable. It can only ever be BEHIND, never
+    # wrong - article_put.py rewrites it in the same commit as the article.
+    try:
+        articles_all, _asrc = articles_current()
+        print(f"  articles: {len(articles_all)} from {_asrc}")
+    except Exception as e:                                  # noqa: BLE001
+        articles_all = load("articles.json")
+        print(f"  ! article store unreachable ({e}) - using the committed "
+              f"export ({len(articles_all)} articles)")
+    # `articles_all` -> every piece still gets its own page at its own URL.
+    # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
+    # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
+    # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
+    _miss = resolve_missing_media(articles_all)
+    if _miss:
+        print(f'  ! {len(_miss)} article image(s) not in this checkout yet - placeholder for this build: '
+              + ', '.join(_miss[:5]))
+    articles = [a for a in articles_all if not is_thin(a)]
+    matches = load("matches.json")
+    headlines = load("headlines.json")
+    videos = load("videos.json")
+    standings = load("standings.json")   # [{competition, table:[...]}]
+    scorers = load("scorers.json")       # [{competition, scorers:[{name,team,goals,...}]}]
+    assists = load("assists.json")       # same shape, key "assists"
+    fixtures = load("fixtures.json")      # [{competition, current, rounds:[{round, matches}]}]
+    goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
+    # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
+    _details_raw = load("match_details.json")
+    md_idx = match_details_index(_details_raw)
+    # ONE rule for a finished match: the frozen archive first (results_archive.py,
+    # 2026-09-24 - python's heir to Oracle's MATCH_RESULTS), the feed files below
+    # it. These are dict.update() layers and the LAST one wins, so the archive is
+    # applied last. Reading bottom-up:
+    #   match_details.json  - the 45-day store, the deepest feed source
+    #   goal_events.json    - a ROLLING window, fresher while it lasts; a
+    #                         finished match drops out within hours
+    #   results_archive     - frozen once the scorers account for the score,
+    #                         never overwritten after that
+    # Letting frozen beat fresh is safe BECAUSE of that gate. The cost, stated
+    # plainly: a complete-but-wrong list, once frozen, is not corrected by a
+    # later feed - that is what "frozen" means.
+    _res_arch = RA.load()
+    _frozen = RA.frozen_entries(_res_arch)
+    # the SCORE of a finished match comes from the archive too, not only its
+    # scorers - both halves of "النتيجة ومسجلي الأهداف"
+    _sc_fill, _sc_chg = apply_frozen_scores(matches, frozen_scores_index(_frozen))
+    ge_idx = goals_index(goal_events, _details_raw, _frozen)
+    print("  + results archive: %d finished match(es), %d frozen; scores taken for %d%s"
+          % (len(_res_arch), len(_frozen), _sc_fill,
+             (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else ""))
+
+    # ---- تحليلات: strength model + predictions + accuracy + player insights ----
+    _archive = load("matches_archive.json")
+    # The season pool: the results archive AHEAD of the feed's rolling files, so
+    # the opening rounds the feed has forgotten still count (the Saudi 51-vs-60
+    # drift of 2026-09-13) and a frozen score wins a conflict. season_matches()
+    # de-duplicates by fixture, so a match on both sides is counted once.
+    _bycomp = AN.season_matches(fixtures, RA.season_rows(_res_arch) + _archive)
+    # season carry-over (roadmap factor 1): the five European leagues start from
+    # last season's carried Elo (data/elo_seeds.json, season_carry.py); absent
+    # file = flat 1500 as before. The Oracle copy reads the same seeds.
+    _seeds = AN.load_elo_seeds()
+    if _seeds:
+        print(f'  + elo seeds: {sum(len(v) for v in _seeds.values())} clubs in {len(_seeds)} leagues')
+    _tstats = AN.team_stats(_bycomp, _seeds)
+    _lparams = {c: AN.league_params(ms) for c, ms in _bycomp.items()}
+    def _pred(m):
+        comp = m.get("competition")
+        if comp not in _tstats or not m.get("home") or not m.get("away"):
+            return None
+        return AN.predict(_tstats[comp], _lparams[comp], m["home"], m["away"])
+    _upcoming = [m for m in matches if (m.get("status") or "").upper() == "UPCOMING" and m.get("match_id")]
+    _preds = {}
+    for m in _upcoming:
+        p = _pred(m)
+        if p:
+            p["src"] = "python"
+            _preds[str(m["match_id"])] = p
+    print(f'  + predictions: {len(_preds)} upcoming fixtures, python model')
+    # The prediction log lives in the store (D1 when configured). A frozen
+    # prediction that gets re-frozen with newer data would silently inflate the
+    # published accuracy, which is the one thing the accuracy page exists to
+    # prevent - so the freeze has to be atomic, and store.pred_freeze refuses
+    # to touch a row that is already scored.
+    #
+    # THE BUILD MUST NOT DEPEND ON A LIVE SERVICE: if the store is unreachable,
+    # fall back to the last committed export, skip persisting, and still render
+    # every page. A dead database may cost us one cycle of the log; it must
+    # never cost us the site.
+    _plog, _pstore_ok = {}, True
+    try:
+        _plog = store.pred_all()
+    except Exception as e:                                  # noqa: BLE001
+        _pstore_ok = False
+        print(f"  ! prediction store unreachable ({e}) - using the committed export")
+        _plog = AN.load_log()
+    # the model's own track record per stated-probability band, computed once:
+    # every upcoming match page prints the band its top number falls in
+    _cal = AN.calibration(_plog)
+    _pch = AN.update_log(_plog, _upcoming, _preds, matches + _archive, datetime.date.today())
+    if _pstore_ok:
+        try:
+            for _mid in _pch["frozen"]:
+                store.pred_freeze(_mid, _plog[_mid])
+            for _mid in _pch["scored"]:
+                _e = _plog[_mid]
+                store.pred_score(_mid, _e["hs"], _e["as"], _e["outcome"], _e["pick"],
+                                 _e["hit"], _e["brier"], _e["score_hit"])
+            if _pch["pruned"]:
+                store.pred_prune(AN.PRUNE_DAYS)
+            if any(_pch.values()):
+                print(f'  + predictions: {len(_pch["frozen"])} frozen, '
+                      f'{len(_pch["scored"])} scored, {len(_pch["pruned"])} pruned '
+                      f'({len(_plog)} in the log, backend {store.backend()})')
+        except Exception as e:                              # noqa: BLE001
+            print(f"  ! could not persist predictions ({e}) - pages still build")
+    _acc = AN.accuracy(_plog)
+    for _k, _v in sorted((_acc.get("by_src") or {}).items()):
+        if _v:
+            print(f'  + accuracy [{_k}]: n={_v["n"]} hit={_v["hit_rate"]:.1%} brier={_v["brier"]:.4f}')
+    _comp_idx = {}
+    for m in matches + _archive + [mm for f in fixtures for rd in f.get("rounds", []) for mm in rd.get("matches", [])]:
+        if m.get("home") and m.get("away"):
+            _comp_idx[(ar_team(m["home"]), ar_team(m["away"]), m.get("kickoff"))] = m.get("competition")
+    _pins = AN.player_insights(_details_raw, lambda h, a, d: _comp_idx.get((h, a, d)), ar_team)
+    # who each club normally starts -> «من غاب ومن عاد» on the match pages
+    _squad = AN.SquadIndex(_details_raw, lambda h, a, d: _comp_idx.get((h, a, d)))
+    _sins = AN.scorer_insights(scorers, assists, {s.get("competition"): s["table"] for s in standings if s.get("table")})
+    # reels: hand-picked first, then auto-pulled channel uploads (deduped)
+    reels = load("reels.json")
+    seen_r = {r.get("video_id") for r in reels}
+    for r in load("reels_auto.json"):
+        if r.get("video_id") not in seen_r:
+            reels.append(r)
+            seen_r.add(r.get("video_id"))
+
+    global TICKER_HTML
+    TICKER_HTML = make_ticker(matches)
+
+    # kickoff epochs for LIVE_JS's kickoff-aware polling (see KO_SCRIPT)
+    global KO_SCRIPT
+    try:
+        from zoneinfo import ZoneInfo
+        _cairo = ZoneInfo("Africa/Cairo")
+        _now = datetime.datetime.now(_cairo)
+        _kos = set()
+        for _m in matches:
+            if not (_m.get("kickoff") and _m.get("koff_time")):
+                continue
+            try:
+                _dt = datetime.datetime.fromisoformat(
+                    f"{_m['kickoff']}T{_m['koff_time']}:00").replace(tzinfo=_cairo)
+            except ValueError:
+                continue
+            _delta = (_dt - _now).total_seconds()
+            # recent past too: a match may already be live at build time
+            if -4 * 3600 <= _delta <= 36 * 3600:
+                _kos.add(int(_dt.timestamp() * 1000))
+        KO_SCRIPT = (f"<script>window.__koTs={json.dumps(sorted(_kos))}</script>"
+                     if _kos else "")
+    except Exception:
+        KO_SCRIPT = ""
+
+    # ---- assets: css + logo ----
+    global CSS_VER
+    _css = CSS + "\n" + LEGENDS_CSS
+    CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
+    with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
+        f.write(_css)
+    # /favicon.ico at the site root — the legacy fallback path some crawlers
+    # (and Google's favicon fetcher) request directly; was a 404 before
+    _ico = os.path.join(HERE, "assets-src", "favicon.ico")
+    if os.path.exists(_ico):
+        shutil.copy(_ico, os.path.join(DIST, "favicon.ico"))
+    _fav = os.path.join(HERE, "assets-src", "favicon.png")
+    if os.path.exists(_fav):
+        shutil.copy(_fav, os.path.join(DIST, "assets", "favicon.png"))
+    _ogb = os.path.join(HERE, "assets-src", "og-banner.png")
+    if os.path.exists(_ogb):
+        shutil.copy(_ogb, os.path.join(DIST, "assets", "og-banner.png"))
+    for _logo in (os.path.join(HERE, "assets-src", "logo.png"),
+                  os.path.join(HERE, "..", "shared-components", "static-files", "icons", "app-icon-192.png")):
+        if os.path.exists(_logo):
+            shutil.copy(_logo, os.path.join(DIST, "assets", "logo.png"))
+            break
+
+    urls = ["/", "/matches.html"]
+
+    # home -> _page_home() (moved out of build(), slice 4)
+    _r = _page_home(**_bound(locals(), ('_acc', '_cal', '_preds', '_upcoming', 'articles', 'fixtures', 'headlines', 'm', 'matches', 'reels', 'standings', 'videos')))
+    if 'h' in _r:
+        h = _r['h']
+    if 'm' in _r:
+        m = _r['m']
+    if 'v' in _r:
+        v = _r['v']
+
+    # article pages -> _page_article_pages() (moved out of build(), slice 4)
+    _r = _page_article_pages(**_bound(locals(), ('articles', 'articles_all', 'matches', 'p', 'urls')))
+    if '_clubs' in _r:
+        _clubs = _r['_clubs']
+    if '_faq' in _r:
+        _faq = _r['_faq']
+    if '_match_arts' in _r:
+        _match_arts = _r['_match_arts']
+    if '_moved' in _r:
+        _moved = _r['_moved']
+    if '_t' in _r:
+        _t = _r['_t']
+    if 'a' in _r:
+        a = _r['a']
+    if 'img' in _r:
+        img = _r['img']
+    if 'p' in _r:
+        p = _r['p']
+
+    # ---- shared per-league data + stats machinery (matches page + /stats) ----
+    st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
+    sc_by_comp = {s.get("competition"): (s.get("scorers") or [])
+                  for s in scorers if s.get("scorers")}
+    as_by_comp = {s.get("competition"): (s.get("assists") or [])
+                  for s in assists if s.get("assists")}
+    # both read the season pool (_bycomp) so a truncated fixtures.json cannot
+    # empty the «آخر 5» column or the tile fallback (2026-09-13)
+    forms = team_form(fixtures, standings, _bycomp)
+    elos = compute_elo(fixtures, _bycomp)
+    fx_by_comp = {f.get("competition"): f for f in fixtures if f.get("rounds")}
+    STAT_PAL = ["#1f94d3", "#e11d48", "#f59e0b", "#7c3aed", "#334155"]
+
+    def _fin_ms(fx):
+        """(round, match) pairs for finished matches with scores, chronological."""
+        ms = []
+        for rd in fx.get("rounds", []):
+            for m in rd.get("matches", []):
+                if (m.get("status") == "FINISHED"
+                        and m.get("home_score") is not None
+                        and m.get("away_score") is not None):
+                    ms.append((rd.get("round"), m))
+        ms.sort(key=lambda t: (t[1].get("kickoff") or "", t[1].get("koff_time") or ""))
+        return ms
+
+    def _pts_race_svg(fin, top_teams):
+        """Cumulative points per round for the leading teams, inline SVG line chart."""
+        rounds = sorted({r for r, _ in fin if r is not None})
+        top_teams = [t for t in top_teams if t]
+        if len(rounds) < 2 or not top_teams:
+            return ""
+        per = {}
+        for r, m in fin:
+            if r is None:
+                continue
+            hs, aw = m["home_score"], m["away_score"]
+            d = per.setdefault(r, {})
+            d[m.get("home")] = d.get(m.get("home"), 0) + (3 if hs > aw else 1 if hs == aw else 0)
+            d[m.get("away")] = d.get(m.get("away"), 0) + (3 if aw > hs else 1 if hs == aw else 0)
+        series = {}
+        for t in top_teams:
+            c, vals = 0, []
+            for r in rounds:
+                c += per.get(r, {}).get(t, 0)
+                vals.append(c)
+            series[t] = vals
+        w, h, ml, mr, mt, mb = 680, 240, 30, 12, 12, 26
+        ymax = max(max(v) for v in series.values()) or 1
+        def x(i): return ml + (w - ml - mr) * (i / max(1, len(rounds) - 1))
+        def y(v): return mt + (h - mt - mb) * (1 - v / ymax)
+        parts = [f'<svg class="chart" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="سباق النقاط">']
+        step = max(1, ymax // 4)
+        for g in range(0, ymax + 1, step):
+            parts.append(f'<line x1="{ml}" y1="{y(g):.1f}" x2="{w - mr}" y2="{y(g):.1f}" stroke="#eef2f6"/>')
+            parts.append(f'<text x="{ml - 5}" y="{y(g) + 4:.1f}" font-size="10" fill="#94a3b8" text-anchor="end">{g}</text>')
+        for i, r in enumerate(rounds):
+            parts.append(f'<text x="{x(i):.1f}" y="{h - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">{r}</text>')
+        for k, (t, vals) in enumerate(series.items()):
+            col = STAT_PAL[k % len(STAT_PAL)]
+            pl = " ".join(f"{x(i):.1f},{y(v):.1f}" for i, v in enumerate(vals))
+            parts.append(f'<polyline points="{pl}" fill="none" stroke="{col}" stroke-width="2.5" stroke-linejoin="round"/>')
+            parts.append(f'<circle cx="{x(len(vals) - 1):.1f}" cy="{y(vals[-1]):.1f}" r="3.5" fill="{col}"/>')
+        parts.append('</svg>')
+        legend = "".join(
+            f'<span class="lgd"><i style="background:{STAT_PAL[k % len(STAT_PAL)]}"></i><bdi>{esc(ar_team(t))}</bdi></span>'
+            for k, t in enumerate(series))
+        return f'<div class="chart-wrap">{"".join(parts)}</div><div class="legend">{legend}</div>'
+
+    def _goals_svg(fin):
+        """Total goals per round, inline SVG bar chart (needs 2+ rounds —
+        a single bar just repeats the season-total tile)."""
+        rounds = sorted({r for r, _ in fin if r is not None})
+        if len(rounds) < 2:
+            return ""
+        goals = {r: 0 for r in rounds}
+        for r, m in fin:
+            if r is not None:
+                goals[r] += m["home_score"] + m["away_score"]
+        w, h, ml, mr, mt, mb = 680, 200, 30, 12, 14, 26
+        ymax = max(goals.values()) or 1
+        bw = min((w - ml - mr) / len(rounds) * 0.6, 64)
+        parts = [f'<svg class="chart" viewBox="0 0 {w} {h}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="الأهداف في كل جولة">']
+        for i, r in enumerate(rounds):
+            cx = ml + (w - ml - mr) * ((i + .5) / len(rounds))
+            bh = (h - mt - mb) * goals[r] / ymax
+            parts.append(f'<rect x="{cx - bw / 2:.1f}" y="{h - mb - bh:.1f}" width="{bw:.1f}" height="{max(bh, 1):.1f}" rx="3" fill="#1f94d3" opacity="0.85"/>')
+            parts.append(f'<text x="{cx:.1f}" y="{h - mb - bh - 4:.1f}" font-size="10" fill="#475569" text-anchor="middle">{goals[r]}</text>')
+            parts.append(f'<text x="{cx:.1f}" y="{h - 8}" font-size="10" fill="#94a3b8" text-anchor="middle">{r}</text>')
+        parts.append('</svg>')
+        return f'<div class="chart-wrap">{"".join(parts)}</div>'
+
+    # season totals per competition, so the player charts can be checked
+    # against the season they claim to describe (see chart_is_current)
+    comp_goals, comp_maxp = {}, {}
+    for _c, _fx in fx_by_comp.items():
+        _f = _fin_ms(_fx)
+        # The denominator has to be the SEASON POOL, not this one file. For the
+        # 365scores leagues fixtures.json carries scores for only a few rounds
+        # (Egypt on 2026-09-16: 11 goals in the file against the 93 the season
+        # actually holds), and an understated denominator makes
+        # chart_is_current reject a perfectly current top-scorer list as "last
+        # season's": 13 goals across the top five > 11 for the whole league.
+        # That is what emptied /scorers/egypt - the guard was right about the
+        # arithmetic and wrong about the world. Found by an outside HTML audit
+        # of the live site, 2026-09-16.
+        comp_goals[_c] = max(
+            sum(int(m["home_score"]) + int(m["away_score"]) for m in (_bycomp.get(_c) or [])),
+            sum(m["home_score"] + m["away_score"] for _, m in _f))
+        _tbl = (st_by_comp.get(_c) or {}).get("table") or []
+        comp_maxp[_c] = (max((r.get("played") or 0) for r in _tbl) if _tbl
+                         else max((r or 0 for r, _ in _f), default=0))
+    sc_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
+             for c, rows in sc_by_comp.items()}
+    as_ok = {c: chart_is_current(rows, comp_goals.get(c), comp_maxp.get(c))
+             for c, rows in as_by_comp.items()}
+    stats_cutoff = (datetime.date.today() - datetime.timedelta(days=30)).isoformat()
+
+    def league_stats_parts(comp):
+        """One league's stats, split into the tab panes the matches page uses:
+        {"numbers": tiles + percentages, "scorers": scorers + assists charts,
+         "trend": points race + goals per round}. Missing pieces are absent.
+        /stats.html stitches them back into one section."""
+        parts = []
+        fx = fx_by_comp.get(comp)
+        if not fx:
+            return {}
+        fin = _fin_ms(fx)
+        if not fin:
+            return {}
+        fx = fx_by_comp.get(comp)
+        if not fx:
+            return ""
+        fin = _fin_ms(fx)
+        if not fin:
+            return ""
+        # a season that ended long ago (e.g. last season's Champions League
+        # rounds still in the feed) must not pose as current-season numbers:
+        # skip when nothing is left to play AND the last match is >30 days old
+        all_ms = [m for rd in fx.get("rounds", []) for m in rd.get("matches", [])]
+        pending = any((m.get("status") or "").upper() != "FINISHED" for m in all_ms)
+        last_day = max((m.get("kickoff") or "" for m in all_ms), default="")
+        if not pending and last_day and last_day < stats_cutoff:
+            return {}
+        played = len(fin)
+        goals = sum(m["home_score"] + m["away_score"] for _, m in fin)
+        big = max((m for _, m in fin),
+                  key=lambda m: (m["home_score"] + m["away_score"],
+                                 max(m["home_score"], m["away_score"])))
+        big_t = (f'{ar_team(big.get("home"))} {big["home_score"]}-{big["away_score"]} '
+                 f'{ar_team(big.get("away"))}')
+        # who played it: same home-first order as every match row on the site
+        def _tile_side(name, badge):
+            img = (f'<img src="{esc(local_crest(badge))}" alt="" loading="lazy">'
+                   if badge else '<span class="ph">⚽</span>')
+            return f'<span class="tm">{img}<bdi>{esc(ar_team(name))}</bdi></span>'
+        big_ms = (f'<div class="tile-ms">{_tile_side(big.get("home"), big.get("home_badge"))}'
+                  f'<i>×</i>{_tile_side(big.get("away"), big.get("away_badge"))}</div>')
+        big_bits = []
+        if big.get("round") is not None:
+            big_bits.append(f'الجولة {esc(str(big["round"]))}')
+        if big.get("kickoff"):
+            try:
+                _d = datetime.date.fromisoformat(big["kickoff"])
+                big_bits.append(f'{_d.day:02d}/{_d.month:02d}/{_d.year}')
+            except Exception:
+                pass
+        big_when = (f'<div class="tile-when">{" · ".join(big_bits)}</div>'
+                    if big_bits else "")
+        top_rows = (st_by_comp.get(comp) or {}).get("table") or []
+        top_teams = [r.get("team") for r in top_rows[:5]]
+        if not top_teams:
+            er = elos.get(comp, {})
+            top_teams = [t for t, _ in sorted(er.items(), key=lambda kv: -kv[1][0])[:5]]
+        panes = {}
+        # player charts, only when they describe THIS season (chart_is_current)
+        sc = sc_by_comp.get(comp) or [] if sc_ok.get(comp) else []
+        asst = as_by_comp.get(comp) or [] if as_ok.get(comp) else []
+        sc_tile = ""
+        if sc:
+            lead = sc[0]
+            sc_tile = (f'<div class="tile tile-sc" title="{esc(lead.get("name"))}'
+                       f' - {esc(lead.get("team"))}"><b>{lead.get("goals")}</b>'
+                       f'<span>هداف الدوري</span>'
+                       f'<div class="tile-ms">{_scorer_face(lead)}'
+                       f'<span class="tm"><bdi>{esc(lead.get("name"))}</bdi></span></div>'
+                       f'<div class="tile-when">{esc(lead.get("team"))}</div></div>')
+        num = ['<div class="stat-tiles">'
+               f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
+               f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
+               f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
+               f'<div class="tile tile-res" title="{esc(big_t)}">'
+               f'{score_pill(big["home_score"], big["away_score"], "sc-in")}'
+               f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
+               f'{sc_tile}'
+               '</div>']
+        pcts = league_pcts(fin)
+        if pcts:
+            num.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
+            num.append(pcts)
+        panes["numbers"] = "".join(num)
+        if sc or asst:
+            chart = ['<div class="chart-cols">']
+            if sc:
+                chart.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
+                             + scorers_list(sc, "أهداف") + '</div>')
+            if asst:
+                chart.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
+                             + scorers_list(asst, "صناعة") + '</div>')
+            chart.append('</div>')
+            panes["scorers"] = "".join(chart)
+        trend = []
+        race = _pts_race_svg(fin, top_teams)
+        if race:
+            trend.append('<h3 class="stats-h3">سباق النقاط — المقدمة</h3>')
+            trend.append(race)
+        gsvg = _goals_svg(fin)
+        if gsvg:
+            trend.append('<h3 class="stats-h3">الأهداف في كل جولة</h3>')
+            trend.append(gsvg)
+        if trend:
+            panes["trend"] = "".join(trend)
+        return panes
+
+    def league_stats_sec(comp, heading=True):
+        """All of a league's stats as one section — used by /stats.html."""
+        panes = league_stats_parts(comp)
+        if not panes:
+            return ""
+        head_html = (f'<h2 class="lt-head">{comp_icon(comp)} {esc(comp_label(comp))}</h2>'
+                     if heading else "")
+        body = "".join(panes.get(k, "") for k in ("numbers", "scorers", "trend"))
+        return f'<section class="stats-sec">{head_html}{body}</section>' 
+
+    # matches page (per-day navigator, like the live app) -> _page_matches_page() (moved out of build(), slice 4)
+    _r = _page_matches_page(**_bound(locals(), ('_mid', '_plog', '_preds', 'a', 'articles', 'f', 'fixtures', 'forms', 'fx_by_comp', 'ge_idx', 'img', 'league_stats_parts', 'm', 'matches', 'p', 'st_by_comp', 'standings')))
+    if 'a' in _r:
+        a = _r['a']
+    if 'comp' in _r:
+        comp = _r['comp']
+    if 'comp_order' in _r:
+        comp_order = _r['comp_order']
+    if 'i' in _r:
+        i = _r['i']
+    if 'img' in _r:
+        img = _r['img']
+    if 'k' in _r:
+        k = _r['k']
+    if 'm' in _r:
+        m = _r['m']
+    if 'st' in _r:
+        st = _r['st']
+
+    # per-match pages (/m/<id>.html) -> _page_per_match_pages() (moved out of build(), slice 4)
+    _r = _page_per_match_pages(**_bound(locals(), ('ZoneInfo', '_bycomp', '_cal', '_clubs', '_dt', '_lparams', '_match_arts', '_plog', '_preds', '_squad', '_tstats', 'a', 'articles', 'comp', 'fixtures', 'forms', 'ge_idx', 'img', 'k', 'm', 'matches', 'md_idx', 'st', 'st_by_comp', 'urls', 'v')))
+    if '_h' in _r:
+        _h = _r['_h']
+    if '_html' in _r:
+        _html = _r['_html']
+    if '_slug' in _r:
+        _slug = _r['_slug']
+    if 'a' in _r:
+        a = _r['a']
+    if 'comp' in _r:
+        comp = _r['comp']
+    if 'desc' in _r:
+        desc = _r['desc']
+    if 'img' in _r:
+        img = _r['img']
+    if 'm' in _r:
+        m = _r['m']
+    if 'm_all' in _r:
+        m_all = _r['m_all']
+    if 'st' in _r:
+        st = _r['st']
+    if 'title' in _r:
+        title = _r['title']
+    if 'v' in _r:
+        v = _r['v']
+    if 'when' in _r:
+        when = _r['when']
+
+    # per-league standings + top-scorers pages -> _page_per_league_standings_top_scorers_pages() (moved out of build(), slice 4)
+    _r = _page_per_league_standings_top_scorers_pages(**_bound(locals(), ('_bycomp', '_faq', '_html', '_preds', 'as_by_comp', 'as_ok', 'comp', 'forms', 'm', 'matches', 'sc_by_comp', 'sc_ok', 'st', 'st_by_comp', 'urls')))
+    if '_comps_with_table' in _r:
+        _comps_with_table = _r['_comps_with_table']
+    if 'comp' in _r:
+        comp = _r['comp']
+    if 'label' in _r:
+        label = _r['label']
+    if 'm' in _r:
+        m = _r['m']
+    if 'season' in _r:
+        season = _r['season']
+    if 'slug' in _r:
+        slug = _r['slug']
+    if 'st' in _r:
+        st = _r['st']
+    if 'up_next' in _r:
+        up_next = _r['up_next']
+
+    # per-league season fixtures (/fixtures/<slug>.html) -> _page_per_league_season_fixtures() (moved out of build(), slice 4)
+    _r = _page_per_league_season_fixtures(**_bound(locals(), ('comp', 'fx_by_comp', 'label', 'season', 'slug', 'st_by_comp', 'urls')))
+    if 'comp' in _r:
+        comp = _r['comp']
+    if 'label' in _r:
+        label = _r['label']
+    if 'slug' in _r:
+        slug = _r['slug']
+
+    # تحليلات: /analysis hub + /analysis/<league> -> _page_analysis_hub_analysis_league() (moved out of build(), slice 4)
+    _page_analysis_hub_analysis_league(**_bound(locals(), ('_acc', '_comps_with_table', '_lparams', '_pins', '_plog', '_preds', '_sins', '_tstats', '_upcoming', 'forms', 'matches', 'urls')))
+
+    # per-club pages (/team/<slug>) -> _page_per_club_pages() (moved out of build(), slice 4)
+    _r = _page_per_club_pages(**_bound(locals(), ('_h', '_plog', '_preds', '_slug', '_t', 'a', 'articles', 'desc', 'forms', 'img', 'm', 'm_all', 'name', 'r', 'season', 'slug', 'st', 'st_by_comp', 'title', 'up_next', 'urls')))
+    if '_img' in _r:
+        _img = _r['_img']
+    if 'a' in _r:
+        a = _r['a']
+    if 'img' in _r:
+        img = _r['img']
+    if 'r' in _r:
+        r = _r['r']
+
+    # stats dashboard (/stats.html) -> _page_stats_dashboard() (moved out of build(), slice 4)
+    _page_stats_dashboard(**_bound(locals(), ('comp', 'comp_order', 'fixtures', 'forms', 'league_stats_sec', 'matches', 'sc_by_comp', 'sc_ok', 'st_by_comp', 'urls')))
+
+    # 404 page (served by Cloudflare for any missing asset) -> _page_404_page() (moved out of build(), slice 4)
+    _page_404_page()
+
+    # privacy policy (required for AdSense) -> _page_privacy_policy() (moved out of build(), slice 4)
+    _page_privacy_policy(**_bound(locals(), ('urls',)))
+
+    # about page (من نحن) — helps AdSense/E-E-A-T review -> _page_about_page_helps_adsense_e_e_a_t_review() (moved out of build(), slice 4)
+    _r = _page_about_page_helps_adsense_e_e_a_t_review(**_bound(locals(), ('urls',)))
+    if 'ed' in _r:
+        ed = _r['ed']
+
+    # contact page (اتصل بنا) -> _page_contact_page() (moved out of build(), slice 4)
+    _page_contact_page(**_bound(locals(), ('urls',)))
+
+    # terms of use (شروط الاستخدام) -> _page_terms_of_use() (moved out of build(), slice 4)
+    _page_terms_of_use(**_bound(locals(), ('urls',)))
+
+    # editorial policy (السياسة التحريرية) — E-E-A-T signal -> _page_editorial_policy_e_e_a_t_signal() (moved out of build(), slice 4)
+    _page_editorial_policy_e_e_a_t_signal(**_bound(locals(), ('ed', 'urls')))
+
+    # news archive pages -> _page_news_archive_pages() (moved out of build(), slice 4)
+    _page_news_archive_pages(**_bound(locals(), ('articles', 'urls')))
+
+    # fb.html — INTERNAL helper: ready-to-paste Facebook posts -> _page_fb_html_internal_helper_ready_to_paste_f() (moved out of build(), slice 4)
+    _r = _page_fb_html_internal_helper_ready_to_paste_f(**_bound(locals(), ('a', 'articles')))
+    if 'a' in _r:
+        a = _r['a']
+    # deliberately NOT appended to urls (sitemap) and linked from nowhere
+
+    # headlines page (full aggregated list; gated by SHOW_HEADLINES) -> _page_headlines_page() (moved out of build(), slice 4)
+    _page_headlines_page(**_bound(locals(), ('h', 'headlines', 'img', 'urls', 'when')))
+
+    # reels page (vertical shorts; data/reels.json + reels_auto.json) -> _page_reels_page() (moved out of build(), slice 4)
+    _page_reels_page(**_bound(locals(), ('i', 'r', 'reels', 'urls')))
+
+    # videos page: grouped by competition (empty sections auto-hide) -> _page_videos_page_grouped_by_competition() (moved out of build(), slice 4)
+    _page_videos_page_grouped_by_competition(**_bound(locals(), ('label', 'urls', 'v', 'videos')))
+
+    # robots + sitemap + ads.txt -> _page_robots_sitemap_ads_txt() (moved out of build(), slice 4)
+    _page_robots_sitemap_ads_txt(**_bound(locals(), ('_img', 'a', 'articles', 'urls')))
+
+    # passthrough root files (Google Search Console verification, etc.) -> _page_passthrough_root_files() (moved out of build(), slice 4)
+    _r = _page_passthrough_root_files()
+    if 'fn' in _r:
+        fn = _r['fn']
+    if 'src' in _r:
+        src = _r['src']
+
+    # _redirects: the match pieces that moved into their match page -> _page_redirects_the_match_pieces_that_moved_in() (moved out of build(), slice 4)
+    _page_redirects_the_match_pieces_that_moved_in(**_bound(locals(), ('_moved',)))
+
+    # mirrored crests (downloaded by local_crest during rendering) -> _page_mirrored_crests() (moved out of build(), slice 4)
+    _r = _page_mirrored_crests(**_bound(locals(), ('fn', 'src')))
+    if 'fn' in _r:
+        fn = _r['fn']
+    if 'n' in _r:
+        n = _r['n']
+    if 'src' in _r:
+        src = _r['src']
+
+    # uploaded media (article images added via the admin page) -> _page_uploaded_media() (moved out of build(), slice 4)
+    _page_uploaded_media(**_bound(locals(), ('_preds', 'articles', 'fn', 'matches', 'n', 'src')))
 
 
 
