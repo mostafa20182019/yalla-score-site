@@ -26,6 +26,33 @@ from site_lib.arabic import (  # noqa: E402,F401
     _AR_DAYS, _AR_MONTHS, _ORD_AR)
 from site_lib.media import (  # noqa: E402,F401
     VIDEO_CATS, EMBED_LABEL)
+# Pure helpers (text, dates, names, urls, stats, match data, widgets) live
+# in site_lib/ since slice 3 - edit them there. Same names, same behaviour.
+from site_lib.text import (  # noqa: E402,F401
+    esc, strip_tags, strip_src, jsonld, seo_desc, article_words,
+    _pct, _signed_pct, _pval, _num, _lam)
+from site_lib.dates import (  # noqa: E402,F401
+    fmt_day, _ar_ago, rel_ar, art_reltime, _days_between, _epoch_ms)
+from site_lib.names import (  # noqa: E402,F401
+    _crest_name, _in_scope, _is_ticker_team, _team_match, _team_news, ar_team,
+    _team_link, _gnorm, comp_label, comp_emoji, comp_has_table, fav_club_names,
+    _egy_article, _eur_article, _club_pool)
+from site_lib.urls import (  # noqa: E402,F401
+    article_href, is_match_piece, pick_match_article, breadcrumb_ld, match_url)
+from site_lib.stats import (  # noqa: E402,F401
+    _cnt, _pts, _games, _goals, _wins, _draws,
+    _losses, _assists, _players, _lil, scorers_read, standings_analysis,
+    AN_games, _scored, _finished_by_comp, compute_elo, team_form, form_dots,
+    league_pcts, chart_is_current, _form_counts, _pts_phrase, _per_game)
+from site_lib.matchdata import (  # noqa: E402,F401
+    score_pill, score_txt, goal_events_index, match_goals, frozen_scores_index, apply_frozen_scores,
+    match_details_index, prematch_for, absence_block, match_details_for, _min_key, _pshort,
+    _athlete_img, _pitch_rows, _rt_class, _played_names, _side_of, match_story,
+    match_ratings)
+from site_lib.widgets import (  # noqa: E402,F401
+    reel_slide, video_facade, pred_btn, done_btn, prob_bar, prob_legend,
+    ratings_table, ga_table, accuracy_html, calibration_html, _pred_item_html, _calls_html,
+    model_explainer)
 
 # ---------------------------------------------------------------- config
 SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
@@ -226,67 +253,13 @@ def articles_current():
                 pass                # unreadable export -> pull everything
     return store.article_all(), f"the {store.backend()} store"
 
-def esc(s):
-    return html.escape(s or "", quote=True)
 
-def strip_tags(s):
-    import re
-    return re.sub(r"<[^>]+>", "", s or "").strip()
 
-def strip_src(title, source):
-    """Drop a trailing ' - <source>' suffix from aggregated headlines (like the app)."""
-    t = (title or "").strip()
-    if source and t.endswith(" - " + source):
-        t = t[: -(len(source) + 3)].strip()
-    return t
 
 REF_TODAY = datetime.date.today().isoformat()  # machine clock (the sandbox is set to Jul 2026)
-def fmt_day(d):
-    try:
-        dt = datetime.date.fromisoformat(d)
-        return f"{_AR_DAYS[dt.weekday()]} {dt.day} {_AR_MONTHS[dt.month]} {dt.year}"
-    except Exception:
-        return d
 
-def _ar_ago(n, one, two, few):
-    """Arabic 'منذ N <unit>' with the correct plural form (1 / 2 / 3-10 / 11+)."""
-    if n == 1:
-        return f"منذ {one}"
-    if n == 2:
-        return f"منذ {two}"
-    if 3 <= n <= 10:
-        return f"منذ {n} {few}"
-    return f"منذ {n} {one}"
 
-def rel_ar(iso):
-    """Build-time Arabic 'منذ X' (JS refines it in the visitor's browser)."""
-    try:
-        dt = datetime.datetime.fromisoformat(iso.replace("Z", "+00:00"))
-    except Exception:
-        return ""
-    now = datetime.datetime.now(dt.tzinfo) if dt.tzinfo else datetime.datetime.now()
-    s = int((now - dt).total_seconds())
-    if s < 0:
-        s = 0
-    if s < 60:
-        return "منذ لحظات"
-    m = s // 60
-    if m < 60:
-        return _ar_ago(m, "دقيقة", "دقيقتين", "دقائق")
-    h = m // 60
-    if h < 24:
-        return _ar_ago(h, "ساعة", "ساعتين", "ساعات")
-    return _ar_ago(h // 24, "يوم", "يومين", "أيام")
 
-def art_reltime(a):
-    """<time> element showing 'منذ X' for an article carrying pub_ts (full ISO
-    timestamp, present on articles published since 2026-08-31). Older articles
-    have only pub_date -> returns '' and the caller shows what it always did."""
-    ts = a.get("pub_ts") or ""
-    txt = rel_ar(ts) if ts else ""
-    if not txt:
-        return ""
-    return f'<time class="reltime" datetime="{esc(ts)}">{esc(txt)}</time>'
 
 def adsense_slot():
     """Left-column ad slot: the real AdSense unit when configured, else a placeholder."""
@@ -344,14 +317,6 @@ def _og_dims(url):
     _OG_DIMS[url] = dims
     return dims
 
-def seo_desc(desc, limit=155):
-    """Meta description: Google shows ~155-160 chars; cut at a word boundary
-    so the snippet never ends mid-word. (og:description keeps the long form.)"""
-    d = " ".join(strip_tags(desc).split())
-    if len(d) <= limit:
-        return d
-    cut = d[:limit].rsplit(" ", 1)[0].rstrip(" ،,.:;-—")
-    return cut + "…"
 
 def seo_title(title, limit=62):
     """<title>: drop the « — يلا سكور» brand suffix when the whole thing would
@@ -487,8 +452,6 @@ def foot():
 </div></footer>
 {cf_beacon()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
 
-def jsonld(obj):
-    return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False) + '</script>'
 
 # Live-scores ticker in the header. Built once per build from matches.json
 # (site rebuilds every 30 min, so it stays fresh). Set by build().
@@ -510,8 +473,6 @@ CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash 
 # to the 500-700-word standard and each one crosses back on its own.
 ARTICLE_MIN_WORDS = 300
 
-def article_words(a):
-    return len(strip_tags(a.get("body") or "").split())
 
 def is_thin(a):
     return article_words(a) < ARTICLE_MIN_WORDS
@@ -529,13 +490,6 @@ KO_SCRIPT = ""
 CRESTS_CACHE = os.path.join(HERE, "assets-src", "crests")
 _CREST_MAP = {}          # remote url -> "/assets/crests/<file>"
 
-def _crest_name(url):
-    ext = ".png"
-    for e in (".png", ".svg", ".jpg", ".jpeg", ".gif", ".webp"):
-        if url.lower().split("?")[0].endswith(e):
-            ext = e
-            break
-    return hashlib.md5(url.encode("utf-8")).hexdigest()[:16] + ext
 
 _CREST_FAILS = [0]       # give up quickly when the crest host is unreachable
 _CREST_FAIL_LIMIT = 3
@@ -587,31 +541,11 @@ def local_crest(url):
 
 
 
-def _in_scope(scope, comp):
-    if scope is None:
-        return True
-    return comp in scope if isinstance(scope, tuple) else comp == scope
 
 
-def _is_ticker_team(m):
-    ha = (m.get("home") or "") + "|" + (m.get("away") or "")
-    comp = m.get("competition") or ""
-    return any(t in ha and _in_scope(c, comp) for t, c in TICKER_TEAMS)
 
 
-def _team_match(tp, m):
-    """Does match m involve club tp? Same token+scope rule as the ticker."""
-    ha = (m.get("home") or "") + "|" + (m.get("away") or "")
-    comp = m.get("competition") or ""
-    return any(t in ha and _in_scope(c, comp)
-               for t, c in tp["match_tokens"])
 
-def _team_news(tp, a):
-    """Does article a mention club tp? title+summary, with exclusions."""
-    txt = (a.get("title") or "") + " " + (a.get("summary") or "")
-    if any(x in txt for x in tp.get("news_excl", [])):
-        return False
-    return any(t in txt for t in tp["news_tokens"])
 
 def _tk_date(kick):
     """Short Arabic date chip: اليوم / أمس / غدًا / dd/mm."""
@@ -630,8 +564,6 @@ def _tk_date(kick):
     return f"{d.day:02d}/{d.month:02d}"
 
 
-def ar_team(name):
-    return AR_TEAM.get(name or "", name or "")
 
 def make_ticker(matches):
     """Header ticker: ONLY the hand-picked TICKER_TEAMS clubs — LIVE first,
@@ -727,26 +659,10 @@ def make_ticker(matches):
 # 15-minute static refresh - the site never depends on this script.
 LIVE_JS = _src("snippets/live_js.html")
 
-def article_href(a):
-    """Site-relative URL of an article.
-
-    A match preview/report lives INSIDE its match page (2026-09-16): one URL per
-    match carrying the story, the numbers, the XI and the result, instead of a
-    prose page at /a/ and a data page at /m/ competing for the same query with
-    half an answer each. Everything that links an article goes through here, so
-    the move is one function wide. The old /a/<id> URLs keep working as 301s
-    (see the _redirects file the build writes) - 43 of the 44 have a published
-    Facebook post pointing at them.
-    """
-    if a.get("kind") in ("preview", "report") and a.get("match_id"):
-        return f"/m/{a['match_id']}.html"
-    return f"/a/{a['article_id']}.html"
 
 def article_url(a):
     return SITE_BASE + article_href(a)
 
-def is_match_piece(a):
-    return bool(a.get("kind") in ("preview", "report") and a.get("match_id"))
 
 # article_id -> match page, for the pieces that moved (filled by build()).
 # An article body written before the move can link a piece as /a/<id>;
@@ -821,14 +737,6 @@ def match_article_block(a, comp):
                                      "url": SITE_BASE}}))
     return "".join(out)
 
-def pick_match_article(pieces, status):
-    """One piece per match page: the report once the match is over, otherwise
-    the preview. Both on one page would tell the same story twice."""
-    if not pieces:
-        return None
-    want = "report" if status == "FINISHED" else "preview"
-    return (next((a for a in pieces if a.get("kind") == want), None)
-            or sorted(pieces, key=lambda a: a.get("pub_ts") or "")[-1])
 
 def article_moved_stub(a):
     """What stays at the old /a/ URL of a piece that moved into its match page.
@@ -856,13 +764,6 @@ def article_moved_stub(a):
 # static legal pages get none.
 _LASTMOD = {}
 
-def breadcrumb_ld(items):
-    """BreadcrumbList JSON-LD from [(name, absolute_url), ...]."""
-    return jsonld({
-        "@context": "https://schema.org", "@type": "BreadcrumbList",
-        "itemListElement": [
-            {"@type": "ListItem", "position": i + 1, "name": n, "item": u}
-            for i, (n, u) in enumerate(items)]})
 
 _ART_CLUBS = {}
 def article_clubs(a):
@@ -905,269 +806,11 @@ def related_articles(a, articles, n=4):
             out.append(b)
     return out
 
-def _team_link(comp, raw_name):
-    """Arabic team name, linked to its /team/ page when it is a curated club."""
-    nm = ar_team(raw_name)
-    for tp in TEAM_PAGES:
-        scope = tuple(c for _, c in tp["match_tokens"] if c) or None
-        in_league = (tp["league"] == comp) or (scope is not None and _in_scope(scope, comp))
-        if in_league and any(t in (raw_name or "") or t == nm for t, _ in tp["match_tokens"]):
-            return f'<a href="/team/{tp["slug"]}.html">{esc(nm)}</a>'
-    return esc(nm)
 
-def _cnt(n, one, two, few, many):
-    """Arabic count with proper agreement: 1 -> one ("نقطة واحدة"),
-    2 -> two ("نقطتان"), 3-10 -> "n few" ("5 نقاط"), 0/11+ -> "n many" ("12 نقطة")."""
-    n = int(n or 0)
-    if n == 0:
-        return f"دون {few}"          # "دون أهداف" / "دون خسائر"
-    if n == 1:
-        return one
-    if n == 2:
-        return two
-    if 3 <= n <= 10:
-        return f"{n} {few}"
-    return f"{n} {many}"
 
-def _pts(n):   return _cnt(n, "نقطة واحدة", "نقطتين", "نقاط", "نقطة")
-def _games(n): return _cnt(n, "مباراة واحدة", "مباراتين", "مباريات", "مباراة")
-def _goals(n): return _cnt(n, "هدف واحد", "هدفين", "أهداف", "هدفًا")
-def _wins(n):  return _cnt(n, "فوز واحد", "فوزين", "انتصارات", "فوزًا")
-def _draws(n): return _cnt(n, "تعادل واحد", "تعادلين", "تعادلات", "تعادلًا")
-def _losses(n): return _cnt(n, "خسارة واحدة", "خسارتين", "خسائر", "خسارة")
-def _assists(n): return _cnt(n, "تمريرة حاسمة واحدة", "تمريرتين حاسمتين",
-                             "تمريرات حاسمة", "تمريرة حاسمة")
-def _players(n): return _cnt(n, "لاعبًا واحدًا", "لاعبين", "لاعبين", "لاعبًا")
 
-def _lil(name):
-    """«لـ» before a club name, with the ل+ال elision Arabic requires:
-    القناة -> للقناة, not «لـالقناة»."""
-    name = (name or "").strip()
-    return ("لل" + name[2:]) if name.startswith("ال") else ("لـ" + name)
 
-def scorers_read(label, season, sc, asst, table, pool):
-    """Editorial reading of a top-scorer chart, computed from the numbers we
-    already publish — the same answer /standings got on 2026-09-06 when a bare
-    table was judged thin content.
 
-    Ten names is a list, not a page. What makes it a page is what the list
-    MEANS: who leads and by how much, how much of his club's season he is
-    carrying, whether one club owns the chart, who creates rather than
-    finishes, and where all of it sits against the league's own goal rate.
-
-    Every sentence restates data on this site (the chart, the official table,
-    the season pool). Nothing is estimated, and each fact is skipped when its
-    input is missing — which is also what decides whether the page is worth
-    indexing: returns (html, faq_html, weight).
-    """
-    sc = [x for x in (sc or []) if x.get("name")]
-    if not sc:
-        return "", "", 0
-    facts, faq = [], []
-    top_v = _pval(sc[0])
-    leaders = [x for x in sc if _pval(x) == top_v]
-    gf_by = {}
-    for r in (table or []):
-        if r.get("team"):
-            gf_by[_gnorm(r["team"])] = r
-
-    # 1. the lead, and what it is worth
-    if len(leaders) == 1:
-        nxt = next((_pval(x) for x in sc if _pval(x) < top_v), None)
-        gap = (f" بفارق {_goals(top_v - nxt)} عن أقرب منافسيه"
-               if nxt is not None and top_v > nxt else " بالتساوي مع أقرب منافسيه")
-        facts.append(f'يتصدر <b>{esc(sc[0]["name"])}</b> ({esc(sc[0].get("team") or "")}) '
-                     f'قائمة هدافي {esc(label)} بـ{_goals(top_v)}{gap}.')
-        faq.append((f"من هداف {label} الآن؟",
-                    f"{sc[0]['name']} ({sc[0].get('team') or ''}) برصيد {_goals(top_v)} "
-                    f"في موسم {season}."))
-    else:
-        # name EVERY leader while they fit in a sentence: capping at three
-        # under a count of four read «بين 4 لاعبين (a، b، c)» and dropped
-        # Zizo from his own shared lead (ChatGPT site audit, 2026-09-21).
-        # Past five names, say «منهم» so the sentence stops claiming to be
-        # the full list instead of silently contradicting the count.
-        if len(leaders) <= 5:
-            names, pre = "، ".join(esc(x["name"]) for x in leaders), ""
-        else:
-            names, pre = "، ".join(esc(x["name"]) for x in leaders[:3]), "منهم "
-        facts.append(f'تُقسَم صدارة هدافي {esc(label)} بين {_players(len(leaders))} '
-                     f'({pre}{names}) برصيد {_goals(top_v)} لكل منهم.')
-        faq_names = ("، ".join(x["name"] for x in leaders) if len(leaders) <= 5
-                     else "، ".join(x["name"] for x in leaders[:3]) + " وآخرون")
-        faq.append((f"من هداف {label} الآن؟",
-                    f"الصدارة مشتركة بين {_players(len(leaders))} برصيد {_goals(top_v)} لكل منهم: "
-                    + faq_names + "."))
-
-    # 2. how much of his club's season the leader is carrying
-    row = gf_by.get(_gnorm(sc[0].get("team")))
-    if row and (row.get("gf") or 0) > 0 and top_v <= row["gf"]:
-        share = round(top_v * 100 / row["gf"])
-        # named, never «وسجّل وحده»: the lead above may be shared, and an
-        # unnamed pronoun would then point at whichever name came first
-        facts.append(f'وسجّل <b>{esc(sc[0]["name"])}</b> {_goals(top_v)} من أصل '
-                     f'{_goals(row["gf"])} {esc(_lil(row["team"]))} هذا الموسم، '
-                     f'أي {share}% من أهداف ناديه.')
-
-    # 3. one club owning the chart
-    clubs = {}
-    for x in sc:
-        if x.get("team"):
-            clubs.setdefault(_gnorm(x["team"]), [x["team"], 0])[1] += 1
-    top_club = max(clubs.values(), key=lambda v: v[1]) if clubs else None
-    if top_club and top_club[1] >= 2:
-        facts.append(f'ويضع {esc(top_club[0])} {_players(top_club[1])} من صفوفه '
-                     f'داخل أعلى {len(sc)} هدافين.')
-
-    # 4. the creators, and anyone doing both
-    if asst:
-        a0 = asst[0]
-        facts.append(f'وفي صناعة الأهداف يتقدم <b>{esc(a0["name"])}</b> '
-                     f'({esc(a0.get("team") or "")}) بـ{_assists(_pval(a0))}.')
-        faq.append((f"من أكثر صانعي الأهداف في {label}؟",
-                    f"{a0['name']} ({a0.get('team') or ''}) برصيد {_assists(_pval(a0))}."))
-        both = [x["name"] for x in sc
-                if any(_gnorm(y.get("name")) == _gnorm(x.get("name")) for y in asst)]
-        if both:
-            facts.append('واللافت أن ' + "، ".join(esc(n) for n in both)
-                         + (' حاضر في القائمتين: بين الهدافين وصنّاع الأهداف معًا.'
-                            if len(both) == 1 else
-                            ' حاضرون في القائمتين معًا.'))
-
-    # 5. the league's own scale
-    if pool:
-        g = sum(int(m["home_score"]) + int(m["away_score"]) for m in pool)
-        n = len(pool)
-        if n and g:
-            top_sum = sum(_pval(x) for x in sc)
-            facts.append(f'وللمقارنة، سجّل {esc(label)} {g} هدفًا في {_games(n)} '
-                         f'هذا الموسم (بمعدل {g / n:.2f} للمباراة)، فأعلى {len(sc)} هدافين '
-                         f'يمثلون {round(top_sum * 100 / g)}% منها.')
-            faq.append((f"كم هدفًا سُجّل في {label} هذا الموسم؟",
-                        f"{g} هدفًا في {_games(n)} منتهية، بمعدل {g / n:.2f} هدف في المباراة "
-                        f"حتى تاريخ التحديث."))
-
-    faq.append(("متى تُحدَّث قائمة الهدافين؟",
-                "تُحدَّث تلقائيًا من مصدر بيانات المباريات كل ربع ساعة تقريبًا، "
-                "فتظهر أهداف كل جولة بعد نهايتها مباشرة."))
-
-    html = (f'<section class="minfo st-analysis"><h2>قراءة في صدارة هدافي {esc(label)}</h2>'
-            + "".join(f"<p>{t}</p>" for t in facts) + '</section>')
-    fhtml = ('<section class="minfo faq"><h2>أسئلة شائعة عن هدافي ' + esc(label) + '</h2>'
-             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>'
-                       for q, a in faq) + '</section>')
-    fld = jsonld({"@context": "https://schema.org", "@type": "FAQPage",
-                  "mainEntity": [{"@type": "Question", "name": q,
-                                  "acceptedAnswer": {"@type": "Answer", "text": a}}
-                                 for q, a in faq]})
-    return html, fhtml + fld, len(facts)
-
-def standings_analysis(comp, label, season, rows, form_map, scorers, up_next, zeroed=False):
-    """Editorial reading of a league table, generated ONLY from the numbers we
-    already publish (AdSense 'low value content' remediation: a bare table is
-    thin; the same page with an explanation, a title-race reading, form notes
-    and an FAQ is a real guide). Returns (html, faq_jsonld_or_empty).
-    Every sentence is a restatement of table/form/scorer data — no guesses."""
-    rows = [r for r in rows if r.get("team")]
-    if not rows:
-        return "", ""
-    if zeroed or all(int(r.get("played") or 0) == 0 for r in rows):
-        html = (f'<section class="minfo st-analysis"><h2>عن ترتيب {esc(label)} {esc(season)}</h2>'
-                f'<p>الموسم الجديد من {esc(label)} لم ينطلق بعد، لذلك يظهر الجدول بقائمة الأندية '
-                f'المشاركة ({len(rows)} فريقًا) وكل الأرقام عند الصفر. بمجرد انتهاء أول مباراة يتحدّث '
-                'الجدول تلقائيًا بالنقاط والأهداف وفارق الأهداف ونتائج آخر خمس مباريات لكل فريق.</p>'
-                '<p><b>كيف تُقرأ الأعمدة؟</b> لعب = عدد المباريات، ف/ت/خ = الفوز والتعادل والخسارة، '
-                'له/عليه = الأهداف المسجلة والمستقبلة، الفارق = له ناقص عليه، النقاط = 3 لكل فوز '
-                'ونقطة لكل تعادل.</p></section>')
-        return html, ""
-    T = lambda r: _team_link(comp, r.get("team"))
-    N = lambda r: ar_team(r.get("team"))
-    lead, second = rows[0], (rows[1] if len(rows) > 1 else None)
-    gap = int(lead.get("pts") or 0) - int((second or {}).get("pts") or 0)
-    ps = []
-    ps.append(f'<p>يتصدر {T(lead)} ترتيب {esc(label)} برصيد <b>{_pts(lead.get("pts"))}</b> من '
-              f'{_games(lead.get("played"))} '
-              f'({_wins(lead.get("won"))}، {_draws(lead.get("draw"))}، {_losses(lead.get("lost"))})'
-              + (f'، بفارق {_pts(gap)} عن {T(second)} صاحب المركز الثاني.'
-                 if second and gap > 0 else
-                 (f'، متساويًا في النقاط مع {T(second)} الثاني الذي يفصله عنه فارق الأهداف '
-                  f'({lead.get("gd")} مقابل {second.get("gd")}).' if second else '.'))
-              + '</p>')
-    top3 = rows[:3]
-    if len(rows) >= 4:
-        ps.append('<p>المربع الأمامي حتى الآن: ' + '، '.join(
-            f'{T(r)} ({_pts(r.get("pts"))})' for r in rows[:4]) + '.</p>')
-    played = [r for r in rows if int(r.get("played") or 0) > 0]
-    if played:
-        best_att = max(played, key=lambda r: (int(r.get("gf") or 0), -int(r.get("ga") or 0)))
-        best_def = min(played, key=lambda r: (int(r.get("ga") or 0), -int(r.get("gf") or 0)))
-        best_gd = max(played, key=lambda r: int(r.get("gd") or 0))
-        worst_gd = min(played, key=lambda r: int(r.get("gd") or 0))
-        ps.append(f'<p><b>الهجوم والدفاع:</b> أقوى خط هجوم هو {T(best_att)} بـ{_goals(best_att.get("gf"))}، '
-                  f'وأقل شباك استقبالًا للأهداف {T(best_def)} '
-                  + (f'بـ{_goals(best_def.get("ga"))} فقط. ' if int(best_def.get("ga") or 0) else 'بشباك لم تستقبل أي هدف حتى الآن. ')
-                  + f'أفضل فارق أهداف يملكه {T(best_gd)} ({"+" if int(best_gd.get("gd") or 0) > 0 else ""}{best_gd.get("gd")})، '
-                  f'وأسوأ فارق عند {T(worst_gd)} ({worst_gd.get("gd")}).</p>')
-    fm = form_map or {}
-    def _last5(r):
-        return (fm.get(r.get("team")) or [])[-5:]
-    hot = sorted([r for r in rows if len(_last5(r)) >= 3],
-                 key=lambda r: (-_last5(r).count("W"), _last5(r).count("L")))[:3]
-    cold = [r for r in rows if len(_last5(r)) >= 3 and _last5(r).count("W") == 0]
-    if hot:
-        ps.append('<p><b>الفرق في أفضل حالاتها:</b> ' + '، '.join(
-            f'{T(r)} ({_wins(_last5(r).count("W"))} في آخر {_games(len(_last5(r)))})' for r in hot)
-            + (f'. أما الفرق التي لم تحقق أي فوز في آخر مبارياتها فهي: '
-               + '، '.join(T(r) for r in cold[:4]) + '.' if cold else '.') + '</p>')
-    bottom = rows[-3:] if len(rows) >= 6 else []
-    if bottom:
-        ps.append('<p><b>قاع الجدول:</b> ' + '، '.join(
-            f'{T(r)} ({_pts(r.get("pts"))})' for r in bottom)
-            + ' — هذه الفرق تحتاج إلى تحسين سريع في النتائج قبل أن تتسع الفجوة مع منطقة الأمان.</p>')
-    top_sc = (scorers or [None])[0]
-    if top_sc and top_sc.get("name"):
-        ps.append(f'<p><b>هداف البطولة:</b> {esc(top_sc["name"])} ({esc(ar_team(top_sc.get("team")))}) '
-                  f'برصيد {_goals(top_sc.get("goals") or top_sc.get("value"))}'
-                  + (f'، يليه {esc(scorers[1]["name"])} بـ{_goals(scorers[1].get("goals") or scorers[1].get("value"))}.'
-                     if len(scorers) > 1 else '.') + '</p>')
-    nxt = up_next[0] if up_next else None
-    if nxt:
-        ps.append(f'<p><b>الجولة القادمة:</b> تُستكمل مباريات {esc(label)} يوم {esc(nxt.get("kickoff"))} '
-                  f'بلقاء {esc(ar_team(nxt.get("home")))} و{esc(ar_team(nxt.get("away")))}'
-                  + (f' و{_games(len(up_next) - 1)} أخرى' if len(up_next) > 1 else '')
-                  + ' — القائمة الكاملة أسفل الصفحة، وكل مباراة لها صفحتها بالتشكيل والأهداف.</p>')
-    ps.append('<p><b>كيف تُقرأ الأعمدة؟</b> «لعب» عدد المباريات، «ف/ت/خ» الفوز والتعادل والخسارة، '
-              '«له» الأهداف المسجلة و«عليه» المستقبلة، «الفارق» = له ناقص عليه، و«النقاط» = 3 نقاط '
-              'لكل فوز ونقطة لكل تعادل. عند التساوي في النقاط تُطبَّق معايير الفصل الواردة في لائحة '
-              'البطولة (فارق الأهداف والأهداف المسجلة، وفي بعض البطولات المواجهات المباشرة أولًا). '
-              'النقاط الملوّنة بجوار كل فريق هي نتائج آخر خمس مباريات من الأقدم إلى الأحدث.</p>')
-    html = (f'<section class="minfo st-analysis"><h2>قراءة في ترتيب {esc(label)} {esc(season)}</h2>'
-            + "".join(ps) + '</section>')
-    # FAQ — answers are the same data in question form
-    faq = [(f"من يتصدر {label} حاليًا؟",
-            f"{N(lead)} يتصدر برصيد {_pts(lead.get('pts'))} من {_games(lead.get('played'))}"
-            + (f"، بفارق {_pts(gap)} عن {N(second)}." if second and gap > 0 else "."))]
-    if second:
-        faq.append((f"كم الفارق بين الأول والثاني في {label}؟",
-                    f"{_pts(gap)} بين {N(lead)} ({lead.get('pts')}) و{N(second)} ({second.get('pts')})."
-                    if gap else f"لا فارق في النقاط: {N(lead)} و{N(second)} متساويان برصيد {_pts(lead.get('pts'))}، ويفصل بينهما فارق الأهداف."))
-    if top_sc and top_sc.get("name"):
-        faq.append((f"من هو هداف {label} هذا الموسم؟",
-                    f"{top_sc['name']} لاعب {ar_team(top_sc.get('team'))} برصيد {_goals(top_sc.get('goals') or top_sc.get('value'))} حتى الآن."))
-    faq.append(("كيف يُحسب فارق الأهداف؟",
-                "فارق الأهداف = الأهداف المسجلة (له) ناقص الأهداف المستقبلة (عليه). يُستخدم كأحد معايير الفصل بين الفرق المتساوية في النقاط."))
-    if nxt:
-        faq.append((f"متى الجولة القادمة في {label}؟",
-                    f"أقرب مباراة يوم {nxt.get('kickoff')}: {ar_team(nxt.get('home'))} ضد {ar_team(nxt.get('away'))} (التوقيت بتوقيت القاهرة في صفحة المباريات)."))
-    faq.append(("كم مرة يتحدّث جدول الترتيب؟",
-                "يتحدّث الجدول تلقائيًا كل ربع ساعة تقريبًا من مصدر بيانات المباريات، فتظهر النتائج بعد صافرة النهاية مباشرة."))
-    fhtml = ('<section class="minfo faq"><h2>أسئلة شائعة عن ' + esc(label) + '</h2>'
-             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>' for q, a in faq)
-             + '</section>')
-    fld = jsonld({"@context": "https://schema.org", "@type": "FAQPage",
-                  "mainEntity": [{"@type": "Question", "name": q,
-                                  "acceptedAnswer": {"@type": "Answer", "text": a}} for q, a in faq]})
-    return html, fhtml + fld
 
 def _rfc822(a):
     """RSS pubDate from pub_ts (full ISO) or pub_date (noon Cairo)."""
@@ -1392,55 +1035,11 @@ def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
             '<a class="fmb-more" href="/analysis.html">كل التوقعات والتحليلات ←</a></section>')
 
 
-def _egy_article(a):
-    txt = (a.get("title") or "") + " " + (a.get("summary") or "")
-    if "الأهلي السعودي" in txt or "أهلي جدة" in txt:
-        return False
-    return any(t in txt for t in _EGY_TOKENS)
 
 
-def _eur_article(a):
-    txt = (a.get("title") or "") + " " + (a.get("summary") or "")
-    return any(t in txt for t in _EUR_TOKENS)
-
-def reel_slide(r, first=False):
-    """One full-height slide of the TikTok-style vertical feed: tap to play
-    (VIDEO_JS facade), swipe up for the next (CSS scroll-snap)."""
-    vid = esc(r.get("video_id") or "")
-    title = esc(r.get("title") or "")
-    thumb = f"https://i.ytimg.com/vi/{vid}/oar2.jpg"          # vertical thumb
-    fallback = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"  # crop if missing
-    hint = '<div class="swipe-hint">اسحب لفوق للريل التالي ⬆</div>' if first else ""
-    return (f'<section class="rslide">'
-            f'<div class="vcard reel rstage" data-vid="{vid}" data-src="youtube">'
-            f'<button type="button" class="vthumb" aria-label="تشغيل: {title}">'
-            f'<img src="{thumb}" alt="{title}" loading="lazy" '
-            f'onerror="this.onerror=null;this.src=\'{fallback}\'">'
-            f'<span class="vplay" aria-hidden="true">▶</span></button>'
-            f'<div class="rtitle">{title}</div>{hint}'
-            f'</div></section>')
 
 
-def video_facade(v):
-    """A lightweight video 'facade': thumbnail + play button; the real iframe
-    is injected by VIDEO_JS only when the visitor clicks (keeps the page fast).
-    Supports source = "youtube" (default) | "dailymotion"."""
-    vid = esc(v.get("video_id") or "")
-    src = (v.get("source") or "youtube").lower()
-    title = esc(v.get("title") or "")
-    date = esc(v.get("pub_date") or "")
-    if src == "dailymotion":
-        thumb = f"https://www.dailymotion.com/thumbnail/video/{vid}"
-    else:
-        src = "youtube"
-        thumb = f"https://i.ytimg.com/vi/{vid}/hqdefault.jpg"
-    meta = f'<p class="meta">{date}</p>' if date else ""
-    return (f'<div class="vcard" data-vid="{vid}" data-src="{src}">'
-            f'<button type="button" class="vthumb" aria-label="تشغيل الفيديو: {title}">'
-            f'<img src="{thumb}" alt="{title}" loading="lazy" '
-            f'onerror="this.style.display=\'none\';this.parentNode.classList.add(\'noimg\')">'
-            f'<span class="vplay" aria-hidden="true">▶</span></button>'
-            f'<div class="vb"><h3>{title}</h3>{meta}</div></div>')
+
 
 
 
@@ -1479,64 +1078,9 @@ b.remove();});})();</script>"""
 AN_DISCLAIMER = ('التوقعات احتمالات إحصائية من نموذج يلا سكور مبنية على نتائج الموسم الحالي فقط، '
                  'وليست نصيحة للمراهنة. كلما زاد عدد المباريات زادت دقة النموذج.')
 
-def _pct(x):
-    return f"{round(x * 100)}%"
-
-def pred_btn(p):
-    """«توقع يلا سكور» — the whole prediction on a match row, in ~110 bytes.
-
-    The site's one differentiator was reachable only from /m/<id> or
-    /analysis, and the numbers said nobody went: over 24 hours the home page
-    and /matches were ~85% of all traffic and exactly one match page showed
-    up at all, twice (2026-09-18). So the prediction now offers itself where
-    the reader already is.
-
-    What crosses the wire per row is five small numbers, not a rendered
-    block: three probabilities, the modal scoreline and the confidence key.
-    /matches is already a 1 MB page with 13% of its LCP samples in the
-    "poor" band, so ~110 bytes x ~90 rows (about 10 KB, below the fold and
-    behind a click) is the whole budget this feature gets. Everything else -
-    the team names, the bar, the link to the full reading - is read at click
-    time from markup the row already carries.
-    """
-    if not p:
-        return ""
-    top = p["top"][0]
-    return ('<button type="button" class="pbtn" data-pp="'
-            f'{round(p["ph"] * 100)},{round(p["pd"] * 100)},{round(p["pa"] * 100)}"'
-            f' data-ps="{top[0]}-{top[1]}" data-pc="{esc(p["conf"])}">'
-            'توقع يلا سكور</button>')
 
 
-def done_btn(e):
-    """«توقعنا قبل المباراة» — the same button on a match that is over.
 
-    Stronger than the pre-match one, and for one reason: a probability
-    before kickoff is a claim, a probability beside the final score is a
-    claim the reader can CHECK. That is the whole point of /predictions,
-    and /predictions is a page nobody visits — /matches is where they are.
-
-    Everything here comes from the FROZEN log row, written the day the
-    prediction was made and never touched again (analysis.update_log:
-    `if old.get("hs") is not None: continue`). Recomputing it today from
-    today's Elo would be marking our own homework with the answers in
-    front of us, and it would quietly turn the site's one honest number
-    into a lie. `hit` is carried rather than derived for the same reason:
-    the log decides what counted, not this renderer.
-
-    And it appears on the misses exactly as it does on the hits — 21 of
-    the 54 finished rows in today's window were wrong. A button that only
-    showed up when we were right would destroy the credibility it exists
-    to build.
-    """
-    if not e or e.get("hs") is None or e.get("as") is None:
-        return ""     # in the log but not played yet, or never scored
-    return ('<button type="button" class="pbtn" data-pp="'
-            f'{round(e["ph"] * 100)},{round(e["pd"] * 100)},{round(e["pa"] * 100)}"'
-            f' data-ps="{esc(e.get("score") or "")}"'
-            f' data-pr="{e["hs"]}-{e["as"]}"'
-            f' data-hit="{1 if e.get("hit") else 0}">'
-            'توقعنا قبل المباراة</button>')
 
 
 # Everything here is namespaced ppop-*, NOT pp-*: «.pp» and its family
@@ -1564,42 +1108,7 @@ def pred_pop(parts):
     return PRED_POP if any('class="pbtn"' in x for x in parts) else ""
 
 
-def prob_bar(p):
-    """Three-segment 1X2 bar (home = brand blue, draw = grey, away = slate).
 
-    PURELY VISUAL since 2026-09-16: the numbers used to be printed inside the
-    segments, but a number does not fit in a narrow one, so a lopsided
-    prediction rendered as "20% 72%" or "87%" — two outside reviewers read that
-    as a missing third probability, twice. A bar that states two of three
-    numbers and a line underneath that states all three is two partial
-    readings of one thing; if a reviewer is confused by it, a reader is too.
-    So the bar shows the shape and prob_legend() says the numbers, once.
-    """
-    ph, pd, pa = p["ph"], p["pd"], p["pa"]
-    def seg(cls, v):
-        return f'<span class="pb-seg pb-{cls}" style="width:{v * 100:.1f}%"></span>' 
-    return ('<div class="pbar" role="img" aria-label="'
-            f'فوز الأرض {_pct(ph)}، تعادل {_pct(pd)}، فوز الضيف {_pct(pa)}">'
-            + seg("h", ph) + seg("d", pd) + seg("a", pa) + '</div>')
-
-def prob_legend(p, cls="pr-probs", home=None, away=None):
-    """The three probabilities in words — and the bar's key.
-
-    Each one carries a swatch in its segment's colour, so the reader can see
-    which slice is which without a number being crammed into a 12-pixel
-    segment. This is the ONLY place the percentages are printed (see
-    prob_bar), which is the point: one statement, never a partial one."""
-    def one(k, label, cls_):
-        # .prb, not .pp: «.pp» is already the player marker on the pitch
-        # graphic (position:absolute) and these three collapsed onto the bar
-        return (f'<span class="prb"><i class="prb-{cls_}"></i>{esc(label)} '
-                f'<b>{_pct(p[k])}</b></span>')
-    # The clubs by NAME whenever the caller knows them (user, 2026-09-18:
-    # «خلى هنا اسماء الفرق»). الأرض/الضيف is the fallback for a caller that
-    # has only the numbers — it makes the reader map a generic word onto a
-    # club that is written two lines up, which is work the page can do.
-    return (f'<span class="{cls}">' + one("ph", home or "الأرض", "h")
-            + one("pd", "تعادل", "d") + one("pa", away or "الضيف", "a") + '</span>')
 
 def conf_chip(conf):
     return f'<span class="conf conf-{esc(conf)}">{esc(AN.CONF_AR.get(conf, ""))}</span>'
@@ -1630,9 +1139,6 @@ def pred_row(m, p):
             + score_pill(top[0], top[1], "sc-in") + '</span>'
             + conf_chip(p["conf"]) + '</span></a>')
 
-def _signed_pct(x):
-    """+24% / -18%, for a factor's distance from the league average."""
-    return ("+" if x >= 0 else "−") + f"{abs(x) * 100:.0f}%"
 
 def why_block(m, p, ex, cal):
     """«لماذا رجّح النموذج هذا التوقع؟» — the prediction taken apart.
@@ -1747,8 +1253,6 @@ def pred_block(m, p, logged, comp_stats, params=None, cal=None):
                 f'<p class="pd-note">{AN_DISCLAIMER} <a href="/predictions.html">سجل التوقعات كاملًا (إصابةً وخطأ)</a></p></section>')
     return ""
 
-def AN_games(n):
-    return _games(n)
 
 def power_table(comp, stats, params, form_map):
     """Club strength table for one competition, ranked by Elo."""
@@ -1784,64 +1288,8 @@ def timing_bars(timing, title):
         for lbl, _, _ in AN.MINUTE_BUCKETS)
     return f'<div class="timing"><h3>{esc(title)}</h3>{bars}</div>'
 
-def ratings_table(rows, title):
-    if not rows:
-        return ""
-    out = [f'<div class="tbl-wrap"><h3>{esc(title)}</h3><table class="ptable"><thead><tr><th>#</th>'
-           '<th class="tl">اللاعب</th><th class="tl">النادي</th><th>المركز</th><th>مباريات</th><th>متوسط التقييم</th><th>أفضل</th></tr></thead><tbody>']
-    for i, r in enumerate(rows, 1):
-        out.append(f'<tr><td>{i}</td><td class="tl"><bdi>{esc(r["name"])}</bdi></td><td class="tl"><bdi>{esc(r["club"])}</bdi></td>'
-                   f'<td>{esc(r.get("pos") or "")}</td><td>{r["n"]}</td><td><b>{r["avg"]:.2f}</b></td><td>{r["best"]:.1f}</td></tr>')
-    out.append('</tbody></table></div>')
-    return "".join(out)
 
-def ga_table(rows, share, title):
-    if not rows:
-        return ""
-    sh = {(s["name"], s["team"]): s for s in share}
-    out = [f'<div class="tbl-wrap"><h3>{esc(title)}</h3><table class="ptable"><thead><tr><th>#</th>'
-           '<th class="tl">اللاعب</th><th class="tl">النادي</th><th>أهداف</th><th>صناعة</th><th>أ+ص</th>'
-           '<th title="نسبة أهدافه من أهداف ناديه">من أهداف ناديه</th></tr></thead><tbody>']
-    for i, r in enumerate(rows, 1):
-        s = sh.get((r["name"], r["team"]))
-        out.append(f'<tr><td>{i}</td><td class="tl"><bdi>{esc(r["name"])}</bdi></td><td class="tl"><bdi>{esc(ar_team(r["team"]))}</bdi></td>'
-                   f'<td>{r["g"]}</td><td>{r["a"]}</td><td><b>{r["g"] + r["a"]}</b></td>'
-                   f'<td>{(_pct(s["share"]) + " (" + str(s["g"]) + "/" + str(s["club_goals"]) + ")") if s else "—"}</td></tr>')
-    out.append('</tbody></table></div>')
-    return "".join(out)
 
-def accuracy_html(acc, anchor=True):
-    a = acc.get("all")
-    hid = ' id="accuracy"' if anchor else ""
-    if not a:
-        return (f'<section class="minfo"{hid}><h2>دقة التوقعات</h2><p>يُثبَّت كل توقع قبل انطلاق المباراة ثم يُقارَن '
-                'بالنتيجة الفعلية بعد صافرة النهاية. يبدأ هذا السجل بالظهور بعد أول مباريات تُلعب منذ إطلاق القسم.</p></section>')
-    out = [f'<section class="minfo"{hid}><h2>دقة التوقعات</h2>'
-           f'<div class="acc-tiles"><div class="tile"><b>{a["n"]}</b><span>مباراة مقيَّمة</span></div>'
-           f'<div class="tile"><b>{_pct(a["hit_rate"])}</b><span>إصابة الاتجاه (فوز/تعادل/خسارة)</span></div>'
-           f'<div class="tile"><b>{_pct(a["home_baseline"])}</b><span>لو توقعنا فوز الأرض دائمًا</span></div>'
-           f'<div class="tile"><b>{a["brier"]:.3f}</b><span>مؤشر Brier (الأقل أفضل، 0.667 = عشوائي)</span></div>'
-           f'<div class="tile"><b>{a["score_hits"]}</b><span>نتيجة مضبوطة</span></div></div>']
-    if acc.get("comps"):
-        out.append('<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">البطولة</th><th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead><tbody>')
-        for comp in COMP_ORDER + [c for c in acc["comps"] if c not in COMP_ORDER]:
-            c = acc["comps"].get(comp)
-            if c:
-                out.append(f'<tr><td class="tl">{esc(comp_label(comp))}</td><td>{c["n"]}</td><td>{_pct(c["hit_rate"])}</td><td>{c["brier"]:.3f}</td></tr>')
-        out.append('</tbody></table></div>')
-    if acc.get("recent"):
-        out.append('<h3>آخر المباريات المقيَّمة</h3><ul class="acc-list">')
-        for e in acc["recent"]:
-            pick_ar = {"H": ar_team(e["home"]), "D": "تعادل", "A": ar_team(e["away"])}[e["pick"]]
-            out.append(f'<li><bdi>{esc(ar_team(e["home"]))} '
-                       f'{score_pill(e["hs"], e["as"], "sc-in")} {esc(ar_team(e["away"]))}</bdi> — '
-                       f'توقعنا <b>{esc(pick_ar)}</b> ({_pct(max(e["ph"], e["pd"], e["pa"]))}) '
-                       + ('<span class="hit ok">✔</span>' if e.get("hit") else '<span class="hit no">✘</span>') + '</li>')
-        out.append('</ul>')
-    out.append('<p class="hintline"><a href="/predictions.html">السجل الكامل: كل توقع بإصابته '
-               'وخطئه، ومعايرة الاحتمالات ←</a></p>')
-    out.append('</section>')
-    return "".join(out)
 
 # ===========================================================================
 # «سجل التوقعات» — /predictions.html (2026-09-14)
@@ -1863,33 +1311,6 @@ def accuracy_html(acc, anchor=True):
 PRED_FILTER_JS = _src("snippets/pred_filter_js.html")
 
 
-def calibration_html(cal):
-    """The reliability table: what we said vs what happened, per band."""
-    bs = [b for b in cal["buckets"] if b["n"] >= 10]
-    if not bs:
-        return ""
-    out = ['<section class="minfo" id="calibration"><h2>هل احتمالاتنا صادقة؟ (معايرة النموذج)</h2>',
-           '<p>كل توقع يقول ثلاثة أرقام: احتمال فوز الأرض، والتعادل، وفوز الضيف — '
-           f'أي <b>{cal["statements"]}</b> احتمالًا معلنًا في <b>{cal["matches"]}</b> مباراة. '
-           'هنا نجمع كل احتمال في نطاقه ونقارنه بما حدث فعلًا: لو قلنا «30%» في مئة حالة، '
-           'المفروض تقع نحو ثلاثين منها. هذا هو المقياس الحقيقي لنموذج احتمالي، '
-           'وليس عدد المرات التي أصاب فيها أعلى احتمال.</p>',
-           '<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">النطاق</th>'
-           '<th>عدد الحالات</th><th>قلنا (متوسط)</th><th>حدث فعلًا</th><th>الفارق</th>'
-           '</tr></thead><tbody>']
-    for b in bs:
-        diff = b["actual"] - b["stated"]
-        cls = "good" if abs(diff) <= 0.05 else "bad" if abs(diff) > 0.12 else ""
-        sign = "+" if diff > 0 else ""
-        out.append(f'<tr><td class="tl" dir="ltr">{b["lo"]}–{b["hi"]}%</td><td>{b["n"]}</td>'
-                   f'<td>{_pct(b["stated"])}</td><td><b>{_pct(b["actual"])}</b></td>'
-                   f'<td class="{cls}" dir="ltr">{sign}{diff * 100:.1f}</td></tr>')
-    out.append('</tbody></table></div>')
-    out.append(f'<p class="hintline">متوسط انحراف المعايرة (ECE): <b>{cal["ece"] * 100:.1f}</b> نقطة مئوية — '
-               'كلما اقترب من الصفر كانت الاحتمالات أصدق. النطاقات التي تقل حالاتها عن عشرة لا تُعرض '
-               'لأن عيّنتها أصغر من أن تقول شيئًا.</p>')
-    out.append('</section>')
-    return "".join(out)
 
 
 def _rec_day_label(d):
@@ -1907,56 +1328,8 @@ def _rec_day_label(d):
     return f"{lead} · {dt.day} {_AR_MONTHS[dt.month]}{year}"
 
 
-def _pred_item_html(e):
-    """One prediction in the record: the verdict first (an RTL reader meets it
-    immediately), the match and its real score, then one muted line with what
-    we said. A six-column table put the verdict at the far end of the row and
-    repeated the date on every line - this reads instead of being decoded."""
-    mid = e.get("match_id")
-    h, a = ar_team(e.get("home")), ar_team(e.get("away"))
-    pick_ar = {"H": f"فوز {h}", "D": "تعادل", "A": f"فوز {a}"}.get(e.get("pick"), "—")
-    conf = max(e.get("ph") or 0, e.get("pd") or 0, e.get("pa") or 0)
-    hit = 1 if e.get("hit") else 0
-    verdict = "أصاب" if hit else "أخطأ"
-    # score_pill, NOT "2-0" text: between two names in an RTL row a glued score
-    # is one LTR bidi run and lands home-score-left = next to the AWAY club
-    # (measured 2026-09-16).
-    score = score_pill(e.get("hs"), e.get("as"), "sc-in")
-    exact = ' <span class="pf-exact" title="أصبنا النتيجة بالضبط">🎯</span>' if e.get("score_hit") else ""
-    tag, href = ("a", f' href="/m/{esc(mid)}.html"') if mid else ("div", "")
-    return (f'<{tag} class="rec-i {"ok" if hit else "no"}"{href} data-hit="{hit}" '
-            f'data-comp="{esc(e.get("comp") or "")}" data-day="{esc(e.get("kickoff") or "")}">'
-            f'<span class="rec-v" title="{verdict}" aria-label="{verdict}">{"✔" if hit else "✘"}</span>'
-            f'<span class="rec-m"><span class="rec-t"><bdi>{esc(h)}</bdi> {score} '
-            f'<bdi>{esc(a)}</bdi>{exact}</span>'
-            f'<span class="rec-s">قلنا <b>{esc(pick_ar)}</b> بنسبة {_pct(conf)} '
-            f'<i class="rec-d">· أقرب نتيجة {score_txt(e.get("score"), "sc-in sc-s")}</i>'
-            f'<i class="rec-lg">· {esc(comp_label(e.get("comp") or ""))}</i></span></span>'
-            f'<span class="rec-c">{esc(comp_label(e.get("comp") or ""))}</span>'
-            f'</{tag}>')
 
 
-def _calls_html(ex):
-    """The most confident hits and the most confident misses, side by side and
-    the same size. A record that shows only the hits is an advert."""
-    if not (ex["best"] or ex["worst"]):
-        return ""
-    def col(title, rows, cls):
-        if not rows:
-            return f'<div class="calls-c"><h3>{esc(title)}</h3><p class="hintline">لا شيء بعد.</p></div>'
-        items = []
-        for e in rows:
-            h, a = ar_team(e.get("home")), ar_team(e.get("away"))
-            pick_ar = {"H": h, "D": "تعادل", "A": a}.get(e.get("pick"), "—")
-            conf = max(e.get("ph") or 0, e.get("pd") or 0, e.get("pa") or 0)
-            items.append(f'<li><bdi>{esc(h)} {score_pill(e.get("hs"), e.get("as"), "sc-in")} {esc(a)}</bdi>'
-                         f'<span>قلنا <b><bdi>{esc(pick_ar)}</bdi></b> بنسبة {_pct(conf)}</span></li>')
-        return f'<div class="calls-c {cls}"><h3>{esc(title)}</h3><ul>{"".join(items)}</ul></div>'
-    return ('<section class="minfo"><h2>أوضح إصاباتنا وأوضح إخفاقاتنا</h2>'
-            '<div class="calls">'
-            + col("أصاب النموذج وهو واثق", ex["best"], "ok")
-            + col("أخطأ النموذج وهو واثق", ex["worst"], "no")
-            + '</div><p class="hintline">أعلى التوقعات ثقةً في الاتجاهين — تُعرض معًا بالحجم نفسه.</p></section>')
 
 
 def prediction_history_page(plog, acc):
@@ -2097,27 +1470,7 @@ def prediction_history_page(plog, acc):
     return url
 
 
-def model_explainer():
-    return ('<section class="minfo explain" id="model"><h2>كيف يعمل نموذج يلا سكور؟</h2>'
-            '<p>القسم لا يعتمد على آراء أو توقعات شخصية، بل على أرقام المباريات الفعلية التي يجمعها الموقع '
-            'كل ربع ساعة. لكل بطولة يبني النموذج ثلاث طبقات:</p><ol>'
-            '<li><b>تقييم القوة (Elo):</b> يبدأ كل نادٍ برصيد 1500 نقطة، ويربح أو يخسر نقاطًا بعد كل مباراة '
-            'بحسب النتيجة وقوة الخصم، مع ميزة صغيرة لصاحب الأرض. الفوز على فريق قوي يرفع التقييم أكثر من الفوز على فريق ضعيف.</li>'
-            '<li><b>مؤشرا الهجوم والدفاع:</b> متوسط أهداف كل نادٍ له وعليه مقارنة بمتوسط الدوري، مع تخفيف أثر العيّنات '
-            'الصغيرة في بداية الموسم حتى لا يبدو فريق «لا يُقهر» بعد مباراتين.</li>'
-            '<li><b>الأهداف المتوقعة والاحتمالات:</b> من المؤشرين ومتوسط أهداف الأرض والضيف في الدوري يُحسب عدد الأهداف '
-            'المتوقع لكل فريق، ثم توزيع بواسون على كل النتائج الممكنة يعطي احتمالات الفوز والتعادل والخسارة، '
-            'والنتائج الأكثر ترجيحًا، واحتمال تجاوز 2.5 هدف وتسجيل الفريقين.</li></ol>'
-            '<p><b>الشفافية:</b> يُثبَّت كل توقع قبل انطلاق المباراة ولا يُعدَّل بعدها، ثم يُقارَن بالنتيجة الفعلية في '
-            '<a href="#accuracy">سجل الدقة</a> أعلاه، إلى جانب مقياس ساذج (توقع فوز الأرض دائمًا) حتى يعرف القارئ إن كان '
-            'النموذج يضيف شيئًا فعلًا.</p>'
-            '<p><b>حدود النموذج:</b> لا يعرف الإصابات ولا الإيقافات ولا تغيّر المدرب، ويعتمد على الموسم الحالي فقط '
-            'فتكون عيّنته صغيرة في الجولات الأولى (نُشير إلى ذلك بوسم «عيّنة صغيرة»). لذلك تُقرأ التوقعات كاحتمالات '
-            'وليست حقائق، وهي ليست نصيحة للمراهنة.</p></section>')
 
-def comp_has_table(comp, has_table):
-    """Was a /standings page written for this competition this build?"""
-    return comp in (has_table or set())
 
 
 def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, sins,
@@ -4239,116 +3592,12 @@ def build():
     print(f"Built {len(articles)} articles, {len(matches)} matches -> {DIST}")
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
-def _scored(m):
-    return m.get("home_score") is not None and m.get("away_score") is not None
 
 
-def _finished_by_comp(fixtures, pool=None):
-    """competition -> chronological FINISHED matches with scores.
-
-    From the season pool when the build has one (fixtures ∪ matches_archive ∪
-    results_archive, de-duplicated by analysis.season_matches - the
-    very matches the Elo model replays), from the rounds data alone otherwise.
-
-    2026-09-13: fixtures.json arrived with La Liga cut to rounds [4, 5] after a
-    degraded feed answer (fetch_data.merge_fixture_rounds now stops that at the
-    source) and the «آخر 5» column collapsed to one or two dots. The pool still
-    held the season, so the standings columns read from it: a truncated
-    fixtures file can no longer empty them."""
-    out = {}
-    for comp, ms in (pool or {}).items():
-        out[comp] = [m for m in ms if m.get("status") == "FINISHED" and _scored(m)]
-    for f in fixtures:
-        comp = f.get("competition")
-        if comp in out:
-            continue
-        ms = []
-        for rd in f.get("rounds", []):
-            ms.extend(rd.get("matches", []))
-        out[comp] = [m for m in ms if m.get("status") == "FINISHED" and _scored(m)]
-    for ms in out.values():
-        ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
-    return out
 
 
-def compute_elo(fixtures, pool=None):
-    """competition -> {team: (rating, played)} from the finished matches
-    (_finished_by_comp), chronological. Plain Elo: start 1500, K=28, home adv +70.
-    Only a fallback for the league tiles when a league has no official table."""
-    out = {}
-    for comp, ms in _finished_by_comp(fixtures, pool).items():
-        r, n = {}, {}
-        for m in ms:
-            h, a = m.get("home"), m.get("away")
-            rh, ra = r.get(h, 1500.0), r.get(a, 1500.0)
-            e = 1.0 / (1 + 10 ** ((ra - (rh + 70)) / 400))
-            hs, aw = m["home_score"], m["away_score"]
-            sc = 1.0 if hs > aw else 0.5 if hs == aw else 0.0
-            r[h], r[a] = rh + 28 * (sc - e), ra + 28 * ((1 - sc) - (1 - e))
-            n[h], n[a] = n.get(h, 0) + 1, n.get(a, 0) + 1
-        out[comp] = {t: (r[t], n[t]) for t in r}
-    return out
 
-def team_form(fixtures, standings=None, pool=None):
-    """competition -> team -> chronological 'W'/'D'/'L' list: finished matches
-    from the season pool (see _finished_by_comp; the rounds data when there is
-    no pool), LIVE matches with a score from the rounds data.
 
-    Reconciled with the official table (2026-09-13, user: Barcelona «لعب 5»
-    but four dots): within ONE fetch, football-data's standings already
-    counted Levante x Barcelona while its fixtures still said LIVE 1-3 - the
-    feed flips a match to FINISHED minutes after it updates the table. So when
-    the table says a club has played MORE matches than we have finished for
-    it, the club's LIVE match with a score (there is at most one) counts as
-    decided too. When the fixture flips to FINISHED it is counted the normal
-    way, never twice."""
-    form = {}
-    pending = {}                     # comp -> team -> results of LIVE matches with a score
-
-    def _res(m):
-        hs, aw = m["home_score"], m["away_score"]
-        return ("W" if hs > aw else "D" if hs == aw else "L",
-                "W" if aw > hs else "D" if hs == aw else "L")
-
-    for comp, ms in _finished_by_comp(fixtures, pool).items():
-        d = form.setdefault(comp, {})
-        for m in ms:
-            rh, ra = _res(m)
-            d.setdefault(m.get("home"), []).append(rh)
-            d.setdefault(m.get("away"), []).append(ra)
-    for f in fixtures:
-        comp = f.get("competition")
-        ms = []
-        for rd in f.get("rounds", []):
-            ms.extend(rd.get("matches", []))
-        ms = [m for m in ms if _scored(m) and m.get("status") == "LIVE"]
-        ms.sort(key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
-        form.setdefault(comp, {})
-        pd_ = pending.setdefault(comp, {})
-        for m in ms:
-            rh, ra = _res(m)
-            pd_.setdefault(m.get("home"), []).append(rh)
-            pd_.setdefault(m.get("away"), []).append(ra)
-    for st in standings or []:
-        comp = st.get("competition")
-        if comp not in form:
-            continue
-        for row in st.get("table") or []:
-            team, played = row.get("team"), row.get("played")
-            if team is None or played is None:
-                continue
-            have = len(form[comp].get(team, []))
-            extra = pending.get(comp, {}).get(team, [])
-            if played > have and extra:
-                form[comp].setdefault(team, []).extend(extra[-(played - have):])
-    return form
-
-def form_dots(results):
-    """Last-5 form as colored dots (oldest -> newest)."""
-    if not results:
-        return '<span class="fm-none">—</span>'
-    return "".join(f'<span class="fm fm-{r.lower()}" title="{ {"W":"فوز","D":"تعادل","L":"خسارة"}[r] }"></span>'
-                   for r in results[-5:])
 
 def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
                     embedded=False):
@@ -4391,8 +3640,6 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'<tbody>{"".join(body)}</tbody></table></div></div>')
 
 
-def comp_label(name):
-    return COMP_LABEL.get(name, name or "")
 
 def comp_icon(name):
     url = COMP_LOGO.get(name)
@@ -4400,20 +3647,6 @@ def comp_icon(name):
         return f'<img class="lg-logo" src="{esc(local_crest(url))}" alt="" loading="lazy">'
     return f'<span class="lg-ico">{comp_emoji(name)}</span>'
 
-def comp_emoji(name):
-    n = (name or "").lower()
-    if "world cup" in n or "مونديال" in n or "كأس العالم" in n: return "🏆"
-    if "egypt" in n or "المصري" in n: return "🇪🇬"   # before "premier" (Egyptian Premier League)
-    if "turk" in n or "التركي" in n: return "🇹🇷"
-    if "saudi" in n or "السعودي" in n: return "🇸🇦"
-    if "premier" in n: return "🦁"
-    if "primera" in n or "laliga" in n or "la liga" in n: return "🇪🇸"
-    if "serie a" in n: return "🇮🇹"
-    if "bundesliga" in n: return "🇩🇪"
-    if "ligue 1" in n: return "🇫🇷"
-    if "caf" in n or "أفريقيا" in n: return "🌍"   # before the generic "champions"
-    if "champions" in n: return "⭐"
-    return "⚽"
 
 def fixture_mini(m):
     """Compact fixture row for the league side panel (FotMob-style)."""
@@ -4478,83 +3711,8 @@ def _scorer_face(sc):
     cls = "sc-face" if sc.get("photo") else ""
     return f'<img class="{cls}" src="{esc(local_crest(u))}" alt="" loading="lazy">'
 
-def chart_is_current(rows, season_goals, max_played):
-    """The 365scores charts keep serving LAST season's list until a new season
-    produces numbers. Such a list always overshoots the season it claims to
-    describe: more goals than the whole competition scored, or more
-    appearances than the busiest team has played."""
-    if not rows:
-        return False
-    if sum(_pval(x) for x in rows) > (season_goals or 0):
-        return False
-    if max_played and max((x.get("played") or 0) for x in rows) > max_played:
-        return False
-    return True
 
-def league_pcts(fin):
-    """Share-of-matches figures for one competition (from finished matches)."""
-    n = len(fin)
-    if not n:
-        return ""
-    over = sum(1 for _, m in fin if m["home_score"] + m["away_score"] >= 3)
-    draws = sum(1 for _, m in fin if m["home_score"] == m["away_score"])
-    homes = sum(1 for _, m in fin if m["home_score"] > m["away_score"])
-    clean = sum(1 for _, m in fin if min(m["home_score"], m["away_score"]) == 0)
-    cells = [("3 أهداف أو أكثر", over), ("تعادلات", draws),
-             ("فوز أصحاب الأرض", homes), ("شباك نظيفة", clean)]
-    out = ['<div class="pct-grid">']
-    for label, cnt in cells:
-        pc = round(cnt * 100 / n)
-        out.append(f'<div class="pct" title="{cnt} من {n} مباراة">'
-                   f'<span class="pct-l">{label}</span><b>{pc}%</b>'
-                   f'<span class="pct-bar"><i style="width:{pc}%"></i></span>'
-                   f'<span class="pct-s">{cnt} من {n}</span></div>')
-    out.append('</div>')
-    return "".join(out)
 
-def fav_club_names(standings, fixtures):
-    """The curated clubs as the ARABIC names the live feed uses — TICKER_TEAMS
-    holds football-data tokens for the European clubs, and /live.json speaks
-    365scores Arabic, so resolve each token through the real data + ar_team()
-    instead of hand-maintaining a second list."""
-    names = []
-    for token, only_comp in TICKER_TEAMS:
-        hit = None
-        for st in standings:
-            comp = st.get("competition")
-            if not _in_scope(only_comp, comp):
-                continue
-            for r in st.get("table") or []:
-                if token in (r.get("team") or ""):
-                    hit = r.get("team")
-                    break
-            if hit:
-                break
-        if not hit:                      # no table yet: try the fixtures feed
-            for fx in fixtures:
-                if not _in_scope(only_comp, fx.get("competition")):
-                    continue
-                for rd in fx.get("rounds", []):
-                    for m in rd.get("matches", []):
-                        for side in ("home", "away"):
-                            if token in (m.get(side) or ""):
-                                hit = m[side]
-                                break
-                        if hit: break
-                    if hit: break
-                if hit: break
-        nm = ar_team(hit) if hit else token
-        # league scope must survive into the browser: /live.json games carry
-        # the 365scores competition id (g.c), and a scoped entry only matches
-        # inside its own league — otherwise Saudi Al-Ahli ("الأهلي" too)
-        # hijacks the favourite-club card meant for Al Ahly Egypt.
-        # a tuple scope emits one entry per league id (الأهلي in 552 AND 624)
-        scopes = only_comp if isinstance(only_comp, tuple) else (only_comp,)
-        for sc in scopes:
-            cid = S365_COMP_IDS.get(sc) if sc else None
-            if not any(e["n"] == nm and e["c"] == cid for e in names):
-                names.append({"n": nm, "c": cid})
-    return names
 
 
 def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
@@ -4628,35 +3786,9 @@ def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
     return ('<section class="stats-sec"><h2 class="lt-head">⭐ أبرز الأندية</h2>'
             f'<div class="cl-grid">{"".join(cards)}</div></section>')
 
-def score_pill(hs, aws, cls):
-    """A score sitting BETWEEN two team names must put the home number on the
-    home side. "1-0" as plain text is one LTR bidi run, so in an RTL row it
-    lands home-score-left = next to the AWAY team (reversed). Ordering two
-    separate elements inside an RTL flex container fixes it and stays correct
-    for two-digit scores, which a bidi-override would scramble.
-    (The .score in match rows is fine as-is: its spaces around the hyphen
-    already split it into separate runs — measured, don't "tidy" them away.)"""
-    h = "-" if hs is None else hs
-    a = "-" if aws is None else aws
-    return (f'<b class="{cls}"><span>{h}</span><i>-</i><span>{a}</span></b>')
 
 
-def score_txt(s, cls="sc-in"):
-    """Same, for a score already stored as the string "H-A" (a frozen
-    prediction, a saved result). A bare "1-2" in a cell of its own is an
-    LTR run with no Arabic letter in front of it to turn the digits into
-    Arabic numerals, so an RTL reader meets the AWAY number first and reads
-    the prediction backwards (user, 2026-09-16)."""
-    s = "" if s is None else str(s).strip()
-    if "-" not in s:
-        return esc(s or "—")
-    h, a = s.split("-", 1)
-    return score_pill(esc(h.strip()), esc(a.strip()), cls)
 
-def _pval(x):
-    """Chart value — "value" is the current key, "goals" the original one."""
-    v = x.get("value")
-    return (x.get("goals") or 0) if v is None else v
 
 def scorers_list(sc, unit="أهداف"):
     """Chart table: rank, player (+club), value — plus a matches column only
@@ -4677,21 +3809,7 @@ def scorers_list(sc, unit="أهداف"):
     rows.append('</div>')
     return "".join(rows)
 
-def _gnorm(s):
-    """Same normalization LIVE_JS uses to pair rows with 365scores names."""
-    s = (s or "")
-    for a, b in (("أ", "ا"), ("إ", "ا"), ("آ", "ا"), ("ة", "ه"), ("ى", "ي")):
-        s = s.replace(a, b)
-    return "".join(ch for ch in s if ch not in ".'’  	")
 
-def goal_events_index(goal_events):
-    """(normalized home|away, date) -> goals. Names in the feed are 365scores
-    Arabic — the same spellings AR_TEAM maps the football-data names to."""
-    idx = {}
-    for e in goal_events:
-        if e.get("goals"):
-            idx[(f'{_gnorm(e.get("home"))}|{_gnorm(e.get("away"))}', e.get("date"))] = e["goals"]
-    return idx
 
 def goals_index(goal_events=None, details=None, frozen=None):
     """THE scorers index - every consumer must use this one (2026-09-24).
@@ -4716,43 +3834,7 @@ def goals_index(goal_events=None, details=None, frozen=None):
     idx.update(goal_events_index(frozen))      # frozen wins
     return idx
 
-def match_goals(idx, m):
-    """Scorer lines for a match row — FINISHED only.
 
-    A live match used to get them too, and that quietly broke the rule the
-    dashes exist for. The user saw «مالقا - - - فياريال» with one goal listed
-    at 12': the score was hidden as possibly-stale while the goal list, which
-    is exactly as stale, implied 1-0. It was 1-1 — the second goal had arrived
-    after the last build. Publishing half the picture is worse than publishing
-    none of it, so a live match now shows nothing until LIVE_JS paints the
-    score AND the goals together from /live.json, which carries both.
-    """
-    if (m.get("status") or "").upper() != "FINISHED":
-        return None
-    h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
-    g = idx.get((f"{h}|{a}", m.get("kickoff")))
-    if g is None:
-        # the two sources can disagree on who is at home (2026-08-23:
-        # football-data said PSG x Rennes, 365scores said Rennes x PSG and
-        # the scorers silently vanished) — try the reversed pair and flip
-        # each goal's side so scorers stay under the right club
-        rg = idx.get((f"{a}|{h}", m.get("kickoff")))
-        if rg is not None:
-            g = [{**x, "side": "a" if x.get("side") == "h" else "h"}
-                 for x in rg]
-    return g
-
-def _epoch_ms(iso):
-    """ISO timestamp (any offset, or a bare date) -> epoch ms, None if unreadable."""
-    if not iso:
-        return None
-    try:
-        d = datetime.datetime.fromisoformat(str(iso).replace("Z", "+00:00"))
-    except ValueError:
-        return None
-    if d.tzinfo is None:                     # a bare pub_date: noon Cairo, as the RSS does
-        d = d.replace(hour=12, tzinfo=datetime.timezone(datetime.timedelta(hours=3)))
-    return int(d.timestamp() * 1000)
 
 
 def build_info(articles, preds):
@@ -4784,182 +3866,18 @@ def build_info(articles, preds):
     }
 
 
-def frozen_scores_index(entries):
-    """(normalized home|away, date) -> (home_score, away_score), from the frozen
-    archive. Keyed by NAMES and date like the scorer index above, not by
-    match_id: the site's matches come from football-data for the European
-    leagues and its ids are not 365scores ids, which is the same reason
-    goal_events_index exists in this shape."""
-    idx = {}
-    for e in entries:
-        if e.get("hs") is not None and e.get("as") is not None:
-            idx[(f'{_gnorm(e.get("home"))}|{_gnorm(e.get("away"))}',
-                 e.get("date"))] = (e["hs"], e["as"])
-    return idx
 
 
-def apply_frozen_scores(matches, idx):
-    """Overlay the frozen score onto every FINISHED match the archive owns.
-
-    The archive wins here, which is the point of freezing. It should never actually differ - both numbers
-    come from the same feed and a finished match does not get corrected - so
-    any disagreement is worth seeing rather than hiding, and the count is
-    printed in the build log. Matches the archive does not hold keep the site's
-    own number, so nothing can go blank.
-
-    Returns (filled, changed): rows taken from the archive, and how many of
-    those carried a different score than the site had."""
-    filled = changed = 0
-    for m in matches:
-        if (m.get("status") or "").upper() != "FINISHED":
-            continue
-        h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
-        hit, flip = idx.get((f"{h}|{a}", m.get("kickoff"))), False
-        if hit is None:
-            # same reversed-pair fallback the scorers use: the two sources can
-            # disagree on who was at home
-            hit, flip = idx.get((f"{a}|{h}", m.get("kickoff"))), True
-        if hit is None:
-            continue
-        hs, asc = (hit[1], hit[0]) if flip else hit
-        if m.get("home_score") != hs or m.get("away_score") != asc:
-            changed += 1
-        m["home_score"], m["away_score"] = hs, asc
-        filled += 1
-    return filled, changed
 
 
-def match_details_index(entries):
-    """Same keying as goal_events_index, but keeps the whole entry
-    (goals + cards + subs + lineups) for the /m/ match pages."""
-    idx = {}
-    for e in entries:
-        idx[(f'{_gnorm(e.get("home"))}|{_gnorm(e.get("away"))}',
-             e.get("date"))] = e
-    return idx
 
-def prematch_for(idx, m):
-    """(entry, flipped) for an UPCOMING match whose XI is already announced
-    (fetch_data stores those with pre=True from ~1h before kick-off), else
-    None. Same reversed-pair fallback as match_details_for."""
-    if (m.get("status") or "").upper() != "UPCOMING":
-        return None
-    h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
-    for key, flip in ((f"{h}|{a}", False), (f"{a}|{h}", True)):
-        e = idx.get((key, m.get("kickoff")))
-        if e is not None and ((e.get("lineups") or {}).get("h", {}).get("xi")
-                              or (e.get("lineups") or {}).get("a", {}).get("xi")):
-            return e, flip
-    return None
 
-def absence_block(squad, comp, m, h_ar, a_ar):
-    """«الغائبون عن التشكيل المعتاد» — presented as FACTS, not as a probability
-    adjustment. The prediction model deliberately ignores this for now: on the
-    25 matches it moves, the absence factor improved brier by 0.013 while the
-    noise band at that sample is ±0.18 (backtest.py, 2026-09-06), so moving the
-    numbers would be dressing up noise. Naming who is missing needs no such
-    proof — it is simply what the announced XI says."""
-    if squad is None or not comp:
-        return ""
-    out = []
-    for club_raw, label in ((m.get("home"), h_ar), (m.get("away"), a_ar)):
-        club = ar_team(club_raw)
-        r = squad.report(comp, club, m.get("kickoff"))
-        if not r or not (r["missing"] or r["back"]):
-            continue
-        bits = []
-        if r["missing"]:
-            bits.append('<p><b>غائبون عن التشكيل المعتاد:</b> ' + '، '.join(
-                f'<bdi>{esc(x["name"])}</bdi>'
-                + (f' <small>(أساسي في {x["starts"]} من {_games(x["of"])}'
-                   + (f'، متوسط تقييمه {x["avg"]:.1f}' if x.get("avg") else '') + ')</small>')
-                for x in r["missing"][:5]) + '</p>')
-        if r["back"]:
-            bits.append('<p><b>عائدون للتشكيل:</b> ' + '، '.join(
-                f'<bdi>{esc(x["name"])}</bdi>' for x in r["back"][:5]) + '</p>')
-        out.append(f'<div class="abs-club"><h3>{esc(label)}</h3>' + "".join(bits) + '</div>')
-    if not out:
-        return ""
-    _up = (m.get("status") or "").upper() == "UPCOMING"
-    _h2 = "التشكيل المعلن — من غاب ومن عاد" if _up else "من غاب عن التشكيل المعتاد"
-    return (f'<section class="minfo absences"><h2>{_h2}</h2>'
-            + "".join(out)
-            + '<p class="pd-note">«التشكيل المعتاد» يُحسب من التشكيلات السابقة لكل فريق هذا '
-              'الموسم: من بدأ 60% منها فأكثر. الغياب هنا واقعة من التشكيل المعلن، وقد يكون '
-              'سببه إصابة أو إيقافًا أو قرارًا فنيًا — لا نخمّن السبب، ولا تدخل هذه المعلومة '
-              'في حساب <a href="/analysis.html#model">التوقع</a> حتى تثبت فائدتها بالأرقام.</p>'
-            '</section>')
 
-def match_details_for(idx, m):
-    """(entry, flipped) for a FINISHED/LIVE match, else None — with the
-    same reversed-pair fallback as match_goals (sources can disagree on
-    who is at home)."""
-    if (m.get("status") or "").upper() not in ("FINISHED", "LIVE"):
-        return None
-    h, a = _gnorm(ar_team(m.get("home"))), _gnorm(ar_team(m.get("away")))
-    e = idx.get((f"{h}|{a}", m.get("kickoff")))
-    if e is not None:
-        return e, False
-    e = idx.get((f"{a}|{h}", m.get("kickoff")))
-    if e is not None:
-        return e, True
-    return None
 
-def _min_key(mn):
-    """'45+2' -> 45.02 for chronological event sorting."""
-    try:
-        base, _, add = (mn or "").partition("+")
-        return int(base) + int(add or 0) / 100.0
-    except ValueError:
-        return 0.0
 
-def _pshort(name):
-    """Pitch-chip name: surname only when the full name is long."""
-    w = (name or "").split()
-    return name if len(name or "") <= 9 or len(w) == 1 else w[-1]
 
-def _athlete_img(p):
-    """365scores athlete headshot URL (mirrored locally via local_crest)."""
-    aid = p.get("aid")
-    if not aid:
-        return None
-    try:
-        v = f"v{int(p['iv'])}/" if p.get("iv") else ""
-    except (TypeError, ValueError):
-        v = ""
-    return ("https://imagecache.365scores.com/image/upload/"
-            "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Athletes:default.png/"
-            f"{v}Athletes/{aid}")
 
-def _pitch_rows(lu, top):
-    """[(x%, y%, player)] for one team's XI, or None when the feed has no
-    formation lines. Home (top=True) attacks downward: GK on line 1 sits
-    nearest its own goal (top edge); away is mirrored from the bottom."""
-    xi = (lu or {}).get("xi") or []
-    if sum(1 for p in xi if p.get("ln")) < 8:
-        return None
-    lines = {}
-    for p in xi:
-        lines.setdefault(p.get("ln") or 99, []).append(p)
-    rows = [lines[k] for k in sorted(lines)]
-    n = len(rows)
-    out = []
-    for i, row in enumerate(rows):
-        frac = i / (n - 1) if n > 1 else 0.0
-        y = 6 + 38 * frac if top else 94 - 38 * frac
-        row.sort(key=lambda p: (p.get("sd") if p.get("sd") is not None else 50))
-        if not top:
-            row.reverse()               # mirror left/right for the away half
-        for j, p in enumerate(row):
-            out.append(((j + 0.5) / len(row) * 100, y, p))
-    return out
 
-def _rt_class(rt):
-    try:
-        r = float(rt)
-    except (TypeError, ValueError):
-        return None
-    return "r8" if r >= 8 else "r7" if r >= 7 else "r65" if r >= 6.5 else "r6"
 
 # «الخسارة» is feminine in Arabic: الخسارة الثانية, not الخسارة الثاني
 _ORD_AR_F = {n: (w + "ة") for n, w in _ORD_AR.items() if n <= 10}
@@ -4970,170 +3888,15 @@ def _ord_ar(n, fem=False):
     n = int(n or 0)
     return (_ORD_AR_F if fem else _ORD_AR).get(n, str(n))
 
-def _num(v):
-    try:
-        f = float(v)
-    except (TypeError, ValueError):
-        return None
-    return f if f > 0 else None
-
-def _lam(name):
-    """Arabic lam of possession before a club name: «الأهلي» -> «للأهلي»,
-    «نيوم» -> «لنيوم». Writing «لـالأهلي» is what a template does, not a writer."""
-    name = name or ""
-    return ("ل" + name[1:]) if name.startswith("ال") else ("ل" + name)
 
 
-def _played_names(e, flipped, side_key):
-    """Names that were ON THE PITCH for one side: the XI plus everyone involved
-    in a substitution. Used to tell a sent-off player from a sent-off manager."""
-    sd = _side_of(flipped)
-    lus = e.get("lineups") or {}
-    feed_key = ("a" if side_key == "h" else "h") if flipped else side_key
-    names = {(p.get("name") or "").strip()
-             for p in ((lus.get(feed_key) or {}).get("xi") or []) if p.get("name")}
-    for sub in (e.get("subs") or []):
-        if sd(sub.get("side")) == side_key:
-            names.update(x.strip() for x in (sub.get("in"), sub.get("out")) if x)
-    return names
 
 
-def _side_of(flipped):
-    """The details entry stores sides as the FEED saw them; `flipped` means the
-    feed's home is our away (the two sources disagree on who is at home)."""
-    return (lambda s: ("a" if s == "h" else "h")) if flipped else (lambda s: s)
 
 
-def match_story(e, flipped, h_ar, a_ar, hs, as_):
-    """The sentences a reader wants under the score: who opened, who turned it
-    around, which goal settled it, what the sending-off did. Returns a list of
-    plain-text sentences (the caller escapes them)."""
-    sd = _side_of(flipped)
-    nm = {"h": h_ar, "a": a_ar}
-    goals = [{"k": _min_key(g.get("minute")), "s": sd(g.get("side")),
-              "m": (g.get("minute") or "").strip(), "p": (g.get("player") or "").strip(),
-              "t": g.get("tag") or ""}
-             for g in (e.get("goals") or [])]
-    timed = sorted([g for g in goals if g["k"] > 0 and g["s"] in ("h", "a")],
-                   key=lambda g: g["k"])
-    reds = sorted([{"k": _min_key(c.get("minute")), "s": sd(c.get("side")),
-                    "m": (c.get("minute") or "").strip(),
-                    "p": (c.get("player") or "").strip()}
-                   for c in (e.get("cards") or []) if c.get("color") == "r"],
-                  key=lambda c: c["k"])
-    winner = "h" if (hs or 0) > (as_ or 0) else "a" if (as_ or 0) > (hs or 0) else None
-    other = {"h": "a", "a": "h"}
-    out = []
-
-    if not (hs or 0) and not (as_ or 0):
-        out.append(f"انتهت المباراة بالتعادل السلبي دون أهداف بين {h_ar} و{a_ar}.")
-    elif timed:
-        g0 = timed[0]
-        if "عكس" in g0["t"]:
-            out.append(f"تقدّم {nm[g0['s']]} بهدف عكسي سجله {g0['p']} في الدقيقة {g0['m']}.")
-        else:
-            pen = " من ركلة جزاء" if "ج" in g0["t"] else ""
-            out.append(f"افتتح {g0['p']} التسجيل {_lam(nm[g0['s']])}{pen} في الدقيقة {g0['m']}.")
-
-    # the running score: who led, who came back, which goal settled it
-    run = {"h": 0, "a": 0}
-    hist = []
-    for g in timed:
-        run[g["s"]] += 1
-        lead = "h" if run["h"] > run["a"] else "a" if run["a"] > run["h"] else None
-        hist.append((g, lead))
-    first_lead = next((l for _, l in hist if l), None)
-    if winner and first_lead and first_lead != winner:
-        out.append(f"قلب {nm[winner]} تأخره أمام {nm[other[winner]]} وحسم اللقاء "
-                   f"{max(hs, as_)}-{min(hs, as_)}.")
-    elif not winner and first_lead and timed:
-        out.append(f"أدرك {nm[other[first_lead]]} التعادل بعد تأخره أمام {nm[first_lead]}.")
-
-    if winner and len(timed) > 1:
-        dec, prev = None, None
-        for g, lead in hist:
-            if lead == winner and prev != winner:
-                dec = g
-            prev = lead
-        if dec is timed[0]:
-            dec = None          # already told: the opener was never caught
-        if dec:
-            if dec["k"] >= 80:
-                out.append(f"وجاء هدف الحسم متأخرًا عبر {dec['p']} في الدقيقة {dec['m']}.")
-            else:
-                out.append(f"وجاء هدف الحسم عبر {dec['p']} في الدقيقة {dec['m']}.")
-
-    # a player with more than one goal
-    tally = {}
-    for g in goals:
-        if g["p"] and "عكس" not in g["t"] and g["s"] in ("h", "a"):
-            tally[(g["p"], g["s"])] = tally.get((g["p"], g["s"]), 0) + 1
-    for (pl, sside), n in sorted(tally.items(), key=lambda kv: -kv[1]):
-        if n >= 3:
-            out.append(f"سجّل {pl} ثلاثية كاملة مع {nm[sside]}.")
-            break
-        if n == 2:
-            out.append(f"سجّل {pl} هدفين {_lam(nm[sside])}.")
-            break
-
-    if reds:
-        r = reds[0]
-        if r["s"] in ("h", "a"):
-            # a red card is shown to managers and bench staff too (Neom x
-            # Al-Fateh 2026: Christophe Galtier). Their name is not in the XI
-            # or the substitutions, and their dismissal does NOT leave the team
-            # a man short - so the ten-men sentence needs proof, not a guess.
-            played = _played_names(e, flipped, r["s"])
-            n_off = sum(1 for x in reds
-                        if x["s"] == r["s"] and x["p"] in played)
-            if r["p"] in played:
-                short = {1: "بعشرة لاعبين", 2: "بتسعة لاعبين"}.get(n_off, "منقوص العدد")
-                line = (f"أكمل {nm[r['s']]} المباراة {short} بعد طرد {r['p']} "
-                        f"في الدقيقة {r['m']}")
-                if winner == r["s"]:
-                    line += "، وخرج فائزًا رغم النقص العددي."
-                elif winner is None:
-                    line += "، ونجح في الخروج بالتعادل رغم النقص العددي."
-                else:
-                    line += "."
-            else:
-                line = f"وتلقى {r['p']} بطاقة حمراء في الدقيقة {r['m']}."
-            out.append(line)
-
-    if winner and not (as_ if winner == "h" else hs):
-        out.append(f"وحافظ {nm[winner]} على نظافة شباكه.")
-
-    if len(timed) >= 3:
-        if all(g["k"] >= 60 for g in timed):
-            out.append("كل أهداف اللقاء جاءت في الثلث الأخير من زمن المباراة.")
-        elif all(g["k"] <= 45 for g in timed):
-            out.append("كل أهداف اللقاء جاءت في الشوط الأول.")
-    return out[:6]
 
 
-def match_ratings(e, flipped, h_ar, a_ar):
-    """{best, best_other, low, sides} from the XI ratings the feed already
-    gives us, or None when either XI is not fully rated (an incomplete set
-    would name a 'best player' out of half a team)."""
-    lus = e.get("lineups") or {}
-    eh, ea = ("a", "h") if flipped else ("h", "a")
-    sides = []
-    for key, name in ((eh, h_ar), (ea, a_ar)):
-        xi = ((lus.get(key) or {}).get("xi")) or []
-        rated = [{"name": (p.get("name") or "").strip(), "rt": _num(p.get("rt")),
-                  "club": name}
-                 for p in xi if _num(p.get("rt")) and p.get("name")]
-        if len(rated) < 8:
-            return None
-        sides.append({"club": name, "players": rated,
-                      "avg": round(sum(p["rt"] for p in rated) / len(rated), 1)})
-    everyone = sides[0]["players"] + sides[1]["players"]
-    best = max(everyone, key=lambda p: p["rt"])
-    other = [p for p in everyone if p["club"] != best["club"]]
-    return {"best": best,
-            "best_other": max(other, key=lambda p: p["rt"]) if other else None,
-            "low": min(everyone, key=lambda p: p["rt"]),
-            "sides": sides}
+
 
 
 def _streak_ar(res):
@@ -5205,9 +3968,6 @@ def table_after(m, st, form_map, fin_comp, h_ar, a_ar):
     return out
 
 
-def _form_counts(res, n=5):
-    l = (res or [])[-n:]
-    return l, l.count("W"), l.count("D"), l.count("L")
 
 
 def _form_phrase(res, club):
@@ -5222,31 +3982,12 @@ def _form_phrase(res, club):
     return out + (f" ({st})" if st else "")
 
 
-def _pts_phrase(n):
-    """«برصيد 10 نقاط» / «دون أي نقاط» — _pts(0) alone gives «دون نقاط», which
-    reads wrong after «برصيد»."""
-    n = int(n or 0)
-    return f"برصيد {_pts(n)}" if n else "دون أي نقاط"
 
 
-def _per_game(row):
-    g = int(row.get("played") or 0)
-    if not g:
-        return None
-    return (int(row.get("gf") or 0) / g, int(row.get("ga") or 0) / g)
 
 
-def _club_pool(fin_all, raw):
-    return [x for x in (fin_all or []) if raw in (x.get("home"), x.get("away"))]
 
 
-def _days_between(d1, d2):
-    try:
-        a = datetime.date.fromisoformat(d1)
-        b_ = datetime.date.fromisoformat(d2)
-        return (a - b_).days
-    except Exception:
-        return None
 
 
 def pre_match_read(m, h_ar, a_ar, comp_label_txt, st=None, form_map=None,
@@ -5577,9 +4318,6 @@ def match_details_html(e, flipped, h_ar, a_ar):
         parts.append('</div></section>')
     return "".join(parts)
 
-def match_url(m):
-    """Canonical per-match page path, or None when the id is missing."""
-    return f"/m/{m['match_id']}.html" if m.get("match_id") else None
 
 def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
               pred=None, done=None):
