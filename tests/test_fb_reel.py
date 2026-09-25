@@ -129,7 +129,7 @@ store.posted_ids = _real
 wf = io.open(".github/workflows/publish.yml", encoding="utf-8").read()
 step = wf[wf.index("Is there a reel to make?"):][:1400]
 ck("27 the workflow runs it only after a real deploy, and never fails the publish",
-   "fresh == 'true'" in step and step.count("continue-on-error: true") == 2)
+   "steps.deploy.outcome == 'success'" in step and step.count("continue-on-error: true") == 2)
 ck("28 ffmpeg is installed only on the runs that have a reel to make",
    "steps.reel.outputs.make == 'yes'" in step and "install -y -qq ffmpeg" in step)
 ck("29 the workflow is gated on the variable too, not only on the code",

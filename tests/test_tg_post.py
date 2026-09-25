@@ -71,8 +71,11 @@ ck("14 no token, no crash: it says what it would post and exits 0",
 
 wf = open(".github/workflows/publish.yml", encoding="utf-8").read()
 step = wf[wf.index("Post new articles to Telegram"):][:600]
+# (2026-09-25: the deploy gate - these steps now require that the deploy
+# ACTUALLY RAN, steps.deploy.outcome == 'success', not just that main did
+# not move: a red gate skips the deploy and must skip the announcements too)
 ck("15 it runs after a real deploy and can never fail the publish",
-   "fresh == 'true'" in step and "continue-on-error: true" in step)
+   "steps.deploy.outcome == 'success'" in step and "continue-on-error: true" in step)
 ck("16 it gets the store credentials, or the claim would be a no-op json write",
    "CF_D1_ID" in step and "TG_BOT_TOKEN" in step and "TG_CHAT_ID" in step)
 

@@ -80,7 +80,7 @@ ck("13 the docstring says plainly that Google does not participate",
 wf = open(".github/workflows/publish.yml", encoding="utf-8").read()
 ck("14 it runs only after a deploy that actually happened, and never fails the run",
    "Tell IndexNow what changed" in wf
-   and re.search(r"Tell IndexNow what changed[\s\S]{0,200}?fresh == 'true'[\s\S]{0,120}?continue-on-error: true", wf) is not None)
+   and re.search(r"Tell IndexNow what changed[\s\S]{0,200}?steps\.deploy\.outcome == 'success'[\s\S]{0,120}?continue-on-error: true", wf) is not None)
 
 print()
 print(f"{len(fails)} FAILED: {', '.join(fails)}" if fails else "ALL INDEXNOW / SITEMAP TESTS PASSED")

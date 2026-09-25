@@ -146,6 +146,28 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: python data_store.py push
 
+      # THE DEPLOY GATE (2026-09-25, the user's call «الاختبارات تمنع النشر لو
+      # فشلت»). The 41 CODE tests (tests/run_all.py --gate, ~6 s) must pass on
+      # this exact checkout + build before it may replace the live site. The 9
+      # live-data tests are NOT in the gate (run_all.DATA_TESTS says why each):
+      # they can go red because the data moved, and a gate that trips on data
+      # would freeze the site for no code reason.
+      #
+      # A red gate skips the deploy - the live site stays on its last good
+      # build - and everything that announces a deploy (IndexNow, Telegram,
+      # Facebook) is skipped with it, because those now require the deploy to
+      # have actually run. The data was already saved above, so nothing is
+      # lost. The verdict turns the run red; three in a row page the user.
+      #
+      # ESCAPE HATCH: repo variable TESTS_GATE = off (Settings > Secrets and
+      # variables > Actions > Variables) deploys even with a red gate - for the
+      # day a test itself is wrong and the site must ship before it is fixed.
+      - name: Tests (the deploy gate)
+        id: gate
+        if: steps.build.outcome == 'success'
+        continue-on-error: true
+        run: python tests/run_all.py --gate
+
       # Plain npx instead of cloudflare/wrangler-action@v3: the deploy step is
       # the one that must not fail, and every marketplace action is a download
       # that GitHub has to resolve first ("Failed to resolve action download
@@ -196,7 +218,7 @@ jobs:
 
       - name: Deploy to Cloudflare
         id: deploy
-        if: steps.tip.outputs.fresh == 'true'
+        if: steps.tip.outputs.fresh == 'true' && (steps.gate.outcome == 'success' || vars.TESTS_GATE == 'off')
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
@@ -236,7 +258,7 @@ jobs:
       # and the script refuses to submit unless it is live.
       - name: Tell IndexNow what changed
         id: indexnow
-        if: steps.tip.outputs.fresh == 'true'
+        if: steps.deploy.outcome == 'success'
         continue-on-error: true
         run: python indexnow.py
 
@@ -248,7 +270,7 @@ jobs:
       # bot and the channel.
       - name: Post new articles to Telegram
         id: tg
-        if: steps.tip.outputs.fresh == 'true'
+        if: steps.deploy.outcome == 'success'
         continue-on-error: true
         env:
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
@@ -281,7 +303,7 @@ jobs:
       # is actually pending, so a quiet cycle costs no extra run.
       - name: Dispatch the Facebook post when an article is pending
         id: fbdispatch
-        if: steps.tip.outputs.fresh == 'true' && vars.FB_POST_ARTICLES == 'on'
+        if: steps.deploy.outcome == 'success' && vars.FB_POST_ARTICLES == 'on'
         continue-on-error: true
         env:
           # without these the store silently falls back to data/fb_posted.json,
@@ -310,7 +332,7 @@ jobs:
         id: cards
         # gated like the article post: a card links to /m/<id> and must not go
         # out from a run that skipped its deploy (the page would still say LIVE)
-        if: steps.tip.outputs.fresh == 'true'
+        if: steps.deploy.outcome == 'success'
         continue-on-error: true
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
@@ -340,7 +362,7 @@ jobs:
       # an hour.
       - name: Is there a reel to make?
         id: reel
-        if: steps.tip.outputs.fresh == 'true' && vars.FB_REELS == '1'
+        if: steps.deploy.outcome == 'success' && vars.FB_REELS == '1'
         continue-on-error: true
         env:
           FB_REELS: ${{ vars.FB_REELS }}
@@ -504,6 +526,8 @@ jobs:
           O_FETCH: ${{ steps.fetch.outcome }}
           O_ARCHIVE: ${{ steps.archive.outcome }}
           O_BUILD: ${{ steps.build.outcome }}
+          O_GATE: ${{ steps.gate.outcome }}
+          GATE_OFF: ${{ vars.TESTS_GATE }}
           O_DEPLOY: ${{ steps.deploy.outcome }}
           O_COMMIT: ${{ steps.commit.outcome }}
           O_SHRINK: ${{ steps.shrink.outcome }}
@@ -522,6 +546,7 @@ jobs:
           [ "$O_ARCHIVE" = "failure" ] && CRIT="$CRIT archive"
           # build must have RUN and passed; skipped here means install failed
           [ "$O_BUILD" != "success" ] && CRIT="$CRIT build"
+          [ "$O_GATE" = "failure" ] && CRIT="$CRIT tests"
           [ "$O_DEPLOY" = "failure" ] && CRIT="$CRIT deploy"
           [ "$O_COMMIT" = "failure" ] && CRIT="$CRIT commit"
           SOFT=""
@@ -539,6 +564,7 @@ jobs:
             echo "| save (data store) | ${O_STORE:-skipped} |"
             echo "| results archive | $O_ARCHIVE |"
             echo "| build | $O_BUILD |"
+            echo "| tests (deploy gate) | ${O_GATE:-skipped}${GATE_OFF:+ (TESTS_GATE=$GATE_OFF)} |"
             echo "| deploy | ${O_DEPLOY:-skipped} (fresh=${DEPLOY_FRESH:-?}) |"
             echo "| commit-back | $O_COMMIT |"
             if [ -n "$SOFT" ]; then echo "| soft failures | $SOFT |"; fi
