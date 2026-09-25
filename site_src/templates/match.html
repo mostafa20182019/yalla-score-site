@@ -1,0 +1,73 @@
+{# /m/<id> - one landing page per match (archive + current window).
+   Templated 2026-09-26. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/matches.html">المباريات</a> › {{ comp }}</nav>
+<h1 class="page-h">مباراة {{ h_ar }} و{{ a_ar }}</h1>
+{# .mp-hero: LIVE_JS repaints THIS row's pill/score like any match row, and
+   since 2026-09-13 also the «الحالة» line of the info card below #}
+<div class="mlist mp-hero">{{ hero_row }}</div>
+{# «موعد المباراة والقنوات الناقلة» - a direct answer for the highest-volume
+   pre-match queries. Pre-match only. The channel is the match's own, else
+   the verified per-league COMP_TV map, else an honest «not announced» -
+   never a guess. #}
+{% if kickoff_info %}
+<section class="minfo">
+  <h2>موعد مباراة {{ h_ar }} و{{ a_ar }} والقنوات الناقلة</h2>
+  <p>تُقام مباراة <b>{{ h_ar }}</b> و<b>{{ a_ar }}</b> ضمن {{ round_txt }}{{ comp }} {{ when_txt }}.</p>
+  {% if channel %}
+  <p>وتُنقل المباراة مباشرة عبر قناة <b>{{ channel }}</b>.</p>
+  {% elif comp_tv %}
+  <p>وتُنقل مباريات {{ comp }} في المنطقة العربية عبر قنوات <b>{{ comp_tv }}</b>.</p>
+  {% else %}
+  <p>لم تتوفر بعد معلومات القناة الناقلة لهذه المباراة — تُحدَّث هذه الصفحة تلقائيًا فور توفرها.</p>
+  {% endif %}
+</section>
+{% endif %}
+{# the match's own article (layer 3), then «قراءة قبل المباراة» (layer 1) or
+   «قراءة المباراة» (layer 2) - the summary ABOVE the evidence - then the
+   timeline/XI, who is missing, and «توقع يلا سكور» #}
+{{ article_block }}
+{{ pre_read }}
+{{ post_read }}
+{{ details }}
+{{ absence }}
+{{ prediction }}
+<section class="minfo">
+  <h2>معلومات المباراة</h2>
+  <dl class="minfo-l">
+    {% for key, value, live_hook in info %}
+    <div><dt>{{ key }}</dt><dd{% if live_hook %} data-lv-state{% endif %}>{{ value }}</dd></div>
+    {% endfor %}
+  </dl>
+</section>
+{% if clubs %}
+<nav class="club-chips">
+  <span>صفحات الأندية:</span>
+  {% for c in clubs %}
+  <a href="/team/{{ c.slug }}.html">أخبار {{ c.name }}</a>
+  {% endfor %}
+</nav>
+{% endif %}
+{% if has_table %}
+<section class="minfo">
+  <h2>{{ table_heading }}</h2>
+  {{ table }}
+</section>
+{% endif %}
+{{ faq }}
+{% if news %}
+<section class="minfo">
+  <h2>آخر الأخبار</h2>
+  <ul class="mp-newslist">
+    {% for n in news %}
+    <li><a href="{{ n.href }}">{{ n.title }}</a></li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{# NO SportsEvent markup (removed 2026-09-23): Google requires a location and
+   we hold no venue data; inventing a stadium would break the firm
+   never-show-possibly-wrong-data rule. BreadcrumbList only. #}
+{{ crumbs_ld }}
+{{ page_foot }}

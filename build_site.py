@@ -1980,68 +1980,23 @@ def _page_matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_
     return {k: _l[k] for k in ('a', 'comp', 'comp_order', 'i', 'img', 'k', 'm', 'st') if k in _l}
 
 
-def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_UNSET, _dt=_UNSET, _lparams=_UNSET, _match_arts=_UNSET, _plog=_UNSET, _preds=_UNSET, _squad=_UNSET, _tstats=_UNSET, a=_UNSET, articles=_UNSET, comp=_UNSET, fixtures=_UNSET, forms=_UNSET, ge_idx=_UNSET, img=_UNSET, k=_UNSET, m=_UNSET, matches=_UNSET, md_idx=_UNSET, st=_UNSET, st_by_comp=_UNSET, urls=_UNSET, v=_UNSET):
-    if ZoneInfo is _UNSET:
-        del ZoneInfo
-    if _bycomp is _UNSET:
-        del _bycomp
-    if _cal is _UNSET:
-        del _cal
-    if _clubs is _UNSET:
-        del _clubs
-    if _dt is _UNSET:
-        del _dt
-    if _lparams is _UNSET:
-        del _lparams
-    if _match_arts is _UNSET:
-        del _match_arts
-    if _plog is _UNSET:
-        del _plog
-    if _preds is _UNSET:
-        del _preds
-    if _squad is _UNSET:
-        del _squad
-    if _tstats is _UNSET:
-        del _tstats
-    if a is _UNSET:
-        del a
-    if articles is _UNSET:
-        del articles
-    if comp is _UNSET:
-        del comp
-    if fixtures is _UNSET:
-        del fixtures
-    if forms is _UNSET:
-        del forms
-    if ge_idx is _UNSET:
-        del ge_idx
-    if img is _UNSET:
-        del img
-    if k is _UNSET:
-        del k
-    if m is _UNSET:
-        del m
-    if matches is _UNSET:
-        del matches
-    if md_idx is _UNSET:
-        del md_idx
-    if st is _UNSET:
-        del st
-    if st_by_comp is _UNSET:
-        del st_by_comp
-    if urls is _UNSET:
-        del urls
-    if v is _UNSET:
-        del v
-    # ---- per-match pages (/m/<id>.html) ----
-    # One landing page per match (archive ∪ current window): these target the
-    # long-tail queries a single /matches.html can never rank for ("نتيجة
-    # مباراة X"، "موعد مباراة Y والقناة الناقلة"). Old pages persist through
-    # data/matches_archive.json (updated by fetch_data, committed back) so an
-    # indexed URL doesn't 404 once the match leaves the day window. Pages get
-    # the live layer for free: match_row emits data-lv, LIVE_JS ships in foot().
+def _page_per_match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
+                          articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls):
+    """/m/<id> - one landing page per match (archive + current window): the
+    long-tail queries a single /matches can never rank for («نتيجة مباراة X»،
+    «موعد مباراة Y والقناة الناقلة»). Old pages persist through
+    matches_archive.json so an indexed URL does not 404 once the match leaves
+    the day window; pages get the live layer for free (match_row emits data-lv,
+    LIVE_JS ships in foot()).
+
+    Markup: site_src/templates/match.html (templated 2026-09-26). Everything
+    else - the titles, the kick-off sentence, the readings, the noindex rule,
+    the sitemap choice - is computed here in the same order and under the same
+    names as before, so the helpers run in the same sequence and the values
+    build() reads afterwards (m_all, and the loop's last _h, _html, _slug, a,
+    comp, desc, img, m, st, title, v, when) end exactly where they used to."""
     os.makedirs(os.path.join(DIST, "m"), exist_ok=True)
-    # finished matches per competition (season pool ∪ fixtures) - table_after()
+    # finished matches per competition (season pool + fixtures) - table_after()
     # uses it to prove the official table is describing THIS match and not a
     # later round
     _fin_by_comp = _finished_by_comp(fixtures, _bycomp)
@@ -2092,25 +2047,11 @@ def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_
             img = _lc if _lc.startswith("http") else SITE_BASE + _lc
         murl = f"/m/{mid}.html"
         _goals = match_goals(ge_idx, m)
-        mp = [head(title, desc, SITE_BASE + murl, image=img, active="matches")]
-        mp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › '
-                  f'<a href="/matches.html">المباريات</a> › {esc(comp)}</nav>')
-        mp.append(f'<h1 class="page-h">مباراة {esc(h_ar)} و{esc(a_ar)}</h1>')
-        # .mp-hero: LIVE_JS repaints THIS row's pill/score like any match row, and
-        # since 2026-09-13 also the «الحالة» line of the info card below (the
-        # user saw «لم تبدأ بعد» 18 min into a live match: the card was static
-        # build-time text while the row above it already said مباشر)
-        mp.append('<div class="mlist mp-hero">')
-        mp.append(match_row(m, show_time=True, show_comp=True,
-                            goals=_goals))
-        mp.append('</div>')
-        # «موعد المباراة والقنوات الناقلة» — a direct-answer paragraph for the
-        # highest-volume pre-match queries ("موعد مباراة X"، "القنوات الناقلة
-        # لمباراة Y"). Pre-match only: after kickoff the page's job is the
-        # result. Channel comes from m["channel"] (per-match, when a source
-        # provides it) else the verified per-league COMP_TV map, else an
-        # honest "not announced" line — never a guess.
-        if st not in ("FINISHED", "POSTPONED"):
+        page_head = head(title, desc, SITE_BASE + murl, image=img, active="matches")
+        hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals)
+        kickoff_info = st not in ("FINISHED", "POSTPONED")
+        _tw = _rd = ""
+        if kickoff_info:
             _tw = f"يوم {day_txt}"
             if m.get("koff_time"):
                 _sa = ""
@@ -2131,29 +2072,13 @@ def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_
                 else:
                     _tw += f" في تمام الساعة {m['koff_time']} بتوقيت القاهرة"
             _rd = f"الجولة {m['round']} من " if m.get("round") else ""
-            mp.append(f'<section class="minfo"><h2>موعد مباراة {esc(h_ar)} '
-                      f'و{esc(a_ar)} والقنوات الناقلة</h2>'
-                      f'<p>تُقام مباراة <b>{esc(h_ar)}</b> و<b>{esc(a_ar)}</b> '
-                      f'ضمن {_rd}{esc(comp)} {_tw}.</p>')
-            if m.get("channel"):
-                mp.append(f'<p>وتُنقل المباراة مباشرة عبر قناة '
-                          f'<b>{esc(str(m["channel"]))}</b>.</p>')
-            elif COMP_TV.get(m.get("competition")):
-                mp.append(f'<p>وتُنقل مباريات {esc(comp)} في المنطقة العربية '
-                          f'عبر قنوات <b>{esc(COMP_TV[m["competition"]])}</b>.</p>')
-            else:
-                mp.append('<p>لم تتوفر بعد معلومات القناة الناقلة لهذه '
-                          'المباراة — تُحدَّث هذه الصفحة تلقائيًا فور توفرها.</p>')
-            mp.append('</section>')
         # the match's own article (layer 3, 2026-09-16): the story sits above
         # the computed reading, which is what backs it with numbers
         _art = pick_match_article(_match_arts.get(str(mid)) or [], st)
-        if _art:
-            mp.append(match_article_block(_art, m.get("competition") or ""))
-        # «قراءة قبل المباراة» (layer 1): how the two clubs arrive - table,
-        # form, goals per game, the last meeting, a short turnaround, and what
-        # a win is worth. Sits under the time/TV answer and above the XI.
+        article_block = match_article_block(_art, m.get("competition") or "") if _art else ""
+        # «قراءة قبل المباراة» (layer 1): how the two clubs arrive
         _pre_weight = 0
+        pre_read = ""
         if st == "UPCOMING":
             _pre, _pre_faq, _pre_weight = pre_match_read(
                 m, h_ar, a_ar, comp,
@@ -2162,11 +2087,11 @@ def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_
                 _fin_by_comp.get(m.get("competition")) or [], _fin_all,
                 _preds.get(str(mid)))
             if _pre:
-                mp.append(_pre)
+                pre_read = _pre
         _det = match_details_for(md_idx, m)
-        # «قراءة المباراة» — the summary goes ABOVE the evidence: what happened
-        # and what it changed, then the timeline and the XI that prove it.
+        # «قراءة المباراة» - the summary goes ABOVE the evidence
         _faq_html = _pre_faq if st == "UPCOMING" and _pre_weight else ""
+        post_read = ""
         if st == "FINISHED" and _det and hs is not None and as_ is not None:
             _read, _faq_html = post_match_read(
                 m, _det[0], _det[1], h_ar, a_ar, hs, as_, comp,
@@ -2174,22 +2099,21 @@ def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_
                 forms.get(m.get("competition")) or {},
                 _fin_by_comp.get(m.get("competition")) or [])
             if _read:
-                mp.append(_read)
+                post_read = _read
+        details = ""
         if _det:
-            mp.append(match_details_html(_det[0], _det[1], h_ar, a_ar))
+            details = match_details_html(_det[0], _det[1], h_ar, a_ar)
         else:
             # announced XI before kick-off: the pitch, then who is missing
             _pre = prematch_for(md_idx, m)
             if _pre:
-                mp.append(match_details_html(_pre[0], _pre[1], h_ar, a_ar))
-        mp.append(absence_block(_squad, m.get("competition"), m, h_ar, a_ar))
+                details = match_details_html(_pre[0], _pre[1], h_ar, a_ar)
+        absence = absence_block(_squad, m.get("competition"), m, h_ar, a_ar)
         # «توقع يلا سكور»: model probabilities for an upcoming match; for a
         # finished one, what the model said before kick-off vs the result
         _pb = pred_block(m, _preds.get(str(mid)) if st == "UPCOMING" else None,
                          _plog.get(str(mid)), _tstats.get(m.get("competition"), {}),
                          params=_lparams.get(m.get("competition")), cal=_cal)
-        if _pb:
-            mp.append(_pb)
         info = [("البطولة", comp)]
         if m.get("round"):
             info.append(("الجولة", str(m["round"])))
@@ -2202,88 +2126,65 @@ def _page_per_match_pages(ZoneInfo=_UNSET, _bycomp=_UNSET, _cal=_UNSET, _clubs=_
                      "UPCOMING": "لم تبدأ بعد", "POSTPONED": "مؤجلة"}.get(st)
         if state_txt:
             info.append(("الحالة", state_txt))
-        mp.append('<section class="minfo"><h2>معلومات المباراة</h2><dl class="minfo-l">')
+        info_rows = []
         for k, v in info:
             # the live layer overwrites the state text while the match can still
             # move (UPCOMING -> LIVE -> FINISHED); a finished page stays static
-            hook = ' data-lv-state' if k == "الحالة" and st in ("UPCOMING", "LIVE") else ''
-            mp.append(f'<div><dt>{esc(k)}</dt><dd{hook}>{esc(str(v))}</dd></div>')
-        mp.append('</dl></section>')
+            info_rows.append((k, str(v), k == "الحالة" and st in ("UPCOMING", "LIVE")))
         _clubs = [tp for tp in TEAM_PAGES if _team_match(tp, m)]
-        if _clubs:
-            mp.append('<nav class="club-chips"><span>صفحات الأندية:</span>'
-                      + "".join(f'<a href="/team/{tp["slug"]}.html">أخبار '
-                                f'{esc(tp["name"])}</a>' for tp in _clubs)
-                      + '</nav>')
         stc = st_by_comp.get(m.get("competition"))
+        table = table_heading = ""
         if stc and stc.get("table"):
             _slug = COMP_SLUG.get(m.get("competition"))
             _h = (f'<a href="/standings/{_slug}.html">ترتيب {esc(comp)} ←</a>'
                   if _slug else f'ترتيب {esc(comp)}')
-            mp.append(f'<section class="minfo"><h2>{_h}</h2>')
-            mp.append(standings_table(m.get("competition"), stc["table"],
-                                      past=stc.get("past"),
-                                      season_label=stc.get("season_label"),
-                                      zeroed=stc.get("zeroed"),
-                                      form_map=forms.get(m.get("competition"), {}),
-                                      embedded=True))
-            mp.append('</section>')
-        if _faq_html:
-            mp.append(_faq_html)
+            table_heading = _h
+            table = standings_table(m.get("competition"), stc["table"],
+                                    past=stc.get("past"),
+                                    season_label=stc.get("season_label"),
+                                    zeroed=stc.get("zeroed"),
+                                    form_map=forms.get(m.get("competition"), {}),
+                                    embedded=True)
+        news = []
         if articles:
-            mp.append('<section class="minfo"><h2>آخر الأخبار</h2><ul class="mp-newslist">')
             for a in articles[:4]:
-                mp.append(f'<li><a href="{article_href(a)}">{esc(a["title"])}</a></li>')
-            mp.append('</ul></section>')
-        # NO SportsEvent markup (removed 2026-09-23). Google's Event rich
-        # result REQUIRES location (a Place with an address) and Search
-        # Console flagged every match page critical for it: «Missing field
-        # location» plus five recommended fields (offers, endDate, performer,
-        # organizer.url, image). We hold NO venue data at all (0 mentions in
-        # 402 detail entries) and inventing a stadium breaks the firm
-        # never-show-possibly-wrong-data rule - so the markup could only ever
-        # be invalid: all the GSC nagging, none of the rich result. The pages
-        # keep BreadcrumbList and the embedded article's NewsArticle. If a
-        # venue field is ever fetched from 365scores, revisit.
-        mp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                                 ("المباريات", SITE_BASE + "/matches.html"),
-                                 (comp, SITE_BASE + murl)]))
-        mp.append(foot())
+                news.append({"href": Markup(article_href(a)), "title": a["title"]})
+        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                                   ("المباريات", SITE_BASE + "/matches.html"),
+                                   (comp, SITE_BASE + murl)])
+        _html = render(
+            "match.html", page_head=Markup(page_head), comp=comp, h_ar=h_ar, a_ar=a_ar,
+            hero_row=Markup(hero_row), kickoff_info=kickoff_info, round_txt=Markup(_rd),
+            when_txt=Markup(_tw), channel=str(m["channel"]) if m.get("channel") else "",
+            comp_tv=COMP_TV.get(m.get("competition")) or "",
+            article_block=Markup(article_block), pre_read=Markup(pre_read),
+            post_read=Markup(post_read), details=Markup(details), absence=Markup(absence),
+            prediction=Markup(_pb or ""), info=info_rows,
+            clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
+            has_table=bool(stc and stc.get("table")), table_heading=Markup(table_heading),
+            table=Markup(table), faq=Markup(_faq_html or ""), news=news,
+            crumbs_ld=Markup(crumbs_ld), page_foot=Markup(foot()))
         # lastmod: a page whose match is recent/upcoming changes every run;
         # an old finished match settled around its kickoff day.
         _LASTMOD[murl] = (REF_TODAY if m["kickoff"] >= (datetime.date.today()
                                                         - datetime.timedelta(days=2)).isoformat()
                           else m["kickoff"])
-        # AdSense "low value content" rejection (2026-09-04): 457 templated
-        # match pages vs 325 articles in the sitemap. A match page with no
-        # real content yet (no scorers, no lineups/details) stays reachable
-        # for visitors and links but is NOINDEXed and kept out of the
-        # sitemap; it becomes indexable automatically once the data arrives.
-        #
-        # 2026-09-14: a fixture page is no longer automatically thin. When the
-        # pre-match reading found at least four substantive facts (the table
-        # standing, both form lines, the goal averages, the stakes...) the page
-        # carries the kick-off answer, that reading, the model's numbers, the
-        # league table and an FAQ - which is a guide, not a stub. A fixture we
-        # know nothing about still scores below the bar and stays out.
+        # AdSense "low value content" rejection (2026-09-04): a match page with
+        # no real content yet (no scorers, no lineups/details) stays reachable
+        # but is NOINDEXed and out of the sitemap; it becomes indexable once the
+        # data arrives. Since 2026-09-14 a fixture whose pre-match reading found
+        # at least four substantive facts counts as content (a guide, not a stub).
         _rich = bool(_art) or bool(_goals) or bool(_det) or _pre_weight >= 4
-        _html = "".join(mp)
         if not _rich:
             _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
         write(f"m/{mid}.html", _html)
         n_mp += 1
         if _rich:
             n_mp_idx += 1
-            # WHAT WE ADVERTISE vs what we publish (2026-09-20). Every rich
-            # match page stays indexable and linked; the sitemap carries only
-            # the ones worth a crawl while the budget is what it is:
-            #   - the last 7 days and everything still to come, which is what
-            #     people actually search for;
-            #   - any match of the eleven curated clubs, our own audience;
-            #   - any page carrying an original article, because that URL
-            #     replaced an article URL (2026-09-16).
-            # The rest keep working for visitors and for links; they are just
-            # not the pages we ask Google to spend its crawl on.
+            # WHAT WE ADVERTISE vs what we publish (2026-09-20): every rich match
+            # page stays indexable and linked; the sitemap carries only the last
+            # 7 days + everything to come, any curated-club match, and any page
+            # carrying an original article (that URL replaced an article URL).
             if m["kickoff"] >= sm_cut or _art or _clubs:
                 urls.append(murl)
                 n_mp_sm += 1
@@ -3626,7 +3527,9 @@ def build():
         st = _r['st']
 
     # per-match pages (/m/<id>.html) -> _page_per_match_pages() (moved out of build(), slice 4)
-    _r = _page_per_match_pages(**_bound(locals(), ('ZoneInfo', '_bycomp', '_cal', '_clubs', '_dt', '_lparams', '_match_arts', '_plog', '_preds', '_squad', '_tstats', 'a', 'articles', 'comp', 'fixtures', 'forms', 'ge_idx', 'img', 'k', 'm', 'matches', 'md_idx', 'st', 'st_by_comp', 'urls', 'v')))
+    _r = _page_per_match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad,
+                               _tstats, articles, fixtures, forms, ge_idx, matches, md_idx,
+                               st_by_comp, urls)
     if '_h' in _r:
         _h = _r['_h']
     if '_html' in _r:
