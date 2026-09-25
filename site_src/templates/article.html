@@ -1,0 +1,68 @@
+{# /a/<id> - every news article (match previews/reports live inside /m/<id>).
+   Templated 2026-09-25; the Python in _page_article_pages() prepares the
+   values and the JSON-LD, this file is only the markup.
+   Lines are joined with NO separator by site_lib.render: break between tags,
+   never inside a sentence - and keep " › ", " — " and " (" on their line. #}
+{{ page_head }}
+{{ article_ld }}
+{{ crumbs_ld }}
+<nav class="crumbs">{% for href, name in crumbs %}{% if not loop.first %} › {% endif %}<a href="{{ href }}">{{ name }}</a>{% endfor %}</nav>
+<article class="article">
+  <h1>{{ title }}</h1>
+  <p class="a-meta"><a class="a-by" href="/editors.html">{{ byline }}</a> · <time datetime="{{ pub_date }}">{{ pub_date }}</time>{{ rel_time }}{{ updated }}</p>
+  {% if img %}
+  <figure class="a-fig">
+    <img class="a-img" src="{{ img }}" alt="{{ title }}" loading="eager" fetchpriority="high">
+    {% if credit %}
+    <figcaption class="a-credit">{{ credit }}</figcaption>
+    {% endif %}
+  </figure>
+  {% endif %}
+  {% if summary %}
+  <p class="lead">{{ summary }}</p>
+  {% endif %}
+  <div class="a-body">{{ body }}</div>
+  {# named sources (transparency - «المصادر») and a short FAQ, written by the
+     article tasks since 2026-09-06; older articles have neither #}
+  {% if sources %}
+  <section class="a-sources">
+    <h2>المصادر</h2>
+    <ul>
+      {% for s in sources %}
+      {% if s.url %}<li><a href="{{ s.url }}" target="_blank" rel="noopener nofollow">{{ s.name }}</a>{% else %}<li>{{ s.name }}{% endif %}{% if s.note %} — {{ s.note }}{% endif %}</li>
+      {% endfor %}
+    </ul>
+  </section>
+  {% endif %}
+  {% if faq %}
+  <section class="a-faq">
+    <h2>أسئلة شائعة</h2>
+    {% for f in faq %}
+    <details><summary>{{ f.q }}</summary><p>{{ f.a }}</p></details>
+    {% endfor %}
+  </section>
+  {{ faq_ld }}
+  {% endif %}
+  {{ embeds }}
+  {% if clubs %}
+  <nav class="club-chips">
+    <span>المزيد عن:</span>
+    {% for c in clubs %}
+    <a href="/team/{{ c.slug }}.html">{{ c.name }}</a>
+    {% endfor %}
+  </nav>
+  {% endif %}
+</article>
+{# related articles: internal links between pieces about the same match/club/
+   topic - articles used to get ~2 inbound links each (listing pages only) #}
+{% if related %}
+<section class="minfo related">
+  <h2>مقالات ذات صلة</h2>
+  <ul class="mp-newslist">
+    {% for r in related %}
+    <li><a href="{{ r.href }}">{{ r.title }}</a>{% if r.when %} <span class="club-when">({{ r.when }})</span>{% endif %}</li>
+    {% endfor %}
+  </ul>
+</section>
+{% endif %}
+{{ page_foot }}
