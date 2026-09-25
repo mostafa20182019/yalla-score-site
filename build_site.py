@@ -1842,42 +1842,14 @@ def _page_article_pages(articles, articles_all, matches, urls):
     return {k: _l[k] for k in ('_clubs', '_faq', '_match_arts', '_moved', '_t', 'a', 'img', 'p') if k in _l}
 
 
-def _page_matches_page(_mid=_UNSET, _plog=_UNSET, _preds=_UNSET, a=_UNSET, articles=_UNSET, f=_UNSET, fixtures=_UNSET, forms=_UNSET, fx_by_comp=_UNSET, ge_idx=_UNSET, img=_UNSET, league_stats_parts=_UNSET, m=_UNSET, matches=_UNSET, p=_UNSET, st_by_comp=_UNSET, standings=_UNSET):
-    if _mid is _UNSET:
-        del _mid
-    if _plog is _UNSET:
-        del _plog
-    if _preds is _UNSET:
-        del _preds
-    if a is _UNSET:
-        del a
-    if articles is _UNSET:
-        del articles
-    if f is _UNSET:
-        del f
-    if fixtures is _UNSET:
-        del fixtures
-    if forms is _UNSET:
-        del forms
-    if fx_by_comp is _UNSET:
-        del fx_by_comp
-    if ge_idx is _UNSET:
-        del ge_idx
-    if img is _UNSET:
-        del img
-    if league_stats_parts is _UNSET:
-        del league_stats_parts
-    if m is _UNSET:
-        del m
-    if matches is _UNSET:
-        del matches
-    if p is _UNSET:
-        del p
-    if st_by_comp is _UNSET:
-        del st_by_comp
-    if standings is _UNSET:
-        del standings
-    # ---- matches page (per-day navigator, like the live app) ----
+def _page_matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
+                       league_stats_parts, matches, st_by_comp, standings):
+    """/matches - the per-day navigator. Markup: site_src/templates/matches.html
+    (templated 2026-09-26). The loops below are the ones that used to append
+    HTML, in the same order and under the same names - they now fill the
+    structures the template renders - so every helper runs in the same
+    sequence and the loop variables build() reads afterwards (a, comp, i, img,
+    k, m, st) end exactly where they used to. comp_order is the real output."""
     from collections import OrderedDict
     daymap = OrderedDict()
     for m in matches:
@@ -1902,32 +1874,18 @@ def _page_matches_page(_mid=_UNSET, _plog=_UNSET, _preds=_UNSET, a=_UNSET, artic
             comp_order.append(c)
     comp_order.sort(key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER
                                    else len(COMP_ORDER), c))
-
-    p = [head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
-              "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
-              SITE_BASE + "/matches.html", active="matches")]
-    # the page had no <h1> at all (its visible heading structure starts at the
-    # league sidebar's h2); a screen-reader-only h1 names the page for crawlers
-    # without touching the FotMob-style layout
-    p.append('<h1 class="sr-only">مواعيد ونتائج مباريات اليوم بتوقيت القاهرة</h1>')
-    p.append('<div class="mpage">')
-
-    # --- right rail (RTL start): leagues filter ---
-    p.append('<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">')
+    pieces = []          # every dynamic piece, for pred_pop's "any prediction button?"
+    page_head = head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
+                     "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
+                     SITE_BASE + "/matches.html", active="matches")
+    leagues = []
     for c in comp_order:
-        p.append(f'<button type="button" class="lg-item" data-comp="{esc(c)}">'
-                 f'{comp_icon(c)} <span class="lg-name">{esc(comp_label(c))}</span></button>')
-    p.append('</div></aside>')
-
-    # --- center: league tables (hidden) + day navigator + days ---
-    p.append('<div class="mp-main">')
-    # ad strip at the top of the CENTER column - matches-list width only
-    p.append(f'<div class="home-topad">{adsense_slot()}</div>')
-    # one tabbed view per league: الترتيب · الهدافون · الأرقام · التطور · الجولات.
-    # Everything is in the DOM (so it stays indexable); JS just switches panes.
+        leagues.append({"comp": c, "icon": Markup(comp_icon(c)), "label": comp_label(c)})
+    ad = adsense_slot()
     LEAGUE_TABS = [("table", "الترتيب"), ("scorers", "الهدافون"),
                    ("numbers", "الأرقام"), ("trend", "التطور"),
                    ("rounds", "الجولات")]
+    views = []
     for c in comp_order:
         st = st_by_comp.get(c)
         panes = league_stats_parts(c)
@@ -1944,26 +1902,17 @@ def _page_matches_page(_mid=_UNSET, _plog=_UNSET, _preds=_UNSET, a=_UNSET, artic
         live = [(k, lbl) for k, lbl in LEAGUE_TABS if panes.get(k)]
         if not live:
             continue
-        p.append(f'<div class="lview" data-comp="{esc(c)}" hidden>')
-        p.append('<div class="ltabs" role="tablist">')
+        tabs = []
         for i, (k, lbl) in enumerate(live):
-            on = " is-on" if i == 0 else ""
-            p.append(f'<button type="button" class="ltab{on}" role="tab" '
-                     f'data-pane="{k}">{lbl}</button>')
-        p.append('</div>')
+            tabs.append((k, lbl))
+        view_panes = []
         for i, (k, lbl) in enumerate(live):
-            hid = "" if i == 0 else " hidden"
-            p.append(f'<div class="lpane" data-pane="{k}"{hid}>{panes[k]}</div>')
-        p.append('</div>')
-    p.append('<div id="noTable" class="no-table" hidden></div>')  # empty state (league with no data)
-    p.append('<div id="daynav" class="daynav" hidden>'
-             '<button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>'
-             '<span id="dayLabel" class="dn-label"></span>'
-             '<button type="button" id="nextDay" class="dn-arrow" aria-label="اليوم التالي">›</button></div>')
-    p.append(FILTERS_HTML)   # FotMob-style match filters (user ask 2026-09-02)
-    p.append(f'<div id="days" data-today="{REF_TODAY}">')
+            view_panes.append((k, Markup(panes[k])))
+            pieces.append(panes[k])
+        views.append({"comp": c, "tabs": tabs, "panes": view_panes})
+    days = []
     for d in sorted_days:
-        p.append(f'<section class="day" data-day="{d}"><h2 class="day-h">{esc(fmt_day(d))}</h2>')
+        day = {"day": d, "heading": fmt_day(d), "comps": []}
         comps = OrderedDict()
         for m in daymap[d]:
             comps.setdefault(m.get("competition") or "", []).append(m)
@@ -1972,10 +1921,10 @@ def _page_matches_page(_mid=_UNSET, _plog=_UNSET, _preds=_UNSET, a=_UNSET, artic
                                key=lambda kv: (COMP_ORDER.index(kv[0])
                                                if kv[0] in COMP_ORDER
                                                else len(COMP_ORDER), kv[0])):
-            p.append(f'<div class="comp" data-comp="{esc(comp)}" data-label="{esc(comp_label(comp))}">')
+            block = {"comp": comp, "label": comp_label(comp), "rows": []}
             if comp:
-                p.append(f'<div class="comp-h">{comp_icon(comp)} {esc(comp_label(comp))}</div>')
-            p.append('<div class="mlist">')
+                block["icon"] = Markup(comp_icon(comp))
+                comp_label(comp)                 # (the old code asked twice; kept for order)
             for m in ms:
                 _mid, _mst = str(m.get("match_id")), (m.get("status") or "").upper()
                 row = match_row(m, show_time=True, show_comp=False,
@@ -1988,58 +1937,45 @@ def _page_matches_page(_mid=_UNSET, _plog=_UNSET, _preds=_UNSET, a=_UNSET, artic
                 tv = "1" if (m.get("channel") or COMP_TV.get(comp)) else "0"
                 row = row.replace('<div class="mrow ',
                                   f'<div data-tv="{tv}" data-ko="{esc(m.get("koff_time") or "")}" class="mrow ', 1)
-                p.append(row)
-            p.append('</div></div>')
-        p.append('<p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>')
-        p.append('</section>')
-    p.append('</div></div>')  # /days /mp-main
-
-    # --- left rail (RTL end): per-league fixtures BY ROUND (shown on select) ---
-    # fallback (leagues with no round data): day-grouped from the day view
+                block["rows"].append(Markup(row))
+                pieces.append(row)
+            day["comps"].append(block)
+        days.append(day)
+    # left rail: per-league fixtures BY DAY for leagues without round data
     comp_fix = {}
     for d in sorted_days:
         for m in daymap[d]:
             comp_fix.setdefault(m.get("competition") or "", {}).setdefault(d, []).append(m)
-    p.append('<aside class="mp-side mp-extra">')
-    # leagues WITHOUT rounds data still get a rail panel (day-grouped fallback);
-    # leagues with rounds show them in the "الجولات" tab instead.
+    rail = []
     for c in comp_order:
         if c not in fx_by_comp and comp_fix.get(c):
-            p.append(f'<div class="lg-fix" data-comp="{esc(c)}" hidden>'
-                     f'<div class="fx-head">{comp_icon(c)} مباريات {esc(comp_label(c))}</div>')
+            entry = {"comp": c, "icon": Markup(comp_icon(c)), "label": comp_label(c), "days": []}
             for d in sorted(comp_fix[c].keys()):
-                p.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
+                fday = {"heading": fmt_day(d), "minis": []}
                 for m in comp_fix[c][d]:
-                    p.append(fixture_mini(m))
-            p.append('</div>')
-    # default rail content: featured-article card + latest headlines -
-    # swapped for the league rounds panel when a competition is selected
-    p.append('<div id="mpDefault">')
+                    mini = fixture_mini(m)
+                    fday["minis"].append(Markup(mini))
+                    pieces.append(mini)
+                entry["days"].append(fday)
+            rail.append(entry)
+    feat, news = None, []
     if articles:
         fa = articles[0]
-        p.append(f'<a class="mp-feat" href="{article_href(fa)}">')
-        if fa.get("image_url"):
-            p.append(f'<img class="mp-feat-img" src="{esc(thumb_url(fa["image_url"]))}" alt="" loading="lazy">')
-        p.append(f'<b class="mp-feat-t">{esc(fa.get("title"))}</b>'
-                 '<span class="mp-feat-cta">اقرأ الخبر ←</span></a>')
-        p.append('<div class="mp-news">')
+        feat = {"href": Markup(article_href(fa)), "has_img": bool(fa.get("image_url")),
+                "img": thumb_url(fa["image_url"]) if fa.get("image_url") else "",
+                "title": fa.get("title")}
         for a in articles[1:4]:
             img = thumb_url(a.get("image_url"))
             th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
                   if img else '<span class="mn-th noimg">⚽</span>')
-            p.append(f'<a class="mn-item" href="{article_href(a)}">{th}'
-                     f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span>'
-                     f'<span class="mn-d">{esc(a.get("pub_date") or "")}</span></span></a>')
-        p.append('</div>')
-    p.append('</div>')
-    p.append('</aside>')
-
-    p.append('</div>')  # /mpage
-    p.append(MATCHES_JS)
-    p.append(ROUNDS_JS)
-    p.append(pred_pop(p))
-    p.append(foot())
-    write("matches.html", "".join(p))
+            news.append({"href": Markup(article_href(a)), "th": Markup(th),
+                         "title": a.get("title"), "date": a.get("pub_date") or ""})
+    popup = pred_pop(pieces)
+    write("matches.html", render(
+        "matches.html", page_head=Markup(page_head), leagues=leagues, ad=Markup(ad),
+        views=views, filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days, rail=rail,
+        feat=feat, news=news, matches_js=Markup(MATCHES_JS), rounds_js=Markup(ROUNDS_JS),
+        popup=Markup(popup), page_foot=Markup(foot())))
     _l = locals()
     return {k: _l[k] for k in ('a', 'comp', 'comp_order', 'i', 'img', 'k', 'm', 'st') if k in _l}
 
@@ -3670,7 +3606,8 @@ def build():
         st_by_comp = _r['st_by_comp']
 
     # matches page (per-day navigator, like the live app) -> _page_matches_page() (moved out of build(), slice 4)
-    _r = _page_matches_page(**_bound(locals(), ('_mid', '_plog', '_preds', 'a', 'articles', 'f', 'fixtures', 'forms', 'fx_by_comp', 'ge_idx', 'img', 'league_stats_parts', 'm', 'matches', 'p', 'st_by_comp', 'standings')))
+    _r = _page_matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
+                            league_stats_parts, matches, st_by_comp, standings)
     if 'a' in _r:
         a = _r['a']
     if 'comp' in _r:

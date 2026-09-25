@@ -1,0 +1,105 @@
+{# /matches - the per-day navigator, like the live app (FotMob-style).
+   Templated 2026-09-26. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence - and keep
+   "{icon} <span" / "{icon} {label}" pairs on one line (the space is data). #}
+{{ page_head }}
+{# the page had no <h1> at all; a screen-reader-only h1 names it for crawlers
+   without touching the layout #}
+<h1 class="sr-only">مواعيد ونتائج مباريات اليوم بتوقيت القاهرة</h1>
+<div class="mpage">
+  {# right rail (RTL start): the leagues filter #}
+  <aside class="mp-side mp-leagues">
+    <h2 class="mp-h">البطولات</h2>
+    <div class="lg-list">
+      {% for l in leagues %}
+      <button type="button" class="lg-item" data-comp="{{ l.comp }}">{{ l.icon }} <span class="lg-name">{{ l.label }}</span></button>
+      {% endfor %}
+    </div>
+  </aside>
+  {# center: the league views (hidden until a league is picked) + the days #}
+  <div class="mp-main">
+    {# ad strip at the top of the CENTER column - matches-list width only #}
+    <div class="home-topad">{{ ad }}</div>
+    {# one tabbed view per league (الترتيب · الهدافون · الأرقام · التطور · الجولات):
+       everything is in the DOM so it stays indexable; JS only switches panes #}
+    {% for v in views %}
+    <div class="lview" data-comp="{{ v.comp }}" hidden>
+      <div class="ltabs" role="tablist">
+        {% for key, label in v.tabs %}
+        <button type="button" class="ltab{% if loop.first %} is-on{% endif %}" role="tab" data-pane="{{ key }}">{{ label }}</button>
+        {% endfor %}
+      </div>
+      {% for key, pane in v.panes %}
+      <div class="lpane" data-pane="{{ key }}"{% if not loop.first %} hidden{% endif %}>{{ pane }}</div>
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <div id="noTable" class="no-table" hidden></div>
+    <div id="daynav" class="daynav" hidden>
+      <button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>
+      <span id="dayLabel" class="dn-label"></span>
+      <button type="button" id="nextDay" class="dn-arrow" aria-label="اليوم التالي">›</button>
+    </div>
+    {# FotMob-style match filters (user ask 2026-09-02) #}
+    {{ filters }}
+    <div id="days" data-today="{{ today }}">
+      {% for d in days %}
+      <section class="day" data-day="{{ d.day }}">
+        <h2 class="day-h">{{ d.heading }}</h2>
+        {% for c in d.comps %}
+        <div class="comp" data-comp="{{ c.comp }}" data-label="{{ c.label }}">
+          {% if c.comp %}
+          <div class="comp-h">{{ c.icon }} {{ c.label }}</div>
+          {% endif %}
+          <div class="mlist">
+            {% for row in c.rows %}
+            {{ row }}
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+        <p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>
+      </section>
+      {% endfor %}
+    </div>
+  </div>
+  {# left rail (RTL end): per-league fixtures for leagues WITHOUT round data
+     (day-grouped fallback; leagues with rounds use the «الجولات» tab), then
+     the default content - featured article + latest news - which the JS swaps
+     for a league's panel when one is selected #}
+  <aside class="mp-side mp-extra">
+    {% for r in rail %}
+    <div class="lg-fix" data-comp="{{ r.comp }}" hidden>
+      <div class="fx-head">{{ r.icon }} مباريات {{ r.label }}</div>
+      {% for day in r.days %}
+      <div class="fx-day">{{ day.heading }}</div>
+      {% for mini in day.minis %}
+      {{ mini }}
+      {% endfor %}
+      {% endfor %}
+    </div>
+    {% endfor %}
+    <div id="mpDefault">
+      {% if feat %}
+      <a class="mp-feat" href="{{ feat.href }}">
+        {% if feat.has_img %}
+        <img class="mp-feat-img" src="{{ feat.img }}" alt="" loading="lazy">
+        {% endif %}
+        <b class="mp-feat-t">{{ feat.title }}</b>
+        <span class="mp-feat-cta">اقرأ الخبر ←</span>
+      </a>
+      <div class="mp-news">
+        {% for n in news %}
+        <a class="mn-item" href="{{ n.href }}">{{ n.th }}
+          <span class="mn-b"><span class="mn-t">{{ n.title }}</span><span class="mn-d">{{ n.date }}</span></span>
+        </a>
+        {% endfor %}
+      </div>
+      {% endif %}
+    </div>
+  </aside>
+</div>
+{{ matches_js }}
+{{ rounds_js }}
+{{ popup }}
+{{ page_foot }}
