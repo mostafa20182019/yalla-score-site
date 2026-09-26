@@ -1,0 +1,59 @@
+{# /analysis - the hub: this week's predictions, the strongest clubs, the best-rated players, the model's record - templated 2026-09-26.
+   Lines are joined with NO separator by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs"><a href="/">أخبار</a> › تحليلات</nav>
+<h1 class="page-h">تحليلات وتوقعات بالأرقام</h1>
+<p class="hintline">نموذج يلا سكور يقرأ نتائج الموسم الحالي في {{ n_comps }} بطولات ويحوّلها إلى تقييم قوة لكل نادٍ واحتمالات لكل مباراة قادمة — {{ n_pred }} مباراة متوقعة خلال الأيام السبعة القادمة. <a href="#model">كيف يعمل النموذج؟</a></p>
+<div class="an-nav">{% for slug, icon, label in nav %}<a href="/analysis/{{ slug }}.html">{{ icon }} {{ label }}</a>{% endfor %}</div>
+<section class="minfo">
+  <h2>توقعات مباريات الأسبوع</h2>
+  {% if not week %}
+  <p class="hintline">لا مباريات قادمة خلال سبعة أيام في البطولات المغطاة.</p>
+  {% endif %}
+  {% for w in week %}
+  <h3 class="an-comp">{{ w.icon }} <a href="/analysis/{{ w.slug }}.html">{{ w.label }}</a></h3>
+  <div class="plist">{% for row in w.rows %}{{ row }}{% endfor %}</div>
+  {% if w.more %}
+  <p class="more-link"><a href="/analysis/{{ w.slug }}.html">كل توقعات {{ w.label }} ({{ w.more }}) ←</a></p>
+  {% endif %}
+  {% endfor %}
+  <p class="pd-note">{{ disclaimer }}</p>
+</section>
+<section class="minfo">
+  <h2>أقوى الأندية الآن (تقييم Elo)</h2>
+  <div class="pw-grid">
+    {% for p in power %}
+    <div class="pw-card">
+      <h3>{{ p.icon }} {{ p.label }}</h3>
+      <ol>
+        {% for team, elo in p.rows %}
+        <li><bdi>{{ team }}</bdi> <b>{{ elo }}</b></li>
+        {% endfor %}
+      </ol>
+      {% if p.slug %}
+      <a href="/analysis/{{ p.slug }}.html">الجدول الكامل ←</a>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+</section>
+{% if best %}
+<section class="minfo">
+  <h2>أعلى اللاعبين تقييمًا هذا الموسم</h2>
+  <p class="hintline">متوسط تقييم اللاعب في المباريات التي بدأها أساسيًا (مرتان على الأقل)، من تقييمات مزوّد البيانات.</p>
+  <div class="tbl-wrap">
+    <table class="ptable">
+      <thead><tr><th>#</th><th class="tl">اللاعب</th><th class="tl">النادي</th><th class="tl">البطولة</th><th>مباريات</th><th>التقييم</th></tr></thead>
+      <tbody>
+        {% for r in best %}
+        <tr><td>{{ loop.index }}</td><td class="tl"><bdi>{{ r.name }}</bdi></td><td class="tl"><bdi>{{ r.club }}</bdi></td><td class="tl">{{ r.comp }}</td><td>{{ r.n }}</td><td><b>{{ r.avg }}</b></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
+{{ accuracy }}
+{{ explainer }}
+{{ page_foot }}

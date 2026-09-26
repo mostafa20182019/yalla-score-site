@@ -1,0 +1,90 @@
+{# /predictions - every frozen prediction, scored: calibration, misses, the full record - templated 2026-09-26. Lines are joined with NO separator by
+   site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/analysis.html">تحليلات وتوقعات</a> › سجل التوقعات</nav>
+<h1 class="page-h">سجل توقعات يلا سكور — بالإصابات والإخفاقات</h1>
+<section class="minfo">
+  <p>يُثبَّت كل توقع في قاعدة البيانات <b>قبل انطلاق المباراة</b>، ولا يُعدَّل ولا يُحذف بعد صافرة النهاية، ثم يُقارَن بالنتيجة تلقائيًا. هذه الصفحة تعرض السجل كاملًا منذ <b>{{ first }}</b> وحتى <b>{{ last }}</b> — ما أصاب فيه النموذج وما أخطأ فيه، بالأرقام نفسها ودون انتقاء. التوقعات احتمالات إحصائية من نتائج الموسم، وليست نصيحة للمراهنة.</p>
+  <div class="acc-tiles">
+    {% for big, small in tiles %}
+    <div class="tile"><b>{{ big }}</b><span>{{ small }}</span></div>
+    {% endfor %}
+  </div>
+</section>
+{{ calibration }}
+{{ calls }}
+{% if show_comps %}
+<section class="minfo">
+  <h2>حسب البطولة</h2>
+  <div class="tbl-wrap">
+    <table class="ptable">
+      <thead><tr><th class="tl">البطولة</th><th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead>
+      <tbody>
+        {% for r in comp_rows %}
+        <tr><td class="tl">{{ r.label }}{% if r.small %} <span class="pf-small">عيّنة صغيرة</span>{% endif %}</td><td>{{ r.n }}</td><td>{{ r.rate }}</td><td>{{ r.brier }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="hintline">مع عشر مباريات أو عشرين، فرق النسب بين بطولة وأخرى يقع كله داخل نطاق الصدفة — الأرقام هنا للعرض لا للترتيب.</p>
+</section>
+{% endif %}
+{% if src_rows is not none %}
+<section class="minfo">
+  <h2>مصدر التوقعات: بايثون وOracle</h2>
+  <div class="tbl-wrap">
+    <table class="ptable">
+      <thead><tr><th class="tl">المصدر</th><th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead>
+      <tbody>
+        {% for r in src_rows %}
+        <tr><td class="tl">{{ r.label }}</td><td>{{ r.n }}</td><td>{{ r.rate }}</td><td>{{ r.brier }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="hintline">منذ 24 سبتمبر 2026 تصدر كل التوقعات من نموذج بايثون وحده، وصف Oracle هو سجل توقعاته قبل ذلك التاريخ، باقٍ كما حُسب. <b>ليست مباراة بين النموذجين:</b> كل توقع يصدر من المصدر المتاح وقتها، فالمجموعتان ليستا نفس المباريات، والفارق بينهما عند هذا العدد يقع داخل نطاق الضوضاء. نعرضهما منفصلين حتى يظهر اليوم الذي يصبح فيه أحدهما أفضل فعلًا.</p>
+</section>
+{% endif %}
+<section class="minfo" id="record">
+  <h2>السجل الكامل</h2>
+  <div class="pf-bar">
+    <span class="pf-chip on" data-f="all">الكل</span>
+    <span class="pf-chip" data-f="hit">أصاب</span>
+    <span class="pf-chip" data-f="miss">أخطأ</span>
+    <select id="pf-comp"><option value="">كل البطولات</option>{% for c, lbl in comp_opts %}<option value="{{ c }}">{{ lbl }}</option>{% endfor %}</select>
+    <span class="pf-n"><b id="pf-count">{{ n_rows }}</b> مباراة</span>
+  </div>
+  <div class="rec" id="predlist">
+    {% for day, day_label, items in days %}
+    <div class="rec-day" data-day="{{ day }}">{{ day_label }}</div>
+    {% for item in items %}
+    {{ item }}
+    {% endfor %}
+    {% endfor %}
+  </div>
+  <p class="rec-none" id="pf-none" hidden>لا توجد مباريات بهذا الاختيار.</p>
+  <button type="button" id="pf-more" class="pf-more" hidden></button>
+  <p class="hintline">🎯 = أصبنا النتيجة بالضبط. «أقرب نتيجة» هي أعلى نتيجة احتمالًا وقت التوقع، والعلامة ✔/✘ تقارن الاتجاه (فوز/تعادل/خسارة) بما حدث.</p>
+</section>
+<section class="minfo">
+  <h2>حدود هذا السجل</h2>
+  <ul class="lim">
+    <li>يبدأ من <b>{{ first }}</b> — أول يوم ثبّتنا فيه التوقعات آليًا، وليس من إطلاق الموقع.</li>
+    <li>يُحتفظ بالتوقعات 150 يومًا، فالسجل نافذة متحركة وليس أرشيفًا أبديًا.</li>
+    <li>العيّنة صغيرة: النسب لكل بطولة على عشرات المباريات، وتتحرك كثيرًا مع كل جولة.</li>
+    <li>النموذج لا يعرف الإصابات ولا الإيقافات ولا تغيّر المدرب، ويعتمد على الموسم الحالي فقط.</li>
+    <li>وسم الثقة الحالي لا يفصل بعد بين التوقعات الجيدة والضعيفة — نعرضه ونعمل على تحسينه.</li>
+    <li>هذه أرقام تحليلية للقارئ، وليست نصيحة للمراهنة بأي شكل.</li>
+  </ul>
+  <p><a href="/analysis.html#model">كيف يعمل النموذج؟ ←</a></p>
+</section>
+<section class="minfo faq">
+  <h2>أسئلة شائعة عن سجل التوقعات</h2>
+  {% for q, v in faq %}
+  <details><summary>{{ q }}</summary><p>{{ v }}</p></details>
+  {% endfor %}
+</section>
+{{ faq_ld }}
+{{ crumbs_ld }}
+{{ page_foot }}
+{{ filter_js }}

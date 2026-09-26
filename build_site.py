@@ -1335,7 +1335,8 @@ def _rec_day_label(d):
 
 def prediction_history_page(plog, acc):
     """/predictions.html — every frozen prediction, scored, with the model's
-    calibration and its misses. Returns the url (or None when nothing scored)."""
+    calibration and its misses. Returns the url (or None when nothing scored).
+    Markup: site_src/templates/predictions.html (templated 2026-09-26)."""
     a = (acc or {}).get("all")
     rows = AN.history(plog)
     if not a or not rows:
@@ -1349,96 +1350,49 @@ def prediction_history_page(plog, acc):
             f"{a['n']} مباراة مقيَّمة، نسبة إصابة الاتجاه {_pct(a['hit_rate'])} مقابل "
             f"{_pct(a['home_baseline'])} لمعيار ساذج، ومعايرة الاحتمالات كاملة.")
     url = "/predictions.html"
-    P = [head(title, desc, SITE_BASE + url, active="analysis")]
-    P.append('<nav class="crumbs"><a href="/">أخبار</a> › '
-             '<a href="/analysis.html">تحليلات وتوقعات</a> › سجل التوقعات</nav>')
-    P.append('<h1 class="page-h">سجل توقعات يلا سكور — بالإصابات والإخفاقات</h1>')
-    P.append('<section class="minfo"><p>يُثبَّت كل توقع في قاعدة البيانات <b>قبل انطلاق المباراة</b>، '
-             'ولا يُعدَّل ولا يُحذف بعد صافرة النهاية، ثم يُقارَن بالنتيجة تلقائيًا. '
-             f'هذه الصفحة تعرض السجل كاملًا منذ <b>{esc(first)}</b> وحتى <b>{esc(last)}</b> — '
-             'ما أصاب فيه النموذج وما أخطأ فيه، بالأرقام نفسها ودون انتقاء. '
-             'التوقعات احتمالات إحصائية من نتائج الموسم، وليست نصيحة للمراهنة.</p>')
-    P.append(f'<div class="acc-tiles"><div class="tile"><b>{a["n"]}</b><span>مباراة مقيَّمة</span></div>'
-             f'<div class="tile"><b>{_pct(a["hit_rate"])}</b><span>إصابة الاتجاه</span></div>'
-             f'<div class="tile"><b>{_pct(a["home_baseline"])}</b><span>معيار ساذج: فوز الأرض دائمًا</span></div>'
-             f'<div class="tile"><b>{a["brier"]:.3f}</b><span>Brier (الأقل أفضل · 0.667 عشوائي)</span></div>'
-             f'<div class="tile"><b>{a["score_hits"]}</b><span>نتيجة مضبوطة</span></div>'
-             f'<div class="tile"><b>{cal["ece"] * 100:.1f}</b><span>انحراف المعايرة (نقطة مئوية)</span></div>'
-             '</div></section>')
-    P.append(calibration_html(cal))
-    P.append(_calls_html(ex))
+    tiles = [(a["n"], "مباراة مقيَّمة"),
+             (_pct(a["hit_rate"]), "إصابة الاتجاه"),
+             (_pct(a["home_baseline"]), "معيار ساذج: فوز الأرض دائمًا"),
+             (f'{a["brier"]:.3f}', "Brier (الأقل أفضل · 0.667 عشوائي)"),
+             (a["score_hits"], "نتيجة مضبوطة"),
+             (f'{cal["ece"] * 100:.1f}', "انحراف المعايرة (نقطة مئوية)")]
 
     # per competition, with the sample size in front of every rate
     comps = (acc or {}).get("comps") or {}
-    if comps:
-        P.append('<section class="minfo"><h2>حسب البطولة</h2>'
-                 '<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">البطولة</th>'
-                 '<th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead><tbody>')
-        for comp in COMP_ORDER + [c for c in comps if c not in COMP_ORDER]:
-            c = comps.get(comp)
-            if not c:
-                continue
-            small = ' <span class="pf-small">عيّنة صغيرة</span>' if c["n"] < 20 else ""
-            P.append(f'<tr><td class="tl">{esc(comp_label(comp))}{small}</td><td>{c["n"]}</td>'
-                     f'<td>{_pct(c["hit_rate"])}</td><td>{c["brier"]:.3f}</td></tr>')
-        P.append('</tbody></table></div><p class="hintline">مع عشر مباريات أو عشرين، فرق النسب بين '
-                 'بطولة وأخرى يقع كله داخل نطاق الصدفة — الأرقام هنا للعرض لا للترتيب.</p></section>')
+    comp_rows = []
+    for comp in COMP_ORDER + [c for c in comps if c not in COMP_ORDER]:
+        c = comps.get(comp)
+        if not c:
+            continue
+        comp_rows.append({"label": comp_label(comp), "small": c["n"] < 20, "n": c["n"],
+                          "rate": _pct(c["hit_rate"]), "brier": f'{c["brier"]:.3f}'})
 
-    # the two models, apart and NOT as a race
+    # the two models, apart and NOT as a race. Since 2026-09-24 every new
+    # prediction is python's (one model, the user's decision); the Oracle rows
+    # are its record before that date, kept exactly as scored - history is
+    # not rewritten
     srcs = (acc or {}).get("by_src") or {}
+    src_rows = None
     if len(srcs) > 1:
-        # since 2026-09-24 every new prediction is python's (one model, the
-        # user's decision); the Oracle rows are its record before that date,
-        # kept exactly as scored - history is not rewritten
-        P.append('<section class="minfo"><h2>مصدر التوقعات: بايثون وOracle</h2>'
-                 '<div class="tbl-wrap"><table class="ptable"><thead><tr><th class="tl">المصدر</th>'
-                 '<th>مباريات</th><th>إصابة الاتجاه</th><th>Brier</th></tr></thead><tbody>')
+        src_rows = []
         for k in sorted(srcs):
             v = srcs[k]
             if not v:
                 continue
             nm = {"oracle": "نموذج Oracle (PL/SQL)", "python": "نموذج بايثون"}.get(k, k)
-            P.append(f'<tr><td class="tl">{esc(nm)}</td><td>{v["n"]}</td>'
-                     f'<td>{_pct(v["hit_rate"])}</td><td>{v["brier"]:.3f}</td></tr>')
-        P.append('</tbody></table></div><p class="hintline">منذ 24 سبتمبر 2026 تصدر كل التوقعات '
-                 'من نموذج بايثون وحده، وصف Oracle هو سجل توقعاته قبل ذلك التاريخ، باقٍ كما حُسب. '
-                 '<b>ليست مباراة بين النموذجين:</b> '
-                 'كل توقع يصدر من المصدر المتاح وقتها، فالمجموعتان ليستا نفس المباريات، '
-                 'والفارق بينهما عند هذا العدد يقع داخل نطاق الضوضاء. نعرضهما منفصلين حتى '
-                 'يظهر اليوم الذي يصبح فيه أحدهما أفضل فعلًا.</p></section>')
+            src_rows.append({"label": nm, "n": v["n"], "rate": _pct(v["hit_rate"]),
+                             "brier": f'{v["brier"]:.3f}'})
 
     # the full record
-    comp_opts = "".join(f'<option value="{esc(c)}">{esc(comp_label(c))}</option>'
-                        for c in (COMP_ORDER + [c for c in comps if c not in COMP_ORDER])
-                        if c in comps)
-    P.append('<section class="minfo" id="record"><h2>السجل الكامل</h2>'
-             '<div class="pf-bar"><span class="pf-chip on" data-f="all">الكل</span>'
-             '<span class="pf-chip" data-f="hit">أصاب</span>'
-             '<span class="pf-chip" data-f="miss">أخطأ</span>'
-             f'<select id="pf-comp"><option value="">كل البطولات</option>{comp_opts}</select>'
-             '<span class="pf-n"><b id="pf-count">' + str(len(rows)) + '</b> مباراة</span></div>'
-             '<div class="rec" id="predlist">')
+    comp_opts = [(c, comp_label(c))
+                 for c in (COMP_ORDER + [c for c in comps if c not in COMP_ORDER]) if c in comps]
     # grouped by day: the date is a header, not a column repeated on every line
-    last_day = None
+    days = []
     for e in rows:
         day = e.get("kickoff") or ""
-        if day != last_day:
-            P.append(f'<div class="rec-day" data-day="{esc(day)}">{_rec_day_label(day)}</div>')
-            last_day = day
-        P.append(_pred_item_html(e))
-    P.append('</div><p class="rec-none" id="pf-none" hidden>لا توجد مباريات بهذا الاختيار.</p>'
-             '<button type="button" id="pf-more" class="pf-more" hidden></button>'
-             '<p class="hintline">🎯 = أصبنا النتيجة بالضبط. «أقرب نتيجة» هي أعلى نتيجة '
-             'احتمالًا وقت التوقع، والعلامة ✔/✘ تقارن الاتجاه (فوز/تعادل/خسارة) بما حدث.</p></section>')
-
-    P.append('<section class="minfo"><h2>حدود هذا السجل</h2><ul class="lim">'
-             f'<li>يبدأ من <b>{esc(first)}</b> — أول يوم ثبّتنا فيه التوقعات آليًا، وليس من إطلاق الموقع.</li>'
-             '<li>يُحتفظ بالتوقعات 150 يومًا، فالسجل نافذة متحركة وليس أرشيفًا أبديًا.</li>'
-             '<li>العيّنة صغيرة: النسب لكل بطولة على عشرات المباريات، وتتحرك كثيرًا مع كل جولة.</li>'
-             '<li>النموذج لا يعرف الإصابات ولا الإيقافات ولا تغيّر المدرب، ويعتمد على الموسم الحالي فقط.</li>'
-             '<li>وسم الثقة الحالي لا يفصل بعد بين التوقعات الجيدة والضعيفة — نعرضه ونعمل على تحسينه.</li>'
-             '<li>هذه أرقام تحليلية للقارئ، وليست نصيحة للمراهنة بأي شكل.</li>'
-             '</ul><p><a href="/analysis.html#model">كيف يعمل النموذج؟ ←</a></p></section>')
+        if not days or day != days[-1][0]:
+            days.append((day, Markup(_rec_day_label(day)), []))
+        days[-1][2].append(Markup(_pred_item_html(e)))
 
     faq = [
         ("هل توقعات يلا سكور دقيقة؟",
@@ -1454,29 +1408,30 @@ def prediction_history_page(plog, acc):
         ("هل هذه نصيحة للمراهنة؟",
          "لا. الأرقام تحليلية مبنية على نتائج الموسم الحالي فقط، ولا تصلح أساسًا لأي رهان."),
     ]
-    P.append('<section class="minfo faq"><h2>أسئلة شائعة عن سجل التوقعات</h2>'
-             + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(v)}</p></details>'
-                       for q, v in faq) + '</section>')
-    P.append(jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+    faq_ld = jsonld({"@context": "https://schema.org", "@type": "FAQPage",
                      "mainEntity": [{"@type": "Question", "name": q,
                                      "acceptedAnswer": {"@type": "Answer", "text": v}}
-                                    for q, v in faq]}))
-    P.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                            ("تحليلات وتوقعات", SITE_BASE + "/analysis.html"),
-                            ("سجل التوقعات", SITE_BASE + url)]))
-    P.append(foot())
-    P.append(PRED_FILTER_JS)
-    write("predictions.html", "".join(P))
+                                    for q, v in faq]})
+    crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+                               ("تحليلات وتوقعات", SITE_BASE + "/analysis.html"),
+                               ("سجل التوقعات", SITE_BASE + url)])
+    write("predictions.html", render(
+        "predictions.html",
+        page_head=Markup(head(title, desc, SITE_BASE + url, active="analysis")),
+        first=first, last=last, tiles=tiles,
+        calibration=Markup(calibration_html(cal)), calls=Markup(_calls_html(ex)),
+        comp_rows=comp_rows, show_comps=bool(comps), src_rows=src_rows, comp_opts=comp_opts, n_rows=len(rows),
+        days=days, faq=faq, faq_ld=Markup(faq_ld), crumbs_ld=Markup(crumbs_ld),
+        page_foot=Markup(foot()), filter_js=Markup(PRED_FILTER_JS)))
     _LASTMOD[url] = REF_TODAY
     return url
 
 
-
-
-
 def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, sins,
                    forms, has_table=None):
-    """Write /analysis.html (hub) + /analysis/<slug>.html per league. Returns urls."""
+    """Write /analysis.html (hub) + /analysis/<slug>.html per league. Returns urls.
+    Markup: site_src/templates/analysis.html + analysis_league.html (templated
+    2026-09-26); the pieces are built here in the same order as before."""
     urls = []
     today = datetime.date.fromisoformat(REF_TODAY)
     wk = (today + datetime.timedelta(days=7)).isoformat()
@@ -1490,59 +1445,42 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
     comps = [c for c in COMP_ORDER if c in tstats] + [c for c in tstats if c not in COMP_ORDER]
     n_pred = sum(len(v) for v in by_comp.values())
     # ---- hub ----
-    hp = [head("تحليلات وتوقعات المباريات بالأرقام — يلا سكور",
-               "توقعات مباريات الأسبوع باحتمالات مبنية على بيانات الموسم، تقييم قوة الأندية، تحليل اللاعبين، "
-               "وسجل شفاف لدقة التوقعات في الدوري المصري وأبرز الدوريات.",
-               SITE_BASE + "/analysis.html", active="analysis")]
-    hp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html")]))
-    hp.append('<nav class="crumbs"><a href="/">أخبار</a> › تحليلات</nav>')
-    hp.append('<h1 class="page-h">تحليلات وتوقعات بالأرقام</h1>')
-    hp.append(f'<p class="hintline">نموذج يلا سكور يقرأ نتائج الموسم الحالي في {len(comps)} بطولات ويحوّلها إلى '
-              f'تقييم قوة لكل نادٍ واحتمالات لكل مباراة قادمة — {n_pred} مباراة متوقعة خلال الأيام السبعة القادمة. '
-              '<a href="#model">كيف يعمل النموذج؟</a></p>')
-    hp.append('<div class="an-nav">' + "".join(
-        f'<a href="/analysis/{COMP_SLUG[c]}.html">{comp_icon(c)} {esc(comp_label(c))}</a>'
-        for c in comps if c in COMP_SLUG) + '</div>')
-    hp.append('<section class="minfo"><h2>توقعات مباريات الأسبوع</h2>')
-    if not by_comp:
-        hp.append('<p class="hintline">لا مباريات قادمة خلال سبعة أيام في البطولات المغطاة.</p>')
+    page_head = head("تحليلات وتوقعات المباريات بالأرقام — يلا سكور",
+                     "توقعات مباريات الأسبوع باحتمالات مبنية على بيانات الموسم، تقييم قوة الأندية، تحليل اللاعبين، "
+                     "وسجل شفاف لدقة التوقعات في الدوري المصري وأبرز الدوريات.",
+                     SITE_BASE + "/analysis.html", active="analysis")
+    crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html")])
+    nav = [(COMP_SLUG[c], Markup(comp_icon(c)), comp_label(c)) for c in comps if c in COMP_SLUG]
+    week = []
     for c in comps:
         rows = by_comp.get(c)
         if not rows:
             continue
-        hp.append(f'<h3 class="an-comp">{comp_icon(c)} <a href="/analysis/{COMP_SLUG.get(c, "")}.html">{esc(comp_label(c))}</a></h3>')
-        hp.append('<div class="plist">' + "".join(pred_row(m, p) for m, p in rows[:8]) + '</div>')
-        if len(rows) > 8 and c in COMP_SLUG:
-            hp.append(f'<p class="more-link"><a href="/analysis/{COMP_SLUG[c]}.html">كل توقعات {esc(comp_label(c))} ({len(rows)}) ←</a></p>')
-    hp.append(f'<p class="pd-note">{AN_DISCLAIMER}</p></section>')
+        week.append({"icon": Markup(comp_icon(c)), "slug": COMP_SLUG.get(c, ""), "label": comp_label(c),
+                     "rows": [Markup(pred_row(m, p)) for m, p in rows[:8]],
+                     "more": len(rows) if len(rows) > 8 and c in COMP_SLUG else 0})
     # power snapshot: top 5 per league
-    hp.append('<section class="minfo"><h2>أقوى الأندية الآن (تقييم Elo)</h2><div class="pw-grid">')
+    power = []
     for c in comps:
         rows = sorted(tstats[c].values(), key=lambda r: -r["elo"])[:5]
         if not rows or all(r["played"] == 0 for r in rows):
             continue
-        hp.append(f'<div class="pw-card"><h3>{comp_icon(c)} {esc(comp_label(c))}</h3><ol>' + "".join(
-            f'<li><bdi>{esc(ar_team(r["team"]))}</bdi> <b>{round(r["elo"])}</b></li>' for r in rows)
-            + (f'</ol><a href="/analysis/{COMP_SLUG[c]}.html">الجدول الكامل ←</a></div>' if c in COMP_SLUG else '</ol></div>'))
-    hp.append('</div></section>')
+        power.append({"icon": Markup(comp_icon(c)), "label": comp_label(c),
+                      "rows": [(ar_team(r["team"]), round(r["elo"])) for r in rows],
+                      "slug": COMP_SLUG[c] if c in COMP_SLUG else None})
     # players snapshot: best-rated across leagues (n>=2)
     best = []
     for c, d in pins.items():
         for r in d.get("ratings", [])[:5]:
             best.append(dict(r, comp=c))
     best.sort(key=lambda r: (-r["avg"], -r["n"]))
-    if best:
-        hp.append('<section class="minfo"><h2>أعلى اللاعبين تقييمًا هذا الموسم</h2>'
-                  '<p class="hintline">متوسط تقييم اللاعب في المباريات التي بدأها أساسيًا (مرتان على الأقل)، من تقييمات مزوّد البيانات.</p>'
-                  '<div class="tbl-wrap"><table class="ptable"><thead><tr><th>#</th><th class="tl">اللاعب</th><th class="tl">النادي</th><th class="tl">البطولة</th><th>مباريات</th><th>التقييم</th></tr></thead><tbody>')
-        for i, r in enumerate(best[:12], 1):
-            hp.append(f'<tr><td>{i}</td><td class="tl"><bdi>{esc(r["name"])}</bdi></td><td class="tl"><bdi>{esc(r["club"])}</bdi></td>'
-                      f'<td class="tl">{esc(comp_label(r["comp"]))}</td><td>{r["n"]}</td><td><b>{r["avg"]:.2f}</b></td></tr>')
-        hp.append('</tbody></table></div></section>')
-    hp.append(accuracy_html(acc))
-    hp.append(model_explainer())
-    hp.append(foot())
-    write("analysis.html", "".join(hp))
+    best_rows = [{"name": r["name"], "club": r["club"], "comp": comp_label(r["comp"]), "n": r["n"],
+                  "avg": f'{r["avg"]:.2f}'} for r in best[:12]]
+    write("analysis.html", render(
+        "analysis.html", page_head=Markup(page_head), crumbs_ld=Markup(crumbs_ld),
+        n_comps=len(comps), n_pred=n_pred, nav=nav, week=week, disclaimer=Markup(AN_DISCLAIMER),
+        power=power, best=best_rows, accuracy=Markup(accuracy_html(acc)),
+        explainer=Markup(model_explainer()), page_foot=Markup(foot())))
     urls.append("/analysis.html")
     # ---- per-league pages ----
     for c in comps:
@@ -1553,68 +1491,56 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
         stats, params = tstats[c], lparams[c]
         if not stats:
             continue
-        lp = [head(f"تحليلات {label}: توقعات المباريات وقوة الأندية واللاعبون — يلا سكور",
-                   f"توقعات مباريات {label} القادمة باحتمالات مبنية على نتائج الموسم، ترتيب قوة الأندية (Elo) "
-                   f"ومؤشرات الهجوم والدفاع، توقيت الأهداف، وأعلى اللاعبين تقييمًا.",
-                   SITE_BASE + f"/analysis/{slug}.html", active="analysis")]
-        lp.append(breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html"),
-                                 (label, SITE_BASE + f"/analysis/{slug}.html")]))
-        lp.append(f'<nav class="crumbs"><a href="/">أخبار</a> › <a href="/analysis.html">تحليلات</a> › {esc(label)}</nav>')
-        lp.append(f'<h1 class="page-h">تحليلات {esc(label)}</h1>')
-        n_m = params["n"]
-        lp.append(f'<p class="hintline">مبنية على {_games(n_m)} منتهية هذا الموسم · متوسط الأهداف في المباراة '
-                  f'{(params["gpm"] or 0):.2f}'
-                  + (f' · فوز الأرض في {_pct(params["home_win"])} من المباريات والتعادل في {_pct(params["draw"])}' if params["home_win"] is not None else '')
-                  + '.</p>')
-        rows = by_comp.get(c, [])
+        page_head = head(f"تحليلات {label}: توقعات المباريات وقوة الأندية واللاعبون — يلا سكور",
+                         f"توقعات مباريات {label} القادمة باحتمالات مبنية على نتائج الموسم، ترتيب قوة الأندية (Elo) "
+                         f"ومؤشرات الهجوم والدفاع، توقيت الأهداف، وأعلى اللاعبين تقييمًا.",
+                         SITE_BASE + f"/analysis/{slug}.html", active="analysis")
+        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html"),
+                                   (label, SITE_BASE + f"/analysis/{slug}.html")])
         # all upcoming of this comp within 14 days
         wk2 = (today + datetime.timedelta(days=14)).isoformat()
         rows = sorted([(m, preds[str(m["match_id"])]) for m in upcoming
                        if m.get("competition") == c and str(m.get("match_id")) in preds and (m.get("kickoff") or "") <= wk2],
                       key=lambda t: (t[0].get("kickoff") or "", t[0].get("koff_time") or ""))
-        lp.append(f'<section class="minfo"><h2>توقعات مباريات {esc(label)} القادمة</h2>')
-        lp.append('<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>' if rows
-                  else '<p class="hintline">لا مباريات قادمة خلال 14 يومًا.</p>')
-        lp.append(f'<p class="pd-note">{AN_DISCLAIMER}</p></section>')
-        lp.append(f'<section class="minfo"><h2>قوة أندية {esc(label)}</h2>'
-                  '<p class="hintline">الترتيب بتقييم القوة (Elo) لا بالنقاط: يكافئ الفوز على الأقوياء ويأخذ فارق الأهداف '
-                  'في الحساب. مؤشر الهجوم/الدفاع = أهداف النادي مقارنة بمتوسط الدوري (1.00 = المتوسط).</p>'
-                  + power_table(c, stats, params, forms.get(c, {})) + '</section>')
+        pred_rows = [Markup(pred_row(m, p)) for m, p in rows]
+        power_html = Markup(power_table(c, stats, params, forms.get(c, {})))
         pi = pins.get(c)
         si = sins.get(c)
+        players = None
         if pi or si:
-            lp.append(f'<section class="minfo"><h2>تحليل اللاعبين في {esc(label)}</h2>')
+            players = ""
             if si and si.get("ga"):
-                lp.append(ga_table(si["ga"], si.get("share", []), "الأكثر مساهمة في الأهداف (أهداف + صناعة)"))
+                players += ga_table(si["ga"], si.get("share", []), "الأكثر مساهمة في الأهداف (أهداف + صناعة)")
             if pi and pi.get("ratings"):
-                lp.append(ratings_table(pi["ratings"][:10], "أعلى اللاعبين تقييمًا (مرتان أساسيًا على الأقل)"))
-            lp.append('</section>')
+                players += ratings_table(pi["ratings"][:10], "أعلى اللاعبين تقييمًا (مرتان أساسيًا على الأقل)")
+            players = Markup(players)
+        timing = None
         if pi and sum(pi["timing"].values()) >= 10:
             late = sorted(pi["club_late"].items(), key=lambda kv: -kv[1]["late_share"])[:3]
             early = sorted(pi["club_late"].items(), key=lambda kv: -(kv[1]["early"] / kv[1]["total"]))[:3]
-            lp.append(f'<section class="minfo"><h2>متى تُسجَّل الأهداف في {esc(label)}؟</h2>'
-                      f'<p class="hintline">توزيع {sum(pi["timing"].values())} هدفًا في {_games(pi["n_matches"])} مرصودة بالتفاصيل هذا الموسم.</p>'
-                      + timing_bars(pi["timing"], "الأهداف حسب فترة المباراة (بالدقائق)"))
-            if late:
-                lp.append('<p class="pd-line"><b>أندية الأهداف المتأخرة (بعد الدقيقة 75):</b> ' + '، '.join(
-                    f'<bdi>{esc(k)}</bdi> ({v["late"]} من {v["total"]})' for k, v in late if v["late"]) + '</p>')
-            if early:
-                lp.append('<p class="pd-line"><b>أندية البداية السريعة (أول 15 دقيقة):</b> ' + '، '.join(
-                    f'<bdi>{esc(k)}</bdi> ({v["early"]} من {v["total"]})' for k, v in early if v["early"]) + '</p>')
-            lp.append('</section>')
+            timing = {
+                "goals": sum(pi["timing"].values()), "games": _games(pi["n_matches"]),
+                "bars": Markup(timing_bars(pi["timing"], "الأهداف حسب فترة المباراة (بالدقائق)")),
+                "late": Markup('، '.join(f'<bdi>{esc(k)}</bdi> ({v["late"]} من {v["total"]})'
+                                         for k, v in late if v["late"])) if late else None,
+                "early": Markup('، '.join(f'<bdi>{esc(k)}</bdi> ({v["early"]} من {v["total"]})'
+                                          for k, v in early if v["early"])) if early else None}
         ca = {"all": acc["comps"].get(c), "comps": {}, "recent": [e for e in acc.get("recent", []) if e.get("comp") == c]}
-        lp.append(accuracy_html(ca, anchor=False))
         # the standings page exists only for a competition with ONE table; a
         # cup (CAF CL) has group tables and no /standings page, so linking it
         # unconditionally left a dead link on that league's analysis page
-        _st_link = (f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a> · '
-                    if (has_table or set()) and comp_has_table(c, has_table) else "")
-        lp.append(f'<p class="more-link">{_st_link}'
-                  f'<a href="/analysis.html#model">كيف يعمل النموذج؟</a></p>')
-        lp.append(foot())
-        write(f"analysis/{slug}.html", "".join(lp))
+        write(f"analysis/{slug}.html", render(
+            "analysis_league.html", page_head=Markup(page_head), crumbs_ld=Markup(crumbs_ld),
+            label=label, slug=slug, games=_games(params["n"]), gpm=f'{(params["gpm"] or 0):.2f}',
+            home_win=_pct(params["home_win"]) if params["home_win"] is not None else None,
+            draw=_pct(params["draw"]) if params["home_win"] is not None else None,
+            rows=pred_rows, disclaimer=Markup(AN_DISCLAIMER), power=power_html,
+            players=players, timing=timing, accuracy=Markup(accuracy_html(ca, anchor=False)),
+            has_table=bool((has_table or set()) and comp_has_table(c, has_table)),
+            page_foot=Markup(foot())))
         urls.append(f"/analysis/{slug}.html")
     return urls
+
 
 # ---- slice 4: build()'s page sections as functions (tools/extract_sections.py) ----
 _UNSET = object()      # 'this build() variable was not bound at the call'

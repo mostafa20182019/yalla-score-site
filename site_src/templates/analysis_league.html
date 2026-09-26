@@ -1,0 +1,43 @@
+{# /analysis/<slug> - one league: upcoming predictions, club power, players, goal timing, the model's record there - templated 2026-09-26.
+   Lines are joined with NO separator by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/analysis.html">تحليلات</a> › {{ label }}</nav>
+<h1 class="page-h">تحليلات {{ label }}</h1>
+<p class="hintline">مبنية على {{ games }} منتهية هذا الموسم · متوسط الأهداف في المباراة {{ gpm }}{% if home_win is not none %} · فوز الأرض في {{ home_win }} من المباريات والتعادل في {{ draw }}{% endif %}.</p>
+<section class="minfo">
+  <h2>توقعات مباريات {{ label }} القادمة</h2>
+  {% if rows %}
+  <div class="plist">{% for row in rows %}{{ row }}{% endfor %}</div>
+  {% else %}
+  <p class="hintline">لا مباريات قادمة خلال 14 يومًا.</p>
+  {% endif %}
+  <p class="pd-note">{{ disclaimer }}</p>
+</section>
+<section class="minfo">
+  <h2>قوة أندية {{ label }}</h2>
+  <p class="hintline">الترتيب بتقييم القوة (Elo) لا بالنقاط: يكافئ الفوز على الأقوياء ويأخذ فارق الأهداف في الحساب. مؤشر الهجوم/الدفاع = أهداف النادي مقارنة بمتوسط الدوري (1.00 = المتوسط).</p>
+  {{ power }}
+</section>
+{% if players is not none %}
+<section class="minfo">
+  <h2>تحليل اللاعبين في {{ label }}</h2>
+  {{ players }}
+</section>
+{% endif %}
+{% if timing is not none %}
+<section class="minfo">
+  <h2>متى تُسجَّل الأهداف في {{ label }}؟</h2>
+  <p class="hintline">توزيع {{ timing.goals }} هدفًا في {{ timing.games }} مرصودة بالتفاصيل هذا الموسم.</p>
+  {{ timing.bars }}
+  {% if timing.late is not none %}
+  <p class="pd-line"><b>أندية الأهداف المتأخرة (بعد الدقيقة 75):</b> {{ timing.late }}</p>
+  {% endif %}
+  {% if timing.early is not none %}
+  <p class="pd-line"><b>أندية البداية السريعة (أول 15 دقيقة):</b> {{ timing.early }}</p>
+  {% endif %}
+</section>
+{% endif %}
+{{ accuracy }}
+<p class="more-link">{% if has_table %}<a href="/standings/{{ slug }}.html">ترتيب {{ label }} ←</a> · {% endif %}<a href="/analysis.html#model">كيف يعمل النموذج؟</a></p>
+{{ page_foot }}
