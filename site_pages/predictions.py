@@ -229,8 +229,8 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
     return urls
 
 
-def _page_analysis_hub_analysis_league(_acc, _comps_with_table, _lparams, _pins, _plog, _preds,
-                                       _sins, _tstats, _upcoming, forms, matches, urls):
+def analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
+                     _upcoming, forms, matches, urls):
     """/analysis hub + /analysis/<league> + /predictions (the markup still lives
     in analysis_pages() and prediction_history_page() - their own templating
     step)."""

@@ -19,28 +19,9 @@ from site_lib.stats import chart_is_current, compute_elo, league_pcts, team_form
 from site_lib.tables import _scorer_face, scorers_list
 from site_lib.text import esc
 from site_lib.ticker import make_ticker
-from site_pages.glue import _UNSET
 
 
-def _page_strength_model_predictions_accuracy_play(_details_raw=_UNSET, _res_arch=_UNSET, assists=_UNSET, e=_UNSET, fixtures=_UNSET, matches=_UNSET, p=_UNSET, scorers=_UNSET, standings=_UNSET):
-    if _details_raw is _UNSET:
-        del _details_raw
-    if _res_arch is _UNSET:
-        del _res_arch
-    if assists is _UNSET:
-        del assists
-    if e is _UNSET:
-        del e
-    if fixtures is _UNSET:
-        del fixtures
-    if matches is _UNSET:
-        del matches
-    if p is _UNSET:
-        del p
-    if scorers is _UNSET:
-        del scorers
-    if standings is _UNSET:
-        del standings
+def prepare_model(_details_raw, _res_arch, assists, fixtures, matches, scorers, standings):
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
     _archive = load("matches_archive.json")
     # The season pool: the results archive AHEAD of the feed's rolling files, so
@@ -150,21 +131,12 @@ def _page_strength_model_predictions_accuracy_play(_details_raw=_UNSET, _res_arc
                      if _kos else "")
     except Exception:
         _shell.KO_SCRIPT = ""
-    _l = locals()
-    return {k: _l[k] for k in ('ZoneInfo', '_acc', '_bycomp', '_cal', '_dt', '_lparams', '_mid', '_pins', '_plog', '_preds', '_sins', '_squad', '_tstats', '_upcoming', 'm', 'p', 'r', 'reels') if k in _l}
+    return {"acc": _acc, "bycomp": _bycomp, "cal": _cal, "lparams": _lparams,
+            "pins": _pins, "plog": _plog, "preds": _preds, "sins": _sins,
+            "squad": _squad, "tstats": _tstats, "upcoming": _upcoming, "reels": reels}
 
 
-def _page_shared_per_league_data_stats_machinery(_bycomp=_UNSET, assists=_UNSET, fixtures=_UNSET, scorers=_UNSET, standings=_UNSET):
-    if _bycomp is _UNSET:
-        del _bycomp
-    if assists is _UNSET:
-        del assists
-    if fixtures is _UNSET:
-        del fixtures
-    if scorers is _UNSET:
-        del scorers
-    if standings is _UNSET:
-        del standings
+def prepare_league_data(_bycomp, assists, fixtures, scorers, standings):
     # ---- shared per-league data + stats machinery (matches page + /stats) ----
     st_by_comp = {s.get("competition"): s for s in standings if s.get("table")}
     sc_by_comp = {s.get("competition"): (s.get("scorers") or [])
@@ -397,5 +369,7 @@ def _page_shared_per_league_data_stats_machinery(_bycomp=_UNSET, assists=_UNSET,
                      if heading else "")
         body = "".join(panes.get(k, "") for k in ("numbers", "scorers", "trend"))
         return f'<section class="stats-sec">{head_html}{body}</section>' 
-    _l = locals()
-    return {k: _l[k] for k in ('as_by_comp', 'as_ok', 'forms', 'fx_by_comp', 'league_stats_parts', 'league_stats_sec', 'sc_by_comp', 'sc_ok', 'st_by_comp') if k in _l}
+    return {"st_by_comp": st_by_comp, "sc_by_comp": sc_by_comp, "sc_ok": sc_ok,
+            "as_by_comp": as_by_comp, "as_ok": as_ok, "forms": forms,
+            "fx_by_comp": fx_by_comp, "league_stats_parts": league_stats_parts,
+            "league_stats_sec": league_stats_sec}

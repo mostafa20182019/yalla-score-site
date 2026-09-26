@@ -17,12 +17,11 @@ from site_lib.urls import match_url
 from site_lib.widgets import video_facade
 
 
-def _page_home(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matches, reels,
-               standings, videos):
+def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matches, reels,
+              standings, videos):
     """/ - markup and the user's standing rules for it: site_src/templates/
     home.html (templated 2026-09-26). The pieces are built here in the same
-    order as before; the loops' last h / m / v keep their names, as when this
-    lived inside build()."""
+    order as before."""
     feat = articles[0] if articles else None    # og:image source
     page_head = head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
                      image=(feat and feat.get("image_url")) or None, active="home",
@@ -108,5 +107,3 @@ def _page_home(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, mat
         reels_banner=Markup(reels_banner), show_headlines=show_headlines,
         headline_cards=[Markup(c) for c in headline_cards], clubs_strip=Markup(strip),
         fav_script=Markup(fav_script), page_foot=Markup(foot())))
-    _l = locals()
-    return {k: _l[k] for k in ('h', 'm', 'v') if k in _l}

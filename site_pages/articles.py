@@ -15,10 +15,9 @@ from site_lib.shell import _LASTMOD, _og_dims, foot, head, thumb_url, write
 from site_lib.snippets import FBCOPY_JS
 from site_lib.text import esc, jsonld, strip_src, strip_tags
 from site_lib.urls import article_href, breadcrumb_ld, is_match_piece
-from site_pages.glue import _UNSET
 
 
-def _page_article_pages(articles, articles_all, matches, urls):
+def article_pages(articles, articles_all, matches, urls):
     """/a/<id> for every article (listed or not - each keeps its page). The
     markup is site_src/templates/article.html (templated 2026-09-25); this
     function prepares the values, the NewsArticle / breadcrumb / FAQ JSON-LD,
@@ -28,9 +27,8 @@ def _page_article_pages(articles, articles_all, matches, urls):
     Match previews/reports do not get a page of their own: they render inside
     /m/<match_id> and their old /a/ URL is a stub that 301s there.
 
-    Returns what later pages read from this section. `a`, `img`, `_clubs`,
-    `_faq` and `_t` are the loop's LAST values, kept under the same names so
-    they end exactly as they did when this section still lived inside build()."""
+    Returns (match_id -> its match pieces, the moved /a/ -> /m/ pairs) - read by
+    match_pages() and write_redirects()."""
     # match_id -> competition, so a match piece whose writer skipped `sources`
     # still credits the right data provider (see match_data_sources)
     _mcomp = {str(m["match_id"]): (m.get("competition") or "")
@@ -137,11 +135,10 @@ def _page_article_pages(articles, articles_all, matches, urls):
     print(f"  + match pieces moved into their match page: {len(_moved)}")
     print(f"  + articles: {len(articles_all)} pages, {len(articles)} listed "
           f"({n_thin} unlisted: under {ARTICLE_MIN_WORDS} words, noindexed + out of every listing)")
-    _l = locals()
-    return {k: _l[k] for k in ('_clubs', '_faq', '_match_arts', '_moved', '_t', 'a', 'img', 'p') if k in _l}
+    return _match_arts, _moved
 
 
-def _page_news_archive(articles, urls):
+def news_archive_pages(articles, urls):
     """/news = everything; /news/egypt + /news/europe = the section archives each
     home block's «المزيد» opens (user 2026-09-01: the blocks stay at 4 rows - the
     rest lives behind المزيد). Same calm list rows everywhere - the old card grid
@@ -181,11 +178,7 @@ def _page_news_archive(articles, urls):
                  [a for a in articles if _eur_article(a)])
 
 
-def _page_fb_html_internal_helper_ready_to_paste_f(a=_UNSET, articles=_UNSET):
-    if a is _UNSET:
-        del a
-    if articles is _UNSET:
-        del articles
+def fb_helper_page(articles):
     # ---- fb.html — INTERNAL helper: ready-to-paste Facebook posts ----
     # Unlinked, out of the sitemap, noindexed. The user opens it directly
     # (bookmark) and copies each new article's post until FB auto-posting
@@ -215,21 +208,9 @@ def _page_fb_html_internal_helper_ready_to_paste_f(a=_UNSET, articles=_UNSET):
     fbp.append(foot())
     write("fb.html", "".join(fbp).replace(
         "<head>", '<head><meta name="robots" content="noindex">', 1))
-    _l = locals()
-    return {k: _l[k] for k in ('a',) if k in _l}
 
 
-def _page_headlines_page(h=_UNSET, headlines=_UNSET, img=_UNSET, urls=_UNSET, when=_UNSET):
-    if h is _UNSET:
-        del h
-    if headlines is _UNSET:
-        del headlines
-    if img is _UNSET:
-        del img
-    if urls is _UNSET:
-        del urls
-    if when is _UNSET:
-        del when
+def headlines_page(headlines, urls):
     # ---- headlines page (full aggregated list; gated by SHOW_HEADLINES) ----
     if SHOW_HEADLINES:
         hp = [head(f"عناوين الصحف — {SITE_NAME}",

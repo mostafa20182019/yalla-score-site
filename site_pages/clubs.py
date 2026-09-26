@@ -19,7 +19,7 @@ from site_lib.text import esc, jsonld
 from site_lib.urls import article_href, breadcrumb_ld, match_url
 
 
-def _page_per_club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
+def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
     """/team/<slug> - evergreen SEO hubs for the highest-volume Arabic query
     family: «أخبار الأهلي اليوم»، «مباريات الزمالك القادمة»، «نتيجة ريال مدريد».
     One page per curated club: latest news + next matches + recent results +
@@ -127,5 +127,3 @@ def _page_per_club_pages(_plog, _preds, articles, forms, m_all, season, st_by_co
             club_ld=Markup(club_ld), popup=Markup(popup), page_foot=Markup(foot())))
         urls.append(t_url)
     print(f"  + club pages: {len(TEAM_PAGES)}")
-    _l = locals()
-    return {k: _l[k] for k in ('_img', 'a', 'img', 'r') if k in _l}

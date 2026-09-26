@@ -13,7 +13,7 @@ from site_lib.text import esc, jsonld
 from site_lib.widgets import reel_slide, video_facade
 
 
-def _page_404():
+def not_found_page():
     """/404 - served by Cloudflare for any missing asset; not in the sitemap on
     purpose. Text: site_src/templates/404.html. The auto-retry (snippets/
     nf_retry_js.html) exists for one real case: an article page can 404 for a
@@ -28,7 +28,7 @@ def _page_404():
                              page_foot=Markup(foot())))
 
 
-def _page_privacy_policy(urls):
+def privacy_page(urls):
     """/privacy (required for AdSense). The text is site_src/templates/privacy.html;
     this function only hands it the pieces that change (templated 2026-09-25)."""
     contact = (Markup(f'راسِلنا على <a href="mailto:{esc(CONTACT_EMAIL)}">{esc(CONTACT_EMAIL)}</a>.')
@@ -44,7 +44,7 @@ def _page_privacy_policy(urls):
     urls.append("/privacy.html")
 
 
-def _page_about(urls):
+def about_page(urls):
     """/about and /editors (AdSense / E-E-A-T identity pages). Text:
     site_src/templates/about.html + editors.html (templated 2026-09-25)."""
     common = dict(site_name=SITE_NAME)
@@ -76,7 +76,7 @@ def _page_about(urls):
     urls.append("/editors.html")
 
 
-def _page_contact(urls):
+def contact_page(urls):
     """/contact - text in site_src/templates/contact.html (templated 2026-09-25)."""
     write("contact.html", render(
         "contact.html",
@@ -87,7 +87,7 @@ def _page_contact(urls):
     urls.append("/contact.html")
 
 
-def _page_terms(urls):
+def terms_page(urls):
     """/terms - text in site_src/templates/terms.html (templated 2026-09-25)."""
     write("terms.html", render(
         "terms.html",
@@ -98,7 +98,7 @@ def _page_terms(urls):
     urls.append("/terms.html")
 
 
-def _page_editorial(urls):
+def editorial_page(urls):
     """/editorial (the E-E-A-T editorial policy, incl. the AI disclosure) - text in
     site_src/templates/editorial.html (templated 2026-09-25)."""
     write("editorial.html", render(
@@ -110,7 +110,7 @@ def _page_editorial(urls):
     urls.append("/editorial.html")
 
 
-def _page_reels(reels, urls):
+def reels_page(reels, urls):
     """/reels - vertical shorts. Template: site_src/templates/reels.html."""
     page_head = Markup(head(f"ريلز كرة القدم — {SITE_NAME}",
                             "ريلز كرة القدم — مقاطع قصيرة: مهارات وأهداف ولقطات ممتعة بالفيديو.",
@@ -124,7 +124,7 @@ def _page_reels(reels, urls):
         urls.append("/reels.html")
 
 
-def _page_videos(videos, urls):
+def videos_page(videos, urls):
     """/videos, grouped by competition (item.cat: "wc" | "epl" | "laliga" | absent
     -> "misc"); empty groups are skipped. Template: site_src/templates/videos.html."""
     page_head = Markup(head(f"فيديوهات كرة القدم — {SITE_NAME}",

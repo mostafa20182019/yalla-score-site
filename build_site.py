@@ -96,29 +96,23 @@ from site_lib.loaders import (  # noqa: E402,F401
 from site_lib.snippets import (  # noqa: E402,F401
     CSS, LEGENDS_HTML, LEGENDS_CSS, ROUNDS_JS, FILTERS_HTML, MATCHES_JS,
     FBCOPY_JS, SHELF_JS, REELS_FEED_JS, VIDEO_JS)
-# glue, prep, static, articles, home, matches, leagues, clubs, predictions, files: moved to site_pages/ by tools/move_names.py (2026-09-26) -
-# edit them there. Same names, same behaviour.
-from site_pages.glue import (  # noqa: E402,F401
-    _UNSET, _bound)
-from site_pages.prep import (  # noqa: E402,F401
-    _page_strength_model_predictions_accuracy_play, _page_shared_per_league_data_stats_machinery)
-from site_pages.static import (  # noqa: E402,F401
-    _page_404, _page_privacy_policy, _page_about, _page_contact, _page_terms, _page_editorial,
-    _page_reels, _page_videos)
-from site_pages.articles import (  # noqa: E402,F401
-    _page_article_pages, _page_news_archive, _page_fb_html_internal_helper_ready_to_paste_f, _page_headlines_page)
-from site_pages.home import (  # noqa: E402,F401
-    _page_home)
-from site_pages.matches import (  # noqa: E402,F401
-    _page_matches_page, _page_per_match_pages)
-from site_pages.leagues import (  # noqa: E402,F401
-    _page_per_league_standings_top_scorers_pages, _page_per_league_season_fixtures, _page_stats_dashboard)
-from site_pages.clubs import (  # noqa: E402,F401
-    _page_per_club_pages)
+# The pages: one module per page type in site_pages/ (slice 8, 2026-09-26),
+# with real names and explicit inputs/outputs since slice 9.
+from site_pages.prep import prepare_model, prepare_league_data  # noqa: E402
+from site_pages.static import (  # noqa: E402
+    not_found_page, privacy_page, about_page, contact_page, terms_page, editorial_page,
+    reels_page, videos_page)
+from site_pages.articles import (  # noqa: E402
+    article_pages, news_archive_pages, fb_helper_page, headlines_page)
+from site_pages.home import home_page  # noqa: E402
+from site_pages.matches import matches_page, match_pages  # noqa: E402
+from site_pages.leagues import league_pages, fixtures_pages, stats_page  # noqa: E402
+from site_pages.clubs import club_pages  # noqa: E402
 from site_pages.predictions import (  # noqa: E402,F401
-    prediction_history_page, analysis_pages, _page_analysis_hub_analysis_league)
-from site_pages.files import (  # noqa: E402,F401
-    _page_robots_sitemap_ads_txt, _page_passthrough_root_files, _page_redirects_the_match_pieces_that_moved_in, _page_mirrored_crests, _page_uploaded_media, _page_assets_css_logo)
+    prediction_history_page, analysis_pages, analysis_section)
+from site_pages.files import (  # noqa: E402
+    robots_sitemap_ads, copy_root_files, write_redirects, copy_crests,
+    copy_media_and_build_info, write_assets)
 import site_lib.shell as _shell   # build() sets TICKER_HTML / KO_SCRIPT / CSS_VER on it
 
 
@@ -198,261 +192,57 @@ def build():
           % (len(_res_arch), len(_frozen), _sc_fill,
              (" - %d DISAGREED with the feed" % _sc_chg) if _sc_chg else ""))
 
-    # تحليلات: strength model + predictions + accuracy + player insights -> _page_strength_model_predictions_accuracy_play() (moved out of build(), slice 4)
-    _r = _page_strength_model_predictions_accuracy_play(**_bound(locals(), ('_details_raw', '_res_arch', 'assists', 'e', 'fixtures', 'matches', 'p', 'scorers', 'standings')))
-    if 'ZoneInfo' in _r:
-        ZoneInfo = _r['ZoneInfo']
-    if '_acc' in _r:
-        _acc = _r['_acc']
-    if '_bycomp' in _r:
-        _bycomp = _r['_bycomp']
-    if '_cal' in _r:
-        _cal = _r['_cal']
-    if '_dt' in _r:
-        _dt = _r['_dt']
-    if '_lparams' in _r:
-        _lparams = _r['_lparams']
-    if '_mid' in _r:
-        _mid = _r['_mid']
-    if '_pins' in _r:
-        _pins = _r['_pins']
-    if '_plog' in _r:
-        _plog = _r['_plog']
-    if '_preds' in _r:
-        _preds = _r['_preds']
-    if '_sins' in _r:
-        _sins = _r['_sins']
-    if '_squad' in _r:
-        _squad = _r['_squad']
-    if '_tstats' in _r:
-        _tstats = _r['_tstats']
-    if '_upcoming' in _r:
-        _upcoming = _r['_upcoming']
-    if 'm' in _r:
-        m = _r['m']
-    if 'p' in _r:
-        p = _r['p']
-    if 'r' in _r:
-        r = _r['r']
-    if 'reels' in _r:
-        reels = _r['reels']
+    # تحليلات: strength model + predictions + accuracy + player insights; also
+    # sets the ticker and the kickoff times on site_lib.shell
+    model = prepare_model(_details_raw, _res_arch, assists, fixtures, matches, scorers, standings)
+    _acc, _bycomp, _cal, _lparams = model["acc"], model["bycomp"], model["cal"], model["lparams"]
+    _pins, _plog, _preds, _sins = model["pins"], model["plog"], model["preds"], model["sins"]
+    _squad, _tstats, _upcoming, reels = model["squad"], model["tstats"], model["upcoming"], model["reels"]
 
-    # assets: css + logo -> _page_assets_css_logo() (moved out of build(), slice 4)
-    _r = _page_assets_css_logo()
-    if 'f' in _r:
-        f = _r['f']
-    if 'urls' in _r:
-        urls = _r['urls']
+    urls = write_assets()          # css + logo; `urls` collects the sitemap from here on
 
-    # home -> _page_home() (moved out of build(), slice 4)
-    _r = _page_home(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matches, reels,
-                    standings, videos)
-    if 'h' in _r:
-        h = _r['h']
-    if 'm' in _r:
-        m = _r['m']
-    if 'v' in _r:
-        v = _r['v']
+    home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matches, reels,
+              standings, videos)
+    _match_arts, _moved = article_pages(articles, articles_all, matches, urls)
 
-    # article pages -> _page_article_pages() (moved out of build(), slice 4)
-    _r = _page_article_pages(articles, articles_all, matches, urls)
-    if '_clubs' in _r:
-        _clubs = _r['_clubs']
-    if '_faq' in _r:
-        _faq = _r['_faq']
-    if '_match_arts' in _r:
-        _match_arts = _r['_match_arts']
-    if '_moved' in _r:
-        _moved = _r['_moved']
-    if '_t' in _r:
-        _t = _r['_t']
-    if 'a' in _r:
-        a = _r['a']
-    if 'img' in _r:
-        img = _r['img']
-    if 'p' in _r:
-        p = _r['p']
+    # shared per-league data (matches page, league pages, /stats)
+    league = prepare_league_data(_bycomp, assists, fixtures, scorers, standings)
+    st_by_comp, sc_by_comp, sc_ok = league["st_by_comp"], league["sc_by_comp"], league["sc_ok"]
+    as_by_comp, as_ok, forms = league["as_by_comp"], league["as_ok"], league["forms"]
+    fx_by_comp = league["fx_by_comp"]
 
-    # shared per-league data + stats machinery (matches page + /stats) -> _page_shared_per_league_data_stats_machinery() (moved out of build(), slice 4)
-    _r = _page_shared_per_league_data_stats_machinery(**_bound(locals(), ('_bycomp', 'assists', 'fixtures', 'scorers', 'standings')))
-    if 'as_by_comp' in _r:
-        as_by_comp = _r['as_by_comp']
-    if 'as_ok' in _r:
-        as_ok = _r['as_ok']
-    if 'forms' in _r:
-        forms = _r['forms']
-    if 'fx_by_comp' in _r:
-        fx_by_comp = _r['fx_by_comp']
-    if 'league_stats_parts' in _r:
-        league_stats_parts = _r['league_stats_parts']
-    if 'league_stats_sec' in _r:
-        league_stats_sec = _r['league_stats_sec']
-    if 'sc_by_comp' in _r:
-        sc_by_comp = _r['sc_by_comp']
-    if 'sc_ok' in _r:
-        sc_ok = _r['sc_ok']
-    if 'st_by_comp' in _r:
-        st_by_comp = _r['st_by_comp']
+    comp_order = matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
+                              league["league_stats_parts"], matches, st_by_comp, standings)
+    m_all = match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
+                        articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls)
+    _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
+                                             sc_by_comp, sc_ok, st_by_comp, urls)
+    fixtures_pages(fx_by_comp, season, st_by_comp, urls)
+    analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
+                     _upcoming, forms, matches, urls)
+    club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
+    stats_page(comp_order, fixtures, forms, league["league_stats_sec"], matches, sc_by_comp,
+               sc_ok, st_by_comp, urls)
 
-    # matches page (per-day navigator, like the live app) -> _page_matches_page() (moved out of build(), slice 4)
-    _r = _page_matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
-                            league_stats_parts, matches, st_by_comp, standings)
-    if 'a' in _r:
-        a = _r['a']
-    if 'comp' in _r:
-        comp = _r['comp']
-    if 'comp_order' in _r:
-        comp_order = _r['comp_order']
-    if 'i' in _r:
-        i = _r['i']
-    if 'img' in _r:
-        img = _r['img']
-    if 'k' in _r:
-        k = _r['k']
-    if 'm' in _r:
-        m = _r['m']
-    if 'st' in _r:
-        st = _r['st']
+    not_found_page()               # served by Cloudflare for any missing asset
+    privacy_page(urls)             # required for AdSense
+    about_page(urls)               # من نحن - AdSense / E-E-A-T review
+    contact_page(urls)
+    terms_page(urls)
+    editorial_page(urls)           # السياسة التحريرية - E-E-A-T signal
+    news_archive_pages(articles, urls)
+    fb_helper_page(articles)       # INTERNAL: not in the sitemap, linked from nowhere
+    headlines_page(headlines, urls)        # gated by SHOW_HEADLINES
+    reels_page(reels, urls)
+    videos_page(videos, urls)
 
-    # per-match pages (/m/<id>.html) -> _page_per_match_pages() (moved out of build(), slice 4)
-    _r = _page_per_match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad,
-                               _tstats, articles, fixtures, forms, ge_idx, matches, md_idx,
-                               st_by_comp, urls)
-    if '_h' in _r:
-        _h = _r['_h']
-    if '_html' in _r:
-        _html = _r['_html']
-    if '_slug' in _r:
-        _slug = _r['_slug']
-    if 'a' in _r:
-        a = _r['a']
-    if 'comp' in _r:
-        comp = _r['comp']
-    if 'desc' in _r:
-        desc = _r['desc']
-    if 'img' in _r:
-        img = _r['img']
-    if 'm' in _r:
-        m = _r['m']
-    if 'm_all' in _r:
-        m_all = _r['m_all']
-    if 'st' in _r:
-        st = _r['st']
-    if 'title' in _r:
-        title = _r['title']
-    if 'v' in _r:
-        v = _r['v']
-    if 'when' in _r:
-        when = _r['when']
-
-    # per-league standings + top-scorers pages -> _page_per_league_standings_top_scorers_pages() (moved out of build(), slice 4)
-    _r = _page_per_league_standings_top_scorers_pages(_bycomp, _preds, as_by_comp, as_ok, forms,
-                                                      matches, sc_by_comp, sc_ok, st_by_comp, urls)
-    if '_comps_with_table' in _r:
-        _comps_with_table = _r['_comps_with_table']
-    if 'comp' in _r:
-        comp = _r['comp']
-    if 'label' in _r:
-        label = _r['label']
-    if 'm' in _r:
-        m = _r['m']
-    if 'season' in _r:
-        season = _r['season']
-    if 'slug' in _r:
-        slug = _r['slug']
-    if 'st' in _r:
-        st = _r['st']
-    if 'up_next' in _r:
-        up_next = _r['up_next']
-
-    # per-league season fixtures (/fixtures/<slug>.html) -> _page_per_league_season_fixtures() (moved out of build(), slice 4)
-    _r = _page_per_league_season_fixtures(fx_by_comp, season, st_by_comp, urls)
-    if 'comp' in _r:
-        comp = _r['comp']
-    if 'label' in _r:
-        label = _r['label']
-    if 'slug' in _r:
-        slug = _r['slug']
-
-    # تحليلات: /analysis hub + /analysis/<league> -> _page_analysis_hub_analysis_league() (moved out of build(), slice 4)
-    _page_analysis_hub_analysis_league(_acc, _comps_with_table, _lparams, _pins, _plog, _preds,
-                                       _sins, _tstats, _upcoming, forms, matches, urls)
-
-    # per-club pages (/team/<slug>) -> _page_per_club_pages() (moved out of build(), slice 4)
-    _r = _page_per_club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
-    if '_img' in _r:
-        _img = _r['_img']
-    if 'a' in _r:
-        a = _r['a']
-    if 'img' in _r:
-        img = _r['img']
-    if 'r' in _r:
-        r = _r['r']
-
-    # stats dashboard (/stats.html) -> _page_stats_dashboard() (moved out of build(), slice 4)
-    _page_stats_dashboard(comp_order, fixtures, forms, league_stats_sec, matches, sc_by_comp,
-                          sc_ok, st_by_comp, urls)
-
-    # 404 page (served by Cloudflare for any missing asset) -> _page_404_page() (moved out of build(), slice 4)
-    _page_404()
-
-    # privacy policy (required for AdSense) -> _page_privacy_policy() (moved out of build(), slice 4)
-    _page_privacy_policy(urls)
-
-    # about page (من نحن) — helps AdSense/E-E-A-T review -> _page_about_page_helps_adsense_e_e_a_t_review() (moved out of build(), slice 4)
-    _page_about(urls)
-
-    # contact page (اتصل بنا) -> _page_contact_page() (moved out of build(), slice 4)
-    _page_contact(urls)
-
-    # terms of use (شروط الاستخدام) -> _page_terms_of_use() (moved out of build(), slice 4)
-    _page_terms(urls)
-
-    # editorial policy (السياسة التحريرية) — E-E-A-T signal -> _page_editorial_policy_e_e_a_t_signal() (moved out of build(), slice 4)
-    _page_editorial(urls)
-
-    # news archive pages -> _page_news_archive_pages() (moved out of build(), slice 4)
-    _page_news_archive(articles, urls)
-
-    # fb.html — INTERNAL helper: ready-to-paste Facebook posts -> _page_fb_html_internal_helper_ready_to_paste_f() (moved out of build(), slice 4)
-    _r = _page_fb_html_internal_helper_ready_to_paste_f(**_bound(locals(), ('a', 'articles')))
-    if 'a' in _r:
-        a = _r['a']
-    # deliberately NOT appended to urls (sitemap) and linked from nowhere
-
-    # headlines page (full aggregated list; gated by SHOW_HEADLINES) -> _page_headlines_page() (moved out of build(), slice 4)
-    _page_headlines_page(**_bound(locals(), ('h', 'headlines', 'img', 'urls', 'when')))
-
-    # reels page (vertical shorts; data/reels.json + reels_auto.json) -> _page_reels_page() (moved out of build(), slice 4)
-    _page_reels(reels, urls)
-
-    # videos page: grouped by competition (empty sections auto-hide) -> _page_videos_page_grouped_by_competition() (moved out of build(), slice 4)
-    _page_videos(videos, urls)
-
-    # robots + sitemap + ads.txt -> _page_robots_sitemap_ads_txt() (moved out of build(), slice 4)
-    _page_robots_sitemap_ads_txt(**_bound(locals(), ('_img', 'a', 'articles', 'urls')))
-
-    # passthrough root files (Google Search Console verification, etc.) -> _page_passthrough_root_files() (moved out of build(), slice 4)
-    _r = _page_passthrough_root_files()
-    if 'fn' in _r:
-        fn = _r['fn']
-    if 'src' in _r:
-        src = _r['src']
-
-    # _redirects: the match pieces that moved into their match page -> _page_redirects_the_match_pieces_that_moved_in() (moved out of build(), slice 4)
-    _page_redirects_the_match_pieces_that_moved_in(**_bound(locals(), ('_moved',)))
-
-    # mirrored crests (downloaded by local_crest during rendering) -> _page_mirrored_crests() (moved out of build(), slice 4)
-    _r = _page_mirrored_crests(**_bound(locals(), ('fn', 'src')))
-    if 'fn' in _r:
-        fn = _r['fn']
-    if 'n' in _r:
-        n = _r['n']
-    if 'src' in _r:
-        src = _r['src']
-
-    # uploaded media (article images added via the admin page) -> _page_uploaded_media() (moved out of build(), slice 4)
-    _page_uploaded_media(**_bound(locals(), ('_preds', 'articles', 'fn', 'matches', 'n', 'src')))
+    # files that are not pages - robots/sitemap last among the writers of
+    # `urls`, so the sitemap lists every page above
+    robots_sitemap_ads(articles, urls)
+    copy_root_files()              # Search Console verification etc.
+    write_redirects(_moved)        # match pieces that moved into their match page
+    copy_crests()                  # downloaded by local_crest during rendering
+    copy_media_and_build_info(_preds, articles, matches)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,11 @@
 # -*- coding: utf-8 -*-
 """Mechanical "extract method" for build_site.build() (2026-09-25, slice 4).
 
+RETIRED 2026-09-26: its output (the _page_* functions, the _UNSET sentinel,
+the locals() hand-back) was replaced in slice 9 by site_pages/ functions with
+explicit inputs and outputs. Kept as the record of how slice 4 was done;
+running it against today's build_site.py finds nothing to extract.
+
     python tools/extract_sections.py            # dry run: the plan, section by section
     python tools/extract_sections.py --apply    # rewrite build_site.py
 

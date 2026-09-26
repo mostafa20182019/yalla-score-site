@@ -19,18 +19,9 @@ from site_lib.loaders import build_info
 from site_lib.shell import _LASTMOD, write, write_text
 from site_lib.snippets import CSS, LEGENDS_CSS
 from site_lib.text import esc, strip_tags
-from site_pages.glue import _UNSET
 
 
-def _page_robots_sitemap_ads_txt(_img=_UNSET, a=_UNSET, articles=_UNSET, urls=_UNSET):
-    if _img is _UNSET:
-        del _img
-    if a is _UNSET:
-        del a
-    if articles is _UNSET:
-        del articles
-    if urls is _UNSET:
-        del urls
+def robots_sitemap_ads(articles, urls):
     # ---- robots + sitemap + ads.txt ----
     write("robots.txt", f"User-agent: *\nAllow: /\nSitemap: {SITE_BASE}/sitemap.xml\n"
                         f"Sitemap: {SITE_BASE}/sitemap-news.xml\n")
@@ -97,7 +88,7 @@ def _page_robots_sitemap_ads_txt(_img=_UNSET, a=_UNSET, articles=_UNSET, urls=_U
     write("sitemap.xml", "\n".join(sm))
 
 
-def _page_passthrough_root_files():
+def copy_root_files():
     # ---- passthrough root files (Google Search Console verification, etc.) ----
     extras = os.path.join(HERE, "root-extras")
     if os.path.isdir(extras):
@@ -106,13 +97,9 @@ def _page_passthrough_root_files():
             if os.path.isfile(src):
                 shutil.copy(src, os.path.join(DIST, fn))
                 print("  + root file:", fn)
-    _l = locals()
-    return {k: _l[k] for k in ('fn', 'src') if k in _l}
 
 
-def _page_redirects_the_match_pieces_that_moved_in(_moved=_UNSET):
-    if _moved is _UNSET:
-        del _moved
+def write_redirects(_moved):
     # ---- _redirects: the match pieces that moved into their match page ----
     # Cloudflare Workers static-asset routing reads this file. Both spellings
     # are listed because the extensionless form is the official URL (write()
@@ -131,11 +118,7 @@ def _page_redirects_the_match_pieces_that_moved_in(_moved=_UNSET):
         print(f"  + _redirects: {len(_moved)} match piece(s) 301 to their match page")
 
 
-def _page_mirrored_crests(fn=_UNSET, src=_UNSET):
-    if fn is _UNSET:
-        del fn
-    if src is _UNSET:
-        del src
+def copy_crests():
     # ---- mirrored crests (downloaded by local_crest during rendering) ----
     if _CREST_MAP:
         dest = os.path.join(DIST, "assets", "crests")
@@ -150,23 +133,9 @@ def _page_mirrored_crests(fn=_UNSET, src=_UNSET):
                 shutil.copy(src, os.path.join(dest, fn))
                 n += 1
         print(f"  + crests mirrored: {n}")
-    _l = locals()
-    return {k: _l[k] for k in ('fn', 'n', 'src') if k in _l}
 
 
-def _page_uploaded_media(_preds=_UNSET, articles=_UNSET, fn=_UNSET, matches=_UNSET, n=_UNSET, src=_UNSET):
-    if _preds is _UNSET:
-        del _preds
-    if articles is _UNSET:
-        del articles
-    if fn is _UNSET:
-        del fn
-    if matches is _UNSET:
-        del matches
-    if n is _UNSET:
-        del n
-    if src is _UNSET:
-        del src
+def copy_media_and_build_info(_preds, articles, matches):
     # ---- uploaded media (article images added via the admin page) ----
     media = os.path.join(HERE, "media")
     if os.path.isdir(media):
@@ -204,7 +173,7 @@ def _page_uploaded_media(_preds=_UNSET, articles=_UNSET, fn=_UNSET, matches=_UNS
     print(f"SITE_BASE = {SITE_BASE}  (edit build_site.py to change, then rebuild)")
 
 
-def _page_assets_css_logo():
+def write_assets():
     # ---- assets: css + logo ----
     _css = CSS + "\n" + LEGENDS_CSS
     _shell.CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
@@ -228,5 +197,4 @@ def _page_assets_css_logo():
             break
 
     urls = ["/", "/matches.html"]
-    _l = locals()
-    return {k: _l[k] for k in ('f', 'urls') if k in _l}
+    return urls

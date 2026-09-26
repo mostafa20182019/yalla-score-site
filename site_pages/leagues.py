@@ -19,16 +19,16 @@ from site_lib.text import esc
 from site_lib.urls import breadcrumb_ld, match_url
 
 
-def _page_per_league_standings_top_scorers_pages(_bycomp, _preds, as_by_comp, as_ok, forms,
-                                                 matches, sc_by_comp, sc_ok, st_by_comp, urls):
+def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp, sc_ok,
+                 st_by_comp, urls):
     """Evergreen SEO landing pages with their own URLs: «ترتيب الدوري المصري» and
     «هدافو الدوري المصري» are huge monthly queries that a tab inside /matches can
     never rank for. One /standings/<slug> per league with a table, and one
     /scorers/<slug> when the charts are current (the stale-last-season guard
     sc_ok/as_ok gates them, same as /matches). Markup: templates standings.html
     + scorers.html (2026-09-26); the pieces are built here in the same order as
-    before. The loop's last comp/label/slug/st/m/up_next are returned under the
-    same names, as when this lived inside build()."""
+    before. Returns (the competitions that got a /standings page, the season
+    label) - read by the analysis section, fixtures and club pages."""
     os.makedirs(os.path.join(DIST, "standings"), exist_ok=True)
     os.makedirs(os.path.join(DIST, "scorers"), exist_ok=True)
     _n = datetime.date.today()
@@ -113,11 +113,10 @@ def _page_per_league_standings_top_scorers_pages(_bycomp, _preds, as_by_comp, as
                 urls.append(sc_url)
             n_lp += 1
     print(f"  + league pages: {n_lp}")
-    _l = locals()
-    return {k: _l[k] for k in ('_comps_with_table', 'comp', 'label', 'm', 'season', 'slug', 'st', 'up_next') if k in _l}
+    return _comps_with_table, season
 
 
-def _page_per_league_season_fixtures(fx_by_comp, season, st_by_comp, urls):
+def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
     """/fixtures/<slug> - a league's whole season. These used to be INSIDE
     /matches, hidden behind the league filter: 2,206 fixture rows and 4,955
     crest tags that every visitor downloaded to look at the 82 rows of one day.
@@ -155,12 +154,10 @@ def _page_per_league_season_fixtures(fx_by_comp, season, st_by_comp, urls):
         _LASTMOD[f"/fixtures/{slug}.html"] = REF_TODAY
         n_fx += 1
     print(f"  + season fixture pages: {n_fx}")
-    _l = locals()
-    return {k: _l[k] for k in ('comp', 'label', 'slug') if k in _l}
 
 
-def _page_stats_dashboard(comp_order, fixtures, forms, league_stats_sec, matches, sc_by_comp,
-                          sc_ok, st_by_comp, urls):
+def stats_page(comp_order, fixtures, forms, league_stats_sec, matches, sc_by_comp, sc_ok,
+               st_by_comp, urls):
     """/stats - the visual stats board. Markup: site_src/templates/stats.html
     (templated 2026-09-26). Noindexed unless SHOW_STATS_PAGE."""
     page_head = head(f"إحصائيات وتحليلات — {SITE_NAME}",

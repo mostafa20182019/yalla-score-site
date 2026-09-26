@@ -2,13 +2,12 @@
 
     python tests/test_build_split.py
 
-The slice-4 page functions pass unbound build() variables as the sentinel
-_UNSET and delete them on entry (`if x is _UNSET: del x`). That only works if
-there is ONE _UNSET: a second run of tools/extract_sections.py once inserted a
-second definition, so 25 functions bound their defaults to the first object
-and compared against the second - the delete never fired and an unset
-variable carried the sentinel back into build(). Pinned here: one definition,
-and every function's _UNSET default is that very object.
+History pinned here: slice 4 moved build()'s sections into functions that
+took build()'s variables through an _UNSET sentinel (`if x is _UNSET: del x`)
+and handed their locals() back. A second _UNSET once broke that silently.
+Slice 9 removed the whole mechanism - every page function now has explicit
+inputs and returns only its real outputs - so the checks below make sure it
+does not creep back, and that build() still calls every page exactly once.
 """
 import inspect
 import os
@@ -33,25 +32,23 @@ from build_source import build_source  # noqa: E402  the whole build
 import glob  # noqa: E402
 import importlib  # noqa: E402
 every = build_source().splitlines()   # build_site + site_lib + site_pages
-defs = [i + 1 for i, l in enumerate(every) if l.startswith("_UNSET = object()")]
-ck("1 _UNSET is defined exactly once in the whole build", len(defs) == 1, f"lines {defs}")
-ck("2 _bound is defined exactly once", sum(1 for l in every if l.startswith("def _bound(")) == 1)
+import ast  # noqa: E402
+ck("1 no _UNSET sentinel left anywhere in the build", not [l for l in every if "_UNSET" in l])
+ck("2 no page function hands its locals() back", not [l for l in every if "_l = locals()" in l])
 
-stale = []
+# every page function in site_pages/ is called exactly once by build()
+# (prediction_history_page / analysis_pages are called by analysis_section)
 page_mods = [importlib.import_module("site_pages." + os.path.basename(f)[:-3])
              for f in sorted(glob.glob("site_pages/*.py")) if not f.endswith("__init__.py")]
-checked = 0
-for mod in [B] + page_mods:
-    for name, fn in vars(mod).items():
-        if not (inspect.isfunction(fn) and fn.__module__ == mod.__name__):
-            continue
-        checked += 1
-        for p in inspect.signature(fn).parameters.values():
-            d = p.default
-            if type(d) is object and d is not B._UNSET:
-                stale.append(f"{name}({p.name})")
-ck("3 every sentinel default IS build_site._UNSET (the `is` check can fire)",
-   not stale and checked >= 30, f"{checked} functions checked; stale {stale[:5]}")
+pages = sorted(n for m in page_mods for n, fn in vars(m).items()
+               if inspect.isfunction(fn) and fn.__module__ == m.__name__
+               and n not in ("prediction_history_page", "analysis_pages"))
+_build = next(n for n in ast.parse(open("build_site.py", encoding="utf-8").read()).body
+              if isinstance(n, ast.FunctionDef) and n.name == "build")
+called = [c.func.id for c in ast.walk(_build) if isinstance(c, ast.Call) and isinstance(c.func, ast.Name)]
+wrong = {n: called.count(n) for n in pages if called.count(n) != 1}
+ck("3 build() calls every site_pages page function exactly once",
+   not wrong and len(pages) >= 28, f"{len(pages)} pages; wrong {wrong}")
 
 # slice 6 (tools/move_names.py): moved names are re-imported, never copied.
 # A `global X` in build_site after X moved would rebind a build_site copy the

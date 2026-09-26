@@ -24,8 +24,8 @@ from site_lib.text import esc
 from site_lib.urls import article_href, breadcrumb_ld, match_url, pick_match_article
 
 
-def _page_matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
-                       league_stats_parts, matches, st_by_comp, standings):
+def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, league_stats_parts,
+                 matches, st_by_comp, standings):
     """/matches - the per-day navigator. Markup: site_src/templates/matches.html
     (templated 2026-09-26). The loops below are the ones that used to append
     HTML, in the same order and under the same names - they now fill the
@@ -158,12 +158,11 @@ def _page_matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_
         views=views, filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days, rail=rail,
         feat=feat, news=news, matches_js=Markup(MATCHES_JS), rounds_js=Markup(ROUNDS_JS),
         popup=Markup(popup), page_foot=Markup(foot())))
-    _l = locals()
-    return {k: _l[k] for k in ('a', 'comp', 'comp_order', 'i', 'img', 'k', 'm', 'st') if k in _l}
+    return comp_order
 
 
-def _page_per_match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
-                          articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls):
+def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats, articles,
+                fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls):
     """/m/<id> - one landing page per match (archive + current window): the
     long-tail queries a single /matches can never rank for («نتيجة مباراة X»،
     «موعد مباراة Y والقناة الناقلة»). Old pages persist through
@@ -371,5 +370,4 @@ def _page_per_match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _
                 urls.append(murl)
                 n_mp_sm += 1
     print(f"  + match pages: {n_mp} ({n_mp_idx} indexable, {n_mp_sm} in the sitemap)")
-    _l = locals()
-    return {k: _l[k] for k in ('_h', '_html', '_slug', 'a', 'comp', 'desc', 'img', 'm', 'm_all', 'st', 'title', 'v', 'when') if k in _l}
+    return m_all
