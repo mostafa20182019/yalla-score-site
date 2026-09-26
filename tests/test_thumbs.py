@@ -68,7 +68,7 @@ ck("10 an already-thumbed URL is not double-mapped",
 
 # ---- who uses it, and who must not ----------------------------------------
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from build_source import build_source  # noqa: E402  build_site.py + site_lib/*.py
+from build_source import build_source  # noqa: E402  the whole build
 bs = build_source()
 ck("11 every card slot maps through thumb_url (6 sites + the home preload)",
    bs.count("thumb_url(") >= 7, str(bs.count("thumb_url(")))

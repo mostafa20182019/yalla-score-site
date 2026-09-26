@@ -4,7 +4,8 @@
     python tools/move_names.py SPEC.json [--dry]
 
 SPEC.json:
-    {"modules": [{"name": "config", "doc": "...", "names": ["SITE_BASE", ...]}, ...],
+    {"package": "site_lib",                     # optional; "site_pages" for pages
+     "modules": [{"name": "config", "doc": "...", "names": ["SITE_BASE", ...]}, ...],
      "no_reexport": ["TICKER_HTML"],            # optional
      "fixups": [["config", "old line", "new line"]]}   # optional, exact lines
 
@@ -39,6 +40,8 @@ import sys
 def main(argv):
     spec = json.load(io.open(argv[0], encoding="utf-8"))
     dry = "--dry" in argv
+    pkg = spec.get("package", "site_lib")   # site_pages for the page functions (slice 8)
+    assert os.path.exists(os.path.join(pkg, "__init__.py")), f"{pkg}/__init__.py missing"
     src = io.open("build_site.py", encoding="utf-8").read()
     nl = "\r\n" if "\r\n" in src else "\n"
     lines = src.replace("\r\n", "\n").split("\n")
@@ -147,7 +150,7 @@ def main(argv):
                         continue
                     assert order.index(home[name]) < order.index(mod), \
                         f"{mod}: line {node.lineno} needs {name} from the later module {home[name]} (cycle)"
-                    need_lib.setdefault(f"site_lib.{home[name]}", set()).add(name)
+                    need_lib.setdefault(f"{pkg}.{home[name]}", set()).add(name)
                 elif name in std:
                     need_std.add(std[name])
                 elif name in lib:
@@ -177,7 +180,7 @@ def main(argv):
                 assert text.count(old + "\n") == 1, f"fixup line not found exactly once in {mod}: {old}"
                 text = text.replace(old + "\n", new + "\n")
         texts[mod] = text
-        report.append(f"  site_lib/{mod}.py: {sum(1 for s in spans if s[3] == mod)} statements, "
+        report.append(f"  {pkg}/{mod}.py: {sum(1 for s in spans if s[3] == mod)} statements, "
                       f"{n_lines} lines; imports {sorted(need_std)} "
                       f"{ {k: sorted(v) for k, v in need_lib.items()} }")
 
@@ -185,7 +188,7 @@ def main(argv):
     if dry:
         return 0
     for mod, text in texts.items():
-        path = f"site_lib/{mod}.py"
+        path = f"{pkg}/{mod}.py"
         assert not os.path.exists(path), f"{path} exists - this tool only creates new modules"
         io.open(path, "w", encoding="utf-8", newline="\n").write(text)
 
@@ -197,19 +200,19 @@ def main(argv):
         while (k < len(lines) and not lines[k].strip() and k >= 2
                and not lines[k - 1].strip() and not lines[k - 2].strip()):
             del lines[k]
-    # re-import after the last `from site_lib.` import block
-    last = max(k for k, l in enumerate(lines) if l.startswith("from site_lib."))
+    # re-import after the last `from site_lib.` / `from site_pages.` import block
+    last = max(k for k, l in enumerate(lines) if l.startswith(("from site_lib.", "from site_pages.")))
     if "(" in lines[last]:                      # a parenthesised, multi-line import
         while not lines[last].split("#")[0].rstrip().endswith(")"):
             last += 1
     skip = set(spec.get("no_reexport", []))
-    imp = [f"# {', '.join(order)}: moved to site_lib/ by tools/move_names.py (2026-09-26) -",
+    imp = [f"# {', '.join(order)}: moved to {pkg}/ by tools/move_names.py (2026-09-26) -",
            "# edit them there. Same names, same behaviour."]
     for mod in order:
         names = [n for m in spec["modules"] if m["name"] == mod for n in m["names"] if n not in skip]
         if not names:
             continue
-        imp.append(f"from site_lib.{mod} import (  # noqa: E402,F401")
+        imp.append(f"from {pkg}.{mod} import (  # noqa: E402,F401")
         for i in range(0, len(names), 6):
             imp.append("    " + ", ".join(names[i:i + 6]) + ("," if i + 6 < len(names) else ")"))
     lines[last + 1:last + 1] = imp
