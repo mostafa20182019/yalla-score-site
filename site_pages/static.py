@@ -83,7 +83,8 @@ def contact_page(urls):
         page_head=Markup(head("اتصل بنا — " + SITE_NAME,
                               "تواصل مع فريق يلا سكور للاستفسارات والتصحيحات والإعلانات.",
                               SITE_BASE + "/contact.html")),
-        contact_email=CONTACT_EMAIL, page_foot=Markup(foot())))
+        contact_email=CONTACT_EMAIL, fb_url=FB_PAGE_URL, tg_url=TG_CHANNEL_URL,
+        page_foot=Markup(foot())))
     urls.append("/contact.html")
 
 

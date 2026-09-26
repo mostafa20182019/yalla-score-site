@@ -16,6 +16,12 @@
     {% else %}
     <p>سيتم إضافة بريد التواصل الرسمي قريبًا.</p>
     {% endif %}
+    {% if fb_url %}
+    <p>ويمكنك أيضًا مراسلتنا عبر <a href="{{ fb_url }}" target="_blank" rel="noopener"><b>صفحتنا على فيسبوك</b></a>.</p>
+    {% endif %}
+    {% if tg_url %}
+    <p>ولمتابعة الأخبار لحظة بلحظة: <a href="{{ tg_url }}" target="_blank" rel="noopener"><b>قناة يلا سكور على تليجرام</b></a>.</p>
+    {% endif %}
   </div>
 </article>
 {{ page_foot }}
