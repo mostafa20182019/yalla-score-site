@@ -54,44 +54,23 @@ from site_lib.widgets import (  # noqa: E402,F401
     reel_slide, video_facade, pred_btn, done_btn, prob_bar, prob_legend,
     ratings_table, ga_table, accuracy_html, calibration_html, _pred_item_html, _calls_html,
     model_explainer)
+# config, shell: moved to site_lib/ by tools/move_names.py (2026-09-26) -
+# edit them there. Same names, same behaviour.
+from site_lib.config import (  # noqa: E402,F401
+    SITE_BASE, SITE_NAME, SITE_TAGLINE, SITE_DESC, LOCALE, BUILD_DATE,
+    ADSENSE_CLIENT, ADSENSE_SLOT, ADSENSE_SLOT_TOP, CONTACT_EMAIL, FB_PAGE_URL, TG_CHANNEL_URL,
+    EDITOR_NAME, EDITOR_ROLE, EDITOR_EMAIL, GENERIC_BYLINES, CF_ANALYTICS_TOKEN, SHOW_VIDEOS,
+    SHOW_REELS, SHOW_HEADLINES, SHOW_STATS_PAGE, PLACEHOLDER_IMGS, HERE, DATA,
+    DIST, SITE_SRC, _src, load, REF_TODAY, ARTICLE_MIN_WORDS,
+    NEWLINE)
+from site_lib.shell import (  # noqa: E402,F401
+    adsense_slot, page_head_ad, adsense_top_banner, _OG_DIMS, _og_dims, seo_title,
+    head, cf_beacon, foot, LIVE_JS, REL_JS, thumb_url,
+    _HTML_URL, _clean_urls, write_text, write, _LASTMOD)
+import site_lib.shell as _shell   # build() sets TICKER_HTML / KO_SCRIPT / CSS_VER on it
 
-# ---------------------------------------------------------------- config
-SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
-SITE_NAME = "يلا سكور"
-SITE_TAGLINE = "أخبار ونتائج كرة القدم"
-SITE_DESC = "يلا سكور — أخبار كرة القدم ونتائج المباريات ومواعيد البطولات بالعربية."
-LOCALE = "ar_AR"
-BUILD_DATE = os.environ.get("BUILD_DATE", "")  # pass a date; else today isn't used in content
 
-# --- Google AdSense (fill these AFTER AdSense approves your site, then rebuild) ---
-# 1) ADSENSE_CLIENT: your publisher id, e.g. "ca-pub-1234567890123456"
-# 2) ADSENSE_SLOT:   the ad-unit slot id from AdSense, e.g. "1234567890"
-# While either is empty, a tidy "مساحة إعلانية" placeholder is shown instead.
-# NOTE: AdSense usually requires your OWN domain (a *.workers.dev subdomain is
-# typically not approved) + a Privacy Policy page.
-ADSENSE_CLIENT = "ca-pub-3080285229612776"
-ADSENSE_SLOT = ""
-ADSENSE_SLOT_TOP = ""   # mobile top-banner unit id (leave empty for placeholder)
 
-# Optional contact email shown on the Privacy Policy page (leave "" to omit).
-CONTACT_EMAIL = "yallascore.eg@gmail.com"
-# Facebook page «يلا سكور» — numeric id URL always resolves; swap for the
-# vanity URL (facebook.com/<username>) once the page has one.
-FB_PAGE_URL = "https://www.facebook.com/104238901487012"
-# the owned Telegram channel (created by the user 2026-09-22; tg_post.py
-# posts every new article to it after deploy, same machinery as Facebook)
-TG_CHANNEL_URL = "https://t.me/yallascore"
-# Editorial identity shown on /editors.html and in every article byline.
-EDITOR_NAME = "مصطفى عبدالسلام"
-EDITOR_ROLE = "مدير التحرير"
-EDITOR_EMAIL = CONTACT_EMAIL
-# The bylines Google reads as a faceless publisher. An article carrying one of
-# these is signed by the named editor instead (2026-09-15): a person who can be
-# looked up, mailed and held responsible is the E-E-A-T signal a generic «فريق
-# التحرير» never gives, and it was one of the two decisions left open after the
-# content rejection. Rendering-level on purpose — the 466 stored rows are not
-# rewritten, so this is one constant away from being undone.
-GENERIC_BYLINES = (SITE_NAME, "فريق التحرير", "فريق يلا سكور", "")
 
 def byline(a):
     """The name to print (and to put in schema) for one article."""
@@ -122,29 +101,8 @@ def match_data_sources(a, comp):
     if comp and comp not in S365_COMPETITIONS:
         out.append(entry("football-data.org", "ترتيب الدوري وأرقام الفريقين هذا الموسم"))
     return out
-# Cloudflare Web Analytics (cookie-less page views / referrers / top pages).
-# Paste the 32-char token from Cloudflare -> Analytics & Logs -> Web Analytics
-# -> Add a site (manual install). Empty = no beacon in the pages.
-CF_ANALYTICS_TOKEN = ""
 
-# Feature switches. Flip to True to bring a section back (nav tab, footer link,
-# home teaser, its page, and sitemap entry all follow this flag automatically).
-SHOW_VIDEOS = False
-SHOW_REELS = False
-# aggregated press headlines OFF for the AdSense review (2026-08-30, user
-# decision): copied titles + outbound links are the site's weakest
-# originality signal. The home slot shows a deeper grid of OUR articles
-# instead. fetch_data.py still refreshes headlines.json (editorial tasks
-# read the RSS separately) — this flag only gates the DISPLAY.
-SHOW_HEADLINES = False
-# stats live inside the /matches league view now (2026-08-19, user request);
-# the standalone page still builds (old links don't 404) but is unlinked,
-# out of the sitemap, and noindexed. Flip to True to bring it back.
-SHOW_STATS_PAGE = False
 
-# Generic fallback thumbnails (our own SVGs in media/, no licensing worries)
-# for headline cards whose source page offers no og:image.
-PLACEHOLDER_IMGS = ["/media/ph-pitch.svg", "/media/ph-ball.svg"]
 
 def resolve_missing_media(articles, media_dir=None, base=None):
     """An article whose image_url points at OUR /media/ but whose file is not in
@@ -177,56 +135,6 @@ def resolve_missing_media(articles, media_dir=None, base=None):
     return missing
 
 
-HERE = os.path.dirname(os.path.abspath(__file__))
-DATA = os.path.join(HERE, "data")
-DIST = os.path.join(HERE, "dist")
-# The page CSS and the <script>/<div> snippets live in site_src/ as real
-# files (2026-09-25, slice 1 of the build_site split) - edit them there,
-# not here. Read once at import; universal newlines, so a Windows checkout
-# (CRLF) builds byte-for-byte the same site as the Linux runner.
-SITE_SRC = os.path.join(HERE, "site_src")
-
-
-def _src(rel):
-    with io.open(os.path.join(SITE_SRC, rel), encoding="utf-8") as f:
-        return f.read()
-
-
-def thumb_url(url):
-    """The 640px card copy of one of OUR photos, when it exists on disk.
-
-    Lighthouse (2026-09-22) measured ~3 MB of the 3.9 MB home page as the
-    full 1600px article photos rendered inside card slots. shrink_media.py
-    writes media/thumbs/<same name> at 640px; every CARD slot goes through
-    here, while the article hero, og:image and RSS keep the original.
-    Anything not ours passes through untouched: external hotlinks (headline
-    cards), the SVG placeholders, and a photo whose thumb is not in this
-    checkout yet (same race as resolve_missing_media - the next run heals it;
-    in publish.yml shrink_media runs BEFORE the build, so it never happens
-    there)."""
-    u = str(url or "")
-    path = u[len(SITE_BASE):] if u.startswith(SITE_BASE) else u
-    if not path.startswith("/media/") or path.lower().endswith(".svg") \
-            or path.startswith("/media/thumbs/"):
-        return url
-    name = path.split("/media/", 1)[1].split("?")[0]
-    if not os.path.exists(os.path.join(HERE, "media", "thumbs", name)):
-        return url
-    return (SITE_BASE if u.startswith(SITE_BASE) else "") + "/media/thumbs/" + name
-
-def load(name):
-    """Load a SQLcl `set sqlformat json` export -> list of row dicts (tolerant)."""
-    p = os.path.join(DATA, name)
-    if not os.path.exists(p):
-        return []
-    try:
-        with open(p, encoding="utf-8") as f:
-            doc = json.load(f)
-        return doc["results"][0]["items"]
-    except Exception as e:
-        print("  ! could not parse %s (%s) - skipping" % (name, e))
-        return []
-
 def articles_current():
     """(articles, source label) - the committed export when it is provably
     current, the store otherwise.
@@ -257,230 +165,8 @@ def articles_current():
 
 
 
-REF_TODAY = datetime.date.today().isoformat()  # machine clock (the sandbox is set to Jul 2026)
-
-
-
-
-def adsense_slot():
-    """Left-column ad slot: the real AdSense unit when configured, else a placeholder."""
-    if ADSENSE_CLIENT and ADSENSE_SLOT:
-        return ('<ins class="adsbygoogle ad-unit" style="display:block"'
-                f' data-ad-client="{ADSENSE_CLIENT}" data-ad-slot="{ADSENSE_SLOT}"'
-                ' data-ad-format="auto" data-full-width-responsive="true"></ins>'
-                '<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>')
-    # no placeholder before approval: empty dashed "ad space" frames read as an
-    # unfinished site to a reviewer (AdSense low-value rejection, 2026-09-04)
-    return ""
-
-def page_head_ad(title_html, hint=""):
-    """Page title on the start side, a leaderboard ad on the end side (the free
-    left half in RTL). Desktop only - phones already get .ad-top above the page."""
-    hint_html = f'<p class="hintline">{hint}</p>' if hint else ""
-    return (f'<div class="page-head"><div class="page-head-t">{title_html}{hint_html}</div>'
-            f'<div class="head-ad">{adsense_slot()}</div></div>')
-
-def adsense_top_banner():
-    """Slim full-width banner shown on MOBILE only, right at the top of every
-    page (the classic 320x50-style slot). Real unit when configured, else a
-    placeholder so the layout can be judged before AdSense approval."""
-    if ADSENSE_CLIENT and ADSENSE_SLOT_TOP:
-        inner = ('<ins class="adsbygoogle" style="display:block;height:60px"'
-                 f' data-ad-client="{ADSENSE_CLIENT}" data-ad-slot="{ADSENSE_SLOT_TOP}"'
-                 ' data-ad-format="horizontal" data-full-width-responsive="true"></ins>'
-                 '<script>(adsbygoogle=window.adsbygoogle||[]).push({});</script>')
-    else:
-        return ""      # nothing (not even the frame) until the real unit exists
-    return f'<div class="ad-top">{inner}</div>'
-
-_OG_DIMS = {}
-
-def _og_dims(url):
-    """(width, height) of one of OUR images (media/ or assets/ under SITE_BASE),
-    (None, None) for anything remote or unreadable. Cached per build."""
-    if not url or not url.startswith(SITE_BASE + "/"):
-        return (None, None)
-    if url in _OG_DIMS:
-        return _OG_DIMS[url]
-    rel = url[len(SITE_BASE) + 1:].split("?")[0]
-    cand = [os.path.join(HERE, rel)]
-    if rel.startswith("assets/"):
-        cand.append(os.path.join(HERE, "assets-src", rel[len("assets/"):]))
-    dims = (None, None)
-    for p in cand:
-        try:
-            from PIL import Image as _PILImage
-            with _PILImage.open(p) as im:
-                dims = im.size
-            break
-        except Exception:
-            continue
-    _OG_DIMS[url] = dims
-    return dims
-
-
-def seo_title(title, limit=62):
-    """<title>: drop the « — يلا سكور» brand suffix when the whole thing would
-    exceed ~60 chars — Google truncates longer titles and the article headline
-    (the part that carries the query words) matters more than the brand,
-    which is already in og:site_name and the publisher schema."""
-    t = " ".join((title or "").split())
-    if len(t) <= limit:
-        return t
-    for suf in (f" — {SITE_NAME}", f" | {SITE_NAME}", f" - {SITE_NAME}"):
-        if t.endswith(suf):
-            return t[:-len(suf)]
-    return t
-
-def head(title, desc, url, image=None, og_type="website", active="",
-         preload_img=None):
-    # preload_img: the page's LCP image (the home hero is a CSS background,
-    # so the browser only discovers it after the stylesheet - Lighthouse
-    # 2026-09-22 measured the discovery delay inside an 8.2s local LCP).
-    # Only the LCP image belongs here; preloading more steals its bandwidth.
-    og_desc = strip_tags(desc)[:300]
-    desc = seo_desc(desc)
-    title = seo_title(title)
-    # og:image must be a raster — Facebook/Twitter ignore SVG entirely (the
-    # homepage once inherited a placeholder SVG from the hero article and FB
-    # rendered no preview at all) — and at least 200px. The branded 1200x630
-    # banner is both the default and the SVG-placeholder replacement.
-    if not image or image.lower().endswith(".svg"):
-        image = SITE_BASE + "/assets/og-banner.png"
-    img = image
-    # og:image:width/height: without them Facebook renders the FIRST share of
-    # a URL with NO image (it fetches the picture asynchronously and only later
-    # shares get it) — article 371's post came out with an empty image box on
-    # 2026-09-04. Known only for our own files (media/, assets/), read once.
-    ogw, ogh = _og_dims(img)
-    # Tiny images (club crests ~95px on match/team pages) are below Facebook's
-    # 200px minimum and look broken in Discover/Twitter cards → use the banner.
-    if ogw and ogw < 400:
-        img = SITE_BASE + "/assets/og-banner.png"
-        ogw, ogh = _og_dims(img)
-    og_type_img = "png" if img.lower().endswith(".png") else "jpeg"
-    og_dims = (
-        f'\n<meta property="og:image:width" content="{ogw}">'
-        f'\n<meta property="og:image:height" content="{ogh}">'
-        f'\n<meta property="og:image:type" content="image/{og_type_img}">'
-    ) if ogw else ""
-    preload = (f'\n<link rel="preload" as="image" href="{esc(preload_img)}">'
-               if preload_img else "")
-    ha = " is-active" if active == "home" else ""
-    ma = " is-active" if active == "matches" else ""
-    aa = " is-active" if active == "analysis" else ""
-    sa = " is-active" if active == "stats" else ""
-    stats_tab = ('    <a href="/stats.html" class="navtab' + sa + '">'
-                 '<span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>'
-                 if SHOW_STATS_PAGE else "")
-    va = " is-active" if active == "videos" else ""
-    ra = " is-active" if active == "reels" else ""
-    vids_tab = (f'\n    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>'
-                if SHOW_VIDEOS else "")
-    reels_tab = (f'\n    <a href="/reels.html" class="navtab{ra}"><span class="ico">⚡</span> ريلز<span class="nav-en"> | Reels</span></a>'
-                 if SHOW_REELS else "")
-    ads_head = (f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" crossorigin="anonymous"></script>'
-                if ADSENSE_CLIENT else "")
-    t = f"""<!doctype html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<script>try{{window.__livePromise=fetch('/live.json?b='+Math.floor(Date.now()/1e4),{{cache:'no-store'}})}}catch(e){{}}</script>
-<title>{esc(title)}</title>
-<meta name="description" content="{esc(desc)}">
-<link rel="canonical" href="{esc(url)}">{preload}
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
-<meta name="google-site-verification" content="mMvVRBkeRXu37K-dU3QCrngUUJs9a2FfwpJNX3CHcpk">
-<meta property="og:type" content="{og_type}">
-<meta property="og:site_name" content="{esc(SITE_NAME)}">
-<meta property="og:locale" content="{LOCALE}">
-<meta property="og:title" content="{esc(title)}">
-<meta property="og:description" content="{esc(og_desc)}">
-<meta property="og:url" content="{esc(url)}">
-<meta property="og:image" content="{esc(img)}">{og_dims}
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="{esc(title)}">
-<meta name="twitter:description" content="{esc(og_desc)}">
-<meta name="twitter:image" content="{esc(img)}">
-<link rel="alternate" type="application/rss+xml" title="{esc(SITE_NAME)}" href="/feed.xml">
-<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap">
-<link rel="stylesheet" href="/assets/style.css?v={CSS_VER}">
-{ads_head}
-</head>
-<body>
-<header class="site-head">
-  <div class="head-crowd" aria-hidden="true"></div>
-  <div class="wrap head-in">
-    <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>
-  </div>
-  {TICKER_HTML}
-  <nav class="site-nav"><div class="wrap nav-in">
-    <a href="/" class="navtab{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
-    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
-    <a href="/analysis.html" class="navtab{aa}"><span class="ico">📈</span> تحليلات<span class="nav-en"> | Analysis</span></a>
-{stats_tab}{vids_tab}{reels_tab}
-  </div></nav>
-</header>
-<main class="wrap">
-{adsense_top_banner()}
-"""
-    return t
-
-def cf_beacon():
-    """Cloudflare Web Analytics beacon — one deferred script, no cookies, no
-    consent banner needed; inert while CF_ANALYTICS_TOKEN is empty."""
-    if not CF_ANALYTICS_TOKEN:
-        return ""
-    return ('<script defer src="https://static.cloudflareinsights.com/beacon.min.js" '
-            f"data-cf-beacon='{{\"token\": \"{CF_ANALYTICS_TOKEN}\"}}'></script>")
-
-def foot():
-    year = "2026"
-    stats_link = ' · <a href="/stats.html">إحصائيات</a>' if SHOW_STATS_PAGE else ""
-    heads_link = ' · <a href="/headlines.html">عناوين الصحف</a>' if SHOW_HEADLINES else ""
-    vids_link = ' · <a href="/videos.html">فيديوهات</a>' if SHOW_VIDEOS else ""
-    reels_link = ' · <a href="/reels.html">ريلز</a>' if SHOW_REELS else ""
-    return f"""</main>
-<footer class="site-foot"><div class="wrap">
-  <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/analysis.html">تحليلات وتوقعات</a> · <a href="/predictions.html">سجل التوقعات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a> · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a></p>
-  <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
-  <p class="credit">© {year} {esc(SITE_NAME)}</p>
-</div></footer>
-{cf_beacon()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
-
-
-# Live-scores ticker in the header. Built once per build from matches.json
-# (site rebuilds every 30 min, so it stays fresh). Set by build().
-TICKER_HTML = ""
-CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash in build()
-# Articles shorter than this are UNLISTED: the page stays online at the same
-# URL, but it is noindexed, left out of the sitemap / news sitemap / RSS, and
-# dropped from every listing on the site (home blocks, /news archives, club
-# pages, match pages, related-article blocks).
-#
-# Raised 200 -> 300 on 2026-09-06 (user decision). He asked whether to DELETE
-# the old archive instead; the numbers said no: 60 of these articles have a
-# live Facebook post pointing at them and 35 are linked from another article,
-# so deleting breaks our main traffic channel — while buying nothing back,
-# since Search Console had 499/500 of them as "discovered, not indexed" anyway.
-# Unlisting shows Google and a browsing reviewer exactly what deletion would,
-# keeps the URL working for anyone arriving from an old post, and is reversible.
-# 294 of 355 articles are under the new bar; upgrade-articles.yml rewrites 5/day
-# to the 500-700-word standard and each one crosses back on its own.
-ARTICLE_MIN_WORDS = 300
-
-
 def is_thin(a):
     return article_words(a) < ARTICLE_MIN_WORDS
-# window.__koTs = epoch-ms of nearby kickoffs (set by build(), injected in
-# foot()) — LIVE_JS uses it to wake its polling right before a match starts
-# instead of sleeping through kickoff on the idle 5-minute cadence.
-KO_SCRIPT = ""
 
 # ---- crest mirroring ---------------------------------------------------
 # football-data's crest host has had TLS/outage problems (2026-07-27: broken
@@ -654,11 +340,6 @@ def make_ticker(matches):
 # FotMob-style news blocks took its home slots; fetch_data no longer pulls
 # transfers.json. Restore from git history if it ever comes back.)
 
-# Client-side live layer: polls /live.json (edge-cached 15s) and patches
-# scores/minute into the ticker + match rows IN PLACE. Matching is by
-# normalized Arabic team-name pair; anything unmatched just stays on the
-# 15-minute static refresh - the site never depends on this script.
-LIVE_JS = _src("snippets/live_js.html")
 
 
 def article_url(a):
@@ -759,11 +440,6 @@ def article_moved_stub(a):
             f'<body><p>انتقلت هذه الصفحة إلى '
             f'<a href="{esc(to)}">صفحة المباراة</a>.</p></body></html>')
 
-# sitemap <lastmod> per URL path (set where the page's real change date is
-# known: articles = publish time, match pages = kickoff/today). Pages that
-# are rebuilt with fresh data every run default to today in the writer;
-# static legal pages get none.
-_LASTMOD = {}
 
 
 _ART_CLUBS = {}
@@ -2959,11 +2635,9 @@ def _page_strength_model_predictions_accuracy_play(_details_raw=_UNSET, _res_arc
             reels.append(r)
             seen_r.add(r.get("video_id"))
 
-    global TICKER_HTML
-    TICKER_HTML = make_ticker(matches)
+    _shell.TICKER_HTML = make_ticker(matches)
 
     # kickoff epochs for LIVE_JS's kickoff-aware polling (see KO_SCRIPT)
-    global KO_SCRIPT
     try:
         from zoneinfo import ZoneInfo
         _cairo = ZoneInfo("Africa/Cairo")
@@ -2981,19 +2655,18 @@ def _page_strength_model_predictions_accuracy_play(_details_raw=_UNSET, _res_arc
             # recent past too: a match may already be live at build time
             if -4 * 3600 <= _delta <= 36 * 3600:
                 _kos.add(int(_dt.timestamp() * 1000))
-        KO_SCRIPT = (f"<script>window.__koTs={json.dumps(sorted(_kos))}</script>"
+        _shell.KO_SCRIPT = (f"<script>window.__koTs={json.dumps(sorted(_kos))}</script>"
                      if _kos else "")
     except Exception:
-        KO_SCRIPT = ""
+        _shell.KO_SCRIPT = ""
     _l = locals()
     return {k: _l[k] for k in ('ZoneInfo', '_acc', '_bycomp', '_cal', '_dt', '_lparams', '_mid', '_pins', '_plog', '_preds', '_sins', '_squad', '_tstats', '_upcoming', 'm', 'p', 'r', 'reels') if k in _l}
 
 
 def _page_assets_css_logo():
     # ---- assets: css + logo ----
-    global CSS_VER
     _css = CSS + "\n" + LEGENDS_CSS
-    CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
+    _shell.CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
         f.write(_css)
     # /favicon.ico at the site root — the legacy fallback path some crawlers
@@ -4378,34 +4051,10 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
   {gblock}
 </div>"""
 
-# The official URL form is EXTENSIONLESS (/news, /a/307, /m/551993): Cloudflare
-# Workers assets 307-redirect /x.html -> /x, so .html canonicals/sitemap URLs
-# made Google see every URL as a temporary redirect whose target pointed back
-# at the redirect (1/500 pages indexed). Files on disk keep their .html names —
-# only emitted URLs are normalized here, at the single output choke point.
-# Matches internal URLs only: absolute ones starting with SITE_BASE, or
-# root-relative ones right after a delimiter ("'>=( or whitespace) so external
-# publisher links like https://example.com/foo.html are never touched.
-_HTML_URL = re.compile(
-    r'(?P<pre>' + re.escape(SITE_BASE) + r'|["\'>=(\s])'
-    r'(?P<path>/[A-Za-z0-9_\-/]+)\.html')
 
-def _clean_urls(text):
-    return _HTML_URL.sub(lambda m: m.group("pre") + m.group("path"), text)
 
-NEWLINE = chr(10)
 
-def write_text(rel, content):
-    """A raw file in dist/: no URL normalisation, no .html handling."""
-    with io.open(os.path.join(DIST, rel), "w", encoding="utf-8", newline="") as f:
-        f.write(content)
 
-def write(rel, content):
-    path = os.path.join(DIST, rel)
-    if rel.endswith((".html", ".xml")):
-        content = _clean_urls(content)
-    with open(path, "w", encoding="utf-8") as f:
-        f.write(content)
 
 # ---------------------------------------------------------------- styles
 CSS = _src("style.css")
@@ -4436,8 +4085,6 @@ FILTERS_HTML = (
 
 MATCHES_JS = _src("snippets/matches_js.html")
 
-# client-side relative time ("منذ X") - always accurate to the visitor's clock.
-REL_JS = _src("snippets/rel_js.html")
 
 FBCOPY_JS = _src("snippets/fbcopy_js.html")
 

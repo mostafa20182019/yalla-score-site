@@ -41,5 +41,25 @@ for name, fn in vars(B).items():
                 stale.append(f"{name}({p.name})")
 ck("3 every sentinel default IS build_site._UNSET (the `is` check can fire)", not stale, stale[:5])
 
+# slice 6 (tools/move_names.py): moved names are re-imported, never copied.
+# A `global X` in build_site after X moved would rebind a build_site copy the
+# moved code never reads (head() would print an empty ticker) - build() sets
+# them on the module instead.
+ck("4 build_site has no `global` statement", not [l for l in src if l.strip().startswith("global ")])
+import site_lib.shell as SH  # noqa: E402
+ck("5 the build-time values are NOT re-exported (a stale copy cannot be read)",
+   not any(hasattr(B, n) for n in ("TICKER_HTML", "KO_SCRIPT", "CSS_VER"))
+   and all(hasattr(SH, n) for n in ("TICKER_HTML", "KO_SCRIPT", "CSS_VER")))
+ck("6 re-exported names are the SAME objects (the registry the sitemap reads is shared)",
+   B._LASTMOD is SH._LASTMOD and B.write is SH.write and B.head is SH.head)
+cyc = [f for f in os.listdir("site_lib") if f.endswith(".py")
+       and "build_site" in "".join(l for l in open(os.path.join("site_lib", f), encoding="utf-8")
+                                   if l.lstrip().startswith(("import ", "from ")))]
+ck("7 no site_lib module imports build_site (no cycles)", not cyc, cyc)
+import site_lib.config as CF  # noqa: E402
+ck("8 config paths still point at the repo root, not site_lib/",
+   CF.HERE == os.path.dirname(os.path.abspath(B.__file__))
+   and os.path.isdir(CF.SITE_SRC) and CF.DIST == os.path.join(CF.HERE, "dist"))
+
 print(f"\n{len(fails)} FAILED: {fails}" if fails else "\nALL OK")
 sys.exit(1 if fails else 0)

@@ -17,6 +17,7 @@ sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.getcwd())
 import analysis as AN
 import build_site as B
+import site_lib.shell as SH   # write() lives there since slice 6: point ITS DIST at the temp dir
 
 fails = []
 def ck(name, cond, extra=""):
@@ -81,7 +82,7 @@ ck("8 an unscored prediction never enters the record", "9" not in [e["match_id"]
 
 # ---------------------------------------------------------------- 2 the page
 tmp = tempfile.mkdtemp()
-B.DIST = tmp
+B.DIST = SH.DIST = tmp
 acc = AN.accuracy(LOG)
 url = B.prediction_history_page(LOG, acc)
 page = open(os.path.join(tmp, "predictions.html"), encoding="utf-8").read()
@@ -101,12 +102,12 @@ for i in range(30):
     k, v = entry(100 + i, f"h{i}", f"a{i}", 0.55, 0.25, 0.20,
                  (2 if i % 3 else 0), (0 if i % 3 else 1), kick="2026-09-08")
     BIG[k] = v
-tmp2 = tempfile.mkdtemp(); B.DIST = tmp2
+tmp2 = tempfile.mkdtemp(); B.DIST = SH.DIST = tmp2
 B.prediction_history_page(BIG, AN.accuracy(BIG))
 big = open(os.path.join(tmp2, "predictions.html"), encoding="utf-8").read()
 ck("13b with enough statements the calibration table appears, with its ECE",
    'id="calibration"' in big and "ECE" in big and "حدث فعلًا" in big)
-B.DIST = tmp
+B.DIST = SH.DIST = tmp
 ck("14 a small competition sample is flagged", "عيّنة صغيرة" in page)
 ck("15 the two models are shown apart and explicitly NOT as a race",
    "ليست مباراة بين النموذجين" in page and "نموذج Oracle" in page)
@@ -130,10 +131,10 @@ ck("20 the filter script ships with the page", "pf-chip" in page and "عرض ا�
 # score_pill(): two elements in an inline-flex box, ordered by the RTL flow.
 AR = dict([entry(7, "الأهلي", "أبو قير للأسمدة", 0.67, 0.20, 0.13, 2, 0,
                  comp="Egyptian Premier League", kick="2026-09-13")])
-tmp3 = tempfile.mkdtemp(); B.DIST = tmp3
+tmp3 = tempfile.mkdtemp(); B.DIST = SH.DIST = tmp3
 B.prediction_history_page(dict(BIG, **AR), AN.accuracy(dict(BIG, **AR)))
 arp = open(os.path.join(tmp3, "predictions.html"), encoding="utf-8").read()
-B.DIST = tmp
+B.DIST = SH.DIST = tmp
 ck("22 the record's score is a pill, not a glued bidi run",
    '<b class="sc-in"><span>2</span><i>-</i><span>0</span></b>' in arp)
 ck("23 no dir=\"ltr\" is forced on a score anywhere on the page",
