@@ -67,7 +67,9 @@ ck("10 an already-thumbed URL is not double-mapped",
    B.thumb_url(f"/media/thumbs/{name}") == f"/media/thumbs/{name}")
 
 # ---- who uses it, and who must not ----------------------------------------
-bs = io.open("build_site.py", encoding="utf-8").read()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from build_source import build_source  # noqa: E402  build_site.py + site_lib/*.py
+bs = build_source()
 ck("11 every card slot maps through thumb_url (6 sites + the home preload)",
    bs.count("thumb_url(") >= 7, str(bs.count("thumb_url(")))
 ck("12 the article hero keeps the full-size file",

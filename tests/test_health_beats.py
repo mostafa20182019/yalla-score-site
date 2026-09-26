@@ -80,6 +80,7 @@ print("4 OK: D1 down or not configured -> exit 0, never a red run")
 
 # 5) build_info
 import build_site as B  # noqa: E402
+import site_lib.loaders as LD  # noqa: E402  build_info() lives there since slice 7: point ITS DATA
 
 d = tempfile.mkdtemp()
 with io.open(os.path.join(d, "fetch_debug.json"), "w", encoding="utf-8") as f:
@@ -87,7 +88,7 @@ with io.open(os.path.join(d, "fetch_debug.json"), "w", encoding="utf-8") as f:
                "goals": "FAIL: TimeoutError()", "standings": "FAIL: HTTPError(429)",
                "s365_charts": {"x": "FAIL: nested dicts are not sources"},
                "utc": "2026-09-24T18:35:29Z"}, f)
-B.DATA = d
+B.DATA = LD.DATA = d
 arts = [{"pub_ts": "2026-09-24T21:10:00+03:00"},     # 18:10Z
         {"pub_ts": "2026-09-24T18:20:00Z"},           # 18:20Z  <- newest
         {"pub_date": "2026-09-23"},                   # noon Cairo the day before
@@ -100,7 +101,7 @@ assert info["articles"] == 4 and info["predictions"] == 2 and "predictions_oracl
 assert abs(info["built_at"] / 1000 - __import__("time").time()) < 60
 print("5 OK: build_info names the FAIL sources and finds the newest article across time zones")
 
-B.DATA = tempfile.mkdtemp()                                  # no fetch_debug.json at all
+B.DATA = LD.DATA = tempfile.mkdtemp()                                  # no fetch_debug.json at all
 info = B.build_info([], {})
 assert info["fetch_at"] is None and info["fetch_failed"] == [] and info["newest_article_at"] is None
 print("6 OK: a missing fetch_debug / empty site gives nulls, not a crash")

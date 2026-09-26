@@ -38,7 +38,9 @@ def ck(name, cond, extra=""):
 
 
 wf = io.open(".github/workflows/publish.yml", encoding="utf-8").read()
-bs = io.open("build_site.py", encoding="utf-8").read()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from build_source import build_source  # noqa: E402  build_site.py + site_lib/*.py
+bs = build_source()
 wk = io.open("worker.js", encoding="utf-8").read()
 
 # THE WAREHOUSE LEFT THE PIPELINE (2026-09-20). It was gated to hourly in the

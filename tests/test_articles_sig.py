@@ -32,7 +32,9 @@ def ck(name, cond, extra=""):
         fails.append(name)
 
 
-bs = io.open("build_site.py", encoding="utf-8").read()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from build_source import build_source  # noqa: E402  build_site.py + site_lib/*.py
+bs = build_source()
 wk = io.open("worker.js", encoding="utf-8").read()
 
 # ---- the build side ------------------------------------------------------

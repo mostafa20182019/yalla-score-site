@@ -45,7 +45,9 @@ ck("7 the author entity is a Person pointing at /editors",
    ld["author"]["@type"] == "Person" and ld["author"]["name"] == NAME
    and ld["author"]["url"].endswith("/editors.html"))
 
-src = open("build_site.py", encoding="utf-8").read()
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from build_source import build_source  # noqa: E402  build_site.py + site_lib/*.py
+src = build_source()
 ck("8 no render path still prints the raw stored author",
    'esc(a.get("author"))' not in src and 'a.get("author") or SITE_NAME' not in src, )
 ck("9 the schema no longer emits an Organization author for articles",
