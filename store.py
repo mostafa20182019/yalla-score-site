@@ -358,6 +358,22 @@ def posted_ids(kind):
     return {r["ref_id"] for r in rows}
 
 
+def posted_since(kind, since_epoch):
+    """[{ref_id, posted_at}] published for this kind at or after `since_epoch`
+    (epoch seconds), newest first. push_send.py counts its daily cap and the gap
+    since the last notification from this."""
+    since = int(since_epoch)
+    if backend() == "json":
+        rows = [{"ref_id": k, "posted_at": int((v or {}).get("ts") or 0)}
+                for k, v in _fb_bucket(_fb_json(), kind).items()
+                if (v or {}).get("post_id") and int((v or {}).get("ts") or 0) >= since]
+    else:
+        rows = sql("SELECT ref_id, posted_at FROM fb_posted WHERE kind = ? "
+                   "AND post_id IS NOT NULL AND posted_at >= ?", [kind, since])
+    return sorted(({"ref_id": r["ref_id"], "posted_at": int(r["posted_at"] or 0)} for r in rows),
+                  key=lambda r: -r["posted_at"])
+
+
 def get_post(kind, ref_id):
     """The stored record, or None."""
     ref_id = str(ref_id)

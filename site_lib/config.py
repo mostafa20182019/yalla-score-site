@@ -37,6 +37,15 @@ FB_PAGE_URL = "https://www.facebook.com/104238901487012"
 # the owned Telegram channel (created by the user 2026-09-22; tg_post.py
 # posts every new article to it after deploy, same machinery as Facebook)
 TG_CHANNEL_URL = "https://t.me/yallascore"
+# Web push (2026-09-27): the PUBLIC half of the VAPID key pair (base64url, 87
+# characters, starts with "B"). Public by design - every browser that
+# subscribes is handed it. The PRIVATE half is the GitHub secret
+# VAPID_PRIVATE_KEY and is read only by push_send.py. Empty = the feature is
+# DARK: no bell, no manifest link, no script, no article line, no privacy
+# paragraph (the CSS, the icons, sw.js and the manifest file still ship - inert
+# without the markup that uses them). Generate the pair with
+# `python push_send.py --keygen`.
+VAPID_PUBLIC_KEY = ""
 # Editorial identity shown on /editors.html and in every article byline.
 EDITOR_NAME = "مصطفى عبدالسلام"
 EDITOR_ROLE = "مدير التحرير"

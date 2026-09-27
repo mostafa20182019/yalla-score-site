@@ -280,6 +280,25 @@ jobs:
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: python tg_post.py --auto
 
+      # Web push (2026-09-27): one notification to every browser that tapped
+      # the bell, for a NEW article that is live - at most 5 a day, 60 min
+      # apart, none 01:00-08:00 Cairo, the last two slots kept for Egyptian /
+      # curated-club news (push_send.py has the rules and the why). Same
+      # claim-then-post lock (kind="push") and «page must be live» rule as
+      # Telegram. A no-op until the user adds the secret VAPID_PRIVATE_KEY and
+      # the public key in site_lib/config.py; a key PAIR mismatch exits 1 so it
+      # shows as a soft failure in the verdict.
+      - name: Push notification for a new article
+        id: push
+        if: steps.deploy.outcome == 'success'
+        continue-on-error: true
+        env:
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: python push_send.py --auto
+
       # New-article Facebook post. Lives HERE (after Deploy) and not in
       # daily-article.yml on purpose: posting the moment the article was
       # committed let Facebook scrape the link before the page existed, and
@@ -533,6 +552,7 @@ jobs:
           O_SHRINK: ${{ steps.shrink.outcome }}
           O_INDEXNOW: ${{ steps.indexnow.outcome }}
           O_TG: ${{ steps.tg.outcome }}
+          O_PUSH: ${{ steps.push.outcome }}
           O_FBDISPATCH: ${{ steps.fbdispatch.outcome }}
           O_CARDS: ${{ steps.cards.outcome }}
           O_REEL: ${{ steps.reelpub.outcome }}
@@ -550,7 +570,7 @@ jobs:
           [ "$O_DEPLOY" = "failure" ] && CRIT="$CRIT deploy"
           [ "$O_COMMIT" = "failure" ] && CRIT="$CRIT commit"
           SOFT=""
-          for p in shrink:$O_SHRINK indexnow:$O_INDEXNOW telegram:$O_TG \
+          for p in shrink:$O_SHRINK indexnow:$O_INDEXNOW telegram:$O_TG push:$O_PUSH \
                    fb-dispatch:$O_FBDISPATCH fb-cards:$O_CARDS reel:$O_REEL; do
             [ "${p#*:}" = "failure" ] && SOFT="$SOFT ${p%%:*}"
           done

@@ -594,3 +594,17 @@ CREATE TABLE IF NOT EXISTS health_beats (
   fails   INTEGER NOT NULL DEFAULT 0,
   detail  TEXT                            -- failed step names
 );
+
+-- Web push subscriptions (2026-09-27). One row per browser that tapped the
+-- bell: the push service's endpoint URL + the two keys the browser generated
+-- for encrypting to it. No name, e-mail or IP - there is nothing here that
+-- identifies a person. Written by the Worker (/push/subscribe, /push/unsubscribe),
+-- read by push_send.py, which also deletes an endpoint the first time its push
+-- service answers 404/410 (the reader unsubscribed or the browser dropped it).
+-- The Worker also CREATEs IF NOT EXISTS, so this line is documentation + tests.
+CREATE TABLE IF NOT EXISTS push_subs (
+  endpoint    TEXT PRIMARY KEY,
+  p256dh      TEXT NOT NULL,
+  auth        TEXT NOT NULL,
+  created_at  INTEGER NOT NULL            -- epoch seconds
+);

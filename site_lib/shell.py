@@ -12,7 +12,7 @@ imports these back under the same names."""
 import io
 import os
 import re
-from site_lib.config import ADSENSE_CLIENT, ADSENSE_SLOT, ADSENSE_SLOT_TOP, CF_ANALYTICS_TOKEN, DIST, FB_PAGE_URL, HERE, LOCALE, SHOW_HEADLINES, SHOW_REELS, SHOW_STATS_PAGE, SHOW_VIDEOS, SITE_BASE, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL, _src
+from site_lib.config import ADSENSE_CLIENT, ADSENSE_SLOT, ADSENSE_SLOT_TOP, CF_ANALYTICS_TOKEN, DIST, FB_PAGE_URL, HERE, LOCALE, SHOW_HEADLINES, SHOW_REELS, SHOW_STATS_PAGE, SHOW_VIDEOS, SITE_BASE, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL, VAPID_PUBLIC_KEY, _src
 from site_lib.text import esc, seo_desc, strip_tags
 
 
@@ -159,6 +159,13 @@ def head(title, desc, url, image=None, og_type="website", active="",
                 if SHOW_VIDEOS else "")
     reels_tab = (f'\n    <a href="/reels.html" class="navtab{ra}"><span class="ico">⚡</span> ريلز<span class="nav-en"> | Reels</span></a>'
                  if SHOW_REELS else "")
+    # web push (2026-09-27): manifest + theme colour + the header bell, all
+    # only when the VAPID public key is configured (site_lib/config.py)
+    push_head = ('\n<link rel="manifest" href="/manifest.webmanifest">'
+                 '\n<meta name="theme-color" content="#1f94d3">'
+                 '\n<link rel="apple-touch-icon" href="/assets/icon-192.png">'
+                 if VAPID_PUBLIC_KEY else "")
+    push_bell = (f'\n    {PUSH_BELL}' if VAPID_PUBLIC_KEY else "")
     ads_head = (f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" crossorigin="anonymous"></script>'
                 if ADSENSE_CLIENT else "")
     t = f"""<!doctype html>
@@ -184,7 +191,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <meta name="twitter:description" content="{esc(og_desc)}">
 <meta name="twitter:image" content="{esc(img)}">
 <link rel="alternate" type="application/rss+xml" title="{esc(SITE_NAME)}" href="/feed.xml">
-<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png">{push_head}
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap">
@@ -195,7 +202,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <header class="site-head">
   <div class="head-crowd" aria-hidden="true"></div>
   <div class="wrap head-in">
-    <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>
+    <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>{push_bell}
   </div>
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
@@ -233,7 +240,35 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-{cf_beacon()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
+{cf_beacon()}{push_js()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
+
+
+# ---- web push (2026-09-27) ----
+# The bell: rendered [hidden]; push_js.html reveals it only in a browser that
+# can subscribe (or on an iPhone, where the tap explains the home-screen step).
+PUSH_BELL = ('<button type="button" class="push-btn head-bell" hidden aria-pressed="false" '
+             'aria-label="فعّل إشعارات الأخبار" title="فعّل إشعارات الأخبار">'
+             '<svg viewBox="0 0 24 24" aria-hidden="true"><path class="bell-fill" fill="none" '
+             'stroke="currentColor" stroke-width="2" stroke-linejoin="round" '
+             'd="M6 16V11a6 6 0 0 1 12 0v5l1.5 2h-15z"/><path fill="none" stroke="currentColor" '
+             'stroke-width="2" stroke-linecap="round" d="M10 21a2 2 0 0 0 4 0"/></svg></button>')
+# the line under every article: same [hidden] rule, same script
+PUSH_CTA = ('<div class="push-cta" hidden><span>🔔 تابع الأخبار أولًا بأول: فعّل الإشعارات '
+            'ليصلك كل خبر جديد فور نشره.</span><button type="button" class="push-btn push-cta-btn" '
+            'hidden aria-pressed="false"><span class="push-lbl">فعّل الإشعارات</span></button></div>')
+PUSH_JS = _src("snippets/push_js.html")
+
+
+def push_js():
+    """The subscribe/unsubscribe script, with the public key filled in."""
+    if not VAPID_PUBLIC_KEY:
+        return ""
+    return PUSH_JS.replace("__VAPID_PUBLIC_KEY__", VAPID_PUBLIC_KEY)
+
+
+def push_cta():
+    """The article-end line, or "" while push is dark."""
+    return PUSH_CTA if VAPID_PUBLIC_KEY else ""
 
 
 # Live-scores ticker in the header. Built once per build from matches.json

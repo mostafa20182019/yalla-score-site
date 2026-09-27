@@ -11,7 +11,7 @@ from site_lib.config import ARTICLE_MIN_WORDS, DIST, FB_PAGE_URL, PLACEHOLDER_IM
 from site_lib.dates import art_reltime, rel_ar
 from site_lib.names import _egy_article, _eur_article
 from site_lib.render import Markup, render
-from site_lib.shell import _LASTMOD, _og_dims, foot, head, thumb_url, write
+from site_lib.shell import _LASTMOD, _og_dims, foot, head, push_cta, thumb_url, write
 from site_lib.snippets import FBCOPY_JS
 from site_lib.text import esc, jsonld, strip_src, strip_tags
 from site_lib.urls import article_href, breadcrumb_ld, is_match_piece
@@ -120,7 +120,7 @@ def article_pages(articles, articles_all, matches, urls):
             img=img, credit=a.get("image_credit"), summary=a.get("summary"), body=body,
             sources=sources, faq=[{"q": f["q"], "a": f["a"]} for f in _faq], faq_ld=faq_ld,
             embeds=embeds, clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
-            related=related, page_foot=Markup(foot()))
+            related=related, push_cta=Markup(push_cta()), page_foot=Markup(foot()))
         p = [_ahtml]
         if _words < ARTICLE_MIN_WORDS:
             # legacy short pieces: keep the URL alive (still linked from lists

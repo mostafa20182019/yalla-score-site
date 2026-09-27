@@ -76,15 +76,22 @@ def draw(size):
     return im.resize((size, size), Image.LANCZOS)
 
 
-png192 = draw(192)
-png192.save(os.path.join(OUT, "favicon.png"))
+def main():
+    png192 = draw(192)
+    png192.save(os.path.join(OUT, "favicon.png"))
 
-# the .ico Google's fetcher asks for directly; several sizes in one file so a
-# 16px tab and a 48px bookmark each get a sharp one
-ico = draw(256)
-ico.save(os.path.join(OUT, "favicon.ico"),
-         sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
+    # the .ico Google's fetcher asks for directly; several sizes in one file so a
+    # 16px tab and a 48px bookmark each get a sharp one
+    ico = draw(256)
+    ico.save(os.path.join(OUT, "favicon.ico"),
+             sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
 
-for f in ("favicon.png", "favicon.ico"):
-    p = os.path.join(OUT, f)
-    print("%-18s %6d bytes  %s" % (f, os.path.getsize(p), Image.open(p).size))
+    for f in ("favicon.png", "favicon.ico"):
+        p = os.path.join(OUT, f)
+        print("%-18s %6d bytes  %s" % (f, os.path.getsize(p), Image.open(p).size))
+
+
+# behind a guard since 2026-09-27: tools/make_push_icons.py imports draw() to
+# make the notification / home-screen icons from the SAME geometry
+if __name__ == "__main__":
+    main()

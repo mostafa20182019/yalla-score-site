@@ -8,6 +8,7 @@
 // - /health + the 15-minute watchdog live in health.js (see its header).
 
 import { healthResponse, watchdog } from "./health.js";
+import { pushApi } from "./push.js";
 
 // Live-scores edge endpoint (/live.json): proxies 365scores' current-games
 // feed with a 30s edge cache, so every visitor polls US (cheap, same-origin)
@@ -935,6 +936,9 @@ export default {
     }
     if (url.pathname === "/admin/api" || url.pathname.startsWith("/admin/api/")) {
       return adminApi(request, env, url);
+    }
+    if (url.pathname === "/push/subscribe" || url.pathname === "/push/unsubscribe") {
+      return pushApi(request, env, url);          // web push (push.js)
     }
     if (url.pathname === "/health") {
       return healthResponse(env, ctx);

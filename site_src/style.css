@@ -1004,3 +1004,16 @@ a{color:inherit}
   .feat-body p{font-size:.82rem;line-height:1.6;
     display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
   .article{padding:18px}}
+/* ---- web push (2026-09-27): the bell in the header + the line under an
+   article. Both render [hidden] and push_js.html reveals them only where the
+   browser can actually subscribe (or on an iPhone, where the tap explains the
+   home-screen step) - an in-app browser never sees a button that cannot work. */
+.head-bell{margin-inline-start:auto;width:40px;height:40px;border-radius:50%;border:1.5px solid rgba(255,255,255,.85);background:rgba(15,23,42,.38);color:#fff;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;padding:0;flex:none}
+.head-bell svg{width:20px;height:20px}
+.head-bell:hover{background:rgba(15,23,42,.55)}
+.head-bell.is-on{background:#fff;color:var(--green-d);border-color:#fff}
+.head-bell.is-on .bell-fill{fill:currentColor}
+.push-cta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 6px;padding:12px 14px;border:1px solid #cfe6f5;background:#f1f8fd;border-radius:12px;font-size:.92rem;font-weight:700}
+.push-cta-btn{border:0;border-radius:999px;background:var(--green);color:#fff;font:inherit;font-weight:800;padding:7px 16px;cursor:pointer}
+.push-cta-btn.is-on{background:#fff;color:var(--green-d);border:1px solid var(--green)}
+.push-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:min(92vw,460px);background:#0f172a;color:#fff;padding:11px 16px;border-radius:12px;font-size:.9rem;line-height:1.6;box-shadow:0 6px 24px rgba(0,0,0,.28);z-index:50;text-align:center}

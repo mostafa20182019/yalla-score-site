@@ -4,7 +4,7 @@ videos.
 Moved verbatim out of build_site.py (2026-09-26, tools/move_names.py):
 source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
-from site_lib.config import CONTACT_EMAIL, EDITOR_EMAIL, EDITOR_NAME, EDITOR_ROLE, FB_PAGE_URL, REF_TODAY, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, _src
+from site_lib.config import CONTACT_EMAIL, EDITOR_EMAIL, EDITOR_NAME, EDITOR_ROLE, FB_PAGE_URL, REF_TODAY, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, VAPID_PUBLIC_KEY, _src
 from site_lib.media import VIDEO_CATS
 from site_lib.render import Markup, render
 from site_lib.shell import foot, head, write
@@ -40,6 +40,7 @@ def privacy_page(urls):
                               SITE_BASE + "/privacy.html")),
         ref_today=REF_TODAY,
         contact=contact,
+        push_on=bool(VAPID_PUBLIC_KEY),
         page_foot=Markup(foot())))
     urls.append("/privacy.html")
 
