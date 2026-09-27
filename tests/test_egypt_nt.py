@@ -8,7 +8,7 @@ the ticker matches tokens by substring. The national-team competition scope
 day someone drops the scope "because Egypt only plays Egypt games".
 Also: the home card's entry is scoped to 365scores competition 588 (the card
 matches names EXACTLY and by competition id), and the national team's results
-are NOT posted to Facebook as result cards (not part of the ask).
+get Facebook result cards like the curated clubs (switched on 2026-09-27).
 """
 import os
 import sys
@@ -53,9 +53,12 @@ ck("7 the home live card gets Egypt scoped to 365scores competition 588",
 ck("8 ... and no UNscoped «مصر» entry (c=None would match any competition)",
    not any(e["n"] == "مصر" and e["c"] is None for e in fav))
 
-src = open("fb_cards.py", encoding="utf-8").read()
-ck("9 the national team's results are not posted as Facebook result cards",
-   "in NT_SCOPE" in src and "from site_lib.clubs import NT_SCOPE" in src)
+import fb_cards as F                                              # noqa: E402
+fin = dict(nt, status="FINISHED", home_score=0, away_score=2)
+fin_masry = dict(masry, status="FINISHED", home_score=1, away_score=1)
+ck("9 the national team's results get Facebook result cards (user ask 2026-09-27)",
+   F.finished_matches([fin]) == [fin])
+ck("10 ... and Al Masry's still do not", F.finished_matches([fin_masry]) == [])
 
 print()
 print("FAILED:" if fails else "all national-team checks passed", ", ".join(fails))

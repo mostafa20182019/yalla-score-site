@@ -37,7 +37,6 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import build_site as b                      # data loaders, crest cache, Arabic names
 import store                                # dedup/claim state (D1, else json)
-from site_lib.clubs import NT_SCOPE          # the national team: ticker yes, FB cards no
 
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 import arabic_reshaper
@@ -137,11 +136,8 @@ def finished_matches(matches, hours=None, only_curated=True):
             continue
         if only_curated and not b._is_ticker_team(m):
             continue
-        # the national team joined TICKER_TEAMS for the ticker + the home live
-        # card (2026-09-27); posting its results to Facebook was not part of
-        # that ask - one line to drop when the user wants Egypt cards too
-        if only_curated and (m.get("competition") or "") in NT_SCOPE:
-            continue
+        # the national team (TICKER_TEAMS, NT_SCOPE) gets cards like the
+        # curated clubs - user ask 2026-09-27 «فعل كروت نتايج المنتخب»
         if hours is not None:
             try:
                 ko = datetime.datetime.fromisoformat(
