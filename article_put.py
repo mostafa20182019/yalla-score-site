@@ -21,6 +21,8 @@ Usage
     python article_put.py --export                   # rewrite the json from D1
     python article_put.py --check draft.json         # validate, write nothing
     python article_put.py --retry-pending            # publish a rescued draft
+    python article_put.py --new --data-brief brief.json draft.json
+                                                     # a data article (round_brief.py)
 
 draft.json is one article object with the same field names the json uses:
 title, summary, body, author, pub_date, pub_ts, image_url, image_credit,
@@ -133,7 +135,30 @@ def source_problems(rec):
     return out
 
 
-def validate(rec, updating=False):
+def data_problems(rec, brief):
+    """A DATA article (round_brief.py, 2026-09-27) instead of the two-source rule.
+
+    Its story is our own numbers, so there is no second outlet to find - and the
+    promise it has to keep is a different one: every number in it came out of
+    the facts pack, none was written by the model. So: it must carry the pack's
+    data source (our URL, with the round key the dedup reads), and every number
+    in title/summary/body/faq must be in the pack's allowed_numbers."""
+    import round_brief as RB
+    out = []
+    want = brief.get("data_source") or {}
+    if not any(isinstance(s, dict) and s.get("note") == want.get("note")
+               and urllib.parse.urlsplit(s.get("url") or "").hostname in OUR_HOSTS
+               for s in rec.get("sources") or []):
+        out.append(f"a data article must carry the facts pack's source: {want}")
+    bad = RB.unknown_numbers(rec, brief)
+    if bad:
+        out.append("numbers that are NOT in the facts pack (computed, never written): "
+                   + ", ".join(bad[:15]) + (" ..." if len(bad) > 15 else "")
+                   + " - use the pack's figures or drop the sentence")
+    return out
+
+
+def validate(rec, updating=False, brief=None):
     """Problems worth refusing to publish over."""
     bad = []
     if not updating:
@@ -158,7 +183,9 @@ def validate(rec, updating=False):
         # club's own announcement, not a guess (the prompts say official only)
         if not isinstance(u, str) or not store.embed_platform(u):
             bad.append(f"embed is not an X/Instagram/Facebook post URL: {u!r}")
-    if not updating and not rec.get("kind"):
+    if brief is not None:
+        bad += data_problems(rec, brief)
+    elif not updating and not rec.get("kind"):
         bad += source_problems(rec)
     words = len(b.strip_tags(rec.get("body") or "").split())
     if not updating and words < 300:
@@ -248,12 +275,13 @@ def retry_pending():
             os.remove(path)
             continue
         rec.pop("article_id", None)
+        brief = rec.pop("_data_brief", None)
         if _too_old(rec):
             print(f"{name}: older than {PENDING_MAX_H}h - dropping, "
                   "it is no longer news")
             os.remove(path)
             continue
-        bad, words = validate(rec)
+        bad, words = validate(rec, brief=brief) if brief is not None else validate(rec)
         if bad:
             # it validated when it was parked; if it does not now, something
             # changed under it and a stuck file would block every future run
@@ -276,7 +304,7 @@ def retry_pending():
             continue
         except store.PartialPublish as e:
             rec["published_id"] = e.aid
-            save_pending(rec)
+            save_pending(dict(rec, _data_brief=brief) if brief is not None else rec)
             print(f"{name}: article {e.aid} inserted but its children failed "
                   f"({e.cause}) - parked as an UPDATE for the next run")
             return 2
@@ -313,6 +341,10 @@ def main():
         print(f"data/articles.json rewritten from D1: {n} articles")
         return 0
 
+    brief = None
+    if "--data-brief" in args:
+        with open(args[args.index("--data-brief") + 1], encoding="utf-8") as f:
+            brief = json.load(f)
     path = args[-1]
     if not os.path.exists(path):
         print(f"no such draft file: {path}")
@@ -324,7 +356,7 @@ def main():
     rec.pop("article_id", None)
 
     updating = mode == "--update"
-    bad, words = validate(rec, updating=updating)
+    bad, words = validate(rec, updating=updating, brief=brief)
     if bad:
         print("REFUSED:")
         for x in bad:
@@ -338,6 +370,10 @@ def main():
     if mode == "--check":
         return 0
 
+    def park(r):
+        # a data article's brief rides with the parked draft: retry_pending
+        # re-runs the SAME numbers guard before it publishes
+        return dict(r, _data_brief=brief) if brief is not None else r
     if updating:
         aid = args[1]
         store.article_update(aid, enrich(rec, words), clubs=clubs)
@@ -353,7 +389,7 @@ def main():
             # the ROW landed - park the draft WITH its id so the retry
             # finishes it as an update instead of inserting a duplicate
             rec["published_id"] = e.aid
-            saved = save_pending(rec)
+            saved = save_pending(park(rec))
             print(f"ARTICLE {e.aid} INSERTED, its children failed: {e.cause}")
             print(f"  the draft is saved at {saved} carrying published_id")
             print("  COMMIT IT - the next run completes the article in place.")
@@ -361,7 +397,7 @@ def main():
         except Exception as e:                               # noqa: BLE001
             # NOT a bad draft and NOT a duplicate - the database refused it.
             # The draft is good; park it instead of losing it.
-            saved = save_pending(rec)
+            saved = save_pending(park(rec))
             print(f"D1 REFUSED THE INSERT: {e}")
             print(f"  the finished draft is saved at {saved}")
             print("  COMMIT IT (with any new media/ file) - the next run "

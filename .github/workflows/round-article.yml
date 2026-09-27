@@ -1,0 +1,161 @@
+name: Round Article (AI)
+
+# «الجولة بالأرقام» - ONE Arabic review of a completed league round, built
+# entirely from our own data (round_brief.py: results, the table after the
+# round, our Elo movement, how our FROZEN predictions did). Prompt:
+# .github/prompts/round-article.md
+#
+# Why (2026-09-27): Search Console's «Crawled - currently not indexed» was 17
+# rewritten-news articles; what Google DID index is what only we publish. This
+# is that kind of article.
+#
+# The numbers rule is enforced by the publisher, not by the prompt:
+# article_put.py --data-brief refuses any number that is not in the facts pack.
+#
+# DISPATCH ONLY for now (user decision pending): the first articles are
+# reviewed by the user before this gets a schedule. With no inputs it picks the
+# most recent completed, uncovered round (Egyptian league first); nothing
+# recent -> "no candidate" and a green exit.
+on:
+  workflow_dispatch:
+    inputs:
+      competition:
+        description: "competition as in fixtures.json, e.g. Egyptian Premier League (empty = auto-pick)"
+        type: string
+        default: ""
+      round:
+        description: "round number (with competition)"
+        type: string
+        default: ""
+
+permissions:
+  contents: write
+  actions: write
+
+concurrency:
+  group: round-article
+  cancel-in-progress: false
+
+jobs:
+  write-round-article:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Pull the working data
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+        run: python data_store.py pull
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Pick the round
+        id: pick
+        env:
+          IN_COMP: ${{ github.event.inputs.competition }}
+          IN_ROUND: ${{ github.event.inputs.round }}
+        run: |
+          if [ -n "$IN_COMP" ] && [ -n "$IN_ROUND" ]; then
+            COMP="$IN_COMP"; RND="$IN_ROUND"
+          else
+            J=$(python round_brief.py --pick)
+            COMP=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('comp',''))" "$J")
+            RND=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('round',''))" "$J")
+          fi
+          echo "comp=$COMP" >> "$GITHUB_OUTPUT"
+          echo "round=$RND" >> "$GITHUB_OUTPUT"
+          if [ -z "$COMP" ]; then
+            echo "## ⏭ no completed, uncovered round in the last days" >> "$GITHUB_STEP_SUMMARY"
+            echo "no candidate"; exit 0
+          fi
+          echo "## 🎯 $COMP - round $RND" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Build the facts pack
+        if: steps.pick.outputs.comp != ''
+        run: |
+          mkdir -p /tmp/brief
+          python round_brief.py --brief "${{ steps.pick.outputs.comp }}" "${{ steps.pick.outputs.round }}" \
+            --out /tmp/brief/brief.json | tee -a "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/setup-node@v4
+        if: steps.pick.outputs.comp != ''
+        with:
+          node-version: "20"
+
+      - name: Install Claude Code
+        if: steps.pick.outputs.comp != ''
+        run: npm install -g @anthropic-ai/claude-code
+
+      - name: Remember state
+        if: steps.pick.outputs.comp != ''
+        run: echo "HEAD_BEFORE=$(git rev-parse HEAD)" >> "$GITHUB_ENV"
+
+      - name: Write the article
+        id: write
+        if: steps.pick.outputs.comp != ''
+        continue-on-error: true
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+          COMP: ${{ steps.pick.outputs.comp }}
+          ROUND: ${{ steps.pick.outputs.round }}
+          BRIEF_JSON: /tmp/brief/brief.json
+        run: |
+          set -o pipefail
+          claude -p "$(cat .github/prompts/round-article.md)" \
+            --model claude-sonnet-5 \
+            --dangerously-skip-permissions \
+            --output-format stream-json --verbose \
+            | python .github/scripts/claude_trace.py
+          { echo "### تقرير Claude"; echo '```'; tail -n 40 /tmp/claude.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Report outcome
+        if: always() && steps.pick.outputs.comp != ''
+        run: |
+          if [ "$(git rev-parse HEAD)" != "$HEAD_BEFORE" ]; then
+            TITLE=$(python -c "import json; print(json.load(open('data/articles.json',encoding='utf-8'))['results'][0]['items'][0]['title'])")
+            echo "## ✅ مقال جديد: $TITLE" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "## ⏭ لا مقال هذا التشغيل - السبب في تقرير Claude أعلاه" >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Flag a failed Claude step
+        if: steps.write.outcome == 'failure'
+        run: |
+          echo "::warning::The Claude step failed (exit code non-zero) - check the account's quota / token if this repeats."
+          echo "### ⚠️ Claude step failed this run" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Heartbeat
+        if: ${{ !cancelled() && steps.pick.outputs.comp != '' }}
+        continue-on-error: true
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: python heartbeat.py article:round --outcome "${{ steps.write.outcome }}"
+
+      # a GITHUB_TOKEN push doesn't fire on:push - dispatch publish, and only
+      # when an article was actually committed (the ping-pong lesson of 09-11)
+      - name: Dispatch publish workflow
+        if: always() && steps.pick.outputs.comp != ''
+        run: |
+          if [ "$(git rev-parse HEAD)" = "$HEAD_BEFORE" ]; then
+            echo "no article was committed this run - not dispatching publish"
+            exit 0
+          fi
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/publish.yml/dispatches" \
+            -d '{"ref":"main","inputs":{"reason":"article"}}'
