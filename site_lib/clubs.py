@@ -9,6 +9,13 @@ build_site imports these back under the same names."""
 # while bare "الأهلي" must still never match Saudi Al-Ahli
 EGY_SCOPE = ("Egyptian Premier League", "CAF Champions League")
 
+# The Egyptian NATIONAL team (user ask 2026-09-27: its matches in the ticker
+# and its live match on the home card). A tuple scope of the national-team
+# competitions we actually fetch - add AFCON finals / World Cup qualifiers here
+# the day fetch_data.py fetches them. The scope is what keeps the token safe:
+# "مصر" is a SUBSTRING of "المصري" (Al Masry), and a club never plays in these.
+NT_SCOPE = ("Africa Cup of Nations Qualification",)
+
 TICKER_TEAMS = [
     ("Real Madrid", None), ("FC Barcelona", None), ("Manchester United", None),
     ("Manchester City", None), ("Arsenal FC", None), ("Liverpool FC", None),
@@ -16,6 +23,7 @@ TICKER_TEAMS = [
     ("الأهلي", EGY_SCOPE),
     ("الزمالك", EGY_SCOPE),
     ("بيراميدز", EGY_SCOPE),
+    ("مصر", NT_SCOPE),
     ("طرابزون سبور", "Turkish Super Lig"),
 ]
 
