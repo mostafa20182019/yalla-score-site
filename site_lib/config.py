@@ -45,7 +45,7 @@ TG_CHANNEL_URL = "https://t.me/yallascore"
 # paragraph (the CSS, the icons, sw.js and the manifest file still ship - inert
 # without the markup that uses them). Generate the pair with
 # `python push_send.py --keygen`.
-VAPID_PUBLIC_KEY = ""
+VAPID_PUBLIC_KEY = "BLYSfMfwaTluBFQF5Pp5dzHOKQrTqIapzK8MX8aMKIKG5G388F9462J2NRI7SBo-KUA6MWm74IioPmsOcHZ9RB4"
 # Editorial identity shown on /editors.html and in every article byline.
 EDITOR_NAME = "مصطفى عبدالسلام"
 EDITOR_ROLE = "مدير التحرير"
