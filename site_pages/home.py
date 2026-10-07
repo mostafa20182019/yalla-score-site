@@ -6,6 +6,7 @@ imports these back under the same names."""
 import datetime
 import json
 from site_lib.cards import clubs_strip, fmb_block, headline_card, news_filter_bar, pred_home_block
+from site_lib.articles import pinned_first
 from site_lib.config import FB_PAGE_URL, REF_TODAY, SHOW_HEADLINES, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
 from site_lib.crests import local_crest
 from site_lib.names import _egy_article, _eur_article, _is_ticker_team, ar_team, fav_club_names
@@ -22,6 +23,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     """/ - markup and the user's standing rules for it: site_src/templates/
     home.html (templated 2026-09-26). The pieces are built here in the same
     order as before."""
+    articles = pinned_first(articles)   # HOME_PIN (site_lib/config.py)
     feat = articles[0] if articles else None    # og:image source
     page_head = head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
                      image=(feat and feat.get("image_url")) or None, active="home",

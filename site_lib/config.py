@@ -73,6 +73,12 @@ BYLINE_TEAM = "فريق التحرير"
 # publish date, no «آخر تحديث» (site_src/templates/article.html). The dates
 # stay in the NewsArticle schema (datePublished / dateModified) for Google.
 BYLINE_RELTIME = False
+# The home page's lead story, pinned (2026-10-07, user: «ثبّت المقال ده في
+# المكان ده حتى لو نزل أخبار جديدة»): the article stays the big card of
+# «الأكثر تداولًا» until `until` (Cairo time), then the newest story takes the
+# place again by itself - a match preview must not outlive its match.
+# None = no pin. Only a listed (non-thin) article can be pinned.
+HOME_PIN = {"article_id": "687", "until": "2026-10-12T00:00:00+03:00"}
 # Cloudflare Web Analytics (cookie-less page views / referrers / top pages).
 # Paste the 32-char token from Cloudflare -> Analytics & Logs -> Web Analytics
 # -> Add a site (manual install). Empty = no beacon in the pages.

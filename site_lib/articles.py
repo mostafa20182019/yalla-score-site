@@ -11,7 +11,7 @@ import re
 import store
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_SLUG, S365_COMPETITIONS
-from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_TEAM, DROP_HEADINGS, EDITOR_NAME, GENERIC_BYLINES, HERE, PLACEHOLDER_IMGS, SITE_BASE, SITE_NAME
+from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_TEAM, DROP_HEADINGS, EDITOR_NAME, HOME_PIN, GENERIC_BYLINES, HERE, PLACEHOLDER_IMGS, SITE_BASE, SITE_NAME
 from site_lib.media import EMBED_LABEL
 from site_lib.names import _team_news
 from site_lib.text import article_words, esc, jsonld, strip_tags
@@ -92,6 +92,23 @@ def piece_place(a, k, idx):
     if a.get("match_id"):
         return idx.get(str(a.get("match_id")), (None, None))
     return None, None
+
+
+def pinned_first(articles, pin=None, now=None):
+    """The articles with HOME_PIN's article moved to the front while the pin
+    is valid (see site_lib/config.py); unchanged otherwise."""
+    pin = HOME_PIN if pin is None else pin
+    if not pin or not articles:
+        return articles
+    now = now or datetime.datetime.now(datetime.timezone.utc)
+    try:
+        if now >= datetime.datetime.fromisoformat(pin["until"]):
+            return articles
+    except (KeyError, ValueError):
+        return articles
+    aid = str(pin.get("article_id"))
+    top = [a for a in articles if str(a.get("article_id")) == aid]
+    return top + [a for a in articles if str(a.get("article_id")) != aid] if top else articles
 
 
 def byline(a):
