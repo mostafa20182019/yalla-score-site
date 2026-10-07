@@ -19,24 +19,12 @@ from site_lib.stats import chart_is_current, compute_elo, league_pcts, team_form
 from site_lib.tables import _scorer_face, scorers_list
 from site_lib.text import esc
 from site_lib.ticker import make_ticker
+from site_lib.model import model_core
 
 
 def prepare_model(_details_raw, _res_arch, assists, fixtures, matches, scorers, standings):
     # ---- تحليلات: strength model + predictions + accuracy + player insights ----
-    _archive = load("matches_archive.json")
-    # The season pool: the results archive AHEAD of the feed's rolling files, so
-    # the opening rounds the feed has forgotten still count (the Saudi 51-vs-60
-    # drift of 2026-09-13) and a frozen score wins a conflict. season_matches()
-    # de-duplicates by fixture, so a match on both sides is counted once.
-    _bycomp = AN.season_matches(fixtures, RA.season_rows(_res_arch) + _archive)
-    # season carry-over (roadmap factor 1): the five European leagues start from
-    # last season's carried Elo (data/elo_seeds.json, season_carry.py); absent
-    # file = flat 1500 as before. The Oracle copy reads the same seeds.
-    _seeds = AN.load_elo_seeds()
-    if _seeds:
-        print(f'  + elo seeds: {sum(len(v) for v in _seeds.values())} clubs in {len(_seeds)} leagues')
-    _tstats = AN.team_stats(_bycomp, _seeds)
-    _lparams = {c: AN.league_params(ms) for c, ms in _bycomp.items()}
+    _bycomp, _tstats, _lparams, _archive = model_core(fixtures, _res_arch)
     def _pred(m):
         comp = m.get("competition")
         if comp not in _tstats or not m.get("home") or not m.get("away"):

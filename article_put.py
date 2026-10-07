@@ -23,6 +23,8 @@ Usage
     python article_put.py --retry-pending            # publish a rescued draft
     python article_put.py --new --data-brief brief.json draft.json
                                                      # a data article (round_brief.py)
+    python article_put.py --new --match-brief brief.json draft.json
+                                                     # a match preview (match_brief.py) - required
 
 draft.json is one article object with the same field names the json uses:
 title, summary, body, author, pub_date, pub_ts, image_url, image_credit,
@@ -158,6 +160,34 @@ def data_problems(rec, brief):
     return out
 
 
+def is_match_brief(brief):
+    return isinstance(brief, dict) and isinstance(brief.get("match"), dict) and "kind" in brief
+
+
+def match_brief_problems(rec, brief):
+    """A match PREVIEW with our prediction in it (2026-10-07).
+
+    The model's numbers are computed (match_brief.prediction_block), so a
+    percentage the writer produced is wrong by definition - a 60% that should
+    have been 62% is exactly the kind of error nobody would catch by reading.
+    Every percentage in the draft must be one the brief states, and a preview
+    that carries our prediction carries the disclaimer with it."""
+    import match_brief as MB
+    out = []
+    if str(rec.get("match_id")) != str(brief["match"].get("match_id")) or rec.get("kind") != brief.get("kind"):
+        out.append(f"the brief is for match {brief['match'].get('match_id')} ({brief.get('kind')}), "
+                   f"the draft for {rec.get('match_id')} ({rec.get('kind')})")
+    bad = MB.unknown_percents(rec, brief)
+    if bad:
+        out.append("percentages that are NOT in the brief (the model's numbers are computed, "
+                   "never written): " + ", ".join(f"{x}%" for x in bad[:15])
+                   + " - copy the brief's figure or drop the sentence")
+    if brief.get("prediction") and "ليست نصيحة للمراهنة" not in b.strip_tags(rec.get("body") or ""):
+        out.append("a preview with our prediction must carry the disclaimer «ليست نصيحة للمراهنة» "
+                   "(brief.prediction.disclaimer) in the body")
+    return out
+
+
 def validate(rec, updating=False, brief=None):
     """Problems worth refusing to publish over."""
     bad = []
@@ -183,10 +213,16 @@ def validate(rec, updating=False, brief=None):
         # club's own announcement, not a guess (the prompts say official only)
         if not isinstance(u, str) or not store.embed_platform(u):
             bad.append(f"embed is not an X/Instagram/Facebook post URL: {u!r}")
-    if brief is not None:
+    if is_match_brief(brief):
+        bad += match_brief_problems(rec, brief)
+    elif brief is not None:
         bad += data_problems(rec, brief)
     elif not updating and not rec.get("kind"):
         bad += source_problems(rec)
+    if not updating and rec.get("kind") == "preview" and not is_match_brief(brief):
+        bad.append("a preview is published with its brief: "
+                   "python article_put.py --new --match-brief \"$BRIEF_JSON\" draft.json "
+                   "(the percentage guard needs it)")
     words = len(b.strip_tags(rec.get("body") or "").split())
     if not updating and words < 300:
         bad.append(f"body is {words} words - under the {b.ARTICLE_MIN_WORDS}-word bar, "
@@ -342,9 +378,13 @@ def main():
         return 0
 
     brief = None
-    if "--data-brief" in args:
-        with open(args[args.index("--data-brief") + 1], encoding="utf-8") as f:
-            brief = json.load(f)
+    for flag in ("--data-brief", "--match-brief"):
+        # one slot for both: validate() tells a match brief (match_brief.py)
+        # from a facts pack (round_brief.py) by its shape, and a parked draft
+        # carries whichever it had through _data_brief
+        if flag in args:
+            with open(args[args.index(flag) + 1], encoding="utf-8") as f:
+                brief = json.load(f)
     path = args[-1]
     if not os.path.exists(path):
         print(f"no such draft file: {path}")

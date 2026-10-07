@@ -100,6 +100,111 @@ def _s365(path):
         return json.loads(r.read().decode("utf-8", "replace"))
 
 
+# ---------------------------------------------------------------- prediction
+_PCT = re.compile(r"(\d+(?:[.,]\d+)?)\s*(?:%|٪|في\s*الم[ئا]ة|بالم[ئا]ة)")
+_AR_DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")
+
+
+def prediction_block(d, m):
+    """«توقع يلا سكور» for a preview (2026-10-07, user ask: «ننزل أخبار قبل
+    المباراة عن توقعاتنا وعن تحليلنا»).
+
+    Built from the SAME code path as the match page - site_lib.model.model_core
+    for the strength model, AN.predict / AN.explain for the numbers, the frozen
+    log for the track record - and formatted with the page's own _pct /
+    _signed_pct, so every figure the writer gets is one a reader can find on
+    /m/<id>. The writer adds words, never numbers: article_put.py refuses a
+    preview whose percentages are not in this block (unknown_percents below).
+
+    None when the model has nothing to say about this competition."""
+    import analysis as AN
+    import results_archive as RA
+    import store
+    from site_lib.text import _pct, _signed_pct
+    from site_lib.model import model_core
+    comp, h_raw, a_raw = m.get("competition"), m.get("home"), m.get("away")
+    _, tstats, lparams, _ = model_core(d["fixtures"], RA.load())
+    if comp not in tstats or not h_raw or not a_raw:
+        return None
+    p = AN.predict(tstats[comp], lparams[comp], h_raw, a_raw)
+    h, a = b.ar_team(h_raw), b.ar_team(a_raw)
+    probs = {"H": p["ph"], "D": p["pd"], "A": p["pa"]}
+    pick = max(probs, key=probs.get)
+    out = {
+        "as_of_cairo": _now().strftime("%Y-%m-%d %H:%M"),
+        "home_win": _pct(p["ph"]), "draw": _pct(p["pd"]), "away_win": _pct(p["pa"]),
+        "favourite": {"H": f"فوز {h}", "D": "التعادل", "A": f"فوز {a}"}[pick],
+        "favourite_prob": _pct(probs[pick]),
+        "expected_goals_model": {h: f'{p["lh"]:.1f}', a: f'{p["la"]:.1f}'},
+        "likely_scores": [{"score_home_away": f"{i}-{j}", "prob": _pct(q)} for i, j, q in p["top"]],
+        "over_2_5": _pct(p["over25"]), "both_score": _pct(p["btts"]),
+        "confidence": p["conf"], "confidence_ar": AN.CONF_AR.get(p["conf"], ""),
+        "matches_played": {h: p["n_h"], a: p["n_a"]},
+        "strength_rating_elo": {h: round(p["elo_h"]), a: round(p["elo_a"])},
+        "disclaimer": b.AN_DISCLAIMER,
+        "match_page": b.match_url(m),
+        "record_page": "/predictions",
+    }
+    slug = b.COMP_SLUG.get(comp)
+    if slug:
+        out["league_analysis_page"] = f"/analysis/{slug}"
+    # «لماذا رجّح النموذج» - the same terms and the same silence rule as why_block
+    ex = AN.explain(tstats[comp], lparams[comp], h_raw, a_raw)
+    if ex["n_h"] or ex["n_a"]:
+        why = {"league_avg_goals": {"home_side": f'{ex["mu_home"]:.2f}', "away_side": f'{ex["mu_away"]:.2f}'}}
+        for club, att, other, d_def in ((h, ex["d_att_h"], a, ex["d_def_a"]), (a, ex["d_att_a"], h, ex["d_def_h"])):
+            why[club] = {
+                "attack_vs_league": _signed_pct(att) if abs(att) >= 0.05 else "عند المتوسط",
+                f"defence_of_{other}": (f'يستقبل {abs(d_def) * 100:.0f}% {"أكثر" if d_def > 0 else "أقل"} من المتوسط'
+                                         if abs(d_def) >= 0.05 else "عند المتوسط"),
+            }
+        if abs(ex["elo_edge"]) >= 0.01:
+            why["strength_gap"] = {"home_bonus_points": round(ex["elo_hfa"]),
+                                   "effect_on_home_goals": _signed_pct(ex["elo_edge"])}
+        out["why"] = why
+    # the honest part: how the model has done, from the frozen log
+    try:
+        log = store.pred_all()
+    except Exception:                                       # noqa: BLE001
+        log = AN.load_log()
+    acc = AN.accuracy(log)
+    rec = {}
+    al = acc.get("all")
+    if al:
+        rec["all"] = {"scored": al["n"], "hits": al["hits"], "hit_rate": _pct(al["hit_rate"]),
+                      "always_home_rate": _pct(al["home_baseline"])}
+    lg = (acc.get("comps") or {}).get(comp)
+    if lg and lg["n"] >= 10:
+        rec["this_league"] = {"scored": lg["n"], "hits": lg["hits"], "hit_rate": _pct(lg["hit_rate"])}
+    bk = AN.stated_bucket(AN.calibration(log), probs[pick])
+    if bk:
+        rec["same_band"] = {"from_pct": f'{bk["lo"]}%', "to_pct": f'{bk["hi"]}%', "times": bk["n"], "came_true": bk["hits"]}
+    if rec:
+        out["record"] = rec
+    return out
+
+
+def brief_percents(brief):
+    """Every percentage the brief states, as numbers."""
+    s = json.dumps(brief, ensure_ascii=False).translate(_AR_DIGITS)
+    return {float(x.replace(",", ".")) for x in _PCT.findall(s)}
+
+
+def unknown_percents(rec, brief):
+    """Percentages in a draft that the brief never stated - the model's numbers
+    are computed, so a percentage the writer produced is by definition wrong."""
+    known = brief_percents(brief)
+    bad = []
+    for f in ("title", "summary", "body", "fb_post"):
+        bad += [x for x in _PCT.findall(b.strip_tags(str(rec.get(f) or "")).translate(_AR_DIGITS))
+                if float(x.replace(",", ".")) not in known]
+    for qa in rec.get("faq") or []:
+        for v in (qa.get("q"), qa.get("a")) if isinstance(qa, dict) else ():
+            bad += [x for x in _PCT.findall(b.strip_tags(str(v or "")).translate(_AR_DIGITS))
+                    if float(x.replace(",", ".")) not in known]
+    return sorted(set(bad), key=lambda x: float(x.replace(",", ".")))
+
+
 # ---------------------------------------------------------------- data
 def load_all():
     return {
@@ -353,6 +458,16 @@ def build_brief(d, m, kind):
     gid = resolve_s365_game(m)
     if gid:
         brief["s365"] = h2h_block(gid)
+    if kind == "preview":
+        try:
+            pr = prediction_block(d, m)
+        except Exception as ex:                             # noqa: BLE001
+            # a preview without our prediction is still a preview; the prompt
+            # then leaves the prediction section out instead of inventing one
+            pr = None
+            brief["prediction_error"] = str(ex)[:160]
+        if pr:
+            brief["prediction"] = pr
     if kind == "report":
         goals = b.match_goals(ge_idx, m) or []
         brief["report"] = {"goals": [{"side": g["side"], "player": g["player"], "minute": g["minute"], "tag": g.get("tag", "")} for g in goals]}
@@ -414,6 +529,26 @@ def to_markdown(br):
         L.append("\n## المواجهات المباشرة الأخيرة")
         for x in s3["h2h"]:
             L.append(f"  - {x['date']} {x['home']} {x['score']} {x['away']} ({x['competition']})")
+    pr = br.get("prediction")
+    if pr:
+        L.append(f"\n## توقع يلا سكور (أرقام النموذج حتى {pr['as_of_cairo']} — انقلها كما هي)")
+        L.append(f"فوز {m['home']} {pr['home_win']} | تعادل {pr['draw']} | فوز {m['away']} {pr['away_win']} — الأرجح: {pr['favourite']} ({pr['favourite_prob']})")
+        L.append("الأهداف المتوقعة من النموذج: " + "، ".join(f"{k} {v}" for k, v in pr["expected_goals_model"].items()))
+        L.append("النتائج الأكثر احتمالًا (أرض-ضيف): " + "، ".join(f"{s['score_home_away']} ({s['prob']})" for s in pr["likely_scores"]))
+        L.append(f"أكثر من 2.5 هدف {pr['over_2_5']} | يسجل الفريقان {pr['both_score']} | الثقة: {pr['confidence_ar']} "
+                 f"(مباريات منتهية: " + "، ".join(f"{k} {v}" for k, v in pr["matches_played"].items()) + ")")
+        L.append("تقييم القوة (Elo): " + "، ".join(f"{k} {v}" for k, v in pr["strength_rating_elo"].items()))
+        if pr.get("why"):
+            L.append("لماذا: " + json.dumps(pr["why"], ensure_ascii=False))
+        rc = pr.get("record") or {}
+        if rc.get("all"):
+            L.append(f"سجل النموذج: أصاب {rc['all']['hits']} من {rc['all']['scored']} ({rc['all']['hit_rate']}) مقابل {rc['all']['always_home_rate']} لو رجّحنا صاحب الأرض دائمًا")
+        if rc.get("this_league"):
+            L.append(f"في هذا الدوري: {rc['this_league']['hits']} من {rc['this_league']['scored']} ({rc['this_league']['hit_rate']})")
+        if rc.get("same_band"):
+            sb = rc["same_band"]
+            L.append(f"حين قال النموذج احتمالًا بين {sb['from_pct']} و{sb['to_pct']}: تحقق {sb['came_true']} من {sb['times']} مرة")
+        L.append(f"تنبيه إلزامي: {pr['disclaimer']}")
     rp = br.get("report")
     if rp:
         L.append("\n## تقرير المباراة")

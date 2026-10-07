@@ -20,6 +20,7 @@ Python deps (requirements.txt + pillow) are already installed by the workflow.
 
 ## THE ONE HARD RULE ON NUMBERS
 Every number, name, minute, position, rating, formation and result in the article MUST come from the brief (or from data/*.json / a page of our own site). Never invent, estimate or "recall" a statistic, a fee, an injury, a quote or a lineup. If the brief lacks something (e.g. no head-to-head, no ratings), write the article WITHOUT that angle — a shorter true article beats a longer padded one. You MAY read 1-2 press sources via Google News RSS (news.google.com/rss/search?q=<urlencoded>&hl=ar&gl=EG&ceid=EG:ar) for context such as injuries/suspensions or the coach's pre-match comments, attributed as "بحسب تقارير صحفية" and only when two sources agree.
+**PERCENTAGES (2026-10-07):** every percentage in a PREVIEW must be one the brief states — `article_put.py --match-brief` refuses the draft otherwise. Copy the model's figures from `prediction` exactly as written there (62%, not «نحو 60%», not 0.62); never derive a new one (no adding two probabilities, no «ضعف الاحتمال»).
 
 ## Length and structure — 650-900 words, HTML <p>/<h2>/<ul> allowed
 ### PREVIEW (KIND=preview)
@@ -29,7 +30,14 @@ Every number, name, minute, position, rating, formation and result in the articl
 4. **المواجهات المباشرة** (only if `s365.h2h` exists): last meetings with scores and what the pattern says.
 5. **قراءة تكتيكية** grounded in data: formations/lineups from the most recent report in match_details if available (check data/match_details.json for either club's last game), otherwise the goals-per-game pattern. No made-up tactics.
 6. **الأرقام التي تحسم اللقاء**: 3-5 bullet facts, each a number from the brief.
-7. **توقّع يلا سكور**: a reasoned expectation in ONE sentence, framed as analysis (not betting), plus the link to the match page `match.url` and the club page(s) `curated_clubs[].url`, and one inline link to a related article from `related_articles` if any.
+7. **توقع يلا سكور** (user ask 2026-10-07: «أخبار قبل المباراة عن توقعاتنا وعن تحليلنا») — ONLY when the brief has `prediction`; this is the article's centre, give it 150-250 words:
+   - the three probabilities and the favourite (`home_win` / `draw` / `away_win`, `favourite`), the model's expected goals for each side (`expected_goals_model`), the most likely scores (`likely_scores` are HOME-AWAY), over 2.5 and both-teams-score, and the confidence label `confidence_ar` with `matches_played`;
+   - WHY, in plain Arabic, from `why` only: the attack of each club against the league average, the defence it faces, and the strength gap (`strength_rating_elo`, `why.strength_gap` when present). Explain what the numbers mean («هجوم الأهلي يسجل 39% فوق متوسط الدوري»); never add a reason the block does not contain — the model does not know injuries, lineups or motivation, and the article must not pretend it does;
+   - HONESTY, from `record`: how often the model has been right overall (vs `always_home_rate`), in this league if `this_league` exists, and — the strongest line — `same_band` («حين قال النموذج احتمالًا بين 60% و69% تحقق 26 من 37 مرة»). A low-confidence prediction says so plainly;
+   - say the figures are «حتى `as_of_cairo`» (they can move after other results), then the disclaimer sentence `prediction.disclaimer` VERBATIM (the publish tool checks for «ليست نصيحة للمراهنة»);
+   - links: the match page `match.url` (the full prediction + «لماذا رجّح النموذج»), `record_page` («سجل توقعاتنا كاملًا، إصابةً وخطأ»), `league_analysis_page` if present, the club page(s) `curated_clubs[].url`, and one related article from `related_articles` if any.
+   Without `prediction` (the model has no data for this competition): NO prediction section and no expectation of your own — end with the links. Never state a favourite the model did not compute.
+   Never frame any of it as a bet, odds or a tip.
 
 ### REPORT (KIND=report)
 1. Lead: final score, competition, date; the one-line story of the game.
@@ -41,9 +49,9 @@ Every number, name, minute, position, rating, formation and result in the articl
 7. Links: match page, club page(s), one related article.
 
 ## Article record — a draft file, published with `article_put.py`
-Write the object to `/tmp/draft.json` and publish it with `python article_put.py --new /tmp/draft.json` (run `--check` on it first). **Never hand-edit data/articles.json**: D1 is the writer since 2026-09-10, it allocates the id inside the INSERT, and its unique index on (match_id, kind) is what actually guarantees one preview and one report per match. If the tool prints "D1 is not configured", stop and report it.
+Write the object to `/tmp/draft.json` and publish it with `python article_put.py --new --match-brief "$BRIEF_JSON" /tmp/draft.json` (run `python article_put.py --check --match-brief "$BRIEF_JSON" /tmp/draft.json` first; a PREVIEW without `--match-brief` is refused, and a refusal that names a percentage means: copy the brief's figure or drop the sentence). A report may pass `--match-brief` too. **Never hand-edit data/articles.json**: D1 is the writer since 2026-09-10, it allocates the id inside the INSERT, and its unique index on (match_id, kind) is what actually guarantees one preview and one report per match. If the tool prints "D1 is not configured", stop and report it.
 - `article_id` — omit it, the database assigns it
-- `title` (~60-95 chars, Arabic, names both clubs; preview titles start with «قبل المباراة:» or «تحليل:»؛ report titles with «تقرير:» or the result), `summary` (1-2 sentences), `body` (HTML), `author` = "مصطفى عبدالسلام"
+- `title` (~60-95 chars, Arabic, names both clubs; preview titles start with «توقع يلا سكور:» when the brief has `prediction` (e.g. «توقع يلا سكور: الفتح × الأهلي في الدوري السعودي»), otherwise «قبل المباراة:» or «تحليل:»؛ report titles with «تقرير:» or the result), `summary` (1-2 sentences), `body` (HTML), `author` = "مصطفى عبدالسلام"
 - `pub_date` = today Cairo (`TZ=Africa/Cairo date +%F`), `pub_ts` = `TZ=Africa/Cairo date -Iseconds`
 - `match_id` = $MATCH_ID (as a number), `kind` = $KIND  ← these two fields are the dedup key; never omit them
 - `fb_post` (USER RULE 2026-09-05 for MATCH articles, replaces title-only): the post must WIN the reader on Facebook without forcing a click — a condensed version of the whole article, not a teaser. Structure: line 1 = the title; then 4-6 short lines that carry the article's key facts and NUMBERS (positions/points, form, the key players with their tallies, head-to-head, the expected/decisive angle — for reports: score, scorers+minutes, best-rated players, standings effect); total 600-900 characters of Arabic text; every number taken from the article; no emoji spam (one ⚽ at most), no clickbait, no 'اضغط الرابط'. Then a line «التحليل الكامل بالأرقام على الموقع 👇», the link https://yallascore.site/m/<match_id> (a match piece lives INSIDE its match page since 2026-09-16 - never link /a/<id>), and 3-4 hashtags starting #يلا_سكور. Plain text with real newlines.
