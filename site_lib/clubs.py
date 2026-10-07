@@ -33,12 +33,24 @@ TICKER_TEAMS = [
 # competition-scope-or-None) — FD English tokens for European clubs
 # ("FC Barcelona" not "Barcelona": Espanyol collision), Arabic clubs scoped
 # to their league (bare "الأهلي" also matches Saudi Al-Ahli). news_tokens
-# are searched in article title+summary; news_excl vetoes false positives.
+# are searched in article title+summary; news_excl names OTHER clubs that
+# share the token (cut out before matching - not a veto of the whole story);
+# news_ctx is a foreign league's context that, without any news_anchor,
+# means the bare token is the foreign club. A match piece also obeys the
+# match_tokens scope: Saudi Pro League -> never the Egyptian club
+# (names._team_news, 2026-10-07).
 TEAM_PAGES = [
     {"slug": "al-ahly", "name": "الأهلي", "league": "Egyptian Premier League",
      "match_tokens": [("الأهلي", EGY_SCOPE)],
      "news_tokens": ["الأهلي"],
-     "news_excl": ["الأهلي السعودي", "أهلي جدة", "شباب الأهلي دبي", "شباب أهلي دبي"]},
+     "news_excl": ["الأهلي السعودي", "الأهلي السعودى", "أهلي جدة",
+                   "شباب الأهلي دبي", "شباب أهلي دبي", "شباب الأهلي",
+                   "الأهلي القطري", "الأهلي الليبي", "أهلي طرابلس",
+                   "الأهلي البحريني", "الأهلي الإماراتي", "الأهلي السوداني"],
+     "news_ctx": ["دوري روشن", "الدوري السعودي", "دوري المحترفين السعودي",
+                  "كأس خادم الحرمين", "جدة"],
+     "news_anchor": ["مصر", "الزمالك", "بيراميدز", "القلعة الحمراء",
+                     "أفريقيا", "إفريقيا", "كاف", "القاهرة", "التتش"]},
     {"slug": "zamalek", "name": "الزمالك", "league": "Egyptian Premier League",
      "match_tokens": [("الزمالك", EGY_SCOPE)],
      "news_tokens": ["الزمالك"]},

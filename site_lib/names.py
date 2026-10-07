@@ -38,10 +38,60 @@ def _team_match(tp, m):
                for t, c in tp["match_tokens"])
 
 
+# match_id -> competition, for the match-piece rule in _team_news. Filled on
+# first use from the same two files site_pages/articles.py reads; a caller
+# that knows better (article_put with a match brief, the tests) passes
+# "competition" on the record or calls set_match_comps().
+_MATCH_COMPS = None
+def set_match_comps(comps):
+    global _MATCH_COMPS
+    _MATCH_COMPS = {str(k): v or "" for k, v in (comps or {}).items()}
+
+
+def _match_comp(a):
+    """Competition of a match piece (preview/report), "" when unknown."""
+    if a.get("competition"):
+        return a["competition"]
+    if not a.get("match_id"):
+        return ""
+    if _MATCH_COMPS is None:
+        from site_lib.config import load
+        set_match_comps({m["match_id"]: m.get("competition")
+                         for m in load("matches_archive.json") + load("matches.json")
+                         if m.get("match_id")})
+    return _MATCH_COMPS.get(str(a["match_id"]), "")
+
+
+def _tp_in_comp(tp, comp):
+    """Can club tp play in competition comp? Its own league, or any of its
+    match_tokens scopes (None = anywhere). Each scope is tested on its own:
+    the old `tuple(c for ...)` nested EGY_SCOPE one level deep, so «CAF
+    Champions League» never matched and _team_link left Egyptian clubs
+    unlinked on African match rows."""
+    return tp.get("league") == comp or any(_in_scope(c, comp) for _, c in tp["match_tokens"])
+
+
 def _team_news(tp, a):
-    """Does article a mention club tp? title+summary, with exclusions."""
+    """Does article a mention club tp? title+summary.
+
+    Bare «الأهلي» is also Saudi Al-Ahli's name (bug 2026-10-07: the preview
+    of الفتح × الأهلي, Saudi Pro League, linked to /team/al-ahly). Three rules:
+    - a match piece whose competition is known belongs to a club only inside
+      that club's match scope - the same rule the ticker uses, so a Saudi Pro
+      League match can never land on the Egyptian club;
+    - news_excl phrases name ANOTHER club («الأهلي السعودي») and are cut out
+      before matching, so «الأهلي يرفض عرض الأهلي السعودي» still counts and
+      «الأهلي السعودي يفوز» does not;
+    - news_ctx (a foreign league: «دوري روشن») with none of news_anchor
+      (Egyptian context) means the bare name is the foreign club."""
+    comp = _match_comp(a) if a.get("kind") else ""
+    if comp and not _tp_in_comp(tp, comp):
+        return False
     txt = (a.get("title") or "") + " " + (a.get("summary") or "")
-    if any(x in txt for x in tp.get("news_excl", [])):
+    for x in tp.get("news_excl", []):
+        txt = txt.replace(x, " ")
+    if any(x in txt for x in tp.get("news_ctx", [])) \
+            and not any(x in txt for x in tp.get("news_anchor", [])):
         return False
     return any(t in txt for t in tp["news_tokens"])
 
@@ -54,9 +104,7 @@ def _team_link(comp, raw_name):
     """Arabic team name, linked to its /team/ page when it is a curated club."""
     nm = ar_team(raw_name)
     for tp in TEAM_PAGES:
-        scope = tuple(c for _, c in tp["match_tokens"] if c) or None
-        in_league = (tp["league"] == comp) or (scope is not None and _in_scope(scope, comp))
-        if in_league and any(t in (raw_name or "") or t == nm for t, _ in tp["match_tokens"]):
+        if _tp_in_comp(tp, comp) and any(t in (raw_name or "") or t == nm for t, _ in tp["match_tokens"]):
             return f'<a href="/team/{tp["slug"]}.html">{esc(nm)}</a>'
     return esc(nm)
 

@@ -251,8 +251,19 @@ def enrich(rec, words):
     return out
 
 
-def clubs_of(rec, aid="new"):
-    return [tp["slug"] for tp in b.article_clubs(dict(rec, article_id=aid))]
+def clubs_of(rec, aid="new", brief=None):
+    """Club slugs for a draft. A match brief names the match's competition,
+    so a preview of a Saudi Pro League game can never land on the Egyptian
+    Al Ahly page even before the match reaches matches_archive.json. The
+    article_clubs cache is keyed by id and every draft here is "new" - drop
+    the entry so one run's second draft never inherits the first one's clubs."""
+    r = dict(rec, article_id=aid)
+    if is_match_brief(brief) and brief["match"].get("competition_raw"):
+        r["competition"] = brief["match"]["competition_raw"]
+    b._ART_CLUBS.pop(aid, None)
+    out = [tp["slug"] for tp in b.article_clubs(r)]
+    b._ART_CLUBS.pop(aid, None)
+    return out
 
 
 def save_pending(rec):
@@ -324,7 +335,7 @@ def retry_pending():
             print(f"{name}: no longer valid ({bad[0]}) - removing")
             os.remove(path)
             continue
-        clubs = clubs_of(rec)
+        clubs = clubs_of(rec, brief=brief)
         try:
             if rec.get("published_id"):
                 # an earlier retry got the ROW in and died on the children
@@ -404,7 +415,7 @@ def main():
         return 1
     # the club links are derived from the title/summary/body; a draft without
     # them cannot recompute the list, and passing [] would DELETE it
-    clubs = clubs_of(rec) if ("body" in rec or "title" in rec) else None
+    clubs = clubs_of(rec, brief=brief) if ("body" in rec or "title" in rec) else None
     print(f"ok: {words} words, clubs={clubs if clubs is not None else 'unchanged'}, "
           f"sources={len(rec.get('sources') or [])}, faq={len(rec.get('faq') or [])}")
     if mode == "--check":
