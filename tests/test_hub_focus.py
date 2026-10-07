@@ -36,7 +36,8 @@ ck("England: every name is what ar_team returns for the football-data club",
                          "Manchester City FC", "Tottenham Hotspur FC")] == list(e))
 for comp, raw in (("Primera Division", ("Real Madrid CF", "FC Barcelona", "Club Atlético de Madrid")),
                   ("Serie A", ("FC Internazionale Milano", "AC Milan", "Juventus FC", "SSC Napoli", "AS Roma", "SS Lazio")),
-                  ("Ligue 1", ("Paris Saint-Germain FC", "Olympique Lyonnais", "Olympique de Marseille", "AS Monaco FC"))):
+                  ("Ligue 1", ("Paris Saint-Germain FC", "Olympique Lyonnais", "Olympique de Marseille", "AS Monaco FC")),
+                  ("Bundesliga", ("FC Bayern München", "Borussia Dortmund", "Bayer 04 Leverkusen", "Borussia Mönchengladbach"))):
     ck(f"{comp}: the asked clubs, in ar_team's spellings", SP.HUB_FOCUS.get(comp) == tuple(ar_team(n) for n in raw),
        SP.HUB_FOCUS.get(comp))
 ck("Saudi: the big four (Al-Ahli = Jeddah, scoped to this league)",

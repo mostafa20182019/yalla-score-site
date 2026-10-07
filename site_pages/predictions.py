@@ -35,7 +35,8 @@ HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بي
              # it can never pull in the Egyptian club (and vice versa)
              "Saudi Pro League": ("الهلال", "النصر", "الاتحاد", "الأهلي"),
              # the feed's spellings: «غلطة سراي» (not جالطة سراي), «فنربخشة»
-             "Turkish Super Lig": ("غلطة سراي", "بشكتاش", "طرابزون سبور", "فنربخشة")}
+             "Turkish Super Lig": ("غلطة سراي", "بشكتاش", "طرابزون سبور", "فنربخشة"),
+             "Bundesliga": ("بايرن ميونخ", "بوروسيا دورتموند", "باير ليفركوزن", "بوروسيا مونشنجلادباخ")}
 
 
 def prediction_history_page(plog, acc):
