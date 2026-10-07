@@ -37,6 +37,20 @@ def drop_headings(articles, headings=DROP_HEADINGS):
     return n
 
 
+# /insights («التحليلات», 2026-10-07): which analytical kind an article is
+def insight_kind(a):
+    """Which analytical kind an article is, or None for plain news."""
+    k = a.get("kind")
+    if k == "analysis":
+        return "analysis"
+    if k in ("preview", "report") and a.get("match_id"):
+        return k
+    for s in a.get("sources") or []:
+        if isinstance(s, dict) and str(s.get("note") or "").startswith("round:"):
+            return "round"
+    return None
+
+
 def byline(a):
     """The name to print (and to put in schema) for one article."""
     return EDITOR_NAME if (a.get("author") or "") in GENERIC_BYLINES else a["author"]

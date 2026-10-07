@@ -105,6 +105,7 @@ from site_pages.static import (  # noqa: E402
 from site_pages.articles import (  # noqa: E402
     article_pages, news_archive_pages, fb_helper_page, headlines_page)
 from site_pages.home import home_page  # noqa: E402
+from site_pages.insights import insights_page  # noqa: E402
 from site_pages.matches import matches_page, match_pages  # noqa: E402
 from site_pages.leagues import league_pages, fixtures_pages, stats_page  # noqa: E402
 from site_pages.clubs import club_pages  # noqa: E402
@@ -233,6 +234,7 @@ def build():
     terms_page(urls)
     editorial_page(urls)           # السياسة التحريرية - E-E-A-T signal
     news_archive_pages(articles, urls)
+    print(f"  + insights (التحليلات): {insights_page(articles, urls)} pieces")
     fb_helper_page(articles)       # INTERNAL: not in the sitemap, linked from nowhere
     headlines_page(headlines, urls)        # gated by SHOW_HEADLINES
     reels_page(reels, urls)

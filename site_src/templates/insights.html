@@ -1,0 +1,29 @@
+{# /insights - «التحليلات»: the analytical pieces (editor analyses, previews with our prediction, post-match reports, «الجولة بالأرقام»), newest first, filterable by kind - 2026-10-07.
+   Lines are joined with NO separator by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<h1 class="page-h">التحليلات</h1>
+<p class="hintline">قراءات المباريات بالأرقام: تحليلات المحرر، ما قبل المباراة بتوقعات نموذج يلا سكور، ما بعد المباراة، و«الجولة بالأرقام».</p>
+{% if rows %}
+<div class="mfilters ins-filters" role="group" aria-label="نوع التحليل">
+  <button class="mf-chip is-on" data-k="">الكل ({{ total }})</button>
+  {% for k, lbl, n in chips %}
+  <button class="mf-chip" data-k="{{ k }}">{{ lbl }} ({{ n }})</button>
+  {% endfor %}
+</div>
+<div class="alist ins-list">
+  {% for r in rows %}
+  <a class="al-row" href="{{ r.href }}" data-k="{{ r.k }}">{{ r.th }}
+    <span class="al-b">
+      <span class="ins-k ins-{{ r.k }}">{{ r.kl }}</span>
+      <b class="al-t">{{ r.title }}</b>
+      <span class="al-s">{{ r.summary }}</span>
+      <span class="al-m">{{ r.byline }} · {{ r.when }}</span>
+    </span>
+  </a>
+  {% endfor %}
+</div>
+<script>(function(){var bs=document.querySelectorAll('.ins-filters .mf-chip'),rs=document.querySelectorAll('.ins-list .al-row');bs.forEach(function(b){b.addEventListener('click',function(){var k=b.getAttribute('data-k');bs.forEach(function(x){x.classList.toggle('is-on',x===b)});rs.forEach(function(r){r.hidden=!!k&&r.getAttribute('data-k')!==k})})})})();</script>
+{% else %}
+<p class="empty-note">لا توجد تحليلات بعد.</p>
+{% endif %}
+{{ page_foot }}

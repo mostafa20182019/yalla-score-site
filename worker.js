@@ -787,6 +787,15 @@ async function adminApi(request, env, url) {
   }
 
   // POST /admin/api/article — publish a new one
+  // kinds (2026-10-07): preview/report belong to a match; "analysis" is an
+  // editor analysis for /insights («التحليلات») and needs no match.
+  function badKind(rec) {
+    const k = rec.kind || null;
+    if (k && !["preview", "report", "analysis"].includes(k)) return "kind must be preview, report or analysis";
+    if ((k === "preview" || k === "report") && !rec.match_id) return "a preview/report needs its match_id";
+    if (rec.match_id && !k) return "a match_id needs a kind";
+    return null;
+  }
   if (request.method === "POST" && parts[0] === "article") {
     let rec;
     try { rec = await request.json(); }
@@ -796,9 +805,8 @@ async function adminApi(request, env, url) {
         return jsonReply(request, { error: `missing ${f}` }, 400);
       }
     }
-    if (!!rec.match_id !== !!rec.kind) {
-      return jsonReply(request, { error: "match_id and kind go together" }, 400);
-    }
+    const bk = badKind(rec);
+    if (bk) return jsonReply(request, { error: bk }, 400);
     const be = badEmbeds(rec);
     if (be) return jsonReply(request, { error: be }, 400);
     const w = words(rec.body);
@@ -847,6 +855,11 @@ async function adminApi(request, env, url) {
 
     const be2 = badEmbeds(rec);
     if (be2) return jsonReply(request, { error: be2 }, 400);
+    if ("kind" in rec && rec.kind && rec.kind !== "analysis") {
+      // the admin form only ever switches news <-> analysis; a match piece's
+      // kind is owned by the match-article pipeline (its unique index)
+      return jsonReply(request, { error: "only kind=analysis (or empty) can be set here" }, 400);
+    }
     const sets = [], vals = [];
     for (const f of ART_FIELDS) {
       if (f in rec) { sets.push(`${f} = ?`); vals.push(rec[f] === "" ? null : rec[f]); }

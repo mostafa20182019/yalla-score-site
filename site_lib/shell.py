@@ -149,6 +149,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
     ha = " is-active" if active == "home" else ""
     ma = " is-active" if active == "matches" else ""
     aa = " is-active" if active == "analysis" else ""
+    ia = " is-active" if active == "insights" else ""
     sa = " is-active" if active == "stats" else ""
     stats_tab = ('    <a href="/stats.html" class="navtab' + sa + '">'
                  '<span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>'
@@ -209,6 +210,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
     <a href="/" class="navtab{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
     <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
     <a href="/analysis.html" class="navtab{aa}"><span class="ico">📈</span> التوقعات<span class="nav-en"> | Predictions</span></a>
+    <a href="/insights.html" class="navtab{ia}"><span class="ico">🧠</span> التحليلات<span class="nav-en"> | Analysis</span></a>
 {stats_tab}{vids_tab}{reels_tab}
   </div></nav>
 </header>
@@ -236,7 +238,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/analysis.html">التوقعات</a> · <a href="/predictions.html">سجل التوقعات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a> · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a></p>
+  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/analysis.html">التوقعات</a> · <a href="/insights.html">التحليلات</a> · <a href="/predictions.html">سجل التوقعات</a> · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a> · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>

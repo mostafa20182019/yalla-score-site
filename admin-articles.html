@@ -106,6 +106,7 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
     </div>
     <div id="bodyPrev"><h4>معاينة:</h4><div id="bodyPrevIn"></div></div>
     <div class="row">
+      <div class="grow" id="fkindBox"><label>نوع المقال</label><select id="fkind"><option value="">خبر</option><option value="analysis">تحليل — يظهر في صفحة «التحليلات»</option></select></div>
       <div class="grow"><label>الكاتب</label><input type="text" id="fauthor" value="فريق التحرير"></div>
       <div class="grow"><label>التاريخ</label><input type="date" id="fdate"></div>
     </div>
@@ -303,6 +304,10 @@ function editArt(i){
     document.getElementById("fembeds").value=(a.embeds||[]).join("\n");
     document.getElementById("fbody").value=a.body||"";
     document.getElementById("fauthor").value=a.author||"فريق التحرير";
+    /* a match preview/report keeps its kind: the selector is for news <-> analysis only */
+    var _mp=(a.kind==="preview"||a.kind==="report");
+    document.getElementById("fkindBox").style.display=_mp?"none":"";
+    document.getElementById("fkind").value=_mp?"":(a.kind||"");
     document.getElementById("fdate").value=a.pub_date||"";
     document.getElementById("formBtn").textContent="💾 حفظ التعديل";
     document.getElementById("cancelEdit").style.display="inline-block";
@@ -314,6 +319,8 @@ function resetForm(){
   document.getElementById("formTitle").textContent="➕ خبر جديد";
   ["ftitle","fsummary","fimg","fcredit","fembeds","fbody"].forEach(function(id){document.getElementById(id).value="";});
   document.getElementById("fauthor").value="فريق التحرير";
+  document.getElementById("fkindBox").style.display="";
+  document.getElementById("fkind").value="";
   document.getElementById("fdate").value=new Date().toISOString().slice(0,10);
   document.getElementById("formBtn").textContent="💾 انشر الخبر";
   document.getElementById("cancelEdit").style.display="none";
@@ -351,6 +358,8 @@ function submitForm(){
   };
   var editing = editIdx!==null;
   if(!editing) rec.pub_ts=new Date().toISOString();   /* powers «منذ X» on the site */
+  if(document.getElementById("fkindBox").style.display!=="none")
+    rec.kind=document.getElementById("fkind").value||null;   /* "" = news, "analysis" = /insights */
 
   busy=true;
   var btn=document.getElementById("formBtn"); btn.disabled=true;

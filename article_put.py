@@ -199,10 +199,15 @@ def validate(rec, updating=False, brief=None):
     for k in rec:
         if k not in ALLOWED:
             bad.append(f"unknown field {k!r}")
-    if bool(rec.get("match_id")) != bool(rec.get("kind")):
-        bad.append("match_id and kind go together (both or neither)")
-    if rec.get("kind") and rec["kind"] not in ("preview", "report"):
-        bad.append(f"kind must be preview or report, not {rec['kind']!r}")
+    # kinds (2026-10-07): preview/report belong to a match (match_id
+    # required); "analysis" is an editor/AI analysis for /insights
+    # («التحليلات») and stands on its own.
+    if rec.get("kind") in ("preview", "report") and not rec.get("match_id"):
+        bad.append("a preview/report needs its match_id")
+    if rec.get("match_id") and not rec.get("kind"):
+        bad.append("a match_id needs a kind (preview or report)")
+    if rec.get("kind") and rec["kind"] not in ("preview", "report", "analysis"):
+        bad.append(f"kind must be preview, report or analysis, not {rec['kind']!r}")
     if rec.get("image_url") and not rec.get("image_credit") \
             and "ph-pitch" not in rec["image_url"] and "ph-ball" not in rec["image_url"]:
         # the standing rule: no credit, no use. Only our own placeholders are
