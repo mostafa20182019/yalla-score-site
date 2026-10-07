@@ -37,8 +37,14 @@ n_a = sum(1 for u in locs if kind(u) == "article")
 # (305 of them), which are exactly what the sitemap exists to advertise and
 # grow ~10 a day. The cut that took it from 670 was the thin MATCH pages, so
 # that is what is capped now; articles are free to grow.
+# 2026-10-07 (user decision): cap 200 -> 450. It had tripped since 09-27 (283)
+# without anything being wrong: the sitemap keeps every match of the 11
+# curated clubs for the WHOLE season (site_pages/matches.py), so that part
+# grows every round by design - ~350 by May, plus the rolling 7-day window.
+# 450 still catches a real leak (e.g. every indexable match page, 714 today);
+# checks 2 and 3 below are the ones that guard the balance.
 ck("1 the sitemap is a selection: match pages capped, articles free to grow",
-   n_m <= 200, f"{len(locs)} URLs, {n_m} match pages (was 670 total)")
+   n_m <= 450, f"{len(locs)} URLs, {n_m} match pages (was 670 total)")
 ck("2 articles outnumber match pages in what we advertise",
    n_a > n_m, f"{n_a} articles vs {n_m} match pages")
 ck("3 the templated share is well under half",
