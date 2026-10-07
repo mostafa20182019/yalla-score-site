@@ -120,7 +120,7 @@ def prediction_history_page(plog, acc):
                                      "acceptedAnswer": {"@type": "Answer", "text": v}}
                                     for q, v in faq]})
     crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                               ("تحليلات وتوقعات", SITE_BASE + "/analysis.html"),
+                               ("التوقعات", SITE_BASE + "/analysis.html"),
                                ("سجل التوقعات", SITE_BASE + url)])
     write("predictions.html", render(
         "predictions.html",
@@ -152,11 +152,11 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
     comps = [c for c in COMP_ORDER if c in tstats] + [c for c in tstats if c not in COMP_ORDER]
     n_pred = sum(len(v) for v in by_comp.values())
     # ---- hub ----
-    page_head = head("تحليلات وتوقعات المباريات بالأرقام — يلا سكور",
+    page_head = head("توقعات المباريات بالأرقام — يلا سكور",
                      "توقعات مباريات الأسبوع باحتمالات مبنية على بيانات الموسم، تقييم قوة الأندية، تحليل اللاعبين، "
                      "وسجل شفاف لدقة التوقعات في الدوري المصري وأبرز الدوريات.",
                      SITE_BASE + "/analysis.html", active="analysis")
-    crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html")])
+    crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("التوقعات", SITE_BASE + "/analysis.html")])
     nav = [(COMP_SLUG[c], Markup(comp_icon(c)), comp_label(c)) for c in comps if c in COMP_SLUG]
     week = []
     for c in comps:
@@ -209,11 +209,11 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
         stats, params = tstats[c], lparams[c]
         if not stats:
             continue
-        page_head = head(f"تحليلات {label}: توقعات المباريات وقوة الأندية واللاعبون — يلا سكور",
+        page_head = head(f"توقعات {label}: احتمالات المباريات وقوة الأندية واللاعبون — يلا سكور",
                          f"توقعات مباريات {label} القادمة باحتمالات مبنية على نتائج الموسم، ترتيب قوة الأندية (Elo) "
                          f"ومؤشرات الهجوم والدفاع، توقيت الأهداف، وأعلى اللاعبين تقييمًا.",
                          SITE_BASE + f"/analysis/{slug}.html", active="analysis")
-        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("تحليلات", SITE_BASE + "/analysis.html"),
+        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("التوقعات", SITE_BASE + "/analysis.html"),
                                    (label, SITE_BASE + f"/analysis/{slug}.html")])
         # all upcoming of this comp within 14 days
         wk2 = (today + datetime.timedelta(days=14)).isoformat()

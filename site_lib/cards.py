@@ -230,4 +230,4 @@ def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
             '<small>احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
             + rec +
             '<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>'
-            '<a class="fmb-more" href="/analysis.html">كل التوقعات والتحليلات ←</a></section>')
+            '<a class="fmb-more" href="/analysis.html">كل التوقعات ←</a></section>')

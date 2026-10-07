@@ -2,8 +2,8 @@
    Lines are joined with NO separator by site_lib.render: break between tags, never inside a sentence. #}
 {{ page_head }}
 {{ crumbs_ld }}
-<nav class="crumbs"><a href="/">أخبار</a> › <a href="/analysis.html">تحليلات</a> › {{ label }}</nav>
-<h1 class="page-h">تحليلات {{ label }}</h1>
+<nav class="crumbs"><a href="/">أخبار</a> › <a href="/analysis.html">التوقعات</a> › {{ label }}</nav>
+<h1 class="page-h">توقعات {{ label }}</h1>
 <p class="hintline">مبنية على {{ games }} منتهية هذا الموسم · متوسط الأهداف في المباراة {{ gpm }}{% if home_win is not none %} · فوز الأرض في {{ home_win }} من المباريات والتعادل في {{ draw }}{% endif %}.</p>
 <section class="minfo">
   <h2>{% if round_no is not none %}توقعات مباريات الجولة {{ round_no }} من {{ label }}{% else %}توقعات مباريات {{ label }} القادمة{% endif %}</h2>

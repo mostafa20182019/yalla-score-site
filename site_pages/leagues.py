@@ -141,7 +141,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
         if comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
-            _links.append(f'<a href="/analysis/{slug}.html">تحليلات وتوقعات {esc(label)} ←</a>')
+            _links.append(f'<a href="/analysis/{slug}.html">توقعات {esc(label)} ←</a>')
         crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
                                    ("المباريات", SITE_BASE + "/matches.html"),
                                    (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")])
