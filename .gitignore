@@ -32,4 +32,5 @@ data/headlines.json
 data/fetch_debug.json
 data/results_archive.json
 data/reels_auto.json
+data/match_stats.json
 data/.store_state.json

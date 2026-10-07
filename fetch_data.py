@@ -1594,6 +1594,17 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! goal events failed ({e}) - keeping existing goal_events.json")
         _DBG["goal_events"] = f"FAIL: {e!r}"
+    try:
+        # per-match team stats, xG first (match_stats.py, 2026-10-07): one
+        # bounded batch per run, newest first, so the season backfill spreads
+        # over a few runs; a failure keeps the existing file
+        import match_stats as _MS
+        from site_lib.names import ar_team as _ar
+        _DBG["match_stats"] = _MS.collect(_MS.finished_pool(), _s365, _ar)
+        print(f"match stats: {_DBG['match_stats']}")
+    except Exception as e:
+        print(f"  ! match stats failed ({e}) - keeping existing file")
+        _DBG["match_stats"] = f"FAIL: {e!r}"
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)
