@@ -11,11 +11,30 @@ import re
 import store
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import S365_COMPETITIONS
-from site_lib.config import ARTICLE_MIN_WORDS, EDITOR_NAME, GENERIC_BYLINES, HERE, PLACEHOLDER_IMGS, SITE_BASE, SITE_NAME
+from site_lib.config import ARTICLE_MIN_WORDS, DROP_HEADINGS, EDITOR_NAME, GENERIC_BYLINES, HERE, PLACEHOLDER_IMGS, SITE_BASE, SITE_NAME
 from site_lib.media import EMBED_LABEL
 from site_lib.names import _team_news
 from site_lib.text import article_words, esc, jsonld, strip_tags
 from site_lib.urls import article_href
+
+
+def drop_headings(articles, headings=DROP_HEADINGS):
+    """Remove each `<h2>heading</h2>` from every article body, in place - the
+    heading only; the paragraphs under it stay and join the section before it.
+    Runs once, right after the articles are loaded, so every reader of the
+    body sees the same text. Returns how many articles changed."""
+    if not headings:
+        return 0
+    pat = re.compile(
+        r'\s*<h2[^>]*>\s*(?:' + '|'.join(re.escape(h) for h in headings) + r')\s*</h2>')
+    n = 0
+    for a in articles or []:
+        body = a.get("body") or ""
+        new = pat.sub("", body)
+        if new != body:
+            a["body"] = new
+            n += 1
+    return n
 
 
 def byline(a):

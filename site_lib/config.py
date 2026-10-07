@@ -121,4 +121,13 @@ REF_TODAY = datetime.date.today().isoformat()  # machine clock (the sandbox is s
 # 294 of 355 articles are under the new bar; upgrade-articles.yml rewrites 5/day
 # to the 500-700-word standard and each one crosses back on its own.
 ARTICLE_MIN_WORDS = 300
+
+# <h2> headings the site no longer shows (2026-10-07, user decision: «شيل كلمة
+# لماذا يهم الخبر بس، سيبلي المحتوى اللي تحتها»). Only the heading goes - its
+# paragraphs stay and read as the end of the section before it. The bodies in D1
+# keep the heading; the build drops it before anything reads the body (page,
+# RSS, match-page embeds), so emptying this tuple brings it back without
+# touching a single stored article. The two article prompts no longer write it.
+# 446 of 625 bodies had it then.
+DROP_HEADINGS = ("لماذا يهم الخبر؟",)
 NEWLINE = chr(10)

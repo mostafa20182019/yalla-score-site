@@ -74,7 +74,7 @@ from site_lib.crests import (  # noqa: E402,F401
 from site_lib.ticker import (  # noqa: E402,F401
     _tk_date, make_ticker)
 from site_lib.articles import (  # noqa: E402,F401
-    byline, match_data_sources, resolve_missing_media, is_thin, article_url, _MOVED_LINKS,
+    byline, match_data_sources, resolve_missing_media, drop_headings, is_thin, article_url, _MOVED_LINKS,
     _A_HREF, fix_moved_links, embed_platform, EMBED_JS, embeds_block, match_article_block,
     article_moved_stub, _ART_CLUBS, article_clubs, _KW_STOP, _art_kw, related_articles,
     _rfc822)
@@ -154,6 +154,7 @@ def build():
     # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
     # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
     # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
+    print(f"  dropped headings from {drop_headings(articles_all)} article(s)")
     _miss = resolve_missing_media(articles_all)
     if _miss:
         print(f'  ! {len(_miss)} article image(s) not in this checkout yet - placeholder for this build: '

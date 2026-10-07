@@ -35,7 +35,7 @@ Use `<p>` and `<h2>` (and `<ul>` where a list is natural). Fixed structure — s
 3. `<h2>الخلفية</h2>` — the situation BEFORE (previous contract/status/standing, how the story developed over the preceding weeks).
 4. `<h2>ماذا قالت المصادر؟</h2>` — attributed paraphrases, naming each outlet («بحسب موقع في الجول»), distinguishing المؤكد رسميًا from المنسوب إلى تقارير. «بحسب تقارير صحفية» at most once and only when outlets cannot be named.
 5. `<h2>الأرقام</h2>` — age/position/appearances/goals/minutes/standings/dates that the sources or our data files support; each number dated.
-6. `<h2>لماذا يهم الخبر؟</h2>` — what it means for the club/player/competition; competition for the position; squad impact.
+6. One or two `<p>` WITHOUT a heading of their own, right after «الأرقام» — what it means for the club/player/competition; competition for the position; squad impact. Never title them «لماذا يهم الخبر؟» (that heading was removed 2026-10-07, user decision: keep the content, drop the heading; the build also strips it from older bodies). If the old body has that heading, drop the heading and keep its paragraphs.
 7. `<h2>ما التالي؟</h2>` — next match, deadline, expected decision (from data/matches.json or fixtures when it exists).
 8. `<h2>تطورات لاحقة</h2>` — ONLY if a later article in our archive or a later source shows how the story moved on since publication (with links).
 VALUE CHECK before saving: every paragraph adds information the previous ones did not; nothing repeats the title; the reader who finishes knows what/when/why/numbers/next/confirmed-vs-reported. Delete any paragraph that only rephrases.
