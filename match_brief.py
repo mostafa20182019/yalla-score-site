@@ -557,6 +557,21 @@ def build_brief(d, m, kind):
     gid = resolve_s365_game(m)
     if gid:
         brief["s365"] = h2h_block(gid)
+    # an IMPORTANT match (both clubs featured) gets our own matchup card as
+    # its image (matchup_card.py, 2026-10-08): drawn here, committed by the
+    # writer, never a club crest - and no photo hunt for the big games
+    if featured_sides(m) == 2:
+        try:
+            import matchup_card as MC
+            fname = MC.card_name(dict(m, status="FINISHED" if kind == "report" else "UPCOMING"))
+            MC.for_match(dict(m, status="FINISHED" if kind == "report" else m.get("status")),
+                         os.path.join(HERE, "media", fname),
+                         venue=(brief.get("s365") or {}).get("venue") or "")
+            brief["image"] = {"file": f"media/{fname}",
+                              "url": f"https://yallascore.site/media/{fname}",
+                              "credit": "الصورة: تصميم يلا سكور"}
+        except Exception as ex:                             # noqa: BLE001
+            brief["image_error"] = str(ex)[:160]
     if kind == "preview":
         try:
             pr = prediction_block(d, m)
