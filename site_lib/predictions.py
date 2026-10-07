@@ -44,6 +44,25 @@ def pred_pop(parts):
     return PRED_POP if any('class="pbtn"' in x for x in parts) else ""
 
 
+def next_round(comp, upcoming, preds):
+    """(round, [(match, prediction)]) for a league page (user ask 2026-10-07:
+    «يظهر بس مباريات الجولة القادمة، أو الجولة الحالية لو لسه مخلصتش»).
+
+    The round is the one of the NEXT fixture to kick off: while a round is
+    still being played its remaining matches come first, once it is over the
+    next round's do. A postponed match re-dated after later rounds (La Liga's
+    round-6 Levante game on 21 Oct while round 8 is due) therefore never
+    captures the page. (None, None) when the league has no round numbers -
+    the caller keeps the 14-day list."""
+    ms = sorted((m for m in upcoming if m.get("competition") == comp),
+                key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    if not ms or ms[0].get("round") in (None, ""):
+        return None, None
+    rnd = ms[0]["round"]
+    return rnd, [(m, preds[str(m["match_id"])]) for m in ms
+                 if m.get("round") == rnd and str(m.get("match_id")) in preds]
+
+
 def conf_chip(conf):
     return f'<span class="conf conf-{esc(conf)}">{esc(AN.CONF_AR.get(conf, ""))}</span>'
 

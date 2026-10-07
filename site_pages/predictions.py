@@ -11,7 +11,7 @@ from site_lib.competitions import COMP_ORDER, COMP_SLUG
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME
 from site_lib.crests import comp_icon
 from site_lib.names import ar_team, comp_has_table, comp_label
-from site_lib.predictions import AN_DISCLAIMER, PRED_FILTER_JS, _rec_day_label, power_table, pred_row, timing_bars, xg_table_html
+from site_lib.predictions import AN_DISCLAIMER, PRED_FILTER_JS, next_round, _rec_day_label, power_table, pred_row, timing_bars, xg_table_html
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, foot, head, write
 from site_lib.stats import _games
@@ -164,7 +164,9 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
         focus = HUB_FOCUS.get(c)
         if focus:
             shown = [(m, p) for m, p in rows if ar_team(m.get("home")) in focus or ar_team(m.get("away")) in focus]
-            more = len(rows) if len(shown) < len(rows) and c in COMP_SLUG else 0
+            _r, _rrows = next_round(c, upcoming, preds)
+            # the number on the link is what the league page lists (its round)
+            more = (len(_rrows) if _rrows else len(rows)) if len(shown) < len(rows) and c in COMP_SLUG else 0
         else:
             shown = rows[:8]
             more = len(rows) if len(rows) > 8 and c in COMP_SLUG else 0
@@ -214,6 +216,9 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
         rows = sorted([(m, preds[str(m["match_id"])]) for m in upcoming
                        if m.get("competition") == c and str(m.get("match_id")) in preds and (m.get("kickoff") or "") <= wk2],
                       key=lambda t: (t[0].get("kickoff") or "", t[0].get("koff_time") or ""))
+        round_no, _rrows = next_round(c, upcoming, preds)
+        if _rrows:
+            rows = _rrows           # the current/next round instead of 14 days
         pred_rows = [Markup(pred_row(m, p)) for m, p in rows]
         power_html = Markup(power_table(c, stats, params, forms.get(c, {})))
         xg_html = Markup(xg_table_html(label, (xg or {}).get(c)))
@@ -247,7 +252,8 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
             label=label, slug=slug, games=_games(params["n"]), gpm=f'{(params["gpm"] or 0):.2f}',
             home_win=_pct(params["home_win"]) if params["home_win"] is not None else None,
             draw=_pct(params["draw"]) if params["home_win"] is not None else None,
-            rows=pred_rows, disclaimer=Markup(AN_DISCLAIMER), power=power_html, xg=xg_html,
+            rows=pred_rows, round_no=round_no if _rrows else None,
+            disclaimer=Markup(AN_DISCLAIMER), power=power_html, xg=xg_html,
             players=players, timing=timing, accuracy=Markup(accuracy_html(ca, anchor=False)),
             has_table=bool((has_table or set()) and comp_has_table(c, has_table)),
             page_foot=Markup(foot())))
