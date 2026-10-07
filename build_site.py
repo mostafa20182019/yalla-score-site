@@ -199,6 +199,7 @@ def build():
     _acc, _bycomp, _cal, _lparams = model["acc"], model["bycomp"], model["cal"], model["lparams"]
     _pins, _plog, _preds, _sins = model["pins"], model["plog"], model["preds"], model["sins"]
     _squad, _tstats, _upcoming, reels = model["squad"], model["tstats"], model["upcoming"], model["reels"]
+    _mstats, _xg = model["mstats"], model["xg"]
 
     urls = write_assets()          # css + logo; `urls` collects the sitemap from here on
 
@@ -215,12 +216,12 @@ def build():
     comp_order = matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
                               league["league_stats_parts"], matches, st_by_comp, standings)
     m_all = match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
-                        articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls)
+                        articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, _mstats)
     _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
                                              sc_by_comp, sc_ok, st_by_comp, urls)
     fixtures_pages(fx_by_comp, season, st_by_comp, urls)
     analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
-                     _upcoming, forms, matches, urls)
+                     _upcoming, forms, matches, urls, _xg)
     club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
     stats_page(comp_order, fixtures, forms, league["league_stats_sec"], matches, sc_by_comp,
                sc_ok, st_by_comp, urls)

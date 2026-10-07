@@ -6,6 +6,7 @@ Moved verbatim out of build_site.py (2026-09-26, tools/move_names.py):
 source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import analysis as AN
+import match_stats as MS
 import datetime
 import json
 import results_archive as RA
@@ -119,7 +120,15 @@ def prepare_model(_details_raw, _res_arch, assists, fixtures, matches, scorers, 
                      if _kos else "")
     except Exception:
         _shell.KO_SCRIPT = ""
-    return {"acc": _acc, "bycomp": _bycomp, "cal": _cal, "lparams": _lparams,
+    # xG per finished match (match_stats.py, 2026-10-07): the match pages show
+    # it, the league analysis pages tabulate it; not a model input (yet)
+    _mstats = MS.load()
+    _xg = AN.xg_table(_mstats.values(), _bycomp)
+    if _mstats:
+        print(f'  + match stats: {sum(1 for r in _mstats.values() if r.get("status") == "ok")} matches with xG, '
+              f'{sum(1 for c in _xg.values() if c["n"] >= AN.XG_MIN_LEAGUE)} league tables')
+    return {"mstats": _mstats, "xg": _xg,
+            "acc": _acc, "bycomp": _bycomp, "cal": _cal, "lparams": _lparams,
             "pins": _pins, "plog": _plog, "preds": _preds, "sins": _sins,
             "squad": _squad, "tstats": _tstats, "upcoming": _upcoming, "reels": reels}
 

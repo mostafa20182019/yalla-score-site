@@ -19,7 +19,7 @@ from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, adsense_slot, foot, head, thumb_url, write
 from site_lib.snippets import FILTERS_HTML, MATCHES_JS, ROUNDS_JS
 from site_lib.stats import _finished_by_comp
-from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, standings_table
+from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, standings_table
 from site_lib.text import esc
 from site_lib.urls import article_href, breadcrumb_ld, match_url, pick_match_article
 
@@ -162,7 +162,7 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
 
 
 def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats, articles,
-                fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls):
+                fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, mstats=None):
     """/m/<id> - one landing page per match (archive + current window): the
     long-tail queries a single /matches can never rank for («نتيجة مباراة X»،
     «موعد مباراة Y والقناة الناقلة»). Old pages persist through
@@ -289,6 +289,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             _pre = prematch_for(md_idx, m)
             if _pre:
                 details = match_details_html(_pre[0], _pre[1], h_ar, a_ar)
+        if st == "FINISHED":
+            # «أرقام المباراة»: xG + shots (match_stats.py), above the lineups
+            details = match_stats_html((mstats or {}).get(str(mid)), h_ar, a_ar) + details
         absence = absence_block(_squad, m.get("competition"), m, h_ar, a_ar)
         # «توقع يلا سكور»: model probabilities for an upcoming match; for a
         # finished one, what the model said before kick-off vs the result

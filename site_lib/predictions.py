@@ -215,6 +215,54 @@ def power_table(comp, stats, params, form_map):
     return "".join(out)
 
 
+def _signed(x, d=2):
+    """+0.42 / -0.42 kept left-to-right inside an RTL cell (a bare "+0.42"
+    would show its sign on the wrong side)."""
+    return f'<span dir="ltr">{"+" if x >= 0 else "−"}{abs(x):.{d}f}</span>'
+
+
+def xg_table_html(label, c):
+    """«الأهداف المتوقعة (xG)» on a league analysis page (2026-10-07).
+
+    Computed from data/match_stats.json (match_stats.py), never written: per
+    club, the quality of the chances it made and allowed per match, and how
+    far its real goals sit from those chances. Silent until the league has
+    AN.XG_MIN_LEAGUE matches with xG - an early table would mostly be noise."""
+    if not c or c["n"] < AN.XG_MIN_LEAGUE or not c["clubs"]:
+        return ""
+    rows = []
+    for i, t in enumerate(c["clubs"], 1):
+        n = t["n"]
+        xf, xa = t["xgf"] / n, t["xga"] / n
+        fin = t["gf"] - t["xgf"]          # scored above (+) or below (-) its chances
+        dfn = t["xga"] - t["ga"]          # conceded fewer (+) or more (-) than it allowed
+        crest = f'<img src="{esc(local_crest(t["badge"]))}" alt="" loading="lazy">' if t.get("badge") else ""
+        rows.append(f'<tr><td>{i}</td><td class="tl">{crest}<bdi>{esc(ar_team(t["team"]))}</bdi></td><td>{n}</td>'
+                    f'<td>{xf:.2f}</td><td>{xa:.2f}</td>'
+                    f'<td class="{"good" if xf - xa >= 0.5 else "bad" if xf - xa <= -0.5 else ""}"><b>{_signed(xf - xa)}</b></td>'
+                    f'<td class="{"good" if fin >= 1.5 else "bad" if fin <= -1.5 else ""}">{_signed(fin, 1)}</td>'
+                    f'<td class="{"good" if dfn >= 1.5 else "bad" if dfn <= -1.5 else ""}">{_signed(dfn, 1)}</td></tr>')
+    def names(ts, key):
+        return "، ".join(f'<bdi>{esc(ar_team(t["team"]))}</bdi> ({_signed(key(t), 1)} في {t["n"]})' for t in ts)
+    over = sorted((t for t in c["clubs"] if t["gf"] - t["xgf"] >= 1.5), key=lambda t: -(t["gf"] - t["xgf"]))[:3]
+    under = sorted((t for t in c["clubs"] if t["gf"] - t["xgf"] <= -1.5), key=lambda t: t["gf"] - t["xgf"])[:3]
+    notes = ""
+    if over:
+        notes += f'<p class="pd-line"><b>يسجّل أكثر من فرصه:</b> {names(over, lambda t: t["gf"] - t["xgf"])}</p>'
+    if under:
+        notes += f'<p class="pd-line"><b>يسجّل أقل من فرصه:</b> {names(under, lambda t: t["gf"] - t["xgf"])}</p>'
+    return (f'<section class="minfo" id="xg"><h2>الأهداف المتوقعة (xG) في {esc(label)}</h2>'
+            f'<p class="hintline">الأهداف المتوقعة تقيس جودة الفرص لا نتيجتها: كم هدفًا كان يُنتظر من التسديدات نفسها. '
+            f'محسوبة من {c["n"]} مباراة منتهية هذا الموسم (بيانات 365scores)، والترتيب بفارق xG في المباراة. '
+            f'«أهداف − xG» موجب = النادي سجّل أكثر من فرصه، و«xG − عليه» موجب = استقبل أقل مما سمح به.</p>'
+            '<div class="tbl-wrap"><table class="ptable xgt"><thead><tr>'
+            '<th>#</th><th class="tl">النادي</th><th>مباريات</th>'
+            '<th title="الأهداف المتوقعة له في المباراة">xG له/م</th><th title="الأهداف المتوقعة عليه في المباراة">xG عليه/م</th>'
+            '<th title="الفارق في المباراة">الفارق/م</th><th title="أهدافه الفعلية ناقص الأهداف المتوقعة له (مجموع)">أهداف − xG</th>'
+            '<th title="الأهداف المتوقعة عليه ناقص ما استقبله فعلًا (مجموع)">xG − عليه</th></tr></thead><tbody>'
+            + "".join(rows) + '</tbody></table></div>' + notes + '</section>')
+
+
 def timing_bars(timing, title):
     tot = sum(timing.values()) or 1
     mx = max(timing.values()) or 1

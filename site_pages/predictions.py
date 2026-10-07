@@ -11,7 +11,7 @@ from site_lib.competitions import COMP_ORDER, COMP_SLUG
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME
 from site_lib.crests import comp_icon
 from site_lib.names import ar_team, comp_has_table, comp_label
-from site_lib.predictions import AN_DISCLAIMER, PRED_FILTER_JS, _rec_day_label, power_table, pred_row, timing_bars
+from site_lib.predictions import AN_DISCLAIMER, PRED_FILTER_JS, _rec_day_label, power_table, pred_row, timing_bars, xg_table_html
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, foot, head, write
 from site_lib.stats import _games
@@ -115,7 +115,7 @@ def prediction_history_page(plog, acc):
 
 
 def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, sins,
-                   forms, has_table=None):
+                   forms, has_table=None, xg=None):
     """Write /analysis.html (hub) + /analysis/<slug>.html per league. Returns urls.
     Markup: site_src/templates/analysis.html + analysis_league.html (templated
     2026-09-26); the pieces are built here in the same order as before."""
@@ -191,6 +191,7 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
                       key=lambda t: (t[0].get("kickoff") or "", t[0].get("koff_time") or ""))
         pred_rows = [Markup(pred_row(m, p)) for m, p in rows]
         power_html = Markup(power_table(c, stats, params, forms.get(c, {})))
+        xg_html = Markup(xg_table_html(label, (xg or {}).get(c)))
         pi = pins.get(c)
         si = sins.get(c)
         players = None
@@ -221,7 +222,7 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
             label=label, slug=slug, games=_games(params["n"]), gpm=f'{(params["gpm"] or 0):.2f}',
             home_win=_pct(params["home_win"]) if params["home_win"] is not None else None,
             draw=_pct(params["draw"]) if params["home_win"] is not None else None,
-            rows=pred_rows, disclaimer=Markup(AN_DISCLAIMER), power=power_html,
+            rows=pred_rows, disclaimer=Markup(AN_DISCLAIMER), power=power_html, xg=xg_html,
             players=players, timing=timing, accuracy=Markup(accuracy_html(ca, anchor=False)),
             has_table=bool((has_table or set()) and comp_has_table(c, has_table)),
             page_foot=Markup(foot())))
@@ -230,7 +231,7 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
 
 
 def analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
-                     _upcoming, forms, matches, urls):
+                     _upcoming, forms, matches, urls, xg=None):
     """/analysis hub + /analysis/<league> + /predictions (the markup still lives
     in analysis_pages() and prediction_history_page() - their own templating
     step)."""
@@ -240,6 +241,6 @@ def analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _s
         urls.append(_hist_url)
         print(f"  + prediction history: {_acc['all']['n']} scored predictions")
     _an_urls = analysis_pages(matches, _upcoming, _preds, _plog, _acc, _tstats, _lparams,
-                              _pins, _sins, forms, _comps_with_table)
+                              _pins, _sins, forms, _comps_with_table, xg)
     urls.extend(_an_urls)
     print(f"  + analysis pages: {len(_an_urls)}")

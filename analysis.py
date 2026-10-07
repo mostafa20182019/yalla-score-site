@@ -699,3 +699,44 @@ def scorer_insights(scorers, assists, standings_tables):
                               "club_goals": club_goals, "share": g / club_goals})
         out[comp] = {"ga": rows[:10], "share": share}
     return out
+
+
+# ------------------------------------------------------------------ xG (2026-10-07)
+XG_MIN_MATCHES = 3          # a club needs this many matches with xG to be listed
+XG_MIN_LEAGUE = 10          # and the league this many before the table is shown
+
+
+def xg_table(stat_rows, season_pool, min_matches=XG_MIN_MATCHES):
+    """Expected goals per club and competition, from data/match_stats.json
+    (match_stats.py) joined to the season pool for the score and the badge.
+
+    Returns {comp: {"n": matches with xG, "clubs": [{team, badge, n, xgf, xga,
+    gf, ga}]}} - totals, not averages, so a caller divides by n itself. Clubs
+    under `min_matches` are left out; the list is ordered by xG difference
+    per match. Pure: nothing is fetched, nothing is written."""
+    by_id = {str(m.get("match_id")): m for ms in (season_pool or {}).values() for m in ms}
+    out = {}
+    for r in stat_rows or []:
+        if r.get("status") != "ok":
+            continue
+        m = by_id.get(str(r.get("match_id")))
+        xh, xa = (r.get("h") or {}).get("xg"), (r.get("a") or {}).get("xg")
+        if not m or m.get("home_score") is None or xh is None or xa is None:
+            continue
+        c = out.setdefault(m.get("competition") or r.get("comp"), {"n": 0, "clubs": {}})
+        c["n"] += 1
+        hs, as_ = int(m["home_score"]), int(m["away_score"])
+        for team, badge, xf, xg_ag, gf, ga in ((m["home"], m.get("home_badge"), xh, xa, hs, as_),
+                                              (m["away"], m.get("away_badge"), xa, xh, as_, hs)):
+            t = c["clubs"].setdefault(team, {"team": team, "badge": badge, "n": 0,
+                                             "xgf": 0.0, "xga": 0.0, "gf": 0, "ga": 0})
+            t["n"] += 1
+            t["xgf"] += xf
+            t["xga"] += xg_ag
+            t["gf"] += gf
+            t["ga"] += ga
+            t["badge"] = t["badge"] or badge
+    for c in out.values():
+        c["clubs"] = sorted((t for t in c["clubs"].values() if t["n"] >= min_matches),
+                            key=lambda t: -(t["xgf"] - t["xga"]) / t["n"])
+    return out

@@ -394,6 +394,12 @@ a{color:inherit}
 .ptable .tl{text-align:start}
 .ptable td.tl img{width:20px;height:20px;object-fit:contain;vertical-align:middle;margin-inline-end:6px}
 .ptable td.good{color:#166534;font-weight:800}.ptable td.bad{color:#991b1b;font-weight:800}
+/* «أرقام المباراة» (match_stats_html, 2026-10-07): the middle label column may wrap, so a
+   375px phone never gets a scrollbar under three short numbers */
+.mstats .ptable th{white-space:normal}.mstats .ptable td{width:28%}
+/* league xG table (xg_table_html): on a phone drop «مباريات» and «xG − عليه», let
+   names and headers wrap, hide the crests - the whole table then fits 375px */
+@media (max-width:560px){.xgt th:nth-child(3),.xgt td:nth-child(3),.xgt th:nth-child(8),.xgt td:nth-child(8){display:none}.xgt th,.xgt td{padding:7px 5px}.xgt th,.xgt td.tl{white-space:normal}.xgt td.tl img{display:none}}
 .tbl-wrap h3,.timing h3{font-size:.95rem;margin:14px 0 8px}
 .pw-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px}
 .pw-card{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 14px}

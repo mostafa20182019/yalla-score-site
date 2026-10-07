@@ -214,6 +214,34 @@ def scorers_list(sc, unit="أهداف"):
     return "".join(rows)
 
 
+MSTAT_ROWS = (("الأهداف المتوقعة (xG)", "xg", "{:.2f}"), ("xG على المرمى", "xgot", "{:.2f}"),
+              ("التسديدات", "shots", "{}"), ("تسديدات على المرمى", "sot", "{}"),
+              ("فرص خطيرة", "big", "{}"), ("الاستحواذ", "poss", "{}%"))
+
+
+def match_stats_html(row, h_ar, a_ar):
+    """«أرقام المباراة» on a finished match page (2026-10-07): xG, shots and
+    possession from data/match_stats.json, home on the right like the score.
+    Nothing when the match has no stats row with xG."""
+    if not row or row.get("status") != "ok":
+        return ""
+    h, a = row.get("h") or {}, row.get("a") or {}
+    lines = []
+    for label, key, fmt in MSTAT_ROWS:
+        if h.get(key) is None or a.get(key) is None:
+            continue
+        hv, av = h[key], a[key]
+        lines.append(f'<tr><td class="{"good" if hv > av else ""}">{fmt.format(hv)}</td>'
+                     f'<th>{esc(label)}</th><td class="{"good" if av > hv else ""}">{fmt.format(av)}</td></tr>')
+    if not lines:
+        return ""
+    return (f'<section class="minfo mstats"><h2>أرقام مباراة {esc(h_ar)} و{esc(a_ar)}</h2>'
+            f'<div class="tbl-wrap"><table class="ptable"><thead><tr><th><bdi>{esc(h_ar)}</bdi></th><th></th>'
+            f'<th><bdi>{esc(a_ar)}</bdi></th></tr></thead><tbody>' + "".join(lines) + '</tbody></table></div>'
+            '<p class="hintline">الأهداف المتوقعة (xG) تقيس جودة الفرص: كم هدفًا كان يُنتظر من التسديدات نفسها. '
+            'المصدر: 365scores.</p></section>')
+
+
 def match_details_html(e, flipped, h_ar, a_ar):
     """'أحداث المباراة' timeline (goals+cards+subs) + 'التشكيلة' section."""
     def side(s):
