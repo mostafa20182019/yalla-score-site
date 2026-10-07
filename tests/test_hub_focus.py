@@ -38,6 +38,10 @@ for comp, raw in (("Primera Division", ("Real Madrid CF", "FC Barcelona", "Club 
                   ("Ligue 1", ("Paris Saint-Germain FC", "Olympique Lyonnais", "Olympique de Marseille", "AS Monaco FC"))):
     ck(f"{comp}: the asked clubs, in ar_team's spellings", SP.HUB_FOCUS.get(comp) == tuple(ar_team(n) for n in raw),
        SP.HUB_FOCUS.get(comp))
+ck("Saudi: the big four (Al-Ahli = Jeddah, scoped to this league)",
+   SP.HUB_FOCUS.get("Saudi Pro League") == ("الهلال", "النصر", "الاتحاد", "الأهلي"))
+ck("Turkey: the big four in the feed's spellings",
+   SP.HUB_FOCUS.get("Turkish Super Lig") == ("غلطة سراي", "بشكتاش", "طرابزون سبور", "فنربخشة"))
 ck("Ligue 1: Paris FC is not PSG", ar_team("Paris FC") not in SP.HUB_FOCUS["Ligue 1"])
 src = io.open("site_pages/predictions.py", encoding="utf-8").read()
 ck("the hub filters by exact membership (home OR away)",

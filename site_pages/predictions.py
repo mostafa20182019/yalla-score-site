@@ -30,7 +30,12 @@ HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بي
              "Primera Division": ("ريال مدريد", "برشلونة", "أتلتيكو مدريد"),
              "Serie A": ("إنتر ميلان", "ميلان", "يوفنتوس", "نابولي", "روما", "لاتسيو"),
              # exact match: «باريس أف.سي.» is NOT Paris Saint-Germain
-             "Ligue 1": ("باريس سان جيرمان", "أولمبيك ليون", "أولمبيك مارسيليا", "موناكو")}
+             "Ligue 1": ("باريس سان جيرمان", "أولمبيك ليون", "أولمبيك مارسيليا", "موناكو"),
+             # «الأهلي» here is Al-Ahli Jeddah: the list is per competition, so
+             # it can never pull in the Egyptian club (and vice versa)
+             "Saudi Pro League": ("الهلال", "النصر", "الاتحاد", "الأهلي"),
+             # the feed's spellings: «غلطة سراي» (not جالطة سراي), «فنربخشة»
+             "Turkish Super Lig": ("غلطة سراي", "بشكتاش", "طرابزون سبور", "فنربخشة")}
 
 
 def prediction_history_page(plog, acc):
