@@ -74,6 +74,21 @@ ck("same date + score: the names pick Fulham-Man United, not Chelsea-Brighton",
 ck("last season's tagged league + a date one day off still matches", BT._key(r2) in got)
 ck("a different score finds nothing", OB.match([r3], odds) == {})
 
+# step 4 candidates: xG blend + time decay (pure: a fake xG index)
+BT._XG = {"1": (2.5, 0.5)}
+train = [{"match_id": 1, "kickoff": "2026-09-01", "home": "A", "away": "B", "home_score": 1, "away_score": 1},
+         {"match_id": 2, "kickoff": "2026-09-29", "home": "B", "away": "A", "home_score": 3, "away_score": 0}]
+st = {"A": {"gf": 1, "ga": 4, "played": 2}, "B": {"gf": 4, "ga": 1, "played": 2}}
+x = BT.f_xg(0.5)["stats"](st, train, {"kickoff": "2026-10-01"})
+ck("xG blend: goals replaced by 0.5*xG+0.5*goals only on the match WITH xG",
+   x["A"]["gf"] == 1 + 0.5 * (2.5 - 1) and x["A"]["ga"] == 4 + 0.5 * (0.5 - 1) and x["B"]["gf"] == 4 + 0.5 * (0.5 - 1), x)
+ck("xG blend returns a copy (the replay's stats are untouched)", st["A"]["gf"] == 1)
+dc = BT.f_decay(30)["stats"](st, train, {"kickoff": "2026-10-01"})
+w_old, w_new = 0.5 ** (30 / 30), 0.5 ** (2 / 30)
+ck("decay: an old match weighs less, played = the weight sum",
+   abs(dc["A"]["gf"] - (w_old * 1 + w_new * 0)) < 1e-9 and abs(dc["A"]["played"] - (w_old + w_new)) < 1e-9, dc["A"])
+BT._XG = None
+
 src = io.open("backtest.py", encoding="utf-8").read()
 ck("live = the site's model: carry-over seeds + the model_core pool (results archive included)",
    'LIVE = {"seeds": A.load_elo_seeds() or None}' in src and "RA.season_rows(RA.load())" in src

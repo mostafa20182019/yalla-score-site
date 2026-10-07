@@ -206,6 +206,12 @@ def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None, only_active=False):
                 h, a = stats.get(m["home"]), stats.get(m["away"])
                 if not h or not a or h["played"] < min_prior or a["played"] < min_prior:
                     continue          # cold start: no history for one of the clubs
+                if cfg.get("stats"):
+                    # a candidate that changes what the attack/defence indices
+                    # are built from (xG instead of goals, recent matches
+                    # weighted more) - it gets the training matches and returns
+                    # a modified COPY of the club stats; Elo is left alone
+                    stats = cfg["stats"](stats, train, m)
                 params = A.league_params(train)
                 lh, la, _, _ = A.lambdas(stats, params, m["home"], m["away"])
                 moved = False
@@ -296,6 +302,63 @@ def carry(shrink):
     return {"seeds": seeds}
 
 
+# ---- step 4 candidates (2026-10-07): xG, time decay ----------------------
+_XG = None
+
+
+def xg_index():
+    """{match_id: (home xG, away xG)} from data/match_stats.json."""
+    global _XG
+    if _XG is None:
+        import match_stats
+        _XG = {mid: (r["h"]["xg"], r["a"]["xg"]) for mid, r in match_stats.load().items()
+               if r.get("status") == "ok" and "xg" in (r.get("h") or {}) and "xg" in (r.get("a") or {})}
+    return _XG
+
+
+def f_xg(w):
+    """Attack/defence from a blend of goals and xG: on every training match that
+    has xG, a club's goals for/against are replaced by w*xG + (1-w)*goals.
+    w=1 is pure xG. The league means stay on goals (the model's scale)."""
+    def hook(stats, train, m):
+        xi = xg_index()
+        acc = {}
+        for t in train:
+            x = xi.get(str(t.get("match_id")))
+            if not x:
+                continue
+            hs, as_ = int(t["home_score"]), int(t["away_score"])
+            for club, xf, xa, gf, ga in ((t["home"], x[0], x[1], hs, as_), (t["away"], x[1], x[0], as_, hs)):
+                d = acc.setdefault(club, [0.0, 0.0])
+                d[0] += w * (xf - gf)
+                d[1] += w * (xa - ga)
+        out = {}
+        for club, st in stats.items():
+            d = acc.get(club)
+            out[club] = dict(st, gf=st["gf"] + d[0], ga=st["ga"] + d[1]) if d else st
+        return out
+    return {"stats": hook}
+
+
+def f_decay(half_days):
+    """Attack/defence with older matches weighted down: weight 0.5**(age/half).
+    `played` becomes the weight sum, so the shrinkage prior counts it too."""
+    def hook(stats, train, m):
+        d0 = datetime.date.fromisoformat(m["kickoff"][:10])
+        acc = {}
+        for t in train:
+            wt = 0.5 ** ((d0 - datetime.date.fromisoformat(t["kickoff"][:10])).days / half_days)
+            hs, as_ = int(t["home_score"]), int(t["away_score"])
+            for club, gf, ga in ((t["home"], hs, as_), (t["away"], as_, hs)):
+                d = acc.setdefault(club, [0.0, 0.0, 0.0])
+                d[0] += wt * gf
+                d[1] += wt * ga
+                d[2] += wt
+        return {club: (dict(st, gf=acc[club][0], ga=acc[club][1], played=acc[club][2]) if club in acc else st)
+                for club, st in stats.items()}
+    return {"stats": hook}
+
+
 def dixon_coles(rho):
     """Dixon & Coles (1997) low-score correction, as a grid hook.
 
@@ -361,6 +424,14 @@ VARIANTS = {
     "red-card-penalty": lambda: {"factor": f_red()},
     # roadmap factor 2 - the draw correction, tested 2026-09-20
     "dixon-coles": lambda: {"grid": dixon_coles(-0.13)},      # the literature value
+    # step 4 (2026-10-07) - xG needs data/match_stats.json, THIS season only
+    "xg-25": lambda: f_xg(0.25),
+    "xg-50": lambda: f_xg(0.5),
+    "xg-75": lambda: f_xg(0.75),
+    "xg-100": lambda: f_xg(1.0),
+    "decay-60d": lambda: f_decay(60),
+    "decay-120d": lambda: f_decay(120),
+    "decay-240d": lambda: f_decay(240),
     "dc-05": lambda: {"grid": dixon_coles(-0.05)},
     "dc-10": lambda: {"grid": dixon_coles(-0.10)},
     "dc-18": lambda: {"grid": dixon_coles(-0.18)},
@@ -369,6 +440,7 @@ VARIANTS = {
 
 SWEEPS = {
     "prior": ("PRIOR_TEAM", [0, 2, 3, 5, 8, 12, 20]),
+    "league-prior": ("PRIOR_LEAGUE", [0, 5, 10, 20, 40, 80]),   # how hard each league's home/away means are pulled to 1.5/1.2
     "k": ("ELO_K", [10, 18, 28, 40, 60]),
     "hfa": ("ELO_HFA", [0, 35, 70, 110]),
     "goalexp": ("ELO_GOAL_EXP", [3, 4.5, 6, 9, 1e9]),
@@ -403,7 +475,8 @@ def paired(ref_rows, cand_rows, n_boot=2000, seed=7):
     boot_b.sort()
     boot_l.sort()
     lo, hi = int(0.025 * n_boot), int(0.975 * n_boot) - 1
-    out = {"n": n, "brier": sum(p[0] for p in pairs) / n, "brier_lo": boot_b[lo], "brier_hi": boot_b[hi],
+    out = {"n": n, "moved": sum(1 for p in pairs if abs(p[0]) > 1e-12),
+           "brier": sum(p[0] for p in pairs) / n, "brier_lo": boot_b[lo], "brier_hi": boot_b[hi],
            "ll": sum(p[1] for p in pairs) / n, "ll_lo": boot_l[lo], "ll_hi": boot_l[hi]}
     if out["brier_hi"] < 0 and out["ll_hi"] < 0:
         out["verdict"] = "BETTER (both intervals below 0) - shippable"
@@ -417,7 +490,7 @@ def paired(ref_rows, cand_rows, n_boot=2000, seed=7):
 def fmt_paired(pr):
     if not pr:
         return "    paired: no common matches"
-    return (f"    paired on {pr['n']}: brier {pr['brier']:+.4f} [{pr['brier_lo']:+.4f}, {pr['brier_hi']:+.4f}]  "
+    return (f"    paired on {pr['n']} ({pr['moved']} moved): brier {pr['brier']:+.4f} [{pr['brier_lo']:+.4f}, {pr['brier_hi']:+.4f}]  "
             f"logloss {pr['ll']:+.4f} [{pr['ll_lo']:+.4f}, {pr['ll_hi']:+.4f}]  -> {pr['verdict']}")
 
 
