@@ -152,12 +152,21 @@ def _fix_images():
             print(f"fix-images: article {aid} not in D1 - skipped")
             missing += 1
             continue
-        if (cur.get("image_url") or "") == url:
+        # optional (2026-10-07): an entry may also correct pub_ts / pub_date -
+        # the derby analysis was parked for a morning slot with that slot's
+        # time, then published by hand the evening before
+        upd = {"image_url": url, "image_credit": credit}
+        for k in ("pub_ts", "pub_date"):
+            if f.get(k):
+                upd[k] = f[k]
+        # "applied" is judged on the photo URL (as before - a credit edited by
+        # hand later must not be overwritten) plus any time field the entry sets
+        if all((cur.get(k) or "") == upd[k] for k in upd if k != "image_credit"):
             print(f"fix-images: {aid} already applied")
             skipped += 1
             continue
         was = (cur.get("image_url") or "").rsplit("/", 1)[-1] or "(none)"
-        store.article_update(aid, {"image_url": url, "image_credit": credit})
+        store.article_update(aid, upd)
         print(f"fix-images: {aid} {was} -> {url.rsplit('/', 1)[-1]}")
         if f.get("why"):
             print(f"            why: {f['why']}")
