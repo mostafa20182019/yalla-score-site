@@ -39,11 +39,11 @@ HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بي
              "Turkish Super Lig": ("غلطة سراي", "بشكتاش", "طرابزون سبور", "فنربخشة"),
              "Bundesliga": ("بايرن ميونخ", "بوروسيا دورتموند", "باير ليفركوزن", "بوروسيا مونشنجلادباخ")}
 # Champions League (user 2026-10-07): every featured club of the leagues above,
-# plus the spellings its feed uses for two of them - football-data's names
-# go through ar_team, which says «جالطة سراي» (the Turkish league feed says
-# «غلطة سراي») and has no Arabic for Fenerbahçe yet.
+# plus the spelling its feed uses for Galatasaray - football-data's names go
+# through ar_team, which says «جالطة سراي» (the Turkish league feed says
+# «غلطة سراي»). Fenerbahçe now maps to «فنربخشة» in AR_TEAM, like the league.
 HUB_FOCUS["UEFA Champions League"] = tuple(sorted({n for v in HUB_FOCUS.values() for n in v})) + (
-    "جالطة سراي", "Fenerbahçe SK")
+    "جالطة سراي",)
 
 
 def prediction_history_page(plog, acc):

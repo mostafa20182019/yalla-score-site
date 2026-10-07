@@ -78,8 +78,8 @@ ck("the hub heading prints it in brackets", "({{ w.round_txt }})" in io.open("si
 ucl = SP.HUB_FOCUS.get("UEFA Champions League", ())
 ck("UCL: every featured club of every league", all(n in ucl for c, v in SP.HUB_FOCUS.items()
                                                     if c != "UEFA Champions League" for n in v))
-ck("UCL: the feed's own spellings for Galatasaray and Fenerbahçe",
-   ar_team("Galatasaray SK") in ucl and ar_team("Fenerbahçe SK") in ucl, (ar_team("Galatasaray SK"), ar_team("Fenerbahçe SK")))
+ck("UCL: the feed's own spelling for Galatasaray is listed", ar_team("Galatasaray SK") in ucl, ar_team("Galatasaray SK"))
+ck("Fenerbahçe reads «فنربخشة» everywhere (user 2026-10-07), so UCL matches it", ar_team("Fenerbahçe SK") == "فنربخشة" and "فنربخشة" in ucl)
 src = io.open("site_pages/predictions.py", encoding="utf-8").read()
 ck("the hub filters by exact membership (home OR away)",
    'ar_team(m.get("home")) in focus or ar_team(m.get("away")) in focus' in src)

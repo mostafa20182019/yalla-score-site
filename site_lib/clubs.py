@@ -103,6 +103,7 @@ AR_TEAM = {
     "FC Internazionale Milano": "إنتر ميلان", "FC København": "كوبنهاجن",
     "FC Lorient": "لوريان", "FC Schalke 04": "شالكه",
     "FK Bodø/Glimt": "بودو جليمت", "FK Kairat": "كايرات",
+    "Fenerbahçe SK": "فنربخشة",   # user 2026-10-07; the 365scores spelling the Turkish league uses
     "Frosinone Calcio": "فروزينوني", "Fulham FC": "فولهام",
     "Galatasaray SK": "جالطة سراي", "Genoa CFC": "جنوى",
     "Getafe CF": "خيتافي", "Hamburger SV": "هامبورج",
