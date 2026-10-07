@@ -37,8 +37,10 @@ not_found_handling = "404-page"
 # cron 5: every minute - refresh the LIVE STORE in D1 (worker.js refreshLive)
 #         so /live.json is served from memory even for the first visitor of a
 #         quiet hour. No GitHub dispatch; the string is matched EXACTLY too.
+# 2026-10-07: cron 3 gained 07,08 (10:00 Cairo) and 12 (15:00 Cairo; 13 was
+# already there) - six match slots, still five cron strings (the free-plan cap).
 crons = ["1,16,31,46 * * * *", "0 6,8,11,14,17,19 * * *",
-         "0 9,10,13,14,16,17 * * *", "30 19,20 * * *", "* * * * *"]
+         "0 7,8,9,10,12,13,14,16,17 * * *", "30 19,20 * * *", "* * * * *"]
 
 # D1 binding for the /admin/api routes (the admin page reads and writes
 # articles through the Worker - a browser cannot reach D1 directly).

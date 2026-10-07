@@ -21,6 +21,14 @@ assert.equal(matchSlotCairo(new Date("2026-12-12T11:00:00Z")), "13:00");
 assert.equal(matchSlotCairo(new Date("2026-12-12T10:00:00Z")), null);   // 12:00 Cairo in winter
 assert.equal(matchSlotCairo(new Date("2026-12-12T21:30:00Z")), "23:30");
 assert.equal(matchSlotCairo(new Date("2026-12-12T20:30:00Z")), null);   // 22:30 Cairo in winter
+// the two slots added 2026-10-07: 10:00 and 15:00 Cairo, summer and winter
+assert.equal(matchSlotCairo(new Date("2026-09-12T07:00:00Z")), "10:00");
+assert.equal(matchSlotCairo(new Date("2026-09-12T08:00:00Z")), null);    // 11:00 Cairo
+assert.equal(matchSlotCairo(new Date("2026-09-12T12:00:00Z")), "15:00");
+assert.equal(matchSlotCairo(new Date("2026-09-12T13:00:00Z")), null);    // 16:00 Cairo
+assert.equal(matchSlotCairo(new Date("2026-12-12T08:00:00Z")), "10:00");
+assert.equal(matchSlotCairo(new Date("2026-12-12T13:00:00Z")), "15:00");
+assert.equal(matchSlotCairo(new Date("2026-12-12T12:00:00Z")), null);    // 14:00 Cairo in winter
 console.log("1 OK: Cairo slot check is DST-proof (summer 10:00Z / winter 11:00Z are both 13:00 Cairo)");
 
 // ---- the handler ----------------------------------------------------------
@@ -38,16 +46,16 @@ assert.deepEqual(dispatched, ["publish.yml", "daily-article.yml"]);
 console.log("2 OK: the 15-minute cron -> publish, the article cron -> daily-article");
 
 dispatched.length = 0;
-await run("0 9,10,13,14,16,17 * * *", "2026-09-12T10:00:00Z");   // 13:00 Cairo: slot
-await run("0 9,10,13,14,16,17 * * *", "2026-09-12T09:00:00Z");   // 12:00 Cairo: DST twin, skip
+await run("0 7,8,9,10,12,13,14,16,17 * * *", "2026-09-12T10:00:00Z");   // 13:00 Cairo: slot
+await run("0 7,8,9,10,12,13,14,16,17 * * *", "2026-09-12T09:00:00Z");   // 12:00 Cairo: DST twin, skip
 await run("30 19,20 * * *", "2026-09-12T20:30:00Z");             // 23:30 Cairo: slot
 await run("30 19,20 * * *", "2026-09-12T19:30:00Z");             // 22:30 Cairo: skip
 assert.deepEqual(dispatched, ["match-article.yml", "match-article.yml"]);
 console.log("3 OK: match-article crons dispatch on the slot and skip the DST twin");
 
 dispatched.length = 0;
-await run("0 9,10,13,14,16,17 * * *", "2026-12-12T11:00:00Z");   // winter: 13:00 Cairo
-await run("0 9,10,13,14,16,17 * * *", "2026-12-12T10:00:00Z");   // winter: 12:00 Cairo
+await run("0 7,8,9,10,12,13,14,16,17 * * *", "2026-12-12T11:00:00Z");   // winter: 13:00 Cairo
+await run("0 7,8,9,10,12,13,14,16,17 * * *", "2026-12-12T10:00:00Z");   // winter: 12:00 Cairo
 assert.deepEqual(dispatched, ["match-article.yml"]);
 console.log("4 OK: in winter the other twin is the one that fires");
 

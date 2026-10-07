@@ -182,7 +182,8 @@ def match_brief_problems(rec, brief):
         out.append("percentages that are NOT in the brief (the model's numbers are computed, "
                    "never written): " + ", ".join(f"{x}%" for x in bad[:15])
                    + " - copy the brief's figure or drop the sentence")
-    if brief.get("prediction") and "ليست نصيحة للمراهنة" not in b.strip_tags(rec.get("body") or ""):
+    if (brief.get("prediction") or brief.get("prediction_check")) \
+            and "ليست نصيحة للمراهنة" not in b.strip_tags(rec.get("body") or ""):
         out.append("a preview with our prediction must carry the disclaimer «ليست نصيحة للمراهنة» "
                    "(brief.prediction.disclaimer) in the body")
     return out
@@ -224,8 +225,9 @@ def validate(rec, updating=False, brief=None):
         bad += data_problems(rec, brief)
     elif not updating and not rec.get("kind"):
         bad += source_problems(rec)
-    if not updating and rec.get("kind") == "preview" and not is_match_brief(brief):
-        bad.append("a preview is published with its brief: "
+    if not updating and rec.get("kind") in ("preview", "report") and not is_match_brief(brief):
+        # reports too since 2026-10-07: they now quote our pre-match prediction
+        bad.append(f"a {rec.get('kind')} is published with its brief: "
                    "python article_put.py --new --match-brief \"$BRIEF_JSON\" draft.json "
                    "(the percentage guard needs it)")
     words = len(b.strip_tags(rec.get("body") or "").split())

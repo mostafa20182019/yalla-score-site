@@ -902,8 +902,9 @@ async function adminApi(request, env, url) {
 }
 
 // The match-article slots, on the Cairo clock. Exported for the test.
-const MATCH_SLOTS = ["13:00", "17:00", "20:00", "23:30"];
-const MATCH_CRONS = new Set(["0 9,10,13,14,16,17 * * *", "30 19,20 * * *"]);
+// 10:00 and 15:00 added 2026-10-07 (previews now cover the featured clubs).
+const MATCH_SLOTS = ["10:00", "13:00", "15:00", "17:00", "20:00", "23:30"];
+const MATCH_CRONS = new Set(["0 7,8,9,10,12,13,14,16,17 * * *", "30 19,20 * * *"]);
 /* /data/bundle (2026-09-24, step 3): the site's working data - the gzip bundle
  * data_store.py pushes into Workers KV after every publish run - for the
  * machines that hold no Cloudflare token: the user's laptop (the Oracle copy

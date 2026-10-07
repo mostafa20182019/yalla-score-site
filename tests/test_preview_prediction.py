@@ -89,7 +89,7 @@ ck("a brief for another match is refused", any("the brief is for match" in x for
 inv, _ = AP.validate(bad, brief=brief)
 ck("the invented 70% is refused at publish time", any("70%" in x for x in inv), inv)
 rep, _ = AP.validate(dict(rec, kind="report", body=good_body))
-ck("a report still publishes without a brief", not any("--match-brief" in x for x in rep), rep)
+ck("a report needs its brief too (since it quotes our prediction, 2026-10-07)", any("--match-brief" in x for x in rep), rep)
 
 print(f"\n{len(fails)} failed" if fails else "\nall passed")
 sys.exit(1 if fails else 0)

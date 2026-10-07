@@ -53,8 +53,11 @@ REPORT_MAX_H = 30.0
 # curated matches of 2026-09-08..13 got a preview and never got a report
 # (16/16 previews, 8/16 reports). A preview must not be able to spend a
 # report's budget - they are not substitutes for each other.
-PREVIEW_DAILY_CAP = 4
-REPORT_DAILY_CAP = 4
+# 4 -> 6 each (2026-10-07): the pieces now cover the FEATURED clubs (the
+# /analysis hub's HUB_FOCUS, ~35 clubs in eight leagues) and the Worker gained
+# two slots (10:00, 15:00 Cairo) - six slots, one piece each.
+PREVIEW_DAILY_CAP = 6
+REPORT_DAILY_CAP = 6
 EGY_FIRST = ("الأهلي", "الزمالك", "بيراميدز")
 
 S365_HEADERS = {
@@ -92,6 +95,30 @@ def curated_club(m):
 
 def curated_clubs(m):
     return [tp for tp in b.TEAM_PAGES if b._team_match(tp, m)]
+
+
+def featured_sides(m):
+    """How many of the two clubs are FEATURED (2026-10-07, user: «تحليل عن
+    مباريات الفرق المميزة وعن توقعنا»): a curated club (TEAM_PAGES) or a club
+    the /analysis hub lists for its league (HUB_FOCUS, exact ar_team names -
+    the same list the user chose league by league). 0, 1 or 2."""
+    from site_pages.predictions import HUB_FOCUS
+    focus = HUB_FOCUS.get(m.get("competition") or "", ())
+    n = 0
+    for side in ("home", "away"):
+        name = m.get(side)
+        if (b.ar_team(name) in focus
+                or any(b._team_match(tp, {"home": name, "away": "", "competition": m.get("competition")})
+                       for tp in b.TEAM_PAGES)):
+            n += 1
+    return n
+
+
+def featured_names(m):
+    from site_pages.predictions import HUB_FOCUS
+    focus = HUB_FOCUS.get(m.get("competition") or "", ())
+    return [b.ar_team(m.get(s)) for s in ("home", "away")
+            if b.ar_team(m.get(s)) in focus] or [tp["name"] for tp in curated_clubs(m)]
 
 def _s365(path):
     import urllib.request
@@ -184,6 +211,74 @@ def prediction_block(d, m):
     return out
 
 
+def prediction_check(m):
+    """What the model said BEFORE this finished match vs what happened - the
+    frozen record (store -> committed export), never a recomputed prediction.
+    The verdict is derived from the logged probabilities and the final score
+    here, so a report written before the build has scored the row still says
+    the same thing the record page will. A miss is reported exactly as loudly
+    as a hit (the standing rule of /predictions). None when nothing was logged."""
+    import analysis as AN
+    import store
+    from site_lib.text import _pct
+    try:
+        log = store.pred_all()
+    except Exception:                                       # noqa: BLE001
+        log = AN.load_log()
+    e = log.get(str(m.get("match_id")))
+    if not e or m.get("home_score") is None or e.get("ph") is None:
+        return None
+    h, a = b.ar_team(m.get("home")), b.ar_team(m.get("away"))
+    hs, as_ = int(m["home_score"]), int(m["away_score"])
+    probs = {"H": e["ph"], "D": e["pd"], "A": e["pa"]}
+    pick = max(probs, key=probs.get)
+    real = "H" if hs > as_ else "D" if hs == as_ else "A"
+    lab = {"H": f"فوز {h}", "D": "التعادل", "A": f"فوز {a}"}
+    out = {"home_win": _pct(e["ph"]), "draw": _pct(e["pd"]), "away_win": _pct(e["pa"]),
+           "model_pick": lab[pick], "model_pick_prob": _pct(probs[pick]),
+           "model_likely_score_home_away": e.get("score"), "confidence_ar": AN.CONF_AR.get(e.get("conf"), ""),
+           "final_score_home_away": f"{hs}-{as_}", "result": lab[real],
+           "hit": pick == real, "exact_score_hit": e.get("score") == f"{hs}-{as_}",
+           "verdict_ar": "أصاب التوقع" if pick == real else "لم يُصب التوقع",
+           "record_page": "/predictions"}
+    bk = AN.stated_bucket(AN.calibration(log), probs[pick])
+    if bk:
+        out["same_band"] = {"from_pct": f'{bk["lo"]}%', "to_pct": f'{bk["hi"]}%',
+                            "times": bk["n"], "came_true": bk["hits"]}
+    return out
+
+
+def report_stats(m, gid=None):
+    """xG, shots and possession of a finished match: straight from 365scores
+    (the stored file only gets a match >= 3 h after kick-off, a report is
+    written ~30 min after the whistle), else the stored row. Formatted the
+    way the match page prints them; possession carries its % sign."""
+    import match_stats as MS
+    st = None
+    if gid:
+        try:
+            st, ok = MS.parse_stats(_s365(f"game/stats/?appTypeId=5&langId=27&timezoneName=Africa/Cairo&games={gid}"))
+            st = st if ok else None
+        except Exception:                                   # noqa: BLE001
+            st = None
+    if not st:
+        row = MS.load().get(str(m.get("match_id")))
+        st = {"h": row["h"], "a": row["a"]} if row and row.get("status") == "ok" else None
+    if not st:
+        return None
+    h, a = b.ar_team(m.get("home")), b.ar_team(m.get("away"))
+    fmt = {"xg": "{:.2f}", "xgot": "{:.2f}", "shots": "{}", "sot": "{}", "big": "{}", "poss": "{}%"}
+    name = {"xg": "الأهداف المتوقعة (xG)", "xgot": "xG على المرمى", "shots": "التسديدات",
+            "sot": "تسديدات على المرمى", "big": "فرص خطيرة", "poss": "الاستحواذ"}
+    out = {}
+    for k in fmt:
+        if st["h"].get(k) is not None and st["a"].get(k) is not None:
+            out[name[k]] = {h: fmt[k].format(st["h"][k]), a: fmt[k].format(st["a"][k])}
+    if out:
+        out["source"] = "365scores"
+    return out or None
+
+
 def brief_percents(brief):
     """Every percentage the brief states, as numbers."""
     s = json.dumps(brief, ensure_ascii=False).translate(_AR_DIGITS)
@@ -246,7 +341,7 @@ def candidates(d, now=None):
     md_idx = b.match_details_index(d["details"])
     out = []
     for m in d["matches"]:
-        if not m.get("match_id") or not curated_club(m):
+        if not m.get("match_id") or not (curated_club(m) or featured_sides(m)):
             continue
         ko = _kick(m)
         if not ko:
@@ -264,8 +359,11 @@ def candidates(d, now=None):
                 if rich:
                     out.append({"match_id": mid, "kind": "report", "hours": round(h, 1), "m": m})
     def prio(c):
+        # reports first, then Egyptian clubs, then the big games (BOTH clubs
+        # featured: الزمالك × الأهلي، ليفربول × مانشستر سيتي), then the soonest
         egy = any(t in (c["m"].get("home", "") + c["m"].get("away", "")) for t in EGY_FIRST)
-        return (0 if c["kind"] == "report" else 1, 0 if egy else 1, c["hours"])
+        return (0 if c["kind"] == "report" else 1, 0 if egy else 1,
+                0 if featured_sides(c["m"]) == 2 else 1, c["hours"])
     out.sort(key=prio)
     return out
 
@@ -434,6 +532,7 @@ def build_brief(d, m, kind):
             "url": b.match_url(m),
         },
         "curated_clubs": [{"name": tp["name"], "url": f"/team/{tp['slug']}"} for tp in clubs],
+        "featured_clubs": featured_names(m),
         "home": {"name": h_ar, "standings": standings_row(d, comp, h_raw), "season": season_record(d, comp, h_raw),
                  "top_scorers": club_players(d, comp, h_raw, "scorers"), "top_assists": club_players(d, comp, h_raw, "assists"),
                  "recent_goals": recent_goals(d, h_raw)},
@@ -497,6 +596,19 @@ def build_brief(d, m, kind):
             brief["report"]["away_lineup"] = lineup_summary(e, ak)
             brief["report"]["cards"] = e.get("cards") or []
             brief["report"]["subs"] = e.get("subs") or []
+        # «هل أصاب توقعنا؟» + the performance numbers (2026-10-07)
+        try:
+            pc = prediction_check(m)
+        except Exception as ex:                             # noqa: BLE001
+            pc, brief["prediction_check_error"] = None, str(ex)[:160]
+        if pc:
+            brief["prediction_check"] = pc
+        try:
+            ms = report_stats(m, gid)
+        except Exception as ex:                             # noqa: BLE001
+            ms, brief["match_stats_error"] = None, str(ex)[:160]
+        if ms:
+            brief["match_stats"] = ms
     return brief
 
 
@@ -549,6 +661,22 @@ def to_markdown(br):
             sb = rc["same_band"]
             L.append(f"حين قال النموذج احتمالًا بين {sb['from_pct']} و{sb['to_pct']}: تحقق {sb['came_true']} من {sb['times']} مرة")
         L.append(f"تنبيه إلزامي: {pr['disclaimer']}")
+    pc = br.get("prediction_check")
+    if pc:
+        L.append(f"\n## هل أصاب توقع يلا سكور؟ (من السجل المجمّد قبل المباراة — انقله كما هو)")
+        L.append(f"قال النموذج: فوز {m['home']} {pc['home_win']} | تعادل {pc['draw']} | فوز {m['away']} {pc['away_win']} — "
+                 f"رجّح {pc['model_pick']} ({pc['model_pick_prob']}) ونتيجة {pc['model_likely_score_home_away']} ({pc['confidence_ar']})")
+        L.append(f"النتيجة: {pc['final_score_home_away']} = {pc['result']} → {pc['verdict_ar']}"
+                 + (" (والنتيجة المضبوطة أيضًا)" if pc["exact_score_hit"] else ""))
+        if pc.get("same_band"):
+            sb = pc["same_band"]
+            L.append(f"سجل هذا المستوى: حين قال النموذج بين {sb['from_pct']} و{sb['to_pct']} تحقق {sb['came_true']} من {sb['times']}")
+    st = br.get("match_stats")
+    if st:
+        L.append("\n## أرقام الأداء (365scores)")
+        for k, v in st.items():
+            if k != "source":
+                L.append(f"{k}: " + " | ".join(f"{t} {x}" for t, x in v.items()))
     rp = br.get("report")
     if rp:
         L.append("\n## تقرير المباراة")

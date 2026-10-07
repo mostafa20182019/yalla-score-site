@@ -9,7 +9,7 @@ or continue after a pause — that ends the run with nothing, and the next slot
 starts from scratch (2026-09-18: a run ended with «I'll wait for the scheduled
 wakeup before retrying the fetch» and published nothing).
 
-You are writing ONE original Arabic **match-analysis article** for "Yalla Score" (يلا سكور) about a match of one of the site's curated clubs (الأهلي، الزمالك، بيراميدز، ريال مدريد، برشلونة، مانشستر يونايتد، مانشستر سيتي، أرسنال، ليفربول، تشيلسي، طرابزون سبور). The kind is either a **preview** (before kick-off) or a **report** (after full-time). The match id, the kind and the path of a JSON brief are in the environment variables `MATCH_ID`, `KIND`, `BRIEF_JSON`; a readable digest of the same brief is in `BRIEF_MD`.
+You are writing ONE original Arabic **match-analysis article** for "Yalla Score" (يلا سكور) about a match of one of the site's **featured clubs** (since 2026-10-07: the eleven curated clubs plus the big clubs the user chose per league - the brief lists them in `featured_clubs`; `curated_clubs` are the ones that have a club page to link). The kind is either a **preview** (before kick-off) or a **report** (after full-time). The match id, the kind and the path of a JSON brief are in the environment variables `MATCH_ID`, `KIND`, `BRIEF_JSON`; a readable digest of the same brief is in `BRIEF_MD`.
 
 Python deps (requirements.txt + pillow) are already installed by the workflow.
 
@@ -43,13 +43,15 @@ Every number, name, minute, position, rating, formation and result in the articl
 1. Lead: final score, competition, date; the one-line story of the game.
 2. **كيف سارت المباراة**: the goals timeline (minute, scorer, penalty/own-goal tags) turned into a narrative of momentum; cards and substitutions if in the brief.
 3. **أرقام اللاعبين**: the best-rated players of each side (ratings from the brief), the scorers' season tallies (top_scorers), the formation each side used.
-4. **ماذا يعني للترتيب**: the standings rows in the brief (position, points, goal difference) and the form string — state what changed for the curated club.
+4. **ماذا يعني للترتيب**: the standings rows in the brief (position, points, goal difference) and the form string — state what changed for the featured club(s).
 5. **الخطوة التالية**: the club's next fixture from data/matches.json (UPCOMING rows for the same club), with date/time in Cairo.
-6. **أرقام المباراة في سطور**: 3-5 bullets, each a number from the brief.
-7. Links: match page, club page(s), one related article.
+6. **أرقام الأداء** (only if the brief has `match_stats`): xG, shots, shots on target, big chances, possession of both sides - say what they mean («صنع أتلتيكو فرصًا تساوي 2.35 هدفًا مقابل 0.30») and whether the score was fair to the chances. Numbers exactly as written in the brief.
+7. **هل أصاب توقع يلا سكور؟** (only if the brief has `prediction_check`; user ask 2026-10-07 «تحليل … وعن توقعنا»): what the model said BEFORE kick-off (`home_win` / `draw` / `away_win`, `model_pick`, `model_likely_score_home_away`, `confidence_ar`), what happened (`final_score_home_away`), and the verdict `verdict_ar` stated plainly - **a miss is written as clearly as a hit**, never softened, never explained away with reasons the model does not know. If `same_band` exists, add how often the model has been right at that confidence. Close with the `prediction.disclaimer`-style sentence «التوقعات احتمالات إحصائية … وليست نصيحة للمراهنة» (the publish tool checks for «ليست نصيحة للمراهنة») and a link to `/predictions` («سجل توقعاتنا كاملًا، إصابةً وخطأ»).
+8. **أرقام المباراة في سطور**: 3-5 bullets, each a number from the brief.
+9. Links: match page, club page(s), one related article.
 
 ## Article record — a draft file, published with `article_put.py`
-Write the object to `/tmp/draft.json` and publish it with `python article_put.py --new --match-brief "$BRIEF_JSON" /tmp/draft.json` (run `python article_put.py --check --match-brief "$BRIEF_JSON" /tmp/draft.json` first; a PREVIEW without `--match-brief` is refused, and a refusal that names a percentage means: copy the brief's figure or drop the sentence). A report may pass `--match-brief` too. **Never hand-edit data/articles.json**: D1 is the writer since 2026-09-10, it allocates the id inside the INSERT, and its unique index on (match_id, kind) is what actually guarantees one preview and one report per match. If the tool prints "D1 is not configured", stop and report it.
+Write the object to `/tmp/draft.json` and publish it with `python article_put.py --new --match-brief "$BRIEF_JSON" /tmp/draft.json` (run `python article_put.py --check --match-brief "$BRIEF_JSON" /tmp/draft.json` first; a PREVIEW without `--match-brief` is refused, and a refusal that names a percentage means: copy the brief's figure or drop the sentence). A report needs `--match-brief` too (since 2026-10-07 it quotes our prediction and the match's numbers, and the same percentage guard applies). **Never hand-edit data/articles.json**: D1 is the writer since 2026-09-10, it allocates the id inside the INSERT, and its unique index on (match_id, kind) is what actually guarantees one preview and one report per match. If the tool prints "D1 is not configured", stop and report it.
 - `article_id` — omit it, the database assigns it
 - `title` (~60-95 chars, Arabic, names both clubs; preview titles start with «توقع يلا سكور:» when the brief has `prediction` (e.g. «توقع يلا سكور: الفتح × الأهلي في الدوري السعودي»), otherwise «قبل المباراة:» or «تحليل:»؛ report titles with «تقرير:» or the result), `summary` (1-2 sentences), `body` (HTML), `author` = "مصطفى عبدالسلام"
 - `pub_date` = today Cairo (`TZ=Africa/Cairo date +%F`), `pub_ts` = `TZ=Africa/Cairo date -Iseconds`
