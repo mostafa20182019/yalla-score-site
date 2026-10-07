@@ -6,7 +6,7 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import hashlib
 import os
-from site_lib.articles import _MOVED_LINKS, article_clubs, article_moved_stub, article_url, byline, embeds_block, fix_moved_links, match_data_sources, related_articles
+from site_lib.articles import _MOVED_LINKS, article_clubs, author_ld, article_moved_stub, article_url, byline, embeds_block, fix_moved_links, match_data_sources, related_articles
 from site_lib.config import ARTICLE_MIN_WORDS, DIST, FB_PAGE_URL, PLACEHOLDER_IMGS, SHOW_HEADLINES, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, load
 from site_lib.dates import art_reltime, rel_ar
 from site_lib.names import _egy_article, _eur_article
@@ -60,11 +60,8 @@ def article_pages(articles, articles_all, matches, urls):
               "inLanguage": "ar", "mainEntityOfPage": url, "url": url,
               "isAccessibleForFree": True, "articleSection": "كرة القدم",
               "wordCount": _words,
-              # byline() resolves the generic team name to the named editor, so
-              # every article carries a Person entity that resolves to a page
-              # with a role, an email and a photo-less but real identity
-              "author": {"@type": "Person", "name": byline(a),
-                         "url": SITE_BASE + "/editors.html"},
+              # the editorial team since 2026-10-07 (see BYLINE_TEAM)
+              "author": author_ld(a),
               "publisher": {"@type": "Organization", "@id": SITE_BASE + "/#org",
                             "name": SITE_NAME, "url": SITE_BASE + "/",
                             "sameAs": [FB_PAGE_URL, TG_CHANNEL_URL],

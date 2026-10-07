@@ -1,4 +1,4 @@
-r"""التوقيع باسم مصطفى عبدالسلام (2026-09-15).
+r"""التوقيع: «فريق التحرير» على كل مقال (2026-10-07; was the named editor since 2026-09-15).
 
     python tests/test_byline.py           (from the repo root)
 
@@ -23,42 +23,45 @@ def ck(name, cond, extra=""):
 
 NAME = "مصطفى عبدالسلام"
 
-ck("1 the generic team byline resolves to the editor",
-   B.byline({"author": "فريق التحرير"}) == NAME)
+TEAM = "فريق التحرير"
+ck("1 the generic team byline stays the team",
+   B.byline({"author": "فريق التحرير"}) == TEAM)
+ck("1b the editor's own name, as the AI prompts store it, is signed as the team too",
+   B.byline({"author": NAME}) == TEAM)
 ck("2 so does the site name and the older variant",
-   B.byline({"author": B.SITE_NAME}) == NAME and B.byline({"author": "فريق يلا سكور"}) == NAME)
+   B.byline({"author": B.SITE_NAME}) == TEAM and B.byline({"author": "فريق يلا سكور"}) == TEAM)
 ck("3 and a missing or empty author",
-   B.byline({}) == NAME and B.byline({"author": ""}) == NAME)
+   B.byline({}) == TEAM and B.byline({"author": ""}) == TEAM)
 ck("4 a real person's name is NOT overwritten",
    B.byline({"author": "أحمد شوقي"}) == "أحمد شوقي")
 
 art = {"article_id": "1", "title": "خبر", "summary": "س", "author": "فريق التحرير",
        "pub_date": "2026-09-15", "body": "<p>نص</p>"}
-ck("5 the card byline prints the name", NAME in B.news_card(art))
-ck("6 the FotMob-block byline prints the name", NAME in B._art_meta(art))
+ck("5 the card byline prints the team, not the name", TEAM in B.news_card(art) and NAME not in B.news_card(art))
+ck("6 the FotMob-block byline prints the team", TEAM in B._art_meta(art) and NAME not in B._art_meta(art))
 
-# the schema: a Person that resolves to a page about that person
+# the schema: the team is an Organization (a Person named «فريق التحرير» would be false)
 import json, re
-ld = {"author": {"@type": "Person", "name": B.byline(art),
-                 "url": B.SITE_BASE + "/editors.html"}}
-ck("7 the author entity is a Person pointing at /editors",
-   ld["author"]["@type"] == "Person" and ld["author"]["name"] == NAME
-   and ld["author"]["url"].endswith("/editors.html"))
+from site_lib.articles import author_ld
+ld = author_ld(art)
+ck("7 the author entity is the editorial team (Organization) pointing at /editors",
+   ld["@type"] == "Organization" and TEAM in ld["name"] and ld["url"].endswith("/editors.html"))
+ck("7b a real person's name stays a Person", author_ld({"author": "أحمد شوقي"})["@type"] == "Person")
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from build_source import build_source  # noqa: E402  the whole build
 src = build_source()
 ck("8 no render path still prints the raw stored author",
    'esc(a.get("author"))' not in src and 'a.get("author") or SITE_NAME' not in src, )
-ck("9 the schema no longer emits an Organization author for articles",
-   '"author": {"@type": "Person", "name": byline(a)' in src)
+ck("9 every article schema takes its author from author_ld()",
+   src.count('"author": author_ld(a)') >= 2)
 # (2026-09-25: the static pages' wording moved into site_src/templates/ -
 # the checks below read it there; the rendered pages are byte-identical)
 TPL = "site_src/templates/"
 tpl = {n: open(TPL + n, encoding="utf-8").read()
        for n in ("editors.html", "editorial.html", "about.html")}
-ck("10 the editors page states that every article carries his signature",
-   "كل مقال على الموقع يحمل توقيعه" in tpl["editors.html"])
+ck("10 the editors page says articles are signed «فريق التحرير» (no stale «يحمل توقيعه»)",
+   "بتوقيع <b>«فريق التحرير»</b>" in tpl["editors.html"] and "يحمل توقيعه" not in tpl["editors.html"])
 
 # the prompts must write the name into new rows too, or the data drifts from
 # what the site renders

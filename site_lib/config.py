@@ -57,6 +57,14 @@ EDITOR_EMAIL = CONTACT_EMAIL
 # content rejection. Rendering-level on purpose — the 466 stored rows are not
 # rewritten, so this is one constant away from being undone.
 GENERIC_BYLINES = (SITE_NAME, "فريق التحرير", "فريق يلا سكور", "")
+# 2026-10-07, user decision (reverses the 2026-09-15 one above): EVERY article
+# is signed «فريق التحرير» - the generic bylines AND the editor's own name,
+# which the AI prompts store in `author`. Still rendering-level: no row is
+# rewritten; set BYLINE_TEAM = "" to go back to signing with EDITOR_NAME. The
+# schema author becomes the site's editorial team (an Organization) - a
+# Person entity named «فريق التحرير» would be a false statement. /editors and
+# /about still name the editor; only the article signature changed.
+BYLINE_TEAM = "فريق التحرير"
 # Cloudflare Web Analytics (cookie-less page views / referrers / top pages).
 # Paste the 32-char token from Cloudflare -> Analytics & Logs -> Web Analytics
 # -> Add a site (manual install). Empty = no beacon in the pages.

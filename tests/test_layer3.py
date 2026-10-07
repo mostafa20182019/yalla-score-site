@@ -52,8 +52,8 @@ ok("10 no pieces, no block", B.pick_match_article([], "FINISHED") is None)
 print()
 print("== the embedded article ==")
 blk = B.match_article_block(rept, "Egyptian Premier League")
-ok("11 it carries the headline and the named byline",
-   "تقرير" in blk and B.EDITOR_NAME in blk)
+ok("11 it carries the headline and the byline (the editorial team since 2026-10-07)",
+   "تقرير" in blk and B.byline(rept) in blk)
 ok("12 it credits its data even when the writer left sources empty",
    "365scores" in blk and "المصادر" in blk)
 ok("13 an Egyptian match is not credited to football-data",

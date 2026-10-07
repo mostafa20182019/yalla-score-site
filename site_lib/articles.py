@@ -11,7 +11,7 @@ import re
 import store
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_SLUG, S365_COMPETITIONS
-from site_lib.config import ARTICLE_MIN_WORDS, DROP_HEADINGS, EDITOR_NAME, GENERIC_BYLINES, HERE, PLACEHOLDER_IMGS, SITE_BASE, SITE_NAME
+from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_TEAM, DROP_HEADINGS, EDITOR_NAME, GENERIC_BYLINES, HERE, PLACEHOLDER_IMGS, SITE_BASE, SITE_NAME
 from site_lib.media import EMBED_LABEL
 from site_lib.names import _team_news
 from site_lib.text import article_words, esc, jsonld, strip_tags
@@ -96,7 +96,20 @@ def piece_place(a, k, idx):
 
 def byline(a):
     """The name to print (and to put in schema) for one article."""
-    return EDITOR_NAME if (a.get("author") or "") in GENERIC_BYLINES else a["author"]
+    au = (a.get("author") or "").strip()
+    if BYLINE_TEAM and (au in GENERIC_BYLINES or au == EDITOR_NAME):
+        return BYLINE_TEAM
+    return EDITOR_NAME if au in GENERIC_BYLINES else au
+
+
+def author_ld(a):
+    """schema.org author of one article: the editorial team as an
+    Organization when the byline is the team, a Person otherwise."""
+    name = byline(a)
+    if BYLINE_TEAM and name == BYLINE_TEAM:
+        return {"@type": "Organization", "name": f"{BYLINE_TEAM} — {SITE_NAME}",
+                "url": SITE_BASE + "/editors.html"}
+    return {"@type": "Person", "name": name, "url": SITE_BASE + "/editors.html"}
 
 
 def match_data_sources(a, comp):
@@ -231,8 +244,7 @@ def match_article_block(a, comp):
                        "datePublished": a.get("pub_ts") or a.get("pub_date"),
                        "dateModified": a.get("updated_ts") or a.get("pub_ts") or a.get("pub_date"),
                        "mainEntityOfPage": SITE_BASE + article_href(a),
-                       "author": {"@type": "Person", "name": byline(a),
-                                  "url": SITE_BASE + "/editors.html"},
+                       "author": author_ld(a),
                        "publisher": {"@type": "Organization", "name": SITE_NAME,
                                      "url": SITE_BASE}}))
     return "".join(out)
