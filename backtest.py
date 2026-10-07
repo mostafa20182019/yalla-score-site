@@ -31,6 +31,22 @@ Usage
   python backtest.py --sweep prior      # scan one constant (prior|k|hfa|goalexp)
   python backtest.py --min-prior 2      # require N prior matches per club
   python backtest.py --json out.json
+  python backtest.py --pool prev        # last season (big five, ~1,750 matches) instead
+  python backtest.py --pool both        # this season + last season together
+  python backtest.py --odds             # model vs closing odds (odds_bench.py --fetch first)
+
+THE VERDICT IS PAIRED (2026-10-07). Every candidate is compared with the live
+model match by match on the SAME matches, and the mean difference gets a
+bootstrap 95% interval. The old rule ("beat 0.9/sqrt(n)") compared two noisy
+totals and so needed a gap of ~0.05 - bigger than any published effect of a
+single factor (0.003-0.02). A paired difference cancels the noise both models
+share (a shock result hurts both), so a real 0.005 can now show. Ship a change
+only when the interval for BOTH brier and logloss sits entirely below zero.
+
+"live" is the model the site runs: the same pool as site_lib.model.model_core
+(fixtures + the frozen results archive + matches_archive) and the season
+carry-over Elo seeds. Until 2026-10-07 it ran without the seeds and without
+the results archive, i.e. a slightly different model than production.
 
 Adding a candidate: write a function in VARIANTS that returns a config dict
 (params override and/or a `factor` callable). A factor gets
@@ -46,6 +62,7 @@ import datetime
 import json
 import math
 import os
+import random
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -137,16 +154,20 @@ class Score:
         self.buckets = collections.defaultdict(lambda: [0, 0.0, 0])  # n, sum_p, hits
 
     def add(self, probs, real):
+        """Score one match; returns its (brier, logloss) for the paired test."""
         self.n += 1
         pick = max(probs, key=probs.get)
         self.hits += pick == real
-        self.brier += sum((probs[k] - (1.0 if k == real else 0.0)) ** 2 for k in "HDA")
-        self.logloss += -math.log(max(probs[real], 1e-9))
+        mb = sum((probs[k] - (1.0 if k == real else 0.0)) ** 2 for k in "HDA")
+        mll = -math.log(max(probs[real], 1e-9))
+        self.brier += mb
+        self.logloss += mll
         for k in "HDA":
             b = self.buckets[min(9, int(probs[k] * 10))]
             b[0] += 1
             b[1] += probs[k]
             b[2] += (k == real)
+        return mb, mll
 
     def calib(self):
         """mean |predicted - observed| across non-empty probability buckets."""
@@ -202,11 +223,11 @@ def run(bycomp, cfg, min_prior=1, min_league=5, ctx=None, only_active=False):
                 # (the metric Dixon-Coles is supposed to move)
                 top = (p.get("top") or [(None, None, 0)])[0]
                 called = f"{top[0]}-{top[1]}"
-                overall.add(probs, real)
+                mb, mll = overall.add(probs, real)
                 per[comp].add(probs, real)
                 rows.append({"comp": comp, "date": m["kickoff"], "home": m["home"],
                              "away": m["away"], "real": real, "probs": probs,
-                             "called": called,
+                             "called": called, "brier": mb, "ll": mll,
                              "score": f'{m["home_score"]}-{m["away_score"]}'})
     finally:
         for k, v in saved.items():
@@ -354,6 +375,75 @@ SWEEPS = {
 }
 
 
+# ---------------------------------------------------------------- the paired verdict
+def _key(r):
+    return (r["comp"], r["date"], r["home"], r["away"])
+
+
+def paired(ref_rows, cand_rows, n_boot=2000, seed=7):
+    """Candidate minus reference, match by match, on the matches BOTH scored.
+    Negative = the candidate is better. Returns the mean differences with a
+    bootstrap 95% interval (seeded: the same data gives the same verdict)."""
+    ref = {_key(r): r for r in ref_rows}
+    pairs = [(c["brier"] - ref[_key(c)]["brier"], c["ll"] - ref[_key(c)]["ll"])
+             for c in cand_rows if _key(c) in ref]
+    n = len(pairs)
+    if n < 2:
+        return None
+    rng = random.Random(seed)
+    boot_b, boot_l = [], []
+    for _ in range(n_boot):
+        sb = sl = 0.0
+        for _ in range(n):
+            x = pairs[rng.randrange(n)]
+            sb += x[0]
+            sl += x[1]
+        boot_b.append(sb / n)
+        boot_l.append(sl / n)
+    boot_b.sort()
+    boot_l.sort()
+    lo, hi = int(0.025 * n_boot), int(0.975 * n_boot) - 1
+    out = {"n": n, "brier": sum(p[0] for p in pairs) / n, "brier_lo": boot_b[lo], "brier_hi": boot_b[hi],
+           "ll": sum(p[1] for p in pairs) / n, "ll_lo": boot_l[lo], "ll_hi": boot_l[hi]}
+    if out["brier_hi"] < 0 and out["ll_hi"] < 0:
+        out["verdict"] = "BETTER (both intervals below 0) - shippable"
+    elif out["brier_lo"] > 0 and out["ll_lo"] > 0:
+        out["verdict"] = "WORSE (both intervals above 0)"
+    else:
+        out["verdict"] = "no proven difference"
+    return out
+
+
+def fmt_paired(pr):
+    if not pr:
+        return "    paired: no common matches"
+    return (f"    paired on {pr['n']}: brier {pr['brier']:+.4f} [{pr['brier_lo']:+.4f}, {pr['brier_hi']:+.4f}]  "
+            f"logloss {pr['ll']:+.4f} [{pr['ll_lo']:+.4f}, {pr['ll_hi']:+.4f}]  -> {pr['verdict']}")
+
+
+PREV_TAG = " (2025/26)"
+
+
+def prev_pool():
+    """Last season (big five, data/season_prev - season_carry.py) in the
+    replay's shape. Its competitions carry PREV_TAG so they never collide with
+    this season's, and the season seeds never apply to them."""
+    import season_carry
+    out = {}
+    for comp, ms in season_carry.load_prev().items():
+        rows = [{"competition": comp + PREV_TAG, "kickoff": m["date"], "home": m["home"], "away": m["away"],
+                 "home_score": m["home_score"], "away_score": m["away_score"], "status": "FINISHED"}
+                for m in ms if m.get("home_score") is not None]
+        out[comp + PREV_TAG] = sorted(rows, key=lambda m: m["kickoff"])
+    return out
+
+
+def season_pool():
+    """THIS season exactly as site_lib.model.model_core builds it."""
+    import results_archive as RA
+    return A.season_matches(load("fixtures.json"), RA.season_rows(RA.load()) + load("matches_archive.json"))
+
+
 # ---------------------------------------------------------------- reporting
 def fmt(name, r, ref=None):
     if not r:
@@ -377,9 +467,19 @@ def main():
     ap.add_argument("--only-active", action="store_true",
                     help="score ONLY the matches a candidate factor actually moves")
     ap.add_argument("--json")
+    ap.add_argument("--pool", choices=("season", "prev", "both"), default="season")
+    ap.add_argument("--odds", action="store_true", help="score the live model against closing odds")
+    ap.add_argument("--boot", type=int, default=2000, help="bootstrap resamples for the paired verdict")
     args = ap.parse_args()
 
-    bycomp = A.season_matches(load("fixtures.json"), load("matches_archive.json"))
+    bycomp = {}
+    if args.pool in ("season", "both"):
+        bycomp.update(season_pool())
+    if args.pool in ("prev", "both"):
+        bycomp.update(prev_pool())
+    # the site's model: season carry-over seeds (keyed by this season's
+    # competition names, so they never touch the tagged previous-season pool)
+    LIVE = {"seeds": A.load_elo_seeds() or None}
     details = load("match_details.json")
     comp_idx = {}
     for comp, ms in bycomp.items():
@@ -405,7 +505,7 @@ def main():
     print(f"filters: league needs >= {args.min_league} prior matches, "
           f"each club >= {args.min_prior}\n")
 
-    live, per, rows = run(bycomp, {}, args.min_prior, args.min_league, ctx)
+    live, per, rows = run(bycomp, LIVE, args.min_prior, args.min_league, ctx)
     lr = live.row()
     if not lr:
         print("Not enough history yet to score anything — come back after more rounds.")
@@ -446,28 +546,54 @@ def main():
             ref = sub.row()
             print(f"\n(subset: the {ref['n'] if ref else 0} matches "
                   f"'{args.probe or 'absence'}' actually moves)")
-        print("\n=== candidates (ship one ONLY if brier AND logloss both improve)")
+        print("\n=== candidates (ship one ONLY if the PAIRED intervals of brier AND logloss are both below 0)")
         print(fmt("live", ref))
         for name, mk in VARIANTS.items():
             if name == "live":
                 continue
-            s, _, _ = run(bycomp, mk(), args.min_prior, args.min_league, ctx, args.only_active)
+            cfg = mk()
+            cfg.setdefault("seeds", LIVE["seeds"])     # a candidate changes ONE thing
+            s, _, crows = run(bycomp, cfg, args.min_prior, args.min_league, ctx, args.only_active)
             print(fmt(name, s.row(), ref))
+            print(fmt_paired(paired(rows, crows, args.boot)))
 
     if args.sweep:
         key, values = SWEEPS[args.sweep]
         print(f"\n=== sweep {key} (current live value: {getattr(A, key)})")
         for v in values:
-            s, _, _ = run(bycomp, {"params": {key: v}}, args.min_prior, args.min_league, ctx)
+            s, _, crows = run(bycomp, {"params": {key: v}, "seeds": LIVE["seeds"]},
+                              args.min_prior, args.min_league, ctx)
             print(fmt(f"{key}={v}", s.row(), lr))
+            print(fmt_paired(paired(rows, crows, args.boot)))
+
+    if args.odds:
+        import odds_bench as OB
+        mk = OB.match(rows, OB.load(["2627", "2526"]))
+        print(f"\n=== live model vs CLOSING ODDS (benchmark only - never an input), "
+              f"{len(mk)} matches with odds")
+        if mk:
+            ms_, os_ = Score(), Score()
+            mrows, orows = [], []
+            for r in rows:
+                pr = mk.get(_key(r))
+                if not pr:
+                    continue
+                ms_.add(r["probs"], r["real"])
+                b, ll = os_.add(pr, r["real"])
+                mrows.append(r)
+                orows.append(dict(r, brier=b, ll=ll))
+            print(fmt("live model", ms_.row()))
+            print(fmt("closing odds", os_.row()))
+            print("    model minus market:" + fmt_paired(paired(orows, mrows, args.boot))[len("    paired"):])
+            print("    (positive = the market is better; that gap is the most any factor could still win)")
 
     # the warning must describe the sample actually scored above, not the full
     # pool: with --only-active the comparison ran on a much smaller subset and
     # quoting 145 there would understate the noise it has to beat.
     n_ref = (ref or lr)["n"]
-    print(f"\nSample warning: {n_ref} scored matches. A brier difference smaller than "
-          f"~{0.9 / math.sqrt(n_ref):.4f} is inside the noise of this sample — "
-          "do not ship a change on it. Re-run as the season grows.")
+    print(f"\nSample: {n_ref} scored matches. Two UNPAIRED totals would need a gap of "
+          f"~{0.9 / math.sqrt(n_ref):.4f} to mean anything; judge candidates by the paired "
+          "intervals above instead (both brier and logloss entirely below 0).")
 
     if args.json:
         json.dump({"live": lr, "per": {c: s.row() for c, s in per.items()},
