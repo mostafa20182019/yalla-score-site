@@ -234,7 +234,7 @@ def build():
     terms_page(urls)
     editorial_page(urls)           # السياسة التحريرية - E-E-A-T signal
     news_archive_pages(articles, urls)
-    print(f"  + insights (التحليلات): {insights_page(articles, urls)} pieces")
+    print(f"  + insights (التحليلات): {insights_page(articles, urls, m_all, fixtures)} pieces")
     fb_helper_page(articles)       # INTERNAL: not in the sitemap, linked from nowhere
     headlines_page(headlines, urls)        # gated by SHOW_HEADLINES
     reels_page(reels, urls)

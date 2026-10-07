@@ -334,6 +334,7 @@ a{color:inherit}
 .ins-k{align-self:flex-start;font-size:.7rem;font-weight:800;border-radius:999px;padding:2px 9px;background:#eef6fc;color:#0d5c8a}
 .ins-k.ins-preview{background:#ecfdf5;color:#166534}.ins-k.ins-report{background:#f1f5f9;color:#334155}.ins-k.ins-round{background:#fef3c7;color:#92400e}
 .ins-filters{max-width:none;margin:0 0 12px}
+.ins-selects{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px}.ins-sel{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:.85rem;color:var(--muted)}.ins-sel select{font:inherit;font-weight:700;color:var(--ink);border:1px solid #e2e8f0;border-radius:10px;padding:6px 10px;background:#fff;max-width:220px}.ins-sel select:disabled{opacity:.55}.ins-count{font-size:.8rem;font-weight:800;color:var(--muted)}
 .plist{display:flex;flex-direction:column;gap:8px}
 .prow{display:grid;grid-template-columns:96px 1fr 268px;grid-template-areas:"when teams bar" "when meta bar";gap:4px 14px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--ink)}
 .prow:hover{border-color:var(--green)}

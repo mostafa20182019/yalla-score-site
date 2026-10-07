@@ -10,7 +10,7 @@ import os
 import re
 import store
 from site_lib.clubs import TEAM_PAGES
-from site_lib.competitions import S365_COMPETITIONS
+from site_lib.competitions import COMP_SLUG, S365_COMPETITIONS
 from site_lib.config import ARTICLE_MIN_WORDS, DROP_HEADINGS, EDITOR_NAME, GENERIC_BYLINES, HERE, PLACEHOLDER_IMGS, SITE_BASE, SITE_NAME
 from site_lib.media import EMBED_LABEL
 from site_lib.names import _team_news
@@ -49,6 +49,49 @@ def insight_kind(a):
         if isinstance(s, dict) and str(s.get("note") or "").startswith("round:"):
             return "round"
     return None
+
+
+# /insights league + round filters (2026-10-07)
+def match_index(m_all, fixtures):
+    """match_id -> (competition, round) from every source that has it: the
+    match pages' pool (archive + day window), the fixtures rounds, the frozen
+    results archive. The first source carrying a round wins."""
+    import results_archive as RA
+    idx = {}
+    def put(mid, comp, rnd):
+        mid = str(mid or "")
+        if not mid or not comp:
+            return
+        old = idx.get(mid)
+        if not old or (old[1] in (None, "") and rnd not in (None, "")):
+            idx[mid] = (comp, rnd)
+    for mid, m in (m_all or {}).items():
+        put(mid, m.get("competition"), m.get("round"))
+    for f in fixtures or []:
+        for r in f.get("rounds", []):
+            for m in r.get("matches", []):
+                put(m.get("match_id"), f.get("competition"), r.get("round"))
+    for mid, m in RA.load().items():
+        put(mid, m.get("competition"), m.get("round"))
+    return idx
+
+
+def piece_place(a, k, idx):
+    """(competition, round) of one analytical piece, or (None, None).
+    A match piece: its match. A round article: its source note
+    «round:<slug>:<n>». An editor analysis attached to no match: unknown."""
+    if k in ("preview", "report"):
+        return idx.get(str(a.get("match_id")), (None, None))
+    if k == "round":
+        by_slug = {v: c for c, v in COMP_SLUG.items()}
+        for s in a.get("sources") or []:
+            note = str((s or {}).get("note") or "") if isinstance(s, dict) else ""
+            if note.startswith("round:"):
+                _, slug, rnd = (note.split(":") + ["", ""])[:3]
+                return by_slug.get(slug), rnd
+    if a.get("match_id"):
+        return idx.get(str(a.get("match_id")), (None, None))
+    return None, None
 
 
 def byline(a):

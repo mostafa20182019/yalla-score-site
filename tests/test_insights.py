@@ -22,6 +22,23 @@ def ck(name, cond, extra=""):
 
 
 import article_put as AP                                   # noqa: E402
+import site_lib.articles as INS                            # noqa: E402
+
+# league + round filters (2026-10-07)
+idx = {"9": ("Premier League", 4)}
+ck("a match piece takes its match's league and round",
+   INS.piece_place({"match_id": 9}, "report", idx) == ("Premier League", 4))
+ck("a round article reads its source note", INS.piece_place(
+   {"sources": [{"note": "round:egypt:5"}]}, "round", idx) == ("Egyptian Premier League", "5"))
+ck("an editor analysis with no match has no place", INS.piece_place({"kind": "analysis"}, "analysis", idx) == (None, None))
+ck("an editor analysis attached to a match takes that match's place",
+   INS.piece_place({"kind": "analysis", "match_id": 9}, "analysis", idx) == ("Premier League", 4))
+mi = INS.match_index({"1": {"competition": "Serie A", "round": None}},
+                     [{"competition": "Serie A", "rounds": [{"round": 3, "matches": [{"match_id": 1}]}]}])
+ck("the index prefers a source that knows the round", mi.get("1") == ("Serie A", 3), mi.get("1"))
+tpl = io.open("site_src/templates/insights.html", encoding="utf-8").read()
+ck("the page has the league and round selects", 'id="insLeague"' in tpl and 'id="insRound"' in tpl
+   and 'data-c="{{ r.c }}" data-r="{{ r.r }}"' in tpl)
 from site_lib.articles import insight_kind                 # noqa: E402
 
 ck("editor analysis", insight_kind({"kind": "analysis"}) == "analysis")
@@ -47,7 +64,7 @@ adm = io.open("admin-articles.html", encoding="utf-8").read()
 ck("admin form: «نوع المقال» selector with «تحليل»", 'id="fkind"' in adm and 'value="analysis"' in adm)
 ck("admin form: a match preview/report hides it (kind untouched)", 'a.kind==="preview"||a.kind==="report"' in adm)
 b = io.open("build_site.py", encoding="utf-8").read()
-ck("build() writes the page", "insights_page(articles, urls)" in b)
+ck("build() writes the page (with the match index inputs)", "insights_page(articles, urls, m_all, fixtures)" in b)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()
 ck("nav: «التوقعات» -> /analysis, «التحليلات» -> /insights",
    '📈</span> التوقعات' in sh and 'href="/insights.html" class="navtab{ia}"' in sh and "🧠</span> التحليلات" in sh)

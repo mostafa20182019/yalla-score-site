@@ -10,9 +10,18 @@
   <button class="mf-chip" data-k="{{ k }}">{{ lbl }} ({{ n }})</button>
   {% endfor %}
 </div>
+<div class="ins-selects">
+  <label class="ins-sel"><span>الدوري</span>
+    <select id="insLeague"><option value="">كل الدوريات</option>{% for slug, lbl, n in leagues %}<option value="{{ slug }}">{{ lbl }} ({{ n }})</option>{% endfor %}</select>
+  </label>
+  <label class="ins-sel"><span>الجولة</span>
+    <select id="insRound" disabled><option value="">كل الجولات</option></select>
+  </label>
+  <span class="ins-count" id="insCount"></span>
+</div>
 <div class="alist ins-list">
   {% for r in rows %}
-  <a class="al-row" href="{{ r.href }}" data-k="{{ r.k }}">{{ r.th }}
+  <a class="al-row" href="{{ r.href }}" data-k="{{ r.k }}" data-c="{{ r.c }}" data-r="{{ r.r }}">{{ r.th }}
     <span class="al-b">
       <span class="ins-k ins-{{ r.k }}">{{ r.kl }}</span>
       <b class="al-t">{{ r.title }}</b>
@@ -22,7 +31,7 @@
   </a>
   {% endfor %}
 </div>
-<script>(function(){var bs=document.querySelectorAll('.ins-filters .mf-chip'),rs=document.querySelectorAll('.ins-list .al-row');bs.forEach(function(b){b.addEventListener('click',function(){var k=b.getAttribute('data-k');bs.forEach(function(x){x.classList.toggle('is-on',x===b)});rs.forEach(function(r){r.hidden=!!k&&r.getAttribute('data-k')!==k})})})})();</script>
+<script>(function(){var R={{ rounds_json }},kind="",lg="",rd="",bs=document.querySelectorAll(".ins-filters .mf-chip"),rs=[].slice.call(document.querySelectorAll(".ins-list .al-row")),L=document.getElementById("insLeague"),S=document.getElementById("insRound"),C=document.getElementById("insCount");function apply(){var n=0;rs.forEach(function(r){var ok=(!kind||r.dataset.k===kind)&&(!lg||r.dataset.c===lg)&&(!rd||r.dataset.r===rd);r.hidden=!ok;if(ok)n++});C.textContent=(kind||lg||rd)?n+" نتيجة":""}function fillRounds(){var seen={};rs.forEach(function(r){if(r.dataset.c===lg&&r.dataset.r)seen[r.dataset.r]=(seen[r.dataset.r]||0)+1});var ks=Object.keys(seen).sort(function(a,b){return b-a});S.innerHTML="<option value=\"\">كل الجولات</option>"+ks.map(function(k){return "<option value=\""+k+"\">الجولة "+(R[k]||k)+" ("+seen[k]+")</option>"}).join("");S.disabled=!lg||!ks.length;rd=""}bs.forEach(function(b){b.addEventListener("click",function(){kind=b.getAttribute("data-k");bs.forEach(function(x){x.classList.toggle("is-on",x===b)});apply()})});L.addEventListener("change",function(){lg=L.value;fillRounds();apply()});S.addEventListener("change",function(){rd=S.value;apply()})})();</script>
 {% else %}
 <p class="empty-note">لا توجد تحليلات بعد.</p>
 {% endif %}
