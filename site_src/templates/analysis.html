@@ -13,7 +13,11 @@
   {% endif %}
   {% for w in week %}
   <h3 class="an-comp">{{ w.icon }} <a href="/analysis/{{ w.slug }}.html">{{ w.label }}</a></h3>
+  {% if w.rows %}
   <div class="plist">{% for row in w.rows %}{{ row }}{% endfor %}</div>
+  {% else %}
+  <p class="hintline">لا مباريات هذا الأسبوع لـ{{ w.focus }}.</p>
+  {% endif %}
   {% if w.more %}
   <p class="more-link"><a href="/analysis/{{ w.slug }}.html">كل توقعات {{ w.label }} ({{ w.more }}) ←</a></p>
   {% endif %}

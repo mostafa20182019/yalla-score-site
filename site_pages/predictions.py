@@ -19,6 +19,13 @@ from site_lib.text import _pct, esc, jsonld
 from site_lib.urls import breadcrumb_ld
 from site_lib.widgets import _calls_html, _pred_item_html, accuracy_html, calibration_html, ga_table, model_explainer, ratings_table
 
+# The /analysis hub shows only these clubs' fixtures for a league (user ask
+# 2026-10-07: «يظهر بس ماتشات الأهلي والزمالك وبيراميدز والمصري والباقي لما
+# أضغط على كل توقعات الدوري المصري»); the rest stay one click away on
+# /analysis/<league>, which still lists every fixture. Names are matched
+# EXACTLY after ar_team - «الأهلي» must not catch «البنك الاهلي».
+HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بيراميدز", "المصري")}
+
 
 def prediction_history_page(plog, acc):
     """/predictions.html — every frozen prediction, scored, with the model's
@@ -143,9 +150,16 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
         rows = by_comp.get(c)
         if not rows:
             continue
+        focus = HUB_FOCUS.get(c)
+        if focus:
+            shown = [(m, p) for m, p in rows if ar_team(m.get("home")) in focus or ar_team(m.get("away")) in focus]
+            more = len(rows) if len(shown) < len(rows) and c in COMP_SLUG else 0
+        else:
+            shown = rows[:8]
+            more = len(rows) if len(rows) > 8 and c in COMP_SLUG else 0
         week.append({"icon": Markup(comp_icon(c)), "slug": COMP_SLUG.get(c, ""), "label": comp_label(c),
-                     "rows": [Markup(pred_row(m, p)) for m, p in rows[:8]],
-                     "more": len(rows) if len(rows) > 8 and c in COMP_SLUG else 0})
+                     "rows": [Markup(pred_row(m, p)) for m, p in shown], "more": more,
+                     "focus": "، ".join(focus[:-1]) + " و" + focus[-1] if focus else ""})
     # power snapshot: top 5 per league
     power = []
     for c in comps:
