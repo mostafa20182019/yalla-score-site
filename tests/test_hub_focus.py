@@ -26,6 +26,13 @@ import site_pages.predictions as SP                        # noqa: E402
 f = SP.HUB_FOCUS.get("Egyptian Premier League")
 ck("the four focus clubs", f == ("الأهلي", "الزمالك", "بيراميدز", "المصري"), f)
 ck("exact names: «البنك الاهلي» is not a focus club", "البنك الاهلي" not in f)
+e = SP.HUB_FOCUS.get("Premier League")
+ck("England: the big six, in the site's Arabic spellings",
+   e == ("أرسنال", "ليفربول", "تشيلسي", "مانشستر يونايتد", "مانشستر سيتي", "توتنهام هوتسبر"), e)
+from site_lib.names import ar_team                          # noqa: E402
+ck("England: every name is what ar_team returns for the football-data club",
+   [ar_team(n) for n in ("Arsenal FC", "Liverpool FC", "Chelsea FC", "Manchester United FC",
+                         "Manchester City FC", "Tottenham Hotspur FC")] == list(e))
 src = io.open("site_pages/predictions.py", encoding="utf-8").read()
 ck("the hub filters by exact membership (home OR away)",
    'ar_team(m.get("home")) in focus or ar_team(m.get("away")) in focus' in src)

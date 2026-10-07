@@ -24,7 +24,9 @@ from site_lib.widgets import _calls_html, _pred_item_html, accuracy_html, calibr
 # أضغط على كل توقعات الدوري المصري»); the rest stay one click away on
 # /analysis/<league>, which still lists every fixture. Names are matched
 # EXACTLY after ar_team - «الأهلي» must not catch «البنك الاهلي».
-HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بيراميدز", "المصري")}
+HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بيراميدز", "المصري"),
+             # 2026-10-07, same ask for England: the big six
+             "Premier League": ("أرسنال", "ليفربول", "تشيلسي", "مانشستر يونايتد", "مانشستر سيتي", "توتنهام هوتسبر")}
 
 
 def prediction_history_page(plog, acc):
