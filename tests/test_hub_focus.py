@@ -33,6 +33,12 @@ from site_lib.names import ar_team                          # noqa: E402
 ck("England: every name is what ar_team returns for the football-data club",
    [ar_team(n) for n in ("Arsenal FC", "Liverpool FC", "Chelsea FC", "Manchester United FC",
                          "Manchester City FC", "Tottenham Hotspur FC")] == list(e))
+for comp, raw in (("Primera Division", ("Real Madrid CF", "FC Barcelona", "Club Atlético de Madrid")),
+                  ("Serie A", ("FC Internazionale Milano", "AC Milan", "Juventus FC", "SSC Napoli", "AS Roma", "SS Lazio")),
+                  ("Ligue 1", ("Paris Saint-Germain FC", "Olympique Lyonnais", "Olympique de Marseille", "AS Monaco FC"))):
+    ck(f"{comp}: the asked clubs, in ar_team's spellings", SP.HUB_FOCUS.get(comp) == tuple(ar_team(n) for n in raw),
+       SP.HUB_FOCUS.get(comp))
+ck("Ligue 1: Paris FC is not PSG", ar_team("Paris FC") not in SP.HUB_FOCUS["Ligue 1"])
 src = io.open("site_pages/predictions.py", encoding="utf-8").read()
 ck("the hub filters by exact membership (home OR away)",
    'ar_team(m.get("home")) in focus or ar_team(m.get("away")) in focus' in src)

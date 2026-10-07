@@ -26,7 +26,11 @@ from site_lib.widgets import _calls_html, _pred_item_html, accuracy_html, calibr
 # EXACTLY after ar_team - «الأهلي» must not catch «البنك الاهلي».
 HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بيراميدز", "المصري"),
              # 2026-10-07, same ask for England: the big six
-             "Premier League": ("أرسنال", "ليفربول", "تشيلسي", "مانشستر يونايتد", "مانشستر سيتي", "توتنهام هوتسبر")}
+             "Premier League": ("أرسنال", "ليفربول", "تشيلسي", "مانشستر يونايتد", "مانشستر سيتي", "توتنهام هوتسبر"),
+             "Primera Division": ("ريال مدريد", "برشلونة", "أتلتيكو مدريد"),
+             "Serie A": ("إنتر ميلان", "ميلان", "يوفنتوس", "نابولي", "روما", "لاتسيو"),
+             # exact match: «باريس أف.سي.» is NOT Paris Saint-Germain
+             "Ligue 1": ("باريس سان جيرمان", "أولمبيك ليون", "أولمبيك مارسيليا", "موناكو")}
 
 
 def prediction_history_page(plog, acc):
