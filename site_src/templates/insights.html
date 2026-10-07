@@ -4,12 +4,6 @@
 <h1 class="page-h">التحليلات</h1>
 <p class="hintline">قراءات المباريات بالأرقام: تحليلات المحرر، ما قبل المباراة بتوقعات نموذج يلا سكور، ما بعد المباراة، و«الجولة بالأرقام».</p>
 {% if rows %}
-<div class="mfilters ins-filters" role="group" aria-label="نوع التحليل">
-  <button class="mf-chip is-on" data-k="">الكل ({{ total }})</button>
-  {% for k, lbl, n in chips %}
-  <button class="mf-chip" data-k="{{ k }}">{{ lbl }} ({{ n }})</button>
-  {% endfor %}
-</div>
 <div class="ins-selects">
   <label class="ins-sel"><span>الدوري</span>
     <select id="insLeague"><option value="">كل الدوريات</option>{% for slug, lbl, n in leagues %}<option value="{{ slug }}">{{ lbl }} ({{ n }})</option>{% endfor %}</select>
@@ -31,7 +25,7 @@
   </a>
   {% endfor %}
 </div>
-<script>(function(){var R={{ rounds_json }},kind="",lg="",rd="",bs=document.querySelectorAll(".ins-filters .mf-chip"),rs=[].slice.call(document.querySelectorAll(".ins-list .al-row")),L=document.getElementById("insLeague"),S=document.getElementById("insRound"),C=document.getElementById("insCount");function apply(){var n=0;rs.forEach(function(r){var ok=(!kind||r.dataset.k===kind)&&(!lg||r.dataset.c===lg)&&(!rd||r.dataset.r===rd);r.hidden=!ok;if(ok)n++});C.textContent=(kind||lg||rd)?n+" نتيجة":""}function fillRounds(){var seen={};rs.forEach(function(r){if(r.dataset.c===lg&&r.dataset.r)seen[r.dataset.r]=(seen[r.dataset.r]||0)+1});var ks=Object.keys(seen).sort(function(a,b){return b-a});S.innerHTML="<option value=\"\">كل الجولات</option>"+ks.map(function(k){return "<option value=\""+k+"\">الجولة "+(R[k]||k)+" ("+seen[k]+")</option>"}).join("");S.disabled=!lg||!ks.length;rd=""}bs.forEach(function(b){b.addEventListener("click",function(){kind=b.getAttribute("data-k");bs.forEach(function(x){x.classList.toggle("is-on",x===b)});apply()})});L.addEventListener("change",function(){lg=L.value;fillRounds();apply()});S.addEventListener("change",function(){rd=S.value;apply()})})();</script>
+<script>(function(){var R={{ rounds_json }},kind="",lg="",rd="",rs=[].slice.call(document.querySelectorAll(".ins-list .al-row")),L=document.getElementById("insLeague"),S=document.getElementById("insRound"),C=document.getElementById("insCount");function apply(){var n=0;rs.forEach(function(r){var ok=(!kind||r.dataset.k===kind)&&(!lg||r.dataset.c===lg)&&(!rd||r.dataset.r===rd);r.hidden=!ok;if(ok)n++});C.textContent=(kind||lg||rd)?n+" نتيجة":""}function fillRounds(){var seen={};rs.forEach(function(r){if(r.dataset.c===lg&&r.dataset.r)seen[r.dataset.r]=(seen[r.dataset.r]||0)+1});var ks=Object.keys(seen).sort(function(a,b){return b-a});S.innerHTML="<option value=\"\">كل الجولات</option>"+ks.map(function(k){return "<option value=\""+k+"\">الجولة "+(R[k]||k)+" ("+seen[k]+")</option>"}).join("");S.disabled=!lg||!ks.length;rd=""}L.addEventListener("change",function(){lg=L.value;fillRounds();apply()});S.addEventListener("change",function(){rd=S.value;apply()})})();</script>
 {% else %}
 <p class="empty-note">لا توجد تحليلات بعد.</p>
 {% endif %}

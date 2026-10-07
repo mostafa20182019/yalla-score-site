@@ -32,8 +32,10 @@ INSIGHT_KINDS = (("analysis", "تحليل"), ("preview", "قبل المبارا�
 
 def insights_page(articles, urls, m_all=None, fixtures=None):
     """Write /insights.html; returns how many pieces it lists.
-    Filters (user 2026-10-07: «اعمل فلتر هنا بالدوري والجولة»): kind chips +
-    a league select + a round select that lists the chosen league's rounds."""
+    Filters (user 2026-10-07: «اعمل فلتر هنا بالدوري والجولة»): a league
+    select + a round select that lists the chosen league's rounds. The kind
+    chips were removed the same day (user: «شيل الفلتر ده»); each row still
+    carries its kind label."""
     label = dict(INSIGHT_KINDS)
     idx = match_index(m_all, fixtures)
     picked = [(insight_kind(a), a) for a in articles]
