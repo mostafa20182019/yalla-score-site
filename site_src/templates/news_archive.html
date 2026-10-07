@@ -12,7 +12,7 @@
     <span class="al-b">
       <b class="al-t">{{ r.title }}</b>
       <span class="al-s">{{ r.summary }}</span>
-      <span class="al-m">{{ r.byline }} · {{ r.when }}</span>
+      <span class="al-m">{{ r.byline }}{% if r.when %} · {{ r.when }}{% endif %}</span>
     </span>
   </a>
   {% endfor %}

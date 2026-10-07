@@ -7,7 +7,7 @@ imports these back under the same names."""
 import hashlib
 import os
 from site_lib.articles import _MOVED_LINKS, article_clubs, author_ld, article_moved_stub, article_url, byline, embeds_block, fix_moved_links, match_data_sources, related_articles
-from site_lib.config import ARTICLE_MIN_WORDS, DIST, FB_PAGE_URL, PLACEHOLDER_IMGS, SHOW_HEADLINES, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, load
+from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_RELTIME, DIST, FB_PAGE_URL, PLACEHOLDER_IMGS, SHOW_HEADLINES, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, load
 from site_lib.dates import art_reltime, rel_ar
 from site_lib.names import _egy_article, _eur_article
 from site_lib.render import Markup, render
@@ -113,7 +113,7 @@ def article_pages(articles, articles_all, matches, urls):
             "article.html",
             page_head=page_head, article_ld=article_ld, crumbs_ld=crumbs_ld, crumbs=crumbs,
             title=a["title"], byline=byline(a), pub_date=a.get("pub_date"),
-            rel_time=Markup(" · " + _t) if _t else "", updated=Markup(_upd),
+            rel_time=Markup(" · " + _t) if (_t and BYLINE_RELTIME) else "", updated=Markup(_upd),
             img=img, credit=a.get("image_credit"), summary=a.get("summary"), body=body,
             sources=sources, faq=[{"q": f["q"], "a": f["a"]} for f in _faq], faq_ld=faq_ld,
             embeds=embeds, clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
@@ -153,7 +153,7 @@ def news_archive_pages(articles, urls):
                 "title": a.get("title"),
                 "summary": strip_tags(a.get("summary") or ""),
                 "byline": byline(a),
-                "when": Markup(art_reltime(a) or esc(a.get("pub_date") or "")),
+                "when": Markup(art_reltime(a) or esc(a.get("pub_date") or "")) if BYLINE_RELTIME else "",
             })
         write(fname, render("news_archive.html", page_head=page_head, h1=h1,
                             crumbs=(fname != "news.html"), rows=rows, page_foot=Markup(foot())))

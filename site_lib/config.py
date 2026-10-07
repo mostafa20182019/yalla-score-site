@@ -65,6 +65,14 @@ GENERIC_BYLINES = (SITE_NAME, "فريق التحرير", "فريق يلا سكو
 # Person entity named «فريق التحرير» would be a false statement. /editors and
 # /about still name the editor; only the article signature changed.
 BYLINE_TEAM = "فريق التحرير"
+# «منذ X» after the byline (2026-10-07, user: «احذف التوقيت اللي هنا منذ 15
+# ساعة»): off on cards, the FotMob blocks, the archives, /insights and the
+# article header (which keeps its date). True brings it back everywhere.
+# The related-articles and club-news lists keep their «(منذ X)».
+# Same day, «وشيل التاريخ»: the article header shows the byline only - no
+# publish date, no «آخر تحديث» (site_src/templates/article.html). The dates
+# stay in the NewsArticle schema (datePublished / dateModified) for Google.
+BYLINE_RELTIME = False
 # Cloudflare Web Analytics (cookie-less page views / referrers / top pages).
 # Paste the 32-char token from Cloudflare -> Analytics & Logs -> Web Analytics
 # -> Add a site (manual install). Empty = no beacon in the pages.

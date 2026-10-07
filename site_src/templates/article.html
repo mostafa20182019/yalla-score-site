@@ -9,7 +9,7 @@
 <nav class="crumbs">{% for href, name in crumbs %}{% if not loop.first %} › {% endif %}<a href="{{ href }}">{{ name }}</a>{% endfor %}</nav>
 <article class="article">
   <h1>{{ title }}</h1>
-  <p class="a-meta"><a class="a-by" href="/editors.html">{{ byline }}</a> · <time datetime="{{ pub_date }}">{{ pub_date }}</time>{{ rel_time }}{{ updated }}</p>
+  <p class="a-meta"><a class="a-by" href="/editors.html">{{ byline }}</a></p>
   {% if img %}
   <figure class="a-fig">
     <img class="a-img" src="{{ img }}" alt="{{ title }}" loading="eager" fetchpriority="high">

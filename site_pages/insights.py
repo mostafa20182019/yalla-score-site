@@ -16,7 +16,7 @@ Match pieces link to their match page (article_href), exactly as everywhere
 else. Only listable (non-thin) articles - the same set every other list uses.
 Template: site_src/templates/insights.html."""
 from site_lib.competitions import COMP_ORDER, COMP_SLUG
-from site_lib.config import SITE_BASE, SITE_NAME, load
+from site_lib.config import BYLINE_RELTIME, SITE_BASE, SITE_NAME, load
 from site_lib.dates import art_reltime
 from site_lib.arabic import round_ordinal
 from site_lib.articles import byline, insight_kind, match_index, piece_place
@@ -55,7 +55,7 @@ def insights_page(articles, urls, m_all=None, fixtures=None):
             "title": a.get("title"),
             "summary": strip_tags(a.get("summary") or ""),
             "byline": byline(a),
-            "when": Markup(art_reltime(a) or esc(a.get("pub_date") or "")),
+            "when": Markup(art_reltime(a) or esc(a.get("pub_date") or "")) if BYLINE_RELTIME else "",
         })
     counts = {k: sum(1 for r in rows if r["k"] == k) for k, _ in INSIGHT_KINDS}
     chips = [(k, lbl, counts[k]) for k, lbl in INSIGHT_KINDS if counts[k]]

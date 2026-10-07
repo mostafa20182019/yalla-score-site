@@ -10,7 +10,7 @@ import hashlib
 import os
 from site_lib.articles import byline
 from site_lib.clubs import TEAM_PAGES
-from site_lib.config import FB_PAGE_URL, HERE, PLACEHOLDER_IMGS, TG_CHANNEL_URL, _src
+from site_lib.config import BYLINE_RELTIME, FB_PAGE_URL, HERE, PLACEHOLDER_IMGS, TG_CHANNEL_URL, _src
 from site_lib.crests import local_crest
 from site_lib.dates import art_reltime, rel_ar
 from site_lib.names import _in_scope, _is_ticker_team, _team_match
@@ -49,15 +49,16 @@ def news_card(a):
     img = thumb_url(a.get("image_url"))
     thumb = (f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>'
              if img else '<div class="card-img noimg">⚽</div>')
-    t = art_reltime(a)
+    t = art_reltime(a) if BYLINE_RELTIME else ""
     return (f'<a class="card" href="{article_href(a)}">{thumb}'
             f'<div class="card-b"><h3>{esc(a["title"])}</h3>'
             f'<p class="meta">{esc(byline(a))}{" · " + t if t else ""}</p></div></a>')
 
 
 def _art_meta(a):
-    """author · منذ X — the byline under FotMob-block titles."""
-    t = art_reltime(a)
+    """author · منذ X — the byline under FotMob-block titles («منذ X» only
+    when BYLINE_RELTIME is on)."""
+    t = art_reltime(a) if BYLINE_RELTIME else ""
     return esc(byline(a)) + (f" · {t}" if t else "")
 
 
