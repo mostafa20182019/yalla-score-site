@@ -7,6 +7,7 @@ imports these back under the same names."""
 import analysis as AN
 import datetime
 import os
+from site_lib.arabic import rounds_label
 from site_lib.competitions import COMP_ORDER, COMP_SLUG
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME
 from site_lib.crests import comp_icon
@@ -172,6 +173,8 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
             shown = rows[:8]
             more = len(rows) if len(rows) > 8 and c in COMP_SLUG else 0
         week.append({"icon": Markup(comp_icon(c)), "slug": COMP_SLUG.get(c, ""), "label": comp_label(c),
+                     # «(الجولة السادسة)» - named from the matches actually listed
+                     "round_txt": rounds_label(m.get("round") for m, _ in (shown or rows)),
                      "rows": [Markup(pred_row(m, p)) for m, p in shown], "more": more,
                      "focus": "، ".join(focus[:-1]) + " و" + focus[-1] if focus else ""})
     # power snapshot: top 5 per league

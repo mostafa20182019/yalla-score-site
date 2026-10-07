@@ -329,6 +329,7 @@ a{color:inherit}
 .an-nav .lg-logo,.an-comp .lg-logo{width:18px;height:18px;object-fit:contain}
 .an-comp{display:flex;align-items:center;gap:6px;font-size:1rem;margin:16px 0 8px}
 .an-comp a{color:var(--ink);text-decoration:none}
+.an-comp .an-round{color:var(--muted);font-weight:700;font-size:.92em}
 .plist{display:flex;flex-direction:column;gap:8px}
 .prow{display:grid;grid-template-columns:96px 1fr 268px;grid-template-areas:"when teams bar" "when meta bar";gap:4px 14px;align-items:center;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;text-decoration:none;color:var(--ink)}
 .prow:hover{border-color:var(--green)}

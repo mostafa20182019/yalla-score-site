@@ -12,7 +12,7 @@
   <p class="hintline">لا مباريات قادمة خلال سبعة أيام في البطولات المغطاة.</p>
   {% endif %}
   {% for w in week %}
-  <h3 class="an-comp">{{ w.icon }} <a href="/analysis/{{ w.slug }}.html">{{ w.label }}</a></h3>
+  <h3 class="an-comp">{{ w.icon }} <a href="/analysis/{{ w.slug }}.html">{{ w.label }}</a>{% if w.round_txt %} <span class="an-round">({{ w.round_txt }})</span>{% endif %}</h3>
   {% if w.rows %}
   <div class="plist">{% for row in w.rows %}{{ row }}{% endfor %}</div>
   {% else %}

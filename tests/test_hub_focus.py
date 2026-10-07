@@ -66,6 +66,15 @@ ck("no fixtures -> (None, None)", SL.next_round("Serie A", up, preds) == (None, 
 ltpl = io.open("site_src/templates/analysis_league.html", encoding="utf-8").read()
 ck("the league page heading names the round", "توقعات مباريات الجولة {{ round_no }} من {{ label }}" in ltpl)
 
+# «(الجولة السادسة)» next to each league on the hub
+from site_lib.arabic import round_ordinal, rounds_label     # noqa: E402
+ck("ordinals: 6, 11, 20, 21, 38", [round_ordinal(n) for n in (6, 11, 20, 21, 38)] ==
+   ["السادسة", "الحادية عشرة", "العشرون", "الحادية والعشرون", "الثامنة والثلاثون"])
+ck("one round -> «الجولة السادسة»", rounds_label([6, 6, "6"]) == "الجولة السادسة")
+ck("two rounds -> «الجولتان الثامنة والتاسعة»", rounds_label([9, 8]) == "الجولتان الثامنة والتاسعة")
+ck("no round numbers -> nothing", rounds_label([None, ""]) == "")
+ck("the hub heading prints it in brackets", "({{ w.round_txt }})" in io.open("site_src/templates/analysis.html", encoding="utf-8").read())
+
 src = io.open("site_pages/predictions.py", encoding="utf-8").read()
 ck("the hub filters by exact membership (home OR away)",
    'ar_team(m.get("home")) in focus or ar_team(m.get("away")) in focus' in src)
