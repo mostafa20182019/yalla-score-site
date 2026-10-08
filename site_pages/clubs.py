@@ -83,12 +83,12 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
                     f'من {srow.get("played")} مباراة</p>')
         up_rows = []
         for m in up_next:
-            up_rows.append(match_row(m, show_time=True, show_comp=True,
+            up_rows.append(match_row(m, show_time=True, show_comp=True, show_date=True,
                                      link=match_url(m),
                                      pred=_preds.get(str(m.get("match_id")))))
         last_rows = []
         for m in last_res:
-            last_rows.append(match_row(m, show_time=False, show_comp=True,
+            last_rows.append(match_row(m, show_time=False, show_comp=True, show_date=True,
                                        link=match_url(m),
                                        done=_plog.get(str(m.get("match_id")))))
         news_items = []

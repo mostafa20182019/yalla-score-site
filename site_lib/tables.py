@@ -355,7 +355,10 @@ def match_details_html(e, flipped, h_ar, a_ar):
 
 
 def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
-              pred=None, done=None):
+              pred=None, done=None, show_date=False):
+    """show_date (2026-10-08, user: «حط هنا برضه تواريخ المباريات» on the club
+    page): the match's day on the competition line - for lists that are NOT
+    grouped under a day heading (club pages, the standings page's next matches)."""
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up"), "POSTPONED": ("", "pp")}.get(st, ("", "up"))
@@ -373,8 +376,15 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
     def crest(u):
         return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="ph">⚽</span>'
     comp = ""
+    meta = []
     if show_comp:
-        comp = f'<div class="mcomp">{esc(comp_label(m.get("competition")))}{(" · " + esc(m.get("channel"))) if m.get("channel") else ""}</div>'
+        meta.append(esc(comp_label(m.get("competition"))))
+        if m.get("channel"):
+            meta.append(esc(m.get("channel")))
+    if show_date and m.get("kickoff"):
+        meta.append(esc(fmt_day(m.get("kickoff"))))
+    if meta:
+        comp = f'<div class="mcomp">{" · ".join(meta)}</div>'
     # only LIVE / FINISHED get a status pill (upcoming shows its time instead)
     pill = (f'<span class="pill pill-{badge[1]}">{esc(badge[0])}</span>'
             if st in ("LIVE", "FINISHED") else "")

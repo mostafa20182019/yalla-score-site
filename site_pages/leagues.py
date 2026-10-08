@@ -66,7 +66,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             scorers = scorers_list(sc, "أهداف") if sc else ""
             next_rows = []
             for m in up_next:
-                next_rows.append(match_row(m, show_time=True, show_comp=False,
+                next_rows.append(match_row(m, show_time=True, show_comp=False, show_date=True,
                                            link=match_url(m),
                                            pred=_preds.get(str(m.get("match_id")))))
             # the popup is added only when a row carries a prediction button
