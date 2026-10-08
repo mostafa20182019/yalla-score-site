@@ -212,3 +212,29 @@ with contextlib.redirect_stdout(buf):
 assert buf.getvalue().strip() == "1", buf.getvalue()
 fp._now = lambda: datetime.datetime.now(datetime.timezone.utc)
 print("17 OK: no window - a 09:00 article is pending at 09:00")
+
+# 18) --repost: refuses while the old post still exists, reposts an OLD article
+# once the page deleted it, and records the new post id
+reset_state()
+store.record_post("article", "687", "OLD_POST", title="T687")
+GONE = set()
+_base = urllib.request.urlopen
+def _with_gone(req, timeout=0):
+    url = req if isinstance(req, str) else req.full_url
+    if isinstance(req, str) and url.startswith(fp.GRAPH + "/"):
+        pid = url[len(fp.GRAPH) + 1:].split("?")[0]
+        if pid in GONE:
+            raise urllib.error.HTTPError(url, 400, "gone", {}, io.BytesIO(b"{}"))
+        return FakeResp(json.dumps({"id": pid}).encode())
+    return _base(req, timeout)
+urllib.request.urlopen = _with_gone
+old = [A(687, 40)]
+assert run(old, argv=("--repost", "687")) == 1 and feed_links() == []
+assert state()["687"]["post_id"] == "OLD_POST"
+GONE.add("OLD_POST")
+assert run(old, argv=("--repost", "687")) == 0
+assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F687"] and scrapes_of(687) >= 1, feed_links()
+assert state()["687"]["post_id"] not in (None, "OLD_POST") and state()["687"]["og_ok"]
+assert run(old, argv=("--repost", "999")) == 1
+urllib.request.urlopen = _base
+print("18 OK: --repost refuses while the old post exists, then reposts a 40h-old article once")

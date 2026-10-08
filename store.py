@@ -339,6 +339,23 @@ def record_post(kind, ref_id, post_id, title=None, score=None, og_ok=False):
         [kind, ref_id, post_id, title, score, 1 if og_ok else 0, now, now])
 
 
+def reopen(kind, ref_id):
+    """Turn a RECORDED post back into this process's claim (post_id -> NULL),
+    for a deliberate repost after the page deleted the old post. Atomic like
+    claim(): of two racing runs only one UPDATE reports a row. True -> this
+    process owns it and must post or release(). No row at all -> claim()."""
+    ref_id, now = str(ref_id), int(time.time())
+    if backend() == "json":
+        st = _fb_json()
+        _fb_bucket(st, kind).pop(ref_id, None)
+        _jsave(FB_JSON, st)
+        return True
+    rows = sql("UPDATE fb_posted SET post_id = NULL, posted_at = NULL, og_ok = 0, claimed_at = ? "
+               "WHERE kind = ? AND ref_id = ? AND post_id IS NOT NULL RETURNING ref_id",
+               [now, kind, ref_id])
+    return bool(rows) or claim(kind, ref_id)
+
+
 def release(kind, ref_id):
     """Give up a claim that never became a post, so a later run can retry."""
     ref_id = str(ref_id)

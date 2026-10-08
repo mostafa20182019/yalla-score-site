@@ -309,6 +309,53 @@ def auto(token, items):
     return 0
 
 
+def post_exists(token, post_id):
+    """True / False from the Graph API; None when it could not tell."""
+    url = f"{GRAPH}/{post_id}?" + urllib.parse.urlencode({"fields": "id", "access_token": token})
+    try:
+        with urllib.request.urlopen(url, timeout=20) as r:
+            return bool(json.load(r).get("id"))
+    except urllib.error.HTTPError as e:
+        return False if e.code in (400, 404) else None     # 400 = "does not exist" on Graph
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def repost(token, aid):
+    """Post ONE article again, by hand (2026-10-08: the derby analysis's post
+    kept Facebook's cached preview of the replaced photo, so the user deleted
+    it). No age limit - the person asked for this article - but it refuses
+    while the recorded post still exists on the page: a repost must never
+    become a duplicate."""
+    aid = str(aid).strip()
+    art = next((a for a in load_articles() if str(a.get("article_id", "")).strip() == aid), None)
+    if not art:
+        print(f"repost: article {aid} not found"); return 1
+    if not token:
+        print("repost: FB_PAGE_TOKEN not set"); return 1
+    rec = store.get_post("article", aid) or {}
+    old = rec.get("post_id")
+    if old and not str(old).startswith("seeded"):
+        alive = post_exists(token, old)
+        if alive is not False:
+            print(f"repost: article {aid}'s post {old} "
+                  f"{'is still on the page - delete it first' if alive else 'could not be checked'}"
+                  " - nothing posted")
+            return 1
+        print(f"repost: old post {old} is gone from the page")
+    if not store.reopen("article", aid):
+        print(f"repost: article {aid} is claimed by another run - nothing posted"); return 1
+    link = article_link(art)
+    ok, _ = scrape_until_ok(token, link)        # a fresh scrape = the CURRENT og:image
+    if not ok:
+        store.release("article", aid)
+        print(f"repost: Facebook still sees the 404 page for {link} - nothing posted"); return 1
+    if try_post(token, art, og_verified=True):
+        return 0
+    store.release("article", aid)
+    return 1
+
+
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
@@ -330,6 +377,9 @@ def main() -> int:
         return 0
     if "--auto" in sys.argv[1:]:
         return auto(token, items)
+    if "--repost" in sys.argv[1:]:
+        i = sys.argv.index("--repost")
+        return repost(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "")
 
     # legacy: post the top article when its id differs from the argument
     art = items[0]
