@@ -33,7 +33,9 @@ import store                                          # noqa: E402
 OUT = os.path.join(HERE, "data", "growth_kpi.json")
 GRAPH = "https://graph.facebook.com/v23.0"
 KINDS = ("article", "pred", "h2h", "goal", "xi", "card", "reel")
-AB_START = 1791504000          # 2026-10-08T00:00Z - the photo-vs-link A/B began (fb_post.PHOTO_AB)
+# the photo-vs-link A/B began on 2026-10-08 (fb_post.PHOTO_AB); computed, not typed -
+# a hand-typed epoch was one day off on the first try
+AB_START = datetime.datetime(2026, 10, 8, tzinfo=datetime.timezone.utc).timestamp()
 
 
 def _get(url, timeout=30):
