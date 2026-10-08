@@ -219,6 +219,11 @@ def validate(rec, updating=False, brief=None):
         # club's own announcement, not a guess (the prompts say official only)
         if not isinstance(u, str) or not store.embed_platform(u):
             bad.append(f"embed is not an X/Instagram/Facebook post URL: {u!r}")
+    if "نصيحة للمراهنة" in (rec.get("fb_post") or ""):
+        # user rule 2026-10-08 («بلاش تكتب الجملة دى فى البوستات»): the
+        # article body keeps the disclaimer, the Facebook post does not.
+        bad.append("fb_post must not carry the betting disclaimer «ليست نصيحة للمراهنة» "
+                   "(user rule 2026-10-08 - it stays in the article body only)")
     if is_match_brief(brief):
         bad += match_brief_problems(rec, brief)
     elif brief is not None:
