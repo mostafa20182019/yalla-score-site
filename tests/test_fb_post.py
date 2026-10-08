@@ -188,7 +188,9 @@ run([A(600, 1, image_url=f"{fp.SITE}/media/card.jpg", fb_post="T600 text\nnumber
      A(602, 1, image_url=f"{fp.SITE}/media/ph-pitch.svg")])
 assert len(photos) == 1 and photos[0][0] == 5002, photos
 assert photos[0][1].endswith(f"\n{fp.SITE}/a/600"), "the link must live in the caption text"
-assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F601", "https%3A%2F%2Fyallascore.site%2Fa%2F602"], feed_links()
+# order-free: the three share one pub_ts to the millisecond on Windows and
+# differ by microseconds on Linux, so the posting order is not the point here
+assert sorted(feed_links()) == ["https%3A%2F%2Fyallascore.site%2Fa%2F601", "https%3A%2F%2Fyallascore.site%2Fa%2F602"], feed_links()
 assert posted_ids() == ["600", "601", "602"] and state()["600"]["post_id"] == "PHOTO_1"
 assert fp.variant({"article_id": "600"}) == "photo" and fp.variant({"article_id": "601"}) == "link"
 fp.PHOTO_AB = False
