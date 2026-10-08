@@ -77,6 +77,7 @@ a{color:inherit}
 .a-tnote{font-weight:600;opacity:.85}
 .a-fig{margin:14px 0}
 .a-img{width:100%;max-height:400px;object-fit:cover;object-position:50% 18%;border-radius:14px;display:block}
+.a-img[src*="/matchup-"]{object-position:50% 50%}
 .a-credit{color:var(--muted);font-size:.72rem;font-weight:600;margin-top:6px;text-align:center}
 .lead{font-size:1.1rem;font-weight:700;color:#334155}
 .a-body{font-size:1.06rem;line-height:1.95}.a-body p{margin:0 0 14px}

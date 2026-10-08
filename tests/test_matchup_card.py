@@ -46,7 +46,17 @@ ck("one file per match and kind", MC.card_name({"match_id": 9, "status": "FINISH
 out = os.path.join(tempfile.mkdtemp(), "c.jpg")
 MC.render("بوروسيا مونشنجلادباخ", "برشلونة", out, comp_label="دوري أبطال أوروبا", round_label="الجولة 2",
           when="الأربعاء 21 أكتوبر · 10 مساءً", score=(2, 1))
-ck("the card is 1600x680", Image.open(out).size == (1600, 680))
+im = Image.open(out).convert("RGB")
+ck("the card is 1600x680", im.size == (1600, 680))
+# nothing white outside SAFE (the home 16:9 crop and the hero band cut there):
+# only the gradient and the faint pitch lines may live in the margins
+x0, y0, x1, y1 = MC.SAFE
+px = im.load()
+spill = [(x, y) for y in range(0, 680, 2) for x in range(0, 1600, 2)
+         if not (x0 <= x <= x1 and y0 <= y <= y1) and min(px[x, y]) > 200]
+ck("nothing drawn outside the safe band (the site crops there)", not spill, spill[:3])
+css = io.open("site_src/style.css", encoding="utf-8").read()
+ck("the article hero centres a matchup card", '.a-img[src*="/matchup-"]{object-position:50% 50%}' in css)
 src = io.open("match_brief.py", encoding="utf-8").read()
 ck("the brief draws a card only for an important match", "if featured_sides(m) == 2:" in src and '"credit": "الصورة: تصميم يلا سكور"' in src)
 pr = io.open(".github/prompts/match-article.md", encoding="utf-8").read()

@@ -9,12 +9,14 @@ A 1600x680 card in the site's brand: blue gradient, a faint halfway line and
 centre circle, each club as a DISC IN ITS COLOURS - never its crest (club
 crests are trademarks; the site uses only free-licensed or its own images),
 the two names, the competition and round in the middle, date / time / venue
-underneath, «يلا سكور» + the URL in the corners. The middle shows «×» before
-kick-off and the score once the match is over (a report).
+underneath, «يلا سكور» + the URL on the same bottom row. The middle shows «×»
+before kick-off and the score once the match is over (a report).
 
-Everything a reader must see sits inside the article-hero crop (the middle
-1600x414 band: the hero renders 1544x400); the brand corners are for the
-Facebook / Telegram / card previews, where the whole image shows.
+EVERYTHING sits inside SAFE = (x 215-1385, y 140-540) (2026-10-08, user:
+«اظبطلى ظهور الصورة» - the first card had the brand in the corners and the
+site cut it): the home lead card is 16:9 (keeps x 195-1405 of a 1600x680
+image) and the article hero is at most ~1504x400 (keeps a 425-row band,
+centred for matchup images by the `.a-img[src*="/matchup-"]` CSS rule).
 
 Kits are FACTS (a club's colours), keyed by the site's Arabic names. A club
 we have no kit for gets a neutral disc - never an invented colour. When the
@@ -34,6 +36,7 @@ sys.path.insert(0, HERE)
 from PIL import Image, ImageDraw, ImageFilter          # noqa: E402
 
 W, H = 1600, 680
+SAFE = (215, 140, 1385, 540)                           # x0, y0, x1, y1 - see the docstring
 TOP, BOT = (31, 148, 211), (12, 66, 104)
 WHITE = (255, 255, 255)
 SOFT = (220, 236, 248)
@@ -192,19 +195,22 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
     under = " · ".join(x for x in ((comp_label if top_label else ""), round_label) if x)
     if under:
         _text_c(d, FC, W // 2, CY + 72, under, FC.font("Bold", 34), SOFT, max_w=420, size=34, weight="Bold")
+    # bottom row, all inside SAFE: brand (right) · date and venue (centre) · URL (left)
+    x0, _, x1, _ = SAFE
     bottom = " · ".join(x for x in (when, venue) if x)
     if bottom:
-        _text_c(d, FC, W // 2, 478, bottom, FC.font("Regular", 34), (235, 244, 251),
-                max_w=1100, size=34, weight="Regular")
+        _text_c(d, FC, W // 2, 486, bottom, FC.font("Regular", 34), (235, 244, 251),
+                max_w=640, size=34, weight="Regular")
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
-    ball = icon.crop((218, 105, 806, 693)).resize((70, 70), Image.LANCZOS)
-    m = Image.new("L", (70, 70), 0)
-    ImageDraw.Draw(m).ellipse([0, 0, 69, 69], fill=255)
-    img.paste(ball, (W - 110, 34), m)
-    fb = FC.font("ExtraBold", 40)
+    bs = 52
+    ball = icon.crop((218, 105, 806, 693)).resize((bs, bs), Image.LANCZOS)
+    m = Image.new("L", (bs, bs), 0)
+    ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
+    img.paste(ball, (x1 - bs, 480), m)
+    fb = FC.font("ExtraBold", 34)
     s = FC.ar("يلا سكور")
-    d.text((W - 126 - d.textlength(s, font=fb), 44), s, font=fb, fill=WHITE)
-    d.text((40, H - 62), "yallascore.site", font=FC.font("Bold", 28), fill=SOFT)
+    d.text((x1 - bs - 12 - d.textlength(s, font=fb), 484), s, font=fb, fill=WHITE)
+    d.text((x0, 492), "yallascore.site", font=FC.font("Bold", 28), fill=SOFT)
     if out.lower().endswith((".jpg", ".jpeg")):
         img.save(out, quality=90, optimize=True)
     else:
