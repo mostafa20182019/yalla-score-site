@@ -94,8 +94,38 @@ KITS_BY_COMP = {("Saudi Pro League", "الأهلي"): ("solid", [(11, 138, 62)],
 NEUTRAL = ("solid", [(176, 190, 204)], ("solid", [(120, 136, 152)]))
 
 
-def kit_for(name, comp=None):
-    return KITS_BY_COMP.get((comp, name)) or KITS.get(name) or NEUTRAL
+def _rgb(h):
+    """'#9A0B14' -> (154, 11, 20); None for anything else."""
+    h = (h or "").strip().lstrip("#")
+    if len(h) != 6:
+        return None
+    try:
+        return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    except ValueError:
+        return None
+
+
+def kit_from_feed(pair):
+    """A kit from the data feed's own club colours (365scores `color` /
+    `awayColor`, 2026-10-08): for a club our KITS table lacks - a fact from
+    the feed, never an invented colour. A light main colour gets the second
+    colour as its trim, so a white disc still says who it is."""
+    if not pair:
+        return None
+    main, alt = _rgb(pair[0]), _rgb(pair[1] if len(pair) > 1 else None)
+    if not main:
+        return None
+    alt_kit = ("solid", [alt or (255, 255, 255)])
+    if sum(main) > 600 and alt:
+        return ("solid", [main], alt_kit, alt)
+    return ("solid", [main], alt_kit)
+
+
+def kit_for(name, comp=None, feed=None):
+    """Our KITS table first; then the feed's colours (`feed` = (main, alt)
+    hex pair); then the neutral disc."""
+    return (KITS_BY_COMP.get((comp, name)) or KITS.get(name)
+            or kit_from_feed(feed) or NEUTRAL)
 
 
 def _accent(kit):
@@ -106,10 +136,11 @@ def _dist(a, b):
     return sum((x - y) ** 2 for x, y in zip(a, b)) ** 0.5
 
 
-def kits(home, away, comp=None):
+def kits(home, away, comp=None, feed=None):
     """(home kit, away kit) - the away side switches to its alternate when
     the two main colours would be hard to tell apart."""
-    hk, ak = kit_for(home, comp), kit_for(away, comp)
+    feed = feed or {}
+    hk, ak = kit_for(home, comp, feed.get("home")), kit_for(away, comp, feed.get("away"))
     if _dist(hk[1][0], ak[1][0]) < 90:
         # the alternate kit, trimmed in the club's own main colour so a plain
         # white disc still says who it is
@@ -162,7 +193,7 @@ def _text_c(d, FC, cx, y, s, f, fill=WHITE, max_w=None, size=None, weight=None):
 
 
 def render(home, away, out, comp=None, comp_label="", round_label="", when="", venue="",
-           score=None, top_label=None):
+           score=None, top_label=None, feed=None):
     """Write the card to `out` (.jpg or .png). `score` = (home, away) for a
     finished match, else the middle shows «×»."""
     FC = _fonts()
@@ -177,7 +208,7 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
     od.ellipse([W // 2 - 230, H // 2 - 230, W // 2 + 230, H // 2 + 230], outline=(255, 255, 255, 40), width=3)
     img.paste(ov, (0, 0), ov)
 
-    hk, ak = kits(home, away, comp)
+    hk, ak = kits(home, away, comp, feed)
     CY, R = 262, 108
     _disc(img, d, 1150, CY, R, hk)                   # home on the RIGHT (RTL)
     _disc(img, d, 450, CY, R, ak)
@@ -235,7 +266,7 @@ def when_ar(kickoff, koff_time):
     return f"{s} · {h12}{':' + format(mm, '02d') if mm else ''} {part}"
 
 
-def for_match(m, out, venue="", top_label=None):
+def for_match(m, out, venue="", top_label=None, feed=None):
     """The card for one match dict (matches.json shape)."""
     from site_lib.names import ar_team, comp_label
     comp = m.get("competition")
@@ -243,7 +274,8 @@ def for_match(m, out, venue="", top_label=None):
     return render(ar_team(m.get("home")), ar_team(m.get("away")), out, comp=comp,
                   comp_label=comp_label(comp), round_label=(f"الجولة {m['round']}" if m.get("round") else ""),
                   when=when_ar(m.get("kickoff"), m.get("koff_time")), venue=venue,
-                  score=(int(m["home_score"]), int(m["away_score"])) if done else None, top_label=top_label)
+                  score=(int(m["home_score"]), int(m["away_score"])) if done else None, top_label=top_label,
+                  feed=feed)
 
 
 def card_name(m):
@@ -252,10 +284,49 @@ def card_name(m):
     return f"matchup-{m.get('match_id')}-{'result' if done else 'preview'}.jpg"
 
 
+def find_fixture(home, away, rows, today=None):
+    """The match between two clubs named in Arabic (either order): the next
+    one not yet played, else the latest played. None when our data has none."""
+    from site_lib.names import ar_team
+    today = today or datetime.date.today().isoformat()
+    pair = {home, away}
+    hits = [m for m in rows if {ar_team(m.get("home")), ar_team(m.get("away"))} == pair]
+    nxt = sorted((m for m in hits if (m.get("status") or "").upper() != "FINISHED"
+                  and (m.get("kickoff") or "") >= today), key=lambda m: m.get("kickoff") or "")
+    if nxt:
+        return nxt[0]
+    done = sorted((m for m in hits if (m.get("status") or "").upper() == "FINISHED"),
+                  key=lambda m: m.get("kickoff") or "")
+    return done[-1] if done else None
+
+
+def for_teams(home, away, out, comp_label_txt=""):
+    """The card for a NEWS story about one match (daily articles, user rule
+    2026-10-08: «الأخبار اللى عن المواجهات تعمل صور بالقالب»). Finds the
+    fixture in our data for competition / round / date / venue / the feed's
+    colours; with no fixture it draws the two names only."""
+    from site_lib.config import load
+    rows = load("matches.json") + load("matches_archive.json")
+    m = find_fixture(home, away, rows)
+    if not m:
+        return render(home, away, out, comp_label=comp_label_txt)
+    venue, feed = "", None
+    try:
+        import match_brief as MB
+        gid = MB.resolve_s365_game(m)
+        hb = MB.h2h_block(gid) if gid else {}
+        venue, feed = hb.get("venue") or "", hb.get("colors")
+    except Exception:                                   # noqa: BLE001 - offline: names + our kits
+        pass
+    return for_match(m, out, venue=venue, feed=feed)
+
+
 if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("--match")
+    ap.add_argument("--teams", nargs=2, metavar=("HOME", "AWAY"),
+                    help="Arabic names as the site writes them; finds the fixture itself")
     ap.add_argument("--out")
     ap.add_argument("--demo", action="store_true")
     a = ap.parse_args()
@@ -266,3 +337,7 @@ if __name__ == "__main__":
         if not m:
             sys.exit(f"match {a.match} not found")
         print(for_match(m, a.out or os.path.join(HERE, "media", card_name(m))))
+    elif a.teams:
+        if not a.out:
+            sys.exit("--teams needs --out media/<unique-name>.jpg (one file per article)")
+        print(for_teams(a.teams[0], a.teams[1], a.out))

@@ -58,7 +58,28 @@ ck("nothing drawn outside the safe band (the site crops there)", not spill, spil
 css = io.open("site_src/style.css", encoding="utf-8").read()
 ck("the article hero centres a matchup card", '.a-img[src*="/matchup-"]{object-position:50% 50%}' in css)
 src = io.open("match_brief.py", encoding="utf-8").read()
-ck("the brief draws a card only for an important match", "if featured_sides(m) == 2:" in src and '"credit": "الصورة: تصميم يلا سكور"' in src)
+ck("the brief draws a card for EVERY match piece, in the feed's colours",
+   "if featured_sides(m) == 2:" not in src and '"credit": "الصورة: تصميم يلا سكور"' in src
+   and 'feed=(brief.get("s365") or {}).get("colors")' in src and '"colors": {side:' in src)
+# the feed's colours fill the gap the KITS table leaves - never an invented one
+ck("a club missing from KITS wears the feed's colours",
+   MC.kit_for("برينتفورد", "Premier League", ("#E30613", "#FFFFFF"))[1][0] == (227, 6, 19))
+ck("KITS still wins over the feed", MC.kit_for("الأهلي", "Egyptian Premier League", ("#000000", "#FFFFFF"))[1][0] == (192, 12, 36))
+ck("a light feed colour gets the second colour as its trim",
+   MC.kit_for("س", None, ("#FFFFFF", "#000099"))[3] == (0, 0, 153))
+ck("bad / missing feed colours -> the neutral disc", MC.kit_for("س", None, ("blue", None)) is MC.NEUTRAL
+   and MC.kit_for("س", None, None) is MC.NEUTRAL)
+rows = [{"home": "الأهلي", "away": "الزمالك", "kickoff": "2026-05-01", "status": "FINISHED"},
+        {"home": "الزمالك", "away": "الأهلي", "kickoff": "2026-10-11", "status": "SCHEDULED"},
+        {"home": "الأهلي", "away": "سموحة", "kickoff": "2026-10-20", "status": "SCHEDULED"}]
+ck("--teams finds the NEXT meeting, in either order",
+   MC.find_fixture("الأهلي", "الزمالك", rows, "2026-10-08")["kickoff"] == "2026-10-11")
+ck("--teams falls back to the latest played meeting",
+   MC.find_fixture("الأهلي", "الزمالك", rows, "2026-10-12")["kickoff"] == "2026-05-01")
+ck("--teams: no fixture -> None (the card draws the names only)", MC.find_fixture("الأهلي", "بيراميدز", rows) is None)
+dp = io.open(".github/prompts/daily-article.md", encoding="utf-8").read()
+ck("the daily prompt sends matchup stories to the card", "MATCHUP STORIES USE OUR CARD" in dp
+   and "matchup_card.py --teams" in dp)
 pr = io.open(".github/prompts/match-article.md", encoding="utf-8").read()
 ck("the prompt makes the writer use brief.image and commit its file", "`brief.image` first" in pr and "git add` `image.file`" in pr)
 

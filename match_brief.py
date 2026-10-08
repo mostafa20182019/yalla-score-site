@@ -492,7 +492,10 @@ def h2h_block(gid):
     out = {"h2h": played(g.get("h2hGames") or [])[:6],
            "recent_home": played((g.get("homeCompetitor") or {}).get("recentGames") or [])[:5],
            "recent_away": played((g.get("awayCompetitor") or {}).get("recentGames") or [])[:5],
-           "venue": (g.get("venue") or {}).get("name")}
+           "venue": (g.get("venue") or {}).get("name"),
+           # the clubs' own colours, for the matchup card's discs (2026-10-08)
+           "colors": {side: ((g.get(k) or {}).get("color"), (g.get(k) or {}).get("awayColor"))
+                      for side, k in (("home", "homeCompetitor"), ("away", "awayCompetitor"))}}
     tp = g.get("topPerformers")
     if tp:
         out["top_performers_raw"] = tp
@@ -557,16 +560,19 @@ def build_brief(d, m, kind):
     gid = resolve_s365_game(m)
     if gid:
         brief["s365"] = h2h_block(gid)
-    # an IMPORTANT match (both clubs featured) gets our own matchup card as
-    # its image (matchup_card.py, 2026-10-08): drawn here, committed by the
-    # writer, never a club crest - and no photo hunt for the big games
-    if featured_sides(m) == 2:
+    # EVERY match piece gets our own matchup card as its image (matchup_card.py;
+    # important matches only on 2026-10-08 morning, then the user: «انا عايزك
+    # تعتمد على القالب فى عمل الصور»): drawn here, committed by the writer,
+    # never a club crest - and no photo hunt. Clubs missing from our KITS
+    # table wear the feed's own colours.
+    if True:
         try:
             import matchup_card as MC
             fname = MC.card_name(dict(m, status="FINISHED" if kind == "report" else "UPCOMING"))
             MC.for_match(dict(m, status="FINISHED" if kind == "report" else m.get("status")),
                          os.path.join(HERE, "media", fname),
-                         venue=(brief.get("s365") or {}).get("venue") or "")
+                         venue=(brief.get("s365") or {}).get("venue") or "",
+                         feed=(brief.get("s365") or {}).get("colors"))
             brief["image"] = {"file": f"media/{fname}",
                               "url": f"https://yallascore.site/media/{fname}",
                               "credit": "الصورة: تصميم يلا سكور"}
