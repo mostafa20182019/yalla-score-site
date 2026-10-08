@@ -134,6 +134,12 @@ def _nf_icon_eur():
         return _NF_ICON_EUR
 
 
+# The chips are OFF (2026-10-08, user: «عايز اشيل الفلتر ده من الصفحة
+# الرئيسية»): the bar keeps the title + the follow pills. NEWS_CHIPS = True
+# brings the three chips and their scroll-spy JS back as they were.
+NEWS_CHIPS = False
+
+
 def news_filter_bar():
     chips = [
         ("trend", "الأكثر تداولًا", _NF_ICON_TREND),
@@ -158,6 +164,8 @@ def news_filter_bar():
           'd="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-.9.5l.3-4.6L18.2 7'
           'c.4-.3-.1-.5-.6-.2L7.4 13.2 3 11.8c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.6.2 1.4 1.6z"/>'
           '</svg></a>')
+    if not NEWS_CHIPS:
+        return f'<div class="nf-bar"><h1 class="page-h">آخر الأخبار</h1>{fb}{tg}</div>'
     return ('<div class="nf-bar"><h1 class="page-h">آخر الأخبار</h1>'
             f'<div class="nf-chips" role="group" aria-label="فلتر الأخبار">{btns}</div>{fb}{tg}</div>'
             + NEWS_FILTER_JS)
