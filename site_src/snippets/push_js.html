@@ -18,7 +18,12 @@
      The Facebook/Instagram in-app browsers can do neither. */
   if(inapp||!(can||(ios&&!standalone)))return;
   btns.forEach(function(b){b.hidden=false;});
-  var cta=document.querySelector('.push-cta');if(cta)cta.hidden=false;
+  /* growth plan week 1 (2026-10-08): the article-end line appears from the
+     reader's SECOND page in this session - a first-time visitor sees the
+     bell only; the ask comes after the site has shown it is worth it */
+  var cta=document.querySelector('.push-cta');
+  if(cta){var pv=1;try{pv=(parseInt(sessionStorage.getItem('ys_pv')||'0',10)||0)+1;sessionStorage.setItem('ys_pv',String(pv));}catch(e){}
+    if(pv>=2)cta.hidden=false;}
   var busy=false,tmr=null;
   function toast(msg){
     var t=document.querySelector('.push-toast');

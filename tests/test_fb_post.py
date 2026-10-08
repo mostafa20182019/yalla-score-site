@@ -175,6 +175,27 @@ run([A(503, 1)])
 assert feed_links() == [] and store.get_post("article", 503) is None
 print("14 OK: an article past MAX_POST_ATTEMPTS is skipped")
 
+# 15) PHOTO A/B (growth plan week 1): even id + readable image -> /me/photos with
+#     the caption; odd id -> link post; even id with an SVG placeholder -> link post
+reset_state()
+photos = []
+fp.post_photo = lambda token, img, caption: (photos.append((len(img), caption)), "PHOTO_1")[1]
+fp.MEDIA = tempfile.mkdtemp()
+with open(os.path.join(fp.MEDIA, "card.jpg"), "wb") as _f:
+    _f.write(b"\xff\xd8" + b"x" * 5000)
+run([A(600, 1, image_url=f"{fp.SITE}/media/card.jpg", fb_post="T600 text\nnumbers"),
+     A(601, 1, image_url=f"{fp.SITE}/media/card.jpg"),
+     A(602, 1, image_url=f"{fp.SITE}/media/ph-pitch.svg")])
+assert len(photos) == 1 and photos[0][0] == 5002, photos
+assert photos[0][1].endswith(f"\n{fp.SITE}/a/600"), "the link must live in the caption text"
+assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F601", "https%3A%2F%2Fyallascore.site%2Fa%2F602"], feed_links()
+assert posted_ids() == ["600", "601", "602"] and state()["600"]["post_id"] == "PHOTO_1"
+assert fp.variant({"article_id": "600"}) == "photo" and fp.variant({"article_id": "601"}) == "link"
+fp.PHOTO_AB = False
+assert fp.variant({"article_id": "600"}) == "link"
+fp.PHOTO_AB = True
+print("15 OK: photo A/B - even id with an image is a photo post (link in the caption), odd/SVG stay link posts")
+
 print("ALL FB_POST TESTS PASSED")
 
 

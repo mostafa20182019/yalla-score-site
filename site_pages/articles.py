@@ -117,7 +117,8 @@ def article_pages(articles, articles_all, matches, urls):
             img=img, credit=a.get("image_credit"), summary=a.get("summary"), body=body,
             sources=sources, faq=[{"q": f["q"], "a": f["a"]} for f in _faq], faq_ld=faq_ld,
             embeds=embeds, clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
-            related=related, push_cta=Markup(push_cta()), page_foot=Markup(foot()))
+            related=related, push_cta=Markup(push_cta()), tg_url=TG_CHANNEL_URL,
+            page_foot=Markup(foot()))
         p = [_ahtml]
         if _words < ARTICLE_MIN_WORDS:
             # legacy short pieces: keep the URL alive (still linked from lists

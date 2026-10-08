@@ -59,6 +59,15 @@ import store  # noqa: E402 - needs HERE on sys.path first
 SITE = "https://yallascore.site"
 GRAPH = "https://graph.facebook.com/v23.0"
 GRAPH_FEED = f"{GRAPH}/me/feed"
+GRAPH_PHOTOS = f"{GRAPH}/me/photos"
+MEDIA = os.path.join(HERE, "media")
+# Growth plan week 1 (2026-10-08): Facebook reaches further with a PHOTO post
+# than with a link post, so an article now goes out as its own image (the
+# matchup card or the article photo) with the text as the caption and the
+# link inside the text. A/B for two weeks: EVEN article ids = photo, ODD = the
+# old link post; the variant is a function of the id, so Insights can be
+# read per variant without storing anything. Set False to go back to links.
+PHOTO_AB = True
 AUTO_MAX_AGE_H = 6       # --auto never posts an article older than this (10 articles/day: 12h re-posted a half-day backlog on 2026-09-03)
 AUTO_MAX_PER_RUN = 3     # --auto posts at most this many per run (staggers a backlog)
 # POSTING WINDOW - OFF (2026-09-12, second decision of the day). A window of
@@ -202,14 +211,81 @@ def scrape_until_ok(token, link):
     return False, og
 
 
+def variant(art):
+    """"photo" or "link" for this article - by id parity while the A/B runs."""
+    if not PHOTO_AB:
+        return "link"
+    try:
+        return "photo" if int(str(art.get("article_id", "")).strip()) % 2 == 0 else "link"
+    except ValueError:
+        return "link"
+
+
+def image_bytes(art):
+    """The article's image as bytes: media/<name> from the checkout first, else
+    downloaded; None for our SVG placeholders (Facebook refuses SVG) or when
+    nothing can be read - the caller then falls back to a link post."""
+    url = (art.get("image_url") or "").strip()
+    if not url or url.lower().endswith(".svg"):
+        return None
+    name = os.path.basename(urllib.parse.urlparse(url).path)
+    local = os.path.join(MEDIA, name)
+    try:
+        if name and os.path.isfile(local):
+            with open(local, "rb") as f:
+                return f.read()
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "yallascore-fb"}),
+                                    timeout=30) as r:
+            data = r.read()
+        return data if len(data) > 1000 else None
+    except Exception as e:                              # noqa: BLE001
+        print(f"  image unavailable ({e}) - link post instead")
+        return None
+
+
+def _multipart(fields, files):
+    boundary = "----yallascore" + str(int(time.time() * 1000))
+    out = []
+    for k, v in fields.items():
+        out += [f"--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"\r\n\r\n".encode("utf-8"),
+                str(v).encode("utf-8"), b"\r\n"]
+    for k, (fn, data, ctype) in files.items():
+        out += [f"--{boundary}\r\nContent-Disposition: form-data; name=\"{k}\"; filename=\"{fn}\"\r\n"
+                f"Content-Type: {ctype}\r\n\r\n".encode("utf-8"), data, b"\r\n"]
+    out.append(f"--{boundary}--\r\n".encode("utf-8"))
+    return b"".join(out), f"multipart/form-data; boundary={boundary}"
+
+
+def post_photo(token, img, caption):
+    """Upload the image as a page photo with the post text as its caption.
+    Returns the Graph post id, raises on failure."""
+    body, ctype = _multipart({"caption": caption, "access_token": token},
+                             {"source": ("article.jpg", img, "image/jpeg")})
+    req = urllib.request.Request(GRAPH_PHOTOS, data=body,
+                                 headers={"Content-Type": ctype, "Content-Length": str(len(body))})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        resp = json.load(r)
+    return resp.get("post_id") or resp.get("id")
+
+
 def post_article(token, art):
-    """Publish the feed post (preview already verified by the caller)."""
+    """Publish the post (page already verified live by the caller): a PHOTO
+    post for the A/B's photo variant when the image can be read, else the
+    classic link post."""
     link = article_link(art)
     title = (art.get("title") or "").strip()
     summary = (art.get("summary") or "").strip()
     # the article task writes a crafted fb_post (same text the user copies
     # from /fb.html) - prefer it; fall back to the plain generated format
     message = (art.get("fb_post") or "").strip() or f"⚽ {title}\n\n{summary}\n\n\U0001f449 {link}"
+    if variant(art) == "photo":
+        img = image_bytes(art)
+        if img:
+            if link not in message:
+                message += f"\n{link}"          # a photo post has no link card: the URL lives in the text
+            print(f"  variant=photo ({len(img) // 1024} KB)")
+            return post_photo(token, img, message)
+    print("  variant=link")
     data = urllib.parse.urlencode({"message": message, "link": link, "access_token": token}).encode()
     with urllib.request.urlopen(urllib.request.Request(GRAPH_FEED, data=data), timeout=30) as r:
         resp = json.load(r)
