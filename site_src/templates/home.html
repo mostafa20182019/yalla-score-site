@@ -16,19 +16,18 @@
    مباشر الآن with a stale score). It renders only from the first fresh
    /live.json reply, ~1 s after load. #}
 <div id="favLive" class="fav-wrap" hidden></div>
-{# «آخر الأخبار» + FotMob-style chips (2026-09-02): a chip scrolls to its
-   block and the highlight follows the block in view - nothing is hidden #}
+{# OPTION «أ» - MATCH CENTRE (user, 2026-10-08): the page title «مباريات تحت
+   المجهر» + follow pills, then the 4 most important predicted matches. The
+   2026-09-01 rule «matches are NOT on the home page» stays true for the
+   matches TABLE (it lives on /matches); these are prediction cards. #}
 {{ news_filter }}
-{# FotMob-style blocks (2026-09-01): newest article featured + the next 4;
-   then the same shape for Egyptian and for European football, each skipping
-   what an earlier block showed. USER RULE: the home shows ONLY these blocks
-   (4 rows each) - no «من أخبارنا أيضًا»; older news lives behind المزيد.
-   Matches are NOT on the home page - they live on /matches. #}
+{# then: التحليلات (HOME_PIN / newest analysis + 4) -> the open record strip
+   -> آخر الأخبار (6 cards) -> Egypt | Europe lists (4 rows each). Each
+   skips what an earlier block showed; older news lives behind المزيد. #}
 {% for block in blocks %}
 {{ block }}
 {% endfor %}
-{# «توقعات يلا سكور» under the news blocks (2026-09-12): four predicted
-   fixtures, المزيد -> /analysis #}
+{# the old «توقعات يلا سكور» block (2026-09-12) - empty since option «أ» #}
 {{ predictions }}
 {% if show_videos %}
 <div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2><a class="see-all" href="/videos.html">كل الفيديوهات ←</a></div>

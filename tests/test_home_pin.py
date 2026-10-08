@@ -39,7 +39,7 @@ ck("no pin / a broken pin changes nothing",
    ids(pinned_first(arts, {}, before)) == ids(arts) and ids(pinned_first(arts, {"article_id": "687"}, before)) == ids(arts))
 src = io.open("site_pages/home.py", encoding="utf-8").read()
 ck("the home page applies the pin before it builds its blocks",
-   src.index("pinned_first(articles)") < src.index('fmb_block(b1[0], b1[1:], "الأكثر تداولًا"'))
+   src.index("pinned_first(articles)") < src.index("home_insights(articles, pin_on)"))
 
 print(f"\n{len(fails)} failed" if fails else "\nall passed")
 sys.exit(1 if fails else 0)

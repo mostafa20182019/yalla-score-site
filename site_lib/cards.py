@@ -8,16 +8,18 @@ import base64
 import datetime
 import hashlib
 import os
-from site_lib.articles import byline
+from site_lib.articles import byline, insight_kind
 from site_lib.clubs import TEAM_PAGES
 from site_lib.config import BYLINE_RELTIME, FB_PAGE_URL, HERE, PLACEHOLDER_IMGS, TG_CHANNEL_URL, _src
 from site_lib.crests import local_crest
 from site_lib.dates import art_reltime, rel_ar
-from site_lib.names import _in_scope, _is_ticker_team, _team_match
-from site_lib.predictions import pred_row
+from site_lib.names import _in_scope, _is_ticker_team, _team_match, ar_team, comp_label
+from site_lib.predictions import conf_chip, pred_row
 from site_lib.shell import thumb_url
 from site_lib.text import _pct, esc, strip_src
-from site_lib.urls import article_href
+from site_lib.ticker import _tk_date
+from site_lib.urls import article_href, match_url
+from site_lib.widgets import prob_bar, prob_legend
 
 
 def headline_card(h):
@@ -140,7 +142,7 @@ def _nf_icon_eur():
 NEWS_CHIPS = False
 
 
-def news_filter_bar():
+def news_filter_bar(title="آخر الأخبار"):
     chips = [
         ("trend", "الأكثر تداولًا", _NF_ICON_TREND),
         ("egy", "أخبار الكرة المصرية", _NF_ICON_EGY),
@@ -165,14 +167,27 @@ def news_filter_bar():
           'c.4-.3-.1-.5-.6-.2L7.4 13.2 3 11.8c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.6.2 1.4 1.6z"/>'
           '</svg></a>')
     if not NEWS_CHIPS:
-        return f'<div class="nf-bar"><h1 class="page-h">آخر الأخبار</h1>{fb}{tg}</div>'
+        return f'<div class="nf-bar"><h1 class="page-h">{esc(title)}</h1>{fb}{tg}</div>'
     return ('<div class="nf-bar"><h1 class="page-h">آخر الأخبار</h1>'
             f'<div class="nf-chips" role="group" aria-label="فلتر الأخبار">{btns}</div>{fb}{tg}</div>'
             + NEWS_FILTER_JS)
 
 
 NEWS_FILTER_JS = _src("snippets/news_filter_js.html")
-def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf=""):
+def fmb_rows(list_items):
+    """The numbered rows of a FotMob-style list (thumbnail on the end)."""
+    out = []
+    for i, a in enumerate(list_items, 1):
+        th = (f'<img class="fmb-th" src="{esc(thumb_url(a.get("image_url")))}" alt="" loading="lazy">'
+              if a.get("image_url") else "")
+        out.append(f'<a class="fmb-row" href="{article_href(a)}">'
+                   f'<span class="fmb-num">{i}</span>'
+                   f'<span class="fmb-rt"><b>{esc(a["title"])}</b>'
+                   f'<small>{_art_meta(a)}</small></span>{th}</a>')
+    return "".join(out)
+
+
+def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf="", extra=""):
     """FotMob-style home block: one featured card (image + title) beside a
     numbered trending-list column with thumbnails and 'منذ X' bylines.
     flip=True mirrors the columns (featured LEFT, list RIGHT) for visual
@@ -181,20 +196,15 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
     imgdiv = (f'<div class="fmb-img" style="background-image:url(\'{esc(img)}\')"></div>'
               if img else '<div class="fmb-img fmb-noimg"></div>')
     _nf = f' data-nf="{nf}"' if nf else ""     # news-filter key (NEWS_FILTER_JS)
-    out = [f'<section class="fmb fmb-flip"{_nf}>' if flip else f'<section class="fmb"{_nf}>']
+    cls = "fmb" + (" fmb-flip" if flip else "") + (f" {extra}" if extra else "")
+    out = [f'<section class="{cls}"{_nf}>']
     out.append(f'<a class="fmb-feat" href="{article_href(feat_a)}">'
                + (f'<div class="fmb-banner">{banner}</div>' if banner else "")
                + imgdiv
                + f'<div class="fmb-fb"><h2>{esc(feat_a["title"])}</h2>'
                + f'<p class="fmb-meta">{_art_meta(feat_a)}</p></div></a>')
     out.append(f'<div class="fmb-list"><div class="fmb-lh">{esc(list_head)}</div>')
-    for i, a in enumerate(list_items, 1):
-        th = (f'<img class="fmb-th" src="{esc(thumb_url(a.get("image_url")))}" alt="" loading="lazy">'
-              if a.get("image_url") else "")
-        out.append(f'<a class="fmb-row" href="{article_href(a)}">'
-                   f'<span class="fmb-num">{i}</span>'
-                   f'<span class="fmb-rt"><b>{esc(a["title"])}</b>'
-                   f'<small>{_art_meta(a)}</small></span>{th}</a>')
+    out.append(fmb_rows(list_items))
     out.append(f'<a class="fmb-more" href="{more_url}">المزيد ←</a></div></section>')
     return "".join(out)
 
@@ -225,6 +235,18 @@ def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
     # that judges a probabilistic model - the same order /predictions uses - and
     # the naive baseline sits next to the hit rate so the rate cannot flatter
     # us. Silent until something has actually been scored.
+    rec = pred_record_line(acc, cal)
+    return ('<section class="fmb fmb-pred" data-nf="pred">'
+            '<div class="fmb-lh fmb-predh"><span>توقعات يلا سكور</span>'
+            '<small>احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
+            + rec +
+            '<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>'
+            '<a class="fmb-more" href="/analysis.html">كل التوقعات ←</a></section>')
+
+
+def pred_record_line(acc, cal):
+    """The open-record sentence (see pred_home_block); "" until something
+    has been scored."""
     a = (acc or {}).get("all")
     rec = ""
     if a and cal and cal.get("matches"):
@@ -234,9 +256,89 @@ def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
                f'<b>{cal["ece"] * 100:.1f}</b> نقطة، وإصابة الاتجاه '
                f'<b>{_pct(a["hit_rate"])}</b> مقابل {_pct(a["home_baseline"])} '
                f'لمعيار ساذج. إصاباتنا وأخطاؤنا كاملة ←</a>')
-    return ('<section class="fmb fmb-pred" data-nf="pred">'
-            '<div class="fmb-lh fmb-predh"><span>توقعات يلا سكور</span>'
-            '<small>احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
-            + rec +
-            '<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>'
-            '<a class="fmb-more" href="/analysis.html">كل التوقعات ←</a></section>')
+    return rec
+
+
+# ---------------------------------------------------------------- home, option A
+# The home page as a MATCH CENTRE (2026-10-08, user picked option «أ» of three:
+# «تمام اعمل الاقتراح أ»): the important upcoming matches with our prediction
+# first, then the analyses, the open record, and the news after them. It
+# reverses the 2026-09-01 rule «Matches are NOT on the home page» for these few
+# prediction cards only - the matches TABLE still lives on /matches.
+
+
+def _mf_card(m, p):
+    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+
+    def crest(u):
+        return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="ph">⚽</span>'
+    when = f'{_tk_date(m.get("kickoff"))}{(" · " + m["koff_time"]) if m.get("koff_time") else ""}'
+    return (f'<a class="mf-card" href="{esc(match_url(m) or "#")}">'
+            f'<span class="mf-top"><span class="mf-comp">{esc(comp_label(m.get("competition")))}</span>'
+            f'<span class="mf-when">{esc(when)}</span></span>'
+            f'<span class="mf-t">{crest(m.get("home_badge"))}<bdi>{esc(h)}</bdi></span>'
+            f'<span class="mf-t">{crest(m.get("away_badge"))}<bdi>{esc(a)}</bdi></span>'
+            + prob_bar(p) + prob_legend(p, cls="mf-probs", home=h, away=a)
+            + f'<span class="mf-foot">{conf_chip(p["conf"])}<span class="mf-go">التوقع والتحليل ←</span></span></a>')
+
+
+def match_focus_pick(upcoming, preds, today, focus=None, n=4):
+    """The n matches the top row shows: within 7 days, with a prediction.
+    Both clubs featured first (focus = HUB_FOCUS: competition -> names), then
+    an Egyptian match of a featured/ticker club, then one featured club, then
+    the ticker clubs, then kickoff."""
+    focus = focus or {}
+    td, wk = today.isoformat(), (today + datetime.timedelta(days=7)).isoformat()
+    cand = []
+    for m in upcoming:
+        p = preds.get(str(m.get("match_id")))
+        k = m.get("kickoff") or ""
+        if not p or k > wk or k < td:
+            continue
+        names = set(focus.get(m.get("competition")) or ())
+        fs = (ar_team(m.get("home")) in names) + (ar_team(m.get("away")) in names)
+        tick = _is_ticker_team(m)
+        egy = m.get("competition") == "Egyptian Premier League" and (fs or tick)
+        cand.append((0 if fs == 2 else 1, 0 if egy else 1, -fs, 0 if tick else 1,
+                     k, m.get("koff_time") or "", m, p))
+    cand.sort(key=lambda t: t[:6])
+    return [(m, p) for *_, m, p in cand[:n]]
+
+
+def match_focus_block(upcoming, preds, today, focus=None, n=4):
+    """«مباريات تحت المجهر» - the top row: one card per match (time, the two
+    clubs, our 1X2 bar + the three numbers + the confidence chip), linking to
+    the match page, where the preview and the full reasoning live."""
+    rows = match_focus_pick(upcoming, preds, today, focus, n)
+    if not rows:
+        return ""
+    return ('<section class="mf"><div class="mf-head">'
+            '<small>توقعات يلا سكور: احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small>'
+            '<a class="see-all" href="/analysis.html">كل التوقعات ←</a></div>'
+            '<div class="mf-row">' + "".join(_mf_card(m, p) for m, p in rows) + '</div></section>')
+
+
+def home_record_strip(acc, cal):
+    """The open record, as its own strip between the analyses and the news."""
+    line = pred_record_line(acc, cal)
+    return f'<div class="hrec">{line}</div>' if line else ""
+
+
+def home_insights(articles, pinned):
+    """(lead, the next 4) for the analysis block. The lead is the HOME_PIN
+    article while the pin is on (`pinned`), else the newest analytical piece."""
+    ins = [a for a in articles if insight_kind(a)]
+    lead = articles[0] if (pinned and articles) else (ins[0] if ins else None)
+    if not lead:
+        return None, []
+    return lead, [a for a in ins if a["article_id"] != lead["article_id"]][:4]
+
+
+def news_cols(cols):
+    """Egypt | Europe side by side: [(head, more_url, items)], compact lists."""
+    out = []
+    for head, more, items in cols:
+        if items:
+            out.append(f'<div class="fmb-list hn-col"><div class="fmb-lh">{esc(head)}</div>'
+                       + fmb_rows(items) + f'<a class="fmb-more" href="{more}">المزيد ←</a></div>')
+    return f'<section class="hn-cols">{"".join(out)}</section>' if out else ""
