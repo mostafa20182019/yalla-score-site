@@ -28,6 +28,12 @@ GOLD = (246, 192, 60)
 SOFT = (222, 238, 248)
 DIM = (170, 192, 214)
 SCENES = [("intro", 2.5), ("tally", 3.0), ("meetings", 6.0), ("cta", 2.5)]
+SAFE_BOTTOM = 340          # Facebook lays the caption + buttons over the bottom of a Reel
+
+
+def footer(d):
+    C.draw_center(d, W / 2, H - SAFE_BOTTOM - 60, C.ar("التحليل الكامل بالأرقام"), C.font("Bold", 34), SOFT)
+    C.draw_center(d, W / 2, H - SAFE_BOTTOM - 10, "yallascore.site", C.font("ExtraBold", 40), C.WHITE)
 
 
 def _count(d, cx, y, n, t, size, col):
@@ -57,7 +63,7 @@ def scene_intro(t, ctx):
                       C.font("ExtraBold", 92), C.WHITE)
         C.draw_center(d, W / 2, H * 0.66 + 130 + (1 - k) * 40, C.ar(ctx["when"] or "بينهما"),
                       C.font("Bold", 40), GOLD)
-    R.footer(d)
+    footer(d)
     return im
 
 
@@ -78,13 +84,16 @@ def scene_tally(t, ctx):
     if t > 1.2:
         k = R.ease((t - 1.2) / 0.8)
         yy = H * 0.56 + (1 - k) * 60
-        C.draw_center(d, W / 2, yy, C.ar("الأهداف"), C.font("ExtraBold", 54), C.WHITE)
+        C.draw_center(d, W / 2, yy, C.ar("الأهداف المسجّلة"), C.font("ExtraBold", 54), C.WHITE)
+        sub = (f"في {ctx['played']} مباريات لُعبت داخل الملعب" if ctx["played"] < ctx["n"]
+               else f"في {ctx['n']} مباريات بالنتائج الرسمية")
+        C.draw_center(d, W / 2, yy + 66, C.ar(sub), C.font("Regular", 28), DIM)
         for cx, name in ((W * 0.72, h), (W * 0.28, a)):
-            d.rounded_rectangle((cx - 170, yy + 90, cx + 170, yy + 250), 26, fill=(0, 0, 0, 80) if False else (10, 40, 70))
-            _count(d, cx, yy + 95, gf[name], t - 1.2, 96, C.WHITE)
-            f = C.fit(d, C.ar(name), "Bold", 34, 320)
-            C.draw_center(d, cx, yy + 200, C.ar(name), f, SOFT)
-    R.footer(d)
+            d.rounded_rectangle((cx - 170, yy + 120, cx + 170, yy + 290), 26, fill=(10, 40, 70))
+            _count(d, cx, yy + 122, gf[name], t - 1.2, 96, C.WHITE)
+            f = C.fit(d, C.ar(f"سجّل {name}"), "Bold", 32, 320)
+            C.draw_center(d, cx, yy + 232, C.ar(f"سجّل {name}"), f, SOFT)
+    footer(d)
     return im
 
 
@@ -109,14 +118,23 @@ def scene_meetings(t, ctx):
         d.ellipse((W - 60 + x_off - nb - 14, y + 10, W - 60 + x_off - 14, y + 10 + nb), fill=GOLD)
         s = str(i + 1)
         d.text((W - 60 + x_off - 14 - nb / 2 - d.textlength(s, font=fd) / 2, y + 16), s, font=fd, fill=(20, 30, 50))
-        head = C.ar(f"{g['comp']} · {HC.ar_date(g['date'])}")
-        f = fd
-        while d.textlength(head, font=f) > W - 260 and f.size > 16:
-            f = C.font("Bold", f.size - 1)
-        d.text((W - 60 + x_off - nb - 30 - d.textlength(head, font=f), y + 14), head, font=f, fill=DIM)
         from site_lib.names import ar_team
         gh, ga = ar_team(g["home"]), ar_team(g["away"])
-        hw, aw = g["hg"] > g["ag"], g["ag"] > g["hg"]
+        gn = ctx["notes"].get(g["date"]) or {}
+        # the note (awarded / penalties) rides on the header line in gold: the
+        # row has no room under the score, and the header is where the eye
+        # reads the context anyway
+        head = C.ar(f"{g['comp']} · {HC.ar_date(g['date'])}")
+        f = fd
+        while d.textlength(head, font=f) > W - 260 - (160 if gn.get("note") else 0) and f.size > 16:
+            f = C.font("Bold", f.size - 1)
+        xr = W - 60 + x_off - nb - 30
+        d.text((xr - d.textlength(head, font=f), y + 14), head, font=f, fill=DIM)
+        if gn.get("note"):
+            nt = C.ar(gn["note"])
+            d.text((xr - d.textlength(head, font=f) - 18 - d.textlength(nt, font=f), y + 14), nt, font=f, fill=GOLD)
+        hw = g["hg"] > g["ag"] or gn.get("winner") == gh
+        aw = g["ag"] > g["hg"] or gn.get("winner") == ga
         mid = W / 2 + x_off
         fnm = C.fit(d, C.ar(max(gh, ga, key=len)), "ExtraBold", 40, 300)
         d.text((mid + 90, y + 50), C.ar(gh), font=fnm, fill=C.WHITE if hw else SOFT)      # home RIGHT
@@ -124,7 +142,7 @@ def scene_meetings(t, ctx):
         sc = f"{g['ag']} - {g['hg']}"
         d.rounded_rectangle((mid - 72, y + 48, mid + 72, y + 100), 14, fill=(0, 0, 0))
         d.text((mid - d.textlength(sc, font=fs) / 2, y + 48), sc, font=fs, fill=C.WHITE)
-    R.footer(d)
+    footer(d)
     return im
 
 
@@ -132,14 +150,15 @@ def scene_cta(t, ctx):
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
     R.header(d, ctx["comp"], None)
-    y = H * 0.22
+    y = H * 0.20
     f = C.font("Bold", 40)
-    for i, name in enumerate((ctx["h"], ctx["a"])):
+    facts = ([ctx["finals"]] if ctx.get("finals") else []) + [
+        (f"آخر فوز لـ{name}: {HC.ar_date(ctx['last'][name])}" if ctx["last"].get(name)
+         else f"{name} بلا فوز في هذه المواجهات") for name in (ctx["h"], ctx["a"])]
+    for i, line in enumerate(facts[:3]):
         if t < 0.25 * i:
             continue
         k = R.ease(min(1.0, (t - 0.25 * i) / 0.5))
-        last = ctx["last"].get(name)
-        line = f"آخر فوز لـ{name}: {HC.ar_date(last)}" if last else f"{name} بلا فوز في هذه المواجهات"
         for chunk in R.wrap(d, line, f, W - 200, lines=2):
             slide = int((1 - k) * 40)
             d.rounded_rectangle((70, y - 14 + slide, W - 70, y + 66 + slide), 20, fill=C.WHITE)
@@ -164,9 +183,11 @@ def context(m, games):
     import matchup_card as MC
     from site_lib.names import ar_team, comp_label
     h, a = ar_team(m.get("home")), ar_team(m.get("away"))
-    w, draws, gf, last = HC.tally(games, h, a)
+    notes = HC.load_notes(h, a)
+    w, draws, gf, last, played = HC.tally(games, h, a, notes)
     return {"m": m, "h": h, "a": a, "games": games, "n": len(games), "wins": w, "draws": draws,
-            "goals": gf, "last": last, "comp": comp_label(m.get("competition")),
+            "goals": gf, "last": last, "played": played, "notes": notes.get("games") or {},
+            "finals": notes.get("finals"), "comp": comp_label(m.get("competition")),
             "when": MC.when_ar(m.get("kickoff"), m.get("koff_time")), "bg": R.background()}
 
 
@@ -193,7 +214,10 @@ def contact_sheet(fs, path, cols=4, every=None):
 def caption(ctx):
     h, a = ctx["h"], ctx["a"]
     lines = [f"آخر {ctx['n']} مواجهات بين {h} و{a} في 14 ثانية 🎬",
-             f"{h} فاز {ctx['wins'][h]} · تعادل {ctx['draws']} · {a} فاز {ctx['wins'][a]}",
+             f"{h} فاز {ctx['wins'][h]} · تعادل {ctx['draws']} · {a} فاز {ctx['wins'][a]}"]
+    if ctx.get("finals"):
+        lines.append(f"🏟️ {ctx['finals']}")
+    lines += [
              f"التوقع والتحليل الكامل: https://yallascore.site/m/{ctx['m'].get('match_id')}",
              f"#يلا_سكور #{h.replace(' ', '_')} #{a.replace(' ', '_')}"]
     return "\n".join(lines)

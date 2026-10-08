@@ -1,0 +1,15 @@
+{
+ "_why": "Hand-checked facts the 365scores head-to-head feed cannot know (2026-10-08, user: the automatic card counted the two awarded derbies as goals). Keyed by the pair's Arabic names in sorted order joined by '|', then by the match date. `played: false` = the result stands officially but no ball was kicked, so its goals are NOT counted; `winner` on a draw = decided on penalties (the official result stays a draw, the name is bolded and the note printed); `finals` = the fact line under the list. A pair with no entry here is drawn from the official results only, and the card says so.",
+ "pairs": {
+  "الأهلي|الزمالك": {
+   "finals": "4 نهائيات بينهما: 3 ألقاب للأهلي ولقب للزمالك",
+   "source": "ويكيبيديا — قمة القاهرة",
+   "games": {
+    "2025-03-11": {"note": "قرار إداري", "played": false},
+    "2024-06-25": {"note": "قرار إداري", "played": false},
+    "2024-10-24": {"note": "الأهلي بالترجيح", "winner": "الأهلي"},
+    "2024-09-27": {"note": "الزمالك بالترجيح", "winner": "الزمالك"}
+   }
+  }
+ }
+}

@@ -540,7 +540,10 @@ def h2h_text(m, r, when=""):
     h, a = ar_team(m.get("home")), ar_team(m.get("away"))
     lines = [f"📊 آخر {r['n']} مواجهات بين {h} و{a}" + (f" قبل لقاء {when}" if when else ""),
              f"🏆 {h} فاز {r['wins'][h]} · تعادل {r['draws']} · {a} فاز {r['wins'][a]}",
-             f"⚽ الأهداف: {h} {r['goals'][h]} · {a} {r['goals'][a]}"]
+             f"⚽ الأهداف: {h} {r['goals'][h]} · {a} {r['goals'][a]}"
+             + (f" (في {r['played']} مباريات لُعبت داخل الملعب)" if r.get("played") and r["played"] < r["n"] else "")]
+    if r.get("finals"):
+        lines.append(f"🏟️ {r['finals']}")
     for name in (h, a):
         if r["last"].get(name):
             import h2h_card as HC

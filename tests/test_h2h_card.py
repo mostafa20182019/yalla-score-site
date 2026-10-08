@@ -37,21 +37,31 @@ games = [G("2026-05-01", "الدوري المصري", "الزمالك", 0, 3, "�
          G("2024-04-15", "الدوري المصري", "الزمالك", 2, 1, "الأهلي"),
          G("2024-03-08", "كأس مصر", "الزمالك", 0, 2, "الأهلي")]
 
-w, draws, gf, last = HC.tally(games, "الزمالك", "الأهلي")
+w, draws, gf, last, played = HC.tally(games, "الزمالك", "الأهلي")
 ck("1 tally: wins 5-2, draws 3", w == {"الأهلي": 5, "الزمالك": 2} and draws == 3, f"{w} {draws}")
 ck("2 goals: Ahly 14, Zamalek 8", gf == {"الأهلي": 14, "الزمالك": 8}, str(gf))
 ck("3 last win of each side (newest first)", last == {"الأهلي": "2026-05-01", "الزمالك": "2025-03-11"}, str(last))
 ck("4 Arabic date", HC.ar_date("2026-05-01") == "1 مايو 2026", HC.ar_date("2026-05-01"))
+# the hand-checked notes (data/h2h_notes.json): awarded games keep the result, lose their goals
+notes = HC.load_notes("الزمالك", "الأهلي")
+ck("4b the derby notes load (either name order)", notes.get("finals") and HC.load_notes("الأهلي", "الزمالك") == notes)
+w2, d2, gf2, last2, played2 = HC.tally(games, "الزمالك", "الأهلي", notes)
+ck("4c with the notes: wins/draws unchanged, goals from played games only (12-5 in 8)",
+   w2 == w and d2 == 3 and gf2 == {"الأهلي": 12, "الزمالك": 5} and played2 == 8, f"{gf2} {played2}")
+ck("4d a pair without notes keeps the official count", HC.load_notes("ليفربول", "مانشستر سيتي") == {})
 
 out = os.path.join(tempfile.mkdtemp(), "h2h.jpg")
 r = HC.render(m, games, out, when="الأحد 11 أكتوبر · 8 مساءً")
 ck("5 the card is written (1080x1350)", os.path.exists(out) and os.path.getsize(out) > 50000)
 from PIL import Image
 ck("6 ...at the Facebook 4:5 size", Image.open(out).size == (1080, 1350))
-ck("7 render returns the tally", r["n"] == 10 and r["wins"]["الأهلي"] == 5)
+ck("7 render returns the tally, with the notes applied", r["n"] == 10 and r["wins"]["الأهلي"] == 5
+   and r["played"] == 8 and r["goals"] == {"الأهلي": 12, "الزمالك": 5} and r["finals"], str(r))
 
 t = fp.h2h_text(m, r, "الأحد 11 أكتوبر")
 print(t)
+ck("8b the post says the goals are from played games and carries the finals line",
+   "في 8 مباريات لُعبت داخل الملعب" in t and "4 نهائيات" in t)
 ck("8 post text: the numbers, the link, the hashtags", "الأهلي فاز 5" in t and "تعادل 3" in t and "الزمالك فاز 2" in t
    and f"{fp.SITE}/m/4804684" in t and t.endswith("#يلا_سكور #الزمالك #الأهلي"))
 ck("9 never a betting word", "مراهنة" not in t)

@@ -35,6 +35,19 @@ CARD_FILL = (255, 255, 255, 22)
 LINE = (70, 104, 140)
 MAX_GAMES = 10
 MIN_GAMES = 4          # fewer meetings on record = no card
+NOTES = os.path.join(HERE, "data", "h2h_notes.json")
+
+
+def load_notes(h, a):
+    """The hand-checked notes for this pair (data/h2h_notes.json), or {}:
+    {games: {date: {note, played, winner}}, finals, source}."""
+    try:
+        import json
+        with open(NOTES, encoding="utf-8") as f:
+            pairs = json.load(f).get("pairs") or {}
+    except (OSError, ValueError):
+        return {}
+    return pairs.get("|".join(sorted((h, a)))) or {}
 
 
 # ---------------------------------------------------------------- data
@@ -63,11 +76,14 @@ def h2h_games(m):
     return out[:MAX_GAMES]
 
 
-def tally(games, h, a):
-    """wins per club, draws, goals per club, last win date per club."""
+def tally(games, h, a, notes=None):
+    """wins per club, draws, goals per club, last win date per club, and
+    `played` = how many of the games were actually played (the notes mark
+    awarded results; their goals are not counted)."""
     from site_lib.names import ar_team
+    notes = (notes or {}).get("games") or {}
     w, gf, last = {h: 0, a: 0}, {h: 0, a: 0}, {h: None, a: None}
-    draws = 0
+    draws, played = 0, 0
     def side(name):
         n = ar_team(name)
         return h if n == h else (a if n == a else None)
@@ -75,14 +91,15 @@ def tally(games, h, a):
         gh, ga = side(g["home"]), side(g["away"])
         if gh is None or ga is None:
             continue
-        gf[gh] += g["hg"]; gf[ga] += g["ag"]
+        if (notes.get(g["date"]) or {}).get("played", True):
+            gf[gh] += g["hg"]; gf[ga] += g["ag"]; played += 1
         if g["hg"] > g["ag"]:
             w[gh] += 1; last[gh] = last[gh] or g["date"]
         elif g["ag"] > g["hg"]:
             w[ga] += 1; last[ga] = last[ga] or g["date"]
         else:
             draws += 1
-    return w, draws, gf, last
+    return w, draws, gf, last, played
 
 
 def ar_date(iso):
@@ -101,7 +118,9 @@ def render(m, games, out, when=""):
     import matchup_card as MC
     from site_lib.names import ar_team, comp_label
     h, a = ar_team(m.get("home")), ar_team(m.get("away"))
-    w, draws, gf, last = tally(games, h, a)
+    notes = load_notes(h, a)
+    gnotes = notes.get("games") or {}
+    w, draws, gf, last, played = tally(games, h, a, notes)
     img = Image.new("RGB", (W, H))
     d = ImageDraw.Draw(img)
     for y in range(H):
@@ -197,8 +216,12 @@ def render(m, games, out, when=""):
     goals_pair(HX - 30, gf[h], gf[a])
     goals_pair(AX + 30, gf[a], gf[h])
     text_c(W // 2, 470, "الأهداف", FC.font("Bold", 30), WHITE)
-    text_c(W // 2, 510, f"في {n} مباريات" if n > 2 else "في المباراتين", FC.font("Regular", 24), DIM)
-    text_c(W // 2, 540, "بالنتائج الرسمية", FC.font("Regular", 24), DIM)
+    if played < n:
+        text_c(W // 2, 510, f"في {played} مباريات", FC.font("Regular", 24), DIM)
+        text_c(W // 2, 540, "لُعبت داخل الملعب", FC.font("Regular", 24), DIM)
+    else:
+        text_c(W // 2, 510, f"في {n} مباريات" if n > 2 else "في المباراتين", FC.font("Regular", 24), DIM)
+        text_c(W // 2, 540, "بالنتائج الرسمية", FC.font("Regular", 24), DIM)
 
     # the meetings: 2 columns x 5, newest at the top right
     CW, CH, GAP = 486, 112, 10
@@ -219,7 +242,9 @@ def render(m, games, out, when=""):
             fh = FC.font("Bold", fh.size - 1)
         text_r(x0 + CW - nb - 22, y0 + 14, head, fh, DIM)
         gh, ga = ar_team(g["home"]), ar_team(g["away"])
-        hw, aw = g["hg"] > g["ag"], g["ag"] > g["hg"]
+        gn = gnotes.get(g["date"]) or {}
+        hw = g["hg"] > g["ag"] or gn.get("winner") == gh
+        aw = g["ag"] > g["hg"] or gn.get("winner") == ga
         mid = x0 + CW / 2 - 16
         fh2 = fnm
         while max(d.textlength(FC.ar(gh), font=fh2), d.textlength(FC.ar(ga), font=fh2)) > 150 and fh2.size > 20:
@@ -229,22 +254,26 @@ def render(m, games, out, when=""):
         sc = f"{g['ag']} - {g['hg']}"                                 # drawn LTR: away left, home right
         rrect([mid - 56, y0 + 46, mid + 56, y0 + 88], 12, (0, 0, 0, 90))
         d.text((mid - d.textlength(sc, font=fs) / 2, y0 + 46), sc, font=fs, fill=WHITE)
+        if gn.get("note"):
+            text_c(mid, y0 + 88, gn["note"], FC.font("Bold", 18), GOLD)
 
-    # the last win of each side + footer
+    # the finals line (hand-checked) or the last win of each side + footer
     fy = 618 + 5 * (CH + GAP) + 4
     rrect([40, fy, W - 40, fy + 60], 18, (246, 192, 60, 26), (246, 192, 60, 120), 2)
     parts = []
     for name in (h, a):
         parts.append(f"آخر فوز لـ{name}: {ar_date(last[name])}" if last[name] else f"{name} بلا فوز في هذه المواجهات")
-    fact = " · ".join(parts)
+    fact = notes.get("finals") or " · ".join(parts)
     ff = FC.font("Bold", 30)
     while d.textlength(FC.ar(fact), font=ff) > W - 120 and ff.size > 18:
         ff = FC.font("Bold", ff.size - 2)
     text_c(W // 2, fy + 10 + (30 - ff.size) // 2, fact, ff, WHITE)
     text_l(40, H - 46, "yallascore.site", FC.font("Bold", 24), SOFT)
-    text_r(W - 40, H - 44, "البيانات: 365Scores · النتائج الرسمية", FC.font("Regular", 22), DIM)
+    src = "البيانات: 365Scores · " + (notes.get("source") or "النتائج الرسمية")
+    text_r(W - 40, H - 44, src, FC.font("Regular", 22), DIM)
     img.save(out, quality=90, optimize=True) if out.lower().endswith((".jpg", ".jpeg")) else img.save(out)
-    return {"n": n, "wins": w, "draws": draws, "goals": gf, "last": last}
+    return {"n": n, "wins": w, "draws": draws, "goals": gf, "last": last, "played": played,
+            "finals": notes.get("finals")}
 
 
 def for_match(m, out):
