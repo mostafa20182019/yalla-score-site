@@ -1,0 +1,63 @@
+name: Growth KPI (weekly)
+
+# The automatic half of the Monday growth read-out (growth plan week 5):
+# followers, Telegram subscribers, push subscriptions, what we published and
+# posted in the last 7 days by kind. Appends a row to data/growth_kpi.json and
+# prints the row in the run summary. The manual half (Cloudflare visitors, GSC,
+# post reach) is filled in matches-guide/GROWTH_LOG.md by hand.
+#
+# GitHub's schedule is best-effort (the Worker's five crons are all spent), and
+# a weekly row that lands an hour or a day late is still the week's row.
+on:
+  schedule:
+    - cron: "20 5 * * 1"          # Monday 05:20 UTC = 08:20 Cairo (winter) / 07:20 (summer)
+  workflow_dispatch:
+
+permissions:
+  contents: write                 # the row is committed back
+
+concurrency:
+  group: growth-kpi
+  cancel-in-progress: false
+
+jobs:
+  kpi:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install deps
+        run: pip install -r requirements.txt
+
+      - name: Pull the working data
+        run: python data_store.py pull
+
+      - name: The week's numbers
+        env:
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: python growth_kpi.py
+
+      - name: Commit the row
+        run: |
+          git config user.name "yalla-score-bot"
+          git config user.email "bot@yallascore.site"
+          git add data/growth_kpi.json
+          if git diff --cached --quiet; then
+            echo "nothing new"
+          else
+            git commit -m "growth kpi: weekly row [skip ci]"
+            git pull --rebase origin main
+            git push origin main
+          fi
