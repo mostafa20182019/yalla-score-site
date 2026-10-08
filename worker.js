@@ -9,6 +9,9 @@
 
 import { healthResponse, watchdog } from "./health.js";
 import { pushApi } from "./push.js";
+// live Facebook posts (goal / VAR / lineup) for the Egyptian scope - see its header;
+// needs the Worker secret FB_PAGE_TOKEN, a no-op without it
+import { livePosts, lineupPosts, postScope } from "./liveposts.js";
 
 // Live-scores edge endpoint (/live.json): proxies 365scores' current-games
 // feed with a 30s edge cache, so every visitor polls US (cheap, same-origin)
@@ -139,6 +142,7 @@ async function liveScoresData() {
     "https://webws.365scores.com/web/games/current/?appTypeId=5" +
     "&langId=27&timezoneName=Africa/Cairo&showOdds=false";
   const games = [];
+  const upcoming = [];    // scheduled games of the live-post scope (lineup window), see liveposts.js
   const wantDetail = [];  // {idx, gid, live, first} — live games + just-ended with a goal
   let ok = false, src = "multi", dt = 0;
   try {
@@ -174,6 +178,11 @@ async function liveScoresData() {
     }
     for (const g of raw) {
         const sg = g.statusGroup;            // 2 scheduled / 3 live / 4 ended
+        if (sg === 2 && g.id && g.startTime) {
+          const u = { id: g.id, c: g.competitionId || 0, h: (g.homeCompetitor || {}).name || "",
+                      a: (g.awayCompetitor || {}).name || "", start: Date.parse(g.startTime) };
+          if (u.start && postScope(u)) upcoming.push(u);
+        }
         if (sg !== 3 && sg !== 4) continue;  // live + finished (final score)
         const h = g.homeCompetitor || {}, a = g.awayCompetitor || {};
         if (h.score == null || h.score < 0 || a.score == null || a.score < 0) continue;
@@ -221,7 +230,7 @@ async function liveScoresData() {
       if (d.goals) g.goals = d.goals;
     }));
   } catch (e) { /* fail-empty */ }
-  return { games, ok, src, dt };
+  return { games, ok, src, dt, upcoming };
 }
 
 function liveResponse(data, extra = {}) {
@@ -409,6 +418,7 @@ async function storeApply(env, fresh, now) {
   }
   const stmts = [];
   let upserts = 0, events = 0, ended = 0;
+  const posts = [], cancels = [];   // goals discovered LIVE + VAR reversals -> liveposts.js
   const goalRow = (g, seq, ev) => env.DB.prepare(GOAL_INS)
     .bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now);
   for (const g of fresh.games) {
@@ -427,14 +437,21 @@ async function storeApply(env, fresh, now) {
       const seqRow = await env.DB.prepare("/*lg_seq*/ SELECT COALESCE(MAX(seq),0) AS s FROM live_goals WHERE game_id = ?")
         .bind(g.id).first();
       let seq = seqRow ? Number(seqRow.s) : 0;
+      // the live-post guard (liveposts.js): a goal is POSTED only while the
+      // score itself went up since the last refresh, and a reversal is posted
+      // only when it went down. A re-attributed goal (new key, same score) or
+      // a detail that failed this minute must never fake either.
+      let up = (g.hs + g.as) - (p.hs + p.as_);
       if (newGoals.length || oldGoals.length) {
         // the detail's goal list is the truth about WHICH goals: a new key is
         // an event, a vanished key is a VAR reversal
         const prevKeys = new Set(oldGoals.map(goalKey)), nextKeys = new Set(newGoals.map(goalKey));
         for (const ev of newGoals) if (!prevKeys.has(goalKey(ev))) {
           seq += 1; stmts.push(goalRow(g, seq, ev)); events += 1;
+          if (g.live && up > 0) { posts.push({ g, seq, ev }); up -= 1; }
         }
         for (const ev of oldGoals) if (!nextKeys.has(goalKey(ev))) {
+          if (up < 0) { cancels.push({ g, ev }); up += 1; }
           stmts.push(env.DB.prepare("/*lg_cancel*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +
             "WHERE game_id = ? AND side = ? AND COALESCE(player,'') = ? AND COALESCE(minute,'') = ? AND cancelled = 0")
             .bind(now, g.id, ev.s, ev.p || "", ev.m || ""));
@@ -445,6 +462,7 @@ async function storeApply(env, fresh, now) {
         for (const [side, d] of [["h", g.hs - p.hs], ["a", g.as - p.as_]]) {
           for (let i = 0; i < d; i++) {
             seq += 1; stmts.push(goalRow(g, seq, { s: side, m: g.min || null })); events += 1;
+            if (g.live) posts.push({ g, seq, ev: { s: side, m: g.min || null } });
           }
           if (d < 0) {   // VAR took a goal back: cancel that side's latest live goal
             stmts.push(env.DB.prepare("/*lg_cancel_last*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +
@@ -452,6 +470,7 @@ async function storeApply(env, fresh, now) {
               "(SELECT MAX(seq) FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 0)")
               .bind(now, g.id, side, g.id, side));
             events += 1;
+            cancels.push({ g, ev: { s: side } });
           }
         }
       }
@@ -505,7 +524,7 @@ async function storeApply(env, fresh, now) {
   stmts.push(env.DB.prepare("/*ls_purge*/ DELETE FROM live_state WHERE changed_at < ?")
     .bind(now - STATE_KEEP_MS));
   for (let i = 0; i < stmts.length; i += 40) await env.DB.batch(stmts.slice(i, i + 40));   // D1 batch cap
-  return { upserts, events, ended };
+  return { upserts, events, ended, posts, cancels };
 }
 
 // One refresh: upstream -> store. A failed upstream read changes nothing (the
@@ -521,7 +540,11 @@ async function refreshLive(env) {
       return { ok: false };
     }
     const r = await storeApply(env, fresh, now);
-    return { ok: true, ...r, n: fresh.games.length };
+    let fb = null;
+    try { fb = await livePosts(env, r); }                 // after the batch: the store is the truth first
+    catch (e) { console.log("live posts failed:", e && e.message); }
+    return { ok: true, upserts: r.upserts, events: r.events, ended: r.ended, n: fresh.games.length,
+             fb, upcoming: fresh.upcoming || [] };
   })().finally(() => { refreshing = null; });
   return refreshing;
 }
@@ -1004,7 +1027,14 @@ export default {
         console.log("live store refresh failed:", e && e.message);
         return;
       }
-      console.log("live store refresh:", JSON.stringify(r));
+      console.log("live store refresh:", JSON.stringify({ ...r, upcoming: (r.upcoming || []).length }));
+      // the official XI, 45-80 minutes before an Egyptian-scope kick-off (liveposts.js)
+      try {
+        const lp = await lineupPosts(env, r.upcoming || [], Date.now(), S365_HEADERS);
+        if (lp.due) console.log("xi posts:", JSON.stringify(lp));
+      } catch (e) {
+        console.log("xi posts failed:", e && e.message);
+      }
       // and the matches that ended: the report queue (see THE REPORT QUEUE)
       try {
         const q = await dueReports(env, Date.now());
