@@ -529,7 +529,8 @@ def build_brief(d, m, kind):
             "match_id": m["match_id"], "competition": b.comp_label(comp), "competition_raw": comp,
             "round": m.get("round"), "kickoff_cairo": ko.strftime("%Y-%m-%d %H:%M") if ko else None,
             "weekday_ar": b._AR_DAYS[ko.weekday()] if ko else None,
-            "home": h_ar, "away": a_ar, "tv": m.get("channel"),
+            "home": h_ar, "away": a_ar,
+            "tv": m.get("channel") or b.COMP_TV.get(comp),   # verified map as the fallback (2026-10-08)
             "status": m.get("status"), "score": (f"{m.get('home_score')}-{m.get('away_score')}"
                                                 if m.get("home_score") is not None else None),
             "url": b.match_url(m),

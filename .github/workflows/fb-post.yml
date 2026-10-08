@@ -24,6 +24,10 @@ on:
         description: "Repost ONE article by id (only after deleting its old post on the page). Empty = normal run."
         required: false
         default: ""
+      prediction:
+        description: "Prediction post for ONE upcoming match (match_id from /m/<id>): our card + the model's numbers + a question. Empty = normal run."
+        required: false
+        default: ""
 
 permissions:
   contents: read           # the state lives in D1; nothing is pushed
@@ -57,8 +61,11 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
           REPOST: ${{ inputs.repost }}
+          PREDICTION: ${{ inputs.prediction }}
         run: |
-          if [ -n "$REPOST" ]; then
+          if [ -n "$PREDICTION" ]; then
+            python fb_post.py --prediction "$PREDICTION" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+          elif [ -n "$REPOST" ]; then
             python fb_post.py --repost "$REPOST" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           else
             python fb_post.py --auto | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}

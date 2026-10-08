@@ -51,7 +51,14 @@ COMP_TV = {
     "Ligue 1": "beIN Sports",
     "UEFA Champions League": "beIN Sports",
     "CAF Champions League": "beIN Sports",     # confirmed by the user 2026-09-02
-    # Serie A / Bundesliga / Turkish / Saudi: rights unverified — add when confirmed.
+    # Verified 2026-10-08 (growth plan, week 0) - MENA rights for 2026/27, one
+    # dated source each; the match page says «في المنطقة العربية»:
+    "Serie A": "STARZPLAY وقنوات أبوظبي الرياضية",   # dzsport-live 2026-08-05 (STARZPLAY exclusive, AD Sports partner)
+    "Bundesliga": "MBC Action وشاهد",              # offsideeg 2025-08-21: MBC, seasons 2025/26-2027/28
+    "Saudi Pro League": "ثمانية",                    # Ahram Gate 2026-08-13: Thmanyah exclusive to 2030/31
+    "Turkish Super Lig": "beIN Sports",             # Masrawy 2026-08-05: beIN to the end of 2026/27
+    "Africa Cup of Nations Qualification": "beIN Sports",   # Annahar/Alkhaleej Sep 2026 (Egypt home games also terrestrial)
+    "UEFA Nations League": "beIN Sports",           # Raya 2026-09-24
 }
 
 # official competition emblems (same host as the team crests already used)

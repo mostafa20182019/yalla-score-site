@@ -306,6 +306,11 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             info.append(("موعد الانطلاق", f"{m['koff_time']} بتوقيت القاهرة"))
         if m.get("channel"):
             info.append(("القناة الناقلة", str(m["channel"])))
+        elif st != "FINISHED" and COMP_TV.get(m.get("competition")):
+            # growth plan 2026-10-08: «موعد المباراة والقنوات الناقلة» is the
+            # title's promise; the verified per-competition map keeps it when
+            # the feed names no channel (every European league, in practice)
+            info.append(("القنوات الناقلة", COMP_TV[m["competition"]]))
         state_txt = {"FINISHED": "انتهت", "LIVE": "جارية الآن",
                      "UPCOMING": "لم تبدأ بعد", "POSTPONED": "مؤجلة"}.get(st)
         if state_txt:

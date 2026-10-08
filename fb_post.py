@@ -356,10 +356,100 @@ def repost(token, aid):
     return 1
 
 
+# ---------------------------------------------------------------- prediction post
+# Growth plan 2026-10-08, week 0: an ENGAGEMENT post before a big match - our
+# matchup card as the photo (photo posts reach further than link posts), the
+# model's numbers only (user rule: never the betting disclaimer in a post),
+# and a question that invites comments. Dispatched by hand from the Facebook
+# Post workflow (`prediction` input) until the slots automate it.
+
+def _tag(name):
+    return "#" + "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in (name or "").replace(" ", "_")).strip("_")
+
+
+def prediction_text(m, pr, tv=None):
+    """The post text for match `m` (matches.json shape) and its prediction
+    block (match_brief.prediction_block). Numbers only, no disclaimer."""
+    import matchup_card as MC
+    from site_lib.names import ar_team, comp_label
+    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+    when = MC.when_ar(m.get("kickoff"), m.get("koff_time"))
+    comp = comp_label(m.get("competition"))
+    top = (pr.get("likely_scores") or [{}])[0]
+    lines = [f"توقع يلا سكور قبل المباراة: {h} × {a}",
+             "⚽ " + " · ".join(x for x in (when, comp, f"على {tv}" if tv else "") if x),
+             f"🤖 النموذج: {h} {pr['home_win']} · تعادل {pr['draw']} · {a} {pr['away_win']}"]
+    extra = []
+    if top.get("score_home_away"):
+        extra.append(f"النتيجة الأرجح {top['score_home_away']} ({top['prob']})")
+    if pr.get("over_2_5"):
+        extra.append(f"أكثر من 2.5 هدف {pr['over_2_5']}")
+    if extra:
+        lines.append("🎯 " + " · ".join(extra))
+    rec = (pr.get("record") or {}).get("all")
+    if rec:
+        lines.append(f"📊 سجل النموذج هذا الموسم: أصاب {rec['hits']} من {rec['scored']} توقعًا")
+    lines += ["توقعك إيه؟ اكتبه في التعليقات 👇",
+              f"التوقع الكامل بالأرقام: {SITE}/m/{m.get('match_id')}",
+              " ".join(("#يلا_سكور", _tag(h), _tag(a)))]
+    return "\n".join(lines)
+
+
+def prediction_post(token, mid, dry=False):
+    """Post the prediction card for one match. 0 = posted or dry-run, 1 = nothing to post."""
+    import tempfile
+    import match_brief as MB
+    import matchup_card as MC
+    import fb_cards
+    from site_lib.competitions import COMP_TV
+    d = MB.load_all()
+    m = next((x for x in d["matches"] if str(x.get("match_id")) == str(mid)), None)
+    if not m:
+        print(f"prediction: match {mid} is not in matches.json")
+        return 1
+    if (m.get("status") or "").upper() == "FINISHED":
+        print(f"prediction: match {mid} is already finished - nothing to predict")
+        return 1
+    pr = MB.prediction_block(d, m)
+    if not pr:
+        print(f"prediction: the model has nothing for {m.get('competition')}")
+        return 1
+    text = prediction_text(m, pr, tv=m.get("channel") or COMP_TV.get(m.get("competition")))
+    out = os.path.join(tempfile.gettempdir(), f"pred-{mid}.jpg")
+    venue, feed = "", None
+    try:
+        gid = MB.resolve_s365_game(m)
+        hb = MB.h2h_block(gid) if gid else {}
+        venue, feed = hb.get("venue") or "", hb.get("colors")
+    except Exception:                                   # noqa: BLE001 - offline: names + our kits
+        pass
+    MC.for_match(m, out, venue=venue, top_label="توقع يلا سكور", feed=feed)
+    print(text)
+    print(f"[card: {out}]")
+    if dry:
+        return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping")
+        return 0
+    if not store.claim("pred", mid, title=text.split("\n", 1)[0]):
+        print(f"prediction {mid}: already posted, or claimed by another run - skipping")
+        return 0
+    try:
+        with open(out, "rb") as f:
+            pid = fb_cards.post_photo(token, f.read(), text)
+        store.record_post("pred", mid, pid, title=text.split("\n", 1)[0])
+        print(f"posted prediction {mid} to Facebook: post id {pid}")
+    except Exception as e:                              # noqa: BLE001
+        store.release("pred", mid)
+        print(f"prediction post FAILED ({mid}): {e}")
+        return 1
+    return 0
+
+
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items:
+    if not items and "--prediction" not in sys.argv[1:]:
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -377,6 +467,10 @@ def main() -> int:
         return 0
     if "--auto" in sys.argv[1:]:
         return auto(token, items)
+    if "--prediction" in sys.argv[1:]:
+        i = sys.argv.index("--prediction")
+        return prediction_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "",
+                               dry="--dry" in sys.argv[1:])
     if "--repost" in sys.argv[1:]:
         i = sys.argv.index("--repost")
         return repost(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "")
