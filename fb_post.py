@@ -382,6 +382,10 @@ def auto(token, items):
             store.release("article", aid)
     if token:
         heal_previews(token)
+        try:                                        # the weekly H2H card (growth plan week 4)
+            h2h_post(token, "auto")
+        except Exception as e:                      # noqa: BLE001 - never fail the article run over it
+            print(f"h2h auto failed: {e}")
     return 0
 
 
@@ -522,10 +526,109 @@ def prediction_post(token, mid, dry=False):
     return 0
 
 
+# ---------------------------------------------------------------- the weekly H2H card
+# Growth plan week 4 (2026-10-08): one head-to-head infographic a week for the
+# biggest match coming up (h2h_card.py), posted as a photo. `auto` picks the
+# match and keeps to one card per H2H_EVERY_DAYS; a match id posts that match
+# (once - the fb_posted lock, kind "h2h").
+H2H_EVERY_DAYS = 6
+H2H_WINDOW_H = (20.0, 96.0)       # kick-off 20h..4 days away: close enough to matter, early enough to be read
+
+
+def h2h_text(m, r, when=""):
+    from site_lib.names import ar_team, comp_label
+    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+    lines = [f"📊 آخر {r['n']} مواجهات بين {h} و{a}" + (f" قبل لقاء {when}" if when else ""),
+             f"🏆 {h} فاز {r['wins'][h]} · تعادل {r['draws']} · {a} فاز {r['wins'][a]}",
+             f"⚽ الأهداف: {h} {r['goals'][h]} · {a} {r['goals'][a]}"]
+    for name in (h, a):
+        if r["last"].get(name):
+            import h2h_card as HC
+            lines.append(f"🗓️ آخر فوز لـ{name}: {HC.ar_date(r['last'][name])}")
+    lines += [f"{comp_label(m.get('competition'))} · التوقع والتحليل: {SITE}/m/{m.get('match_id')}",
+              " ".join(("#يلا_سكور", _tag(h), _tag(a)))]
+    return "\n".join(lines)
+
+
+def h2h_pick(d, now=None):
+    """The biggest upcoming match: both sides featured, kick-off inside
+    H2H_WINDOW_H, Egyptian league first, then the soonest. None when nothing fits."""
+    import match_brief as MB
+    now = now or _now()
+    cands = []
+    for m in d["matches"]:
+        if (m.get("status") or "").upper() != "UPCOMING" or not m.get("match_id"):
+            continue
+        ko = MB._kick(m)
+        if not ko:
+            continue
+        hrs = (ko - now).total_seconds() / 3600
+        if not (H2H_WINDOW_H[0] <= hrs <= H2H_WINDOW_H[1]):
+            continue
+        if MB.featured_sides(m) < 2:
+            continue
+        cands.append((0 if m.get("competition") == "Egyptian Premier League" else 1, hrs, m))
+    cands.sort(key=lambda x: (x[0], x[1]))
+    return cands[0][2] if cands else None
+
+
+def h2h_post(token, which, dry=False):
+    """0 = posted / dry / nothing due, 1 = asked for a match that cannot be done."""
+    import tempfile
+    import match_brief as MB
+    import matchup_card as MC
+    import h2h_card as HC
+    d = MB.load_all()
+    if which == "auto":
+        recent = store.posted_since("h2h", time.time() - H2H_EVERY_DAYS * 86400)
+        if recent:
+            print(f"h2h: a card went out {((time.time() - recent[0]['posted_at']) / 86400):.1f} days ago - not yet")
+            return 0
+        m = h2h_pick(d)
+        if not m:
+            print("h2h: no big match in the window")
+            return 0
+    else:
+        m = next((x for x in d["matches"] if str(x.get("match_id")) == str(which)), None)
+        if not m:
+            print(f"h2h: match {which} is not in matches.json")
+            return 1
+    ref = str(m["match_id"])
+    if store.get_post("h2h", ref):
+        print(f"h2h: match {ref} already has its card")
+        return 0
+    out = os.path.join(tempfile.gettempdir(), f"h2h-{ref}.jpg")
+    r = HC.for_match(m, out)
+    if not r:
+        print(f"h2h: too few meetings on record for {ref} (or the feed is unreachable)")
+        return 0 if which == "auto" else 1
+    text = h2h_text(m, r, MC.when_ar(m.get("kickoff"), m.get("koff_time")))
+    print(text)
+    print(f"[card: {out}]")
+    if dry:
+        return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping")
+        return 0
+    if not store.claim("h2h", ref, title=text.split("\n", 1)[0]):
+        print(f"h2h {ref}: claimed by another run - skipping")
+        return 0
+    try:
+        with open(out, "rb") as f:
+            pid = post_photo(token, f.read(), text)
+        store.record_post("h2h", ref, pid, title=text.split("\n", 1)[0])
+        print(f"posted h2h card {ref} to Facebook: post id {pid}")
+    except Exception as e:                              # noqa: BLE001
+        store.release("h2h", ref)
+        print(f"h2h post FAILED ({ref}): {e}")
+        return 1
+    return 0
+
+
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and "--prediction" not in sys.argv[1:]:
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -543,6 +646,10 @@ def main() -> int:
         return 0
     if "--auto" in sys.argv[1:]:
         return auto(token, items)
+    if "--h2h" in sys.argv[1:]:
+        i = sys.argv.index("--h2h")
+        return h2h_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "auto",
+                        dry="--dry" in sys.argv[1:])
     if "--prediction" in sys.argv[1:]:
         i = sys.argv.index("--prediction")
         return prediction_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "",
