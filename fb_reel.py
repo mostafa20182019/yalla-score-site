@@ -318,7 +318,16 @@ def frames(ctx):
 
 # ---------------------------------------------------------------- encoding
 def ffmpeg():
-    return shutil.which("ffmpeg")
+    """ffmpeg on PATH (the GitHub runner), else the binary the imageio-ffmpeg
+    wheel ships (pip install imageio-ffmpeg - the laptop, 2026-10-08), else None."""
+    exe = shutil.which("ffmpeg")
+    if exe:
+        return exe
+    try:
+        import imageio_ffmpeg                       # noqa: PLC0415
+        return imageio_ffmpeg.get_ffmpeg_exe()
+    except Exception:                               # noqa: BLE001
+        return None
 
 
 def encode(fs, path):
