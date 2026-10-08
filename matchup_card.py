@@ -6,9 +6,10 @@ User: «اعمل قالب صورة المواجهة للماتشات المهم�
 one by hand for the Zamalek x Al Ahly analysis (article 687).
 
 A 1600x680 card in the site's brand: blue gradient, a faint halfway line and
-centre circle, each club as a DISC IN ITS COLOURS - never its crest (club
-crests are trademarks; the site uses only free-licensed or its own images),
-the two names, the competition and round in the middle, date / time / venue
+centre circle, each club as its CREST inside a white ring (user decision
+2026-10-08 evening, «شعارات في كل البطاقات»: the same crests the site shows
+beside every score, from the crest cache) - or, when the fixture carries
+no badge our cache can rasterise, a DISC IN ITS COLOURS - the two names, the competition and round in the middle, date / time / venue
 underneath, «يلا سكور» + the URL on the same bottom row. The middle shows «×»
 before kick-off and the score once the match is over (a report).
 
@@ -182,6 +183,27 @@ def _disc(img, d, cx, cy, r, kit):
     d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=WHITE, width=8)
 
 
+def _crest(img, d, cx, cy, r, badge):
+    """The club crest centred on a white disc inside the ring. True when
+    drawn; False (nothing drawn) when the badge is missing, SVG, or cannot
+    be read - the caller then draws the coloured disc."""
+    if not badge:
+        return False
+    try:
+        im = _fonts().crest_image(badge, int(2 * r * 0.70))
+    except Exception:                                   # noqa: BLE001 - offline, odd file
+        im = None
+    if im is None:
+        return False
+    sh = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(sh).ellipse([cx - r + 6, cy - r + 14, cx + r + 6, cy + r + 14], fill=(0, 0, 0, 90))
+    img.paste(sh.filter(ImageFilter.GaussianBlur(12)), (0, 0), sh.filter(ImageFilter.GaussianBlur(12)))
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHITE)
+    img.paste(im, (cx - im.width // 2, cy - im.height // 2), im)
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=WHITE, width=8)
+    return True
+
+
 def _text_c(d, FC, cx, y, s, f, fill=WHITE, max_w=None, size=None, weight=None):
     """Centred Arabic text; shrinks (when weight/size are given) to fit max_w."""
     t = FC.ar(s)
@@ -193,7 +215,7 @@ def _text_c(d, FC, cx, y, s, f, fill=WHITE, max_w=None, size=None, weight=None):
 
 
 def render(home, away, out, comp=None, comp_label="", round_label="", when="", venue="",
-           score=None, top_label=None, feed=None):
+           score=None, top_label=None, feed=None, home_badge=None, away_badge=None):
     """Write the card to `out` (.jpg or .png). `score` = (home, away) for a
     finished match, else the middle shows «×»."""
     FC = _fonts()
@@ -210,8 +232,10 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
 
     hk, ak = kits(home, away, comp, feed)
     CY, R = 262, 108
-    _disc(img, d, 1150, CY, R, hk)                   # home on the RIGHT (RTL)
-    _disc(img, d, 450, CY, R, ak)
+    if not _crest(img, d, 1150, CY, R, home_badge):   # home on the RIGHT (RTL)
+        _disc(img, d, 1150, CY, R, hk)
+    if not _crest(img, d, 450, CY, R, away_badge):
+        _disc(img, d, 450, CY, R, ak)
     _text_c(d, FC, 1150, CY + R + 14, home, FC.font("ExtraBold", 66), max_w=440, size=66, weight="ExtraBold")
     _text_c(d, FC, 450, CY + R + 14, away, FC.font("ExtraBold", 66), max_w=440, size=66, weight="ExtraBold")
     if top_label or comp_label:
@@ -275,7 +299,7 @@ def for_match(m, out, venue="", top_label=None, feed=None):
                   comp_label=comp_label(comp), round_label=(f"الجولة {m['round']}" if m.get("round") else ""),
                   when=when_ar(m.get("kickoff"), m.get("koff_time")), venue=venue,
                   score=(int(m["home_score"]), int(m["away_score"])) if done else None, top_label=top_label,
-                  feed=feed)
+                  feed=feed, home_badge=m.get("home_badge"), away_badge=m.get("away_badge"))
 
 
 def card_name(m):

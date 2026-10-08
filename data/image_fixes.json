@@ -1,25 +1,31 @@
 {
-  "_why": "Corrections to the photo of an ALREADY PUBLISHED article. D1 is the writer, and the Cloudflare credentials live only on the runner, so a wrong photo is fixed by adding an entry here and dispatching the D1 Admin workflow with task `fix-images`. The entry stays in git as the record of what was wrong and why. Applying is idempotent: an article already carrying the new image_url is reported as 'already applied' and left alone.",
-  "fixes": [
-    {
-      "article_id": "467",
-      "why": "A preview of a match being played TODAY was illustrated with Steven Gerrard, who retired in 2016. The credit said so («أسطورة ليفربول السابق ... عام 2014») and the club test passed, because the club was right - only the person was a decade out of the story. Replaced with the host's ground, which is what the editorial rule prescribes when no current-squad photo is available.",
-      "image_url": "https://yallascore.site/media/anfield-kop-stand-panorama.jpg",
-      "image_credit": "صورة: مدرجات ملعب أنفيلد معقل ليفربول — تصوير Yurificacion، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)"
-    },
-    {
-      "article_id": "433",
-      "why": "Same photo, same mistake, one match earlier - the Liverpool v Atletico Madrid preview. Found by the audit that the 467 report triggered.",
-      "image_url": "https://yallascore.site/media/anfield-stadium-liverpool-2026.jpg",
-      "image_credit": "صورة: ملعب أنفيلد معقل ليفربول — تصوير Vojta Zurek، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)"
-    },
-    {
-      "article_id": "687",
-      "why": "The derby analysis (Zamalek x Al Ahly, 11 Oct 2026) was illustrated with Cairo Stadium full of EGYPT national-team fans (Egypt v Senegal 2022) - the user asked for no crowd of anyone's colours: «استاد القاهرة بس يكون فاضي». Replaced with the stadium's almost empty stands at night (FIFA Series 2024, CC0). Club crests were offered as an alternative and declined: the clubs' logos are not ours to use as an article image. pub_ts also corrected: the draft was parked with the next morning slot's time (09:00 on 8 Oct) and the user published it by hand at 22:49 on 7 Oct. | 2026-10-08: the user then asked for our own logo instead («غير صورة المقال لصورة اللوجو بتاعنا»): media/yallascore-brand-cover.jpg, the Facebook cover design re-laid to 1600x680 with the content inside the hero crop. Edited in place, not appended - two entries for one article would make every fix-images run flip the photo twice. | 2026-10-08 (2): the user approved a matchup card made for it instead - media/matchup-zamalek-ahly-2026-10-11.jpg: brand background, each club as a disc in its colours (white with two red bands / red), names, «القمة 133», round, date and venue; NO club crests (trademarks). | 2026-10-08 (3): the site cropped the card's corners (brand cut on the home lead, date line cut in the hero) - «اظبطلى ظهور الصورة». Re-laid with everything inside matchup_card.SAFE, saved under a NEW name (-v2) because /media is cached 7 days.",
-      "image_url": "https://yallascore.site/media/matchup-zamalek-ahly-2026-10-11-v2.jpg",
-      "image_credit": "الصورة: تصميم يلا سكور",
-      "pub_ts": "2026-10-07T22:49:00+03:00",
-      "pub_date": "2026-10-07"
-    }
-  ]
+ "_why": "Corrections to the photo of an ALREADY PUBLISHED article. D1 is the writer, and the Cloudflare credentials live only on the runner, so a wrong photo is fixed by adding an entry here and dispatching the D1 Admin workflow with task `fix-images`. The entry stays in git as the record of what was wrong and why. Applying is idempotent: an article already carrying the new image_url is reported as 'already applied' and left alone.",
+ "fixes": [
+  {
+   "article_id": "467",
+   "why": "A preview of a match being played TODAY was illustrated with Steven Gerrard, who retired in 2016. The credit said so («أسطورة ليفربول السابق ... عام 2014») and the club test passed, because the club was right - only the person was a decade out of the story. Replaced with the host's ground, which is what the editorial rule prescribes when no current-squad photo is available.",
+   "image_url": "https://yallascore.site/media/anfield-kop-stand-panorama.jpg",
+   "image_credit": "صورة: مدرجات ملعب أنفيلد معقل ليفربول — تصوير Yurificacion، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)"
+  },
+  {
+   "article_id": "433",
+   "why": "Same photo, same mistake, one match earlier - the Liverpool v Atletico Madrid preview. Found by the audit that the 467 report triggered.",
+   "image_url": "https://yallascore.site/media/anfield-stadium-liverpool-2026.jpg",
+   "image_credit": "صورة: ملعب أنفيلد معقل ليفربول — تصوير Vojta Zurek، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)"
+  },
+  {
+   "article_id": "687",
+   "why": "The derby analysis (Zamalek x Al Ahly, 11 Oct 2026) was illustrated with Cairo Stadium full of EGYPT national-team fans (Egypt v Senegal 2022) - the user asked for no crowd of anyone's colours: «استاد القاهرة بس يكون فاضي». Replaced with the stadium's almost empty stands at night (FIFA Series 2024, CC0). Club crests were offered as an alternative and declined: the clubs' logos are not ours to use as an article image. pub_ts also corrected: the draft was parked with the next morning slot's time (09:00 on 8 Oct) and the user published it by hand at 22:49 on 7 Oct. | 2026-10-08: the user then asked for our own logo instead («غير صورة المقال لصورة اللوجو بتاعنا»): media/yallascore-brand-cover.jpg, the Facebook cover design re-laid to 1600x680 with the content inside the hero crop. Edited in place, not appended - two entries for one article would make every fix-images run flip the photo twice. | 2026-10-08 (2): the user approved a matchup card made for it instead - media/matchup-zamalek-ahly-2026-10-11.jpg: brand background, each club as a disc in its colours (white with two red bands / red), names, «القمة 133», round, date and venue; NO club crests (trademarks). | 2026-10-08 (3): the site cropped the card's corners (brand cut on the home lead, date line cut in the hero) - «اظبطلى ظهور الصورة». Re-laid with everything inside matchup_card.SAFE, saved under a NEW name (-v2) because /media is cached 7 days. | 2026-10-08 (4): the user chose crests on EVERY card («شعارات في كل البطاقات، الخيار 2») - the same crests the site shows beside each score, drawn inside the white ring by matchup_card._crest; new name again (-v3) because /media is cached 7 days.",
+   "image_url": "https://yallascore.site/media/matchup-zamalek-ahly-2026-10-11-v3.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور",
+   "pub_ts": "2026-10-07T22:49:00+03:00",
+   "pub_date": "2026-10-07"
+  },
+  {
+   "article_id": "697",
+   "why": "Liverpool x Manchester City analysis (11 Oct 2026): published with the disc-coloured matchup card; 2026-10-08 the user chose crests on every card (option 2) - replaced by the same card with both crests (-v2, /media is cached 7 days).",
+   "image_url": "https://yallascore.site/media/matchup-liverpool-man-city-2026-10-11-v2.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور"
+  }
+ ]
 }
