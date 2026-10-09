@@ -37,9 +37,9 @@ on:
         type: choice
         default: "status"
         options: [ "status", "init", "migrate", "export", "verify", "warehouse",
-                   "sample", "articles-backfill", "fix-images", "delete-article" ]
+                   "sample", "articles-backfill", "fix-images", "delete-article", "delete-thin" ]
       args:
-        description: "delete-article only: the ids, comma-separated (e.g. 565,566)"
+        description: "delete-article: the ids, comma-separated (e.g. 565,566). delete-thin: `dry` to list only"
         type: string
         default: ""
 
@@ -100,7 +100,7 @@ jobs:
       # the ability to walk the state's history in git, which is how the
       # duplicate-post bug was found in the first place.
       - name: Commit the export
-        if: env.TASK == 'export' || env.TASK == 'delete-article'
+        if: env.TASK == 'export' || env.TASK == 'delete-article' || (env.TASK == 'delete-thin' && env.ARGS != 'dry')
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"

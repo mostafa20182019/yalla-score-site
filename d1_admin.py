@@ -175,12 +175,41 @@ def _fix_images():
           f"{missing} not found")
 
 
+THIN_BEFORE = "2026-09-01"     # the stubs are all from July/August 2026; nothing newer is touched
+
+
+def thin_unlisted(articles, posted_ids):
+    """The articles the `delete-thin` task removes (user decision 2026-10-09,
+    option 1 of three): under the listing bar, plain news (never a match piece
+    or an analysis), published before THIN_BEFORE, and WITHOUT a Facebook post
+    (a deleted page behind a live post would 404 the post's link). They are
+    already unlisted + noindexed, so nothing on the site links them; what
+    goes is the hidden thin page itself. Returns [(id, words, title)]."""
+    from site_lib.text import article_words
+    from site_lib.config import ARTICLE_MIN_WORDS
+    out = []
+    for a in articles:
+        aid = str(a.get("article_id"))
+        if a.get("kind") in ("preview", "report", "analysis"):
+            continue
+        if (a.get("pub_date") or "9999") >= THIN_BEFORE:
+            continue
+        if aid in posted_ids:
+            continue
+        w = article_words(a)
+        if w < ARTICLE_MIN_WORDS:
+            out.append((aid, w, a.get("title") or ""))
+    return sorted(out, key=lambda x: int(x[0]))
+
+
 def main():
     args = sys.argv[1:]
     be = store.backend()
     print(f"backend: {be}")
     WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse",
-               "--sample", "--fix-images", "--delete-article")
+               "--sample", "--fix-images", "--delete-article", "--delete-thin")
+    if "--delete-thin" in args and "dry" in args:
+        WRITERS = tuple(w for w in WRITERS if w != "--delete-thin")   # the listing needs no D1
     if be == "json" and any(a in args for a in WRITERS):
         print("!! D1 is NOT configured (CF_API_TOKEN / CF_ACCOUNT_ID / CF_D1_ID missing).")
         print("   Nothing was written. Add the three secrets and re-run.")
@@ -250,6 +279,23 @@ def main():
         # workflow commits data/articles.json for this task like for --export
         n = store.article_export()
         print(f"exported D1 -> data/articles.json ({n} articles)")
+
+    if "--delete-thin" in args:
+        # the 97 August stubs (2026-10-09): list, or delete + re-export. `dry`
+        # as the extra argument lists only - run that first, read the summary.
+        posted = set(store.posted_ids("article"))
+        picks = thin_unlisted(store.article_all(), posted)
+        print(f"thin unlisted articles (under the bar, news, before {THIN_BEFORE}, no Facebook post): {len(picks)}")
+        for aid, w, title in picks:
+            print(f"  {aid}  {w:3d}w  {title[:70]}")
+        if "dry" in args:
+            print("dry run - nothing deleted")
+        else:
+            for aid, _w, _t in picks:
+                store.article_delete(aid)
+            print(f"deleted {len(picks)} articles")
+            n = store.article_export()
+            print(f"exported D1 -> data/articles.json ({n} articles)")
 
     if "--export" in args:
         ok = store.export_json()
