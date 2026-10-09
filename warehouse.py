@@ -613,7 +613,7 @@ def refresh_articles(verbose=True, source="d1"):
              for tp in b.TEAM_PAGES]
     n_cl = store.upsert_many("clubs", ["slug", "name_ar", "league"], clubs, ["slug"])
 
-    rows, srcs, faqs, links = [], [], [], []
+    rows, srcs, faqs, links, embs = [], [], [], [], []
     for a in arts:
         aid = str(a.get("article_id"))
         body = a.get("body") or ""
@@ -638,6 +638,10 @@ def refresh_articles(verbose=True, source="d1"):
                          "url": s.get("url"), "note": s.get("note")})
         for i, q in enumerate(a.get("faq") or []):
             faqs.append({"article_id": aid, "seq": i, "q": q.get("q"), "a": q.get("a")})
+        # embeds (2026-10-09): the json backfill dropped them - article 699 was
+        # the first export row with one, and the round-trip test caught it
+        for i, u in enumerate(u for u in (a.get("embeds") or []) if store.embed_platform(u)):
+            embs.append({"article_id": aid, "seq": i, "url": u, "platform": store.embed_platform(u)})
         for tp in b.article_clubs(a):
             links.append({"article_id": aid, "slug": tp["slug"]})
 
@@ -666,6 +670,11 @@ def refresh_articles(verbose=True, source="d1"):
     q_write, q_same = _changed_only("article_faq", ["article_id", "seq"], QCOLS, faqs)
     n_faq = store.upsert_many("article_faq", QCOLS, q_write, ["article_id", "seq"])
 
+    store._ensure_embeds()
+    ECOLS = ["article_id", "seq", "url", "platform"]
+    e_write, e_same = _changed_only("article_embeds", ["article_id", "seq"], ECOLS, embs)
+    n_emb = store.upsert_many("article_embeds", ECOLS, e_write, ["article_id", "seq"])
+
     LCOLS = ["article_id", "slug"]
     l_write, l_same = _changed_only("article_clubs", LCOLS, LCOLS, links)
     n_lnk = store.upsert_many("article_clubs", LCOLS, l_write, LCOLS)
@@ -678,7 +687,8 @@ def refresh_articles(verbose=True, source="d1"):
             out[it["article_id"]] = out.get(it["article_id"], 0) + 1
         return out
     trimmed = (_trim_by("article_sources", "article_id", _by_article(srcs))
-               + _trim_by("article_faq", "article_id", _by_article(faqs)))
+               + _trim_by("article_faq", "article_id", _by_article(faqs))
+               + _trim_by("article_embeds", "article_id", _by_article(embs)))
 
     # a club link can disappear when an upgrade rewrites the text
     stale = 0
