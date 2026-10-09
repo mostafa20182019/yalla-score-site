@@ -58,6 +58,10 @@ sys.path.insert(0, HERE)
 import store  # noqa: E402 - needs HERE on sys.path first
 SITE = "https://yallascore.site"
 GRAPH = "https://graph.facebook.com/v23.0"
+# the Yalla Score page (2026-10-09): every post id on record starts with it.
+# --whoami refuses a token that is not THIS page's - a page token of another
+# page the same user manages posts green runs to the wrong page.
+PAGE_ID = "104238901487012"
 GRAPH_FEED = f"{GRAPH}/me/feed"
 GRAPH_PHOTOS = f"{GRAPH}/me/photos"
 MEDIA = os.path.join(HERE, "media")
@@ -628,10 +632,37 @@ def h2h_post(token, which, dry=False):
     return 0
 
 
+def whoami(token):
+    """Print who the token is and refuse anything but the Yalla Score page.
+    0 = the page token; 1 = no token, a user token, another page, or a dead
+    token (HTTP 190). Run first in the workflow so a wrong secret fails the
+    job loudly instead of posting to the wrong page for a day."""
+    if not token:
+        print("whoami: FB_PAGE_TOKEN not set")
+        return 1
+    try:
+        url = f"{GRAPH}/me?fields=id,name&access_token={urllib.parse.quote(token)}"
+        with urllib.request.urlopen(urllib.request.Request(url), timeout=30) as r:
+            me = json.load(r)
+    except urllib.error.HTTPError as e:
+        print(f"whoami: Facebook refused the token: HTTP {e.code} {e.read().decode('utf-8', 'replace')[:200]}")
+        return 1
+    except Exception as e:                                # noqa: BLE001
+        print(f"whoami: could not reach Facebook ({e})")
+        return 1
+    who = f"{me.get('name')!r} (id {me.get('id')})"
+    if str(me.get("id")) != PAGE_ID:
+        print(f"whoami: the token belongs to {who}, NOT the Yalla Score page (id {PAGE_ID}) - "
+              "paste the page's own access_token from me/accounts")
+        return 1
+    print(f"whoami: page token OK - {who}")
+    return 0
+
+
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h")):
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -649,6 +680,8 @@ def main() -> int:
         return 0
     if "--auto" in sys.argv[1:]:
         return auto(token, items)
+    if "--whoami" in sys.argv[1:]:
+        return whoami(token)
     if "--h2h" in sys.argv[1:]:
         i = sys.argv.index("--h2h")
         return h2h_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "auto",

@@ -56,6 +56,17 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
+      # 2026-10-09: a token of ANOTHER page posted a whole day of articles to it
+      # while every run stayed green. Refuse to post with anything but the Yalla
+      # Score page's own token.
+      - name: Check whose token this is
+        env:
+          FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+        run: |
+          python fb_post.py --whoami | tee /tmp/who.txt; rc=${PIPESTATUS[0]}
+          { echo "### Token"; echo '```'; cat /tmp/who.txt; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+          exit $rc
+
       - name: Post new articles to Facebook
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
@@ -73,7 +84,7 @@ jobs:
           elif [ -n "$PREDICTION" ]; then
             python fb_post.py --prediction "$PREDICTION" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$REPOST" ]; then
-            python fb_post.py --repost "$REPOST" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+            rc=0; for id in ${REPOST//,/ }; do python fb_post.py --repost "$id" | tee -a /tmp/fb.txt || rc=1; done
           else
             python fb_post.py --auto | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           fi
