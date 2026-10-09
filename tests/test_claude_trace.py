@@ -106,7 +106,7 @@ p4, res4, _, _ = run([ev({"type": "result", "subtype": "error_during_execution",
 ck("11 an errored result event exits non-zero", p4.returncode == 1, p4.returncode)
 
 # --------------------------------------------- 5 the workflows are wired to it
-for wf in ("daily-article", "match-article", "upgrade-articles"):
+for wf in ("daily-article", "match-article"):
     y = open(os.path.join(".github", "workflows", wf + ".yml"), encoding="utf-8").read()
     ck(f"12 {wf} pipes claude through the tracer",
        "--output-format stream-json --verbose" in y
@@ -114,7 +114,7 @@ for wf in ("daily-article", "match-article", "upgrade-articles"):
        and "tail -n" in y)
 
 # ------------------------------------- 6 the one-shot rule is in every prompt
-for pr in ("daily-article", "match-article", "upgrade-article"):
+for pr in ("daily-article", "match-article"):
     t = open(os.path.join(".github", "prompts", pr + ".md"), encoding="utf-8").read()
     ck(f"13 {pr} tells Claude the run is one-shot",
        "ONE-SHOT run" in t and "NEVER end your turn saying you will wait" in t)

@@ -136,7 +136,7 @@ ck("8b publish pulls BEFORE it fetches, and the pull is not continue-on-error",
    0 < i_pull < i_fetch and "continue-on-error" not in pull_block)
 ck("8c publish saves the data (no --seed) and never commits data/ back to git",
    "run: python data_store.py push" + chr(10) in wf and "--seed" not in wf and "git add data/" not in wf)
-for n in ("daily-article.yml", "match-article.yml", "upgrade-articles.yml", "add-sources.yml",
+for n in ("daily-article.yml", "match-article.yml",
           "season-carry.yml", "d1-admin.yml", "tests.yml"):
     ck(f"8d {n} pulls the working data", "python data_store.py pull" in
        open(os.path.join(root, ".github", "workflows", n), encoding="utf-8").read())

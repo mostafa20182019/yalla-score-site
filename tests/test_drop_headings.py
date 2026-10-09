@@ -57,7 +57,7 @@ src = io.open("build_site.py", encoding="utf-8").read()
 ck("build() strips before the thin filter",
    0 < src.find("drop_headings(articles_all)") < src.find("not is_thin(a)"))
 
-for p in (".github/prompts/daily-article.md", ".github/prompts/upgrade-article.md"):
+for p in (".github/prompts/daily-article.md",):
     t = io.open(p, encoding="utf-8").read()
     ck(f"{p}: no {WHY} heading asked for", f"<h2>{WHY}</h2>" not in t and f"«{WHY}» / «" not in t)
     ck(f"{p}: says not to write it", "never" in t.lower() and WHY in t)

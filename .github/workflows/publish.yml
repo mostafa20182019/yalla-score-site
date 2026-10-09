@@ -27,7 +27,7 @@ permissions:
 # Data-refresh runs are interchangeable - only the newest matters - so they
 # still cancel each other. Runs that CARRY NEW CONTENT get their own group and
 # are never cancelled: a PUSH, and a dispatch with reason=article (sent by
-# daily-article / match-article / upgrade-articles after they commit).
+# daily-article / match-article after they commit).
 #
 # Why: with a single shared group + cancel-in-progress, a trigger fires every
 # ~15 min (Worker cron + GitHub cron), so any run slower than that window was
