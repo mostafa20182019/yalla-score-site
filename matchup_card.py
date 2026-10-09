@@ -290,6 +290,77 @@ def when_ar(kickoff, koff_time):
     return f"{s} · {h12}{':' + format(mm, '02d') if mm else ''} {part}"
 
 
+def club_badge(name, comp=None):
+    """The crest URL our data holds for a club named in Arabic (any fixture
+    it played), or None."""
+    from site_lib.config import load
+    from site_lib.names import ar_team
+    rows = load("matches.json") + load("matches_archive.json")
+    for f in load("fixtures.json"):
+        for rd in f.get("rounds") or []:
+            rows += rd.get("matches") or []
+    for m in rows:
+        if comp and m.get("competition") != comp:
+            continue
+        if ar_team(m.get("home")) == name and m.get("home_badge"):
+            return m["home_badge"]
+        if ar_team(m.get("away")) == name and m.get("away_badge"):
+            return m["away_badge"]
+    return None
+
+
+def render_club(name, out, badge=None, comp=None, label=""):
+    """ONE club's card (user, 2026-10-09: «كنت أفضل للخبر ده يتعمل بالقالب صورة
+    فيها شعار الأهلي فقط»): the image for a story about a club or one of its
+    officials/players when no vetted photo of the person exists - the crest
+    inside the white ring on the brand canvas, the name, an optional label
+    (the competition, or «أخبار الأهلي»). Same SAFE band as the match card."""
+    FC = _fonts()
+    img = Image.new("RGB", (W, H))
+    d = ImageDraw.Draw(img)
+    for y in range(H):
+        t = y / (H - 1)
+        d.line([(0, y), (W, y)], fill=tuple(round(a + (b - a) * t) for a, b in zip(TOP, BOT)))
+    ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    od = ImageDraw.Draw(ov)
+    od.ellipse([W // 2 - 230, H // 2 - 230, W // 2 + 230, H // 2 + 230], outline=(255, 255, 255, 40), width=3)
+    od.ellipse([W // 2 - 330, H // 2 - 330, W // 2 + 330, H // 2 + 330], outline=(255, 255, 255, 18), width=3)
+    img.paste(ov, (0, 0), ov)
+    CY, R = 262, 118
+    if not _crest(img, d, W // 2, CY, R, badge):
+        _disc(img, d, W // 2, CY, R, kit_for(name, comp))
+    _text_c(d, FC, W // 2, CY + R + 14, name, FC.font("ExtraBold", 72), max_w=900, size=72, weight="ExtraBold")
+    if label:
+        _text_c(d, FC, W // 2, 92, label, FC.font("Bold", 36), SOFT, max_w=700, size=36, weight="Bold")
+    x0, _, x1, _ = SAFE
+    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
+    bs = 52
+    ball = icon.crop((218, 105, 806, 693)).resize((bs, bs), Image.LANCZOS)
+    m = Image.new("L", (bs, bs), 0)
+    ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
+    img.paste(ball, (x1 - bs, 480), m)
+    fb = FC.font("ExtraBold", 34)
+    sname = FC.ar("يلا سكور")
+    d.text((x1 - bs - 12 - d.textlength(sname, font=fb), 484), sname, font=fb, fill=WHITE)
+    d.text((x0, 492), "yallascore.site", font=FC.font("Bold", 28), fill=SOFT)
+    if out.lower().endswith((".jpg", ".jpeg")):
+        img.save(out, quality=90, optimize=True)
+    else:
+        img.save(out)
+    return out
+
+
+def for_club(name, out, label=None):
+    """The club card from our own data: crest from any fixture, label = the
+    club's league when we know it."""
+    from site_lib.clubs import TEAM_PAGES
+    from site_lib.names import comp_label
+    tp = next((t for t in TEAM_PAGES if t["name"] == name), None)
+    comp = tp.get("league") if tp else None
+    return render_club(name, out, badge=club_badge(name, comp) or club_badge(name), comp=comp,
+                       label=label if label is not None else (comp_label(comp) if comp else ""))
+
+
 def for_match(m, out, venue="", top_label=None, feed=None):
     """The card for one match dict (matches.json shape)."""
     from site_lib.names import ar_team, comp_label
@@ -351,6 +422,8 @@ if __name__ == "__main__":
     ap.add_argument("--match")
     ap.add_argument("--teams", nargs=2, metavar=("HOME", "AWAY"),
                     help="Arabic names as the site writes them; finds the fixture itself")
+    ap.add_argument("--club", help="ONE club's card (crest + name), for a club/official story")
+    ap.add_argument("--label", help="--club only: the line above the crest (default: the club's league)")
     ap.add_argument("--out")
     ap.add_argument("--demo", action="store_true")
     a = ap.parse_args()
@@ -365,3 +438,7 @@ if __name__ == "__main__":
         if not a.out:
             sys.exit("--teams needs --out media/<unique-name>.jpg (one file per article)")
         print(for_teams(a.teams[0], a.teams[1], a.out))
+    elif a.club:
+        if not a.out:
+            sys.exit("--club needs --out media/<unique-name>.jpg")
+        print(for_club(a.club, a.out, label=a.label))
