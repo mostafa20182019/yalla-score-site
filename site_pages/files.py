@@ -99,15 +99,27 @@ def copy_root_files():
                 print("  + root file:", fn)
 
 
+# Retired hubs and a deleted duplicate that Google still asks for (GSC «Not
+# found (404)», 2026-10-09): a permanent redirect to the nearest living page
+# instead of a 404 - the equity and the crawl budget follow the redirect.
+STATIC_REDIRECTS = [
+    ("/scorers", "/scorers/egypt"),      # the old single scorers page -> the Egyptian hub
+    ("/videos", "/"),                     # feature switched off (SHOW_VIDEOS)
+    ("/reels", "/"),                      # feature switched off (SHOW_REELS)
+    ("/headlines", "/"),                  # aggregated press headlines off since the AdSense review
+    ("/a/573", "/a/567"),                 # the Shenawy triple-publish duplicate, deleted; its link text was Fathy's injury
+]
+
+
 def write_redirects(_moved):
     # ---- _redirects: the match pieces that moved into their match page ----
     # Cloudflare Workers static-asset routing reads this file. Both spellings
     # are listed because the extensionless form is the official URL (write()
     # normalizes every internal link) while published Facebook posts and old
     # Google results can still carry either.
-    if _moved:
+    if True:
         lines = []
-        for old_path, new_path in _moved:
+        for old_path, new_path in list(STATIC_REDIRECTS) + list(_moved or []):
             # the extensionless form is the canonical one; targeting the .html
             # name would make every redirect a 301 into a 307 (Workers assets
             # redirect /x.html -> /x), the chain that cost us indexing once
@@ -115,7 +127,8 @@ def write_redirects(_moved):
             lines.append(f"{old_path} {new_path} 301")
             lines.append(f"{old_path}.html {new_path} 301")
         write_text("_redirects", NEWLINE.join(lines) + NEWLINE)
-        print(f"  + _redirects: {len(_moved)} match piece(s) 301 to their match page")
+        print(f"  + _redirects: {len(_moved or [])} match piece(s) 301 to their match page "
+              f"+ {len(STATIC_REDIRECTS)} retired paths")
 
 
 def copy_crests():
