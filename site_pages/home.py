@@ -7,7 +7,7 @@ import datetime
 import json
 from site_lib.cards import (clubs_strip, fmb_block, headline_card, home_insights, home_record_strip,
                              match_focus_block, news_card, news_cols, news_filter_bar)
-from site_lib.articles import held_analyses, pinned_first
+from site_lib.articles import held_analyses, insight_kind, pinned_first
 from site_lib.config import FB_PAGE_URL, REF_TODAY, SHOW_HEADLINES, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
 from site_lib.crests import local_crest
 from site_lib.names import _egy_article, _eur_article, _is_ticker_team, ar_team, fav_club_names
@@ -60,15 +60,17 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
                       + fmb_block(lead, more_ins, "أحدث التحليلات", "/insights.html", extra="fmb-an"))
         used = {a["article_id"] for a in [lead, *more_ins]}
     blocks.append(home_record_strip(_acc, _cal))
-    news = [a for a in articles if a["article_id"] not in used][:6]
+    # «آخر الأخبار» is NEWS: a preview/report/analysis belongs to the analyses
+    # block above and never spills here (user, 2026-10-09)
+    news = [a for a in articles if a["article_id"] not in used and not insight_kind(a)][:6]
     if news:
         blocks.append('<div class="sec-h"><h2 class="page-h">آخر الأخبار</h2>'
                       '<a class="see-all" href="/news.html">كل الأخبار ←</a></div>'
                       '<div class="hn-grid">' + "".join(news_card(a) for a in news) + '</div>')
         used |= {a["article_id"] for a in news}
-    egy = [a for a in articles if a["article_id"] not in used and _egy_article(a)][:4]
+    egy = [a for a in articles if a["article_id"] not in used and not insight_kind(a) and _egy_article(a)][:4]
     used |= {a["article_id"] for a in egy}
-    eur = [a for a in articles if a["article_id"] not in used and _eur_article(a)][:4]
+    eur = [a for a in articles if a["article_id"] not in used and not insight_kind(a) and _eur_article(a)][:4]
     blocks.append(news_cols([("أخبار الكرة المصرية", "/news/egypt.html", egy),
                              ("أخبار الكرة الأوروبية", "/news/europe.html", eur)]))
     blocks = [b for b in blocks if b]
