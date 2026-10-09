@@ -111,6 +111,32 @@ def pinned_first(articles, pin=None, now=None):
     return top + [a for a in articles if str(a.get("article_id")) != aid] if top else articles
 
 
+def held_analyses(articles, matches, now=None, hours_after=3.0):
+    """Article ids of ANALYSIS pieces whose match has not ended yet (user,
+    2026-10-09: «عايز التحليل يفضل هنا ... لحد نهاية المباراة» - the Liverpool
+    x City analysis must not be pushed out of the home block by newer
+    previews). A match is over when the data says FINISHED or when
+    `hours_after` hours have passed since kick-off (Cairo). Order = kick-off."""
+    from zoneinfo import ZoneInfo
+    cairo = ZoneInfo("Africa/Cairo")
+    now = now or datetime.datetime.now(cairo)
+    by_id = {str(m.get("match_id")): m for m in (matches or []) if m.get("match_id")}
+    out = []
+    for a in articles:
+        if a.get("kind") != "analysis" or not a.get("match_id"):
+            continue
+        m = by_id.get(str(a["match_id"]))
+        if not m or (m.get("status") or "").upper() == "FINISHED":
+            continue
+        try:
+            ko = datetime.datetime.fromisoformat(f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00").replace(tzinfo=cairo)
+        except (KeyError, TypeError, ValueError):
+            continue
+        if now < ko + datetime.timedelta(hours=hours_after):
+            out.append((ko, str(a["article_id"])))
+    return [aid for _, aid in sorted(out, key=lambda x: x[0])]
+
+
 def byline(a):
     """The name to print (and to put in schema) for one article."""
     au = (a.get("author") or "").strip()

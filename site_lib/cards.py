@@ -324,10 +324,17 @@ def home_record_strip(acc, cal):
     return f'<div class="hrec">{line}</div>' if line else ""
 
 
-def home_insights(articles, pinned):
+def home_insights(articles, pinned, held=()):
     """(lead, the next 4) for the analysis block. The lead is the HOME_PIN
-    article while the pin is on (`pinned`), else the newest analytical piece."""
+    article while the pin is on (`pinned`), else the newest analytical piece.
+    `held` (site_lib.articles.held_analyses): analyses of matches not yet
+    played come first, in kick-off order, so a newer preview never pushes
+    the big-match analysis out before the match is over."""
     ins = [a for a in articles if insight_kind(a)]
+    held = [str(x) for x in held]
+    if held:
+        front = sorted((a for a in ins if str(a["article_id"]) in held), key=lambda a: held.index(str(a["article_id"])))
+        ins = front + [a for a in ins if str(a["article_id"]) not in held]
     lead = articles[0] if (pinned and articles) else (ins[0] if ins else None)
     if not lead:
         return None, []

@@ -7,7 +7,7 @@ import datetime
 import json
 from site_lib.cards import (clubs_strip, fmb_block, headline_card, home_insights, home_record_strip,
                              match_focus_block, news_card, news_cols, news_filter_bar)
-from site_lib.articles import pinned_first
+from site_lib.articles import held_analyses, pinned_first
 from site_lib.config import FB_PAGE_URL, REF_TODAY, SHOW_HEADLINES, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
 from site_lib.crests import local_crest
 from site_lib.names import _egy_article, _eur_article, _is_ticker_team, ar_team, fav_club_names
@@ -53,7 +53,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
         _upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
     blocks = []
     used = set()
-    lead, more_ins = home_insights(articles, pin_on)
+    lead, more_ins = home_insights(articles, pin_on, held=held_analyses(articles, matches))
     if lead and more_ins:
         blocks.append('<div class="sec-h"><h2 class="page-h">التحليلات</h2>'
                       '<a class="see-all" href="/insights.html">كل التحليلات ←</a></div>'
