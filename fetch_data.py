@@ -322,6 +322,55 @@ def merge_fixture_rounds(by_league, prev_items):
                      f"{sum(len(v) for v in rebuilt.values())} merged")
     return by_league, ("; ".join(notes) or None)
 
+_WIN_MERGE_NOTE = None   # set by fetch_matches when the day window had to be merged with the previous file
+
+
+def _is_fd_row(m):
+    """A football-data row (the 365scores leagues are merged in later and
+    carry imagecache.365scores.com crests)."""
+    return "crests.football-data.org" in ((m.get("home_badge") or "") + (m.get("away_badge") or ""))
+
+
+def merge_window_matches(out, prev_items, cutoff, horizon):
+    """The day window gets the same guard as the season (2026-10-09, user:
+    «احمى ملف نافذة الايام بنفس القاعدة»).
+
+    On 2026-10-09 football-data answered the Premier League and the Champions
+    League with 0 matches for one refresh: merge_fixture_rounds kept the
+    season in fixtures.json, but matches.json - built from the same raw
+    answer - simply lost both leagues, and everything keyed on it (the home
+    hold rule, the match focus) lost those matches too. So, per
+    football-data league the previous matches.json held inside the SAME
+    window [cutoff, horizon], when this fetch brought back FEWER rows the
+    previous rows are kept and the fresh ones override them match by match.
+    A complete answer never merges. Kept rows keep their stored status: a
+    match played during the outage stays UPCOMING until the feed answers
+    again (the live layer covers the Egyptian leagues on its own).
+    Returns (rows, note-or-None)."""
+    notes = []
+    def inside(m):
+        return cutoff.isoformat() <= (m.get("kickoff") or "") <= horizon.isoformat()
+    prev_by = {}
+    for m in prev_items or []:
+        if _is_fd_row(m) and inside(m) and m.get("competition"):
+            prev_by.setdefault(m["competition"], []).append(m)
+    new_by = {}
+    for m in out:
+        if m.get("competition"):
+            new_by.setdefault(m["competition"], []).append(m)
+    rows = list(out)
+    for name, prev_rows in prev_by.items():
+        new_n = len(new_by.get(name, []))
+        if new_n >= len(prev_rows):
+            continue
+        fresh = {m.get("match_id"): m for m in new_by.get(name, [])}
+        kept = [m for m in prev_rows if m.get("match_id") not in fresh]
+        rows.extend(kept)
+        notes.append(f"{name}: {new_n} fetched < {len(prev_rows)} kept -> {new_n + len(kept)} merged")
+    rows.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
+    return rows, ("; ".join(notes) or None)
+
+
 def _norm_status(s):
     s = (s or "").upper()
     if s in ("IN_PLAY", "PAUSED"):
@@ -484,6 +533,12 @@ def fetch_matches():
         if cutoff <= dt.date() <= horizon:
             out.append(row)
     out.sort(key=lambda x: (x["kickoff"], x["koff_time"] or ""))
+    # the day window keeps a league the feed dropped this refresh (same rule
+    # as the season below; see merge_window_matches)
+    global _WIN_MERGE_NOTE
+    out, _WIN_MERGE_NOTE = merge_window_matches(out, read_items("matches.json"), cutoff, horizon)
+    if _WIN_MERGE_NOTE:
+        print(f"  ! matches merged with the previous file: {_WIN_MERGE_NOTE}")
 
     # a league whose full-season call failed keeps its previous rounds (see
     # merge_fixture_rounds); the fresh rows still override the old ones
@@ -1515,6 +1570,7 @@ if __name__ == "__main__":
             print(f"  ! matches archive failed ({e}) - keeping existing file")
             _DBG["matches_archive"] = f"FAIL: {e!r}"
     _DBG["fixtures_merge"] = _FIX_MERGE_NOTE or "none (every league complete)"
+    _DBG["matches_merge"] = _WIN_MERGE_NOTE or "none (every league complete)"
     if _FIXTURES is not None:
         write_items("fixtures.json", _FIXTURES)
         print(f"fixtures: {len(_FIXTURES)} leagues, "
