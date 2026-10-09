@@ -53,7 +53,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
         _upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
     blocks = []
     used = set()
-    lead, more_ins = home_insights(articles, pin_on, held=held_analyses(articles, matches))
+    lead, more_ins = home_insights(articles, pin_on, held=held_analyses(articles, matches, fixtures=fixtures))
     if lead and more_ins:
         blocks.append('<div class="sec-h"><h2 class="page-h">التحليلات</h2>'
                       '<a class="see-all" href="/insights.html">كل التحليلات ←</a></div>'

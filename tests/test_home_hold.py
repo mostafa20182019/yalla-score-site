@@ -34,5 +34,11 @@ ck("5 nothing held: newest analytical piece leads, as before", lead2["article_id
 lead3, _ = home_insights(arts, True, held=held)
 ck("6 HOME_PIN still wins the lead when it is on", lead3["article_id"] == "700")
 ck("7 the match ended -> released", held_analyses(arts, matches, now=now + datetime.timedelta(days=3)) == [])
+# a match that fell out of the day window (a degraded fetch) is still found in the season fixtures
+fixtures = [{"competition": "Premier League", "rounds": [{"round": 6, "matches": [
+    {"match_id": 560598, "kickoff": "2026-10-11", "koff_time": "18:30", "status": "UPCOMING"}]}]}]
+ck("8 a match missing from matches.json is held from fixtures.json",
+   held_analyses(arts, [matches[1]], now=now, fixtures=fixtures) == ["697", "687"],
+   str(held_analyses(arts, [matches[1]], now=now, fixtures=fixtures)))
 print("\nALL HOME HOLD TESTS PASSED" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

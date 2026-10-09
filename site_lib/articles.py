@@ -111,7 +111,7 @@ def pinned_first(articles, pin=None, now=None):
     return top + [a for a in articles if str(a.get("article_id")) != aid] if top else articles
 
 
-def held_analyses(articles, matches, now=None, hours_after=3.0):
+def held_analyses(articles, matches, now=None, hours_after=3.0, fixtures=None):
     """Article ids of ANALYSIS pieces whose match has not ended yet (user,
     2026-10-09: «عايز التحليل يفضل هنا ... لحد نهاية المباراة» - the Liverpool
     x City analysis must not be pushed out of the home block by newer
@@ -120,7 +120,19 @@ def held_analyses(articles, matches, now=None, hours_after=3.0):
     from zoneinfo import ZoneInfo
     cairo = ZoneInfo("Africa/Cairo")
     now = now or datetime.datetime.now(cairo)
-    by_id = {str(m.get("match_id")): m for m in (matches or []) if m.get("match_id")}
+    # matches.json is a day window that can LOSE a league when its fetch
+    # degrades (2026-10-09: the Premier League vanished from it for one refresh
+    # and the Liverpool x City analysis dropped out of the home block), so the
+    # season fixtures - merged, guarded - are searched too
+    by_id = {}
+    for comp in (fixtures or []):
+        for rd in (comp.get("rounds") or []):
+            for m in (rd.get("matches") or []):
+                if m.get("match_id"):
+                    by_id[str(m["match_id"])] = m
+    for m in (matches or []):
+        if m.get("match_id"):
+            by_id[str(m["match_id"])] = m          # the fresher window wins
     out = []
     for a in articles:
         if a.get("kind") != "analysis" or not a.get("match_id"):
