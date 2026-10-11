@@ -56,6 +56,12 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
+      # data/ (matches, fixtures, standings...) lives in Workers KV, not git:
+      # the prediction and H2H posts read matches.json, so pull first
+      # (2026-10-11: «match 4804684 is not in matches.json» on the derby day)
+      - name: Pull the working data
+        run: python data_store.py pull
+
       # 2026-10-09: a token of ANOTHER page posted a whole day of articles to it
       # while every run stayed green. Refuse to post with anything but the Yalla
       # Score page's own token.
