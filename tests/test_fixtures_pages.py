@@ -91,7 +91,7 @@ for f in pages:
 # the title has to answer the query, not describe the site
 t0 = rd(pages[0])
 ck("11 the title is the query a reader types",
-   re.search(r"<title>جدول مباريات .+ — كل الجولات", t0) is not None,
+   re.search(r"<title>جدول مباريات .+ اليوم والجولة القادمة", t0) is not None,
    re.search(r"<title>(.*?)</title>", t0).group(1)[:60])
 ck("12 the page says how many rounds and matches it holds, in words",
    re.search(r"<b>\d+</b> جولة و<b>\d+</b> مباراة", t0) is not None)

@@ -17,6 +17,76 @@ from site_lib.stats import scorers_read, standings_analysis
 from site_lib.tables import clubs_panel, league_rounds_panel, match_row, scorers_list, standings_table
 from site_lib.text import esc
 from site_lib.urls import breadcrumb_ld, match_url
+from site_lib.dates import day_month
+from site_lib.names import ar_team
+
+
+# 2026-10-12 (user: «اعمل نفس الحاجة لصفحات الدوريات», after the club pages):
+# the league titles lead with the query a reader types («ترتيب الدوري المصري
+# اليوم», «مباريات الدوري المصري اليوم», «هداف الدوري المصري») and the
+# descriptions open with the live fact - the top of the table, the next
+# fixture and last score, the leading scorer - instead of a generic sentence.
+def _ar_n(n, one, two, few, many):
+    """The Arabic count forms: «نقطة واحدة» / «نقطتين» / «3 نقاط» (3-10) /
+    «11 نقطة» (11 and up take the singular)."""
+    n = int(n or 0)
+    if n == 1:
+        return one
+    if n == 2:
+        return two
+    return f"{n} {few if 3 <= n <= 10 else many}"
+
+
+def _bi(s):
+    """«بـ3 نقاط» but «بنقطتين» - the joining form of the preposition."""
+    return ("بـ" if s[:1].isdigit() else "ب") + s
+
+
+def standings_desc(label, season, table, zeroed=False):
+    rows = [r for r in (table or []) if r.get("team")]
+    if zeroed or len(rows) < 3:
+        return (f"جدول ترتيب {label} لموسم {season} محدثًا تلقائيًا: النقاط والمباريات "
+                "والأهداف وفارق الأهداف ونتائج آخر 5 مباريات لكل فريق.")
+    t1, t2, t3 = rows[0], rows[1], rows[2]
+    return (f"المتصدر: {ar_team(t1.get('team'))} {_bi(_ar_n(t1.get('pts'), 'نقطة واحدة', 'نقطتين', 'نقاط', 'نقطة'))} "
+            f"من {_ar_n(t1.get('played'), 'مباراة واحدة', 'مباراتين', 'مباريات', 'مباراة')}، "
+            f"ثم {ar_team(t2.get('team'))} ({t2.get('pts')}) و{ar_team(t3.get('team'))} ({t3.get('pts')}). "
+            f"جدول ترتيب {label} {season} كاملًا بالأهداف وفارق الأهداف ونتائج آخر 5 مباريات.")
+
+
+def scorers_desc(label, season, sc):
+    rows = [r for r in (sc or []) if r.get("name")]
+    if len(rows) < 3:
+        return (f"قائمة هدافي {label} لموسم {season} محدثة تلقائيًا بعد كل جولة، "
+                "مع ترتيب صناع الأهداف (التمريرات الحاسمة).")
+    g = lambda r: r.get("goals") if r.get("goals") is not None else r.get("value")
+    s1, s2, s3 = rows[0], rows[1], rows[2]
+    return (f"هداف {label} حتى الآن: {s1.get('name')} ({ar_team(s1.get('team'))}) "
+            f"{_bi(_ar_n(g(s1), 'هدف واحد', 'هدفين', 'أهداف', 'هدفًا'))}، ثم {s2.get('name')} ({g(s2)}) "
+            f"و{s3.get('name')} ({g(s3)}). ترتيب هدافي {label} {season} وصناع الأهداف "
+            "محدّث بعد كل جولة.")
+
+
+def fixtures_desc(label, season, rounds, n_m):
+    flat = [(r.get("round"), m) for r in rounds for m in (r.get("matches") or [])]
+    fin = [(rn, m) for rn, m in flat if (m.get("status") or "").upper() == "FINISHED"
+           and m.get("home_score") is not None]
+    up = [(rn, m) for rn, m in flat if (m.get("status") or "").upper() in ("UPCOMING", "LIVE", "TIMED", "SCHEDULED")]
+    fin.sort(key=lambda x: (x[1].get("kickoff") or "", x[1].get("koff_time") or ""))
+    up.sort(key=lambda x: (x[1].get("kickoff") or "", x[1].get("koff_time") or ""))
+    parts = []
+    if up:
+        rn, m = up[0]
+        parts.append(f"القادمة: {ar_team(m.get('home'))} × {ar_team(m.get('away'))} "
+                     f"{day_month(m.get('kickoff'), weekday=True)}"
+                     + (f" {m.get('koff_time')} بتوقيت القاهرة" if m.get("koff_time") else "")
+                     + (f" (الجولة {rn})." if rn else "."))
+    if fin:
+        rn, m = fin[-1]
+        parts.append(f"آخر نتيجة: {ar_team(m.get('home'))} {m.get('home_score')} - "
+                     f"{m.get('away_score')} {ar_team(m.get('away'))} ({day_month(m.get('kickoff'))}).")
+    parts.append(f"جدول مباريات {label} {season}: {len(rounds)} جولة و{n_m} مباراة بمواعيدها ونتائجها.")
+    return " ".join(parts)
 
 
 def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp, sc_ok,
@@ -48,10 +118,8 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                    if m.get("competition") == comp
                    and (m.get("status") or "").upper() in ("UPCOMING", "LIVE")][:6]
         if st and st.get("table"):
-            page_head = Markup(head(f"ترتيب {label} {season} — جدول الترتيب الكامل | {SITE_NAME}",
-                                    f"جدول ترتيب {label} لموسم {season} محدثًا تلقائيًا: "
-                                    "النقاط والمباريات والأهداف وفارق الأهداف "
-                                    "ونتائج آخر 5 مباريات لكل فريق.",
+            page_head = Markup(head(f"ترتيب {label} اليوم — جدول الترتيب الكامل {season} | {SITE_NAME}",
+                                    standings_desc(label, season, st["table"], st.get("zeroed")),
                                     SITE_BASE + st_url, active="matches"))
             crumbs_ld = Markup(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
                                               ("المباريات", SITE_BASE + "/matches.html"),
@@ -83,9 +151,8 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             # the page must exist whenever the league is active (the footer
             # links to /scorers/egypt.html sitewide) - a stale-gated chart
             # gets a placeholder, never last season's names
-            page_head = Markup(head(f"هدافو {label} {season} — ترتيب الهدافين وصناع الأهداف | {SITE_NAME}",
-                                    f"قائمة هدافي {label} لموسم {season} محدثة تلقائيًا بعد كل "
-                                    "جولة، مع ترتيب صناع الأهداف (التمريرات الحاسمة).",
+            page_head = Markup(head(f"هداف {label} {season} — ترتيب الهدافين وصناع الأهداف | {SITE_NAME}",
+                                    scorers_desc(label, season, sc),
                                     SITE_BASE + sc_url, active="matches"))
             scorers = scorers_list(sc, "أهداف") if sc else ""
             assists = scorers_list(asst, "صناعة") if asst else ""
@@ -132,9 +199,8 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
             continue
         label = comp_label(comp)
         n_m = sum(len(r.get("matches") or []) for r in rounds)
-        page_head = Markup(head(f"جدول مباريات {label} {season} — كل الجولات | {SITE_NAME}",
-                                f"جدول مباريات {label} لموسم {season} كاملًا: {len(rounds)} جولة "
-                                f"و{n_m} مباراة بمواعيدها ونتائجها، محدّثًا تلقائيًا بعد كل جولة.",
+        page_head = Markup(head(f"جدول مباريات {label} اليوم والجولة القادمة {season} | {SITE_NAME}",
+                                fixtures_desc(label, season, rounds, n_m),
                                 SITE_BASE + f"/fixtures/{slug}.html", active="matches"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True)
         _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
