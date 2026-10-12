@@ -4,6 +4,7 @@ query is really after (2026-10-12, same move as the club pages the same day:
 user «اعمل نفس الحاجة لصفحات الدوريات»). Helpers live here, not in
 site_pages/, because build() calls every site_pages function once
 (tests/test_build_split.py)."""
+import re
 from site_lib.dates import day_month
 from site_lib.names import ar_team, comp_label
 
@@ -119,6 +120,13 @@ def matches_desc(matches, today, team_pages, comp_order):
                            team_pages, comp_order) or fin[-1]
         parts.append(f"آخر نتيجة: {ar_team(m.get('home'))} {m.get('home_score')} - "
                      f"{m.get('away_score')} {ar_team(m.get('away'))}.")
-    parts.append("النتائج تتحدّث تلقائيًا.")
-    return " ".join(parts)
+    # the snippet is cut at seo_desc's limit: drop the generic tail first,
+    # then the league in parentheses, so the score is never the cut point
+    from site_lib.shell import seo_desc
+    tail = "النتائج تتحدّث تلقائيًا."
+    for cand in (parts + [tail], parts, [re.sub(r" \([^()]*\)\.", ".", p) for p in parts]):
+        text = " ".join(cand)
+        if seo_desc(text) == text:
+            return text
+    return " ".join(cand)
 
