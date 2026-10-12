@@ -228,9 +228,13 @@ def render(m, games, out, when=""):
     # alone beside an empty half
     single = n <= 6
     if single:
-        CW, CH, GAP, PER = W - 80, 92, 10, 6
+        # the rows share the fixed list area (610 px): four meetings get
+        # taller cards, six get 92 px ones - never a gap above the footer
+        GAP, PER = 10, 6
+        CH = min(142, 610 // max(n, 1) - GAP)
+        CW = W - 80
         COLS = (40,)
-        ty, ny = 10, 42          # the head line / the names+score row inside a card
+        ty, ny = 10 + (CH - 92) // 4, 42 + (CH - 92) // 2   # head line / names+score row
     elif n <= 8:
         # seven or eight: 4 + 3/4 taller cards, the footer stays put
         CW, CH, GAP, PER = 486, 142, 10, 4
