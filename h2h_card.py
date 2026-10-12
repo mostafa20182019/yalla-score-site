@@ -223,13 +223,22 @@ def render(m, games, out, when=""):
         text_c(W // 2, 510, f"في {n} مباريات" if n > 2 else "في المباراتين", FC.font("Regular", 24), DIM)
         text_c(W // 2, 540, "بالنتائج الرسمية", FC.font("Regular", 24), DIM)
 
-    # the meetings: 2 columns x 5, newest at the top right
-    CW, CH, GAP = 486, 112, 10
-    COLS = (W - 40 - CW, 40)
+    # the meetings: 2 columns x 5, newest at the top right - or, up to six
+    # meetings (--last 6, 2026-10-12), ONE full-width column so no game sits
+    # alone beside an empty half
+    single = n <= 6
+    if single:
+        CW, CH, GAP, PER = W - 80, 92, 10, 6
+        COLS = (40,)
+        ty, ny = 10, 42          # the head line / the names+score row inside a card
+    else:
+        CW, CH, GAP, PER = 486, 112, 10, 5
+        COLS = (W - 40 - CW, 40)
+        ty, ny = 14, 46
     fnm, fs, fc = FC.font("ExtraBold", 32), FC.font("ExtraBold", 34), FC.font("Bold", 21)
     for i, g in enumerate(games[:MAX_GAMES]):
-        x0 = COLS[i // 5]
-        y0 = 618 + (i % 5) * (CH + GAP)
+        x0 = COLS[i // PER]
+        y0 = 618 + (i % PER) * (CH + GAP)
         rrect([x0, y0, x0 + CW, y0 + CH], 18, CARD_FILL, None, 1)
         nb = 34
         d.ellipse([x0 + CW - nb - 12, y0 + 12, x0 + CW - 12, y0 + 12 + nb], fill=GOLD)
@@ -240,25 +249,25 @@ def render(m, games, out, when=""):
         fh = fc
         while d.textlength(FC.ar(head), font=fh) > CW - nb - 40 and fh.size > 14:
             fh = FC.font("Bold", fh.size - 1)
-        text_r(x0 + CW - nb - 22, y0 + 14, head, fh, DIM)
+        text_r(x0 + CW - nb - 22, y0 + ty, head, fh, DIM)
         gh, ga = ar_team(g["home"]), ar_team(g["away"])
         gn = gnotes.get(g["date"]) or {}
         hw = g["hg"] > g["ag"] or gn.get("winner") == gh
         aw = g["ag"] > g["hg"] or gn.get("winner") == ga
         mid = x0 + CW / 2 - 16
         fh2 = fnm
-        while max(d.textlength(FC.ar(gh), font=fh2), d.textlength(FC.ar(ga), font=fh2)) > 150 and fh2.size > 20:
+        while max(d.textlength(FC.ar(gh), font=fh2), d.textlength(FC.ar(ga), font=fh2)) > (330 if single else 150) and fh2.size > 20:
             fh2 = FC.font("ExtraBold", fh2.size - 2)
-        text_l(mid + 66, y0 + 46, gh, fh2, WHITE if hw else SOFT)     # home RIGHT of the score
-        text_r(mid - 66, y0 + 46, ga, fh2, WHITE if aw else SOFT)     # away LEFT of it
+        text_l(mid + 66, y0 + ny, gh, fh2, WHITE if hw else SOFT)     # home RIGHT of the score
+        text_r(mid - 66, y0 + ny, ga, fh2, WHITE if aw else SOFT)     # away LEFT of it
         sc = f"{g['ag']} - {g['hg']}"                                 # drawn LTR: away left, home right
-        rrect([mid - 56, y0 + 46, mid + 56, y0 + 88], 12, (0, 0, 0, 90))
-        d.text((mid - d.textlength(sc, font=fs) / 2, y0 + 46), sc, font=fs, fill=WHITE)
+        rrect([mid - 56, y0 + ny, mid + 56, y0 + ny + 42], 12, (0, 0, 0, 90))
+        d.text((mid - d.textlength(sc, font=fs) / 2, y0 + ny), sc, font=fs, fill=WHITE)
         if gn.get("note"):
-            text_c(mid, y0 + 88, gn["note"], FC.font("Bold", 18), GOLD)
+            text_c(mid, y0 + ny + 42, gn["note"], FC.font("Bold", 18), GOLD)
 
     # the finals line (hand-checked) or the last win of each side + footer
-    fy = 618 + 5 * (CH + GAP) + 4
+    fy = 618 + PER * (CH + GAP) + 4
     rrect([40, fy, W - 40, fy + 60], 18, (246, 192, 60, 26), (246, 192, 60, 120), 2)
     parts = []
     for name in (h, a):
@@ -276,12 +285,16 @@ def render(m, games, out, when=""):
             "finals": notes.get("finals")}
 
 
-def for_match(m, out):
-    """Fetch + render. None when the record is too short to be worth a card."""
+def for_match(m, out, last=None):
+    """Fetch + render. None when the record is too short to be worth a card.
+    last = show only the newest N meetings (user ask 2026-10-12: «آخر ست
+    مواجهات» City × PSG); the default is MAX_GAMES."""
     import matchup_card as MC
     games = h2h_games(m)
     if len(games) < MIN_GAMES:
         return None
+    if last:
+        games = games[:int(last)]
     return render(m, games, out, when=MC.when_ar(m.get("kickoff"), m.get("koff_time")))
 
 
@@ -290,11 +303,12 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--match", required=True)
     ap.add_argument("--out", default=os.path.join(HERE, "data", "briefs", "h2h.jpg"))
+    ap.add_argument("--last", type=int, default=None, help="only the newest N meetings")
     args = ap.parse_args()
     import match_brief as MB
     d = MB.load_all()
     m = next((x for x in d["matches"] if str(x.get("match_id")) == str(args.match)), None)
     if not m:
         sys.exit(f"match {args.match} is not in matches.json")
-    r = for_match(m, args.out)
+    r = for_match(m, args.out, last=args.last)
     print(args.out if r else "too few meetings on record", r)
