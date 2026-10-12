@@ -112,7 +112,7 @@ def ar_date(iso):
 
 
 # ---------------------------------------------------------------- drawing
-def render(m, games, out, when=""):
+def render(m, games, out, when="", official=False):
     """Write the card for match `m` (matches.json shape) and its h2h games."""
     import fb_cards as FC
     import matchup_card as MC
@@ -235,19 +235,22 @@ def render(m, games, out, when=""):
         CW = W - 80
         COLS = (40,)
         ty, ny = 10 + (CH - 92) // 4, 42 + (CH - 92) // 2   # head line / names+score row
+        yoff = (610 - n * (CH + GAP)) // 2 if n <= 3 else 0  # two or three sit centred
     elif n <= 8:
         # seven or eight: 4 + 3/4 taller cards, the footer stays put
         CW, CH, GAP, PER = 486, 142, 10, 4
         COLS = (W - 40 - CW, 40)
         ty, ny = 22, 62
+        yoff = 0
     else:
         CW, CH, GAP, PER = 486, 112, 10, 5
         COLS = (W - 40 - CW, 40)
         ty, ny = 14, 46
+        yoff = 0
     fnm, fs, fc = FC.font("ExtraBold", 32), FC.font("ExtraBold", 34), FC.font("Bold", 21)
     for i, g in enumerate(games[:MAX_GAMES]):
         x0 = COLS[i // PER]
-        y0 = 618 + (i % PER) * (CH + GAP)
+        y0 = 618 + yoff + (i % PER) * (CH + GAP)
         rrect([x0, y0, x0 + CW, y0 + CH], 18, CARD_FILL, None, 1)
         nb = 34
         d.ellipse([x0 + CW - nb - 12, y0 + 12, x0 + CW - 12, y0 + 12 + nb], fill=GOLD)
@@ -288,23 +291,39 @@ def render(m, games, out, when=""):
     text_c(W // 2, fy + 10 + (30 - ff.size) // 2, fact, ff, WHITE)
     text_l(40, H - 46, "yallascore.site", FC.font("Bold", 24), SOFT)
     src = "البيانات: 365Scores · " + (notes.get("source") or "النتائج الرسمية")
+    if official:
+        # the editor left the friendlies out - the card says so
+        src += " · المباريات الرسمية فقط"
+        if yoff >= 60:
+            text_c(W // 2, 618 + yoff - 50, "المباريات الرسمية فقط، بلا الوديات", FC.font("Bold", 26), DIM)
     text_r(W - 40, H - 44, src, FC.font("Regular", 22), DIM)
     img.save(out, quality=90, optimize=True) if out.lower().endswith((".jpg", ".jpeg")) else img.save(out)
     return {"n": n, "wins": w, "draws": draws, "goals": gf, "last": last, "played": played,
             "finals": notes.get("finals")}
 
 
-def for_match(m, out, last=None):
+def is_friendly(g):
+    c = (g.get("comp") or "").lower()
+    return "ودية" in c or "ودي" in c.split() or "friendly" in c
+
+
+def for_match(m, out, last=None, official=False):
     """Fetch + render. None when the record is too short to be worth a card.
     last = show only the newest N meetings (user ask 2026-10-12: «آخر ست
-    مواجهات» City × PSG); the default is MAX_GAMES."""
+    مواجهات» City × PSG); official = leave the friendlies out (user ask the
+    same day: Atlético × United, «مش عايز الماتشات الودية»). An explicit
+    last/official is the editor's call, so MIN_GAMES does not apply to it."""
     import matchup_card as MC
     games = h2h_games(m)
-    if len(games) < MIN_GAMES:
+    if official:
+        games = [g for g in games if not is_friendly(g)]
+    if len(games) < MIN_GAMES and not (last or official):
         return None
     if last:
         games = games[:int(last)]
-    return render(m, games, out, when=MC.when_ar(m.get("kickoff"), m.get("koff_time")))
+    if not games:
+        return None
+    return render(m, games, out, when=MC.when_ar(m.get("kickoff"), m.get("koff_time")), official=official)
 
 
 if __name__ == "__main__":
@@ -313,11 +332,12 @@ if __name__ == "__main__":
     ap.add_argument("--match", required=True)
     ap.add_argument("--out", default=os.path.join(HERE, "data", "briefs", "h2h.jpg"))
     ap.add_argument("--last", type=int, default=None, help="only the newest N meetings")
+    ap.add_argument("--official", action="store_true", help="leave the friendlies out")
     args = ap.parse_args()
     import match_brief as MB
     d = MB.load_all()
     m = next((x for x in d["matches"] if str(x.get("match_id")) == str(args.match)), None)
     if not m:
         sys.exit(f"match {args.match} is not in matches.json")
-    r = for_match(m, args.out, last=args.last)
+    r = for_match(m, args.out, last=args.last, official=args.official)
     print(args.out if r else "too few meetings on record", r)
