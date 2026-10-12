@@ -8,6 +8,17 @@ from site_lib.arabic import _AR_DAYS, _AR_MONTHS
 from site_lib.text import esc
 
 
+def day_month(d, weekday=False):
+    """«10 أكتوبر» (or «السبت 10 أكتوبر») - the short, year-less form for
+    meta descriptions."""
+    try:
+        dt = datetime.date.fromisoformat(d)
+        s = f"{dt.day} {_AR_MONTHS[dt.month]}"
+        return f"{_AR_DAYS[dt.weekday()]} {s}" if weekday else s
+    except Exception:
+        return d
+
+
 def fmt_day(d):
     try:
         dt = datetime.date.fromisoformat(d)

@@ -110,6 +110,7 @@ AR_TEAM = {
     "Hull City AFC": "هال سيتي", "Ipswich Town FC": "إبسويتش تاون",
     "Juventus FC": "يوفنتوس", "Le Havre AC": "لو آفر",
     "Le Mans FC": "لومان", "Leeds United FC": "ليدز يونايتد",
+    "LASK Linz": "لاسك لينز", "LASK": "لاسك لينز",
     "Levante UD": "ليفانتي", "Lille OSC": "ليل", "Liverpool FC": "ليفربول",
     "Manchester City FC": "مانشستر سيتي",
     "Manchester United FC": "مانشستر يونايتد", "Málaga CF": "مالقا",

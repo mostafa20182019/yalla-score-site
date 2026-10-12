@@ -63,11 +63,28 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
                 if crest:
                     break
         t_url = f"/team/{slug}.html"
-        title = (f"أخبار {name} اليوم — مباريات ونتائج وترتيب {name} "
-                 f"{season} | {SITE_NAME}")
-        desc = (f"آخر أخبار {name} اليوم، موعد مباراة {name} القادمة، نتائج "
-                f"آخر المباريات وترتيب {name} في {league_ar} {season} — "
-                "تتحدّث الصفحة تلقائيًا على مدار اليوم.")
+        # 2026-10-12 (user «نفذه الآن»): GSC's first non-branded impressions were
+        # «نتيجة ريال مدريد اليوم / الآن» and «آخر أخبار نادي بيراميدز» - the title
+        # now answers the result intent first, and the description opens with
+        # the last score and the next fixture instead of a generic sentence.
+        from site_lib.dates import day_month
+        from site_lib.names import ar_team
+        # ≤ 62 chars with the brand for the short names (seo_title drops the
+        # brand, never the query words, when a long name pushes it over)
+        title = f"نتيجة {name} اليوم والمباراة القادمة والأخبار | {SITE_NAME}"
+        _parts = []
+        if last_res:
+            _l = last_res[0]
+            # the score with SPACES: a glued «1-0» is one LTR run and reverses in RTL
+            _parts.append(f"آخر نتيجة: {ar_team(_l.get('home'))} {_l.get('home_score')} - "
+                          f"{_l.get('away_score')} {ar_team(_l.get('away'))} ({day_month(_l.get('kickoff'))}).")
+        if up_next:
+            _n = up_next[0]
+            _parts.append(f"القادمة: {ar_team(_n.get('home'))} × {ar_team(_n.get('away'))} "
+                          f"{day_month(_n.get('kickoff'), weekday=True)}"
+                          + (f" {_n.get('koff_time')} بتوقيت القاهرة." if _n.get("koff_time") else "."))
+        _parts.append(f"أخبار {name} وترتيبه في {league_ar}.")
+        desc = " ".join(_parts)
         img = (crest if crest.startswith("http")
                else SITE_BASE + crest) if crest else None
         page_head = head(title, desc, SITE_BASE + t_url, image=img)
