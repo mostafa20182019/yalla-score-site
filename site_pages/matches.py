@@ -11,6 +11,7 @@ from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
 from site_lib.crests import comp_icon, local_crest
 from site_lib.dates import fmt_day
+from site_lib.league_desc import matches_desc
 from site_lib.matchdata import absence_block, match_details_for, match_goals, prematch_for
 from site_lib.names import _team_match, ar_team, comp_label
 from site_lib.predictions import pred_block, pred_pop
@@ -57,8 +58,11 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
     comp_order.sort(key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER
                                    else len(COMP_ORDER), c))
     pieces = []          # every dynamic piece, for pred_pop's "any prediction button?"
-    page_head = head(f"مواعيد ونتائج المباريات — {SITE_NAME}",
-                     "مواعيد ونتائج مباريات كرة القدم بتوقيت القاهرة على يلا سكور.",
+    # 2026-10-12 (user: «اعمل نفس الحاجة لصفحة المباريات»): the title is the
+    # query («مواعيد ونتائج مباريات اليوم») and the description opens with
+    # today's count, the headline fixture and the latest score.
+    page_head = head(f"مواعيد ونتائج مباريات اليوم بتوقيت القاهرة | {SITE_NAME}",
+                     matches_desc(matches, REF_TODAY, TEAM_PAGES, comp_order),
                      SITE_BASE + "/matches.html", active="matches")
     leagues = []
     for c in comp_order:

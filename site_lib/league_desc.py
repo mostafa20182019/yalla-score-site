@@ -5,7 +5,7 @@ user «اعمل نفس الحاجة لصفحات الدوريات»). Helpers li
 site_pages/, because build() calls every site_pages function once
 (tests/test_build_split.py)."""
 from site_lib.dates import day_month
-from site_lib.names import ar_team
+from site_lib.names import ar_team, comp_label
 
 
 # the league titles lead with the query a reader types («ترتيب الدوري المصري
@@ -73,3 +73,51 @@ def fixtures_desc(label, season, rounds, n_m):
                      f"{m.get('away_score')} {ar_team(m.get('away'))} ({day_month(m.get('kickoff'))}).")
     parts.append(f"جدول مباريات {label} {season}: {len(rounds)} جولة و{n_m} مباراة بمواعيدها ونتائجها.")
     return " ".join(parts)
+
+
+def _pick_headline(ms, team_pages, comp_order):
+    """The match of the day: both clubs curated, else one, else the first
+    league in COMP_ORDER; ties by kick-off time."""
+    from site_lib.names import _team_match
+
+    def key(m):
+        n = sum(1 for tp in team_pages if _team_match(tp, m))
+        c = m.get("competition") or ""
+        return (-n, comp_order.index(c) if c in comp_order else len(comp_order),
+                m.get("koff_time") or "")
+    return sorted(ms, key=key)[0] if ms else None
+
+
+def matches_desc(matches, today, team_pages, comp_order):
+    """/matches: «N مباريات اليوم» + the headline fixture + the latest score.
+    today = the navigator's default day (REF_TODAY), so the number matches
+    what the page opens on."""
+    todays = [m for m in matches if (m.get("kickoff") or "") == today]
+    fin = [m for m in matches if (m.get("status") or "").upper() == "FINISHED"
+           and m.get("home_score") is not None and (m.get("kickoff") or "") <= today]
+    fin.sort(key=lambda m: ((m.get("kickoff") or ""), (m.get("koff_time") or "")))
+    parts = []
+    if todays:
+        parts.append(f"مباريات اليوم {day_month(today, weekday=True)}: "
+                     f"{_ar_n(len(todays), 'مباراة واحدة', 'مباراتان', 'مباريات', 'مباراة')}.")
+        h = _pick_headline(todays, team_pages, comp_order)
+        if h:
+            parts.append(f"أبرزها: {ar_team(h.get('home'))} × {ar_team(h.get('away'))}"
+                         + (f" {h.get('koff_time')} بتوقيت القاهرة" if h.get("koff_time") else "")
+                         + f" ({comp_label(h.get('competition') or '')}).")
+    else:
+        nxt = sorted((m for m in matches if (m.get("kickoff") or "") > today),
+                     key=lambda m: ((m.get("kickoff") or ""), (m.get("koff_time") or "")))
+        if nxt:
+            n = nxt[0]
+            parts.append(f"لا مباريات اليوم. القادمة: {ar_team(n.get('home'))} × {ar_team(n.get('away'))} "
+                         f"{day_month(n.get('kickoff'), weekday=True)}"
+                         + (f" {n.get('koff_time')} بتوقيت القاهرة." if n.get("koff_time") else "."))
+    if fin:
+        m = _pick_headline([x for x in fin if x.get("kickoff") == fin[-1].get("kickoff")],
+                           team_pages, comp_order) or fin[-1]
+        parts.append(f"آخر نتيجة: {ar_team(m.get('home'))} {m.get('home_score')} - "
+                     f"{m.get('away_score')} {ar_team(m.get('away'))}.")
+    parts.append("كل المواعيد بتوقيت القاهرة والنتائج تتحدّث تلقائيًا.")
+    return " ".join(parts)
+
