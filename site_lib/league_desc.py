@@ -108,9 +108,10 @@ def matches_desc(matches, today, team_pages, comp_order):
     else:
         nxt = sorted((m for m in matches if (m.get("kickoff") or "") > today),
                      key=lambda m: ((m.get("kickoff") or ""), (m.get("koff_time") or "")))
+        parts.append("لا مباريات اليوم.")
         if nxt:
             n = nxt[0]
-            parts.append(f"لا مباريات اليوم. القادمة: {ar_team(n.get('home'))} × {ar_team(n.get('away'))} "
+            parts.append(f"القادمة: {ar_team(n.get('home'))} × {ar_team(n.get('away'))} "
                          f"{day_month(n.get('kickoff'), weekday=True)}"
                          + (f" {n.get('koff_time')} بتوقيت القاهرة." if n.get("koff_time") else "."))
     if fin:
@@ -118,6 +119,6 @@ def matches_desc(matches, today, team_pages, comp_order):
                            team_pages, comp_order) or fin[-1]
         parts.append(f"آخر نتيجة: {ar_team(m.get('home'))} {m.get('home_score')} - "
                      f"{m.get('away_score')} {ar_team(m.get('away'))}.")
-    parts.append("كل المواعيد بتوقيت القاهرة والنتائج تتحدّث تلقائيًا.")
+    parts.append("النتائج تتحدّث تلقائيًا.")
     return " ".join(parts)
 
