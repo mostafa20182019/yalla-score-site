@@ -231,6 +231,11 @@ def render(m, games, out, when=""):
         CW, CH, GAP, PER = W - 80, 92, 10, 6
         COLS = (40,)
         ty, ny = 10, 42          # the head line / the names+score row inside a card
+    elif n <= 8:
+        # seven or eight: 4 + 3/4 taller cards, the footer stays put
+        CW, CH, GAP, PER = 486, 142, 10, 4
+        COLS = (W - 40 - CW, 40)
+        ty, ny = 22, 62
     else:
         CW, CH, GAP, PER = 486, 112, 10, 5
         COLS = (W - 40 - CW, 40)
@@ -267,7 +272,7 @@ def render(m, games, out, when=""):
             text_c(mid, y0 + ny + 42, gn["note"], FC.font("Bold", 18), GOLD)
 
     # the finals line (hand-checked) or the last win of each side + footer
-    fy = 618 + PER * (CH + GAP) + 4
+    fy = 618 + 5 * (112 + 10) + 4          # the list area is fixed; the layouts fill it
     rrect([40, fy, W - 40, fy + 60], 18, (246, 192, 60, 26), (246, 192, 60, 120), 2)
     parts = []
     for name in (h, a):
