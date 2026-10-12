@@ -31,7 +31,10 @@ import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 HOST = "yallascore.site"
-KEY = "ed37eefa1248d5155a305468d9099dab"
+# 2026-10-12: Bing Webmaster Tools only reports IndexNow traffic for a key it
+# generated itself (the «Get Started» wizard offers no "use my key"), so the
+# site now signs with Bing's key; the old key file stays served (harmless).
+KEY = "0529d0814bd94b3dab7787bf0afd773f"
 KEY_URL = f"https://{HOST}/{KEY}.txt"
 ENDPOINT = "https://api.indexnow.org/indexnow"
 CAP = 100          # well under the protocol's 10,000; a focused list is the point
