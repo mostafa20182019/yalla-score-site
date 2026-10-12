@@ -111,6 +111,7 @@ AR_TEAM = {
     "Juventus FC": "يوفنتوس", "Le Havre AC": "لو آفر",
     "Le Mans FC": "لومان", "Leeds United FC": "ليدز يونايتد",
     "LASK Linz": "لاسك لينز", "LASK": "لاسك لينز",
+    "Sabah FK": "صباح", "Viking FK": "فايكينج",
     "Levante UD": "ليفانتي", "Lille OSC": "ليل", "Liverpool FC": "ليفربول",
     "Manchester City FC": "مانشستر سيتي",
     "Manchester United FC": "مانشستر يونايتد", "Málaga CF": "مالقا",
