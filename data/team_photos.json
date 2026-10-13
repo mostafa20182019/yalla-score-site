@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-13T16:33:20+03:00",
+ "generated_at": "2026-10-13T16:37:28+03:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -289,6 +289,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "arsenal-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار أرسنال",
+   "club": "أرسنال",
+   "slug": "arsenal",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/arsenal/identity-card.jpg",
+   "added": "2026-10-13"
+  },
+  {
    "file": "ashraf-sobhy-zamalek-statement.jpg",
    "credit": "صورة: الدكتور أشرف صبحي، وزير الشباب والرياضة الأسبق، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
    "subject": "الدكتور أشرف صبحي",
@@ -297,6 +308,17 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/ashraf-sobhy-zamalek-statement.jpg",
+   "added": "2026-10-13"
+  },
+  {
+   "file": "barcelona-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار برشلونة",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/barcelona/identity-card.jpg",
    "added": "2026-10-13"
   },
   {
@@ -487,6 +509,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "chelsea-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار تشيلسي",
+   "club": "تشيلسي",
+   "slug": "chelsea",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/chelsea/identity-card.jpg",
+   "added": "2026-10-13"
+  },
+  {
    "file": "cody-gakpo-liverpool.jpg",
    "credit": "صورة: كودي خاكبو مهاجم ليفربول خلال مواجهة فولهام بالدوري الإنجليزي عام 2026 — تصوير Timmy96، رخصة CC0 (ويكيميديا كومنز)",
    "subject": "كودي خاكبو مهاجم ليفربول",
@@ -539,6 +572,17 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/liverpool/djylian-nguessan-saint-etienne.jpg",
+   "added": "2026-10-13"
+  },
+  {
+   "file": "egypt-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار منتخب مصر",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/egypt/identity-card.jpg",
    "added": "2026-10-13"
   },
   {
@@ -1037,6 +1081,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "liverpool-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار ليفربول",
+   "club": "ليفربول",
+   "slug": "liverpool",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/liverpool/identity-card.jpg",
+   "added": "2026-10-13"
+  },
+  {
    "file": "mahmoud-elkhatib-ahly-president.jpg",
    "credit": "صورة: محمود الخطيب رئيس النادي الأهلي خلال كلمة رسمية — من قناة الأهلي، رخصة CC BY 3.0 (ويكيميديا كومنز)",
    "subject": "محمود الخطيب رئيس النادي الأهلي",
@@ -1056,6 +1111,28 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/mahmoud-elkhatib-ahly-tv-launch.jpg",
+   "added": "2026-10-13"
+  },
+  {
+   "file": "man-city-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار مانشستر سيتي",
+   "club": "مانشستر سيتي",
+   "slug": "man-city",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/man-city/identity-card.jpg",
+   "added": "2026-10-13"
+  },
+  {
+   "file": "man-united-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار مانشستر يونايتد",
+   "club": "مانشستر يونايتد",
+   "slug": "man-united",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/man-united/identity-card.jpg",
    "added": "2026-10-13"
   },
   {
@@ -1466,6 +1543,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "pyramids-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار بيراميدز",
+   "club": "بيراميدز",
+   "slug": "pyramids",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/pyramids/identity-card.jpg",
+   "added": "2026-10-13"
+  },
+  {
    "file": "pyramids-june30-mayele-exit.jpg",
    "credit": "صورة: استاد 30 يونيو (الدفاع الجوي) بالقاهرة، ملعب بيراميدز — Crosskimo، ملكية عامة (ويكيميديا كومنز، الصورة مقتطعة ومعدّلة الإضاءة)",
    "subject": "استاد 30 يونيو",
@@ -1518,6 +1606,17 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/real-madrid-bernabeu-entrance.jpg",
+   "added": "2026-10-13"
+  },
+  {
+   "file": "real-madrid-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار ريال مدريد",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/real-madrid/identity-card.jpg",
    "added": "2026-10-13"
   },
   {
@@ -1705,6 +1804,17 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/real-madrid/thibaut-courtois-belgium-2026.jpg",
+   "added": "2026-10-13"
+  },
+  {
+   "file": "trabzonspor-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار طرابزون سبور",
+   "club": "طرابزون سبور",
+   "slug": "trabzonspor",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/trabzonspor/identity-card.jpg",
    "added": "2026-10-13"
   },
   {
@@ -2024,6 +2134,17 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/zamalek-gate-jefali-fine.jpg",
+   "added": "2026-10-13"
+  },
+  {
+   "file": "zamalek-identity-card.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار الزمالك",
+   "club": "الزمالك",
+   "slug": "zamalek",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/zamalek/identity-card.jpg",
    "added": "2026-10-13"
   },
   {
