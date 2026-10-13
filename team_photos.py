@@ -60,6 +60,11 @@ TEAMS = {
     "trabzonspor": "طرابزون سبور",
 }
 
+# a subject that starts with one of these is a place or a thing, not a person
+# (the living-story test only applies to people)
+NOT_A_PERSON = ("ملعب", "استاد", "ستاد", "إستاد", "الاستاد", "جماهير", "مشجعو",
+                "مشجعي", "شعار", "قميص", "كأس", "مقر", "لافتة", "مدرجات", "درع")
+
 WHY = ("Photos the editor put by hand into team-photos/<club>/ and team_photos.py "
        "copied into media/ with the credit he wrote in that folder's credits.txt. "
        "A media/ file is usable only when a credit for it lives here, in "
@@ -117,6 +122,13 @@ def media_name(slug, name):
 
 
 # ----------------------------------------------------------------- imaging
+def _same_bytes(a, b):
+    if os.path.getsize(a) != os.path.getsize(b):
+        return False
+    h = lambda p: hashlib.md5(open(p, "rb").read()).hexdigest()
+    return h(a) == h(b)
+
+
 def _web_bytes(path):
     """The photo at web size as JPEG bytes (EXIF rotation applied, RGB,
     at most MAX_W wide, never upscaled)."""
@@ -212,7 +224,7 @@ def sync(folder_root=FOLDER, media=MEDIA, registry_path=REGISTRY, teams=TEAMS,
                 continue
             credit, year, subject = rec
             subject = subject or club
-            is_person = subject != club
+            is_person = subject != club and not subject.startswith(NOT_A_PERSON)
             entry = by_source.get(source)
             if entry:
                 changed = (entry.get("credit"), entry.get("year"), entry.get("subject")) \
@@ -223,6 +235,21 @@ def sync(folder_root=FOLDER, media=MEDIA, registry_path=REGISTRY, teams=TEAMS,
                     res["updated"].append(source)
                 else:
                     res["kept"] += 1
+                continue
+            # A photo that already lives in media/ under this very name with
+            # the very same bytes (the vetted photos our articles used, seeded
+            # into the folders 2026-10-13): register THAT file, copy nothing -
+            # a second copy would only confuse the variety rule.
+            same = os.path.join(media, name)
+            if os.path.exists(same) and _same_bytes(same, os.path.join(folder, name)):
+                p = {"file": name, "credit": credit, "subject": subject, "club": club,
+                     "slug": slug, "year": year, "is_person": is_person,
+                     "source": source, "added": today}
+                reg["photos"] = [q for q in reg["photos"] if q["file"] != name]
+                reg["photos"].append(p)
+                by_source[source] = p
+                by_file.add(name)
+                res["added"].append(f"{source} = media/{name} (already there)")
                 continue
             fname = media_name(slug, name)
             if fname in by_file or os.path.exists(os.path.join(media, fname)):

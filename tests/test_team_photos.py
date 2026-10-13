@@ -106,6 +106,19 @@ credits(os.path.join(root, "juventus"), "* | صورة |\n")
 r = run()
 ck("5a a folder that is not a curated club is skipped", not any("juventus" in s for s in r["added"]))
 
+# ------------------------------- 7. a photo media/ already has (the seeding)
+liv = os.path.join(root, "liverpool")
+src = photo(os.path.join(media), "anfield-kop.jpg", 1200, 600)        # "already published"
+os.makedirs(liv, exist_ok=True); shutil.copy2(src, os.path.join(liv, "anfield-kop.jpg"))                # same bytes in the folder
+credits(liv, "anfield-kop.jpg | صورة: مدرجات ملعب أنفيلد معقل ليفربول، رخصة CC BY 2.0 | 2024 | مدرجات ملعب أنفيلد\n")
+n_before = len(os.listdir(media))
+r = run()
+p = [q for q in json.load(open(reg, encoding="utf-8"))["photos"] if q["slug"] == "liverpool"][0]
+ck("7a identical bytes under the same name -> registered as THAT file, no copy",
+   p["file"] == "anfield-kop.jpg" and len(os.listdir(media)) == n_before, str(r["added"]))
+ck("7b a stadium/crowd subject is not a person", p["is_person"] is False)
+ck("7c the source was left alone (already web-sized)", Image.open(os.path.join(liv, "anfield-kop.jpg")).width == 1200)
+
 # ------------------------------------------------- 6. the real repo's state
 ck("6a every curated club page has a folder", all(os.path.isdir(os.path.join("team-photos", s)) for s in TP.TEAMS), str([s for s in TP.TEAMS if not os.path.isdir(os.path.join("team-photos", s))]))
 ck("6b every folder ships its credits.txt", all(os.path.exists(os.path.join("team-photos", s, "credits.txt")) for s in TP.TEAMS))
