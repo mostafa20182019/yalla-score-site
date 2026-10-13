@@ -1,0 +1,5 @@
+{
+ "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
+ "generated_at": "2026-10-13T15:51:27+03:00",
+ "photos": []
+}

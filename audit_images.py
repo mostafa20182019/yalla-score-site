@@ -107,18 +107,23 @@ def club_vocabulary():
 
 
 def registry():
-    """data/media_credits.json - photos stocked by hand in the Oracle library.
+    """data/media_credits.json + data/team_photos.json - photos stocked by hand.
 
     A second place a credit can legitimately live. Before it existed, a file in
     media/ could only be registered by an article already using it, so a photo
     chosen in advance was unusable by our own rule. Same shape of record, so
     the checks below apply to it unchanged."""
-    path = os.path.join(HERE, "data", "media_credits.json")
-    if not os.path.exists(path):
-        return {}
-    with open(path, encoding="utf-8") as fh:
-        d = json.load(fh) or {}
-    return {p["file"]: p.get("credit") for p in (d.get("photos") or []) if p.get("file")}
+    out = {}
+    # data/team_photos.json (2026-10-13): the editor's own team-photos/<club>/
+    # folders, copied by team_photos.py - the third valid home for a credit
+    for name in ("media_credits.json", "team_photos.json"):
+        path = os.path.join(HERE, "data", name)
+        if not os.path.exists(path):
+            continue
+        with open(path, encoding="utf-8") as fh:
+            d = json.load(fh) or {}
+        out.update({p["file"]: p.get("credit") for p in (d.get("photos") or []) if p.get("file")})
+    return out
 
 
 def orphans(credited):
