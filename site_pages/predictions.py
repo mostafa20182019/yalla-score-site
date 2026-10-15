@@ -44,6 +44,9 @@ HUB_FOCUS = {"Egyptian Premier League": ("الأهلي", "الزمالك", "بي
 # «غلطة سراي»). Fenerbahçe now maps to «فنربخشة» in AR_TEAM, like the league.
 HUB_FOCUS["UEFA Champions League"] = tuple(sorted({n for v in HUB_FOCUS.values() for n in v})) + (
     "جالطة سراي",)
+# Europa League (2026-10-15): the same featured clubs - whichever of them
+# drop into it are the ones readers follow
+HUB_FOCUS["UEFA Europa League"] = HUB_FOCUS["UEFA Champions League"]
 
 
 def prediction_history_page(plog, acc):

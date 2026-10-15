@@ -725,6 +725,11 @@ S365_LEAGUES = [
     # URLs (uefa-nations-league-7016; the women's edition is 7995). National
     # teams again: no model, multi-group standings skipped by the guards.
     (7016, "UEFA Nations League"),
+    # الدوري الأوروبي (user ask 2026-10-15). 365scores id verified against its
+    # own URL (uefa-europa-league-573; 572 is the Champions League). A
+    # 36-club league phase = ONE standings entry, one group -> rendered as
+    # a table like the UCL; the knockout rounds later carry no table.
+    (573, "UEFA Europa League"),
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
@@ -899,7 +904,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573"
 
 def _goal_rows(game, fallback_home_id):
     """game detail -> (goals list, health) — tolerant of field-name drift."""
@@ -1291,7 +1296,7 @@ S365_SCORER_COMPS = [
     (649, "Saudi Pro League"), (7, "Premier League"),
     (11, "Primera Division"), (17, "Serie A"), (25, "Bundesliga"),
     (35, "Ligue 1"), (572, "UEFA Champions League"),
-    (624, "CAF Champions League"),
+    (624, "CAF Champions League"), (573, "UEFA Europa League"),
 ]
 
 # the response carries several athlete charts per competition; these are the

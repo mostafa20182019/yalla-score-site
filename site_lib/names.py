@@ -142,6 +142,7 @@ def comp_emoji(name):
     if "bundesliga" in n: return "🇩🇪"
     if "ligue 1" in n: return "🇫🇷"
     if "caf" in n or "أفريقيا" in n: return "🌍"   # before the generic "champions"
+    if "europa" in n or "الأوروبي" in n: return "🇪🇺"   # the Europa League (2026-10-15)
     if "champions" in n: return "⭐"
     return "⚽"
 

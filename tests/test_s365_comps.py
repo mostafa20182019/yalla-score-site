@@ -67,6 +67,16 @@ slugs = list(bs.COMP_SLUG.values())
 ck("10 COMP_SLUG values are unique", len(slugs) == len(set(slugs)))
 ck("11 the AFCON qualifiers page slug exists",
    bs.COMP_SLUG.get("Africa Cup of Nations Qualification") == "afcon-qualifiers")
+# the Europa League (user ask 2026-10-15): 573 everywhere, placed right after
+# the UCL, with the UCL's featured clubs on the predictions hub
+ck("11b the Europa League is 573 in fetch_data, build_site and the worker",
+   ids.get("UEFA Europa League") == 573 and bs.S365_COMP_IDS.get("UEFA Europa League") == 573
+   and "573" in live)
+ck("11c ...sits right after the Champions League in the sidebar order",
+   bs.COMP_ORDER.index("UEFA Europa League") == bs.COMP_ORDER.index("UEFA Champions League") + 1)
+ck("11d ...has its slug, label, emblem and TV entry",
+   bs.COMP_SLUG.get("UEFA Europa League") == "europa-league" and "UEFA Europa League" in bs.COMP_LABEL
+   and "UEFA Europa League" in bs.COMP_LOGO and "UEFA Europa League" in bs.COMP_TV)
 
 # ---- the standings guard: BOTH multi-group shapes are skipped ------------
 body = fds.split("def fetch_s365_league", 1)[1]

@@ -45,7 +45,7 @@ CAIRO = ZoneInfo("Africa/Cairo")
 COMPS = {
     "Egyptian Premier League": 552, "Saudi Pro League": 649, "Turkish Super Lig": 78,
     "Premier League": 7, "Primera Division": 11, "Serie A": 17, "Bundesliga": 25,
-    "Ligue 1": 35, "UEFA Champions League": 572,
+    "Ligue 1": 35, "UEFA Champions League": 572, "UEFA Europa League": 573,
 }
 NATIVE = {"Egyptian Premier League", "Saudi Pro League", "Turkish Super Lig"}   # our id == 365 id
 STAT_IDS = {76: "xg", 79: "xgot", 3: "shots", 4: "sot", 24: "big", 10: "poss"}

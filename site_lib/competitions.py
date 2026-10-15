@@ -12,7 +12,7 @@ build_site imports these back under the same names."""
 S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
                      "Saudi Pro League", "CAF Champions League",
                      "Africa Cup of Nations Qualification",
-                     "UEFA Nations League")
+                     "UEFA Nations League", "UEFA Europa League")
 
 # The header ticker shows ONLY these clubs' matches (user pick 2026-08-08).
 # Tokens are substring-matched against football-data team names, so keep them
@@ -37,6 +37,7 @@ COMP_SLUG = {
     "CAF Champions League": "caf-champions-league",
     "Africa Cup of Nations Qualification": "afcon-qualifiers",
     "UEFA Nations League": "nations-league",
+    "UEFA Europa League": "europa-league",
 }
 
 # MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
@@ -59,6 +60,7 @@ COMP_TV = {
     "Turkish Super Lig": "beIN Sports",             # Masrawy 2026-08-05: beIN to the end of 2026/27
     "Africa Cup of Nations Qualification": "beIN Sports",   # Annahar/Alkhaleej Sep 2026 (Egypt home games also terrestrial)
     "UEFA Nations League": "beIN Sports",           # Raya 2026-09-24
+    "UEFA Europa League": "beIN Sports",            # same UEFA club package as the UCL in MENA (2024/25-2026/27)
 }
 
 # official competition emblems (same host as the team crests already used)
@@ -81,6 +83,10 @@ COMP_LOGO = {
         "https://imagecache.365scores.com/image/upload/"
         "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
         "d_Competitions:default1.png/v4/Competitions/7016",
+    "UEFA Europa League":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/573",
 }
 
 # friendlier display names (data-comp keeps the raw API name for filtering)
@@ -97,19 +103,21 @@ COMP_LABEL = {
     "UEFA Champions League": "دوري أبطال أوروبا",
     "Africa Cup of Nations Qualification": "تصفيات كأس أمم إفريقيا",
     "UEFA Nations League": "دوري الأمم الأوروبية",
+    "UEFA Europa League": "الدوري الأوروبي",
 }
 
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
 COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
               "Bundesliga", "Serie A", "UEFA Champions League",
+              "UEFA Europa League",     # right after the UCL (user ask 2026-10-15)
               "CAF Champions League",   # after UCL (user pick 2026-09-02)
               "Africa Cup of Nations Qualification",  # user ask 2026-09-20
               "UEFA Nations League"]                  # user ask 2026-09-21
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
 # must agree with LIVE_COMPS in worker.js
-# (552,78,649,7,11,17,25,35,572,624,588,7016).
+# (552,78,649,7,11,17,25,35,572,624,588,7016,573).
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
     "Turkish Super Lig": 78,
@@ -117,4 +125,5 @@ S365_COMP_IDS = {
     "CAF Champions League": 624,
     "Africa Cup of Nations Qualification": 588,
     "UEFA Nations League": 7016,
+    "UEFA Europa League": 573,
 }
