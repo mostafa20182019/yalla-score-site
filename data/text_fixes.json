@@ -1,0 +1,16 @@
+{
+ "_why": "Text corrections applied to already-published articles by the D1 Admin workflow's fix-text task (d1_admin.py). Committed and reviewable like image_fixes.json; idempotent.",
+ "fixes": [
+  {
+   "article_id": 767,
+   "replace": [
+    [
+     "شيكابالا",
+     "شيكو بانزا"
+    ]
+   ],
+   "why": "الخبر سمّى شيكابالا (معتزل) في لقطتي ركلة الجزاء، بينما مصادره الثلاثة (اليوم السابع، الموقع الرسمي للأهلي، بطولات) تقول شيكو بانزا. رصده المستخدم على منشور فيسبوك 2026-10-15.",
+   "added": "2026-10-15"
+  }
+ ]
+}

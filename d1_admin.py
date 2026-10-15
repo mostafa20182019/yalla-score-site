@@ -175,6 +175,81 @@ def _fix_images():
           f"{missing} not found")
 
 
+TEXT_FIELDS = ("title", "summary", "body", "fb_post", "faq")
+
+
+def _rep(text, fix):
+    for old, new in fix.get("replace") or []:
+        if old:
+            text = text.replace(old, new)
+    return text
+
+
+def apply_text_fix(cur, fix):
+    """The update a text fix produces for article `cur`, or None when there is
+    nothing left to replace (already applied). Pure, so a test can hold it.
+
+    fix = {"article_id": 767, "replace": [["old", "new"], ...],
+           "fields": optional subset of TEXT_FIELDS, "why": "..."}.
+    `faq` is a list of {q, a}: both strings are replaced."""
+    fields = fix.get("fields") or TEXT_FIELDS
+    upd = {}
+    for k in fields:
+        v = cur.get(k)
+        if k == "faq" and isinstance(v, list):
+            new = [{**q, **{kk: _rep(q[kk], fix) for kk in ("q", "a") if isinstance(q.get(kk), str)}}
+                   for q in v]
+            if new != v:
+                upd[k] = new
+        elif isinstance(v, str):
+            nv = _rep(v, fix)
+            if nv != v:
+                upd[k] = nv
+    return upd or None
+
+
+def _fix_text():
+    """Correct the TEXT of already-published articles from data/text_fixes.json
+    (2026-10-15: article 767 named a retired player where its own sources
+    named the current one - the user caught it on the Facebook post). Same
+    shape and the same reasons as fix-images: a committed, reviewable entry
+    with its `why`, idempotent, applied in CI where D1 is configured. The
+    export is regenerated afterwards so fb_update_posts.py (which reads the
+    export) sends the corrected fb_post."""
+    path = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                        "data", "text_fixes.json")
+    if not os.path.exists(path):
+        print("fix-text: no data/text_fixes.json, nothing to do")
+        return
+    with open(path, encoding="utf-8") as fh:
+        fixes = (json.load(fh) or {}).get("fixes") or []
+    applied = skipped = missing = 0
+    for f in fixes:
+        aid = str(f.get("article_id") or "").strip()
+        if not aid or not f.get("replace"):
+            print(f"fix-text: incomplete entry {f!r} - skipped")
+            continue
+        cur = store.article_get(aid)
+        if cur is None:
+            print(f"fix-text: article {aid} not in D1 - skipped")
+            missing += 1
+            continue
+        upd = apply_text_fix(cur, f)
+        if not upd:
+            print(f"fix-text: {aid} already applied")
+            skipped += 1
+            continue
+        store.article_update(aid, upd)
+        print(f"fix-text: {aid} fields changed: {', '.join(sorted(upd))}")
+        if f.get("why"):
+            print(f"          why: {f['why']}")
+        applied += 1
+    print(f"fix-text: {applied} applied, {skipped} already applied, {missing} not found")
+    if applied:
+        n = store.article_export()
+        print(f"exported D1 -> data/articles.json ({n} articles)")
+
+
 THIN_BEFORE = "2026-09-01"     # the stubs are all from July/August 2026; nothing newer is touched
 
 
@@ -207,7 +282,7 @@ def main():
     be = store.backend()
     print(f"backend: {be}")
     WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse",
-               "--sample", "--fix-images", "--delete-article", "--delete-thin")
+               "--sample", "--fix-images", "--fix-text", "--delete-article", "--delete-thin")
     if "--delete-thin" in args and "dry" in args:
         WRITERS = tuple(w for w in WRITERS if w != "--delete-thin")   # the listing needs no D1
     if be == "json" and any(a in args for a in WRITERS):
@@ -260,6 +335,9 @@ def main():
 
     if "--fix-images" in args:
         _fix_images()
+
+    if "--fix-text" in args:
+        _fix_text()
 
     if "--delete-article" in args:
         # ids come as the next argument, comma-separated: --delete-article 565,566

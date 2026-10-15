@@ -189,6 +189,32 @@ def match_brief_problems(rec, brief):
     return out
 
 
+NAME_GUARD = os.path.join(HERE, "data", "name_guard.json")
+
+
+def name_guard_problems(rec):
+    """Names that keep sneaking into CURRENT stories although the person is
+    retired or gone (2026-10-15: article 767 wrote a retired player's name
+    where every one of its sources had the current player's). A guarded name
+    in the summary / body / fb_post / faq is refused unless the TITLE names
+    him - a story ABOUT the man is of course allowed."""
+    if not os.path.exists(NAME_GUARD):
+        return []
+    with open(NAME_GUARD, encoding="utf-8") as fh:
+        names = (json.load(fh) or {}).get("names") or []
+    title = rec.get("title") or ""
+    text = " ".join([rec.get("summary") or "", b.strip_tags(rec.get("body") or ""),
+                     rec.get("fb_post") or ""] +
+                    [f"{q.get('q', '')} {q.get('a', '')}" for q in (rec.get("faq") or []) if isinstance(q, dict)])
+    out = []
+    for n in names:
+        name = (n.get("name") or "").strip()
+        if name and name in text and name not in title:
+            out.append(f"«{name}» appears in the text but not in the title - {n.get('note') or 'guarded name'}; "
+                       f"copy the player's name from the sources verbatim, never a better-known lookalike")
+    return out
+
+
 def validate(rec, updating=False, brief=None):
     """Problems worth refusing to publish over."""
     bad = []
@@ -224,6 +250,7 @@ def validate(rec, updating=False, brief=None):
         # article body keeps the disclaimer, the Facebook post does not.
         bad.append("fb_post must not carry the betting disclaimer «ليست نصيحة للمراهنة» "
                    "(user rule 2026-10-08 - it stays in the article body only)")
+    bad += name_guard_problems(rec)
     if is_match_brief(brief):
         bad += match_brief_problems(rec, brief)
     elif brief is not None:

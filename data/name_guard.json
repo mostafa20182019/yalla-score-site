@@ -1,0 +1,10 @@
+{
+ "_why": "Names refused by article_put.py unless the TITLE names the person: retired or departed players that a writer substitutes for a lookalike current name. Add a name with its note; the note is printed in the refusal.",
+ "names": [
+  {
+   "name": "شيكابالا",
+   "note": "محمود عبد الرازق «شيكابالا» لاعب معتزل؛ لاعب الزمالك الحالي الذي يُقصد غالبًا هو «شيكو بانزا»",
+   "added": "2026-10-15"
+  }
+ ]
+}
