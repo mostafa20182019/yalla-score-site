@@ -95,8 +95,29 @@ MAX_POST_ATTEMPTS = 3    # a permanently failing article must not eat a slot for
 
 
 def load_articles():
+    """The articles as the SITE sees them. The committed export is a copy of
+    D1 cut by the article run that published; when that copy is behind D1
+    (2026-10-15: article 801 was live on the site for an hour with no export
+    commit, so --pending counted 0 and nothing was dispatched - the user asked
+    why the Hany story never reached the page), the poster must read D1 like
+    the build does. Same one-row signature check as build_site: the full pull
+    only when the export's sig is stale, so the read budget is untouched on a
+    quiet cycle. json backend (laptop, tests): the file, unchanged."""
     with open(os.path.join(HERE, "data", "articles.json"), encoding="utf-8") as f:
-        return json.load(f)["results"][0]["items"]
+        doc = json.load(f)
+    items = doc["results"][0]["items"]
+    if store.backend() == "json":
+        return items
+    try:
+        sig = store.articles_sig()
+        if sig and sig == doc.get("sig"):
+            return items
+        fresh = store.article_all()
+        print(f"articles: export sig {doc.get('sig')!r} != store {sig!r} - read {len(fresh)} from D1", file=sys.stderr)
+        return fresh
+    except Exception as e:  # noqa: BLE001 - never block a post over the freshness check
+        print(f"articles: D1 read failed ({e}) - using the export", file=sys.stderr)
+        return items
 
 
 def article_age_hours(art):
