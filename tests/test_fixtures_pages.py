@@ -39,11 +39,14 @@ kb = os.path.getsize(os.path.join(DIST, "matches.html")) / 1024
 # 2026-10-11/12: 566 KB and 1,348 crest tags - found: the 19-day window holds
 # 296 matches (two full club weekends + a Champions League round + 32 CAF CL
 # games), ~2 crests a row; the markup per row is unchanged. Moved to 640 / 1,500.
-ck("1 /matches is no longer a megabyte of HTML", kb < 640, f"{kb:.0f} KB (was 958; budget 640)")
+# budgets re-based 2026-10-15 for the 13th competition (Europa League: 636 KB,
+# 1,532 img tags the day it joined - the guard is against the SEASON coming
+# back in, thousands of rows, not against one more league's current round)
+ck("1 /matches is no longer a megabyte of HTML", kb < 720, f"{kb:.0f} KB (was 958; budget 720)")
 ck("2 the hidden season is gone: a handful of fixture rows, not thousands",
    len(re.findall(r'class="fx"', m)) < 200, len(re.findall(r'class="fx"', m)))
 ck("3 and the crest tags went with it",
-   m.count("<img") < 1500, f'{m.count("<img")} img tags (was 4,959)')
+   m.count("<img") < 1800, f'{m.count("<img")} img tags (was 4,959; budget 1,800)')
 panels = re.findall(r'<div class="lg-fix rounds-panel.*?(?=<div class="lg-fix rounds-panel|\Z)',
                     m_html, re.S)
 ck("4 every league ships ONE round inline",
