@@ -34,7 +34,9 @@ def day_matches(matches, date, comp):
     return out
 
 
-def render(ms, date, comp, out):
+def render(ms, date, comp, out, part=None, parts=1):
+    """part/parts (2026-10-15, the Europa League's 18-match Thursdays): page
+    `part` of `parts`, nine matches each, the subtitle says which."""
     import fb_cards as FC
     import matchup_card as MC
     from site_lib.names import ar_team, comp_label
@@ -90,11 +92,13 @@ def render(ms, date, comp, out):
     label = comp_label(comp)
     text_c(W // 2, 96, f"مباريات {label}", fit(f"مباريات {label}", "ExtraBold", 72, W - 80, 40))
     rnd = next((m.get("round") for m in ms if m.get("round")), None)
-    sub = " · ".join(x for x in (when, f"الجولة {rnd}" if rnd else "", "التوقيت بتوقيت القاهرة") if x)
+    sub = " · ".join(x for x in (when, f"الجولة {rnd}" if rnd else "",
+                                  f"الجزء {part} من {parts}" if parts > 1 else "",
+                                  "التوقيت بتوقيت القاهرة") if x)
     text_c(W // 2, 192, sub, FC.font("Bold", 30), GOLD)
 
     # the rows
-    rows = ms[:MAX_ROWS]
+    rows = ms[(part - 1) * MAX_ROWS:part * MAX_ROWS] if part else ms[:MAX_ROWS]
     n = max(len(rows), 1)
     GAP = 8
     CH = min(96, (936 - GAP * n) // n)
@@ -118,7 +122,7 @@ def render(ms, date, comp, out):
         text_r(W - 40 - 16 - 2 * R - 14, cy - fh.size * 0.62, h, fh, WHITE)   # home RIGHT
         text_l(40 + 16 + 2 * R + 14, cy - fa.size * 0.62, a, fa, WHITE)       # away LEFT
         y += CH + GAP
-    if len(ms) > MAX_ROWS:
+    if len(ms) > MAX_ROWS and not part:
         text_c(W // 2, y + 4, f"و{len(ms) - MAX_ROWS} مباريات أخرى في الموقع", FC.font("Bold", 24), DIM)
 
     # footer: the channel + the site
@@ -139,6 +143,7 @@ if __name__ == "__main__":
     ap.add_argument("--date", help="YYYY-MM-DD (default: tomorrow, Cairo)")
     ap.add_argument("--comp", default="UEFA Champions League")
     ap.add_argument("--out", default=os.path.join(HERE, "data", "briefs", "day.jpg"))
+    ap.add_argument("--part", type=int, help="page N of a day bigger than nine matches (default: every page, <out>-N.jpg)")
     args = ap.parse_args()
     import match_brief as MB
     from site_lib.config import load
@@ -150,4 +155,13 @@ if __name__ == "__main__":
     ms = day_matches(dd["matches"], date, args.comp)
     if not ms:
         sys.exit(f"no {args.comp} matches on {date} in matches.json")
-    print(args.out, render(ms, date, args.comp, args.out))
+    parts = -(-len(ms) // MAX_ROWS)
+    if parts == 1:
+        print(args.out, render(ms, date, args.comp, args.out))
+    elif args.part:
+        print(args.out, render(ms, date, args.comp, args.out, args.part, parts))
+    else:
+        stem, ext = os.path.splitext(args.out)
+        for k in range(1, parts + 1):
+            out = f"{stem}-{k}{ext}"
+            print(out, render(ms, date, args.comp, out, k, parts))
