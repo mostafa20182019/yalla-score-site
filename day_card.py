@@ -34,7 +34,15 @@ def day_matches(matches, date, comp):
     return out
 
 
-def render(ms, date, comp, out, part=None, parts=1):
+def pick_matches(ms, tokens):
+    """Only the matches involving one of the picked clubs (substring on the
+    Arabic names the card prints; user ask 2026-10-15 «أهم المباريات»)."""
+    from site_lib.names import ar_team
+    toks = [t.strip() for t in tokens if t.strip()]
+    return [m for m in ms if any(t in ar_team(m.get("home") or "") or t in ar_team(m.get("away") or "") for t in toks)]
+
+
+def render(ms, date, comp, out, part=None, parts=1, title=None):
     """part/parts (2026-10-15, the Europa League's 18-match Thursdays): page
     `part` of `parts`, nine matches each, the subtitle says which."""
     import fb_cards as FC
@@ -90,7 +98,8 @@ def render(ms, date, comp, out, part=None, parts=1):
     when = MC.when_ar(date, None)
     text_l(40, 46, when, FC.font("Bold", 26), SOFT)
     label = comp_label(comp)
-    text_c(W // 2, 96, f"مباريات {label}", fit(f"مباريات {label}", "ExtraBold", 72, W - 80, 40))
+    title = title or f"مباريات {label}"
+    text_c(W // 2, 96, title, fit(title, "ExtraBold", 72, W - 80, 40))
     rnd = next((m.get("round") for m in ms if m.get("round")), None)
     sub = " · ".join(x for x in (when, f"الجولة {rnd}" if rnd else "",
                                   f"الجزء {part} من {parts}" if parts > 1 else "",
@@ -143,6 +152,7 @@ if __name__ == "__main__":
     ap.add_argument("--date", help="YYYY-MM-DD (default: tomorrow, Cairo)")
     ap.add_argument("--comp", default="UEFA Champions League")
     ap.add_argument("--out", default=os.path.join(HERE, "data", "briefs", "day.jpg"))
+    ap.add_argument("--pick", help="comma-separated club names (Arabic, as the site writes them): only their matches, titled «أبرز مباريات …»")
     ap.add_argument("--part", type=int, help="page N of a day bigger than nine matches (default: every page, <out>-N.jpg)")
     args = ap.parse_args()
     import match_brief as MB
@@ -155,13 +165,20 @@ if __name__ == "__main__":
     ms = day_matches(dd["matches"], date, args.comp)
     if not ms:
         sys.exit(f"no {args.comp} matches on {date} in matches.json")
+    title = None
+    if args.pick:
+        ms = pick_matches(ms, args.pick.split(","))
+        if not ms:
+            sys.exit("none of the picked clubs play that day")
+        from site_lib.names import comp_label
+        title = f"أبرز مباريات {comp_label(args.comp)}"
     parts = -(-len(ms) // MAX_ROWS)
     if parts == 1:
-        print(args.out, render(ms, date, args.comp, args.out))
+        print(args.out, render(ms, date, args.comp, args.out, title=title))
     elif args.part:
-        print(args.out, render(ms, date, args.comp, args.out, args.part, parts))
+        print(args.out, render(ms, date, args.comp, args.out, args.part, parts, title))
     else:
         stem, ext = os.path.splitext(args.out)
         for k in range(1, parts + 1):
             out = f"{stem}-{k}{ext}"
-            print(out, render(ms, date, args.comp, out, k, parts))
+            print(out, render(ms, date, args.comp, out, k, parts, title))
