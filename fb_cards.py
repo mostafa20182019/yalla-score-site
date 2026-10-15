@@ -154,12 +154,50 @@ def scorers_for(m, ge_idx):
     """[(side, 'player  min'), ...] from goal_events, via build_site's matcher
     (handles the reversed home/away disagreement between sources)."""
     goals = b.match_goals(ge_idx, m) or []
-    rows = []
+    return group_goals(goals)
+
+
+def group_goals(goals):
+    """One row per SCORER, his minutes side by side («برادلي باركولا 24' 37' 66'»),
+    the way a TV graphic lists a hat-trick (2026-10-15: LASK 3-6 Liverpool
+    showed four of nine goals and the fourth was cut by the panel edge). Order
+    = first goal of each scorer; a tag rides with its minute."""
+    order, by = [], {}
     for g in goals:
-        tag = f" ({g['tag']})" if g.get("tag") else ""
-        mn = f" {g['minute']}'" if g.get("minute") else ""   # ASCII ' — Almarai has no U+2032 prime
-        rows.append((g["side"], f"{g['player']}{tag}{mn}"))
+        player = " ".join((g.get("player") or "").split())     # the feed doubles spaces at times
+        key = (g["side"], player)
+        if key not in by:
+            by[key] = []
+            order.append(key)
+        mn = f"{g['minute']}'" if g.get("minute") else ""      # ASCII ' — Almarai has no U+2032 prime
+        tag = f"({g['tag']})" if g.get("tag") else ""
+        by[key].append(" ".join(x for x in (mn, tag) if x))
+    rows = []
+    for side, player in order:
+        mins = " ".join(x for x in by[(side, player)] if x)
+        rows.append((side, f"{player} {mins}".strip()))
     return rows
+
+
+# crest size, scorer font size, scorer line height - tried in this order until
+# every row of the busier side fits above the panel's bottom edge
+LAYOUTS = ((170, 27, 36), (140, 25, 30), (140, 23, 27), (120, 22, 26))
+MORE = "+{n}"                      # the overflow line when even the tightest layout cannot hold them all
+
+
+def layout_for(rows, panel_top=118 + 36, panel_bottom=630 - 96):
+    """(crest_sz, font_size, line_h, y0, max_rows) for these scorer rows:
+    the first layout whose busiest side fits; max_rows is how many rows a side
+    may draw (an overflow line counts as one of them)."""
+    n = max([sum(1 for r in rows if r[0] == side) for side in ("h", "a")] or [0])
+    for crest_sz, fs, lh in LAYOUTS:
+        y0 = panel_top + crest_sz + 18 + 52 + 14
+        room = (panel_bottom - 12 - y0) // lh
+        if n <= room:
+            return crest_sz, fs, lh, y0, n
+    crest_sz, fs, lh = LAYOUTS[-1]
+    y0 = panel_top + crest_sz + 18 + 52 + 14
+    return crest_sz, fs, lh, y0, max(1, (panel_bottom - 12 - y0) // lh)
 
 def ar_date(kick):
     try:
@@ -192,7 +230,8 @@ def render_card(m, ge_idx):
 
     # teams: HOME on the right (RTL), AWAY on the left
     home, away = b.ar_team(m.get("home")), b.ar_team(m.get("away"))
-    crest_sz = 170
+    rows = scorers_for(m, ge_idx)
+    crest_sz, f_gs, lh, y0, max_rows = layout_for(rows, panel[1] + 36, panel[3])
     cx_home, cx_away = W - 48 - 260, 48 + 260
     top = panel[1] + 36
     for cx, name, url in ((cx_home, home, m.get("home_badge")), (cx_away, away, m.get("away_badge"))):
@@ -214,17 +253,21 @@ def render_card(m, ge_idx):
     f_ft = font("Regular", 26)
     draw_center(d, W / 2, pill[3] + 10, ft, f_ft, MUTED)
 
-    # scorers under each team (max 4 per side)
-    rows = scorers_for(m, ge_idx)
-    f_g = font("Regular", 27)
-    y0 = top + crest_sz + 18 + 52 + 14
+    # scorers under each team: one row per scorer, the layout chosen above so
+    # every row stays inside the panel; an overflow line only past the tightest
+    f_g = font("Regular", f_gs)
     for side, cx in (("h", cx_home), ("a", cx_away)):
         y = y0
-        for s, txt in [r for r in rows if r[0] == side][:4]:
+        mine = [r for r in rows if r[0] == side]
+        if len(mine) > max_rows:
+            extra = len(mine) - (max_rows - 1)
+            mine = mine[:max_rows - 1] + [(side, MORE.format(n=extra))]
+        for s, txt in mine:
             line = ar(txt)
-            d.ellipse((cx + 186, y + 10, cx + 198, y + 22), fill=RED)  # goal dot on the right edge
+            dot = y + lh // 2 - 6
+            d.ellipse((cx + 186, dot, cx + 198, dot + 12), fill=RED)  # goal dot on the right edge
             d.text((cx + 176 - text_w(d, line, f_g), y), line, font=f_g, fill=INK)
-            y += 36
+            y += lh
 
     # footer brand
     f_b = font("ExtraBold", 40)
