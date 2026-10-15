@@ -335,6 +335,13 @@ def home_insights(articles, pinned, held=()):
     if held:
         front = sorted((a for a in ins if str(a["article_id"]) in held), key=lambda a: held.index(str(a["article_id"])))
         ins = front + [a for a in ins if str(a["article_id"]) not in held]
+    # featured clubs first (user, 2026-10-15: the lead must be the Zamalek
+    # match, the second the Pyramids one - not whichever preview is newest):
+    # Egyptian curated sides, then the other curated clubs, then the rest;
+    # a stable sort keeps the held/newest order inside each tier
+    from site_lib.names import curated_tier
+    front = [a for a in ins if str(a["article_id"]) in held]
+    ins = front + sorted((a for a in ins if str(a["article_id"]) not in held), key=curated_tier)
     lead = articles[0] if (pinned and articles) else (ins[0] if ins else None)
     if not lead:
         return None, []

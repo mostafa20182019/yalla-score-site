@@ -4,7 +4,7 @@ Moved verbatim out of build_site.py (slice 3, 2026-09-25): the source
 and its comments are exactly what they were there. Edit here; build_site
 imports these back under the same names."""
 import hashlib
-from site_lib.clubs import AR_TEAM, TEAM_PAGES, TICKER_TEAMS, _EGY_TOKENS, _EUR_TOKENS
+from site_lib.clubs import NT_SCOPE, AR_TEAM, TEAM_PAGES, TICKER_TEAMS, _EGY_TOKENS, _EUR_TOKENS
 from site_lib.competitions import COMP_LABEL, S365_COMP_IDS
 from site_lib.text import esc
 
@@ -94,6 +94,25 @@ def _team_news(tp, a):
             and not any(x in txt for x in tp.get("news_anchor", [])):
         return False
     return any(t in txt for t in tp["news_tokens"])
+
+
+# The Egyptian national team as a pseudo club page for the tiering below
+# (clubs.TEAM_PAGES has no entry for it; NT_SCOPE keeps «مصر» off «المصري»)
+_NT_PAGE = {"slug": "egypt", "name": "منتخب مصر", "league": "Egypt NT",
+            "match_tokens": [("مصر", NT_SCOPE)],
+            "news_tokens": ["منتخب مصر", "الفراعنة", "المنتخب المصري", "المنتخب الوطني"],
+            "news_excl": ["منتخب مصر للشباب", "منتخب مصر الأولمبي", "منتخب مصر تحت"]}
+
+
+def curated_tier(a):
+    """0 = an Egyptian curated side (الأهلي / الزمالك / بيراميدز / منتخب مصر),
+    1 = another curated club, 2 = nobody we curate. User rule 2026-10-15
+    («خلي دايمًا توقعات وتقارير الفرق المميزة في الأول»): the home analyses
+    block leads with these, Egyptian first, newest within each tier."""
+    for tp in TEAM_PAGES + [_NT_PAGE]:
+        if _team_news(tp, a):
+            return 0 if tp.get("league") in ("Egyptian Premier League", "Egypt NT") else 1
+    return 2
 
 
 def ar_team(name):
