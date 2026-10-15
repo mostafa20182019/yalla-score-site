@@ -145,8 +145,17 @@ for label, q in (
 # Newcastle both 6th, next club 8th). That is not corruption, and comparing it
 # against a strict RANK() without saying so overstates the gap - so the view
 # has to report it.
+# (2026-10-15) compared against the table itself, not against "some league
+# must have a tie today": on 10-15 no live table had one and the check went
+# red for the data, not for the code (the Tests workflow, not the gate).
 shared = store.sql("SELECT COUNT(*) n FROM v_table_vs_model WHERE tied > 1")[0]["n"]
-ck("39 shared positions are flagged, not hidden", shared > 0, f"{shared} tied rows")
+direct = store.sql("SELECT COUNT(*) n FROM standings s "
+                   "LEFT JOIN standings_meta m ON m.comp_id = s.comp_id "
+                   "WHERE COALESCE(m.zeroed, 0) = 0 AND EXISTS ("
+                   "  SELECT 1 FROM standings o WHERE o.comp_id = s.comp_id "
+                   "  AND o.pos = s.pos AND o.team_id <> s.team_id)")[0]["n"]
+ck("39 shared positions are flagged, not hidden (view = table)", shared == direct,
+   f"view {shared} tied rows, table {direct}")
 
 zc = store.sql("SELECT COUNT(*) n FROM standings_meta")[0]["n"]
 ck("40 a snapshot row exists per competition in the file",
