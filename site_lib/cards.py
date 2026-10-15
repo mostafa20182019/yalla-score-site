@@ -324,7 +324,7 @@ def home_record_strip(acc, cal):
     return f'<div class="hrec">{line}</div>' if line else ""
 
 
-def home_insights(articles, pinned, held=()):
+def home_insights(articles, pinned, held=(), stale=()):
     """(lead, the next 4) for the analysis block. The lead is the HOME_PIN
     article while the pin is on (`pinned`), else the newest analytical piece.
     `held` (site_lib.articles.held_analyses): analyses of matches not yet
@@ -339,9 +339,15 @@ def home_insights(articles, pinned, held=()):
     # match, the second the Pyramids one - not whichever preview is newest):
     # Egyptian curated sides, then the other curated clubs, then the rest;
     # a stable sort keeps the held/newest order inside each tier
+    # ...and a piece that has had its moment steps back first (user, same day:
+    # a preview once its match is over, a report 24 h after the match -
+    # site_lib.articles.stale_analyses): fresh pieces of any tier before
+    # stale ones, featured first within each
     from site_lib.names import curated_tier
+    stale = {str(x) for x in stale}
     front = [a for a in ins if str(a["article_id"]) in held]
-    ins = front + sorted((a for a in ins if str(a["article_id"]) not in held), key=curated_tier)
+    ins = front + sorted((a for a in ins if str(a["article_id"]) not in held),
+                         key=lambda a: (str(a["article_id"]) in stale, curated_tier(a)))
     lead = articles[0] if (pinned and articles) else (ins[0] if ins else None)
     if not lead:
         return None, []

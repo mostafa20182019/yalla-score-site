@@ -111,6 +111,84 @@ def pinned_first(articles, pin=None, now=None):
     return top + [a for a in articles if str(a.get("article_id")) != aid] if top else articles
 
 
+def match_rows_by_id(matches, fixtures=None):
+    """match_id -> match row, the day window over the season fixtures (the
+    helper held_analyses/stale_analyses share; match_index() below is the
+    insights page's league/round index - a different thing)."""
+    by_id = {}
+    for comp in (fixtures or []):
+        for rd in (comp.get("rounds") or []):
+            for m in (rd.get("matches") or []):
+                if m.get("match_id"):
+                    by_id[str(m["match_id"])] = m
+    for m in (matches or []):
+        if m.get("match_id"):
+            by_id[str(m["match_id"])] = m          # the fresher window wins
+    return by_id
+
+
+def _published(a, cairo):
+    """The article's publication moment (pub_ts, else pub_date at midnight)."""
+    for key in ("pub_ts", "pub_date"):
+        v = a.get(key)
+        if not v:
+            continue
+        try:
+            d = datetime.datetime.fromisoformat(str(v))
+        except ValueError:
+            continue
+        return d if d.tzinfo else d.replace(tzinfo=cairo)
+    return None
+
+
+def _kickoff(m, cairo):
+    try:
+        return datetime.datetime.fromisoformat(f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00").replace(tzinfo=cairo)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def stale_analyses(articles, matches, now=None, fixtures=None, over_after=3.0, report_after=24.0,
+                   pub_after=48.0):
+    """Article ids of match pieces that have had their moment (user,
+    2026-10-15: «التوقعات تبدأ تبعد في الترتيب لما المباراة تخلص، والتقارير
+    تبعد بعد المباراة بـ24 ساعة»): a preview or an analysis once its match is
+    over (FINISHED, or `over_after` hours past kick-off), a report
+    `report_after` hours after the match ended (kick-off + 2 h). A piece whose
+    match we cannot find (round pieces, old matches) goes by its own age:
+    stale `pub_after` hours after publication. Unordered set of ids."""
+    from zoneinfo import ZoneInfo
+    cairo = ZoneInfo("Africa/Cairo")
+    now = now or datetime.datetime.now(cairo)
+    by_id = match_rows_by_id(matches, fixtures)
+    out = set()
+    for a in articles:
+        if not insight_kind(a):
+            continue
+        kind = a.get("kind")
+        m = by_id.get(str(a["match_id"])) if a.get("match_id") else None
+        if not m:
+            # no match to read (a round piece, an editor analysis, or a match
+            # that left the data window weeks ago): the piece's own age
+            # decides - `pub_after` hours after publication it has had its
+            # moment (first build showed a 4-0 report from September and a
+            # played-out preliminary preview sitting 3rd and 4th)
+            pub = _published(a, cairo)
+            if pub is not None and now >= pub + datetime.timedelta(hours=pub_after):
+                out.add(str(a["article_id"]))
+            continue
+        ko = _kickoff(m, cairo)
+        finished = (m.get("status") or "").upper() == "FINISHED"
+        if kind in ("preview", "analysis"):
+            over = finished or (ko is not None and now >= ko + datetime.timedelta(hours=over_after))
+            if over:
+                out.add(str(a["article_id"]))
+        else:
+            if ko is not None and now >= ko + datetime.timedelta(hours=2 + report_after):
+                out.add(str(a["article_id"]))
+    return out
+
+
 def held_analyses(articles, matches, now=None, hours_after=3.0, fixtures=None):
     """Article ids of ANALYSIS pieces whose match has not ended yet (user,
     2026-10-09: «عايز التحليل يفضل هنا ... لحد نهاية المباراة» - the Liverpool
@@ -124,15 +202,7 @@ def held_analyses(articles, matches, now=None, hours_after=3.0, fixtures=None):
     # degrades (2026-10-09: the Premier League vanished from it for one refresh
     # and the Liverpool x City analysis dropped out of the home block), so the
     # season fixtures - merged, guarded - are searched too
-    by_id = {}
-    for comp in (fixtures or []):
-        for rd in (comp.get("rounds") or []):
-            for m in (rd.get("matches") or []):
-                if m.get("match_id"):
-                    by_id[str(m["match_id"])] = m
-    for m in (matches or []):
-        if m.get("match_id"):
-            by_id[str(m["match_id"])] = m          # the fresher window wins
+    by_id = match_rows_by_id(matches, fixtures)
     out = []
     for a in articles:
         if a.get("kind") != "analysis" or not a.get("match_id"):

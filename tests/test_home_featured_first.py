@@ -55,6 +55,46 @@ ck("3b ...and the list below it is still featured-first", [a["article_id"] for a
 lead, rest = C.home_insights(arts, pinned=False, held=["4"])
 ck("4 a held analysis keeps its precedence over the tiers", lead["article_id"] == "4" and [a["article_id"] for a in rest][:2] == ["8", "7"])
 
+# ------------------------------------------- stale pieces step back (same day)
+import datetime
+from zoneinfo import ZoneInfo
+from site_lib.articles import stale_analyses
+cairo = ZoneInfo("Africa/Cairo")
+now = datetime.datetime(2026, 10, 15, 18, 0, tzinfo=cairo)
+def MM(i, day, time, status="UPCOMING"):
+    return {"match_id": str(1000 + i), "kickoff": day, "koff_time": time, "status": status,
+            "home": "x", "away": "y", "competition": "c"}
+ms = [MM(9, "2026-10-15", "19:45"),                       # tonight, not yet played  -> fresh preview
+      MM(8, "2026-10-16", "19:00"),                       # tomorrow                 -> fresh preview
+      MM(7, "2026-10-16", "16:30"),                       # tomorrow                 -> fresh preview
+      MM(6, "2026-10-14", "22:00", "FINISHED"),           # last night's report (<24h after) -> fresh
+      MM(5, "2026-10-17", "17:00"),                       # Saturday preview          -> fresh
+      MM(4, "2026-10-13", "22:00", "FINISHED")]           # report two days old       -> stale
+st = stale_analyses(arts, ms, now=now)
+ck("5a a report is fresh for 24 h after the match, stale after", st == {"4"}, str(st))
+st2 = stale_analyses(arts, [MM(9, "2026-10-15", "13:00", "FINISHED")] + ms[1:], now=now)
+ck("5b a preview is stale the moment its match is over", "9" in st2)
+st3 = stale_analyses(arts, [MM(9, "2026-10-15", "14:00")] + ms[1:], now=now)
+ck("5c ...or 3 h past kick-off when the feed never said FINISHED", "9" in st3)
+old = [dict(P(21, "تقرير: الزمالك يسحق إيه إس بورت 4-0", "report"), pub_ts="2026-09-26T23:10:00+03:00"),
+       dict(P(22, "توقع يلا سكور: الزمالك يواجه إيه إس بورت"), pub_ts="2026-10-15T09:00:00+03:00"),
+       {"article_id": "23", "title": "الجولة 5 من الدوري المصري بالأرقام", "summary": "", "pub_date": "2026-10-01",
+        "sources": [{"name": "x", "url": "https://yallascore.site/", "note": "round:egypt:5"}]}]
+st4 = stale_analyses(old, [], now=now)
+ck("5d no match to read: the piece's own age decides (48 h) - old report + old round piece stale, this morning's preview fresh",
+   st4 == {"21", "23"}, str(st4))
+
+# the stale Pyramids/Ahly reports step behind every fresh piece, featured kept inside each group
+arts2 = arts + [P(3, "تقرير: بيراميدز يكتسح سيراميكا كليوباترا 4-1", "report"),
+                P(2, "تقرير: الأهلي يكسب قمة الزمالك 2-0", "report")]
+lead, rest = C.home_insights(arts2, pinned=False, stale={"3", "2", "4"})
+ids = [lead["article_id"]] + [a["article_id"] for a in rest]
+ck("6a fresh featured lead, fresh pieces of every tier next, stale ones last",
+   ids == ["8", "7", "5", "9", "6"], str(ids))
+lead, rest = C.home_insights(arts2, pinned=False, stale={"8", "7", "5", "9", "6"})
+ck("6b when only stale pieces remain, the featured ones still lead them",
+   [lead["article_id"]] + [a["article_id"] for a in rest][:2] == ["3", "2", "4"], lead["article_id"])
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)
