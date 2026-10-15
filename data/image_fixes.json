@@ -38,6 +38,36 @@
    "why": "«عبدالفتاح: الأهلي لم يعترض على حكم القمة.. واستقالة عاشور» (2026-10-09 20:05) shipped with the derby matchup card although the headline names a person speaking for one club - the card rule read 'the referee appointment' and 'the reaction' too widely. User: an Al Ahly photo. The club's stadium (vetted, CC BY-SA 4.0) is the neutral honest choice for a board statement. | same evening: the user prefers the TEMPLATE for a club story - one crest, the club's name («كنت أفضل للخبر ده يتعمل بالقالب صورة فيها شعار الأهلي فقط») -> matchup_card.py --club, media/club-al-ahly-card.jpg (edited in place, one entry per article).",
    "image_url": "https://yallascore.site/media/club-al-ahly-card.jpg",
    "image_credit": "الصورة: تصميم يلا سكور"
+  },
+  {
+   "article_id": "758",
+   "image_url": "https://yallascore.site/media/zamalek-identity-card.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور",
+   "why": "Zamalek club story published with the retired blue template card (club-zamalek-card.jpg) although the club's identity image existed; the prompt's step 4 still said 'club card' and the writer never reached the team-folders rule. User 2026-10-15: «ليه فيه صور اخبار عن الزمالك بتنزل بالصورة القديمة». -> the identity image, like article 793."
+  },
+  {
+   "article_id": "759",
+   "image_url": "https://yallascore.site/media/zamalek-identity-card.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور",
+   "why": "Zamalek club story published with the retired blue template card (club-zamalek-card.jpg) although the club's identity image existed; the prompt's step 4 still said 'club card' and the writer never reached the team-folders rule. User 2026-10-15: «ليه فيه صور اخبار عن الزمالك بتنزل بالصورة القديمة». -> the identity image, like article 793."
+  },
+  {
+   "article_id": "765",
+   "image_url": "https://yallascore.site/media/zamalek-identity-card.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور",
+   "why": "Zamalek club story published with the retired blue template card (club-zamalek-card.jpg) although the club's identity image existed; the prompt's step 4 still said 'club card' and the writer never reached the team-folders rule. User 2026-10-15: «ليه فيه صور اخبار عن الزمالك بتنزل بالصورة القديمة». -> the identity image, like article 793."
+  },
+  {
+   "article_id": "767",
+   "image_url": "https://yallascore.site/media/zamalek-identity-card.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور",
+   "why": "Zamalek club story published with the retired blue template card (club-zamalek-card.jpg) although the club's identity image existed; the prompt's step 4 still said 'club card' and the writer never reached the team-folders rule. User 2026-10-15: «ليه فيه صور اخبار عن الزمالك بتنزل بالصورة القديمة». -> the identity image, like article 793."
+  },
+  {
+   "article_id": "787",
+   "image_url": "https://yallascore.site/media/zamalek-identity-card.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور",
+   "why": "Zamalek club story published with the retired blue template card (club-zamalek-card.jpg) although the club's identity image existed; the prompt's step 4 still said 'club card' and the writer never reached the team-folders rule. User 2026-10-15: «ليه فيه صور اخبار عن الزمالك بتنزل بالصورة القديمة». -> the identity image, like article 793."
   }
  ]
 }
