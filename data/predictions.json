@@ -2567,6 +2567,54 @@
   "src_ts": null,
   "ts": "2026-10-14"
  },
+ "4763765": {
+  "as": null,
+  "away": "فنربخشة",
+  "brier": null,
+  "comp": "Turkish Super Lig",
+  "conf": "mid",
+  "hit": null,
+  "home": "جلطة سراي",
+  "hs": null,
+  "kickoff": "2026-10-26",
+  "koff_time": "21:30",
+  "la": 1.945,
+  "lh": 1.702,
+  "outcome": null,
+  "pa": 0.4403,
+  "pd": 0.2166,
+  "ph": 0.3432,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-16"
+ },
+ "4763766": {
+  "as": null,
+  "away": "باشاك شهير",
+  "brier": null,
+  "comp": "Turkish Super Lig",
+  "conf": "mid",
+  "hit": null,
+  "home": "بشكتاش",
+  "hs": null,
+  "kickoff": "2026-10-26",
+  "koff_time": "19:00",
+  "la": 1.062,
+  "lh": 2.609,
+  "outcome": null,
+  "pa": 0.1328,
+  "pd": 0.1636,
+  "ph": 0.7036,
+  "pick": null,
+  "score": "2-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-16"
+ },
  "4763767": {
   "as": null,
   "away": "غنتشلربيرليغي",
@@ -3642,6 +3690,30 @@
   "src_ts": null,
   "ts": "2026-10-13"
  },
+ "4764328": {
+  "as": null,
+  "away": "طرابزون سبور",
+  "brier": null,
+  "comp": "Turkish Super Lig",
+  "conf": "mid",
+  "hit": null,
+  "home": "ريزة سبور",
+  "hs": null,
+  "kickoff": "2026-10-26",
+  "koff_time": "19:00",
+  "la": 1.723,
+  "lh": 0.862,
+  "outcome": null,
+  "pa": 0.5775,
+  "pd": 0.2366,
+  "ph": 0.1858,
+  "pick": null,
+  "score": "0-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-16"
+ },
  "4788276": {
   "as": 0,
   "away": "الرياض",
@@ -3860,18 +3932,18 @@
   "hs": null,
   "kickoff": "2026-10-24",
   "koff_time": "17:00",
-  "la": 0.689,
-  "lh": 2.148,
+  "la": 0.685,
+  "lh": 2.152,
   "outcome": null,
-  "pa": 0.1063,
-  "pd": 0.1835,
-  "ph": 0.7102,
+  "pa": 0.1053,
+  "pd": 0.1828,
+  "ph": 0.7119,
   "pick": null,
   "score": "2-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "4789439": {
   "as": null,
@@ -3884,18 +3956,18 @@
   "hs": null,
   "kickoff": "2026-10-24",
   "koff_time": "21:00",
-  "la": 0.93,
-  "lh": 1.623,
+  "la": 0.924,
+  "lh": 1.628,
   "outcome": null,
-  "pa": 0.2157,
-  "pd": 0.2479,
-  "ph": 0.5364,
+  "pa": 0.2135,
+  "pd": 0.2474,
+  "ph": 0.5392,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "4789440": {
   "as": null,
@@ -3908,18 +3980,18 @@
   "hs": null,
   "kickoff": "2026-10-23",
   "koff_time": "21:00",
-  "la": 1.992,
-  "lh": 1.742,
+  "la": 1.97,
+  "lh": 1.747,
   "outcome": null,
-  "pa": 0.4426,
-  "pd": 0.2137,
-  "ph": 0.3436,
+  "pa": 0.437,
+  "pd": 0.2146,
+  "ph": 0.3484,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-15"
  },
  "4789441": {
   "as": null,
@@ -3932,18 +4004,18 @@
   "hs": null,
   "kickoff": "2026-10-23",
   "koff_time": "16:30",
-  "la": 2.403,
-  "lh": 0.763,
+  "la": 2.395,
+  "lh": 0.891,
   "outcome": null,
-  "pa": 0.7364,
-  "pd": 0.1636,
-  "ph": 0.1,
+  "pa": 0.7058,
+  "pd": 0.1719,
+  "ph": 0.1222,
   "pick": null,
   "score": "0-2",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-15"
  },
  "4789442": {
   "as": null,
@@ -3956,18 +4028,18 @@
   "hs": null,
   "kickoff": "2026-10-24",
   "koff_time": "18:05",
-  "la": 1.675,
-  "lh": 1.611,
+  "la": 1.759,
+  "lh": 1.647,
   "outcome": null,
-  "pa": 0.3981,
-  "pd": 0.2308,
-  "ph": 0.3711,
+  "pa": 0.4102,
+  "pd": 0.226,
+  "ph": 0.3638,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "4789443": {
   "as": null,
@@ -3980,18 +4052,18 @@
   "hs": null,
   "kickoff": "2026-10-23",
   "koff_time": "18:30",
-  "la": 0.871,
-  "lh": 1.448,
+  "la": 0.864,
+  "lh": 1.453,
   "outcome": null,
-  "pa": 0.2264,
-  "pd": 0.2676,
-  "ph": 0.506,
+  "pa": 0.2239,
+  "pd": 0.2671,
+  "ph": 0.509,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-15"
  },
  "4789444": {
   "as": null,
@@ -4004,18 +4076,18 @@
   "hs": null,
   "kickoff": "2026-10-22",
   "koff_time": "16:40",
-  "la": 1.011,
-  "lh": 1.284,
+  "la": 1.019,
+  "lh": 1.388,
   "outcome": null,
-  "pa": 0.2924,
-  "pd": 0.2806,
-  "ph": 0.427,
+  "pa": 0.2759,
+  "pd": 0.2703,
+  "ph": 0.4538,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-12"
+  "ts": "2026-10-15"
  },
  "4789445": {
   "as": null,
@@ -4028,18 +4100,18 @@
   "hs": null,
   "kickoff": "2026-10-22",
   "koff_time": "17:45",
-  "la": 1.438,
-  "lh": 0.866,
+  "la": 1.429,
+  "lh": 1.038,
   "outcome": null,
-  "pa": 0.5047,
-  "pd": 0.2688,
-  "ph": 0.2265,
+  "pa": 0.4601,
+  "pd": 0.2658,
+  "ph": 0.2741,
   "pick": null,
-  "score": "0-1",
+  "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-12"
+  "ts": "2026-10-15"
  },
  "4789446": {
   "as": null,
@@ -4052,18 +4124,18 @@
   "hs": null,
   "kickoff": "2026-10-22",
   "koff_time": "21:00",
-  "la": 0.714,
-  "lh": 2.274,
+  "la": 0.784,
+  "lh": 2.1,
   "outcome": null,
-  "pa": 0.1013,
-  "pd": 0.1725,
-  "ph": 0.7262,
+  "pa": 0.1284,
+  "pd": 0.1938,
+  "ph": 0.6778,
   "pick": null,
   "score": "2-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-12"
+  "ts": "2026-10-15"
  },
  "4789447": {
   "as": null,
@@ -4076,18 +4148,18 @@
   "hs": null,
   "kickoff": "2026-10-20",
   "koff_time": "18:00",
-  "la": 0.948,
-  "lh": 1.52,
+  "la": 0.941,
+  "lh": 1.525,
   "outcome": null,
-  "pa": 0.2358,
-  "pd": 0.2587,
-  "ph": 0.5055,
+  "pa": 0.233,
+  "pd": 0.2582,
+  "ph": 0.5087,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789448": {
   "as": null,
@@ -4100,18 +4172,18 @@
   "hs": null,
   "kickoff": "2026-10-20",
   "koff_time": "18:10",
-  "la": 2.677,
-  "lh": 0.617,
+  "la": 2.644,
+  "lh": 0.622,
   "outcome": null,
-  "pa": 0.8079,
-  "pd": 0.1296,
-  "ph": 0.0625,
+  "pa": 0.8025,
+  "pd": 0.1327,
+  "ph": 0.0648,
   "pick": null,
   "score": "0-2",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789449": {
   "as": null,
@@ -4124,18 +4196,18 @@
   "hs": null,
   "kickoff": "2026-10-19",
   "koff_time": "21:00",
-  "la": 0.92,
-  "lh": 1.576,
+  "la": 1.06,
+  "lh": 1.594,
   "outcome": null,
-  "pa": 0.2201,
-  "pd": 0.253,
-  "ph": 0.5269,
+  "pa": 0.2524,
+  "pd": 0.25,
+  "ph": 0.4976,
   "pick": null,
-  "score": "1-0",
+  "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789450": {
   "as": null,
@@ -4148,18 +4220,18 @@
   "hs": null,
   "kickoff": "2026-10-20",
   "koff_time": "21:00",
-  "la": 1.158,
-  "lh": 1.652,
+  "la": 1.147,
+  "lh": 1.658,
   "outcome": null,
-  "pa": 0.2673,
-  "pd": 0.2437,
-  "ph": 0.4889,
+  "pa": 0.264,
+  "pd": 0.2434,
+  "ph": 0.4926,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789451": {
   "as": null,
@@ -4172,18 +4244,18 @@
   "hs": null,
   "kickoff": "2026-10-19",
   "koff_time": "21:00",
-  "la": 0.79,
-  "lh": 2.667,
+  "la": 0.817,
+  "lh": 2.942,
   "outcome": null,
-  "pa": 0.0866,
-  "pd": 0.1431,
-  "ph": 0.7703,
+  "pa": 0.0747,
+  "pd": 0.1248,
+  "ph": 0.8005,
   "pick": null,
   "score": "2-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789452": {
   "as": null,
@@ -4196,18 +4268,18 @@
   "hs": null,
   "kickoff": "2026-10-19",
   "koff_time": "18:05",
-  "la": 2.132,
-  "lh": 1.097,
+  "la": 2.177,
+  "lh": 1.016,
   "outcome": null,
-  "pa": 0.6097,
-  "pd": 0.203,
-  "ph": 0.1873,
+  "pa": 0.6372,
+  "pd": 0.1966,
+  "ph": 0.1661,
   "pick": null,
   "score": "1-2",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789453": {
   "as": null,
@@ -4220,18 +4292,18 @@
   "hs": null,
   "kickoff": "2026-10-18",
   "koff_time": "21:00",
-  "la": 0.984,
-  "lh": 0.87,
+  "la": 1.082,
+  "lh": 0.962,
   "outcome": null,
-  "pa": 0.3696,
-  "pd": 0.3223,
-  "ph": 0.3081,
+  "pa": 0.3793,
+  "pd": 0.3038,
+  "ph": 0.3169,
   "pick": null,
-  "score": "0-0",
+  "score": "0-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789454": {
   "as": null,
@@ -4244,18 +4316,18 @@
   "hs": null,
   "kickoff": "2026-10-20",
   "koff_time": "21:00",
-  "la": 1.637,
-  "lh": 1.325,
+  "la": 1.619,
+  "lh": 1.33,
   "outcome": null,
-  "pa": 0.4477,
-  "pd": 0.2416,
-  "ph": 0.3106,
+  "pa": 0.4425,
+  "pd": 0.2427,
+  "ph": 0.3149,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789455": {
   "as": null,
@@ -4268,18 +4340,18 @@
   "hs": null,
   "kickoff": "2026-10-19",
   "koff_time": "18:20",
-  "la": 1.688,
-  "lh": 1.247,
+  "la": 1.703,
+  "lh": 1.33,
   "outcome": null,
-  "pa": 0.4774,
-  "pd": 0.2396,
-  "ph": 0.283,
+  "pa": 0.4626,
+  "pd": 0.2371,
+  "ph": 0.3003,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789456": {
   "as": null,
@@ -4292,18 +4364,18 @@
   "hs": null,
   "kickoff": "2026-10-17",
   "koff_time": "18:40",
-  "la": 1.038,
-  "lh": 1.828,
+  "la": 1.029,
+  "lh": 1.832,
   "outcome": null,
-  "pa": 0.2129,
-  "pd": 0.2285,
-  "ph": 0.5586,
+  "pa": 0.2104,
+  "pd": 0.228,
+  "ph": 0.5616,
   "pick": null,
   "score": "1-1",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789457": {
   "as": null,
@@ -4316,18 +4388,18 @@
   "hs": null,
   "kickoff": "2026-10-17",
   "koff_time": "21:00",
-  "la": 0.575,
-  "lh": 1.435,
+  "la": 0.572,
+  "lh": 1.44,
   "outcome": null,
-  "pa": 0.1485,
-  "pd": 0.2696,
-  "ph": 0.5819,
+  "pa": 0.1472,
+  "pd": 0.2688,
+  "ph": 0.5841,
   "pick": null,
   "score": "1-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789458": {
   "as": null,
@@ -4364,63 +4436,63 @@
   "hs": null,
   "kickoff": "2026-10-16",
   "koff_time": "16:15",
-  "la": 0.722,
-  "lh": 2.928,
+  "la": 0.718,
+  "lh": 2.931,
   "outcome": null,
-  "pa": 0.0638,
-  "pd": 0.119,
-  "ph": 0.8172,
+  "pa": 0.0632,
+  "pd": 0.1185,
+  "ph": 0.8182,
   "pick": null,
   "score": "2-0",
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-11"
+  "ts": "2026-10-15"
  },
  "4789460": {
-  "as": null,
+  "as": 2,
   "away": "الخلود",
-  "brier": null,
+  "brier": 0.7979,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 0,
   "home": "الفيصلي",
-  "hs": null,
+  "hs": 3,
   "kickoff": "2026-10-15",
   "koff_time": "16:40",
   "la": 1.686,
   "lh": 1.248,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.4766,
   "pd": 0.2398,
   "ph": 0.2836,
-  "pick": null,
+  "pick": "A",
   "score": "1-1",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "python",
   "src_ts": null,
   "ts": "2026-10-11"
  },
  "4789461": {
-  "as": null,
+  "as": 0,
   "away": "الفيحاء",
-  "brier": null,
+  "brier": 0.7223,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 0,
   "home": "الخليج",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-10-15",
   "koff_time": "17:50",
   "la": 1.082,
   "lh": 0.931,
-  "outcome": null,
+  "outcome": "H",
   "pa": 0.3863,
   "pd": 0.306,
   "ph": 0.3076,
-  "pick": null,
+  "pick": "A",
   "score": "0-1",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "python",
   "src_ts": null,
   "ts": "2026-10-11"
@@ -4450,25 +4522,25 @@
   "ts": "2026-10-11"
  },
  "4789463": {
-  "as": null,
+  "as": 3,
   "away": "الفتح",
-  "brier": null,
+  "brier": 1.0609,
   "comp": "Saudi Pro League",
   "conf": "mid",
-  "hit": null,
+  "hit": 0,
   "home": "الحزم",
-  "hs": null,
+  "hs": 2,
   "kickoff": "2026-10-15",
   "koff_time": "18:15",
   "la": 0.725,
   "lh": 1.521,
-  "outcome": null,
+  "outcome": "A",
   "pa": 0.1776,
   "pd": 0.2589,
   "ph": 0.5635,
-  "pick": null,
+  "pick": "H",
   "score": "1-0",
-  "score_hit": null,
+  "score_hit": 0,
   "src": "python",
   "src_ts": null,
   "ts": "2026-10-11"
@@ -6823,6 +6895,870 @@
   "src_ts": null,
   "ts": "2026-09-29"
  },
+ "4828711": {
+  "as": null,
+  "away": "ليفسكي صوفيا",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "فيكتوريا بلزن",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.37,
+  "lh": 1.386,
+  "outcome": null,
+  "pa": 0.3687,
+  "pd": 0.2552,
+  "ph": 0.3762,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828712": {
+  "as": null,
+  "away": "ريال سوسيداد",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "ليلستروم",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.213,
+  "lh": 1.396,
+  "outcome": null,
+  "pa": 0.3264,
+  "pd": 0.2621,
+  "ph": 0.4115,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828713": {
+  "as": null,
+  "away": "ميلان",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "بورنموث",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.463,
+  "lh": 1.515,
+  "outcome": null,
+  "pa": 0.3666,
+  "pd": 0.244,
+  "ph": 0.3894,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828714": {
+  "as": null,
+  "away": "ريد بول سالزبورغ",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "تسيليى",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.322,
+  "lh": 1.676,
+  "outcome": null,
+  "pa": 0.3031,
+  "pd": 0.2391,
+  "ph": 0.4578,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828715": {
+  "as": null,
+  "away": "أندرلخت",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "ياغييلونيا بياويستوك",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.053,
+  "lh": 1.755,
+  "outcome": null,
+  "pa": 0.2266,
+  "pd": 0.2353,
+  "ph": 0.5381,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828716": {
+  "as": null,
+  "away": "كريستال بالاس",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "بشكتاش",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.505,
+  "lh": 2.185,
+  "outcome": null,
+  "pa": 0.264,
+  "pd": 0.2055,
+  "ph": 0.5305,
+  "pick": null,
+  "score": "2-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828717": {
+  "as": null,
+  "away": "أولمبيك ليون",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "هوفنهايم",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.899,
+  "lh": 1.732,
+  "outcome": null,
+  "pa": 0.4248,
+  "pd": 0.2179,
+  "ph": 0.3574,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828718": {
+  "as": null,
+  "away": "بنفيكا",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "أومونيا نيقوسيا",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.448,
+  "lh": 1.741,
+  "outcome": null,
+  "pa": 0.3215,
+  "pd": 0.2322,
+  "ph": 0.4462,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828719": {
+  "as": null,
+  "away": "سبارتا براغ",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "أولمبياكوس",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.056,
+  "lh": 1.409,
+  "outcome": null,
+  "pa": 0.2824,
+  "pd": 0.2672,
+  "ph": 0.4505,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828720": {
+  "as": null,
+  "away": "سيلتا فيجو",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "سيلتيك",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "22:00",
+  "la": 1.655,
+  "lh": 1.565,
+  "outcome": null,
+  "pa": 0.4025,
+  "pd": 0.2333,
+  "ph": 0.3641,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828721": {
+  "as": null,
+  "away": "هبوعيل بئر سبع",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "يونيون سانت جيلواز",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.208,
+  "lh": 1.571,
+  "outcome": null,
+  "pa": 0.2934,
+  "pd": 0.2492,
+  "ph": 0.4574,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828722": {
+  "as": null,
+  "away": "نيميخين",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "دينامو زغرب",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.059,
+  "lh": 1.405,
+  "outcome": null,
+  "pa": 0.2838,
+  "pd": 0.2674,
+  "ph": 0.4488,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828723": {
+  "as": null,
+  "away": "أولمبيك مارسيليا",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "شتورم غراتس",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.325,
+  "lh": 1.226,
+  "outcome": null,
+  "pa": 0.3901,
+  "pd": 0.2665,
+  "ph": 0.3434,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828724": {
+  "as": null,
+  "away": "سندرلاند",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "ليخ بوزنان",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.898,
+  "lh": 1.199,
+  "outcome": null,
+  "pa": 0.5365,
+  "pd": 0.2238,
+  "ph": 0.2397,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828725": {
+  "as": null,
+  "away": "ستاد رين",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "يوفنتوس",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.357,
+  "lh": 1.569,
+  "outcome": null,
+  "pa": 0.3304,
+  "pd": 0.245,
+  "ph": 0.4245,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828726": {
+  "as": null,
+  "away": "ألكمار",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "أرارات أرمينيا",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.712,
+  "lh": 1.379,
+  "outcome": null,
+  "pa": 0.454,
+  "pd": 0.2356,
+  "ph": 0.3104,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828727": {
+  "as": null,
+  "away": "توريينسي",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "فيرينتسفاروشي",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.197,
+  "lh": 1.779,
+  "outcome": null,
+  "pa": 0.2569,
+  "pd": 0.2332,
+  "ph": 0.5099,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828728": {
+  "as": null,
+  "away": "باير ليفركوزن",
+  "brier": null,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": null,
+  "home": "أوفي كريت",
+  "hs": null,
+  "kickoff": "2026-10-22",
+  "koff_time": "19:45",
+  "la": 1.893,
+  "lh": 1.202,
+  "outcome": null,
+  "pa": 0.5346,
+  "pd": 0.2242,
+  "ph": 0.2411,
+  "pick": null,
+  "score": "1-1",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828729": {
+  "as": 0,
+  "away": "أندرلخت",
+  "brier": 0.6151,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "دينامو زغرب",
+  "hs": 1,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "H",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828730": {
+  "as": 1,
+  "away": "أولمبياكوس",
+  "brier": 0.5729,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 1,
+  "home": "أولمبيك مارسيليا",
+  "hs": 0,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "A",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828731": {
+  "as": 2,
+  "away": "يوفنتوس",
+  "brier": 0.5729,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 1,
+  "home": "سيلتا فيجو",
+  "hs": 1,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "A",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828732": {
+  "as": 0,
+  "away": "شتورم غراتس",
+  "brier": 0.6151,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "بورنموث",
+  "hs": 3,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "H",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828733": {
+  "as": 1,
+  "away": "أرارات أرمينيا",
+  "brier": 0.6151,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "ياغييلونيا بياويستوك",
+  "hs": 3,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "H",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828734": {
+  "as": 1,
+  "away": "أوفي كريت",
+  "brier": 0.6151,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "ستاد رين",
+  "hs": 2,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "H",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828735": {
+  "as": 1,
+  "away": "سيلتيك",
+  "brier": 0.6151,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "بنفيكا",
+  "hs": 4,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "H",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828736": {
+  "as": 3,
+  "away": "بشكتاش",
+  "brier": 0.5729,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 1,
+  "home": "هوفنهايم",
+  "hs": 2,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "A",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828737": {
+  "as": 1,
+  "away": "هبوعيل بئر سبع",
+  "brier": 0.5755,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 1,
+  "home": "ألكمار",
+  "hs": 2,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 0.919,
+  "lh": 1.054,
+  "outcome": "H",
+  "pa": 0.3093,
+  "pd": 0.3101,
+  "ph": 0.3806,
+  "pick": "H",
+  "score": "1-0",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828738": {
+  "as": 1,
+  "away": "فيكتوريا بلزن",
+  "brier": 0.6151,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "فيرينتسفاروشي",
+  "hs": 2,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "H",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828739": {
+  "as": 1,
+  "away": "ليفسكي صوفيا",
+  "brier": 0.8439,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "نيميخين",
+  "hs": 1,
+  "kickoff": "2026-10-15",
+  "koff_time": "22:00",
+  "la": 1.45,
+  "lh": 1.403,
+  "outcome": "D",
+  "pa": 0.3855,
+  "pd": 0.25,
+  "ph": 0.3644,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 1,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828740": {
+  "as": 1,
+  "away": "ريال سوسيداد",
+  "brier": 1.0642,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "يونيون سانت جيلواز",
+  "hs": 1,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 0.897,
+  "lh": 2.039,
+  "outcome": "D",
+  "pa": 0.1568,
+  "pd": 0.2049,
+  "ph": 0.6383,
+  "pick": "H",
+  "score": "2-0",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828741": {
+  "as": 4,
+  "away": "باير ليفركوزن",
+  "brier": 0.3399,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 1,
+  "home": "ليخ بوزنان",
+  "hs": 0,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 1.684,
+  "lh": 1.041,
+  "outcome": "A",
+  "pa": 0.524,
+  "pd": 0.2418,
+  "ph": 0.2342,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828742": {
+  "as": 2,
+  "away": "سندرلاند",
+  "brier": 0.7808,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "توريينسي",
+  "hs": 1,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 1.05,
+  "lh": 1.381,
+  "outcome": "A",
+  "pa": 0.2856,
+  "pd": 0.27,
+  "ph": 0.4444,
+  "pick": "H",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828743": {
+  "as": 2,
+  "away": "كريستال بالاس",
+  "brier": 0.6365,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "أولمبيك ليون",
+  "hs": 3,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 1.468,
+  "lh": 1.375,
+  "outcome": "H",
+  "pa": 0.3956,
+  "pd": 0.2504,
+  "ph": 0.354,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828744": {
+  "as": 1,
+  "away": "ليلستروم",
+  "brier": 1.1004,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "سبارتا براغ",
+  "hs": 1,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 1.032,
+  "lh": 2.251,
+  "outcome": "D",
+  "pa": 0.1612,
+  "pd": 0.1909,
+  "ph": 0.6479,
+  "pick": "H",
+  "score": "2-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828745": {
+  "as": 3,
+  "away": "أومونيا نيقوسيا",
+  "brier": 0.5468,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 1,
+  "home": "تسيليى",
+  "hs": 0,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 1.205,
+  "lh": 1.046,
+  "outcome": "A",
+  "pa": 0.3965,
+  "pd": 0.2862,
+  "ph": 0.3173,
+  "pick": "A",
+  "score": "1-1",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
+ "4828746": {
+  "as": 4,
+  "away": "ميلان",
+  "brier": 1.0605,
+  "comp": "UEFA Europa League",
+  "conf": "low",
+  "hit": 0,
+  "home": "ريد بول سالزبورغ",
+  "hs": 0,
+  "kickoff": "2026-10-15",
+  "koff_time": "19:45",
+  "la": 0.781,
+  "lh": 1.613,
+  "outcome": "A",
+  "pa": 0.1802,
+  "pd": 0.248,
+  "ph": 0.5718,
+  "pick": "H",
+  "score": "1-0",
+  "score_hit": 0,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-15"
+ },
  "4829717": {
   "as": 0,
   "away": "توغو",
@@ -8680,7 +9616,7 @@
   "home": "15 دي أجوستو",
   "hs": null,
   "kickoff": "2026-10-17",
-  "koff_time": "19:00",
+  "koff_time": "18:00",
   "la": 0.93,
   "lh": 1.669,
   "outcome": null,
@@ -8692,7 +9628,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-15"
  },
  "558559": {
   "as": null,
@@ -10007,7 +10943,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "559649": {
   "as": null,
@@ -10031,7 +10967,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "559650": {
   "as": null,
@@ -10055,7 +10991,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "559651": {
   "as": null,
@@ -10079,7 +11015,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "559652": {
   "as": null,
@@ -10103,7 +11039,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-16"
  },
  "559653": {
   "as": null,
@@ -10127,7 +11063,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "559654": {
   "as": null,
@@ -10151,7 +11087,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559655": {
   "as": null,
@@ -10175,7 +11111,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-16"
  },
  "559656": {
   "as": null,
@@ -10199,7 +11135,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "559657": {
   "as": null,
@@ -10223,7 +11159,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559658": {
   "as": null,
@@ -10247,7 +11183,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559659": {
   "as": null,
@@ -10271,7 +11207,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559660": {
   "as": null,
@@ -10295,7 +11231,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559661": {
   "as": null,
@@ -10319,7 +11255,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559662": {
   "as": null,
@@ -10343,7 +11279,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559663": {
   "as": null,
@@ -10367,7 +11303,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559664": {
   "as": null,
@@ -10391,7 +11327,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559665": {
   "as": null,
@@ -10415,7 +11351,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-13"
+  "ts": "2026-10-16"
  },
  "559666": {
   "as": 1,
@@ -11875,7 +12811,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560603": {
   "as": null,
@@ -11899,7 +12835,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560604": {
   "as": null,
@@ -11923,7 +12859,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560605": {
   "as": null,
@@ -11947,7 +12883,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560606": {
   "as": null,
@@ -11971,7 +12907,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560607": {
   "as": null,
@@ -11995,7 +12931,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560608": {
   "as": null,
@@ -12019,7 +12955,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560609": {
   "as": null,
@@ -12043,7 +12979,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560610": {
   "as": null,
@@ -12067,7 +13003,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560611": {
   "as": null,
@@ -12091,7 +13027,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560612": {
   "as": null,
@@ -12115,7 +13051,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560613": {
   "as": null,
@@ -12139,7 +13075,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560614": {
   "as": null,
@@ -12163,7 +13099,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560615": {
   "as": null,
@@ -12187,7 +13123,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560616": {
   "as": null,
@@ -12211,7 +13147,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560617": {
   "as": null,
@@ -12235,7 +13171,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560618": {
   "as": null,
@@ -12259,7 +13195,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560619": {
   "as": null,
@@ -12283,7 +13219,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560620": {
   "as": null,
@@ -12307,7 +13243,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "560621": {
   "as": null,
@@ -12331,7 +13267,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-15"
+  "ts": "2026-10-16"
  },
  "564658": {
   "as": 3,
@@ -13428,7 +14364,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564709": {
   "as": null,
@@ -13452,7 +14388,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564710": {
   "as": null,
@@ -13476,7 +14412,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564711": {
   "as": null,
@@ -13500,7 +14436,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564712": {
   "as": null,
@@ -13524,7 +14460,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564713": {
   "as": null,
@@ -13548,7 +14484,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564714": {
   "as": null,
@@ -13572,7 +14508,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564715": {
   "as": null,
@@ -13596,7 +14532,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564716": {
   "as": null,
@@ -13620,7 +14556,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564717": {
   "as": null,
@@ -13644,7 +14580,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564718": {
   "as": null,
@@ -13668,7 +14604,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564719": {
   "as": null,
@@ -13692,7 +14628,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564720": {
   "as": null,
@@ -13718,6 +14654,30 @@
   "src_ts": null,
   "ts": "2026-10-15"
  },
+ "564721": {
+  "as": null,
+  "away": "CA Osasuna",
+  "brier": null,
+  "comp": "Primera Division",
+  "conf": "mid",
+  "hit": null,
+  "home": "Sevilla FC",
+  "hs": null,
+  "kickoff": "2026-10-26",
+  "koff_time": "23:00",
+  "la": 0.967,
+  "lh": 2.495,
+  "outcome": null,
+  "pa": 0.1266,
+  "pd": 0.1676,
+  "ph": 0.7058,
+  "pick": null,
+  "score": "2-0",
+  "score_hit": null,
+  "src": "python",
+  "src_ts": null,
+  "ts": "2026-10-16"
+ },
  "564722": {
   "as": null,
   "away": "Villarreal CF",
@@ -13740,7 +14700,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564723": {
   "as": null,
@@ -13788,7 +14748,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "564725": {
   "as": null,
@@ -13860,7 +14820,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565786": {
   "as": 4,
@@ -14554,7 +15514,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565822": {
   "as": null,
@@ -14578,7 +15538,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565823": {
   "as": null,
@@ -14602,7 +15562,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565824": {
   "as": null,
@@ -14626,7 +15586,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565825": {
   "as": null,
@@ -14650,7 +15610,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565826": {
   "as": null,
@@ -14674,7 +15634,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565827": {
   "as": null,
@@ -14698,7 +15658,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565828": {
   "as": null,
@@ -14722,7 +15682,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565829": {
   "as": null,
@@ -14746,7 +15706,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565830": {
   "as": null,
@@ -14770,7 +15730,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565831": {
   "as": null,
@@ -14794,7 +15754,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565832": {
   "as": null,
@@ -14818,7 +15778,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565833": {
   "as": null,
@@ -14842,7 +15802,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565834": {
   "as": null,
@@ -14866,7 +15826,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565835": {
   "as": null,
@@ -14938,7 +15898,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "565838": {
   "as": null,
@@ -14962,7 +15922,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575325": {
   "as": 1,
@@ -15786,7 +16746,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575360": {
   "as": null,
@@ -15810,7 +16770,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575361": {
   "as": null,
@@ -15834,7 +16794,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575362": {
   "as": null,
@@ -15858,7 +16818,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575363": {
   "as": null,
@@ -15882,7 +16842,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575364": {
   "as": null,
@@ -15906,7 +16866,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575365": {
   "as": null,
@@ -15930,7 +16890,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575366": {
   "as": null,
@@ -15954,7 +16914,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575367": {
   "as": null,
@@ -15978,7 +16938,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575368": {
   "as": null,
@@ -16002,7 +16962,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575369": {
   "as": null,
@@ -16026,7 +16986,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575370": {
   "as": null,
@@ -16050,7 +17010,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575371": {
   "as": null,
@@ -16074,7 +17034,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575372": {
   "as": null,
@@ -16098,7 +17058,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575373": {
   "as": null,
@@ -16122,7 +17082,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575374": {
   "as": null,
@@ -16146,7 +17106,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575375": {
   "as": null,
@@ -16170,7 +17130,7 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  },
  "575376": {
   "as": null,
@@ -16194,6 +17154,6 @@
   "score_hit": null,
   "src": "python",
   "src_ts": null,
-  "ts": "2026-10-14"
+  "ts": "2026-10-15"
  }
 }
