@@ -35,7 +35,7 @@ def _lum(c):
     return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255
 
 
-def render(name, out, tagline="", colour=None, badge=None):
+def render(name, out, tagline="", colour=None, badge=None, bare=False):
     """Dark kit (most clubs): the colour as the canvas, white text.
     LIGHT kit (Zamalek, Real Madrid, Man City's sky blue): the colour stays
     the canvas - it IS the club's colour - and the text turns to the kit's
@@ -65,14 +65,20 @@ def render(name, out, tagline="", colour=None, badge=None):
     od = ImageDraw.Draw(ov)
     for i in range(0, W, 64):                          # faint stand stripes
         od.polygon([(i, H), (i + 24, H), (i + 24 + 160, 380), (i + 160, 380)], fill=stripe)
-    cx, cy = W // 2, 300
+    # bare (user, 2026-10-16: «شيل اسم الفريق وأي كلام، خلي الشكل مع الشعار
+    # فقط»): the crest alone, centred, no name, no tagline, no brand row
+    cx, cy = W // 2, (H // 2 if bare else 300)
+    ccy = H // 2 if bare else 262
     od.ellipse([cx - 230, cy - 230, cx + 230, cy + 230], outline=line + (70,), width=3)
     od.ellipse([cx - 330, cy - 330, cx + 330, cy + 330], outline=line + (30,), width=3)
     img.paste(ov, (0, 0), ov)
-    if not MC._crest(img, d, cx, 262, 128, badge):
-        MC._disc(img, d, cx, 262, 128, kit)
+    if not MC._crest(img, d, cx, ccy, 128, badge):
+        MC._disc(img, d, cx, ccy, 128, kit)
     if light:                                          # the white ring needs an edge on a light canvas
-        d.ellipse([cx - 128, 262 - 128, cx + 128, 262 + 128], outline=_tint(ink, 0.6), width=4)
+        d.ellipse([cx - 128, ccy - 128, cx + 128, ccy + 128], outline=_tint(ink, 0.6), width=4)
+    if bare:
+        img.save(out, quality=90, optimize=True)
+        return out
     MC._text_c(d, FC, cx, 262 + 128 + 10, name, FC.font("ExtraBold", 84), text, max_w=900, size=84, weight="ExtraBold")
     if tagline:
         MC._text_c(d, FC, cx, 90, tagline, FC.font("Bold", 38), soft, max_w=800, size=38, weight="Bold")
@@ -98,6 +104,7 @@ def main():
     ap.add_argument("--tagline", default="")
     ap.add_argument("--colour", help="hex, when the club has no kit in matchup_card (the NT)")
     ap.add_argument("--badge-as", help="look the crest up under this name (NT: مصر)")
+    ap.add_argument("--bare", action="store_true", help="the crest only: no name, no tagline, no brand")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     from site_lib.clubs import TEAM_PAGES
@@ -106,7 +113,7 @@ def main():
     key = a.badge_as or a.club
     badge = MC.club_badge(key, comp) or MC.club_badge(key)
     colour = MC._rgb(a.colour) if a.colour else None
-    print(render(a.club, a.out, a.tagline, colour=colour, badge=badge))
+    print(render(a.club, a.out, a.tagline, colour=colour, badge=badge, bare=a.bare))
 
 
 if __name__ == "__main__":
