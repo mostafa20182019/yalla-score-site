@@ -31,6 +31,32 @@ def _tint(c, k):
     return tuple(min(255, round(v + (255 - v) * k)) for v in c)
 
 
+def _big_crest(url, size):
+    """The crest at `size` px for the bare image. The site's badge URLs ask
+    365scores for 68 px (136 at dpr 2) - fine beside a score, a smudge in a
+    344 px ring - so the bare image asks the same host for 400 px; football-
+    data crests are 200 px PNGs and may be scaled up to `size` (at most 1.3x,
+    the LANCZOS limit before edges soften). None when nothing can be read."""
+    import build_site as b
+    from PIL import Image as _I
+    if not url:
+        return None
+    hi = url.replace("w_68,h_68", "w_400,h_400").replace("dpr_2", "dpr_1") if "w_68,h_68" in url else url
+    for u in (hi, url):
+        b.local_crest(u)
+        path = os.path.join(b.CRESTS_CACHE, b._crest_name(u))
+        if not os.path.exists(path) or path.lower().endswith(".svg"):
+            continue
+        try:
+            im = _I.open(path).convert("RGBA")
+        except Exception:                               # noqa: BLE001
+            continue
+        k = min(size / max(im.width, im.height), 1.3)       # fit the ring; upscale at most 1.3x
+        im = im.resize((max(1, round(im.width * k)), max(1, round(im.height * k))), _I.LANCZOS)
+        return im
+    return None
+
+
 def _lum(c):
     return (0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2]) / 255
 
@@ -69,13 +95,30 @@ def render(name, out, tagline="", colour=None, badge=None, bare=False):
     # فقط»): the crest alone, centred, no name, no tagline, no brand row
     cx, cy = W // 2, (H // 2 if bare else 300)
     ccy = H // 2 if bare else 262
-    od.ellipse([cx - 230, cy - 230, cx + 230, cy + 230], outline=line + (70,), width=3)
-    od.ellipse([cx - 330, cy - 330, cx + 330, cy + 330], outline=line + (30,), width=3)
+    # bare crest is bigger (user, same day: «كبّر الشعار شوية»): ring 128 -> 172,
+    # the halo rings grow with it. 172 keeps the ring inside the article
+    # hero's ~425-row band (y 127-552) and the SAFE band (y 140-540).
+    R = 172 if bare else 128
+    r1, r2 = (300, 420) if bare else (230, 330)
+    od.ellipse([cx - r1, cy - r1, cx + r1, cy + r1], outline=line + (70,), width=3)
+    od.ellipse([cx - r2, cy - r2, cx + r2, cy + r2], outline=line + (30,), width=3)
     img.paste(ov, (0, 0), ov)
-    if not MC._crest(img, d, cx, ccy, 128, badge):
-        MC._disc(img, d, cx, ccy, 128, kit)
+    drawn = False
+    if bare:
+        big = _big_crest(badge, int(2 * R * 0.80))
+        if big is not None:
+            from PIL import ImageFilter as _F
+            sh = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+            ImageDraw.Draw(sh).ellipse([cx - R + 6, ccy - R + 14, cx + R + 6, ccy + R + 14], fill=(0, 0, 0, 90))
+            sh = sh.filter(_F.GaussianBlur(12))
+            img.paste(sh, (0, 0), sh)
+            d.ellipse([cx - R, ccy - R, cx + R, ccy + R], fill=WHITE)
+            img.paste(big, (cx - big.width // 2, ccy - big.height // 2), big)
+            drawn = True
+    if not drawn and not MC._crest(img, d, cx, ccy, R, badge):
+        MC._disc(img, d, cx, ccy, R, kit)
     if light:                                          # the white ring needs an edge on a light canvas
-        d.ellipse([cx - 128, ccy - 128, cx + 128, ccy + 128], outline=_tint(ink, 0.6), width=4)
+        d.ellipse([cx - R, ccy - R, cx + R, ccy + R], outline=_tint(ink, 0.6), width=4)
     if bare:
         img.save(out, quality=90, optimize=True)
         return out
