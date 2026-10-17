@@ -680,10 +680,81 @@ def whoami(token):
     return 0
 
 
+def xi_caption(data):
+    """The «📋 التشكيل الرسمي» text - the same lines liveposts.js writes."""
+    comp = data.get("comp") or ""
+    lines = [f"📋 التشكيل الرسمي: {data['home']['name']} × {data['away']['name']}", comp]
+    for side in (data["home"], data["away"]):
+        f = f" ({side['formation']})" if side.get("formation") else ""
+        lines.append(f"▪️ {side['name']}{f}:")
+        lines.append("، ".join(p["name"] for p in side["players"]))
+    lines.append(f"المباراة لحظة بلحظة: https://yallascore.site/m/{data['gid']}")
+    tag = lambda n: "#" + n.strip().replace(" ", "_")
+    lines.append(f"#يلا_سكور {tag(data['home']['name'])} {tag(data['away']['name'])}")
+    return "\n".join(x for x in lines if x)
+
+
+def xi_post(token, gid, dry=False):
+    """Draw the line-up card for a 365scores game and post it as a photo
+    (user, 2026-10-17). The Worker holds the "xi" claim and dispatched us;
+    run by hand, we take the claim ourselves. A game whose XI has no field
+    positions yet goes out as the text post, so the page is never left
+    without the line-up."""
+    import lineup_card as LC
+    gid = str(gid).strip()
+    if not gid:
+        print("--xi needs a 365scores game id"); return 1
+    rec = store.get_post("xi", gid)
+    if rec and rec.get("post_id"):
+        print(f"xi {gid}: already posted ({rec['post_id']})"); return 0
+    game = LC._s365_game(gid)
+    data = LC.parse(game)
+    if data:
+        data["gid"] = gid
+        caption = xi_caption(data)
+    else:
+        caption = None
+    if dry:
+        print(caption or f"xi {gid}: no positioned XI yet"); return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if not rec and not store.claim("xi", gid, title=f"xi {gid}"):
+        print(f"xi {gid}: claimed by another run - nothing posted"); return 0
+    try:
+        if data:
+            pid = post_photo(token, LC.render_bytes(data), caption)
+            print(f"posted the line-up card for {gid}: {pid}")
+        else:
+            # no positions: the plain text, from the detail's member names
+            lu = LC.parse_names(game)
+            if not lu:
+                print(f"xi {gid}: no full XI in the detail - nothing posted (the Worker retries)")
+                if not rec:
+                    store.release("xi", gid)
+                return 0
+            lu["gid"] = gid
+            pid = post_text(token, xi_caption(lu))
+            print(f"posted the line-up text for {gid}: {pid}")
+        store.record_post("xi", gid, pid, title=f"xi {gid}")
+    except Exception as e:  # noqa: BLE001 - never fail the workflow over a social post
+        print(f"xi {gid}: post FAILED: {e}")
+        if not rec:
+            store.release("xi", gid)
+        return 1
+    return 0
+
+
+def post_text(token, message):
+    data = urllib.parse.urlencode({"message": message, "access_token": token}).encode()
+    with urllib.request.urlopen(urllib.request.Request(GRAPH_FEED, data=data), timeout=30) as r:
+        resp = json.load(r)
+    return resp.get("id")
+
+
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami")):
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -711,6 +782,9 @@ def main() -> int:
         i = sys.argv.index("--prediction")
         return prediction_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "",
                                dry="--dry" in sys.argv[1:])
+    if "--xi" in sys.argv[1:]:
+        i = sys.argv.index("--xi")
+        return xi_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
     if "--repost" in sys.argv[1:]:
         i = sys.argv.index("--repost")
         return repost(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "")

@@ -67,6 +67,7 @@ function fakeD1() {
       return { results: [], changes: 1 };
     }
     if (sql.includes("/*fb_rec*/")) { const r = fb.get(`${b[2]}|${b[3]}`); if (r) { r.post_id = b[0]; r.posted_at = b[1]; } return { results: [], changes: r ? 1 : 0 }; }
+    if (sql.includes("/*fb_row*/")) { const r = fb.get(`${b[0]}|${b[1]}`); return { first: r ? { post_id: r.post_id, claimed_at: r.claimed_at } : null }; }
     if (sql.includes("/*fb_find*/")) { const r = fb.get(`${b[0]}|${b[1]}`); return { first: r && r.post_id ? { post_id: r.post_id } : null }; }
     if (sql.includes("/*fb_drop*/")) { const r = fb.get(`${b[0]}|${b[1]}`); if (r && !r.post_id) fb.delete(`${b[0]}|${b[1]}`); return { results: [] }; }
     throw new Error("fake D1: unknown statement " + sql.slice(0, 60));
@@ -103,6 +104,8 @@ const XI = (n) => ({ members: Array.from({ length: n }, (_, i) => ({ id: 100 + i
 
 let LIST = { games: [] };
 const fbCalls = [];
+const ghCalls = [];
+let ghOk = true;
 let cardOk = true;
 globalThis.fetch = async (url, init) => {
   const u = String(url);
@@ -110,6 +113,10 @@ globalThis.fetch = async (url, init) => {
   if (u.includes("/web/game/")) {
     const gid = Number(u.match(/gameId=(\d+)/)[1]);
     return detailFor[gid] ? Response.json(detailFor[gid]) : new Response("no", { status: 500 });
+  }
+  if (u.startsWith("https://api.github.com/")) {
+    ghCalls.push(JSON.parse(init.body || "{}"));
+    return new Response(null, { status: ghOk ? 204 : 500 });
   }
   if (u.startsWith("https://graph.facebook.com/")) {
     const p = Object.fromEntries(new URLSearchParams(init.body));
@@ -285,6 +292,30 @@ ck("26 the pure messages carry hashtags and no betting word",
    htMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 0, as: 0, goals: [] }).endsWith("#يلا_سكور #الأهلي #الزمالك")
    && !ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("مراهنة")
    && ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("الأهلي: زيزو 12' (ج)"));
+
+/* ------------------------------- 11 the line-up CARD path (2026-10-17) */
+const envGh = { ...env, GH_TOKEN: "gh" };
+const tickGh = () => worker.scheduled({ cron: "* * * * *" }, envGh, {});
+const now2 = Date.now();
+detailFor[990] = DETAIL(0, 0, [], { h: XI(11), a: XI(11) });
+LIST = { games: [sched(990, 552, "الزمالك", "سموحة", now2 + 60 * 60 * 1000)] };
+const n2 = posts().length;
+await tickGh();
+ck("28 with GH_TOKEN the XI is DISPATCHED to fb-post.yml (xi=<game>), not posted from the edge",
+   ghCalls.length === 1 && ghCalls[0].inputs && ghCalls[0].inputs.xi === "990" && posts().length === n2
+   && db.fb.has("xi|990") && !db.fb.get("xi|990").post_id, JSON.stringify(ghCalls));
+await tickGh();
+ck("29 the next minute neither re-dispatches nor posts (the runner's turn)", ghCalls.length === 1 && posts().length === n2);
+db.fb.get("xi|990").claimed_at -= 13 * 60;                   // the runner never came back
+await tickGh();
+ck("30 ...but 12 minutes later the text post goes out as the fallback",
+   posts().length === n2 + 1 && posts()[n2].caption.startsWith("📋 التشكيل الرسمي: الزمالك × سموحة") && db.fb.get("xi|990").post_id);
+ghOk = false;
+detailFor[991] = DETAIL(0, 0, [], { h: XI(11), a: XI(11) });
+LIST = { games: [sched(991, 552, "الأهلي", "إنبي", now2 + 60 * 60 * 1000)] };
+await tickGh();
+ck("31 a failed dispatch falls straight back to the text post", posts().length === n2 + 2 && db.fb.get("xi|991").post_id, JSON.stringify(ghCalls.slice(-1)));
+ghOk = true;
 
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

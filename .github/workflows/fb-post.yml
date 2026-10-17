@@ -28,6 +28,10 @@ on:
         description: "Rewrite the TEXT of already-posted articles in place from the export (ids, comma-separated). Run D1 Admin fix-text first."
         required: false
         default: ""
+      xi:
+        description: "Post the line-up CARD of a 365scores game id (dispatched by the Worker when both XIs are announced)."
+        required: false
+        default: ""
       h2h:
         description: "Head-to-head infographic for ONE upcoming match (match_id), or `auto` for the biggest match of the next days. Empty = normal run."
         required: false
@@ -87,10 +91,13 @@ jobs:
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
           REPOST: ${{ inputs.repost }}
           UPDATE: ${{ inputs.update }}
+          XI: ${{ inputs.xi }}
           PREDICTION: ${{ inputs.prediction }}
           H2H: ${{ inputs.h2h }}
         run: |
-          if [ -n "$UPDATE" ]; then
+          if [ -n "$XI" ]; then
+            python fb_post.py --xi "$XI" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+          elif [ -n "$UPDATE" ]; then
             python fb_update_posts.py ${UPDATE//,/ } | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$H2H" ]; then
             python fb_post.py --h2h "$H2H" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}

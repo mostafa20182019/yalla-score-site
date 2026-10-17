@@ -1020,7 +1020,8 @@ export default {
       console.log("live store refresh:", JSON.stringify({ ...r, upcoming: (r.upcoming || []).length }));
       // the official XI, 45-80 minutes before an Egyptian-scope kick-off (liveposts.js)
       try {
-        const lp = await lineupPosts(env, r.upcoming || [], Date.now(), S365_HEADERS);
+        const lp = await lineupPosts(env, r.upcoming || [], Date.now(), S365_HEADERS,
+                                     env.GH_TOKEN ? (inputs) => dispatchWorkflow(env, "fb-post.yml", inputs) : null);
         if (lp.due) console.log("xi posts:", JSON.stringify(lp));
       } catch (e) {
         console.log("xi posts failed:", e && e.message);

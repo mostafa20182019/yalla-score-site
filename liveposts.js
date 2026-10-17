@@ -12,7 +12,13 @@
  *                    fell - the «never show possibly-wrong live data» rule)
  *   - VAR reversal   the goal's own post is EDITED, never left standing
  *   - «📋 التشكيل»   once per match, 45-80 minutes before kick-off, when the
- *                    detail carries eleven named starters on each side
+ *                    detail carries eleven named starters on each side. Since
+ *                    2026-10-17 it is a PICTURE: the Worker cannot draw, so
+ *                    it takes the "xi" lock and dispatches fb-post.yml with
+ *                    xi=<game>; fb_post.py --xi draws the pitch (lineup_card
+ *                    .py) and posts it. No GH_TOKEN, a failed dispatch, or a
+ *                    runner that has not posted within XI_FALLBACK_MS = the
+ *                    text post from here, as before
  *
  * Scope (user, 2026-10-17: «تابع نتائج الفرق المميزة ونزّل بوستات لما يتم
  * إحراز أهداف أو انتهاء الشوط الأول أو انتهاء المباراة») = EVERY curated club:
@@ -42,6 +48,7 @@ const FB_GRAPH = "https://graph.facebook.com/v23.0";
 const SITE = "https://yallascore.site";
 export const XI_MIN_MS = 45 * 60 * 1000;    // post the XI when kick-off is
 export const XI_MAX_MS = 80 * 60 * 1000;    // 45..80 minutes away
+export const XI_FALLBACK_MS = 12 * 60 * 1000;   // a dispatched card not posted by then -> the text
 
 const COMP_AR = {
   552: "الدوري المصري", 624: "دوري أبطال أفريقيا", 627: "كأس الكونفدرالية الأفريقية", 588: "تصفيات كأس أمم أفريقيا",
@@ -139,6 +146,7 @@ export function xiMessage(g, xi) {
 const FB_CLAIM = "/*fb_claim*/ INSERT OR IGNORE INTO fb_posted (kind, ref_id, title, claimed_at) VALUES (?,?,?,?)";
 const FB_REC = "/*fb_rec*/ UPDATE fb_posted SET post_id = ?, posted_at = ? WHERE kind = ? AND ref_id = ?";
 const FB_FIND = "/*fb_find*/ SELECT post_id FROM fb_posted WHERE kind = ? AND ref_id = ?";
+const FB_ROW = "/*fb_row*/ SELECT post_id, claimed_at FROM fb_posted WHERE kind = ? AND ref_id = ?";
 const FB_DROP = "/*fb_drop*/ DELETE FROM fb_posted WHERE kind = ? AND ref_id = ? AND post_id IS NULL";
 const LG_LIST = "/*lg_list*/ SELECT side, player, minute, tag FROM live_goals WHERE game_id = ? AND cancelled = 0 ORDER BY seq";
 const LG_CANCELLED = "/*lg_cancelled*/ SELECT seq FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 1 " +
@@ -159,6 +167,10 @@ async function record(env, kind, ref, postId) {
 }
 async function drop(env, kind, ref) {
   await env.DB.prepare(FB_DROP).bind(kind, ref).run();
+}
+async function fbRow(env, kind, ref) {
+  const r = await env.DB.prepare(FB_ROW).bind(kind, ref).first();
+  return r ? { post_id: r.post_id ? String(r.post_id) : null, claimed_at: Number(r.claimed_at || 0) } : null;
 }
 async function findPost(env, kind, ref) {
   const r = await env.DB.prepare(FB_FIND).bind(kind, ref).first();
@@ -271,20 +283,36 @@ async function gameLineups(gid, headers) {
   } catch (e) { return null; }
 }
 
-// upcoming = [{id, c, h, a, start}] from the list (statusGroup 2), every minute
-export async function lineupPosts(env, upcoming, now, headers) {
-  const out = { due: 0, posted: 0, waiting: 0 };
+// upcoming = [{id, c, h, a, start}] from the list (statusGroup 2), every minute.
+// `dispatch(inputs)` = worker.js's fb-post.yml dispatcher (null when there is
+// no GH_TOKEN): the card path. Returns true when the run was started.
+export async function lineupPosts(env, upcoming, now, headers, dispatch = null) {
+  const out = { due: 0, posted: 0, waiting: 0, dispatched: 0 };
   const due = (upcoming || []).filter(g => postScope(g) && g.start - now >= XI_MIN_MS && g.start - now <= XI_MAX_MS);
   out.due = due.length;
   if (!due.length) return out;
   if (!env.FB_PAGE_TOKEN) { console.log("xi posts: no FB_PAGE_TOKEN -", due.length, "match(es) not posted"); return out; }
   for (const g of due) {
     const ref = String(g.id);
-    if (await findPost(env, "xi", ref)) continue;          // already out
+    const row = await fbRow(env, "xi", ref);
+    if (row && row.post_id) continue;                       // already out
     const xi = await gameLineups(g.id, headers);
     if (!xi) { out.waiting += 1; continue; }                // not announced yet: next minute
     const msg = xiMessage(g, xi);
+    if (row && !row.post_id) {
+      // claimed earlier (a dispatched card): give the runner XI_FALLBACK_MS,
+      // then post the text ourselves - the page must not miss the line-up
+      if (now - row.claimed_at * 1000 < XI_FALLBACK_MS) continue;
+      const pid = await publish(env, msg, await cardUrl(env, g.id));
+      if (pid) { await record(env, "xi", ref, pid); out.posted += 1; }
+      continue;
+    }
     if (!(await claim(env, "xi", ref, msg.split("\n")[0]))) continue;
+    if (dispatch) {
+      let ok = false;
+      try { ok = await dispatch({ xi: ref }); } catch (e) { ok = false; }
+      if (ok) { out.dispatched += 1; continue; }          // the runner draws + posts + records
+    }
     const pid = await publish(env, msg, await cardUrl(env, g.id));
     if (pid) { await record(env, "xi", ref, pid); out.posted += 1; }
     else await drop(env, "xi", ref);
