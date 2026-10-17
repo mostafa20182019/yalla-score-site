@@ -155,7 +155,11 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
         fill = (255, 255, 255, 230) if done else (200, 16, 46, 235) if live_now else (0, 0, 0, 90)
         rrect([W // 2 - 62, cy - 22, W // 2 + 62, cy + 22], 12, fill)
         ink = (16, 62, 108) if done else WHITE if live_now else GOLD
-        d.text((W // 2 - d.textlength(t, font=fp) / 2, cy - (25 if (done or live_now) else 21)), t, font=fp, fill=ink)
+        # centre the INK of the digits in the pill, not the font box: PIL draws
+        # from the top of the ascender box, so a fixed offset left the score
+        # sitting low (user, 2026-10-17: «ليه النتيجة مش في منتصف الجزء الأبيض»)
+        bx = d.textbbox((0, 0), t, font=fp)
+        d.text((W // 2 - (bx[0] + bx[2]) / 2, cy - (bx[1] + bx[3]) / 2), t, font=fp, fill=ink)
         if live_now:
             text_c(W // 2, cy + 24, "مباشر", FC.font("Bold", 18), (255, 120, 140))
         elif every:                      # the competition under the score, the day spans several
