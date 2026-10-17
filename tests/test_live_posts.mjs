@@ -26,12 +26,20 @@ function fakeD1() {
     if (sql.startsWith("CREATE TABLE")) return { results: [] };
     if (sql.includes("/*ls_rows*/")) return { results: [...state.values()] };
     if (sql.includes("/*ls_snap*/")) return { first: meta.has("snapshot") ? { v: meta.get("snapshot") } : null };
-    if (sql.includes("/*ls_prev*/")) return { results: b.map(id => state.get(id)).filter(Boolean) };
+    if (sql.includes("/*ls_prev*/")) {
+      // api.stalePrev: the rows as an OVERLAPPING refresh read them before this
+      // one's batch landed (the cross-isolate race of 2026-10-17); used once
+      const src = api.stalePrev || state; api.stalePrev = null;
+      return { results: b.map(id => src.get(id)).filter(Boolean) };
+    }
     if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0]).map(g => ({ seq: g.seq, side: g.side, player: g.player || null, cancelled: g.cancelled ? 1 : 0 })) };
     if (sql.includes("/*lg_name*/")) { const g = goals.find(x => x.game_id === b[3] && x.seq === b[4]); if (g) { g.player = b[0]; g.minute = b[1] || ""; g.tag = b[2] || ""; } return { results: [] }; }
     if (sql.includes("/*lg_ins*/")) {
+      // the conditional form carries (game_id, changed_at) the refresh diffed against
+      if (b.length > 12 && (state.get(b[12]) || {}).changed_at !== b[13]) return { results: [], meta: { changes: 0 } };
+      if (goals.find(g => g.game_id === b[0] && g.seq === b[1])) return { results: [], meta: { changes: 0 } };
       goals.push({ game_id: b[0], seq: b[1], side: b[2], player: b[3] || "", minute: b[4] || "", cancelled: 0, cancelled_at: 0 });
-      return { results: [] };
+      return { results: [], meta: { changes: 1 } };
     }
     if (sql.includes("/*lg_cancel*/")) {
       for (const g of goals) if (g.game_id === b[1] && g.side === b[2] && g.player === b[3] && g.minute === b[4] && !g.cancelled) { g.cancelled = 1; g.cancelled_at = b[0]; }
@@ -51,8 +59,10 @@ function fakeD1() {
     }
     if (sql.includes("/*ls_upsert*/")) {
       const [game_id, c, h, a, hs, as_, live, min, gt, hf, goalsJ, first_seen, seen_at, changed_at] = b;
+      const prev = state.get(game_id);
+      if (prev && b.length > 14 && prev.changed_at !== b[14]) return { results: [], meta: { changes: 0 } };   // the row moved on
       state.set(game_id, { game_id, c, h, a, hs, as_, live, min, gt, hf, goals: goalsJ, first_seen, seen_at, changed_at });
-      return { results: [] };
+      return { results: [], meta: { changes: 1 } };
     }
     if (sql.includes("/*ls_purge*/")) return { results: [] };
     if (sql.includes("/*lm_set*/")) { meta.set(b[0], b[1]); return { results: [] };
@@ -81,7 +91,8 @@ function fakeD1() {
     async first() { const r = exec(sql, this._b); return "first" in r ? r.first : (r.results[0] || null); },
     async run() { const r = exec(sql, this._b); return { success: true, meta: { changes: r.changes ?? 1 } }; },
   });
-  return { state, fb, goals, prepare: (sql) => mk(sql), batch: async (st) => st.map(s => exec(s.sql, s._b)) };
+  const api = { state, fb, goals, stalePrev: null, prepare: (sql) => mk(sql), batch: async (st) => st.map(s => exec(s.sql, s._b)) };
+  return api;
 }
 
 /* ------------------------------------------------------------- upstream */
@@ -309,6 +320,30 @@ ck("26 the pure messages carry hashtags and no betting word",
    htMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 0, as: 0, goals: [] }).endsWith("#يلا_سكور #الأهلي #الزمالك")
    && !ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("مراهنة")
    && ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("الأهلي: زيزو 12' (ج)"));
+
+/* ----------------------- 10b two refreshes overlap (2026-10-17 Kitara) */
+// «هدف! كيتارا 1 - 2 الأهلي» went out at 82' and again at 83': the one-minute
+// cron and a visitor's background refresh ran in different isolates, both
+// diffed the same 1-1 "before", and the slower one logged the goal under the
+// next seq and posted it. The slower one must post NOTHING.
+detailFor[990] = DETAIL(1, 1, [{ s: "h", pid: 11, m: 30 }, { s: "a", pid: 21, m: 50 }]);
+LIST = { games: [live(990, 627, "كيتارا", "الأهلي", 1, 1), ...filler] };
+await tick();                                                     // first sight, 1-1
+const nRace = posts().length;
+const staleRows = new Map([...db.state].map(([k, v]) => [k, { ...v }]));
+const fastAt = Date.now() - 2000;
+db.state.set(990, { ...db.state.get(990), as_: 2, changed_at: fastAt });                       // the fast refresh landed 1-2 ...
+db.goals.push({ game_id: 990, seq: 3, side: "a", player: "", minute: "82'", cancelled: 0, cancelled_at: 0 });   // ... logged the goal ...
+db.fb.set("goal|990:3", { kind: "goal", ref_id: "990:3", title: "x", claimed_at: 1, post_id: "PF" });    // ... and posted it
+db.stalePrev = staleRows;                                         // the slow refresh still holds 1-1
+delete detailFor[990];                                            // and its detail lagged (score-only path)
+LIST.games[0] = live(990, 627, "كيتارا", "الأهلي", 1, 2, { gameTimeDisplay: "83'", gameTime: 83 });
+await tick();
+ck("20b the slower of two overlapping refreshes posts NO second «هدف!» for the same goal",
+   posts().length === nRace && !db.goals.find(g => g.game_id === 990 && g.seq === 4),
+   JSON.stringify([posts().slice(-1), db.goals.filter(g => g.game_id === 990)]));
+ck("20c ...and leaves the state the faster one wrote (1-2) untouched",
+   db.state.get(990).as_ === 2 && db.state.get(990).changed_at === fastAt);
 
 /* ------------------------------- 11 the line-up CARD path (2026-10-17) */
 const envGh = { ...env, GH_TOKEN: "gh" };

@@ -338,6 +338,15 @@ const REPORT_INS = "/*rq_ins*/ INSERT OR IGNORE INTO report_queue (game_id, c, h
 
 const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
   "score_h, score_a, c, h, a, seen_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+// The same insert, applied only while the game's state row is still the one
+// this refresh diffed against (changed_at unchanged). Two refreshes overlap
+// across isolates - the one-minute cron and a visitor's background refresh -
+// and both diff the same "before"; without this the second one logged the
+// same goal under the next seq and posted it again (2026-10-17, Kitara x
+// Al Ahly: «هدف! 1 - 2» at 82' and again at 83').
+const GOAL_INS_IF = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
+  "score_h, score_a, c, h, a, seen_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,? " +
+  "WHERE EXISTS (SELECT 1 FROM live_state WHERE game_id = ? AND changed_at IS ?)";
 const META_SET = "/*lm_set*/ INSERT INTO live_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v";
 
 async function storeRead(env, now) {
@@ -396,8 +405,10 @@ async function storeApply(env, fresh, now) {
   let upserts = 0, events = 0, ended = 0;
   const posts = [], cancels = [];   // goals discovered LIVE + VAR reversals -> liveposts.js
   const hts = [], ends = [];        // the half-time whistle / the final whistle -> liveposts.js
-  const goalRow = (g, seq, ev) => env.DB.prepare(GOAL_INS)
-    .bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now);
+  const goalRow = (g, seq, ev, p = null) => (p
+    ? env.DB.prepare(GOAL_INS_IF).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now,
+                                       g.id, p.changed_at == null ? null : Number(p.changed_at))
+    : env.DB.prepare(GOAL_INS).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now));
   for (const g of fresh.games) {
     if (!g.id) continue;
     const p = prev[g.id];
@@ -448,8 +459,8 @@ async function storeApply(env, fresh, now) {
             events += 1;
             continue;
           }
-          seq += 1; stmts.push(goalRow(g, seq, ev)); events += 1;
-          if (g.live && up > 0) { posts.push({ g, seq, ev }); up -= 1; }
+          seq += 1; stmts.push(goalRow(g, seq, ev, p)); events += 1;
+          if (g.live && up > 0) { posts.push({ g, seq, ev, at: stmts.length - 1 }); up -= 1; }
         }
         for (const ev of oldGoals) if (!nextKeys.has(goalKey(ev))) {
           if (up < 0) { cancels.push({ g, ev }); up += 1; }
@@ -462,8 +473,8 @@ async function storeApply(env, fresh, now) {
         // no goal list on either side: go by the score alone
         for (const [side, d] of [["h", g.hs - p.hs], ["a", g.as - p.as_]]) {
           for (let i = 0; i < d; i++) {
-            seq += 1; stmts.push(goalRow(g, seq, { s: side, m: g.min || null })); events += 1;
-            if (g.live) posts.push({ g, seq, ev: { s: side, m: g.min || null } });
+            seq += 1; stmts.push(goalRow(g, seq, { s: side, m: g.min || null }, p)); events += 1;
+            if (g.live) posts.push({ g, seq, ev: { s: side, m: g.min || null }, at: stmts.length - 1 });
           }
           if (d < 0) {   // VAR took a goal back: cancel that side's latest live goal
             stmts.push(env.DB.prepare("/*lg_cancel_last*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +
@@ -513,11 +524,16 @@ async function storeApply(env, fresh, now) {
     const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
       || (p.goals || null) !== goalsJson || breakNow !== breakBefore;
     if (changed) {
+      // ... and only while the row is still the "before" this refresh read
+      // (same race as GOAL_INS_IF: a slower overlapping refresh must not
+      // write its stale picture over the one that already moved on)
       stmts.push(env.DB.prepare("/*ls_upsert*/ INSERT INTO live_state (game_id, c, h, a, hs, as_, live, min, gt, hf, goals, " +
         "first_seen, seen_at, changed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(game_id) DO UPDATE SET " +
         "c=excluded.c, h=excluded.h, a=excluded.a, hs=excluded.hs, as_=excluded.as_, live=excluded.live, min=excluded.min, " +
-        "gt=excluded.gt, hf=excluded.hf, goals=excluded.goals, seen_at=excluded.seen_at, changed_at=excluded.changed_at")
-        .bind(g.id, g.c, g.h, g.a, g.hs, g.as, g.live ? 1 : 0, g.min || "", g.gt || 0, g.hf || 0, goalsJson, now, now, now));
+        "gt=excluded.gt, hf=excluded.hf, goals=excluded.goals, seen_at=excluded.seen_at, changed_at=excluded.changed_at " +
+        "WHERE live_state.changed_at IS ?")
+        .bind(g.id, g.c, g.h, g.a, g.hs, g.as, g.live ? 1 : 0, g.min || "", g.gt || 0, g.hf || 0, goalsJson, now, now, now,
+              p && p.changed_at != null ? Number(p.changed_at) : null));
       upserts += 1;
     }
     // an UNCHANGED game is no longer written at all - it is listed in the
@@ -538,8 +554,13 @@ async function storeApply(env, fresh, now) {
   })));
   stmts.push(env.DB.prepare("/*ls_purge*/ DELETE FROM live_state WHERE changed_at < ?")
     .bind(now - STATE_KEEP_MS));
-  for (let i = 0; i < stmts.length; i += 40) await env.DB.batch(stmts.slice(i, i + 40));   // D1 batch cap
-  return { upserts, events, ended, posts, cancels, hts, ends };
+  const res = [];
+  for (let i = 0; i < stmts.length; i += 40) res.push(...(await env.DB.batch(stmts.slice(i, i + 40)) || []));   // D1 batch cap
+  // a goal is posted only if ITS row was really written: the conditional
+  // insert above reports 0 changes when an overlapping refresh got there
+  // first (that refresh posted it), or when the seq already existed
+  const applied = (i) => { const r = res[i]; return !(r && r.meta && r.meta.changes === 0); };
+  return { upserts, events, ended, posts: posts.filter(x => x.at == null || applied(x.at)), cancels, hts, ends };
 }
 
 // One refresh: upstream -> store. A failed upstream read changes nothing (the

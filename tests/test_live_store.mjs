@@ -34,7 +34,12 @@ function fakeD1() {
     if (sql.includes("/*ls_snap*/")) return {
       results: meta.has("snapshot") ? [{ v: meta.get("snapshot") }] : [],
       meta: { rows_read: meta.has("snapshot") ? 1 : 0 } };
-    if (sql.includes("/*ls_prev*/")) return { results: b.map(id => state.get(id)).filter(Boolean) };
+    if (sql.includes("/*ls_prev*/")) {
+      // api.stalePrev: a copy of the rows as an OVERLAPPING refresh saw them before
+      // this one's batch landed (the cross-isolate race of 2026-10-17); used once
+      const src = api.stalePrev || state; api.stalePrev = null;
+      return { results: b.map(id => src.get(id)).filter(Boolean) };
+    }
     if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0])
       .map(g => ({ seq: g.seq, side: g.side, player: g.player, cancelled: g.cancelled ? 1 : 0 })) };
     if (sql.includes("/*lg_name*/")) {
@@ -45,9 +50,11 @@ function fakeD1() {
     }
     if (sql.includes("/*lg_ins*/")) {
       const [game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at] = b;
-      if (!goals.find(g => g.game_id === game_id && g.seq === seq))
-        goals.push({ game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at, cancelled: 0 });
-      return { results: [] };
+      // the conditional form carries (game_id, changed_at) the refresh diffed against
+      if (b.length > 12 && (state.get(b[12]) || {}).changed_at !== b[13]) return { results: [], meta: { changes: 0 } };
+      if (goals.find(g => g.game_id === game_id && g.seq === seq)) return { results: [], meta: { changes: 0 } };
+      goals.push({ game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at, cancelled: 0 });
+      return { results: [], meta: { changes: 1 } };
     }
     if (sql.includes("/*lg_cancel_last*/")) {
       const [now, game_id, side] = b;
@@ -64,9 +71,10 @@ function fakeD1() {
     if (sql.includes("/*ls_upsert*/")) {
       const [game_id, c, h, a, hs, as_, live, min, gt, hf, goalsJ, first_seen, seen_at, changed_at] = b;
       const prev = state.get(game_id);
+      if (prev && b.length > 14 && prev.changed_at !== b[14]) return { results: [], meta: { changes: 0 } };   // the row moved on
       state.set(game_id, { game_id, c, h, a, hs, as_, live, min, gt, hf, goals: goalsJ,
                            first_seen: prev ? prev.first_seen : first_seen, seen_at, changed_at });
-      return { results: [] };
+      return { results: [], meta: { changes: 1 } };
     }
     if (sql.includes("/*ls_purge*/")) {
       for (const [k, r] of [...state]) if ((r.changed_at || 0) < b[0]) state.delete(k);
@@ -91,7 +99,8 @@ function fakeD1() {
     async first() { const r = exec(sql, this._b); return "first" in r ? r.first : (r.results[0] || null); },
     async run() { exec(sql, this._b); return { success: true }; },
   });
-  return { state, goals, meta, seen, rq, prepare: (sql) => mk(sql), batch: async (st) => st.map(s => exec(s.sql, s._b)) };
+  const api = { state, goals, meta, seen, rq, stalePrev: null, prepare: (sql) => mk(sql), batch: async (st) => st.map(s => exec(s.sql, s._b)) };
+  return api;
 }
 
 /* ------------------------------------------------------------- upstream */
@@ -239,6 +248,24 @@ scenario(2, 1, 76, [goalEv(11, 1, 12), goalEv(21, 2, 58), goalEv(12, 1, 75)]);
 await call(); await drain();
 ck("14e the detail catches up: the nameless row gets its scorer, no new row",
    db.goals.length === 4 && db.goals.find(g => g.seq === 4).player === "ناصر ماهر" && db.goals.find(g => g.seq === 4).minute === "75");
+
+// 2026-10-17 (Kitara x Al Ahly, «هدف! 1 - 2» at 82' and again at 83'): two
+// refreshes overlap across isolates and diff the same "before". The slower
+// one must not log the goal a second time under the next seq, nor write its
+// stale picture over the state the faster one already advanced.
+age(20000);
+const stale = new Map([...db.state].map(([k, v]) => [k, { ...v }]));   // what the slow refresh read
+const winnerAt = Date.now() - 3000;
+db.state.set(900, { ...db.state.get(900), hs: 3, changed_at: winnerAt });                                    // the fast refresh landed 3-1 ...
+db.goals.push({ game_id: 900, seq: 5, side: "h", player: null, minute: "80'", cancelled: 0 });               // ... and logged the goal
+db.stalePrev = stale;
+scenario(3, 1, 80, [goalEv(11, 1, 12), goalEv(21, 2, 58), goalEv(12, 1, 75)]);   // upstream: 3-1, detail still lagging
+await call(); await drain();
+ck("14f an overlapping refresh that diffed the old state logs NO second row for the same goal",
+   db.goals.filter(g => g.game_id === 900 && !g.cancelled).length === 4 && !db.goals.find(g => g.seq === 6),
+   JSON.stringify(db.goals.filter(g => g.game_id === 900).map(g => [g.seq, g.player, g.minute, g.cancelled])));
+ck("14g ... and does not write its stale picture over the row that moved on",
+   db.state.get(900).hs === 3 && db.state.get(900).changed_at === winnerAt);
 
 /* ------------------------------------------------------------- 7 score-only game */
 // a game whose detail has no usable goal list: goals are logged from the score alone
