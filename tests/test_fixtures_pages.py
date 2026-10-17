@@ -43,8 +43,11 @@ kb = os.path.getsize(os.path.join(DIST, "matches.html")) / 1024
 # 1,532 img tags the day it joined - the guard is against the SEASON coming
 # back in, thousands of rows, not against one more league's current round)
 ck("1 /matches is no longer a megabyte of HTML", kb < 720, f"{kb:.0f} KB (was 958; budget 720)")
+# 300 since 2026-10-17: 14 competitions' current rounds on a full Saturday
+# measured 207 (the Confederation Cup's 32 ties joined that day); the guard is
+# against the SEASON coming back (2,206 rows), not the day's own fixtures
 ck("2 the hidden season is gone: a handful of fixture rows, not thousands",
-   len(re.findall(r'class="fx"', m)) < 200, len(re.findall(r'class="fx"', m)))
+   len(re.findall(r'class="fx"', m)) < 300, f'{len(re.findall(r"class=\"fx\"", m))} rows (budget 300)')
 ck("3 and the crest tags went with it",
    m.count("<img") < 1800, f'{m.count("<img")} img tags (was 4,959; budget 1,800)')
 panels = re.findall(r'<div class="lg-fix rounds-panel.*?(?=<div class="lg-fix rounds-panel|\Z)',
