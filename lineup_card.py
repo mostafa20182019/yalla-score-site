@@ -40,7 +40,7 @@ GRASS_A, GRASS_B = (34, 120, 68), (30, 108, 60)        # mown stripes
 LINE = (235, 245, 238)
 
 # the pitch rectangle on the card
-PITCH = (60, 296, W - 60, H - 96)                       # x0, y0, x1, y1 - as tall as the brand rows allow
+PITCH = (60, 372, W - 60, H - 80)                       # x0, y0, x1, y1 - under the restyled header (2026-10-17)
 
 
 def _s365_game(gid):
@@ -167,7 +167,7 @@ def _place(side, top):
     """pixel (x, y) per player: the feed's fieldSide across the pitch, its
     fieldLine from the keeper's goal line towards the halfway line."""
     x0, y0, x1, y1 = PITCH
-    padx, pady, gap = 90, 58, 72            # gap = the strip either side of halfway no disc enters
+    padx, pady, gap = 90, 54, 66            # gap = the strip either side of halfway no disc enters
     my = (y0 + y1) / 2
     span = (my - y0) - pady - gap           # keeper line -> forward line, per half
     out = []
@@ -211,13 +211,26 @@ def render(data, out):
             s = FC.ar((side["name"] or "?").strip()[:1])
             d.text((cx - d.textlength(s, font=f) / 2, cy - r * 0.6), s, font=f, fill=TOP)
 
-    # brand + title
+    # the header in the goal card's style (user, 2026-10-17: «نفس الصورة لبوست
+    # التشكيلة»): the brand centred at the top, the big shadowed headline,
+    # the rule with the ball logo, then the two clubs (crest, name, formation)
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
-    ball = icon.crop((218, 105, 806, 693)).resize((52, 52), Image.LANCZOS)
-    bm = Image.new("L", (52, 52), 0)
-    ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
-    img.paste(ball, (W - 52 - 40, 36), bm)
-    text_r(W - 40 - 52 - 12, 40, "يلا سكور", FC.font("ExtraBold", 34))
+    def ball(size, bx, by):
+        b = icon.crop((218, 105, 806, 693)).resize((size, size), Image.LANCZOS)
+        m = Image.new("L", (size, size), 0)
+        ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
+        img.paste(b, (bx - size // 2, by - size // 2), m)
+    fb = FC.font("ExtraBold", 44)
+    bn = FC.ar("يلا سكور")
+    bw = d.textlength(bn, font=fb)
+    bx0 = W / 2 - (bw + 70) / 2
+    ball(58, int(bx0 + bw + 70 - 29), 62)
+    d.text((bx0, 38), bn, font=fb, fill=WHITE)
+    tv = FC.ar("التشكيل الرسمي")
+    fh = FC.font("ExtraBold", 112)
+    tx = W / 2 - d.textlength(tv, font=fh) / 2
+    d.text((tx + 5, 112 + 8), tv, font=fh, fill=(4, 16, 36))
+    d.text((tx, 112), tv, font=fh, fill=WHITE)
     when = ""
     try:
         from zoneinfo import ZoneInfo
@@ -226,22 +239,25 @@ def render(data, out):
         when = MC.when_ar(dt.strftime("%Y-%m-%d"), dt.strftime("%H:%M"))
     except Exception:                                   # noqa: BLE001
         when = ""
-    text_l(40, 46, when, FC.font("Bold", 26), SOFT)
-    text_c(W // 2, 96, "التشكيل الرسمي", FC.font("ExtraBold", 64))
-    text_c(W // 2, 176, data["comp"] or "", FC.font("Bold", 30), GOLD)
+    sub_ = " · ".join(x for x in (data["comp"] or "", when) if x)
+    text_c(W // 2, 236, sub_, FC.font("Bold", 28), GOLD)
+    ry = 292
+    d.line([(90, ry), (W / 2 - 46, ry)], fill=WHITE, width=2)
+    d.line([(W / 2 + 46, ry), (W - 90, ry)], fill=WHITE, width=2)
+    ball(56, W // 2, ry)
 
     # the two club bars: home right (RTL), away left
-    hy = 222
+    hy = 304
     for side, right in ((data["home"], True), (data["away"], False)):
-        cx = W - 40 - 36 if right else 40 + 36
-        crest(cx, hy + 26, 36, side)
-        f = fit(side["name"], "ExtraBold", 34, 360)
+        cx = W - 40 - 32 if right else 40 + 32
+        crest(cx, hy + 26, 32, side)
+        f = fit(side["name"], "ExtraBold", 32, 340)
         if right:
-            text_r(cx - 50, hy + 4, side["name"], f)
-            text_r(cx - 50, hy + 42, side["formation"], FC.font("Bold", 22), SOFT)
+            text_r(cx - 46, hy + 2, side["name"], f)
+            text_r(cx - 46, hy + 40, side["formation"], FC.font("Bold", 22), SOFT)
         else:
-            text_l(cx + 50, hy + 4, side["name"], f)
-            text_l(cx + 50, hy + 42, side["formation"], FC.font("Bold", 22), SOFT)
+            text_l(cx + 46, hy + 2, side["name"], f)
+            text_l(cx + 46, hy + 40, side["formation"], FC.font("Bold", 22), SOFT)
 
     _pitch(img, d)
     R = 27
@@ -270,8 +286,8 @@ def render(data, out):
             img.paste(ov, (0, 0), ov)
             d.text((x - tw / 2, y + R + 7), name, font=f, fill=WHITE)
 
-    text_l(40, H - 62, "yallascore.site", FC.font("Bold", 24), SOFT)
-    text_r(W - 40, H - 62, "التشكيل كما أعلنه الناديان قبل المباراة", FC.font("Regular", 22), DIM)
+    text_l(40, H - 52, "yallascore.site", FC.font("Bold", 22), SOFT)
+    text_r(W - 40, H - 52, "التشكيل كما أعلنه الناديان قبل المباراة", FC.font("Regular", 22), DIM)
     if out:
         img.save(out, quality=90, optimize=True)
     return img

@@ -58,7 +58,7 @@ tmp = os.path.join(tempfile.mkdtemp(), "xi.jpg")
 LC.render(data, tmp)
 with Image.open(tmp) as im:
     ck("5a the card is the Facebook portrait size", im.size == (1080, 1350), str(im.size))
-    px = im.getpixel(((x0 + x1) // 2, int(my) + 40))
+    px = im.getpixel(((x0 + x1) // 2 + 160, int(my) + 14))     # just under the halfway line, off any disc
     ck("5b the pitch is green where no disc sits", px[1] > px[0] + 30 and px[1] > px[2] + 30, str(px))
 b = LC.render_bytes(data)
 ck("5c render_bytes gives a JPEG", b[:3] == b"\xff\xd8\xff" and len(b) > 50_000, str(len(b)))
