@@ -219,17 +219,21 @@ async function publish(env, message, photo) {
 // text itself for any goal claim the runner has not finished within
 // GOAL_FALLBACK_MS, so a goal is never lost to a slow or failed run.
 export async function goalFallbacks(env, now) {
+  // goals, half-time and full-time alike: a dispatched card the runner has
+  // not posted within GOAL_FALLBACK_MS goes out as the text kept in the claim
   const out = { posted: 0 };
   const since = Math.floor((now - 6 * 3600 * 1000) / 1000);      // never dig up old claims
   const until = Math.floor((now - GOAL_FALLBACK_MS) / 1000);
-  let rows = [];
-  try { rows = (await env.DB.prepare(FB_STALE).bind("goal", until, since).all()).results || []; }
-  catch (e) { return out; }
-  for (const row of rows) {
-    if (!row.title || !row.title.includes("\n")) continue;      // a claim from the old text path: nothing to resend
-    const gid = String(row.ref_id).split(":")[0];
-    const pid = await publish(env, row.title, await cardUrl(env, gid));
-    if (pid) { await record(env, "goal", String(row.ref_id), pid); out.posted += 1; }
+  for (const kind of ["goal", "ht", "ft"]) {
+    let rows = [];
+    try { rows = (await env.DB.prepare(FB_STALE).bind(kind, until, since).all()).results || []; }
+    catch (e) { continue; }
+    for (const row of rows) {
+      if (!row.title || !row.title.includes("\n")) continue;    // a claim from the old text path: nothing to resend
+      const gid = String(row.ref_id).split(":")[0];
+      const pid = await publish(env, row.title, await cardUrl(env, gid));
+      if (pid) { await record(env, kind, String(row.ref_id), pid); out.posted += 1; }
+    }
   }
   return out;
 }
@@ -275,8 +279,17 @@ export async function livePosts(env, r, dispatch = null) {
   for (const [kind, list, text] of [["ht", hts, htMessage], ["ft", ends, ftMessage]]) {
     for (const { g } of list) {
       const ref = String(g.id);
-      const msg = text(g, await goalsLogged(env, g.id));
-      if (!(await claim(env, kind, ref, msg.split("\n")[0]))) { out.skipped += 1; continue; }
+      const goals = await goalsLogged(env, g.id);
+      const msg = text(g, goals);
+      // the claim keeps the whole text so goalFallbacks() can resend it
+      if (!(await claim(env, kind, ref, dispatch ? msg : msg.split("\n")[0]))) { out.skipped += 1; continue; }
+      if (dispatch) {
+        let ok = false;
+        try {
+          ok = await dispatch({ whistle: JSON.stringify({ kind, g: { id: g.id, c: g.c, h: g.h, a: g.a, hs: g.hs, as: g.as }, goals: goals || [] }) });
+        } catch (e) { ok = false; }
+        if (ok) { out.dispatched += 1; continue; }    // the runner draws, posts and records
+      }
       const pid = await publish(env, msg, await cardUrl(env, g.id));
       if (pid) { await record(env, kind, ref, pid); out.posted += 1; }
       else await drop(env, kind, ref);

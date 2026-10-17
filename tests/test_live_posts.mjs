@@ -341,5 +341,22 @@ ck("35 ...after 4 minutes the goal text goes out from the edge", posts().length 
 await tickGh();
 ck("36 ...once", posts().length === n3 + 1);
 
+/* ---------------------------- 13 half-time / full-time as CARDS (2026-10-17) */
+const gh1 = ghCalls.length, n4 = posts().length;
+detailFor[996] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]);
+LIST = { games: [live(996, 552, "الزمالك", "إنبي", 1, 0), ...filler] };
+await tickGh();                                                  // first sight, in play
+detailFor[996] = withStatus(DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]), HT_STATUS);
+LIST.games[0] = ht(996, 552, "الزمالك", "إنبي", 1, 0);
+await tickGh();
+const wd = ghCalls.slice(gh1).find(c => c.inputs && c.inputs.whistle);
+ck("37 with GH_TOKEN the half-time whistle is DISPATCHED as a card (whistle=<json>) with the logged goals",
+   !!wd && JSON.parse(wd.inputs.whistle).kind === "ht" && JSON.parse(wd.inputs.whistle).goals.length === 1
+   && JSON.parse(wd.inputs.whistle).goals[0].p === "زيزو" && posts().length === n4 && db.fb.has("ht|996"), JSON.stringify(ghCalls.slice(gh1)));
+db.fb.get("ht|996").claimed_at -= 5 * 60;                     // the runner never came back
+await tickGh();
+ck("38 ...and 4 minutes later the half-time text goes out from the edge",
+   posts().length === n4 + 1 && posts()[n4].caption.startsWith("⏸️ نهاية الشوط الأول: الزمالك 1 - 0 إنبي") && posts()[n4].caption.includes("الزمالك: زيزو 30'"), JSON.stringify(posts().slice(-1)));
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

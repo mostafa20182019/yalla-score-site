@@ -47,6 +47,17 @@ ck("2f render_bytes gives a JPEG", b[:3] == b"\xff\xd8\xff" and len(b) > 40_000,
 im2 = GC.render({**ev, "minute": "", "tag": "", "player": "هدف عكسي؟"})
 ck("3 no minute -> no chip, still renders", im2.size == (1080, 1080))
 
+# the half-time / full-time card (same style)
+wev = {"kind": "ft", "home": "مانشستر سيتي", "away": "إبسويتش تاون", "hs": 3, "as": 2, "comp": 7, "home_badge": hb, "away_badge": ab,
+       "goals": [{"s": "h", "p": "هالاند", "m": "12"}, {"s": "a", "p": "ديلاب", "m": "40", "t": "ج"}, {"s": "h", "p": "فودين", "m": "77"}, {"s": "h", "p": "هالاند", "m": "90+2"}, {"s": "a", "p": "هيرست", "m": "88"}]}
+wim = GC.render_whistle(wev)
+ck("4a the whistle card is square too", wim.size == (1080, 1080))
+band2 = wim.crop((100, 140, 980, 280)); white2 = sum(1 for p in band2.getdata() if min(p) > 230)
+ck("4b the headline «انتهت المباراة» is drawn large", white2 > 6000, str(white2))
+ck("4c the rule sits under the crests with the ball in its middle", min(wim.getpixel((540, 712))) < 120 and min(wim.getpixel((200, 712))) > 200)
+wb = GC.render_whistle_bytes({**wev, "kind": "ht", "goals": []})
+ck("4d render_whistle_bytes gives a JPEG for a goalless half", wb[:3] == b"\xff\xd8\xff")
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

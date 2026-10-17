@@ -176,6 +176,120 @@ def render(ev, out=None):
     return img
 
 
+WHISTLE_TITLE = {"ht": "نهاية الشوط الأول", "ft": "انتهت المباراة"}
+
+
+def render_whistle(ev, out=None):
+    """The half-time / full-time card (user, 2026-10-17: «نفس الصورة لبوست
+    نهاية الشوط الأول والمباراة»): the goal card's style with the whistle as
+    the headline, both crests in glass circles with the score between, the
+    rule with the ball, and each side's scorers beneath. ev = {kind 'ht'|'ft',
+    home, away, hs, as, comp, home_badge, away_badge, goals: [{s, p, m, t}]}."""
+    import fb_cards as FC
+    img = Image.new("RGB", (W, H))
+    d = ImageDraw.Draw(img)
+    for y in range(H):
+        t = y / (H - 1)
+        d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(TOP, BOT)))
+    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    ImageDraw.Draw(glow).ellipse([W // 2 - 420, 260, W // 2 + 420, 700], fill=(31, 148, 211, 80))
+    glow = glow.filter(ImageFilter.GaussianBlur(110))
+    img.paste(glow, (0, 0), glow)
+
+    def text_c(cx, y, s_, f, fill=WHITE):
+        s_ = FC.ar(s_); d.text((cx - d.textlength(s_, font=f) / 2, y), s_, font=f, fill=fill)
+    def text_r(xr, y, s_, f, fill=WHITE):
+        s_ = FC.ar(s_); d.text((xr - d.textlength(s_, font=f), y), s_, font=f, fill=fill)
+    def text_l(xl, y, s_, f, fill=WHITE):
+        d.text((xl, y), FC.ar(s_), font=f, fill=fill)
+    def fit(s_, weight, size, max_w, min_size=18):
+        f = FC.font(weight, size)
+        while d.textlength(FC.ar(s_), font=f) > max_w and size > min_size:
+            size -= 2; f = FC.font(weight, size)
+        return f
+    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
+    def ball(size, cx, cy):
+        b = icon.crop((218, 105, 806, 693)).resize((size, size), Image.LANCZOS)
+        m = Image.new("L", (size, size), 0)
+        ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
+        img.paste(b, (cx - size // 2, cy - size // 2), m)
+
+    fb = FC.font("ExtraBold", 44)
+    bn = FC.ar("يلا سكور")
+    bw = d.textlength(bn, font=fb)
+    bx = W / 2 - (bw + 70) / 2
+    ball(58, int(bx + bw + 70 - 29), 62)
+    d.text((bx, 38), bn, font=fb, fill=WHITE)
+
+    kind = ev.get("kind") or "ft"
+    title = WHISTLE_TITLE.get(kind, WHISTLE_TITLE["ft"])
+    ft_ = fit(title, "ExtraBold", 132, W - 120, 60)
+    tv = FC.ar(title)
+    tx = W / 2 - d.textlength(tv, font=ft_) / 2
+    d.text((tx + 5, 128 + 8), tv, font=ft_, fill=(4, 16, 36))
+    d.text((tx, 128), tv, font=ft_, fill=WHITE)
+
+    # the two crests in glass circles, the score between, name tags under
+    cy, R = 470, 128
+    for lbl, bdg, cx in ((ev.get("home"), ev.get("home_badge"), W - 110 - R), (ev.get("away"), ev.get("away_badge"), 110 + R)):
+        glass = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        gd = ImageDraw.Draw(glass)
+        gd.ellipse([cx - R, cy - R, cx + R, cy + R], fill=(255, 255, 255, 46), outline=(255, 255, 255, 170), width=4)
+        gd.ellipse([cx - R + 18, cy - R + 12, cx - R + 104, cy - R + 48], fill=(255, 255, 255, 40))
+        img.paste(glass, (0, 0), glass)
+        cr = _crest(bdg, 176)
+        if cr is not None:
+            img.paste(cr, (cx - cr.width // 2, cy - cr.height // 2), cr)
+        f = fit(lbl or "", "Bold", 30, 260, 18)
+        tw = d.textlength(FC.ar(lbl or ""), font=f)
+        d.rounded_rectangle([cx - tw / 2 - 14, cy + R + 16, cx + tw / 2 + 14, cy + R + 62], 10, fill=(31, 148, 211))
+        text_c(cx, cy + R + 20, lbl or "", f)
+    score = f"{ev.get('as')} - {ev.get('hs')}"          # home sits on the right
+    fs = FC.font("ExtraBold", 136)
+    d.text((W / 2 - d.textlength(score, font=fs) / 2, cy - 88), score, font=fs, fill=WHITE)
+
+    # the rule with the ball
+    ry = 712
+    d.line([(90, ry), (W / 2 - 46, ry)], fill=WHITE, width=2)
+    d.line([(W / 2 + 46, ry), (W - 90, ry)], fill=WHITE, width=2)
+    ball(56, W // 2, ry)
+
+    # the scorers, one column per side (home right)
+    goals = ev.get("goals") or []
+    def line_of(g):
+        t = {"ج": " (ج)", "عكسية": " (عكسي)"}.get(g.get("t") or "", "")
+        return f"{g.get('p') or ''} {g.get('m')}'{t}" if g.get("m") else f"{g.get('p') or ''}{t}"
+    fl = FC.font("Bold", 30)
+    for side_, xr, right in (("h", W - 100, True), ("a", 100, False)):
+        rows = [line_of(g) for g in goals if g.get("s") == side_ and g.get("p")]
+        if len(rows) > 5:
+            rows = rows[:4] + [f"+{len(rows) - 4}"]
+        yy = 752
+        for r in rows:
+            if right:
+                d.ellipse([xr - 10, yy + 12, xr, yy + 22], fill=(246, 192, 60))
+                text_r(xr - 20, yy, r, fl)
+            else:
+                d.ellipse([xr, yy + 12, xr + 10, yy + 22], fill=(246, 192, 60))
+                text_l(xr + 20, yy, r, fl)
+            yy += 44
+    if not any(g.get("p") for g in goals):
+        text_c(W // 2, 760, "بلا أهداف" if (ev.get("hs") or 0) + (ev.get("as") or 0) == 0 else "", FC.font("Bold", 30), SOFT)
+
+    text_l(40, H - 44, "yallascore.site", FC.font("Bold", 22), SOFT)
+    text_r(W - 40, H - 44, COMP_AR.get(int(ev.get("comp") or 0), ""), FC.font("Bold", 22), SOFT)
+    if out:
+        img.save(out, quality=90, optimize=True)
+    return img
+
+
+def render_whistle_bytes(ev):
+    img = render_whistle(ev)
+    buf = io.BytesIO()
+    img.save(buf, "JPEG", quality=90, optimize=True)
+    return buf.getvalue()
+
+
 def render_bytes(ev):
     img = render(ev)
     buf = io.BytesIO()

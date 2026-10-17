@@ -812,6 +812,70 @@ def goal_post(token, payload, dry=False):
     return 0
 
 
+def whistle_caption(kind, g, goals):
+    """The «⏸️ نهاية الشوط الأول» / «🏁 انتهت المباراة» text - liveposts.js's lines."""
+    tag = lambda n: "#" + (n or "").strip().replace(" ", "_")
+    head = "⏸️ نهاية الشوط الأول" if kind == "ht" else "🏁 انتهت المباراة"
+    lines = [f"{head}: {g['h']} {g['hs']} - {g['as']} {g['a']}"]
+    by = {"h": [], "a": []}
+    for ev in goals or []:
+        if not ev.get("p"):
+            continue
+        t = {"ج": " (ج)", "عكسية": " (عكسي)"}.get(ev.get("t") or "", "")
+        by.setdefault(ev.get("s"), by["h"]).append(f"{ev['p']} {ev['m']}'{t}" if ev.get("m") else f"{ev['p']}{t}")
+    if by["h"]: lines.append(f"{g['h']}: " + "، ".join(by["h"]))
+    if by["a"]: lines.append(f"{g['a']}: " + "، ".join(by["a"]))
+    comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
+    link = "المباراة لحظة بلحظة" if kind == "ht" else "تفاصيل المباراة والهدافون"
+    lines.append((f"{comp} · " if comp else "") + f"{link}: https://yallascore.site/m/{g['id']}")
+    lines.append(f"#يلا_سكور {tag(g['h'])} {tag(g['a'])}")
+    return "\n".join(lines)
+
+
+def whistle_post(token, payload, dry=False):
+    """Half-time / full-time as a CARD (user, 2026-10-17). payload = the JSON
+    the Worker dispatched: {"kind": "ht"|"ft", "g": {...}, "goals": [...]}.
+    Same contract as goal_post: the Worker holds the claim, we post and
+    record; the text goes out if the picture fails."""
+    import goal_card as GC
+    try:
+        d = json.loads(payload)
+        kind, g, goals = d["kind"], d["g"], d.get("goals") or []
+        assert kind in ("ht", "ft")
+    except Exception as e:  # noqa: BLE001
+        print(f"--whistle: bad payload ({e})"); return 1
+    ref = str(g["id"])
+    rec = store.get_post(kind, ref)
+    if rec and rec.get("post_id"):
+        print(f"{kind} {ref}: already posted ({rec['post_id']})"); return 0
+    caption = whistle_caption(kind, g, goals)
+    if dry:
+        print(caption); return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if not rec and not store.claim(kind, ref, title=caption.split("\n")[0]):
+        print(f"{kind} {ref}: claimed by another run - nothing posted"); return 0
+    try:
+        try:
+            game = GC._s365_game(g["id"])
+            hb, ab = GC.badges_for(game)
+            img = GC.render_whistle_bytes({"kind": kind, "home": g["h"], "away": g["a"], "hs": g["hs"], "as": g["as"],
+                                           "comp": g.get("c") or 0, "home_badge": hb, "away_badge": ab, "goals": goals})
+            pid = post_photo(token, img, caption)
+            print(f"posted the {kind} card for {ref}: {pid}")
+        except Exception as e:  # noqa: BLE001
+            print(f"{kind} {ref}: card failed ({e}) - posting the text")
+            pid = post_text(token, caption)
+            print(f"posted the {kind} text for {ref}: {pid}")
+        store.record_post(kind, ref, pid, title=caption.split("\n")[0])
+    except Exception as e:  # noqa: BLE001
+        print(f"{kind} {ref}: post FAILED: {e}")
+        if not rec:
+            store.release(kind, ref)
+        return 1
+    return 0
+
+
 def post_text(token, message):
     data = urllib.parse.urlencode({"message": message, "access_token": token}).encode()
     with urllib.request.urlopen(urllib.request.Request(GRAPH_FEED, data=data), timeout=30) as r:
@@ -822,7 +886,7 @@ def post_text(token, message):
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal")):
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -850,6 +914,9 @@ def main() -> int:
         i = sys.argv.index("--prediction")
         return prediction_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "",
                                dry="--dry" in sys.argv[1:])
+    if "--whistle" in sys.argv[1:]:
+        i = sys.argv.index("--whistle")
+        return whistle_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
     if "--goal" in sys.argv[1:]:
         i = sys.argv.index("--goal")
         return goal_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
