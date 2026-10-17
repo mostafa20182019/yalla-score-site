@@ -9,6 +9,11 @@ from COMP_TV. Same blue, brand and card primitives as h2h_card.py.
 
     python day_card.py                                   # tomorrow, Champions League
     python day_card.py --date 2026-10-13 --comp "UEFA Champions League" --out day.jpg
+    python day_card.py --date 2026-10-17 --comp all --pick "الأهلي,برشلونة,ليفربول"   # across competitions (2026-10-17)
+
+`--comp all` (user ask 2026-10-17 «صورة بنتائج أبرز مباريات اليوم»): the whole
+day across competitions, the competition named under each score, no round
+line; with --pick the rows keep the order of the picked clubs.
 """
 import argparse
 import datetime
@@ -29,17 +34,24 @@ MAX_ROWS = 9           # one card; a bigger day gets the first nine by kick-off
 
 def day_matches(matches, date, comp):
     out = [m for m in matches if (m.get("kickoff") or "")[:10] == date
-           and m.get("competition") == comp]
+           and (comp == "all" or m.get("competition") == comp)]
     out.sort(key=lambda m: (m.get("koff_time") or "", m.get("home") or ""))
     return out
 
 
-def pick_matches(ms, tokens):
+def pick_matches(ms, tokens, keep_order=False):
     """Only the matches involving one of the picked clubs (substring on the
     Arabic names the card prints; user ask 2026-10-15 «أهم المباريات»)."""
     from site_lib.names import ar_team
     toks = [t.strip() for t in tokens if t.strip()]
-    return [m for m in ms if any(t in ar_team(m.get("home") or "") or t in ar_team(m.get("away") or "") for t in toks)]
+    def rank(m):
+        h, a = ar_team(m.get("home") or ""), ar_team(m.get("away") or "")
+        return next((i for i, t in enumerate(toks) if t in h or t in a), None)
+    out = [(rank(m), m) for m in ms]
+    out = [(r, m) for r, m in out if r is not None]
+    if keep_order:                       # the picked order = the card's order (2026-10-17, --comp all)
+        out.sort(key=lambda x: x[0])
+    return [m for _, m in out]
 
 
 def render(ms, date, comp, out, part=None, parts=1, title=None):
@@ -97,15 +109,16 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
     text_r(W - 40 - 52 - 12, 40, "يلا سكور", FC.font("ExtraBold", 34))
     when = MC.when_ar(date, None)
     text_l(40, 46, when, FC.font("Bold", 26), SOFT)
-    label = comp_label(comp)
+    every = comp == "all"
+    label = "مباريات اليوم" if every else comp_label(comp)
     sts = [(m.get("status") or "").upper() for m in ms]
     all_done = bool(ms) and all(x == "FINISHED" for x in sts)
     any_done = any(x == "FINISHED" for x in sts)
     if title and (all_done or any_done) and "نتائج" not in title:
         title = ("نتائج أبرز " + label) if "أبرز" in title else ("نتائج " + label)
-    title = title or (f"نتائج {label}" if (all_done or any_done) else f"مباريات {label}")
+    title = title or (("نتائج اليوم" if every else f"نتائج {label}") if (all_done or any_done) else label if every else f"مباريات {label}")
     text_c(W // 2, 96, title, fit(title, "ExtraBold", 72, W - 80, 40))
-    rnd = next((m.get("round") for m in ms if m.get("round")), None)
+    rnd = None if every else next((m.get("round") for m in ms if m.get("round")), None)
     sub = " · ".join(x for x in (when, f"الجولة {rnd}" if rnd else "",
                                   f"الجزء {part} من {parts}" if parts > 1 else "",
                                   "" if (all_done or any_done) else "التوقيت بتوقيت القاهرة") if x)
@@ -145,6 +158,8 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
         d.text((W // 2 - d.textlength(t, font=fp) / 2, cy - (25 if (done or live_now) else 21)), t, font=fp, fill=ink)
         if live_now:
             text_c(W // 2, cy + 24, "مباشر", FC.font("Bold", 18), (255, 120, 140))
+        elif every:                      # the competition under the score, the day spans several
+            text_c(W // 2, cy + 24, comp_label(m.get("competition")), FC.font("Bold", 17), SOFT)
         side_w = W // 2 - 62 - (40 + 16 + 2 * R + 14) - 10
         fh = fit(h, "ExtraBold", fn.size, side_w, 18)
         fa = fit(a, "ExtraBold", fn.size, side_w, 18)
@@ -175,7 +190,7 @@ if __name__ == "__main__":
     sys.stdout.reconfigure(encoding="utf-8")
     ap = argparse.ArgumentParser()
     ap.add_argument("--date", help="YYYY-MM-DD (default: tomorrow, Cairo)")
-    ap.add_argument("--comp", default="UEFA Champions League")
+    ap.add_argument("--comp", default="UEFA Champions League", help="a competition name as matches.json spells it, or `all`")
     ap.add_argument("--out", default=os.path.join(HERE, "data", "briefs", "day.jpg"))
     ap.add_argument("--pick", help="comma-separated club names (Arabic, as the site writes them): only their matches, titled «أبرز مباريات …»")
     ap.add_argument("--part", type=int, help="page N of a day bigger than nine matches (default: every page, <out>-N.jpg)")
@@ -192,11 +207,11 @@ if __name__ == "__main__":
         sys.exit(f"no {args.comp} matches on {date} in matches.json")
     title = None
     if args.pick:
-        ms = pick_matches(ms, args.pick.split(","))
+        ms = pick_matches(ms, args.pick.split(","), keep_order=args.comp == "all")
         if not ms:
             sys.exit("none of the picked clubs play that day")
         from site_lib.names import comp_label
-        title = f"أبرز مباريات {comp_label(args.comp)}"
+        title = "أبرز مباريات اليوم" if args.comp == "all" else f"أبرز مباريات {comp_label(args.comp)}"
     parts = -(-len(ms) // MAX_ROWS)
     if parts == 1:
         print(args.out, render(ms, date, args.comp, args.out, title=title))
