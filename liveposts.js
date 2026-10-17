@@ -44,7 +44,7 @@ export const XI_MIN_MS = 45 * 60 * 1000;    // post the XI when kick-off is
 export const XI_MAX_MS = 80 * 60 * 1000;    // 45..80 minutes away
 
 const COMP_AR = {
-  552: "الدوري المصري", 624: "دوري أبطال أفريقيا", 588: "تصفيات كأس أمم أفريقيا",
+  552: "الدوري المصري", 624: "دوري أبطال أفريقيا", 627: "كأس الكونفدرالية الأفريقية", 588: "تصفيات كأس أمم أفريقيا",
   7: "الدوري الإنجليزي", 11: "الدوري الإسباني", 17: "الدوري الإيطالي", 25: "الدوري الألماني",
   35: "الدوري الفرنسي", 78: "الدوري التركي", 649: "الدوري السعودي",
   572: "دوري أبطال أوروبا", 573: "الدوري الأوروبي", 7016: "دوري الأمم الأوروبية",
@@ -55,7 +55,7 @@ const COMP_AR = {
 // الأهلي is also a Saudi club and a Dubai club, so the Egyptian three count
 // only in the Egyptian league (552) and the CAF Champions League (624);
 // «مصر» only exactly (it is a substring of «المصري»); comps null = anywhere.
-const EGY_LIVE_COMPS = [552, 624];
+const EGY_LIVE_COMPS = [552, 624, 627];   // league, CAF CL, CAF Confederation Cup
 export const CURATED_LIVE = [
   { t: "الأهلي", comps: EGY_LIVE_COMPS },
   { t: "الزمالك", comps: EGY_LIVE_COMPS },

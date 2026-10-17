@@ -47,7 +47,7 @@ ck("4 ...and its 365scores id in S365_COMP_IDS, matching fetch_data's",
 # African cups have no flag, so they carry the 365scores emblem
 ck("5 the flag-less competitions carry an emblem",
    all(n in bs.COMP_LOGO for n in
-       ("CAF Champions League", "Africa Cup of Nations Qualification")))
+       ("CAF Champions League", "Africa Cup of Nations Qualification", "CAF Confederation Cup")))
 
 all_comps = fd.S365_ALL_COMPS.split(",")
 ck("6 S365_ALL_COMPS (details/lineups/goals) covers every S365 league",
@@ -74,6 +74,11 @@ ck("11b the Europa League is 573 in fetch_data, build_site and the worker",
    and "573" in live)
 ck("11c ...sits right after the Champions League in the sidebar order",
    bs.COMP_ORDER.index("UEFA Europa League") == bs.COMP_ORDER.index("UEFA Champions League") + 1)
+ck("11e the CAF Confederation Cup is 627 everywhere, after the CAF CL, inside the Egyptian scope and detail-first",
+   ids.get("CAF Confederation Cup") == 627 and bs.S365_COMP_IDS.get("CAF Confederation Cup") == 627 and "627" in live
+   and bs.COMP_ORDER.index("CAF Confederation Cup") == bs.COMP_ORDER.index("CAF Champions League") + 1
+   and "CAF Confederation Cup" in __import__("site_lib.clubs", fromlist=["EGY_SCOPE"]).EGY_SCOPE and "627" in first
+   and bs.COMP_SLUG.get("CAF Confederation Cup") == "caf-confederation-cup" and "CAF Confederation Cup" in bs.COMP_LOGO)
 ck("11d ...has its slug, label, emblem and TV entry",
    bs.COMP_SLUG.get("UEFA Europa League") == "europa-league" and "UEFA Europa League" in bs.COMP_LABEL
    and "UEFA Europa League" in bs.COMP_LOGO and "UEFA Europa League" in bs.COMP_TV)

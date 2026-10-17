@@ -41,7 +41,8 @@ FILE = os.path.join(HERE, "data", "match_stats.json")
 CAIRO = ZoneInfo("Africa/Cairo")
 
 # competition -> 365scores competition id. CAF Champions League (624) is left
-# out on purpose: 365scores carries no stats for it (0/12 on 2026-10-07).
+# out on purpose: 365scores carries no stats for it (0/12 on 2026-10-07) -
+# and so is the Confederation Cup (627), the same feed.
 COMPS = {
     "Egyptian Premier League": 552, "Saudi Pro League": 649, "Turkish Super Lig": 78,
     "Premier League": 7, "Primera Division": 11, "Serie A": 17, "Bundesliga": 25,

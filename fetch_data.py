@@ -730,6 +730,12 @@ S365_LEAGUES = [
     # 36-club league phase = ONE standings entry, one group -> rendered as
     # a table like the UCL; the knockout rounds later carry no table.
     (573, "UEFA Europa League"),
+    # كأس الكونفدرالية الأفريقية (user ask 2026-10-17). 365scores id verified
+    # (nameForURL caf-confederation-cup; 624 is the Champions League). The
+    # Egyptian clubs play in it, so it joins EGY_SCOPE and the live-post scope.
+    # Preliminary rounds carry no table; the group stage is multi-group and
+    # the standings guards skip it like the CAF CL.
+    (627, "CAF Confederation Cup"),
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
@@ -904,7 +910,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627"
 
 def _goal_rows(game, fallback_home_id):
     """game detail -> (goals list, health) — tolerant of field-name drift."""
@@ -1297,6 +1303,7 @@ S365_SCORER_COMPS = [
     (11, "Primera Division"), (17, "Serie A"), (25, "Bundesliga"),
     (35, "Ligue 1"), (572, "UEFA Champions League"),
     (624, "CAF Champions League"), (573, "UEFA Europa League"),
+    (627, "CAF Confederation Cup"),
 ]
 
 # the response carries several athlete charts per competition; these are the

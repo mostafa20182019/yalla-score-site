@@ -7,7 +7,8 @@ build_site imports these back under the same names."""
 # a scope is None (any competition), one competition name, or a tuple of
 # names — the Egyptian clubs must count in Africa too (CAF CL, 2026-09-02),
 # while bare "الأهلي" must still never match Saudi Al-Ahli
-EGY_SCOPE = ("Egyptian Premier League", "CAF Champions League")
+EGY_SCOPE = ("Egyptian Premier League", "CAF Champions League",
+             "CAF Confederation Cup")      # 2026-10-17: الزمالك / بيراميدز play in it
 
 # The Egyptian NATIONAL team (user ask 2026-09-27: its matches in the ticker
 # and its live match on the home card). A tuple scope of the national-team
