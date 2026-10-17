@@ -110,13 +110,27 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
     when = MC.when_ar(date, None)
     text_l(40, 46, when, FC.font("Bold", 26), SOFT)
     every = comp == "all"
-    label = "مباريات اليوم" if every else comp_label(comp)
+    if every:
+        # «اليوم» / «الغد» relative to the Cairo clock at render time (a card
+        # drawn the evening before says الغد, 2026-10-18); other days by name
+        from zoneinfo import ZoneInfo
+        today = datetime.datetime.now(ZoneInfo("Africa/Cairo")).date()
+        try:
+            delta = (datetime.date.fromisoformat(date) - today).days
+        except ValueError:
+            delta = 0
+        rel = {0: "اليوم", 1: "الغد", -1: "أمس"}.get(delta)
+        label = f"مباريات {rel}" if rel else f"مباريات {MC.when_ar(date, None)}"
+    else:
+        label = comp_label(comp)
     sts = [(m.get("status") or "").upper() for m in ms]
     all_done = bool(ms) and all(x == "FINISHED" for x in sts)
     any_done = any(x == "FINISHED" for x in sts)
+    if every and title == "أبرز مباريات":
+        title = "أبرز " + label
     if title and (all_done or any_done) and "نتائج" not in title:
         title = ("نتائج أبرز " + label) if "أبرز" in title else ("نتائج " + label)
-    title = title or (("نتائج اليوم" if every else f"نتائج {label}") if (all_done or any_done) else label if every else f"مباريات {label}")
+    title = title or (("نتائج " + label.split(" ", 1)[1] if every else f"نتائج {label}") if (all_done or any_done) else label if every else f"مباريات {label}")
     text_c(W // 2, 96, title, fit(title, "ExtraBold", 72, W - 80, 40))
     rnd = None if every else next((m.get("round") for m in ms if m.get("round")), None)
     sub = " · ".join(x for x in (when, f"الجولة {rnd}" if rnd else "",
@@ -233,7 +247,7 @@ if __name__ == "__main__":
         if not ms:
             sys.exit("none of the picked clubs play that day")
         from site_lib.names import comp_label
-        title = "أبرز مباريات اليوم" if args.comp == "all" else f"أبرز مباريات {comp_label(args.comp)}"
+        title = "أبرز مباريات" if args.comp == "all" else f"أبرز مباريات {comp_label(args.comp)}"   # all: render() appends اليوم/الغد
     parts = -(-len(ms) // MAX_ROWS)
     if parts == 1:
         print(args.out, render(ms, date, args.comp, args.out, title=title))
