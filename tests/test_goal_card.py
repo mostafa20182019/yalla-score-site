@@ -28,22 +28,24 @@ ev = {"side": "h", "player": "إيرلينغ هالاند", "minute": "66", "tag
       "hs": 1, "as": 1, "comp": 7, "home_badge": hb, "away_badge": ab}
 tmp = os.path.join(tempfile.mkdtemp(), "goal.jpg")
 im = GC.render(ev, tmp)
-ck("2a the card is the Facebook portrait size", im.size == (1080, 1350))
+ck("2a the card is square, like the reference", im.size == (1080, 1080))
 ck("2b the file is a JPEG", open(tmp, "rb").read(3) == b"\xff\xd8\xff")
 # the big word sits in the upper band: lots of white there, none mid-left
-band = im.crop((200, 160, 880, 330)); white = sum(1 for p in band.getdata() if min(p) > 230)
+band = im.crop((200, 130, 880, 300)); white = sum(1 for p in band.getdata() if min(p) > 230)
 ck("2c «جووووول» is drawn large in the upper band", white > 8000, str(white))
 # the orange minute chip exists to the right of centre at the scorer row
-chip = im.crop((540, 840, 760, 900)); orange = sum(1 for p in chip.getdata() if p[0] > 200 and p[1] < 140 and p[2] < 60)
+chip = im.crop((540, 724, 760, 784)); orange = sum(1 for p in chip.getdata() if p[0] > 200 and p[1] < 140 and p[2] < 60)
 ck("2d the minute chip is orange", orange > 1500, str(orange))
 # the score strip's two white discs
-for x in (150, 930):
-    px = im.getpixel((x, 1040 - 63))                  # inside the white disc, above the crest
+for x in (172, 908):
+    px = im.getpixel((x, 968 - 56))                   # inside the white disc, above the crest
     ck(f"2e a white crest disc at x={x}", min(px) > 200, str(px))
+rule = im.crop((100, 824, 480, 829)); rw = sum(1 for p in rule.getdata() if min(p) > 200)
+ck("2g the rule runs across the card with the ball in its middle", rw > 600 and min(im.getpixel((540, 826))) < 120, str(rw))   # a 2 px line over 380 px
 b = GC.render_bytes(ev)
 ck("2f render_bytes gives a JPEG", b[:3] == b"\xff\xd8\xff" and len(b) > 40_000, str(len(b)))
 im2 = GC.render({**ev, "minute": "", "tag": "", "player": "هدف عكسي؟"})
-ck("3 no minute -> no chip, still renders", im2.size == (1080, 1350))
+ck("3 no minute -> no chip, still renders", im2.size == (1080, 1080))
 
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))

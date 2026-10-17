@@ -21,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 from PIL import Image, ImageDraw, ImageFilter          # noqa: E402
 
-W, H = 1080, 1350
+W, H = 1080, 1080                                  # square, like the reference
 TOP, BOT = (16, 62, 108), (5, 20, 40)
 WHITE, SOFT, DIM = (255, 255, 255), (205, 222, 238), (150, 172, 196)
 GOLD, ORANGE = (246, 192, 60), (232, 93, 4)
@@ -56,16 +56,19 @@ def _crest(url, size):
 
 def render(ev, out=None):
     """ev = {side 'h'|'a', player, minute, tag, home, away, hs, as, comp,
-    home_badge, away_badge}. Returns the PIL image (and saves to `out`)."""
+    home_badge, away_badge}. Returns the PIL image (and saves to `out`).
+    Layout = the user's reference (2026-10-17, «اعمل زيها بالظبط»): the brand
+    centred at the top, the word, the crest in a glass circle, scorer +
+    minute, a rule with the site's ball logo in its middle, then the score
+    strip (name tags above the crests, the score between)."""
     import fb_cards as FC
     img = Image.new("RGB", (W, H))
     d = ImageDraw.Draw(img)
     for y in range(H):
         t = y / (H - 1)
         d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(TOP, BOT)))
-    # a soft light behind the crest
     glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).ellipse([W // 2 - 380, 330, W // 2 + 380, 1000], fill=(31, 148, 211, 90))
+    ImageDraw.Draw(glow).ellipse([W // 2 - 360, 300, W // 2 + 360, 780], fill=(31, 148, 211, 90))
     glow = glow.filter(ImageFilter.GaussianBlur(110))
     img.paste(glow, (0, 0), glow)
 
@@ -81,83 +84,93 @@ def render(ev, out=None):
             size -= 2; f = FC.font(weight, size)
         return f
 
-    # brand
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
-    ball = icon.crop((218, 105, 806, 693)).resize((52, 52), Image.LANCZOS)
-    bm = Image.new("L", (52, 52), 0)
-    ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
-    img.paste(ball, (W - 52 - 40, 36), bm)
-    text_r(W - 40 - 52 - 12, 40, "يلا سكور", FC.font("ExtraBold", 34))
-    text_l(40, 46, COMP_AR.get(int(ev.get("comp") or 0), ""), FC.font("Bold", 26), SOFT)
+    def ball(size, cx, cy):
+        b = icon.crop((218, 105, 806, 693)).resize((size, size), Image.LANCZOS)
+        m = Image.new("L", (size, size), 0)
+        ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
+        img.paste(b, (cx - size // 2, cy - size // 2), m)
+
+    # the brand, centred at the top (ball + name)
+    fb = FC.font("ExtraBold", 44)
+    bn = FC.ar("يلا سكور")
+    bw = d.textlength(bn, font=fb)
+    bx = W / 2 - (bw + 70) / 2
+    ball(58, int(bx + bw + 70 - 29), 62)
+    d.text((bx, 38), bn, font=fb, fill=WHITE)
 
     # the word, with a faint echo behind it
     word = "جووووول"
-    fw = FC.font("ExtraBold", 190)
+    fw = FC.font("ExtraBold", 176)
     wv = FC.ar(word)
     wx = W / 2 - d.textlength(wv, font=fw) / 2
-    for dx, dy in ((6, 10),):
-        d.text((wx + dx, 150 + dy), wv, font=fw, fill=(4, 16, 36))
-    d.text((wx, 150), wv, font=fw, fill=WHITE)
+    d.text((wx + 6, 118 + 10), wv, font=fw, fill=(4, 16, 36))
+    d.text((wx, 118), wv, font=fw, fill=WHITE)
     echo = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     ed = ImageDraw.Draw(echo)
-    fe = FC.font("ExtraBold", 120)
-    for yy in (420, 560, 700, 840):
+    fe = FC.font("ExtraBold", 110)
+    for yy in (360, 480, 600):
         ed.text((W / 2 - ed.textlength(wv, font=fe) / 2, yy), wv, font=fe, fill=(255, 255, 255, 14))
     img.paste(echo, (0, 0), echo)
 
     # the scoring club's crest in a glass circle
     side = ev.get("side") or "h"
     badge = ev.get("home_badge") if side == "h" else ev.get("away_badge")
-    cx, cy, R = W // 2, 600, 190
+    cx, cy, R = W // 2, 520, 170
     glass = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     gd = ImageDraw.Draw(glass)
     gd.ellipse([cx - R, cy - R, cx + R, cy + R], fill=(255, 255, 255, 46), outline=(255, 255, 255, 170), width=5)
-    gd.ellipse([cx - R + 24, cy - R + 18, cx - R + 150, cy - R + 70], fill=(255, 255, 255, 40))
+    gd.ellipse([cx - R + 22, cy - R + 16, cx - R + 136, cy - R + 62], fill=(255, 255, 255, 40))
     img.paste(glass, (0, 0), glass)
-    big = _crest(badge, 260)
+    big = _crest(badge, 236)
     if big is not None:
         img.paste(big, (cx - big.width // 2, cy - big.height // 2), big)
     else:
-        text_c(cx, cy - 40, (ev.get("home") if side == "h" else ev.get("away")) or "", FC.font("ExtraBold", 54))
+        text_c(cx, cy - 36, (ev.get("home") if side == "h" else ev.get("away")) or "", FC.font("ExtraBold", 50))
 
     # scorer + minute
-    y = 840
+    y = 724
     name = ev.get("player") or ""
     minute = str(ev.get("minute") or "").replace("'", "")
     tag = {"ج": "ركلة جزاء", "عكسية": "هدف عكسي"}.get(ev.get("tag") or "", "")
-    fn = fit(name, "ExtraBold", 56, 640, 30)
+    fn = fit(name, "ExtraBold", 54, 600, 30)
     nw = d.textlength(FC.ar(name), font=fn)
-    chip_w = 110 if minute else 0
-    total = nw + (chip_w + 24 if minute else 0)
+    chip_w = 104 if minute else 0
+    total = nw + (chip_w + 22 if minute else 0)
     x_right = W / 2 + total / 2
     if minute:
-        d.rounded_rectangle([x_right - chip_w, y - 4, x_right, y + 62], 12, fill=ORANGE)
-        fm = FC.font("ExtraBold", 40)
-        d.text((x_right - chip_w / 2 - d.textlength(minute, font=fm) / 2, y + 2), minute, font=fm, fill=WHITE)
-        x_right -= chip_w + 24
+        d.rounded_rectangle([x_right - chip_w, y - 2, x_right, y + 60], 12, fill=ORANGE)
+        fm = FC.font("ExtraBold", 38)
+        d.text((x_right - chip_w / 2 - d.textlength(minute, font=fm) / 2, y + 3), minute, font=fm, fill=WHITE)
+        x_right -= chip_w + 22
     text_r(x_right, y - 6, name, fn)
     if tag:
-        text_c(W // 2, y + 76, tag, FC.font("Bold", 28), GOLD)
+        text_c(W // 2, y + 68, tag, FC.font("Bold", 26), GOLD)
 
-    # the score strip
-    sy = 1040
-    d.line([(80, sy - 40), (W - 80, sy - 40)], fill=(255, 255, 255, 40), width=2)
-    for lbl, bdg, xr in ((ev.get("home"), ev.get("home_badge"), True), (ev.get("away"), ev.get("away_badge"), False)):
-        bx = W - 80 - 70 if xr else 80 + 70
-        d.ellipse([bx - 70, sy - 70, bx + 70, sy + 70], fill=WHITE)
-        cr = _crest(bdg, 112)
+    # the rule with the site's ball in its middle
+    ry = 826
+    d.line([(90, ry), (W / 2 - 46, ry)], fill=WHITE, width=2)
+    d.line([(W / 2 + 46, ry), (W - 90, ry)], fill=WHITE, width=2)
+    ball(56, W // 2, ry)
+
+    # the score strip: name tags above the crests, the score between
+    sy = 968
+    for lbl, bdg, right in ((ev.get("home"), ev.get("home_badge"), True), (ev.get("away"), ev.get("away_badge"), False)):
+        bx2 = W - 110 - 62 if right else 110 + 62
+        d.ellipse([bx2 - 62, sy - 62, bx2 + 62, sy + 62], fill=WHITE)
+        cr = _crest(bdg, 100)
         if cr is not None:
-            img.paste(cr, (bx - cr.width // 2, sy - cr.height // 2), cr)
-        f = fit(lbl or "", "Bold", 30, 220, 18)
+            img.paste(cr, (bx2 - cr.width // 2, sy - cr.height // 2), cr)
+        f = fit(lbl or "", "Bold", 28, 220, 18)
         tw = d.textlength(FC.ar(lbl or ""), font=f)
-        d.rounded_rectangle([bx - tw / 2 - 14, sy - 70 - 56, bx + tw / 2 + 14, sy - 70 - 10], 10, fill=(31, 148, 211))
-        text_c(bx, sy - 70 - 52, lbl or "", f)
+        d.rounded_rectangle([bx2 - tw / 2 - 14, sy - 62 - 54, bx2 + tw / 2 + 14, sy - 62 - 10], 10, fill=(31, 148, 211))
+        text_c(bx2, sy - 62 - 50, lbl or "", f)
     score = f"{ev.get('as')} - {ev.get('hs')}"          # home sits on the right
-    fs = FC.font("ExtraBold", 96)
-    d.text((W / 2 - d.textlength(score, font=fs) / 2, sy - 62), score, font=fs, fill=WHITE)
+    fs = FC.font("ExtraBold", 92)
+    d.text((W / 2 - d.textlength(score, font=fs) / 2, sy - 58), score, font=fs, fill=WHITE)
 
-    text_l(40, H - 62, "yallascore.site", FC.font("Bold", 24), SOFT)
-    text_r(W - 40, H - 62, "النتيجة لحظة الهدف", FC.font("Regular", 22), DIM)
+    text_l(40, H - 44, "yallascore.site", FC.font("Bold", 22), SOFT)
+    text_r(W - 40, H - 44, COMP_AR.get(int(ev.get("comp") or 0), ""), FC.font("Bold", 22), SOFT)
     if out:
         img.save(out, quality=90, optimize=True)
     return img
