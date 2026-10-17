@@ -98,25 +98,29 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
     when = MC.when_ar(date, None)
     text_l(40, 46, when, FC.font("Bold", 26), SOFT)
     label = comp_label(comp)
-    all_done = bool(ms) and all((m.get("status") or "").upper() == "FINISHED" for m in ms)
-    if title and all_done and "نتائج" not in title:
+    sts = [(m.get("status") or "").upper() for m in ms]
+    all_done = bool(ms) and all(x == "FINISHED" for x in sts)
+    any_done = any(x == "FINISHED" for x in sts)
+    if title and (all_done or any_done) and "نتائج" not in title:
         title = ("نتائج أبرز " + label) if "أبرز" in title else ("نتائج " + label)
-    title = title or (f"نتائج {label}" if all_done else f"مباريات {label}")
+    title = title or (f"نتائج {label}" if (all_done or any_done) else f"مباريات {label}")
     text_c(W // 2, 96, title, fit(title, "ExtraBold", 72, W - 80, 40))
     rnd = next((m.get("round") for m in ms if m.get("round")), None)
     sub = " · ".join(x for x in (when, f"الجولة {rnd}" if rnd else "",
                                   f"الجزء {part} من {parts}" if parts > 1 else "",
-                                  "" if all_done else "التوقيت بتوقيت القاهرة") if x)
+                                  "" if (all_done or any_done) else "التوقيت بتوقيت القاهرة") if x)
     text_c(W // 2, 192, sub, FC.font("Bold", 30), GOLD)
 
     # the rows
     rows = ms[(part - 1) * MAX_ROWS:part * MAX_ROWS] if part else ms[:MAX_ROWS]
     n = max(len(rows), 1)
     GAP = 8
-    CH = min(96, (936 - GAP * n) // n)
+    # a short day gets taller rows and bigger crests instead of a half-empty
+    # card (2026-10-17: five Premier League results on a nine-row layout)
+    CH = min(132, (936 - GAP * n) // n)
     y = 262
-    R = 34
-    fn = FC.font("ExtraBold", 30)
+    R = 44 if CH >= 120 else 34
+    fn = FC.font("ExtraBold", 34 if CH >= 120 else 30)
     ft = FC.font("ExtraBold", 28)
     for m in rows:
         rrect([40, y, W - 40, y + CH], 18, CARD_FILL, None, 1)
@@ -125,16 +129,25 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
         crest(W - 40 - 16 - R, cy, R, h, m.get("home_badge"))
         crest(40 + 16 + R, cy, R, a, m.get("away_badge"))
         # time pill in the middle
-        done = (m.get("status") or "").upper() == "FINISHED" and m.get("home_score") is not None
+        st = (m.get("status") or "").upper()
+        done = st == "FINISHED" and m.get("home_score") is not None
+        live_now = st == "LIVE" and m.get("home_score") is not None
         # a finished match shows its score: HOME sits on the right of the card,
-        # so its goals are the right-hand number (RTL-safe, like fb_cards)
-        t = f"{m.get('away_score')} - {m.get('home_score')}" if done else (m.get("koff_time") or "--:--")
-        fp = FC.font("ExtraBold", 34) if done else ft
-        rrect([W // 2 - 62, cy - 22, W // 2 + 62, cy + 22], 12, (0, 0, 0, 90) if not done else (255, 255, 255, 230))
-        d.text((W // 2 - d.textlength(t, font=fp) / 2, cy - (25 if done else 21)), t, font=fp, fill=(16, 62, 108) if done else GOLD)
+        # so its goals are the right-hand number (RTL-safe, like fb_cards); a
+        # match still in play shows its running score on a red pill with
+        # «مباشر» under it (2026-10-17: a results card asked for while one
+        # match was still on)
+        t = f"{m.get('away_score')} - {m.get('home_score')}" if (done or live_now) else (m.get("koff_time") or "--:--")
+        fp = FC.font("ExtraBold", 34) if (done or live_now) else ft
+        fill = (255, 255, 255, 230) if done else (200, 16, 46, 235) if live_now else (0, 0, 0, 90)
+        rrect([W // 2 - 62, cy - 22, W // 2 + 62, cy + 22], 12, fill)
+        ink = (16, 62, 108) if done else WHITE if live_now else GOLD
+        d.text((W // 2 - d.textlength(t, font=fp) / 2, cy - (25 if (done or live_now) else 21)), t, font=fp, fill=ink)
+        if live_now:
+            text_c(W // 2, cy + 24, "مباشر", FC.font("Bold", 18), (255, 120, 140))
         side_w = W // 2 - 62 - (40 + 16 + 2 * R + 14) - 10
-        fh = fit(h, "ExtraBold", 30, side_w, 18)
-        fa = fit(a, "ExtraBold", 30, side_w, 18)
+        fh = fit(h, "ExtraBold", fn.size, side_w, 18)
+        fa = fit(a, "ExtraBold", fn.size, side_w, 18)
         text_r(W - 40 - 16 - 2 * R - 14, cy - fh.size * 0.62, h, fh, WHITE)   # home RIGHT
         text_l(40 + 16 + 2 * R + 14, cy - fa.size * 0.62, a, fa, WHITE)       # away LEFT
         y += CH + GAP
@@ -143,12 +156,17 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
 
     # footer: the channel + the site
     fy = 262 + 9 * (96 + GAP) + 10
-    tv = None if all_done else COMP_TV.get(comp)      # a results card has no «القنوات الناقلة» line
+    tv = None if (all_done or any_done) else COMP_TV.get(comp)      # a results card has no «القنوات الناقلة» line
     if tv:
         rrect([40, fy, W - 40, fy + 60], 18, (246, 192, 60, 26), (246, 192, 60, 120), 2)
         text_c(W // 2, fy + 10, f"القنوات الناقلة: {tv}", FC.font("Bold", 30), WHITE)
     text_l(40, H - 46, "yallascore.site", FC.font("Bold", 24), SOFT)
-    text_r(W - 40, H - 44, "النتائج النهائية" if all_done else "المواعيد: الجدول الرسمي · قد تتغير", FC.font("Regular", 22), DIM)
+    live_n = sum(1 for x in sts if x == "LIVE")
+    still = {1: "ومباراة واحدة مستمرة", 2: "ومباراتان مستمرتان"}.get(live_n, f"و{live_n} مباريات مستمرة")
+    foot = ("النتائج النهائية" if all_done else
+            f"نتائج نهائية · {still}" if (any_done and live_n) else
+            "المواعيد: الجدول الرسمي · قد تتغير")
+    text_r(W - 40, H - 44, foot, FC.font("Regular", 22), DIM)
     img.save(out, quality=90, optimize=True)
     return {"n": len(ms), "rows": len(rows)}
 
