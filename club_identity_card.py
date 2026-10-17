@@ -141,6 +141,67 @@ def render(name, out, tagline="", colour=None, badge=None, bare=False):
     return out
 
 
+def _star(d, cx, cy, r, fill):
+    import math
+    pts = []
+    for i in range(10):
+        a = -math.pi / 2 + i * math.pi / 5
+        rr = r if i % 2 == 0 else r * 0.45
+        pts.append((cx + rr * math.cos(a), cy + rr * math.sin(a)))
+    d.polygon(pts, fill=fill)
+
+
+def render_bands(name, out, badge=None, colour=(200, 16, 46), stars=0, seed=7):
+    """The kit-stripe identity image (user, 2026-10-17, from a Zamalek shirt
+    photo: «زي كده بس من غير علامة نايك»): a white canvas, two bands in the
+    club colour whose ends dissolve into a pixel grid, the crest in the
+    middle with its stars above. No text, no brand - the crest-only rule."""
+    import random
+    rnd = random.Random(seed)
+    img = Image.new("RGB", (W, H), (250, 250, 250))
+    d = ImageDraw.Draw(img)
+    # a faint vertical sheen so the white is not flat
+    for y in range(H):
+        t = abs(y - H / 2) / (H / 2)
+        v = round(250 - 8 * t)
+        d.line([(0, y), (W, y)], fill=(v, v, v))
+    bands = [(246, 336), (376, 466)]                   # y0, y1 of each band (90 px, 40 px apart)
+    solid = (520, W - 520)                             # solid between these x
+    cell = 18
+    for y0, y1 in bands:
+        d.rectangle([solid[0], y0, solid[1], y1], fill=colour)
+        # the dissolve: a pixel grid that thins away from the solid part, with
+        # a few cells spilling above and below the band's edge (the shirt)
+        for side in (-1, 1):
+            for k in range(0, 360, cell):
+                p = 1.0 - k / 360
+                x = (solid[0] - k - cell) if side < 0 else (solid[1] + k)
+                for yy in range(y0 - cell, y1 + cell, cell):
+                    inside = y0 <= yy < y1
+                    if rnd.random() < (p if inside else p * 0.25):
+                        d.rectangle([x, yy, x + cell - 1, yy + cell - 1], fill=colour)
+    # the crest, big, on the bands
+    cx, cy = W // 2, 352
+    big = _big_crest(badge, 330)
+    if big is not None:
+        # a white halo in the crest's own shape (its alpha, pasted around the
+        # centre), so the bands stop at the crest the way a shirt's do
+        halo = Image.new("RGBA", big.size, (255, 255, 255, 0))
+        halo.paste((255, 255, 255, 255), (0, 0), big.split()[-1])
+        for dx in range(-7, 8, 2):
+            for dy in range(-7, 8, 2):
+                img.paste(halo, (cx - big.width // 2 + dx, cy - big.height // 2 + dy), halo)
+        img.paste(big, (cx - big.width // 2, cy - big.height // 2), big)
+    else:
+        d.ellipse([cx - 150, cy - 150, cx + 150, cy + 150], fill=WHITE, outline=colour, width=8)
+    gold = (212, 175, 55)
+    top = cy - (big.height // 2 if big is not None else 150) - 40
+    for i in range(stars):
+        _star(d, cx + (i - (stars - 1) / 2) * 42, top, 16, gold)
+    img.save(out, quality=92, optimize=True)
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--club", required=True, help="the club's name as the site writes it")
@@ -148,6 +209,8 @@ def main():
     ap.add_argument("--colour", help="hex, when the club has no kit in matchup_card (the NT)")
     ap.add_argument("--badge-as", help="look the crest up under this name (NT: مصر)")
     ap.add_argument("--bare", action="store_true", help="the crest only: no name, no tagline, no brand")
+    ap.add_argument("--bands", action="store_true", help="the kit-stripe style: white canvas, two bands in the club colour, crest + stars")
+    ap.add_argument("--stars", type=int, default=0, help="--bands: gold stars above the crest")
     ap.add_argument("--out", required=True)
     a = ap.parse_args()
     from site_lib.clubs import TEAM_PAGES
@@ -156,6 +219,11 @@ def main():
     key = a.badge_as or a.club
     badge = MC.club_badge(key, comp) or MC.club_badge(key)
     colour = MC._rgb(a.colour) if a.colour else None
+    if a.bands:
+        kit = MC.KITS.get(a.club)
+        band = colour or (kit[1][1] if kit and len(kit[1]) > 1 else (kit[1][0] if kit else (200, 16, 46)))
+        print(render_bands(a.club, a.out, badge=badge, colour=band, stars=a.stars))
+        return
     print(render(a.club, a.out, a.tagline, colour=colour, badge=badge, bare=a.bare))
 
 
