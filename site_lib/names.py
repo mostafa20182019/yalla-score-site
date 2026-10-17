@@ -24,17 +24,30 @@ def _in_scope(scope, comp):
     return comp in scope if isinstance(scope, tuple) else comp == scope
 
 
+def _tok_hit(t, m):
+    """Does token t name one of the two sides of match m? A Latin token (the
+    football-data names of the European clubs) is a substring of "home|away"
+    as before; an ARABIC token must equal a side's name exactly. The feed
+    spells the Egyptian club «الأهلي» and the Libyan one «الأهلي طرابلس» -
+    both in the 2026-27 CAF Confederation Cup (found 2026-10-17 the day the
+    competition joined: a substring put Al Ahly Tripoli's tie in Al Ahly's
+    ticker row). The same guard already kept «مصر» off «المصري» by scope;
+    exactness closes it everywhere."""
+    h, a = (m.get("home") or "").strip(), (m.get("away") or "").strip()
+    if any("\u0600" <= ch <= "\u06ff" for ch in t):
+        return t == h or t == a
+    return t in h + "|" + a
+
+
 def _is_ticker_team(m):
-    ha = (m.get("home") or "") + "|" + (m.get("away") or "")
     comp = m.get("competition") or ""
-    return any(t in ha and _in_scope(c, comp) for t, c in TICKER_TEAMS)
+    return any(_tok_hit(t, m) and _in_scope(c, comp) for t, c in TICKER_TEAMS)
 
 
 def _team_match(tp, m):
     """Does match m involve club tp? Same token+scope rule as the ticker."""
-    ha = (m.get("home") or "") + "|" + (m.get("away") or "")
     comp = m.get("competition") or ""
-    return any(t in ha and _in_scope(c, comp)
+    return any(_tok_hit(t, m) and _in_scope(c, comp)
                for t, c in tp["match_tokens"])
 
 

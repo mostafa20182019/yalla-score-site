@@ -137,13 +137,17 @@ def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
                        if (m.get("status") or "").upper() == "UPCOMING"),
                       key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
     cards = []
+    from site_lib.names import _in_scope, _tok_hit
     for token, only_comp in TICKER_TEAMS:
         found = None
         for comp, st in st_by_comp.items():
-            if only_comp and comp != only_comp:
+            # scope may be a tuple since 2026-09-02 (_in_scope knows); an Arabic
+            # token must equal the row's name - «الأهلي طرابلس» shares a table
+            # with «الأهلي» in the Confederation Cup (2026-10-17)
+            if not _in_scope(only_comp, comp):
                 continue
             for r in st["table"]:
-                if token in (r.get("team") or ""):
+                if _tok_hit(token, {"home": r.get("team") or "", "away": ""}):
                     found = (comp, r)
                     break
             if found:

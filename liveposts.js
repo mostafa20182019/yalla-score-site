@@ -64,9 +64,10 @@ const COMP_AR = {
 // «مصر» only exactly (it is a substring of «المصري»); comps null = anywhere.
 const EGY_LIVE_COMPS = [552, 624, 627];   // league, CAF CL, CAF Confederation Cup
 export const CURATED_LIVE = [
-  { t: "الأهلي", comps: EGY_LIVE_COMPS },
-  { t: "الزمالك", comps: EGY_LIVE_COMPS },
-  { t: "بيراميدز", comps: EGY_LIVE_COMPS },
+  // exact (2026-10-17): «الأهلي طرابلس» plays the same Confederation Cup
+  { t: "الأهلي", comps: EGY_LIVE_COMPS, exact: true },
+  { t: "الزمالك", comps: EGY_LIVE_COMPS, exact: true },
+  { t: "بيراميدز", comps: EGY_LIVE_COMPS, exact: true },
   { t: "مصر", comps: [588], exact: true },
   { t: "طرابزون سبور", comps: [78, 573] },
   { t: "ريال مدريد", comps: null },

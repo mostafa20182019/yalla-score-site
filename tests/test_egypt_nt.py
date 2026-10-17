@@ -60,6 +60,22 @@ ck("9 the national team's results get Facebook result cards (user ask 2026-09-27
    F.finished_matches([fin]) == [fin])
 ck("10 ... and Al Masry's still do not", F.finished_matches([fin_masry]) == [])
 
+# the Libyan namesake (2026-10-17): «الأهلي طرابلس» in the CAF Confederation
+# Cup must never be the Egyptian club's match - Arabic tokens match exactly
+CC = "CAF Confederation Cup"
+ck("11 «الأهلي» (exact) in the Confederation Cup is the curated club",
+   _is_ticker_team({"home": "كيتارا", "away": "الأهلي", "competition": CC}))
+ck("12 «الأهلي طرابلس» in the same competition is NOT",
+   not _is_ticker_team({"home": "جامعة ويلوالو أديجرات", "away": "الأهلي طرابلس", "competition": CC}))
+ck("13 the European tokens still match as substrings (football-data names)",
+   _is_ticker_team({"home": "FC Barcelona", "away": "Getafe CF", "competition": "Primera Division"}))
+from site_lib.names import _team_match                               # noqa: E402
+from site_lib.clubs import TEAM_PAGES                                # noqa: E402
+ahly = next(tp for tp in TEAM_PAGES if tp["slug"] == "al-ahly")
+ck("14 the club page matcher agrees (Tripoli out, Egypt in)",
+   _team_match(ahly, {"home": "الأهلي", "away": "كيتارا", "competition": CC})
+   and not _team_match(ahly, {"home": "الأهلي طرابلس", "away": "كيتارا", "competition": CC}))
+
 print()
 print("FAILED:" if fails else "all national-team checks passed", ", ".join(fails))
 sys.exit(1 if fails else 0)
