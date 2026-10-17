@@ -10,7 +10,7 @@
 // post and no failure, and the official XI goes out once in its window only
 // when both sides have eleven names.
 import assert from "node:assert/strict";
-import { goalMessage, postScope, parseLineups, XI_MIN_MS } from "../liveposts.js";
+import { goalMessage, postScope, parseLineups, XI_MIN_MS, htMessage, ftMessage, CURATED_LIVE } from "../liveposts.js";
 
 let fails = [];
 const ck = (name, cond, extra = "") => {
@@ -41,6 +41,7 @@ function fakeD1() {
       if (mine.length) { const last = mine[mine.length - 1]; last.cancelled = 1; last.cancelled_at = b[0]; }
       return { results: [] };
     }
+    if (sql.includes("/*lg_list*/")) return { results: goals.filter(g => g.game_id === b[0] && !g.cancelled).map(g => ({ side: g.side, player: g.player, minute: g.minute, tag: g.tag || "" })) };
     if (sql.includes("/*lg_cancelled*/")) {
       const [gid, side, p1, , m1] = b;
       const hit = goals.filter(g => g.game_id === gid && g.side === side && g.cancelled && (p1 === "" || g.player === p1) && (m1 === "" || g.minute === m1))
@@ -129,9 +130,10 @@ const posts = () => fbCalls.filter(c => c.path === "me/photos" || c.path === "me
 /* ---------------------------------------------- 1 pure helpers */
 ck("1 scope: الأهلي in the Egyptian league, مصر in the AFCON qualifiers",
    postScope({ c: 552, h: "الأهلي", a: "سموحة" }) && postScope({ c: 588, h: "مصر", a: "أنغولا" }));
-ck("2 scope: the Saudi الأهلي, Arsenal and the Port Said المصري are OUT",
-   !postScope({ c: 649, h: "الأهلي", a: "النصر" }) && !postScope({ c: 7, h: "أرسنال", a: "تشيلسي" })
-   && !postScope({ c: 552, h: "المصري", a: "إنبي" }));
+ck("2 scope: the Saudi الأهلي and the Port Said المصري are OUT; Arsenal (every curated club, 2026-10-17) is IN",
+   !postScope({ c: 649, h: "الأهلي", a: "النصر" }) && postScope({ c: 7, h: "أرسنال", a: "توتنهام" })
+   && !postScope({ c: 552, h: "المصري", a: "إنبي" }) && postScope({ c: 573, h: "طرابزون سبور", a: "ليل" })
+   && !postScope({ c: 7, h: "إيفرتون", a: "توتنهام" }) && CURATED_LIVE.length === 12);
 const gm = goalMessage({ id: 901, c: 552, h: "الزمالك", a: "الإسماعيلي", hs: 2, as: 0 }, { s: "h", p: "زيزو", m: "63", t: "ج" });
 ck("3 goal text: spaced score, scorer, minute, penalty, match link, hashtags",
    gm.startsWith("⚽ هدف! الزمالك 2 - 0 الإسماعيلي") && gm.includes("🥅 زيزو · الدقيقة 63 · ركلة جزاء")
@@ -147,7 +149,7 @@ detailFor[901] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 20 }]);
 // and re-fetches per competition (the fake would then answer 12 times)
 LIST = { games: [
   live(901, 552, "الزمالك", "الإسماعيلي", 1, 0),
-  live(902, 7, "أرسنال", "توتنهام", 1, 1),
+  live(902, 7, "إيفرتون", "توتنهام", 1, 1),
   live(903, 649, "الأهلي", "النصر", 1, 0),
   live(904, 11, "خيتافي", "إلتشي", 0, 0),
   live(905, 552, "بيراميدز", "زد", 0, 0),       // never gets a detail: score-only path
@@ -160,7 +162,7 @@ ck("7 ...but they are in the goal log", db.goals.length === 1);
 /* -------------------------------------------- 3 a goal discovered live */
 detailFor[901] = DETAIL(2, 0, [{ s: "h", pid: 11, m: 20 }, { s: "h", pid: 12, m: 63 }]);
 LIST.games[0] = live(901, 552, "الزمالك", "الإسماعيلي", 2, 0);
-LIST.games[1] = live(902, 7, "أرسنال", "توتنهام", 2, 1);      // Arsenal scores too: out of scope
+LIST.games[1] = live(902, 7, "إيفرتون", "توتنهام", 2, 1);     // Everton scores: not a curated club
 LIST.games[2] = live(903, 649, "الأهلي", "النصر", 2, 0);      // Saudi Al-Ahli scores: out of scope
 await tick();
 ck("8 exactly ONE post: the Zamalek goal, as a PHOTO with our card",
@@ -234,6 +236,55 @@ await tick();
 ck("19 the XI is never posted twice", posts().length === n0 + 1);
 ck("20 the window: 44 minutes before is too late to start, 81 too early",
    XI_MIN_MS === 45 * 60 * 1000);
+
+/* ------------------------------------ 10 half-time and full-time (2026-10-17) */
+const ht = (id, comp, h, a, hs, as_) => live(id, comp, h, a, hs, as_, { statusText: "شوط", shortStatusText: "شوط", gameTimeDisplay: "45'", gameTime: 45 });
+const over = (id, comp, h, a, hs, as_) => live(id, comp, h, a, hs, as_, { statusGroup: 4, statusText: "انتهت", shortStatusText: "انتهت", justEnded: true });
+const withStatus = (d, extra) => ({ game: { ...d.game, ...extra } });
+const HT_STATUS = { statusText: "شوط", shortStatusText: "شوط", gameTimeDisplay: "45'", gameTime: 45 };
+detailFor[970] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]);
+LIST = { games: [live(970, 7, "ليفربول", "برينتفورد", 1, 0), live(971, 7, "إيفرتون", "فولهام", 0, 0), ...filler] };
+await tick();                                                    // first sight, in play
+const n1 = posts().length;
+detailFor[970] = withStatus(DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]), HT_STATUS);   // the detail (fresher) says break too
+LIST.games[0] = ht(970, 7, "ليفربول", "برينتفورد", 1, 0);
+LIST.games[1] = ht(971, 7, "إيفرتون", "فولهام", 0, 0);           // not curated: no post
+await tick();
+ck("21 the half-time whistle posts ONCE for the curated game, with the score and the scorer",
+   posts().length === n1 + 1 && posts()[n1].caption.startsWith("⏸️ نهاية الشوط الأول: ليفربول 1 - 0 برينتفورد")
+   && posts()[n1].caption.includes("ليفربول: زيزو 30'") && posts()[n1].caption.includes("الدوري الإنجليزي"),
+   JSON.stringify(posts().slice(-1)));
+await tick();
+ck("22 the break goes on: no second half-time post", posts().length === n1 + 1 && db.fb.has("ht|970"));
+detailFor[970] = DETAIL(2, 0, [{ s: "h", pid: 11, m: 30 }, { s: "h", pid: 12, m: 78 }]);
+LIST.games[0] = live(970, 7, "ليفربول", "برينتفورد", 2, 0);
+await tick();
+ck("23 second-half goal posts as a goal, not as another break", posts().length === n1 + 2 && posts()[n1 + 1].caption.startsWith("⚽ هدف!"));
+detailFor[970] = withStatus(DETAIL(2, 0, [{ s: "h", pid: 11, m: 30 }, { s: "h", pid: 12, m: 78 }]), { statusGroup: 4, statusText: "انتهت", shortStatusText: "انتهت" });
+LIST.games[0] = over(970, 7, "ليفربول", "برينتفورد", 2, 0);
+LIST.games[1] = over(971, 7, "إيفرتون", "فولهام", 1, 1);
+await tick();
+ck("24 the final whistle posts ONCE for the curated game, with both scorers",
+   posts().length === n1 + 3 && posts()[n1 + 2].caption.startsWith("🏁 انتهت المباراة: ليفربول 2 - 0 برينتفورد")
+   && posts()[n1 + 2].caption.includes("زيزو 30'") && posts()[n1 + 2].caption.includes("عمر جابر 78'")
+   && posts()[n1 + 2].caption.includes("https://yallascore.site/m/970"), JSON.stringify(posts().slice(-1)));
+await tick();
+ck("25 an ended game stays ended: no second full-time post", posts().length === n1 + 3 && db.fb.has("ft|970") && !db.fb.has("ft|971"));
+// the store bug the full-time post exposed: a fresh read with no goal list
+// (no detail) must not cancel the logged goals
+detailFor[980] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 40 }]);
+LIST = { games: [live(980, 11, "برشلونة", "خيتافي", 1, 0), ...filler] };
+await tick();
+delete detailFor[980];                                            // the detail endpoint fails now
+LIST.games[0] = live(980, 11, "برشلونة", "خيتافي", 1, 0, { statusGroup: 4, statusText: "انتهت", shortStatusText: "انتهت" });   // no justEnded, no detail
+await tick();
+ck("27 an ended game with no goal list keeps its logged goals (not cancelled as VAR)",
+   db.goals.filter(x => x.game_id === 980 && !x.cancelled).length === 1
+   && posts().slice(-1)[0].caption.includes("برشلونة: زيزو 40'"), JSON.stringify(posts().slice(-1)));
+ck("26 the pure messages carry hashtags and no betting word",
+   htMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 0, as: 0, goals: [] }).endsWith("#يلا_سكور #الأهلي #الزمالك")
+   && !ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("مراهنة")
+   && ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("الأهلي: زيزو 12' (ج)"));
 
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

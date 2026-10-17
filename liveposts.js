@@ -14,14 +14,22 @@
  *   - «📋 التشكيل»   once per match, 45-80 minutes before kick-off, when the
  *                    detail carries eleven named starters on each side
  *
- * Scope is Egyptian only (user's plan): الأهلي / الزمالك / بيراميدز in the
- * Egyptian league (552) and the CAF Champions League (624), and the national
- * team «مصر» in the AFCON qualifiers (588) - matched EXACTLY, because «مصر»
- * is a substring of «المصري» (the Port Said club).
+ * Scope (user, 2026-10-17: «تابع نتائج الفرق المميزة ونزّل بوستات لما يتم
+ * إحراز أهداف أو انتهاء الشوط الأول أو انتهاء المباراة») = EVERY curated club:
+ * الأهلي / الزمالك / بيراميدز in the Egyptian league (552) and the CAF
+ * Champions League (624), the national team «مصر» in the AFCON qualifiers
+ * (588) - matched EXACTLY, because «مصر» is a substring of «المصري» (the Port
+ * Said club) -, طرابزون سبور in the Turkish league and the Europa League, and
+ * the seven European clubs in any competition we follow. CURATED_LIVE here
+ * is the ONE list; worker.js imports it for the report queue too.
+ *
+ *   - «⏸️ نهاية الشوط الأول»  once, the refresh that first sees the break
+ *   - «🏁 انتهت المباراة»      once, the refresh that sees live -> ended,
+ *                             with the scorers the store logged
  *
  * Dedup is the same lock the Python side uses: an INSERT on fb_posted's
- * PRIMARY KEY (kind, ref_id) - kinds "goal" (ref "<game>:<seq>") and "xi"
- * (ref "<game>"). Two refreshes racing on the same goal cannot both post.
+ * PRIMARY KEY (kind, ref_id) - kinds "goal" (ref "<game>:<seq>"), "xi",
+ * "ht" and "ft" (ref "<game>"). Two refreshes racing cannot both post.
  *
  * Photo = our matchup card when the site has drawn it for that match
  * (media/matchup-<id>-preview.jpg, checked through the ASSETS binding, no
@@ -35,22 +43,43 @@ const SITE = "https://yallascore.site";
 export const XI_MIN_MS = 45 * 60 * 1000;    // post the XI when kick-off is
 export const XI_MAX_MS = 80 * 60 * 1000;    // 45..80 minutes away
 
-const COMP_AR = { 552: "الدوري المصري", 624: "دوري أبطال أفريقيا", 588: "تصفيات كأس أمم أفريقيا" };
+const COMP_AR = {
+  552: "الدوري المصري", 624: "دوري أبطال أفريقيا", 588: "تصفيات كأس أمم أفريقيا",
+  7: "الدوري الإنجليزي", 11: "الدوري الإسباني", 17: "الدوري الإيطالي", 25: "الدوري الألماني",
+  35: "الدوري الفرنسي", 78: "الدوري التركي", 649: "الدوري السعودي",
+  572: "دوري أبطال أوروبا", 573: "الدوري الأوروبي", 7016: "دوري الأمم الأوروبية",
+};
 
-const POST_SCOPE = [
-  { t: "الأهلي", comps: [552, 624] },
-  { t: "الزمالك", comps: [552, 624] },
-  { t: "بيراميدز", comps: [552, 624] },
+// The curated clubs as 365scores spells them (the live feed is langId=27, so
+// every name is Arabic - NOT the football-data names in matches.json).
+// الأهلي is also a Saudi club and a Dubai club, so the Egyptian three count
+// only in the Egyptian league (552) and the CAF Champions League (624);
+// «مصر» only exactly (it is a substring of «المصري»); comps null = anywhere.
+const EGY_LIVE_COMPS = [552, 624];
+export const CURATED_LIVE = [
+  { t: "الأهلي", comps: EGY_LIVE_COMPS },
+  { t: "الزمالك", comps: EGY_LIVE_COMPS },
+  { t: "بيراميدز", comps: EGY_LIVE_COMPS },
   { t: "مصر", comps: [588], exact: true },
+  { t: "طرابزون سبور", comps: [78, 573] },
+  { t: "ريال مدريد", comps: null },
+  { t: "برشلونة", comps: null },
+  { t: "مانشستر يونايتد", comps: null },
+  { t: "مانشستر سيتي", comps: null },
+  { t: "أرسنال", comps: null },
+  { t: "ليفربول", comps: null },
+  { t: "تشيلسي", comps: null },
 ];
-const arNorm = (x) => (x || "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").trim();
+// same normalisation match_brief._norm uses, so آرسنال matches أرسنال
+export const arNorm = (x) => (x || "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").trim();
 
-export function postScope(g) {
+export function curatedLive(g) {
   const c = Number(g.c || 0);
-  return POST_SCOPE.some(s => s.comps.includes(c) && (s.exact
+  return CURATED_LIVE.some(s => (!s.comps || s.comps.includes(c)) && (s.exact
     ? [arNorm(g.h), arNorm(g.a)].includes(arNorm(s.t))
     : (arNorm(g.h) + "|" + arNorm(g.a)).includes(arNorm(s.t))));
 }
+export const postScope = curatedLive;
 
 const tag = (name) => "#" + (name || "").trim().replace(/\s+/g, "_");
 // «الأهلي 1 - 0 الزمالك» with SPACES: a glued «1-0» is one LTR run and shows
@@ -70,6 +99,34 @@ export function goalMessage(g, ev) {
   return lines.join("\n");
 }
 
+// the scorers as one line per side. `goals` = [{s, p, m, t}] - the store's
+// own goal log (live_goals, cancelled rows left out), read by goalsLogged();
+// a game object's own list may be missing on an ended game, the log is not
+export function scorerLines(g, goals) {
+  const by = { h: [], a: [] };
+  for (const ev of goals || g.goals || []) {
+    if (!ev || !ev.p) continue;
+    const t = ev.t === "ج" ? " (ج)" : ev.t === "عكسية" ? " (عكسي)" : "";
+    (by[ev.s] || by.h).push(ev.m ? `${ev.p} ${ev.m}'${t}` : `${ev.p}${t}`);
+  }
+  const out = [];
+  if (by.h.length) out.push(`${g.h}: ${by.h.join("، ")}`);
+  if (by.a.length) out.push(`${g.a}: ${by.a.join("، ")}`);
+  return out;
+}
+
+export function htMessage(g, goals) {
+  return [`⏸️ نهاية الشوط الأول: ${scoreLine(g)}`, ...scorerLines(g, goals),
+          `${COMP_AR[g.c] || ""} · المباراة لحظة بلحظة: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
+          `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].join("\n");
+}
+
+export function ftMessage(g, goals) {
+  return [`🏁 انتهت المباراة: ${scoreLine(g)}`, ...scorerLines(g, goals),
+          `${COMP_AR[g.c] || ""} · تفاصيل المباراة والهدافون: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
+          `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].join("\n");
+}
+
 export function xiMessage(g, xi) {
   const side = (name, s) => [`▪️ ${name}${s.f ? ` (${s.f})` : ""}:`, s.xi.join("، ")];
   return [`📋 التشكيل الرسمي: ${g.h} × ${g.a}`, COMP_AR[g.c] || "",
@@ -83,9 +140,16 @@ const FB_CLAIM = "/*fb_claim*/ INSERT OR IGNORE INTO fb_posted (kind, ref_id, ti
 const FB_REC = "/*fb_rec*/ UPDATE fb_posted SET post_id = ?, posted_at = ? WHERE kind = ? AND ref_id = ?";
 const FB_FIND = "/*fb_find*/ SELECT post_id FROM fb_posted WHERE kind = ? AND ref_id = ?";
 const FB_DROP = "/*fb_drop*/ DELETE FROM fb_posted WHERE kind = ? AND ref_id = ? AND post_id IS NULL";
+const LG_LIST = "/*lg_list*/ SELECT side, player, minute, tag FROM live_goals WHERE game_id = ? AND cancelled = 0 ORDER BY seq";
 const LG_CANCELLED = "/*lg_cancelled*/ SELECT seq FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 1 " +
   "AND (? = '' OR COALESCE(player,'') = ?) AND (? = '' OR COALESCE(minute,'') = ?) ORDER BY cancelled_at DESC, seq DESC LIMIT 1";
 
+async function goalsLogged(env, gid) {
+  try {
+    const r = await env.DB.prepare(LG_LIST).bind(gid).all();
+    return (r.results || []).map(x => ({ s: x.side, p: x.player || "", m: x.minute || "", t: x.tag || "" }));
+  } catch (e) { return null; }
+}
 async function claim(env, kind, ref, title) {
   const r = await env.DB.prepare(FB_CLAIM).bind(kind, ref, title, Math.floor(Date.now() / 1000)).run();
   return !!(r && r.meta && r.meta.changes);
@@ -138,8 +202,10 @@ export async function livePosts(env, r) {
   const out = { posted: 0, edited: 0, skipped: 0 };
   const posts = (r && r.posts || []).filter(x => postScope(x.g));
   const cancels = (r && r.cancels || []).filter(x => postScope(x.g));
-  if (!posts.length && !cancels.length) return out;
-  if (!env.FB_PAGE_TOKEN) { console.log("live posts: no FB_PAGE_TOKEN -", posts.length, "goal(s) not posted"); return out; }
+  const hts = (r && r.hts || []).filter(x => postScope(x.g));
+  const ends = (r && r.ends || []).filter(x => postScope(x.g));
+  if (!posts.length && !cancels.length && !hts.length && !ends.length) return out;
+  if (!env.FB_PAGE_TOKEN) { console.log("live posts: no FB_PAGE_TOKEN -", posts.length + hts.length + ends.length, "post(s) not posted"); return out; }
   for (const { g, seq, ev } of posts) {
     const ref = `${g.id}:${seq}`;
     const msg = goalMessage(g, ev);
@@ -157,6 +223,18 @@ export async function livePosts(env, r) {
     const msg = `❌ أُلغي الهدف بعد مراجعة الفيديو (VAR)\n` + goalMessage(g, ev).replace("⚽ هدف! ", "كان: ");
     const j = await graph(env, pid, { message: msg });
     if (j) out.edited += 1;
+  }
+  // half-time and full-time, after the goals so a 90' goal is announced before
+  // the whistle; one post per game per kind (the lock), the card as the photo
+  for (const [kind, list, text] of [["ht", hts, htMessage], ["ft", ends, ftMessage]]) {
+    for (const { g } of list) {
+      const ref = String(g.id);
+      const msg = text(g, await goalsLogged(env, g.id));
+      if (!(await claim(env, kind, ref, msg.split("\n")[0]))) { out.skipped += 1; continue; }
+      const pid = await publish(env, msg, await cardUrl(env, g.id));
+      if (pid) { await record(env, kind, ref, pid); out.posted += 1; }
+      else await drop(env, kind, ref);
+    }
   }
   return out;
 }

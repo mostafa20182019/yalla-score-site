@@ -11,7 +11,7 @@ import { healthResponse, watchdog } from "./health.js";
 import { pushApi } from "./push.js";
 // live Facebook posts (goal / VAR / lineup) for the Egyptian scope - see its header;
 // needs the Worker secret FB_PAGE_TOKEN, a no-op without it
-import { livePosts, lineupPosts, postScope } from "./liveposts.js";
+import { livePosts, lineupPosts, postScope, curatedLive } from "./liveposts.js";
 
 // Live-scores edge endpoint (/live.json): proxies 365scores' current-games
 // feed with a 30s edge cache, so every visitor polls US (cheap, same-origin)
@@ -327,32 +327,8 @@ const REPORT_KEEP_MS  = 3 * 24 * 3600 * 1000;   // purge queue rows this old
 // that would decline anyway; match_brief.py is the authority.
 const REPORT_DAILY_CAP = 4;
 
-// The 11 curated clubs as 365scores spells them (the live feed is langId=27,
-// so every name is Arabic - these are NOT the football-data names in
-// matches.json). Scope repeats build_site's: الأهلي is also a Saudi club and
-// a Dubai club, so the Egyptian three count only in the Egyptian league (552)
-// and the CAF Champions League (624); طرابزون سبور only in the Turkish league.
-const EGY_LIVE_COMPS = [552, 624];
-const CURATED_LIVE = [
-  { t: "الأهلي", comps: EGY_LIVE_COMPS },
-  { t: "الزمالك", comps: EGY_LIVE_COMPS },
-  { t: "بيراميدز", comps: EGY_LIVE_COMPS },
-  { t: "طرابزون سبور", comps: [78] },
-  { t: "ريال مدريد", comps: null },
-  { t: "برشلونة", comps: null },
-  { t: "مانشستر يونايتد", comps: null },
-  { t: "مانشستر سيتي", comps: null },
-  { t: "أرسنال", comps: null },
-  { t: "ليفربول", comps: null },
-  { t: "تشيلسي", comps: null },
-];
-// same normalisation match_brief._norm uses, so آرسنال matches أرسنال
-const arNorm = (x) => (x || "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي");
-function curatedLive(g) {
-  const ha = arNorm(g.h) + "|" + arNorm(g.a);
-  return CURATED_LIVE.some(cl => ha.includes(arNorm(cl.t))
-                              && (!cl.comps || cl.comps.includes(g.c)));
-}
+// The curated clubs the report queue and the live posts share live in
+// liveposts.js (CURATED_LIVE / curatedLive) - one list, imported above.
 const cairoDate = (ms) => new Intl.DateTimeFormat("en-CA", {
   timeZone: "Africa/Cairo", year: "numeric", month: "2-digit", day: "2-digit",
 }).format(new Date(ms));
@@ -419,6 +395,7 @@ async function storeApply(env, fresh, now) {
   const stmts = [];
   let upserts = 0, events = 0, ended = 0;
   const posts = [], cancels = [];   // goals discovered LIVE + VAR reversals -> liveposts.js
+  const hts = [], ends = [];        // the half-time whistle / the final whistle -> liveposts.js
   const goalRow = (g, seq, ev) => env.DB.prepare(GOAL_INS)
     .bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now);
   for (const g of fresh.games) {
@@ -442,7 +419,12 @@ async function storeApply(env, fresh, now) {
       // only when it went down. A re-attributed goal (new key, same score) or
       // a detail that failed this minute must never fake either.
       let up = (g.hs + g.as) - (p.hs + p.as_);
-      if (newGoals.length || oldGoals.length) {
+      // A fresh read with NO goal list at all (the detail was not fetched or
+      // failed - e.g. an ended game the list did not flag justEnded) must go
+      // by the score, never by keys: otherwise every logged goal "vanishes"
+      // and is cancelled as a VAR reversal (found 2026-10-17 by the full-time
+      // post, whose scorer lines came back empty).
+      if (g.goals !== undefined && (newGoals.length || oldGoals.length)) {
         // the detail's goal list is the truth about WHICH goals: a new key is
         // an event, a vanished key is a VAR reversal
         const prevKeys = new Set(oldGoals.map(goalKey)), nextKeys = new Set(newGoals.map(goalKey));
@@ -482,7 +464,15 @@ async function storeApply(env, fresh, now) {
       stmts.push(env.DB.prepare(REPORT_INS)
         .bind(g.id, g.c, g.h, g.a, g.hs, g.as, now, now + REPORT_DELAY_MS));
       ended += 1;
+      ends.push({ g });
     }
+    // THE HALF-TIME WHISTLE (2026-10-17): the first refresh that sees the
+    // break (liveFields writes min = "استراحة") on a game we saw in play.
+    // The lock in liveposts.js makes a repeat harmless, and `changed` below
+    // rewrites the row at this transition so the next refresh does not look
+    // like one.
+    const breakNow = g.live && (g.min || "") === "استراحة", breakBefore = !!p && (p.min || "") === "استراحة";
+    if (p && p.live && breakNow && !breakBefore && curatedLive(g)) hts.push({ g });
     // The state row is written only when something MATERIAL changed. The
     // minute is deliberately not in that test (2026-09-17): it ticks for every
     // live game every minute, so including it cost one row write per live game
@@ -496,7 +486,7 @@ async function storeApply(env, fresh, now) {
     // min/gt/hf still update whenever anything else moves.
     const goalsJson = newGoals.length ? JSON.stringify(newGoals) : null;
     const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
-      || (p.goals || null) !== goalsJson;
+      || (p.goals || null) !== goalsJson || breakNow !== breakBefore;
     if (changed) {
       stmts.push(env.DB.prepare("/*ls_upsert*/ INSERT INTO live_state (game_id, c, h, a, hs, as_, live, min, gt, hf, goals, " +
         "first_seen, seen_at, changed_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON CONFLICT(game_id) DO UPDATE SET " +
@@ -524,7 +514,7 @@ async function storeApply(env, fresh, now) {
   stmts.push(env.DB.prepare("/*ls_purge*/ DELETE FROM live_state WHERE changed_at < ?")
     .bind(now - STATE_KEEP_MS));
   for (let i = 0; i < stmts.length; i += 40) await env.DB.batch(stmts.slice(i, i + 40));   // D1 batch cap
-  return { upserts, events, ended, posts, cancels };
+  return { upserts, events, ended, posts, cancels, hts, ends };
 }
 
 // One refresh: upstream -> store. A failed upstream read changes nothing (the

@@ -313,6 +313,12 @@ def fetch_live():
         out[(b._gnorm(g.get("h")), b._gnorm(g.get("a")))] = g
     return out
 
+def live_game_for(live, m):
+    """The /live.json game for this match (either orientation), or None."""
+    h, a = b._gnorm(b.ar_team(m.get("home"))), b._gnorm(b.ar_team(m.get("away")))
+    return live.get((h, a)) or live.get((a, h))
+
+
 def live_score_for(live, m):
     """(hs, as, live_flag) from /live.json for this match, or None when the
     pair is not there. Handles the reversed home/away disagreement."""
@@ -324,6 +330,22 @@ def live_score_for(live, m):
     if g is not None:
         return g.get("as"), g.get("hs"), bool(g.get("live"))
     return None
+
+
+def whistle_posted(live, m):
+    """True when the Worker already posted this match's final whistle
+    («🏁 انتهت المباراة», liveposts.js, 2026-10-17). The live game id is the
+    365scores id, which only /live.json can map to our fixture, so the
+    lookup goes through the same name pairing the score check uses. Then the
+    result card - the same score and scorers, 30 minutes later - is a second
+    post about the same whistle, and the page gets one."""
+    g = live_game_for(live, m)
+    if not g or not g.get("id"):
+        return False
+    try:
+        return bool(store.get_post("ft", str(g["id"])))
+    except Exception:  # noqa: BLE001 - the store falling over must not stop cards
+        return False
 
 def score_verified(m, live, now=None):
     """Only a confirmed final score may go on a card (user rule: never publish a
@@ -405,6 +427,9 @@ def post_cards(picked, ge_idx, out_dir):
         ok, why = score_verified(m, live)
         if not ok:
             print(f"card {mid} deferred: {why}")
+            continue
+        if whistle_posted(live, m):
+            print(f"card {mid} skipped: the Worker posted the final whistle for this match")
             continue
         # then claim, so only one run can render and publish this card even if
         # two of them verified the same score at the same moment
