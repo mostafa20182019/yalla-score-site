@@ -60,7 +60,7 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
     import fb_cards as FC
     import matchup_card as MC
     from site_lib.names import ar_team, comp_label
-    from site_lib.competitions import COMP_TV
+    from site_lib.competitions import COMP_TV, COMP_LOGO
     img = Image.new("RGB", (W, H))
     d = ImageDraw.Draw(img)
     for y in range(H):
@@ -165,8 +165,26 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
         elif every:                      # the competition under the score, the day spans several
             text_c(W // 2, cy + 24, comp_label(m.get("competition")), FC.font("Bold", 17), SOFT)
         side_w = W // 2 - 62 - (40 + 16 + 2 * R + 14) - 10
+        away_w = side_w
+        if every:
+            # the competition's emblem beside the score (user, 2026-10-17:
+            # «حط شعار البطولة جنب المباراة عشان يتعرف الماتش كان في بطولة إيه»):
+            # a white disc left of the pill, the away name gives up that width
+            LG = 24
+            lurl = COMP_LOGO.get(m.get("competition"))
+            lim = None
+            if lurl:
+                try:
+                    lim = FC.crest_image(lurl, int(2 * LG * 0.84))
+                except Exception:                       # noqa: BLE001
+                    lim = None
+            if lim is not None:
+                lx = W // 2 - 62 - 12 - LG
+                d.ellipse([lx - LG, cy - LG, lx + LG, cy + LG], fill=WHITE)
+                img.paste(lim, (lx - lim.width // 2, cy - lim.height // 2), lim)
+                away_w = side_w - (2 * LG + 16)
         fh = fit(h, "ExtraBold", fn.size, side_w, 18)
-        fa = fit(a, "ExtraBold", fn.size, side_w, 18)
+        fa = fit(a, "ExtraBold", fn.size, away_w, 18)
         text_r(W - 40 - 16 - 2 * R - 14, cy - fh.size * 0.62, h, fh, WHITE)   # home RIGHT
         text_l(40 + 16 + 2 * R + 14, cy - fa.size * 0.62, a, fa, WHITE)       # away LEFT
         y += CH + GAP
