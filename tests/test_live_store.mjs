@@ -35,9 +35,13 @@ function fakeD1() {
       results: meta.has("snapshot") ? [{ v: meta.get("snapshot") }] : [],
       meta: { rows_read: meta.has("snapshot") ? 1 : 0 } };
     if (sql.includes("/*ls_prev*/")) return { results: b.map(id => state.get(id)).filter(Boolean) };
-    if (sql.includes("/*lg_seq*/")) {
-      const s = goals.filter(g => g.game_id === b[0]).reduce((m, g) => Math.max(m, g.seq), 0);
-      return { first: { s } };
+    if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0])
+      .map(g => ({ seq: g.seq, side: g.side, player: g.player, cancelled: g.cancelled ? 1 : 0 })) };
+    if (sql.includes("/*lg_name*/")) {
+      const [player, minute, tag, game_id, seq] = b;
+      const g = goals.find(x => x.game_id === game_id && x.seq === seq);
+      if (g) { g.player = player; g.minute = minute; g.tag = tag; }
+      return { results: [] };
     }
     if (sql.includes("/*lg_ins*/")) {
       const [game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at] = b;
@@ -205,6 +209,36 @@ ck("13 upstream back: the stale store refreshes synchronously and serves the cur
    r.j.src === "store-fresh" && r.j.games.find(g => g.id === 900).as === 1);
 ck("14 the away goal joined the log as seq 3 (seq 2 stays cancelled)",
    db.goals.length === 3 && db.goals[2].side === "a" && db.goals[2].player === "لاعب الإسماعيلي" && db.goals.find(g => g.seq === 2).cancelled === 1);
+
+/* ------------------------------------------------------------- 6b detail gone */
+// 2026-10-17 (Betis x Barcelona): a refresh whose DETAIL fails (or whose
+// events lag the list's score, so no usable goal list comes back) must keep
+// the goal list the store already holds - writing null there made the next
+// detailed refresh log every goal on the board a second time
+age(20000);
+const keep = DETAIL[900]; delete DETAIL[900];
+await call(); await drain();
+ck("14b a refresh without the detail keeps the stored goal list and logs nothing",
+   db.goals.length === 3 && db.state.get(900).goals && JSON.parse(db.state.get(900).goals).length === 2);
+age(20000);
+DETAIL[900] = keep;
+await call(); await drain();
+ck("14c the detail back: the same two goals are NOT logged again",
+   db.goals.length === 3 && db.goals.filter(g => g.player === "زيزو").length === 1);
+// the detail lags a new goal: the list says 2-1 while the events still show
+// two goals -> the score-only path logs (and posts) a nameless home goal; the
+// next detailed refresh NAMES that row instead of adding a second one
+age(20000);
+scenario(2, 1, 75, [goalEv(11, 1, 12), goalEv(21, 2, 58)]);
+await call(); await drain();
+const nl = db.goals.filter(g => g.game_id === 900 && !g.cancelled);
+ck("14d a goal the detail has not listed yet is logged from the score, nameless",
+   nl.length === 3 && nl[2].player === null && nl[2].side === "h" && nl[2].seq === 4);
+age(20000);
+scenario(2, 1, 76, [goalEv(11, 1, 12), goalEv(21, 2, 58), goalEv(12, 1, 75)]);
+await call(); await drain();
+ck("14e the detail catches up: the nameless row gets its scorer, no new row",
+   db.goals.length === 4 && db.goals.find(g => g.seq === 4).player === "ناصر ماهر" && db.goals.find(g => g.seq === 4).minute === "75");
 
 /* ------------------------------------------------------------- 7 score-only game */
 // a game whose detail has no usable goal list: goals are logged from the score alone

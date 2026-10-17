@@ -31,7 +31,8 @@ function fakeD1() {
     if (sql.includes("/*ls_rows*/")) return { results: [...state.values()] };
     if (sql.includes("/*ls_snap*/")) return { first: meta.has("snapshot") ? { v: meta.get("snapshot") } : null };
     if (sql.includes("/*ls_prev*/")) return { results: b.map(id => state.get(id)).filter(Boolean) };
-    if (sql.includes("/*lg_seq*/")) return { first: { s: goals.filter(g => g.game_id === b[0]).length } };
+    if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0]).map(g => ({ seq: g.seq, side: g.side, player: g.player || null, cancelled: g.cancelled ? 1 : 0 })) };
+    if (sql.includes("/*lg_name*/")) { const g = goals.find(x => x.game_id === b[3] && x.seq === b[4]); if (g) { g.player = b[0]; g.minute = b[1] || ""; g.tag = b[2] || ""; } return { results: [] }; }
     if (sql.includes("/*lg_ins*/")) { goals.push({ game_id: b[0], seq: b[1] }); return { results: [] }; }
     if (sql.includes("/*lg_cancel")) return { results: [] };
     if (sql.includes("/*ls_upsert*/")) {

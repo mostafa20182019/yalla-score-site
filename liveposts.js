@@ -158,7 +158,16 @@ const LG_CANCELLED = "/*lg_cancelled*/ SELECT seq FROM live_goals WHERE game_id 
 async function goalsLogged(env, gid) {
   try {
     const r = await env.DB.prepare(LG_LIST).bind(gid).all();
-    return (r.results || []).map(x => ({ s: x.side, p: x.player || "", m: x.minute || "", t: x.tag || "" }));
+    // the same (side, scorer, minute) twice is a logging slip, never two
+    // goals - a whistle post or card names each goal once (2026-10-17)
+    const seen = new Set(), out = [];
+    for (const x of r.results || []) {
+      const ev = { s: x.side, p: x.player || "", m: x.minute || "", t: x.tag || "" };
+      const k = ev.p ? `${ev.s}|${ev.p}|${ev.m}` : null;
+      if (k) { if (seen.has(k)) continue; seen.add(k); }
+      out.push(ev);
+    }
+    return out;
   } catch (e) { return null; }
 }
 async function claim(env, kind, ref, title) {

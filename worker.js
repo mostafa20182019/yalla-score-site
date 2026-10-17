@@ -411,9 +411,19 @@ async function storeApply(env, fresh, now) {
       // log. Goals from here on are caught by the score diff below.
       newGoals.forEach((ev, i) => { stmts.push(goalRow(g, i + 1, ev)); events += 1; });
     } else {
-      const seqRow = await env.DB.prepare("/*lg_seq*/ SELECT COALESCE(MAX(seq),0) AS s FROM live_goals WHERE game_id = ?")
-        .bind(g.id).first();
-      let seq = seqRow ? Number(seqRow.s) : 0;
+      // the open rows of this game's log in one read: the next seq, and the
+      // NAMELESS rows the score-only path below logged while the detail
+      // lagged - a named goal that arrives later fills one of those instead
+      // of becoming a second row (2026-10-17: Betis x Barcelona's half-time
+      // post listed «لامين يامال 10'» twice)
+      // (every row counts for the next seq - a cancelled seq is never reused;
+      // only live rows can be named)
+      const logRows = ((await env.DB.prepare("/*lg_open*/ SELECT seq, side, player, cancelled FROM live_goals WHERE game_id = ? ORDER BY seq")
+        .bind(g.id).all()).results) || [];
+      let seq = logRows.reduce((m, r) => Math.max(m, Number(r.seq) || 0), 0);
+      const openRows = logRows.filter(r => !r.cancelled);
+      const nameless = { h: openRows.filter(r => r.side === "h" && !r.player).map(r => r.seq),
+                         a: openRows.filter(r => r.side === "a" && !r.player).map(r => r.seq) };
       // the live-post guard (liveposts.js): a goal is POSTED only while the
       // score itself went up since the last refresh, and a reversal is posted
       // only when it went down. A re-attributed goal (new key, same score) or
@@ -429,6 +439,15 @@ async function storeApply(env, fresh, now) {
         // an event, a vanished key is a VAR reversal
         const prevKeys = new Set(oldGoals.map(goalKey)), nextKeys = new Set(newGoals.map(goalKey));
         for (const ev of newGoals) if (!prevKeys.has(goalKey(ev))) {
+          const open = ev.p && nameless[ev.s] && nameless[ev.s].length ? nameless[ev.s].shift() : null;
+          if (open) {
+            // the score-only path already logged (and posted) this goal
+            // without a name: name that row, no second row, no second post
+            stmts.push(env.DB.prepare("/*lg_name*/ UPDATE live_goals SET player = ?, minute = ?, tag = ? WHERE game_id = ? AND seq = ?")
+              .bind(ev.p, ev.m || null, ev.t || null, g.id, open));
+            events += 1;
+            continue;
+          }
           seq += 1; stmts.push(goalRow(g, seq, ev)); events += 1;
           if (g.live && up > 0) { posts.push({ g, seq, ev }); up -= 1; }
         }
@@ -484,7 +503,13 @@ async function storeApply(env, fresh, now) {
     // clock; what visitors are served is the snapshot row below, which is
     // rewritten every refresh and carries the fresh minute. The row's own
     // min/gt/hf still update whenever anything else moves.
-    const goalsJson = newGoals.length ? JSON.stringify(newGoals) : null;
+    // A refresh WITHOUT a usable goal list (the detail failed, or its events
+    // still lag the list's score so the counts did not match) keeps the list
+    // we already had. Writing null here is what duplicated goals: the next
+    // detailed refresh saw an empty "before" and logged every goal on the
+    // board again (2026-10-17, «لامين يامال 10'» twice at half-time).
+    const goalsJson = g.goals === undefined ? (p && p.goals ? p.goals : null)
+      : (newGoals.length ? JSON.stringify(newGoals) : null);
     const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
       || (p.goals || null) !== goalsJson || breakNow !== breakBefore;
     if (changed) {

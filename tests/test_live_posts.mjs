@@ -27,7 +27,8 @@ function fakeD1() {
     if (sql.includes("/*ls_rows*/")) return { results: [...state.values()] };
     if (sql.includes("/*ls_snap*/")) return { first: meta.has("snapshot") ? { v: meta.get("snapshot") } : null };
     if (sql.includes("/*ls_prev*/")) return { results: b.map(id => state.get(id)).filter(Boolean) };
-    if (sql.includes("/*lg_seq*/")) return { first: { s: goals.filter(g => g.game_id === b[0]).length } };
+    if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0]).map(g => ({ seq: g.seq, side: g.side, player: g.player || null, cancelled: g.cancelled ? 1 : 0 })) };
+    if (sql.includes("/*lg_name*/")) { const g = goals.find(x => x.game_id === b[3] && x.seq === b[4]); if (g) { g.player = b[0]; g.minute = b[1] || ""; g.tag = b[2] || ""; } return { results: [] }; }
     if (sql.includes("/*lg_ins*/")) {
       goals.push({ game_id: b[0], seq: b[1], side: b[2], player: b[3] || "", minute: b[4] || "", cancelled: 0, cancelled_at: 0 });
       return { results: [] };
@@ -291,6 +292,19 @@ await tick();
 ck("27 an ended game with no goal list keeps its logged goals (not cancelled as VAR)",
    db.goals.filter(x => x.game_id === 980 && !x.cancelled).length === 1
    && posts().slice(-1)[0].caption.includes("برشلونة: زيزو 40'"), JSON.stringify(posts().slice(-1)));
+// 2026-10-17 (Betis x Barcelona half-time: «لامين يامال 10'» twice): the same
+// (side, scorer, minute) logged twice is a slip of the log, never two goals -
+// the whistle text and the card payload name it once
+detailFor[981] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 10 }]);
+LIST = { games: [live(981, 11, "برشلونة", "ريال بيتيس", 1, 0), ...filler] };
+await tick();
+db.goals.push({ game_id: 981, seq: 2, side: "h", player: "زيزو", minute: "10", cancelled: 0, cancelled_at: 0 });
+detailFor[981] = withStatus(DETAIL(1, 0, [{ s: "h", pid: 11, m: 10 }]), { statusGroup: 4, statusText: "انتهت", shortStatusText: "انتهت" });
+LIST.games[0] = over(981, 11, "برشلونة", "ريال بيتيس", 1, 0);
+await tick();
+ck("27b a scorer row logged twice is named ONCE in the full-time post",
+   posts().slice(-1)[0].caption.startsWith("🏁 انتهت المباراة: برشلونة 1 - 0 ريال بيتيس")
+   && posts().slice(-1)[0].caption.split("زيزو 10'").length === 2, JSON.stringify(posts().slice(-1)));
 ck("26 the pure messages carry hashtags and no betting word",
    htMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 0, as: 0, goals: [] }).endsWith("#يلا_سكور #الأهلي #الزمالك")
    && !ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("مراهنة")

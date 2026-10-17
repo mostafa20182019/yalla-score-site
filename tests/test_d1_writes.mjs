@@ -20,7 +20,7 @@ const ck = (name, cond, extra = "") => {
 };
 
 const WRITE_TAGS = ["/*ls_upsert*/", "/*ls_touch*/", "/*lm_set*/", "/*ls_purge*/",
-                    "/*lg_ins*/", "/*lg_cancel*/", "/*lg_cancel_last*/",
+                    "/*lg_ins*/", "/*lg_name*/", "/*lg_cancel*/", "/*lg_cancel_last*/",
                     "/*rq_ins*/", "/*rq_try*/", "/*rq_done*/", "/*rq_purge*/"];
 const isWrite = (sql) => WRITE_TAGS.some(t => sql.includes(t));
 
@@ -38,7 +38,8 @@ function fakeD1() {
       return { results: r, meta: { rows_read: r.length } };
     }
     if (sql.includes("/*ls_prev*/")) return { results: b.map(id => state.get(id)).filter(Boolean) };
-    if (sql.includes("/*lg_seq*/")) return { first: { s: goals.filter(g => g.game_id === b[0]).length } };
+    if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0]).map(g => ({ seq: g.seq, side: "h", player: "x", cancelled: 0 })) };
+    if (sql.includes("/*lg_name*/")) return { results: [] };
     if (sql.includes("/*lg_ins*/")) { goals.push({ game_id: b[0], seq: b[1] }); return { results: [] }; }
     if (sql.includes("/*lg_cancel")) return { results: [] };
     if (sql.includes("/*ls_upsert*/")) {
