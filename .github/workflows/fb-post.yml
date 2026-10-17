@@ -32,6 +32,10 @@ on:
         description: "Post the line-up CARD of a 365scores game id (dispatched by the Worker when both XIs are announced)."
         required: false
         default: ""
+      goal:
+        description: "Post one goal as a CARD: the JSON the Worker dispatched ({g, seq, ev})."
+        required: false
+        default: ""
       h2h:
         description: "Head-to-head infographic for ONE upcoming match (match_id), or `auto` for the biggest match of the next days. Empty = normal run."
         required: false
@@ -92,10 +96,13 @@ jobs:
           REPOST: ${{ inputs.repost }}
           UPDATE: ${{ inputs.update }}
           XI: ${{ inputs.xi }}
+          GOAL: ${{ inputs.goal }}
           PREDICTION: ${{ inputs.prediction }}
           H2H: ${{ inputs.h2h }}
         run: |
-          if [ -n "$XI" ]; then
+          if [ -n "$GOAL" ]; then
+            python fb_post.py --goal "$GOAL" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+          elif [ -n "$XI" ]; then
             python fb_post.py --xi "$XI" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$UPDATE" ]; then
             python fb_update_posts.py ${UPDATE//,/ } | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}

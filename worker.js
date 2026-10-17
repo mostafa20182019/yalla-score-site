@@ -11,7 +11,7 @@ import { healthResponse, watchdog } from "./health.js";
 import { pushApi } from "./push.js";
 // live Facebook posts (goal / VAR / lineup) for the Egyptian scope - see its header;
 // needs the Worker secret FB_PAGE_TOKEN, a no-op without it
-import { livePosts, lineupPosts, postScope, curatedLive } from "./liveposts.js";
+import { livePosts, lineupPosts, postScope, curatedLive, goalFallbacks } from "./liveposts.js";
 
 // Live-scores edge endpoint (/live.json): proxies 365scores' current-games
 // feed with a 30s edge cache, so every visitor polls US (cheap, same-origin)
@@ -531,8 +531,14 @@ async function refreshLive(env) {
     }
     const r = await storeApply(env, fresh, now);
     let fb = null;
-    try { fb = await livePosts(env, r); }                 // after the batch: the store is the truth first
+    const fbDispatch = env.GH_TOKEN ? (inputs) => dispatchWorkflow(env, "fb-post.yml", inputs) : null;
+    try { fb = await livePosts(env, r, fbDispatch); }     // after the batch: the store is the truth first
     catch (e) { console.log("live posts failed:", e && e.message); }
+    if (fbDispatch && env.FB_PAGE_TOKEN) {
+      // goal cards the runner never posted: the text, from the edge
+      try { const gf = await goalFallbacks(env, now); if (gf.posted) console.log("goal fallbacks:", JSON.stringify(gf)); }
+      catch (e) { console.log("goal fallbacks failed:", e && e.message); }
+    }
     return { ok: true, upserts: r.upserts, events: r.events, ended: r.ended, n: fresh.games.length,
              fb, upcoming: fresh.upcoming || [] };
   })().finally(() => { refreshing = null; });

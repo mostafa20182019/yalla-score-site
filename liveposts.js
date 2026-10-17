@@ -49,6 +49,7 @@ const SITE = "https://yallascore.site";
 export const XI_MIN_MS = 45 * 60 * 1000;    // post the XI when kick-off is
 export const XI_MAX_MS = 80 * 60 * 1000;    // 45..80 minutes away
 export const XI_FALLBACK_MS = 12 * 60 * 1000;   // a dispatched card not posted by then -> the text
+export const GOAL_FALLBACK_MS = 4 * 60 * 1000;  // a goal card not posted by then -> the text (a goal cannot wait 12)
 
 const COMP_AR = {
   552: "الدوري المصري", 624: "دوري أبطال أفريقيا", 627: "كأس الكونفدرالية الأفريقية", 588: "تصفيات كأس أمم أفريقيا",
@@ -148,6 +149,7 @@ const FB_CLAIM = "/*fb_claim*/ INSERT OR IGNORE INTO fb_posted (kind, ref_id, ti
 const FB_REC = "/*fb_rec*/ UPDATE fb_posted SET post_id = ?, posted_at = ? WHERE kind = ? AND ref_id = ?";
 const FB_FIND = "/*fb_find*/ SELECT post_id FROM fb_posted WHERE kind = ? AND ref_id = ?";
 const FB_ROW = "/*fb_row*/ SELECT post_id, claimed_at FROM fb_posted WHERE kind = ? AND ref_id = ?";
+const FB_STALE = "/*fb_stale*/ SELECT ref_id, title FROM fb_posted WHERE kind = ? AND post_id IS NULL AND claimed_at < ? AND claimed_at > ?";
 const FB_DROP = "/*fb_drop*/ DELETE FROM fb_posted WHERE kind = ? AND ref_id = ? AND post_id IS NULL";
 const LG_LIST = "/*lg_list*/ SELECT side, player, minute, tag FROM live_goals WHERE game_id = ? AND cancelled = 0 ORDER BY seq";
 const LG_CANCELLED = "/*lg_cancelled*/ SELECT seq FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 1 " +
@@ -210,9 +212,32 @@ async function publish(env, message, photo) {
 }
 
 /* ------------------------------------------------------- goals + VAR */
-// r = storeApply's result: posts [{g, seq, ev}], cancels [{g, ev}]
-export async function livePosts(env, r) {
-  const out = { posted: 0, edited: 0, skipped: 0 };
+// Goal cards (2026-10-17, user: «صورة زي دي مع الهدف»): the Worker cannot
+// draw, so with a dispatcher it claims the goal (the title column keeps the
+// WHOLE text) and starts fb-post.yml goal=<json>; fb_post.py --goal draws
+// goal_card.py and posts within a minute or two. goalFallbacks() posts the
+// text itself for any goal claim the runner has not finished within
+// GOAL_FALLBACK_MS, so a goal is never lost to a slow or failed run.
+export async function goalFallbacks(env, now) {
+  const out = { posted: 0 };
+  const since = Math.floor((now - 6 * 3600 * 1000) / 1000);      // never dig up old claims
+  const until = Math.floor((now - GOAL_FALLBACK_MS) / 1000);
+  let rows = [];
+  try { rows = (await env.DB.prepare(FB_STALE).bind("goal", until, since).all()).results || []; }
+  catch (e) { return out; }
+  for (const row of rows) {
+    if (!row.title || !row.title.includes("\n")) continue;      // a claim from the old text path: nothing to resend
+    const gid = String(row.ref_id).split(":")[0];
+    const pid = await publish(env, row.title, await cardUrl(env, gid));
+    if (pid) { await record(env, "goal", String(row.ref_id), pid); out.posted += 1; }
+  }
+  return out;
+}
+
+// r = storeApply's result: posts [{g, seq, ev}], cancels [{g, ev}], hts, ends;
+// `dispatch(inputs)` = worker.js's fb-post.yml dispatcher (null = no GH_TOKEN)
+export async function livePosts(env, r, dispatch = null) {
+  const out = { posted: 0, edited: 0, skipped: 0, dispatched: 0 };
   const posts = (r && r.posts || []).filter(x => postScope(x.g));
   const cancels = (r && r.cancels || []).filter(x => postScope(x.g));
   const hts = (r && r.hts || []).filter(x => postScope(x.g));
@@ -222,7 +247,15 @@ export async function livePosts(env, r) {
   for (const { g, seq, ev } of posts) {
     const ref = `${g.id}:${seq}`;
     const msg = goalMessage(g, ev);
-    if (!(await claim(env, "goal", ref, msg.split("\n")[0]))) { out.skipped += 1; continue; }
+    // the claim keeps the whole text: goalFallbacks() resends it if the card never comes
+    if (!(await claim(env, "goal", ref, dispatch ? msg : msg.split("\n")[0]))) { out.skipped += 1; continue; }
+    if (dispatch) {
+      let ok = false;
+      try {
+        ok = await dispatch({ goal: JSON.stringify({ g: { id: g.id, c: g.c, h: g.h, a: g.a, hs: g.hs, as: g.as }, seq, ev }) });
+      } catch (e) { ok = false; }
+      if (ok) { out.dispatched += 1; continue; }  // the runner draws, posts and records
+    }
     const pid = await publish(env, msg, await cardUrl(env, g.id));
     if (pid) { await record(env, "goal", ref, pid); out.posted += 1; }
     else await drop(env, "goal", ref);            // a later refresh may not retry (the diff is gone) - the lock must not stay

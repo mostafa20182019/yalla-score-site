@@ -67,6 +67,7 @@ function fakeD1() {
       return { results: [], changes: 1 };
     }
     if (sql.includes("/*fb_rec*/")) { const r = fb.get(`${b[2]}|${b[3]}`); if (r) { r.post_id = b[0]; r.posted_at = b[1]; } return { results: [], changes: r ? 1 : 0 }; }
+    if (sql.includes("/*fb_stale*/")) return { results: [...fb.values()].filter(r => r.kind === b[0] && !r.post_id && r.claimed_at < b[1] && r.claimed_at > b[2]).map(r => ({ ref_id: r.ref_id, title: r.title })) };
     if (sql.includes("/*fb_row*/")) { const r = fb.get(`${b[0]}|${b[1]}`); return { first: r ? { post_id: r.post_id, claimed_at: r.claimed_at } : null }; }
     if (sql.includes("/*fb_find*/")) { const r = fb.get(`${b[0]}|${b[1]}`); return { first: r && r.post_id ? { post_id: r.post_id } : null }; }
     if (sql.includes("/*fb_drop*/")) { const r = fb.get(`${b[0]}|${b[1]}`); if (r && !r.post_id) fb.delete(`${b[0]}|${b[1]}`); return { results: [] }; }
@@ -318,6 +319,27 @@ LIST = { games: [sched(991, 552, "الأهلي", "إنبي", now2 + 60 * 60 * 10
 await tickGh();
 ck("31 a failed dispatch falls straight back to the text post", posts().length === n2 + 2 && db.fb.get("xi|991").post_id, JSON.stringify(ghCalls.slice(-1)));
 ghOk = true;
+
+/* ------------------------------------ 12 the goal CARD path (2026-10-17) */
+const gh0 = ghCalls.length, n3 = posts().length;
+detailFor[995] = DETAIL(0, 0, []);
+LIST = { games: [live(995, 552, "الأهلي", "كيتارا", 0, 0), ...filler] };
+await tickGh();                                                  // first sight
+detailFor[995] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 66 }]);
+LIST.games[0] = live(995, 552, "الأهلي", "كيتارا", 1, 0);
+await tickGh();
+const gd = ghCalls.slice(gh0).find(c => c.inputs && c.inputs.goal);
+ck("32 with GH_TOKEN a live goal is DISPATCHED as a card (goal=<json>), not posted from the edge",
+   !!gd && JSON.parse(gd.inputs.goal).g.id === 995 && JSON.parse(gd.inputs.goal).ev.p === "زيزو" && posts().length === n3
+   && db.fb.has("goal|995:1") && !db.fb.get("goal|995:1").post_id, JSON.stringify(ghCalls.slice(gh0)));
+ck("33 the claim keeps the WHOLE goal text for the fallback", db.fb.get("goal|995:1").title.includes("\n") && db.fb.get("goal|995:1").title.startsWith("⚽ هدف! الأهلي 1 - 0 كيتارا"));
+await tickGh();
+ck("34 the next minute posts nothing (the runner's turn)", posts().length === n3);
+db.fb.get("goal|995:1").claimed_at -= 5 * 60;                // the runner never came back
+await tickGh();
+ck("35 ...after 4 minutes the goal text goes out from the edge", posts().length === n3 + 1 && posts()[n3].caption.startsWith("⚽ هدف! الأهلي 1 - 0 كيتارا") && db.fb.get("goal|995:1").post_id, JSON.stringify(posts().slice(-1)));
+await tickGh();
+ck("36 ...once", posts().length === n3 + 1);
 
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

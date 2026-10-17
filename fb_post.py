@@ -744,6 +744,74 @@ def xi_post(token, gid, dry=False):
     return 0
 
 
+GOAL_COMP_AR = {552: "الدوري المصري", 624: "دوري أبطال أفريقيا", 627: "كأس الكونفدرالية الأفريقية",
+                588: "تصفيات كأس أمم أفريقيا", 7: "الدوري الإنجليزي", 11: "الدوري الإسباني",
+                17: "الدوري الإيطالي", 25: "الدوري الألماني", 35: "الدوري الفرنسي", 78: "الدوري التركي",
+                649: "الدوري السعودي", 572: "دوري أبطال أوروبا", 573: "الدوري الأوروبي", 7016: "دوري الأمم الأوروبية"}
+
+
+def goal_caption(g, ev):
+    """The «⚽ هدف!» text - the same lines liveposts.js writes (goalMessage)."""
+    tag = lambda n: "#" + (n or "").strip().replace(" ", "_")
+    lines = [f"⚽ هدف! {g['h']} {g['hs']} - {g['as']} {g['a']}"]
+    who = []
+    if ev.get("p"): who.append(ev["p"])
+    if ev.get("m"): who.append(f"الدقيقة {ev['m']}")
+    if ev.get("t") == "ج": who.append("ركلة جزاء")
+    if ev.get("t") == "عكسية": who.append("هدف عكسي")
+    if who: lines.append("🥅 " + " · ".join(who))
+    comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
+    lines.append((f"{comp} · " if comp else "") + f"المباراة لحظة بلحظة: https://yallascore.site/m/{g['id']}")
+    lines.append(f"#يلا_سكور {tag(g['h'])} {tag(g['a'])}")
+    return "\n".join(lines)
+
+
+def goal_post(token, payload, dry=False):
+    """Draw the goal card and post it as a photo (user, 2026-10-17: «صورة زي
+    دي مع الهدف»). `payload` = the JSON the Worker dispatched:
+    {"g": {id, c, h, a, hs, as}, "seq": n, "ev": {s, p, m, t}}. The Worker
+    holds the "goal" claim (ref "<game>:<seq>"); we post and record. If the
+    picture cannot be drawn, the text goes out instead - a goal must never
+    wait."""
+    import goal_card as GC
+    try:
+        d = json.loads(payload)
+        g, ev, seq = d["g"], d.get("ev") or {}, d.get("seq")
+    except Exception as e:  # noqa: BLE001
+        print(f"--goal: bad payload ({e})"); return 1
+    ref = f"{g['id']}:{seq}"
+    rec = store.get_post("goal", ref)
+    if rec and rec.get("post_id"):
+        print(f"goal {ref}: already posted ({rec['post_id']})"); return 0
+    caption = goal_caption(g, ev)
+    if dry:
+        print(caption); return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if not rec and not store.claim("goal", ref, title=caption.split("\n")[0]):
+        print(f"goal {ref}: claimed by another run - nothing posted"); return 0
+    try:
+        try:
+            game = GC._s365_game(g["id"])
+            hb, ab = GC.badges_for(game)
+            img = GC.render_bytes({"side": ev.get("s") or "h", "player": ev.get("p") or "", "minute": ev.get("m") or "",
+                                   "tag": ev.get("t") or "", "home": g["h"], "away": g["a"], "hs": g["hs"], "as": g["as"],
+                                   "comp": g.get("c") or 0, "home_badge": hb, "away_badge": ab})
+            pid = post_photo(token, img, caption)
+            print(f"posted the goal card for {ref}: {pid}")
+        except Exception as e:  # noqa: BLE001 - the picture failed: the text, now
+            print(f"goal {ref}: card failed ({e}) - posting the text")
+            pid = post_text(token, caption)
+            print(f"posted the goal text for {ref}: {pid}")
+        store.record_post("goal", ref, pid, title=caption.split("\n")[0])
+    except Exception as e:  # noqa: BLE001
+        print(f"goal {ref}: post FAILED: {e}")
+        if not rec:
+            store.release("goal", ref)
+        return 1
+    return 0
+
+
 def post_text(token, message):
     data = urllib.parse.urlencode({"message": message, "access_token": token}).encode()
     with urllib.request.urlopen(urllib.request.Request(GRAPH_FEED, data=data), timeout=30) as r:
@@ -754,7 +822,7 @@ def post_text(token, message):
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi")):
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -782,6 +850,9 @@ def main() -> int:
         i = sys.argv.index("--prediction")
         return prediction_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "",
                                dry="--dry" in sys.argv[1:])
+    if "--goal" in sys.argv[1:]:
+        i = sys.argv.index("--goal")
+        return goal_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
     if "--xi" in sys.argv[1:]:
         i = sys.argv.index("--xi")
         return xi_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
