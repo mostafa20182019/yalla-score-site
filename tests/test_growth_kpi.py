@@ -2,7 +2,7 @@
 """growth_kpi.py: the weekly row is built from the store with no network,
 every missing token leaves a null instead of failing, and the file keeps one
 row per day."""
-import sys, os, tempfile, time, json
+import datetime, sys, os, tempfile, time, json
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 for _k in ("CF_API_TOKEN", "CF_ACCOUNT_ID", "CF_D1_ID", "FB_PAGE_TOKEN", "TG_BOT_TOKEN", "TG_CHAT_ID"):
