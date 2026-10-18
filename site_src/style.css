@@ -546,7 +546,8 @@ a{color:inherit}
 .fmb{display:grid;grid-template-columns:1.15fr 1fr;gap:20px;background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:16px;margin:0 0 18px}
 .fmb-feat{display:flex;flex-direction:column;text-decoration:none;color:var(--ink);border-radius:12px;overflow:hidden;background:#f8fafc;border:1px solid #eef2f6}
 .fmb-banner{background:linear-gradient(135deg,var(--green-d),var(--green));color:#fff;font-weight:900;padding:10px 14px;font-size:.95rem}
-.fmb-img{aspect-ratio:16/9;background-size:cover;background-position:50% 25%}
+.fmb-img{aspect-ratio:16/9;background-size:cover;background-position:50% 25%;overflow:hidden}
+.fmb-pic{display:block;width:100%;height:100%;object-fit:cover;object-position:50% 25%}
 .fmb-noimg{background:linear-gradient(135deg,var(--green),#0d3e59)}
 .fmb-fb{padding:12px 14px 14px}
 .fmb-fb h2{margin:0 0 8px;font-size:1.3rem;line-height:1.5;font-weight:900}

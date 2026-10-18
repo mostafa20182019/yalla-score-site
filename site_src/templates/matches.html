@@ -83,7 +83,7 @@
       {% if feat %}
       <a class="mp-feat" href="{{ feat.href }}">
         {% if feat.has_img %}
-        <img class="mp-feat-img" src="{{ feat.img }}" alt="" loading="lazy">
+        <img class="mp-feat-img" src="{{ feat.img_full }}"{% if feat.img != feat.img_full %} srcset="{{ feat.img }} 640w, {{ feat.img_full }} 1600w" sizes="(max-width: 900px) 100vw, 60vw"{% endif %} alt="" loading="lazy" decoding="async">
         {% endif %}
         <b class="mp-feat-t">{{ feat.title }}</b>
         <span class="mp-feat-cta">اقرأ الخبر ←</span>

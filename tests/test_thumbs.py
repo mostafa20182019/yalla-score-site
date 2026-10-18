@@ -87,7 +87,8 @@ ck("15 shrink_media (which writes the thumbs) runs BEFORE the build",
 html = B.fmb_block({"title": "t", "image_url": f"/media/{name}",
                     "article_id": "1", "pub_date": "2026-09-22"},
                    [], "قائمة", "/news.html")
-ck("16 a rendered featured card points at the thumb", f"/media/thumbs/{name}" in html)
+ck("16 a rendered featured card offers the thumb AND the original (srcset), src = the original (2026-10-18: the big slot pixelated the thumb)",
+   f'srcset="/media/thumbs/{name} 640w, /media/{name} 1600w"' in html and f'src="/media/{name}"' in html and 'class="fmb-pic"' in html, html[:300])
 
 print()
 print(f"{len(fails)} FAILED: {', '.join(fails)}" if fails else "ALL THUMBS TESTS PASSED")

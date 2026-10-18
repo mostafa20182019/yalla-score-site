@@ -149,6 +149,7 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
         fa = articles[0]
         feat = {"href": Markup(article_href(fa)), "has_img": bool(fa.get("image_url")),
                 "img": thumb_url(fa["image_url"]) if fa.get("image_url") else "",
+                "img_full": fa.get("image_url") or "",      # the big slot: srcset thumb + original (2026-10-18)
                 "title": fa.get("title")}
         for a in articles[1:4]:
             img = thumb_url(a.get("image_url"))

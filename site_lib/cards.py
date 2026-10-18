@@ -192,9 +192,19 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
     numbered trending-list column with thumbnails and 'منذ X' bylines.
     flip=True mirrors the columns (featured LEFT, list RIGHT) for visual
     alternation between consecutive blocks."""
-    img = thumb_url(feat_a.get("image_url"))
-    imgdiv = (f'<div class="fmb-img" style="background-image:url(\'{esc(img)}\')"></div>'
-              if img else '<div class="fmb-img fmb-noimg"></div>')
+    # The featured slot is ~1100 CSS px wide on desktop (and 2-3x that in device
+    # pixels on phones): a 640px thumb stretched into it came out pixelated
+    # (user, 2026-10-18, the Kitara x Al Ahly card under «التحليلات»). So the
+    # slot is an <img> with BOTH sizes in srcset and the browser picks: the
+    # thumb only where it is enough, the original everywhere else. The small
+    # list thumbnails beside it keep the thumb (that is where the 2026-09-22
+    # weight saving came from).
+    full = feat_a.get("image_url") or ""
+    img = thumb_url(full)
+    imgdiv = (f'<div class="fmb-img"><img class="fmb-pic" src="{esc(full)}"'
+              + (f' srcset="{esc(img)} 640w, {esc(full)} 1600w" sizes="(max-width: 900px) 100vw, 60vw"' if img != full else "")
+              + ' alt="" loading="lazy" decoding="async"></div>'
+              if full else '<div class="fmb-img fmb-noimg"></div>')
     _nf = f' data-nf="{nf}"' if nf else ""     # news-filter key (NEWS_FILTER_JS)
     cls = "fmb" + (" fmb-flip" if flip else "") + (f" {extra}" if extra else "")
     out = [f'<section class="{cls}"{_nf}>']

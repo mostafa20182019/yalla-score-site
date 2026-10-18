@@ -33,7 +33,9 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
                      image=(feat and feat.get("image_url")) or None, active="home",
                      # the hero block renders the THUMB now - preloading the
                      # full 1600 would fetch a file the page never uses
-                     preload_img=thumb_url(feat and feat.get("image_url")) or None)
+                     # the LCP is the featured slot, which now renders the ORIGINAL on
+                     # desktop and hi-DPR phones (srcset) - preload that, not the thumb
+                     preload_img=(feat and feat.get("image_url")) or None)
     org_ld = jsonld({
         "@context": "https://schema.org",
         "@graph": [
