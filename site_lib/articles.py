@@ -316,6 +316,39 @@ def fix_moved_links(body):
         body)
 
 
+def ensure_match_image(m, art, status, media_dir=None):
+    """A match piece always shows OUR matchup card when its own image is
+    missing or a placeholder (2026-10-18: the Brentford x Liverpool report
+    shipped with ph-pitch.svg, and the Facebook link preview of /m/560611
+    showed the site banner - the match page's og:image was the 95px crest).
+
+    Returns the absolute image URL for the page's og:image (and sets it on the
+    article dict so the embedded block shows the same picture), or None when a
+    card cannot be drawn. The card is drawn into media/ at build time when the
+    writer's run did not commit one; the name is deterministic, so every build
+    agrees and nothing needs committing."""
+    url = str(art.get("image_url") or "")
+    if url and not any(p in url for p in ("ph-pitch", "ph-ball")):
+        return url if url.startswith("http") else SITE_BASE + url
+    try:
+        import matchup_card as MC
+        mm = dict(m, status="FINISHED" if (status or "").upper() == "FINISHED" else "UPCOMING")
+        fname = MC.card_name(mm)
+        mdir = media_dir or os.path.join(HERE, "media")
+        path = os.path.join(mdir, fname)
+        if not os.path.exists(path):
+            os.makedirs(mdir, exist_ok=True)
+            MC.for_match(mm, path)
+    except Exception as ex:                                 # noqa: BLE001
+        print(f"  ! matchup card for match {m.get('match_id')} not drawn: {ex}")
+        return None
+    full = f"{SITE_BASE}/media/{fname}"
+    art["image_url"] = full
+    if not art.get("image_credit"):
+        art["image_credit"] = "الصورة: تصميم يلا سكور"
+    return full
+
+
 def match_article_block(a, comp):
     """The AI preview/report, rendered inside its match page (layer 3).
 

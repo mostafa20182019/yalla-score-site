@@ -5,7 +5,7 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import datetime
 import os
-from site_lib.articles import match_article_block
+from site_lib.articles import ensure_match_image, match_article_block
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
@@ -226,8 +226,14 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             desc = (f"موعد مباراة {h_ar} و{a_ar} في {comp}: {when}، "
                     "والقنوات الناقلة للمباراة. النتيجة المباشرة ومسجلو "
                     "الأهداف هنا فور انطلاق اللقاء.")
-        img = None
-        if m.get("home_badge"):
+        # the match's own article (layer 3, 2026-09-16) is picked here, before
+        # the head: its picture (the matchup card, drawn now if the writer's
+        # run left none) is the page's og:image. Without it the 95px crest
+        # fell through to the site banner on every Facebook link preview
+        # (2026-10-18, the Brentford x Liverpool report).
+        _art = pick_match_article(_match_arts.get(str(mid)) or [], st)
+        img = ensure_match_image(m, _art, st) if _art else None
+        if not img and m.get("home_badge"):
             _lc = local_crest(m["home_badge"])
             img = _lc if _lc.startswith("http") else SITE_BASE + _lc
         murl = f"/m/{mid}.html"
@@ -257,9 +263,8 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                 else:
                     _tw += f" في تمام الساعة {m['koff_time']} بتوقيت القاهرة"
             _rd = f"الجولة {m['round']} من " if m.get("round") else ""
-        # the match's own article (layer 3, 2026-09-16): the story sits above
-        # the computed reading, which is what backs it with numbers
-        _art = pick_match_article(_match_arts.get(str(mid)) or [], st)
+        # the story sits above the computed reading, which is what backs it
+        # with numbers (_art picked above, with its image settled)
         article_block = match_article_block(_art, m.get("competition") or "") if _art else ""
         # «قراءة قبل المباراة» (layer 1): how the two clubs arrive
         _pre_weight = 0
