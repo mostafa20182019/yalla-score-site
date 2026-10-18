@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-18T15:22:07+03:00",
+ "generated_at": "2026-10-18T21:23:42+03:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -377,17 +377,6 @@
    "added": "2026-10-13"
   },
   {
-   "file": "al-ahly-club-of-the-century-monument.jpg",
-   "credit": "الصورة: برج القاهرة، BavKraft عبر ويكيميديا كومنز (CC0) · تركيب يلا سكور",
-   "subject": "شعار الأهلي",
-   "club": "الأهلي",
-   "slug": "al-ahly",
-   "year": 2026,
-   "is_person": false,
-   "source": "team-photos/al-ahly/club-of-the-century-monument.jpg",
-   "added": "2026-10-18"
-  },
-  {
    "file": "al-ahly-red-castle-card.jpg",
    "credit": "الصورة: تصميم يلا سكور",
    "subject": "شعار الأهلي",
@@ -465,28 +454,6 @@
    "added": "2026-10-13"
   },
   {
-   "file": "barcelona-blaugrana-poster.jpg",
-   "credit": "الصورة: سماء Jose Soria (CC0) وكامب نو من ويكيميديا كومنز (CC BY 2.0) · تصميم يلا سكور",
-   "subject": "شعار برشلونة",
-   "club": "برشلونة",
-   "slug": "barcelona",
-   "year": 2026,
-   "is_person": false,
-   "source": "team-photos/barcelona/blaugrana-poster.jpg",
-   "added": "2026-10-18"
-  },
-  {
-   "file": "barcelona-corner-flag-night.jpg",
-   "credit": "الصورة: مدرج كامب نو JoJan عبر ويكيميديا كومنز (CC BY 3.0) · تصميم يلا سكور",
-   "subject": "شعار برشلونة",
-   "club": "برشلونة",
-   "slug": "barcelona",
-   "year": 2026,
-   "is_person": false,
-   "source": "team-photos/barcelona/corner-flag-night.jpg",
-   "added": "2026-10-18"
-  },
-  {
    "file": "barcelona-identity-card.jpg",
    "credit": "الصورة: تصميم يلا سكور",
    "subject": "شعار برشلونة",
@@ -498,25 +465,25 @@
    "added": "2026-10-13"
   },
   {
-   "file": "barcelona-jersey-macro.jpg",
+   "file": "barcelona-jersey-macro-wide.jpg",
    "credit": "الصورة: تصميم يلا سكور",
    "subject": "شعار برشلونة",
    "club": "برشلونة",
    "slug": "barcelona",
    "year": 2026,
    "is_person": false,
-   "source": "team-photos/barcelona/jersey-macro.jpg",
+   "source": "team-photos/barcelona/jersey-macro-wide.jpg",
    "added": "2026-10-18"
   },
   {
-   "file": "barcelona-paint-split.jpg",
+   "file": "barcelona-paint-split-wide.jpg",
    "credit": "الصورة: تصميم يلا سكور",
    "subject": "شعار برشلونة",
    "club": "برشلونة",
    "slug": "barcelona",
    "year": 2026,
    "is_person": false,
-   "source": "team-photos/barcelona/paint-split.jpg",
+   "source": "team-photos/barcelona/paint-split-wide.jpg",
    "added": "2026-10-18"
   },
   {
@@ -1389,14 +1356,14 @@
    "added": "2026-10-13"
   },
   {
-   "file": "man-united-crown-wallpaper.jpg",
+   "file": "man-united-crown-wallpaper-wide.jpg",
    "credit": "الصورة: تصميم يلا سكور",
    "subject": "شعار مانشستر يونايتد",
    "club": "مانشستر يونايتد",
    "slug": "man-united",
    "year": 2026,
    "is_person": false,
-   "source": "team-photos/man-united/crown-wallpaper.jpg",
+   "source": "team-photos/man-united/crown-wallpaper-wide.jpg",
    "added": "2026-10-18"
   },
   {
