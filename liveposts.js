@@ -130,6 +130,12 @@ export function htMessage(g, goals) {
           `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].join("\n");
 }
 
+export function koMessage(g) {
+  return [`🔔 انطلقت المباراة: ${g.h} × ${g.a}`,
+          `${COMP_AR[g.c] || ""} · المباراة لحظة بلحظة: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
+          `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].join("\n");
+}
+
 export function ftMessage(g, goals) {
   return [`🏁 انتهت المباراة: ${scoreLine(g)}`, ...scorerLines(g, goals),
           `${COMP_AR[g.c] || ""} · تفاصيل المباراة والهدافون: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
@@ -233,7 +239,7 @@ export async function goalFallbacks(env, now) {
   const out = { posted: 0 };
   const since = Math.floor((now - 6 * 3600 * 1000) / 1000);      // never dig up old claims
   const until = Math.floor((now - GOAL_FALLBACK_MS) / 1000);
-  for (const kind of ["goal", "ht", "ft"]) {
+  for (const kind of ["goal", "ht", "ft", "ko"]) {
     let rows = [];
     try { rows = (await env.DB.prepare(FB_STALE).bind(kind, until, since).all()).results || []; }
     catch (e) { continue; }
@@ -255,7 +261,8 @@ export async function livePosts(env, r, dispatch = null) {
   const cancels = (r && r.cancels || []).filter(x => postScope(x.g));
   const hts = (r && r.hts || []).filter(x => postScope(x.g));
   const ends = (r && r.ends || []).filter(x => postScope(x.g));
-  if (!posts.length && !cancels.length && !hts.length && !ends.length) return out;
+  const kos = (r && r.kos || []).filter(x => postScope(x.g));
+  if (!posts.length && !cancels.length && !hts.length && !ends.length && !kos.length) return out;
   if (!env.FB_PAGE_TOKEN) { console.log("live posts: no FB_PAGE_TOKEN -", posts.length + hts.length + ends.length, "post(s) not posted"); return out; }
   for (const { g, seq, ev } of posts) {
     const ref = `${g.id}:${seq}`;
@@ -285,10 +292,11 @@ export async function livePosts(env, r, dispatch = null) {
   }
   // half-time and full-time, after the goals so a 90' goal is announced before
   // the whistle; one post per game per kind (the lock), the card as the photo
-  for (const [kind, list, text] of [["ht", hts, htMessage], ["ft", ends, ftMessage]]) {
+  // (the kick-off first: it carries no goals and comes before anything else)
+  for (const [kind, list, text] of [["ko", kos, koMessage], ["ht", hts, htMessage], ["ft", ends, ftMessage]]) {
     for (const { g } of list) {
       const ref = String(g.id);
-      const goals = await goalsLogged(env, g.id);
+      const goals = kind === "ko" ? [] : await goalsLogged(env, g.id);
       const msg = text(g, goals);
       // the claim keeps the whole text so goalFallbacks() can resend it
       if (!(await claim(env, kind, ref, dispatch ? msg : msg.split("\n")[0]))) { out.skipped += 1; continue; }

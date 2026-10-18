@@ -37,7 +37,7 @@ on:
         required: false
         default: ""
       whistle:
-        description: "Post half-time / full-time as a CARD: the JSON the Worker dispatched ({kind, g, goals})."
+        description: "Post kick-off / half-time / full-time as a CARD: the JSON the Worker dispatched ({kind: ko|ht|ft, g, goals})."
         required: false
         default: ""
       h2h:

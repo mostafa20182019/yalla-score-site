@@ -176,7 +176,7 @@ def render(ev, out=None):
     return img
 
 
-WHISTLE_TITLE = {"ht": "نهاية الشوط الأول", "ft": "انتهت المباراة"}
+WHISTLE_TITLE = {"ht": "نهاية الشوط الأول", "ft": "انتهت المباراة", "ko": "انطلقت المباراة"}
 
 
 def render_whistle(ev, out=None):
@@ -244,7 +244,8 @@ def render_whistle(ev, out=None):
         tw = d.textlength(FC.ar(lbl or ""), font=f)
         d.rounded_rectangle([cx - tw / 2 - 14, cy + R + 16, cx + tw / 2 + 14, cy + R + 62], 10, fill=(31, 148, 211))
         text_c(cx, cy + R + 20, lbl or "", f)
-    score = f"{ev.get('as')} - {ev.get('hs')}"          # home sits on the right
+    # home sits on the right; the kick-off card has no score yet - a «×»
+    score = "×" if kind == "ko" else f"{ev.get('as')} - {ev.get('hs')}"
     fs = FC.font("ExtraBold", 136)
     d.text((W / 2 - d.textlength(score, font=fs) / 2, cy - 88), score, font=fs, fill=WHITE)
 
@@ -273,7 +274,9 @@ def render_whistle(ev, out=None):
                 d.ellipse([xr, yy + 12, xr + 10, yy + 22], fill=(246, 192, 60))
                 text_l(xr + 20, yy, r, fl)
             yy += 44
-    if not any(g.get("p") for g in goals):
+    if kind == "ko":
+        text_c(W // 2, 760, "صافرة البداية · تابع النتيجة لحظة بلحظة على الموقع", FC.font("Bold", 30), SOFT)
+    elif not any(g.get("p") for g in goals):
         text_c(W // 2, 760, "بلا أهداف" if (ev.get("hs") or 0) + (ev.get("as") or 0) == 0 else "", FC.font("Bold", 30), SOFT)
 
     text_l(40, H - 44, "yallascore.site", FC.font("Bold", 22), SOFT)

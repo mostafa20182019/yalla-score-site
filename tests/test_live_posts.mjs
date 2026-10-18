@@ -345,6 +345,28 @@ ck("20b the slower of two overlapping refreshes posts NO second «هدف!» for 
 ck("20c ...and leaves the state the faster one wrote (1-2) untouched",
    db.state.get(990).as_ === 2 && db.state.get(990).changed_at === fastAt);
 
+/* --------------------------- 10c the kick-off post (2026-10-18) */
+// user: «عايز نعمل بوست عند بداية مباراة للفرق المميزة». An upcoming game has
+// no state row, so the kick-off is the FIRST sight of a curated game in play
+// within its opening minutes; a game first seen at 70' gets no «انطلقت».
+const nKo = posts().length;
+// (the DETAIL helper says 70' by default and the detail overrides the list's minute - the kick-off needs 1')
+detailFor[985] = withStatus(DETAIL(0, 0, [], undefined), { statusText: "الشوط الأول", shortStatusText: "1", gameTime: 1, gameTimeDisplay: "1'" });
+detailFor[986] = DETAIL(0, 0, [], undefined);
+LIST = { games: [live(985, 7, "ليفربول", "فياريال", 0, 0, { statusText: "الشوط الأول", shortStatusText: "1", gameTime: 1, gameTimeDisplay: "1'" }),
+                 live(986, 7, "تشيلسي", "توتنهام", 0, 0),           // first seen at 70': the store missed the start
+                 live(987, 7, "بيرنلي", "فولهام", 0, 0, { gameTime: 1, gameTimeDisplay: "1'" }),   // not curated
+                 ...filler] };
+await tick();
+ck("20d the first sight of a curated game in its opening minute posts «انطلقت المباراة» once, nothing for the others",
+   posts().length === nKo + 1 && posts()[nKo].caption.startsWith("🔔 انطلقت المباراة: ليفربول × فياريال")
+   && posts()[nKo].caption.includes("https://yallascore.site/m/985") && db.fb.has("ko|985") && !db.fb.has("ko|986") && !db.fb.has("ko|987"),
+   JSON.stringify(posts().slice(-1)));
+LIST.games[0] = live(985, 7, "ليفربول", "فياريال", 0, 0, { gameTime: 2, gameTimeDisplay: "2'" });
+detailFor[985] = withStatus(DETAIL(0, 0, [], undefined), { statusText: "الشوط الأول", shortStatusText: "1", gameTime: 2, gameTimeDisplay: "2'" });
+await tick();
+ck("20e the next minute posts no second kick-off", posts().length === nKo + 1);
+
 /* ------------------------------- 11 the line-up CARD path (2026-10-17) */
 const envGh = { ...env, GH_TOKEN: "gh" };
 const tickGh = () => worker.scheduled({ cron: "* * * * *" }, envGh, {});

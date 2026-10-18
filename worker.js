@@ -336,6 +336,7 @@ const cairoDate = (ms) => new Intl.DateTimeFormat("en-CA", {
 const REPORT_INS = "/*rq_ins*/ INSERT OR IGNORE INTO report_queue (game_id, c, h, a, hs, as_, " +
   "ended_at, due_at, tries) VALUES (?,?,?,?,?,?,?,?,0)";
 
+const KICKOFF_MAX_MIN = 5;   // a game first seen in play past this minute gets no «انطلقت» post
 const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
   "score_h, score_a, c, h, a, seen_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 // The same insert, applied only while the game's state row is still the one
@@ -404,7 +405,7 @@ async function storeApply(env, fresh, now) {
   const stmts = [];
   let upserts = 0, events = 0, ended = 0;
   const posts = [], cancels = [];   // goals discovered LIVE + VAR reversals -> liveposts.js
-  const hts = [], ends = [];        // the half-time whistle / the final whistle -> liveposts.js
+  const hts = [], ends = [], kos = [];   // half-time / final whistle / kick-off -> liveposts.js
   const goalRow = (g, seq, ev, p = null) => (p
     ? env.DB.prepare(GOAL_INS_IF).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now,
                                        g.id, p.changed_at == null ? null : Number(p.changed_at))
@@ -503,6 +504,12 @@ async function storeApply(env, fresh, now) {
     // like one.
     const breakNow = g.live && (g.min || "") === "استراحة", breakBefore = !!p && (p.min || "") === "استراحة";
     if (p && p.live && breakNow && !breakBefore && curatedLive(g)) hts.push({ g });
+    // THE KICK-OFF (2026-10-18, user: «بوست عند بداية مباراة للفرق المميزة»):
+    // an upcoming game has no state row (storeApply never stores sg 2), so the
+    // start is the FIRST sight of a curated game in play, in its opening
+    // minutes. The minute cap keeps a store that missed the start (a quiet
+    // ten minutes, a cold isolate) from shouting «انطلقت» at 0-1 in the 20th.
+    if (!p && g.live && (g.gt || 0) <= KICKOFF_MAX_MIN && (g.min || "") !== "استراحة" && curatedLive(g)) kos.push({ g });
     // The state row is written only when something MATERIAL changed. The
     // minute is deliberately not in that test (2026-09-17): it ticks for every
     // live game every minute, so including it cost one row write per live game
@@ -560,7 +567,7 @@ async function storeApply(env, fresh, now) {
   // insert above reports 0 changes when an overlapping refresh got there
   // first (that refresh posted it), or when the seq already existed
   const applied = (i) => { const r = res[i]; return !(r && r.meta && r.meta.changes === 0); };
-  return { upserts, events, ended, posts: posts.filter(x => x.at == null || applied(x.at)), cancels, hts, ends };
+  return { upserts, events, ended, posts: posts.filter(x => x.at == null || applied(x.at)), cancels, hts, ends, kos };
 }
 
 // One refresh: upstream -> store. A failed upstream read changes nothing (the

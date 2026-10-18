@@ -57,6 +57,12 @@ ck("4b the headline «انتهت المباراة» is drawn large", white2 > 60
 ck("4c the rule sits under the crests with the ball in its middle", min(wim.getpixel((540, 712))) < 120 and min(wim.getpixel((200, 712))) > 200)
 wb = GC.render_whistle_bytes({**wev, "kind": "ht", "goals": []})
 ck("4d render_whistle_bytes gives a JPEG for a goalless half", wb[:3] == b"\xff\xd8\xff")
+# 5 the kick-off card (2026-10-18): the whistle layout with «انطلقت المباراة», a «×» instead of a score
+kim = GC.render_whistle({**wev, "kind": "ko", "hs": 0, "as": 0, "goals": []})
+ck("5a the kick-off card renders at the whistle card's size", kim.size == (GC.W, GC.H))
+ck("5b WHISTLE_TITLE knows the kick-off", GC.WHISTLE_TITLE.get("ko") == "انطلقت المباراة")
+kb = GC.render_whistle_bytes({**wev, "kind": "ko", "hs": 0, "as": 0, "goals": []})
+ck("5c render_whistle_bytes gives a JPEG for the kick-off", kb[:3] == b"\xff\xd8\xff")
 
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))

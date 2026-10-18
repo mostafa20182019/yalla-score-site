@@ -74,6 +74,12 @@ finally:
     fp.article_pub_dt, fp.open_hours = _pd, _oh
 ck("20 --prediction refuses while the switch is off (dry runs still draw)", fp.prediction_post("tok", "4804684") == 1)
 
+# ---- the kick-off caption (2026-10-18): no score, no scorers, the live link
+kg = {"id": 985, "c": 7, "h": "ليفربول", "a": "فياريال", "hs": 0, "as": 0}
+kc = fp.whistle_caption("ko", kg, [{"s": "h", "p": "x", "m": "1"}])
+ck("21 the kick-off caption opens with the bell and the two names, no score", kc.startswith("🔔 انطلقت المباراة: ليفربول × فياريال") and "0 - 0" not in kc)
+ck("22 ...carries the live link and the hashtags, and ignores any goal list", "https://yallascore.site/m/985" in kc and "#يلا_سكور" in kc and "x 1'" not in kc)
+
 print()
 print("ALL FB PREDICTION TESTS PASSED" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

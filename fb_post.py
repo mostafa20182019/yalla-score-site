@@ -846,8 +846,13 @@ def goal_post(token, payload, dry=False):
 def whistle_caption(kind, g, goals):
     """The «⏸️ نهاية الشوط الأول» / «🏁 انتهت المباراة» text - liveposts.js's lines."""
     tag = lambda n: "#" + (n or "").strip().replace(" ", "_")
-    head = "⏸️ نهاية الشوط الأول" if kind == "ht" else "🏁 انتهت المباراة"
-    lines = [f"{head}: {g['h']} {g['hs']} - {g['as']} {g['a']}"]
+    if kind == "ko":          # the kick-off (2026-10-18): no score yet, no scorers
+        head = "🔔 انطلقت المباراة"
+        lines = [f"{head}: {g['h']} × {g['a']}"]
+        goals = []
+    else:
+        head = "⏸️ نهاية الشوط الأول" if kind == "ht" else "🏁 انتهت المباراة"
+        lines = [f"{head}: {g['h']} {g['hs']} - {g['as']} {g['a']}"]
     by = {"h": [], "a": []}
     for ev in goals or []:
         if not ev.get("p"):
@@ -857,7 +862,7 @@ def whistle_caption(kind, g, goals):
     if by["h"]: lines.append(f"{g['h']}: " + "، ".join(by["h"]))
     if by["a"]: lines.append(f"{g['a']}: " + "، ".join(by["a"]))
     comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
-    link = "المباراة لحظة بلحظة" if kind == "ht" else "تفاصيل المباراة والهدافون"
+    link = "المباراة لحظة بلحظة" if kind in ("ht", "ko") else "تفاصيل المباراة والهدافون"
     lines.append((f"{comp} · " if comp else "") + f"{link}: https://yallascore.site/m/{g['id']}")
     lines.append(f"#يلا_سكور {tag(g['h'])} {tag(g['a'])}")
     return "\n".join(lines)
@@ -872,7 +877,7 @@ def whistle_post(token, payload, dry=False):
     try:
         d = json.loads(payload)
         kind, g, goals = d["kind"], d["g"], d.get("goals") or []
-        assert kind in ("ht", "ft")
+        assert kind in ("ht", "ft", "ko")
     except Exception as e:  # noqa: BLE001
         print(f"--whistle: bad payload ({e})"); return 1
     ref = str(g["id"])
