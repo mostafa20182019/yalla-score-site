@@ -337,6 +337,7 @@ const REPORT_INS = "/*rq_ins*/ INSERT OR IGNORE INTO report_queue (game_id, c, h
   "ended_at, due_at, tries) VALUES (?,?,?,?,?,?,?,?,0)";
 
 const KICKOFF_MAX_MIN = 5;   // a game first seen in play past this minute gets no «انطلقت» post
+const LS_PREV_CHUNK = 80;    // game ids per ls_prev query: D1 allows 100 bound parameters (2026-10-18)
 const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
   "score_h, score_a, c, h, a, seen_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
 // The same insert, applied only while the game's state row is still the one
@@ -397,9 +398,16 @@ const goalKey = (g) => `${g.s}|${g.p || ""}|${g.m || ""}`;
 async function storeApply(env, fresh, now) {
   const ids = fresh.games.map(g => g.id).filter(Boolean);
   const prev = {};
-  if (ids.length) {
-    const q = `/*ls_prev*/ SELECT * FROM live_state WHERE game_id IN (${ids.map(() => "?").join(",")})`;
-    const r = await env.DB.prepare(q).bind(...ids).all();
+  // D1 refuses a statement with more than 100 bound parameters ("too many
+  // SQL variables"). The day's list crossed 100 games on 2026-10-18 (109 with
+  // the Confederation Cup and the Sunday leagues) and every refresh threw
+  // here for two hours - /live.json fell back to the direct read and no
+  // kick-off / half-time / goal post went out. Read the previous rows in
+  // chunks well under the cap.
+  for (let i = 0; i < ids.length; i += LS_PREV_CHUNK) {
+    const part = ids.slice(i, i + LS_PREV_CHUNK);
+    const q = `/*ls_prev*/ SELECT * FROM live_state WHERE game_id IN (${part.map(() => "?").join(",")})`;
+    const r = await env.DB.prepare(q).bind(...part).all();
     for (const row of r.results || []) prev[row.game_id] = row;
   }
   const stmts = [];

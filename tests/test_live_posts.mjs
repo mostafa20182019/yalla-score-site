@@ -26,6 +26,7 @@ function fakeD1() {
     if (sql.startsWith("CREATE TABLE")) return { results: [] };
     if (sql.includes("/*ls_rows*/")) return { results: [...state.values()] };
     if (sql.includes("/*ls_snap*/")) return { first: meta.has("snapshot") ? { v: meta.get("snapshot") } : null };
+    if (sql.includes("/*ls_prev*/") && b.length > 100) throw new Error("D1_ERROR: too many SQL variables");   // the real cap (2026-10-18)
     if (sql.includes("/*ls_prev*/")) {
       // api.stalePrev: the rows as an OVERLAPPING refresh read them before this
       // one's batch landed (the cross-isolate race of 2026-10-17); used once

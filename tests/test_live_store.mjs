@@ -34,6 +34,7 @@ function fakeD1() {
     if (sql.includes("/*ls_snap*/")) return {
       results: meta.has("snapshot") ? [{ v: meta.get("snapshot") }] : [],
       meta: { rows_read: meta.has("snapshot") ? 1 : 0 } };
+    if (sql.includes("/*ls_prev*/") && b.length > 100) throw new Error("D1_ERROR: too many SQL variables");   // the real cap (2026-10-18)
     if (sql.includes("/*ls_prev*/")) {
       // api.stalePrev: a copy of the rows as an OVERLAPPING refresh saw them before
       // this one's batch landed (the cross-isolate race of 2026-10-17); used once
@@ -280,6 +281,24 @@ await call(); await drain();
 const sg = db.goals.filter(g => g.game_id === 903);
 ck("15 without a goal list the score change itself is the event (side + the minute on the clock, no scorer)",
    sg.length === 1 && sg[0].side === "h" && sg[0].player === null && sg[0].minute === "23'");
+
+/* --------------------------------------- 7b a day of 110 games (2026-10-18) */
+// D1 allows 100 bound parameters; the Sunday list reached 109 games and the
+// ls_prev query threw on every refresh for two hours. The fake now enforces
+// the cap; the worker must read the previous rows in chunks.
+age(20000);
+const bigDay = [];
+for (let i = 0; i < 110; i++)
+  bigDay.push({ id: 5000 + i, statusGroup: 2, competitionId: 11, homeCompetitor: team(70000 + 2 * i, "h" + i, -1), awayCompetitor: team(70001 + 2 * i, "a" + i, -1) });
+bigDay[0] = { ...bigDay[0], statusGroup: 3, statusText: "الشوط الأول", shortStatusText: "1", gameTime: 20, gameTimeDisplay: "20'",
+              homeCompetitor: team(70000, "h0", 1), awayCompetitor: team(70001, "a0", 0) };
+const keepList = LIST;
+LIST = { games: [...keepList.games, ...bigDay] };
+let bigErr = null;
+try { await call(); await drain(); } catch (e) { bigErr = e; }
+ck("15b a list of more than 100 games still refreshes the store (ls_prev in chunks under D1's 100-parameter cap)",
+   !bigErr && db.state.has(5000) && db.state.get(5000).hs === 1, String(bigErr && bigErr.message));
+LIST = keepList;
 
 /* ------------------------------------------------------------- 8 cron */
 const callsBefore = upstreamCalls;
