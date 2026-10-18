@@ -289,7 +289,8 @@ ck("15 without a goal list the score change itself is the event (side + the minu
 age(20000);
 const bigDay = [];
 for (let i = 0; i < 110; i++)
-  bigDay.push({ id: 5000 + i, statusGroup: 2, competitionId: 11, homeCompetitor: team(70000 + 2 * i, "h" + i, -1), awayCompetitor: team(70001 + 2 * i, "a" + i, -1) });
+  // FINISHED, not scheduled: only live + finished games are stored (and bound), scheduled ones go to `upcoming`
+  bigDay.push({ id: 5000 + i, statusGroup: 4, competitionId: 11, homeCompetitor: team(70000 + 2 * i, "h" + i, 0), awayCompetitor: team(70001 + 2 * i, "a" + i, 0) });
 bigDay[0] = { ...bigDay[0], statusGroup: 3, statusText: "الشوط الأول", shortStatusText: "1", gameTime: 20, gameTimeDisplay: "20'",
               homeCompetitor: team(70000, "h0", 1), awayCompetitor: team(70001, "a0", 0) };
 const keepList = LIST;
