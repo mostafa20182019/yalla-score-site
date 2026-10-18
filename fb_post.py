@@ -72,6 +72,31 @@ MEDIA = os.path.join(HERE, "media")
 # old link post; the variant is a function of the id, so Insights can be
 # read per variant without storing anything. Set False to go back to links.
 PHOTO_AB = True
+# PREDICTION POSTS ARE OFF unless the repo variable FB_PREDICTIONS is "on"
+# (user, 2026-10-18: «مش عايز بوستات للتوقعات على الفيس بوك الفترة دى»). Covers
+# the prediction CARD post (--prediction), and the auto-posting of articles
+# that ARE a prediction: kind=analysis, a preview titled «توقع يلا سكور:», or
+# any article whose fb_post text carries the model line. News and match
+# reports (kind=report) always post. Flip: Settings > Secrets and variables > Actions >
+# Variables > FB_PREDICTIONS = on (both workflows pass it through).
+FB_PREDICTIONS = (os.environ.get("FB_PREDICTIONS", "") or "").strip().lower() == "on"
+PREDICTION_MARKS = ("توقع يلا سكور", "نموذج يلا سكور", "توقعات يلا سكور")
+
+
+def is_prediction_post(art):
+    """True when the article's Facebook post would be a prediction post.
+    A match REPORT is never one (user, 2026-10-18: «التقارير تنزل على الفيس
+    عادي، التوقعات بس هي اللي متنزلش مؤقتًا»), even when it says how our
+    prediction fared."""
+    if (art.get("kind") or "") == "report":
+        return False
+    if (art.get("kind") or "") == "analysis":
+        return True
+    title = (art.get("title") or "").strip()
+    if (art.get("kind") or "") == "preview" and title.startswith("توقع يلا سكور"):
+        return True
+    text = title + chr(10) + str(art.get("fb_post") or "")
+    return any(k in text for k in PREDICTION_MARKS)
 AUTO_MAX_AGE_H = 6       # --auto never posts an article older than this (10 articles/day: 12h re-posted a half-day backlog on 2026-09-03)
 AUTO_MAX_PER_RUN = 3     # --auto posts at most this many per run (staggers a backlog)
 # POSTING WINDOW - OFF (2026-09-12, second decision of the day). A window of
@@ -368,6 +393,9 @@ def pending(items):
             continue          # undated / old (in OPEN hours): never auto-posted
         if store.failed_count("article", aid) >= MAX_POST_ATTEMPTS:
             continue          # gave up on this one; don't burn a slot on it
+        if not FB_PREDICTIONS and is_prediction_post(art):
+            print(f"article {aid}: a prediction post - skipped (FB_PREDICTIONS is off)", file=sys.stderr)
+            continue
         todo.append((age, art))
     todo.sort(key=lambda t: -t[0])            # oldest first, newest last
     return [art for _, art in todo][:AUTO_MAX_PER_RUN]
@@ -502,6 +530,9 @@ def prediction_text(m, pr, tv=None):
 
 def prediction_post(token, mid, dry=False):
     """Post the prediction card for one match. 0 = posted or dry-run, 1 = nothing to post."""
+    if not FB_PREDICTIONS and not dry:
+        print("prediction: prediction posts are OFF (user, 2026-10-18) - set the repo variable FB_PREDICTIONS=on to post them again")
+        return 1
     import tempfile
     import match_brief as MB
     import matchup_card as MC

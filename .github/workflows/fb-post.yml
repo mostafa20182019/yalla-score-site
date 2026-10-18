@@ -104,6 +104,8 @@ jobs:
           WHISTLE: ${{ inputs.whistle }}
           PREDICTION: ${{ inputs.prediction }}
           H2H: ${{ inputs.h2h }}
+          # prediction posts are off until this repo variable is "on" (2026-10-18)
+          FB_PREDICTIONS: ${{ vars.FB_PREDICTIONS }}
         run: |
           if [ -n "$WHISTLE" ]; then
             python fb_post.py --whistle "$WHISTLE" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
