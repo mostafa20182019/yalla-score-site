@@ -279,16 +279,54 @@ def render_card(m, ge_idx):
     d.text((60, H - 66), "yallascore.site", font=font("Bold", 30), fill=(225, 238, 247))
     return im
 
-def post_text(m):
+def whistle_event(m, ge_idx):
+    """The publish-path result card in the LIVE family's design (2026-10-18:
+    Nottingham x Arsenal's result went out on the old light card while the
+    Worker's full-time card - the same match state - looks different; the
+    user asked why). Builds goal_card.render_whistle's event for kind "ft":
+    scorers from goal_events via build_site's matcher, the competition id the
+    card's label map expects (looked up by the Arabic label, so football-data
+    competitions resolve too), the crests from the match row."""
+    import goal_card as GC
+    goals = []
+    for g in (b.match_goals(ge_idx, m) or []):
+        goals.append({"s": g.get("side") or "h", "p": g.get("player") or "", "m": g.get("minute") or "", "t": g.get("tag") or ""})
+    label = b.comp_label(m.get("competition") or "")
+    cid = next((k for k, v in GC.COMP_AR.items() if v == label), 0)
+    return {"kind": "ft", "home": b.ar_team(m.get("home")), "away": b.ar_team(m.get("away")),
+            "hs": m.get("home_score"), "as": m.get("away_score"), "comp": cid,
+            "home_badge": m.get("home_badge"), "away_badge": m.get("away_badge"), "goals": goals}
+
+
+def whistle_png(m, ge_idx):
+    import goal_card as GC
+    img = GC.render_whistle(whistle_event(m, ge_idx))
+    buf = io.BytesIO()
+    img.save(buf, "PNG", optimize=True)
+    return buf.getvalue()
+
+
+def post_text(m, ge_idx=None):
+    """The same text as the Worker's full-time post (liveposts.ftMessage /
+    fb_post.whistle_caption): «🏁 انتهت المباراة», the scorers per side, the
+    competition and the match page, the hashtags."""
     home, away = b.ar_team(m.get("home")), b.ar_team(m.get("away"))
     comp = b.comp_label(m.get("competition") or "")
-    tags = ["#يلا_سكور"]
-    for t in (home, away):
-        tags.append("#" + t.replace(" ", "_"))
-    tags.append("#" + comp.replace(" ", "_"))
-    return (f"⚽ {home} {m['home_score']} - {m['away_score']} {away} | {comp}\n\n"
-            f"تفاصيل المباراة والهدافون 👇\n{b.SITE_BASE}{b.match_url(m)}\n\n"
-            + " ".join(tags) + "\n")
+    lines = [f"🏁 انتهت المباراة: {home} {m['home_score']} - {m['away_score']} {away}"]
+    if ge_idx is not None:
+        by = {"h": [], "a": []}
+        for g in (b.match_goals(ge_idx, m) or []):
+            if not g.get("player"):
+                continue
+            t = {"ج": " (ج)", "عكسية": " (عكسي)"}.get(g.get("tag") or "", "")
+            by.setdefault(g.get("side") or "h", by["h"]).append(
+                f"{g['player']} {g['minute']}'{t}" if g.get("minute") else f"{g['player']}{t}")
+        if by["h"]: lines.append(f"{home}: " + "، ".join(by["h"]))
+        if by["a"]: lines.append(f"{away}: " + "، ".join(by["a"]))
+    lines.append(f"{comp} · تفاصيل المباراة والهدافون: {b.SITE_BASE}{b.match_url(m)}")
+    tags = ["#يلا_سكور"] + ["#" + t.replace(" ", "_") for t in (home, away)] + ["#" + comp.replace(" ", "_")]
+    lines.append(" ".join(tags))
+    return "\n".join(lines) + "\n"
 
 
 # ---------------------------------------------------------------- Facebook
@@ -439,11 +477,11 @@ def post_cards(picked, ge_idx, out_dir):
             continue
         print(f"card {mid}: {why}")
         try:
-            card = render_card(m, ge_idx)
-            buf = io.BytesIO()
-            card.save(buf, "PNG", optimize=True)
-            card.save(os.path.join(out_dir, f"{mid}.png"), "PNG", optimize=True)
-            pid = post_photo(token, buf.getvalue(), post_text(m))
+            # the live family's full-time card, not the old light result card
+            png = whistle_png(m, ge_idx)
+            with open(os.path.join(out_dir, f"{mid}.png"), "wb") as fh:
+                fh.write(png)
+            pid = post_photo(token, png, post_text(m, ge_idx))
             store.record_post("card", mid, pid,
                               title=f'{m.get("home")} - {m.get("away")}',
                               score=f'{m["home_score"]}-{m["away_score"]}')
