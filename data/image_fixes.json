@@ -68,6 +68,12 @@
    "image_url": "https://yallascore.site/media/zamalek-identity-card.jpg",
    "image_credit": "الصورة: تصميم يلا سكور",
    "why": "Zamalek club story published with the retired blue template card (club-zamalek-card.jpg) although the club's identity image existed; the prompt's step 4 still said 'club card' and the writer never reached the team-folders rule. User 2026-10-15: «ليه فيه صور اخبار عن الزمالك بتنزل بالصورة القديمة». -> the identity image, like article 793."
+  },
+  {
+   "article_id": "848",
+   "image_url": "https://yallascore.site/media/barcelona-jersey-macro.jpg",
+   "image_credit": "الصورة: تصميم يلا سكور",
+   "why": "Barcelona club announcement (Kounde + Eric Garcia out) shipped with ph-pitch.svg although team-photos/barcelona held five of our own images registered the same afternoon; the writer found no free photo of the two players and fell to the placeholder instead of the folder. User 2026-10-18: «ليه البوست ده مش محطوطله صورة من صور برشلونة اللى عملناها النهاردة». -> the jersey macro from the folder; article_put now fills a curated club's folder image itself when a record arrives with a placeholder."
   }
  ]
 }

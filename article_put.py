@@ -290,6 +290,50 @@ def enrich(rec, words):
     return out
 
 
+PLACEHOLDER_MARKS = ("ph-pitch", "ph-ball")
+TEAM_PHOTOS_JSON = os.path.join(HERE, "data", "team_photos.json")
+
+
+def club_image_fallback(rec, clubs, registry_path=TEAM_PHOTOS_JSON):
+    """A curated club's story never ships with the placeholder (2026-10-18:
+    article 848, Barcelona's Kounde/Garcia announcement, went out on
+    ph-pitch.svg although team-photos/barcelona held five of our own images
+    - the writer found no free photo of the two players and stopped there).
+    The prompt says «the folder first, the identity image when no photo of
+    the player exists»; this makes that a property of the publish tool, not
+    of the writer's mood: a record with no image or a placeholder, about a
+    curated club (clubs_of), that is not a match piece, takes one of the
+    club's «شعار» entries (our designs: identity card, poster, jersey...)
+    chosen by a stable hash of the title so consecutive stories vary, with
+    the entry's credit verbatim. Returns a new dict; untouched otherwise."""
+    url = str(rec.get("image_url") or "")
+    if url and not any(k in url for k in PLACEHOLDER_MARKS):
+        return rec
+    if rec.get("match_id") or not clubs:
+        return rec
+    try:
+        with open(registry_path, encoding="utf-8") as f:
+            photos = json.load(f).get("photos") or []
+    except (OSError, ValueError):
+        return rec
+    for slug in clubs:
+        pool = sorted((e for e in photos if e.get("slug") == slug and e.get("file")
+                       and str(e.get("subject") or "").startswith("شعار")), key=lambda e: e["file"])
+        if not pool:
+            pool = sorted((e for e in photos if e.get("slug") == slug and e.get("file") and not e.get("is_person")),
+                          key=lambda e: e["file"])
+        if not pool:
+            continue
+        h = int(hashlib.md5((rec.get("title") or "").encode("utf-8")).hexdigest(), 16)
+        e = pool[h % len(pool)]
+        out = dict(rec)
+        out["image_url"] = f"{b.SITE_BASE}/media/{e['file']}"
+        out["image_credit"] = e.get("credit") or "الصورة: تصميم يلا سكور"
+        print(f"image: placeholder replaced by the {slug} folder's {e['file']} (the club's story never ships blank)")
+        return out
+    return rec
+
+
 def clubs_of(rec, aid="new", brief=None):
     """Club slugs for a draft. A match brief names the match's competition,
     so a preview of a Saudi Pro League game can never land on the Egyptian
@@ -375,6 +419,7 @@ def retry_pending():
             os.remove(path)
             continue
         clubs = clubs_of(rec, brief=brief)
+        rec = club_image_fallback(rec, clubs)          # a curated club's story never ships blank (2026-10-18)
         try:
             if rec.get("published_id"):
                 # an earlier retry got the ROW in and died on the children

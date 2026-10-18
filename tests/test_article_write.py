@@ -240,6 +240,24 @@ ck("35 an article whose media file is not in the checkout yet renders a placehol
    and _arts[0]["image_url"].endswith("ok.jpg") and _arts[0]["image_credit"] == "c1"
    and _arts[2]["image_url"].startswith("https://upload"), str(_miss))
 
+
+# ---- a curated club's story never ships with the placeholder (2026-10-18)
+_bd = {"title": "رسميًا.. برشلونة يعلن غياب كوندي وإريك جارسيا عن باريس سان جيرمان", "summary": "s", "body": "<p>x</p>",
+       "image_url": "https://yallascore.site/media/ph-pitch.svg", "image_credit": ""}
+_r = AP.club_image_fallback(_bd, ["barcelona"])
+ck("F1 a Barcelona story with the placeholder takes one of the folder's «شعار» images, with its credit",
+   _r["image_url"].startswith("https://yallascore.site/media/barcelona-") and _r["image_credit"], _r.get("image_url"))
+ck("F2 the pick is stable for the same title", AP.club_image_fallback(_bd, ["barcelona"])["image_url"] == _r["image_url"])
+_r2 = AP.club_image_fallback(dict(_bd, title="برشلونة يضم حارسًا جديدًا"), ["barcelona"])
+ck("F3 another title may take another of the club's images (variety by hash), still from the folder",
+   _r2["image_url"].startswith("https://yallascore.site/media/barcelona-"))
+ck("F4 a real photo is left alone", AP.club_image_fallback(dict(_bd, image_url="https://yallascore.site/media/raphinha-barcelona-2025.jpg", image_credit="c"), ["barcelona"])["image_url"].endswith("raphinha-barcelona-2025.jpg"))
+ck("F5 a match piece and a story with no curated club are left alone",
+   AP.club_image_fallback(dict(_bd, match_id="1"), ["barcelona"])["image_url"].endswith("ph-pitch.svg")
+   and AP.club_image_fallback(_bd, [])["image_url"].endswith("ph-pitch.svg"))
+ck("F6 main() runs the fallback after clubs_of and before the write",
+   0 < open("article_put.py", encoding="utf-8").read().find("clubs = clubs_of(rec, brief=brief)") < open("article_put.py", encoding="utf-8").read().find("rec = club_image_fallback(rec, clubs)"))
+
 print("\n" + ("ALL ARTICLE WRITE TESTS PASSED" if not fails
              else f"{len(fails)} FAILED: {fails}"))
 sys.exit(1 if fails else 0)
