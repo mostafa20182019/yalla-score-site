@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-18T14:50:13+03:00",
+ "generated_at": "2026-10-18T15:13:11+03:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1178,6 +1178,17 @@
    "is_person": false,
    "source": "team-photos/man-city/identity-card.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "man-united-crown-wallpaper.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار مانشستر يونايتد",
+   "club": "مانشستر يونايتد",
+   "slug": "man-united",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/man-united/crown-wallpaper.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "man-united-identity-card.jpg",
