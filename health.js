@@ -61,7 +61,7 @@ const ago = (ms) => ms < HOUR ? `${Math.round(ms / MIN)} min`
 
 /* Pure: inputs -> verdict. Everything time-based takes `now` so the tests can
  * move the clock. `d1Error` set = the database did not answer. */
-export function evaluate({ build, beats, snapshot, d1Error }, now) {
+export function evaluate({ build, beats, snapshot, d1Error, lastError }, now) {
   const checks = {};
   const put = (name, status, msg, extra = {}) => { checks[name] = { status, msg, ...extra }; };
 
@@ -134,8 +134,11 @@ export function evaluate({ build, beats, snapshot, d1Error }, now) {
     put("live", "warn", "the live store has no snapshot yet");
   } else {
     const la = now - snapshot.ts;
+    // a failure recorded AFTER the last good snapshot is the reason it is stale
+    const err = lastError && lastError.ts && lastError.ts > snapshot.ts ? lastError : null;
     put("live", la > LIMITS.liveFail ? "fail" : la > LIMITS.liveWarn ? "warn" : "ok",
-        `live store refreshed ${ago(la)} ago`, { age_min: Math.round(la / MIN) });
+        `live store refreshed ${ago(la)} ago`,
+        { age_min: Math.round(la / MIN), ...(err ? { last_error: err.msg, error_at: err.ts } : {}) });
   }
   return finish(checks, now);
 }
@@ -161,13 +164,17 @@ export async function gather(env) {
   if (!env.DB) { out.d1Error = "no binding"; return out; }
   try {
     if (!beatsReady) { await env.DB.prepare(BEATS_DDL).run(); beatsReady = true; }
-    const [b, s] = await env.DB.batch([
+    const [b, s, le] = await env.DB.batch([
       env.DB.prepare("/*hb_rows*/ SELECT name, ts, ok, fails, detail FROM health_beats"),
       env.DB.prepare("/*hb_snap*/ SELECT v FROM live_meta WHERE k = 'snapshot'"),
+      // the last refresh failure the one-minute cron recorded (worker.js, 2026-10-18)
+      env.DB.prepare("/*hb_err*/ SELECT v FROM live_meta WHERE k = 'last_error'"),
     ]);
     for (const row of b.results || []) out.beats[row.name] = row;
     const v = ((s.results || [])[0] || {}).v;
     if (v) { try { out.snapshot = { ts: Number(JSON.parse(v).ts) }; } catch (e) { /* bad row */ } }
+    const ev = (((le || {}).results || [])[0] || {}).v;
+    if (ev) { try { out.lastError = JSON.parse(ev); } catch (e) { out.lastError = { msg: String(ev).slice(0, 300) }; } }
   } catch (e) {
     out.d1Error = (e && e.message || String(e)).slice(0, 120);
   }

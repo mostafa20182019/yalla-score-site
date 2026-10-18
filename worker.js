@@ -1080,6 +1080,13 @@ export default {
         r = await refreshLive(env);
       } catch (e) {          // a quota wall or an unreachable D1 skips a beat
         console.log("live store refresh failed:", e && e.message);
+        // keep the LAST failure where /health can show it (2026-10-18: the
+        // store went quiet for two hours and the only trace was a log line
+        // nobody can read from outside); one small write per failing minute
+        try {
+          await env.DB.prepare(META_SET).bind("last_error",
+            JSON.stringify({ ts: Date.now(), msg: String(e && e.message || e).slice(0, 300) })).run();
+        } catch (e2) { /* the store may be the thing that is down */ }
         return;
       }
       console.log("live store refresh:", JSON.stringify({ ...r, upcoming: (r.upcoming || []).length }));
