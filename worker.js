@@ -1016,6 +1016,20 @@ export function matchSlotCairo(date) {
   return MATCH_SLOTS.includes(hm) ? hm : null;
 }
 
+// A missing file must not be remembered for a week. root-extras/_headers gives
+// /media/* a 7-day Cache-Control (crests 30 days), and Workers static assets put
+// that header on the 404 too, so Cloudflare cached a "not found" for a photo
+// that the next deploy brought (2026-10-18: article 847's crest image, built one
+// commit before the file was pushed, stayed a 404 at the edge after it arrived).
+// Any error answer leaves with no-store: the page's onerror placeholder covers
+// the moment, and the first request after the deploy sees the file.
+function assetResponse(res) {
+  if (res.status < 400) return res;
+  const out = new Response(res.body, res);
+  out.headers.set("cache-control", "no-store");
+  return out;
+}
+
 export default {
   async fetch(request, env, ctx) {
     // Permanent redirect from any non-canonical host — the legacy
@@ -1073,7 +1087,7 @@ export default {
       }
       return res;
     }
-    return env.ASSETS.fetch(request);
+    return assetResponse(await env.ASSETS.fetch(request), url);
   },
 
   async scheduled(event, env, ctx) {

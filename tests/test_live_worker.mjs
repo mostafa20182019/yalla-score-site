@@ -122,4 +122,20 @@ for (const [from, to] of [["http://yallascore.site/m/1?b=2", "https://yallascore
 }
 const okRes = await worker.fetch(new Request("https://yallascore.site/live.json"), {}, { waitUntil() {} });
 assert.notEqual(okRes.status, 301, "the canonical origin itself is never redirected");
+// 13) a missing asset is never cached for a week (2026-10-18): root-extras/_headers
+// gives /media/* max-age=604800 and the assets layer puts it on the 404 too, so the
+// edge kept "not found" for a photo the next deploy brought. Error answers leave
+// with no-store; a found file keeps its header untouched.
+{
+  const ASSETS = { fetch: async (req) => new URL(req.url).pathname.endsWith("missing.jpg")
+    ? new Response("not found", { status: 404, headers: { "cache-control": "public, max-age=0, must-revalidate, public, max-age=604800" } })
+    : new Response("jpg", { status: 200, headers: { "cache-control": "public, max-age=604800" } }) };
+  const miss = await worker.fetch(new Request("https://yallascore.site/media/missing.jpg"), { ASSETS }, { waitUntil() {} });
+  assert.equal(miss.status, 404);
+  assert.equal(miss.headers.get("cache-control"), "no-store", "a 404 must not inherit the 7-day media cache");
+  assert.equal(await miss.text(), "not found", "the body passes through");
+  const hitRes = await worker.fetch(new Request("https://yallascore.site/media/found.jpg"), { ASSETS }, { waitUntil() {} });
+  assert.equal(hitRes.status, 200);
+  assert.equal(hitRes.headers.get("cache-control"), "public, max-age=604800", "a found file keeps its long cache");
+}
 console.log("ALL ASSERTIONS PASSED — detail calls:", gids.join(","), "dt =", j.dt);
