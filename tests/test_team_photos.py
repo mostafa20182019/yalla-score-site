@@ -9,7 +9,7 @@ a photo with no credit must never reach media/, a registered file is never
 rewritten, the slug prefix and ascii name are what the prompts search for,
 and a credit fix in credits.txt reaches the registry without re-adding.
 """
-import json, os, shutil, sys, tempfile
+import io, json, os, shutil, sys, tempfile
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.getcwd())
 from PIL import Image
@@ -131,6 +131,15 @@ for p in real["photos"]:
     ck(f"6f registered file exists: {p['file']}", os.path.exists(os.path.join("media", p["file"])))
 import audit_images as AI
 ck("6g audit_images reads this registry too", all(p["file"] in AI.registry() for p in real["photos"]))
+
+# 7 the prompts send a curated club's NEW photo through its folder (user ask
+# 2026-10-18: the folders are where he sees what his clubs' stories used)
+_pr = io.open(".github/prompts/daily-article.md", encoding="utf-8").read()
+ck("8a daily-article saves a curated club's photo into team-photos/<slug>/ and runs team_photos.py",
+   "team-photos/<slug>/" in _pr and "python team_photos.py" in _pr and "credits.txt" in _pr)
+ck("8b ...and commits the folder + registry with the article", "git add team-photos data/team_photos.json" in _pr)
+_wf = io.open(".github/workflows/daily-article.yml", encoding="utf-8").read()
+ck("8c the parked-draft commit carries the folder and the registry too", "git add drafts media team-photos data/team_photos.json" in _wf)
 
 shutil.rmtree(tmp, ignore_errors=True)
 print()

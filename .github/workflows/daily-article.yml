@@ -174,7 +174,7 @@ jobs:
           fi
           git config user.name "yalla-score-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add drafts media
+          git add drafts media team-photos data/team_photos.json
           git commit -m "Yalla Score: park the article D1 refused (published next slot)"
           git pull --rebase origin main
           git push origin HEAD:main

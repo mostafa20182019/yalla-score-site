@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-18T15:13:11+03:00",
+ "generated_at": "2026-10-18T15:22:07+03:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -25,6 +25,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "abdelkader-pyramids.jpg",
+   "credit": "صورة: أحمد عبد القادر — قناة النادي الأهلي، رخصة CC BY 3.0 (ويكيميديا)",
+   "subject": "أحمد عبد القادر",
+   "club": "بيراميدز",
+   "slug": "pyramids",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/pyramids/abdelkader-pyramids.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "ahly-afsha-zed.jpg",
    "credit": "صورة: محمد مجدي \"أفشة\" خلال مشاركته مع الأهلي أمام مونتيري المكسيكي في كأس العالم للأندية 2021 — Mohammad Amin Ansari، رخصة CC BY 4.0 (ويكيميديا كومنز)",
    "subject": "محمد مجدي \"أفشة\"",
@@ -34,6 +45,72 @@
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-afsha-zed.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "ahly-ammouta-gamper.jpg",
+   "credit": "صورة: المدرب المغربي الحسين عموتة، المدير الفني للأهلي، في صورة من الأرشيف تعود إلى فترة تدريبه نادي السد القطري — Doha Stadium Plus Qatar، رخصة CC BY 2.0 (ويكيميديا كومنز)",
+   "subject": "المدرب المغربي الحسين عموتة",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-ammouta-gamper.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-ashour-renewal.jpg",
+   "credit": "صورة: إمام عاشور مع منتخب مصر — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "إمام عاشور مع منتخب مصر",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-ashour-renewal.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-ashour-transfer-file.jpg",
+   "credit": "صورة: إمام عاشور لاعب النادي الأهلي مع منتخب مصر — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)، معدّلة بالاقتصاص",
+   "subject": "إمام عاشور لاعب النادي الأهلي مع منتخب مصر",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-ashour-transfer-file.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-badalona-friendly.jpg",
+   "credit": "صورة: تشكيل النادي الأهلي في كأس العالم للأندية 2021 — Mohammad Amin Ansari، رخصة CC BY 4.0 (ويكيميديا)",
+   "subject": "تشكيل النادي الأهلي في كأس العالم للأندية 2021",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-badalona-friendly.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-belammari.jpg",
+   "credit": "صورة: يوسف بلعمري مع منتخب المغرب — تصوير Laloumance، رخصة CC BY 4.0 (ويكيميديا كومنز)",
+   "subject": "يوسف بلعمري مع منتخب المغرب",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-belammari.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-ben-romdhane.jpg",
+   "credit": "صورة: محمد علي بن رمضان — Bahbouhe، رخصة CC BY-SA 4.0 (ويكيميديا)",
+   "subject": "محمد علي بن رمضان",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-ben-romdhane.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "ahly-cairo-stadium-crowd.jpg",
@@ -91,6 +168,50 @@
    "added": "2026-10-13"
   },
   {
+   "file": "ahly-emam-ashour.jpg",
+   "credit": "صورة: إمام عاشور بقميص الأهلي — Mokhtar JR، رخصة CC BY 4.0 (ويكيميديا)",
+   "subject": "إمام عاشور بقميص الأهلي",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-emam-ashour.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-fans-tifo-supercup.jpg",
+   "credit": "صورة أرشيفية: جماهير الأهلي ترفع لوحة تشجيعية تحمل شعار النادي في مباراة السوبر المصري 2015 — تصوير Saiflee100، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "صورة أرشيفية: جماهير الأهلي ترفع لوحة تشجيعية تحمل شعار النا",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-fans-tifo-supercup.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-kit-2026.jpg",
+   "credit": "صورة أرشيفية: لاعبو الأهلي في كأس العالم للأندية 2021 — تصوير محمد أمين أنصاري، رخصة CC BY 4.0 (ويكيميديا كومنز)",
+   "subject": "صورة أرشيفية: لاعبو الأهلي في كأس العالم للأندية 2021",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-kit-2026.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "ahly-mahmoud-salah-deal.jpg",
+   "credit": "صورة: لاعبو الأهلي في مباراة بكأس العالم للأندية — تصوير محمد أمين أنصاري، رخصة CC BY 4.0 (ويكيميديا كومنز)",
+   "subject": "لاعبو الأهلي في مباراة بكأس العالم للأندية",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-mahmoud-salah-deal.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "ahly-military-academy-stadium.jpg",
    "credit": "صورة: جماهير الأهلي في مدرجات استاد الكلية الحربية قبل مباراة بالدوري المصري — تصوير Crosskimo، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
    "subject": "جماهير الأهلي",
@@ -133,6 +254,17 @@
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-reda-slim.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "ahly-spain-camp-ashour.jpg",
+   "credit": "صورة: إمام عاشور لاعب النادي الأهلي — Mokhtar JR، رخصة CC BY 4.0 (ويكيميديا كومنز)",
+   "subject": "إمام عاشور لاعب النادي الأهلي",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ahly-spain-camp-ashour.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "ahly-stadium-gate-of-champs.jpg",
@@ -210,6 +342,17 @@
    "is_person": true,
    "source": "team-photos/egypt/ahly-yasser-ibrahim-shabab.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "ahmed-abdelkader.jpg",
+   "credit": "صورة: أحمد عبد القادر — قناة النادي الأهلي، رخصة CC BY 3.0 (ويكيميديا كومنز)",
+   "subject": "أحمد عبد القادر",
+   "club": "بيراميدز",
+   "slug": "pyramids",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/pyramids/ahmed-abdelkader.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "ahmed-zizo-egypt-nt.jpg",
@@ -410,6 +553,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "ben-romdhane.jpg",
+   "credit": "صورة: محمد علي بن رمضان — Bahbouhe، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد علي بن رمضان",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/ben-romdhane.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "bencharki-al-ahly-2026.jpg",
    "credit": "صورة: أشرف بنشرقي لاعب الأهلي — تصوير Mokhtar JR، رخصة CC0 (ويكيميديا كومنز)",
    "subject": "أشرف بنشرقي لاعب الأهلي",
@@ -474,6 +628,17 @@
    "is_person": true,
    "source": "team-photos/arsenal/bukayo-saka-arsenal-2025.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "cairo-stadium-ahly-smouha-reschedule.jpg",
+   "credit": "صورة: استاد القاهرة الدولي خلال كأس الأمم الأفريقية 2019 — تصوير Crosskimo، ملكية عامة (ويكيميديا كومنز)",
+   "subject": "استاد القاهرة الدولي خلال كأس الأمم الأفريقية 2019",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": false,
+   "source": "team-photos/al-ahly/cairo-stadium-ahly-smouha-reschedule.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "cairo-stadium-egypt-fifa-case.jpg",
@@ -685,6 +850,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "egypt-women-elmitwalli.jpg",
+   "credit": "صورة: اللاعبة الدولية المصرية سلوى «سالي» المتولي بقميص نادي أتاشهير بلدية سبور التركي — CeeGee، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "اللاعبة الدولية المصرية سلوى «سالي» المتولي بقميص نادي أتاشه",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/egypt/egypt-women-elmitwalli.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "egypt-youth-cairo-stadium.jpg",
    "credit": "صورة: استاد القاهرة الدولي خلال مباراة منتخب مصر للشباب أمام جنوب أفريقيا في كأس أمم أفريقيا تحت 23 عامًا 2019 — تصوير Crosskimo، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
    "subject": "استاد القاهرة الدولي",
@@ -760,6 +936,17 @@
    "is_person": false,
    "source": "team-photos/arsenal/emirates-arsenal-2026.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "enzo-fernandez-city-2026.jpg",
+   "credit": "صورة: إنزو فرنانديز مع منتخب الأرجنتين خلال كأس العالم 2026 — تصوير Bryan Berlin (Berlination)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "إنزو فرنانديز مع منتخب الأرجنتين خلال كأس العالم 2026",
+   "club": "مانشستر سيتي",
+   "slug": "man-city",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/man-city/enzo-fernandez-city-2026.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "enzo-fernandez-city-official-2026.jpg",
@@ -872,6 +1059,17 @@
    "added": "2026-10-13"
   },
   {
+   "file": "gradisar-ahly.jpg",
+   "credit": "صورة: نيتس جراديشار بقميص الأهلي — تصوير Eslam Kassim، رخصة CC0 (ويكيميديا كومنز)",
+   "subject": "نيتس جراديشار بقميص الأهلي",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/gradisar-ahly.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "grealish-everton-loan-sep2026.jpg",
    "credit": "صورة: جاك جرايليش خلال مباراة لمانشستر سيتي في دوري أبطال أوروبا — تصوير Steffen Prößdorf، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
    "subject": "جاك جرايليش",
@@ -958,6 +1156,17 @@
    "is_person": true,
    "source": "team-photos/liverpool/harvey-elliott-valencia.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "hitham-hassan-egypt-celtic.jpg",
+   "credit": "صورة: هيثم حسن بقميص منتخب مصر في كأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)، معدّلة بالاقتصاص",
+   "subject": "هيثم حسن بقميص منتخب مصر في كأس العالم 2026",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/egypt/hitham-hassan-egypt-celtic.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "hossam-abdelmaguid-egypt-2024.jpg",
@@ -1400,6 +1609,61 @@
    "added": "2026-10-13"
   },
   {
+   "file": "mohamed-salah-egypt-argentina-wc2026-163.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 202",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-salah-egypt-argentina-wc2026-163.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "mohamed-salah-egypt-argentina-wc2026-front.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 202",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-salah-egypt-argentina-wc2026-front.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "mohamed-salah-egypt-national-team-camp.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 202",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-salah-egypt-national-team-camp.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "mohamed-salah-egypt-portrait-wc2026.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 202",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-salah-egypt-portrait-wc2026.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "mohamed-salah-egypt-wc2026.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر في مباراة الأرجنتين بكأس العالم 2026 — Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر في مباراة الأرجنتين بكأس العالم 2026",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-salah-egypt-wc2026.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "mohamed-salah-super-cup-istanbul.jpg",
    "credit": "صورة: محمد صلاح يحمل كأس السوبر الأوروبي في إسطنبول — تصوير Mehdi Bolourian، رخصة CC BY 4.0 (ويكيميديا كومنز)",
    "subject": "محمد صلاح يحمل كأس السوبر الأوروبي",
@@ -1420,6 +1684,28 @@
    "is_person": true,
    "source": "team-photos/al-ahly/mohamed-sherif-interview.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "mohamed-sherif.jpg",
+   "credit": "صورة: محمد شريف في لقاء تلفزيوني — عبر ويكيميديا كومنز، رخصة CC BY 3.0",
+   "subject": "محمد شريف في لقاء تلفزيوني",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/mohamed-sherif.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "mohanad-lasheen-egypt-wc2026.jpg",
+   "credit": "صورة: المدافع مهند لاشين خلال مباراة مصر والأرجنتين في كأس العالم 2026 - تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "المدافع مهند لاشين خلال مباراة مصر والأرجنتين في كأس العالم",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/egypt/mohanad-lasheen-egypt-wc2026.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "mohaned-lasheen-egypt.jpg",
@@ -1466,6 +1752,39 @@
    "added": "2026-10-13"
   },
   {
+   "file": "mostafa-shobeir-egypt.jpg",
+   "credit": "صورة: مصطفى شوبير مع منتخب مصر خلال مباراة الأرجنتين في يوليو 2026 — تصوير Berlination، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "مصطفى شوبير مع منتخب مصر خلال مباراة الأرجنتين في يوليو 2026",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/egypt/mostafa-shobeir-egypt.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "mostafa-shobeir-renewal-2029.jpg",
+   "credit": "صورة: مصطفى شوبير حارس مرمى الأهلي ومنتخب مصر خلال مباراة الأرجنتين في كأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "مصطفى شوبير حارس مرمى الأهلي ومنتخب مصر خلال مباراة الأرجنتي",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": 2029,
+   "is_person": true,
+   "source": "team-photos/al-ahly/mostafa-shobeir-renewal-2029.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "mostafa-shobeir.jpg",
+   "credit": "صورة: مصطفى شوبير خلال مباراة الأرجنتين ومصر في كأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "مصطفى شوبير خلال مباراة الأرجنتين ومصر في كأس العالم 2026",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/al-ahly/mostafa-shobeir.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "mostafa-zico-pyramids-2026.jpg",
    "credit": "صورة: مصطفى زيكو خلال مشاركته مع منتخب مصر في كأس العالم 2026 — تصوير Bryan Berlin (Berlination)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
    "subject": "مصطفى زيكو",
@@ -1475,6 +1794,17 @@
    "is_person": true,
    "source": "team-photos/egypt/mostafa-zico-pyramids-2026.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "mostafa-zikou-egypt-argentina.jpg",
+   "credit": "صورة: مصطفى زيكو خلال مباراة مصر والأرجنتين في كأس العالم 2026 — تصوير Bryan Berlin (Berlination)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "مصطفى زيكو خلال مباراة مصر والأرجنتين في كأس العالم 2026",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/egypt/mostafa-zikou-egypt-argentina.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "mudryk-tottenham.jpg",
@@ -1774,6 +2104,39 @@
    "added": "2026-10-13"
   },
   {
+   "file": "salah-trabzonspor-first-appearance.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مونديال 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر خلال مونديال 2026",
+   "club": "طرابزون سبور",
+   "slug": "trabzonspor",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/trabzonspor/salah-trabzonspor-first-appearance.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "salah-trabzonspor-super-lig-debut.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر في مونديال 2026 — Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر في مونديال 2026",
+   "club": "طرابزون سبور",
+   "slug": "trabzonspor",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/trabzonspor/salah-trabzonspor-super-lig-debut.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "salah-yomra-street.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة ودية أمام الأرجنتين، يوليو 2026 — Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر خلال مباراة ودية أمام الأرجنتين",
+   "club": "طرابزون سبور",
+   "slug": "trabzonspor",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/trabzonspor/salah-yomra-street.jpg",
+   "added": "2026-10-18"
+  },
+  {
    "file": "sayed-and-omar-moawad-ahly.jpg",
    "credit": "صورة: سيد معوض مع نجله عمر سيد معوض لاعب الأهلي — Al Ahly TV، رخصة CC BY 3.0 (ويكيميديا كومنز)",
    "subject": "سيد معوض",
@@ -1926,6 +2289,17 @@
    "is_person": true,
    "source": "team-photos/egypt/trezeguet-best-player.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "trezeguet-egypt.jpg",
+   "credit": "صورة: محمود حسن تريزيجيه بقميص منتخب مصر — Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمود حسن تريزيجيه بقميص منتخب مصر",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/egypt/trezeguet-egypt.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "trezeguet-injury-worldcup.jpg",
@@ -2124,6 +2498,17 @@
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-fans-borg-el-arab-banner-02.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "zamalek-fans-borg-el-arab-banner.jpg",
+   "credit": "صورة: جمهور الزمالك يرفع لافتة في مدرجات استاد برج العرب — حسن حمدي وحيدي، رخصة الملك العام (ويكيميديا كومنز)",
+   "subject": "جمهور الزمالك يرفع لافتة في مدرجات استاد برج العرب",
+   "club": "الزمالك",
+   "slug": "zamalek",
+   "year": null,
+   "is_person": true,
+   "source": "team-photos/zamalek/zamalek-fans-borg-el-arab-banner.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "zamalek-fans-cairo-stadium.jpg",
