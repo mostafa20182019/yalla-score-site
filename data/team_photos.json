@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-18T14:35:59+03:00",
+ "generated_at": "2026-10-18T14:50:13+03:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -353,6 +353,28 @@
    "is_person": false,
    "source": "team-photos/barcelona/identity-card.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "barcelona-jersey-macro.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار برشلونة",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/barcelona/jersey-macro.jpg",
+   "added": "2026-10-18"
+  },
+  {
+   "file": "barcelona-paint-split.jpg",
+   "credit": "الصورة: تصميم يلا سكور",
+   "subject": "شعار برشلونة",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/barcelona/paint-split.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "barcola-liverpool-france-nt.jpg",
