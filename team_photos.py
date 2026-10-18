@@ -270,7 +270,21 @@ def sync(folder_root=FOLDER, media=MEDIA, registry_path=REGISTRY, teams=TEAMS,
             by_file.add(fname)
             res["added"].append(f"{source} -> media/{fname}")
 
-    if not check and (res["added"] or res["updated"]):
+    # A photo the editor DELETED from its folder leaves the registry (user,
+    # 2026-10-18: «لو فيه صور انت بتستخدمها ومش عجباني همسحها منه») - from
+    # this moment no article picks it. Its media/ copy stays: the articles that
+    # already published it keep their picture.
+    res["removed"] = []
+    keep = []
+    for p in reg["photos"]:
+        src = p.get("source") or ""
+        if src.startswith("team-photos/") and not os.path.exists(os.path.join(folder_root, *src.split("/")[1:])):
+            res["removed"].append(src)
+            continue
+        keep.append(p)
+    reg["photos"] = keep
+
+    if not check and (res["added"] or res["updated"] or res["removed"]):
         save_registry(reg, registry_path)
     return res
 
@@ -286,6 +300,8 @@ def main():
         print(f"  +    {verb} {s}")
     for s in res["updated"]:
         print(f"  ~    credit updated {s}")
+    for s in res.get("removed", []):
+        print(f"  -    deleted from its folder, out of the registry (media copy kept): {s}")
     for s in res["waiting"]:
         print(f"  !    WAITING for a credit line in credits.txt: {s}")
     print(f"team photos: {len(res['added'])} {verb}, {len(res['updated'])} updated, "

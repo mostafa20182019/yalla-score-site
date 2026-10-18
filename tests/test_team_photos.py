@@ -132,6 +132,19 @@ for p in real["photos"]:
 import audit_images as AI
 ck("6g audit_images reads this registry too", all(p["file"] in AI.registry() for p in real["photos"]))
 
+# 9 a photo the editor DELETES from its folder leaves the registry; its media copy stays
+# (user, 2026-10-18: «لو فيه صور إنت بتستخدمها ومش عجباني همسحها منه»)
+_del_src = os.path.join(root, "al-ahly", "Trezeguet-2026.jpg")
+_del_media = os.path.join(media, "al-ahly-trezeguet-2026.jpg")
+ck("9a before: the photo is registered and its media copy exists",
+   any(q["source"] == "team-photos/al-ahly/Trezeguet-2026.jpg" for q in json.load(open(reg, encoding="utf-8"))["photos"]) and os.path.exists(_del_media))
+os.remove(_del_src)
+_r9 = run()
+ck("9b sync reports the deletion", _r9.get("removed") == ["team-photos/al-ahly/Trezeguet-2026.jpg"], str(_r9.get("removed")))
+ck("9c the registry no longer lists it", not any(q["source"] == "team-photos/al-ahly/Trezeguet-2026.jpg" for q in json.load(open(reg, encoding="utf-8"))["photos"]))
+ck("9d the media copy is left in place (published articles keep their picture)", os.path.exists(_del_media))
+ck("9e a second sync is quiet", run().get("removed") == [])
+
 # 7 the prompts send a curated club's NEW photo through its folder (user ask
 # 2026-10-18: the folders are where he sees what his clubs' stories used)
 _pr = io.open(".github/prompts/daily-article.md", encoding="utf-8").read()
