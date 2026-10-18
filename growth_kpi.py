@@ -43,6 +43,91 @@ def _get(url, timeout=30):
         return json.load(r)
 
 
+def _post_json(url, body, headers, timeout=40):
+    req = urllib.request.Request(url, data=json.dumps(body).encode("utf-8"),
+                                 headers={"User-Agent": "yallascore-kpi", "Content-Type": "application/json", **headers})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return json.load(r)
+
+
+# Cloudflare Web Analytics (2026-10-18, user: «ابدأ بقياس الزوار تلقائيًا»):
+# the dashboard's numbers come from the GraphQL Analytics API, dataset
+# rumPageloadEventsAdaptiveGroups, filtered by the site's beacon tag. Two
+# secrets/variables the user adds: CF_ANALYTICS_TOKEN (an API token with
+# Account > Account Analytics > Read; the D1 token lacks it) and
+# CF_RUM_SITE_TAG (the Web Analytics site tag = the beacon token shown under
+# Analytics & Logs > Web Analytics > Manage site). Missing either = nulls.
+CF_GRAPHQL = "https://api.cloudflare.com/client/v4/graphql"
+RUM_QUERY = """
+query ($account: String!, $site: String!, $since: Date!, $until: Date!) {
+  viewer { accounts(filter: {accountTag: $account}) {
+    byDay: rumPageloadEventsAdaptiveGroups(
+      filter: {siteTag: $site, date_geq: $since, date_leq: $until}, limit: 100, orderBy: [date_ASC]) {
+      count sum { visits } dimensions { date } }
+    byRef: rumPageloadEventsAdaptiveGroups(
+      filter: {siteTag: $site, date_geq: $since, date_leq: $until}, limit: 50, orderBy: [sum_visits_DESC]) {
+      count sum { visits } dimensions { refererHost } }
+  } }
+}"""
+
+
+def parse_rum(j, since7):
+    """The GraphQL reply -> {visits_7d, pageviews_7d, visits_prev7, pageviews_prev7,
+    by_day: {date: [visits, pageviews]}, top_referrers: [[host, visits], ...]}.
+    `since7` = the first date of the current 7-day window; earlier days are
+    the previous window (the query asks for 14 days)."""
+    accs = (((j or {}).get("data") or {}).get("viewer") or {}).get("accounts") or []
+    if not accs:
+        err = (j or {}).get("errors")
+        raise ValueError(f"no account data in the reply: {str(err)[:200]}")
+    acc = accs[0]
+    by_day, cur_v = {}, 0
+    cur_p = prev_v = prev_p = 0
+    for g in acc.get("byDay") or []:
+        d = (g.get("dimensions") or {}).get("date")
+        v, pv = int((g.get("sum") or {}).get("visits") or 0), int(g.get("count") or 0)
+        by_day[d] = [v, pv]
+        if d and d >= since7:
+            cur_v += v; cur_p += pv
+        else:
+            prev_v += v; prev_p += pv
+    refs = {}
+    for g in acc.get("byRef") or []:
+        h = (g.get("dimensions") or {}).get("refererHost") or "(direct)"
+        if h.endswith("yallascore.site"):
+            continue                                   # our own pages are not a source
+        refs[h] = refs.get(h, 0) + int((g.get("sum") or {}).get("visits") or 0)
+    # the referrer groups cover 14 days; the 7-day split is not available per host
+    # without a second query, so the list is labelled 14d in the row
+    top = sorted(refs.items(), key=lambda kv: -kv[1])[:6]
+    return {"visits_7d": cur_v, "pageviews_7d": cur_p, "visits_prev7": prev_v, "pageviews_prev7": prev_p,
+            "by_day": by_day, "top_referrers_14d": [[h, n] for h, n in top]}
+
+
+def cloudflare_site(account, token, site_tag, now=None):
+    """Visitors from Cloudflare Web Analytics for the last 7 days (and the 7
+    before, for the trend). Nulls, never a failure, when anything is missing."""
+    empty = {"visits_7d": None, "pageviews_7d": None, "visits_prev7": None, "pageviews_prev7": None,
+             "by_day": {}, "top_referrers_14d": []}
+    if not (account and token and site_tag):
+        return empty
+    now = now or time.time()
+    today = datetime.datetime.fromtimestamp(now, datetime.timezone.utc).date()
+    until = today - datetime.timedelta(days=1)                 # yesterday: the last complete day
+    since7 = until - datetime.timedelta(days=6)
+    since14 = until - datetime.timedelta(days=13)
+    try:
+        j = _post_json(CF_GRAPHQL, {"query": RUM_QUERY, "variables": {
+            "account": account, "site": site_tag, "since": since14.isoformat(), "until": until.isoformat()}},
+            {"Authorization": f"Bearer {token}"})
+        out = parse_rum(j, since7.isoformat())
+        out["window"] = [since7.isoformat(), until.isoformat()]
+        return out
+    except Exception as e:                            # noqa: BLE001
+        print(f"cloudflare analytics: {e}")
+        return empty
+
+
 def facebook(token):
     if not token:
         return {"followers": None, "fans": None}
@@ -124,6 +209,8 @@ def row(now=None):
         "push_subs": push_subs(),
         "articles_7d": articles_7d(now),
         "posts_7d": posts_7d(now),
+        "site": cloudflare_site(os.environ.get("CF_ACCOUNT_ID", "").strip(), os.environ.get("CF_ANALYTICS_TOKEN", "").strip(),
+                                os.environ.get("CF_RUM_SITE_TAG", "").strip(), now),
     }
 
 
@@ -147,6 +234,20 @@ def summary(r):
             f"{p.get('goal')} | {p.get('xi')} | {p.get('card')} |")
 
 
+def site_summary(r):
+    """The visitors block for the step summary: 7-day visits with the trend,
+    page views, and the top referrers - the numbers the Monday review reads."""
+    st = r.get("site") or {}
+    if st.get("visits_7d") is None:
+        return "زوار الموقع: غير متاح (أضف CF_ANALYTICS_TOKEN و CF_RUM_SITE_TAG)"
+    prev = st.get("visits_prev7") or 0
+    trend = f" ({'+' if st['visits_7d'] >= prev else ''}{st['visits_7d'] - prev} عن الأسبوع السابق)" if prev else ""
+    refs = " · ".join(f"{h} {n}" for h, n in st.get("top_referrers_14d") or []) or "لا إحالات مسجّلة"
+    w = st.get("window") or ["", ""]
+    return (f"زوار الموقع {w[0]} → {w[1]}: **{st['visits_7d']}** زيارة{trend} · {st['pageviews_7d']} مشاهدة صفحة\n"
+            f"مصادر الإحالة (14 يومًا): {refs}")
+
+
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     r = row()
@@ -159,7 +260,7 @@ def main():
     if s:
         with open(s, "a", encoding="utf-8") as fh:
             fh.write("### Growth KPI\n\n| date | followers | telegram | push | articles 7d | posts photo/link | pred | h2h | goal | xi | cards |\n"
-                     "|---|---|---|---|---|---|---|---|---|---|---|\n" + summary(r) + "\n")
+                     "|---|---|---|---|---|---|---|---|---|---|---|\n" + summary(r) + "\n\n" + site_summary(r) + "\n")
     return 0
 
 
