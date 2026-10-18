@@ -39,6 +39,9 @@ def article_pages(articles, articles_all, matches, urls):
     _MOVED_LINKS.update({str(x["article_id"]): f"/m/{x['match_id']}"
                          for x in articles_all if is_match_piece(x)})
     n_thin = 0
+    # «مباريات اليوم» under every article body (2026-10-18): one strip, built once
+    from site_lib.today_strip import today_strip
+    _today_strip = today_strip(matches)
     p = []
     for a in articles_all:
         if is_match_piece(a):
@@ -118,7 +121,7 @@ def article_pages(articles, articles_all, matches, urls):
             sources=sources, faq=[{"q": f["q"], "a": f["a"]} for f in _faq], faq_ld=faq_ld,
             embeds=embeds, clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
             related=related, push_cta=Markup(push_cta()), tg_url=TG_CHANNEL_URL,
-            page_foot=Markup(foot()))
+            today_strip=Markup(_today_strip), page_foot=Markup(foot()))
         p = [_ahtml]
         if _words < ARTICLE_MIN_WORDS:
             # legacy short pieces: keep the URL alive (still linked from lists

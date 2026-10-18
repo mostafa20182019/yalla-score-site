@@ -22,6 +22,9 @@
   <p class="lead">{{ summary }}</p>
   {% endif %}
   <div class="a-body">{{ body }}</div>
+  {# «مباريات اليوم» (2026-10-18): 1.18 pages per visit said the reader leaves
+     after one story - today's matches, live first, each a link to its page #}
+  {{ today_strip }}
   {# named sources (transparency - «المصادر») and a short FAQ, written by the
      article tasks since 2026-09-06; older articles have neither #}
   {% if sources %}
