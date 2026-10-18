@@ -111,4 +111,15 @@ assert.ok(listCalls.some(u => u.endsWith("competitions=552")) && listCalls.some(
        && listCalls.some(u => u.endsWith("competitions=588"))     // AFCON qualifiers (2026-09-20)
        && listCalls.some(u => u.endsWith("competitions=627")));    // CAF Confederation Cup (2026-10-17)
 assert.equal(new Set(j.games.map(g => g.h + "|" + g.a)).size, j.games.length, "duplicated game after merge");
+// 12) one canonical origin (2026-10-18): http and www both 301 straight to https on the bare host
+for (const [from, to] of [["http://yallascore.site/m/1?b=2", "https://yallascore.site/m/1?b=2"],
+                          ["http://www.yallascore.site/", "https://yallascore.site/"],
+                          ["https://www.yallascore.site/news", "https://yallascore.site/news"],
+                          ["https://yalla-score.someone.workers.dev/a/5", "https://yallascore.site/a/5"]]) {
+  const r = await worker.fetch(new Request(from), {}, { waitUntil() {} });
+  assert.equal(r.status, 301, from);
+  assert.equal(r.headers.get("location"), to, from);
+}
+const okRes = await worker.fetch(new Request("https://yallascore.site/live.json"), {}, { waitUntil() {} });
+assert.notEqual(okRes.status, 301, "the canonical origin itself is never redirected");
 console.log("ALL ASSERTIONS PASSED — detail calls:", gids.join(","), "dt =", j.dt);

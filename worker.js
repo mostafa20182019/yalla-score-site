@@ -1016,8 +1016,14 @@ export default {
     // content in Google after the 2026-08-03 domain move.
     const url = new URL(request.url);
     const canonical = "yallascore.site";
-    if (url.hostname !== canonical) {
+    // 2026-10-18: the SCHEME is part of the canonical too. http://yallascore.site/
+    // answered 200 (Cloudflare's "Always Use HTTPS" was never switched on for
+    // the Worker's custom domain), so Bing kept the previous owner's http root
+    // as a second, excluded copy of the site. http or www -> one 301 to https
+    // on the bare host (two hops would cost the old links a second redirect).
+    if (url.hostname !== canonical || url.protocol !== "https:") {
       url.hostname = canonical;
+      url.protocol = "https:";
       return Response.redirect(url.toString(), 301);
     }
     if (url.pathname === "/admin/api" || url.pathname.startsWith("/admin/api/")) {
