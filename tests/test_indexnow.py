@@ -72,10 +72,32 @@ ck("7 the key file ships at the host root",
 urls, total = IN.changed_today(os.path.join(DIST, "sitemap.xml"))
 ck("8 it submits what changed today, capped", 0 < len(urls) <= IN.CAP, f"{len(urls)} of {total}")
 ck("9 the home page and the sections come first, match pages last",
-   urls[0].rstrip("/") == "https://yallascore.site"
-   and IN.rank(urls[0]) <= IN.rank(urls[-1]), f"{urls[0]} … {urls[-1]}")
+   bool(urls) and urls[0].rstrip("/") == "https://yallascore.site"
+   and IN.rank(urls[0]) <= IN.rank(urls[-1]), f"{urls[0] if urls else '-'} … {urls[-1] if urls else '-'}")
 old = IN.changed_today(os.path.join(DIST, "sitemap.xml"), today="2019-01-01")
 ck("10 a day when nothing changed submits nothing", old == ([], 0), old[1])
+
+# ------------------------------------------- once per change (2026-10-18)
+# Bing Webmaster: 6.7K submissions in 15 hours, 67K in a week, for a site of
+# ~1,000 URLs - every 15-minute publish resent the same «changed today» list.
+_now = 1_800_000_000
+_chg = [("https://yallascore.site/", "2026-10-18"), ("https://yallascore.site/a/900", "2026-10-18T10:00:00+03:00"),
+        ("https://yallascore.site/a/901", "2026-10-18T11:00:00+03:00"), ("https://yallascore.site/m/1", "2026-10-18")]
+_led = {"https://yallascore.site/": {"title": "2026-10-18", "posted_at": _now - 3 * 3600},          # same day, pushed
+        "https://yallascore.site/a/900": {"title": "2026-10-18T09:00:00+03:00", "posted_at": _now - 3600},  # edited, but 1h ago
+        "https://yallascore.site/a/901": {"title": "2026-10-18T09:00:00+03:00", "posted_at": _now - 8 * 3600}}  # edited, 8h ago
+_picked, _same, _cool = IN.select(_chg, lambda u: _led.get(u), now=_now)
+ck("18 a URL whose pushed <lastmod> is the current one is not resent", "https://yallascore.site/" not in [u for u, _ in _picked] and _same == 1)
+ck("19 a URL edited but pushed within the cooldown waits", "https://yallascore.site/a/900" not in [u for u, _ in _picked] and _cool == 1)
+ck("20 a URL edited after the cooldown, and a never-pushed URL, go out", [u for u, _ in _picked] == ["https://yallascore.site/a/901", "https://yallascore.site/m/1"], str(_picked))
+ck("21 the per-run cap still holds", len(IN.select([(f"https://yallascore.site/m/{i}", "2026-10-18") for i in range(300)], lambda u: None, now=_now, cap=100)[0]) == 100)
+ck("22 a hub with a date-only <lastmod> goes once a day: tomorrow's date is a new version",
+   IN.select([("https://yallascore.site/", "2026-10-19")], lambda u: _led.get(u), now=_now + 86400)[0] == [("https://yallascore.site/", "2026-10-19")])
+_src = open("indexnow.py", encoding="utf-8").read()
+ck("23 main() consults the store ledger and records each pushed URL with its <lastmod>",
+   'store.get_post(LEDGER_KIND, u)' in _src and 'store.record_post(LEDGER_KIND, u, "1", title=lastmod)' in _src)
+_wf = open(".github/workflows/publish.yml", encoding="utf-8").read()
+ck("24 the publish step hands the IndexNow script the D1 secrets", _wf.find("run: python indexnow.py") > _wf.find("CF_D1_ID: ${{ secrets.CF_D1_ID }}\n        run: python indexnow.py") >= 0 or "CF_D1_ID: ${{ secrets.CF_D1_ID }}\n        run: python indexnow.py" in _wf)
 ck("11 the payload names the host, the key and where the key lives",
    IN.KEY_URL == f"https://{IN.HOST}/{IN.KEY}.txt" and IN.ENDPOINT.endswith("/indexnow"))
 src = open("indexnow.py", encoding="utf-8").read()
