@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-13T16:37:28+03:00",
+ "generated_at": "2026-10-18T12:48:33+03:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -232,6 +232,17 @@
    "is_person": true,
    "source": "team-photos/al-ahly/akram-tawfik.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "al-ahly-club-of-the-century-monument.jpg",
+   "credit": "الصورة: برج القاهرة، BavKraft عبر ويكيميديا كومنز (CC0) · تركيب يلا سكور",
+   "subject": "شعار الأهلي",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": 2026,
+   "is_person": false,
+   "source": "team-photos/al-ahly/club-of-the-century-monument.jpg",
+   "added": "2026-10-18"
   },
   {
    "file": "al-ahly-red-castle-card.jpg",
