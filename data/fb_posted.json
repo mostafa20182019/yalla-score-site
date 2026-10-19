@@ -2676,6 +2676,66 @@
    "post_id": "104238901487012_1465752518997525",
    "title": "توقع يلا سكور: الفيحاء ضد الأهلي في الجولة 10 بالدوري السعودي",
    "ts": 1792325857
+  },
+  "845": {
+   "og_ok": true,
+   "post_id": "104238901487012_1465848195654624",
+   "title": "أحمد ربيع يعلن إصابته بكسر في الأنف بعد عودة الزمالك من رواندا",
+   "ts": 1792333399
+  },
+  "847": {
+   "og_ok": true,
+   "post_id": "104238901487012_1465999978972779",
+   "title": "رومانو: مانشستر يونايتد متمسك بكاريك وكونتي بلا مفاوضات جادة",
+   "ts": 1792344572
+  },
+  "848": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466021938970583",
+   "title": "رسميًا.. برشلونة يعلن غياب كوندي وإريك جارسيا عن باريس سان جيرمان",
+   "ts": 1792346400
+  },
+  "849": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466101992295911",
+   "title": "اتحاد الكرة يرفض طلب الزمالك سماع تسجيلات الفار بعد قمة الأهلي",
+   "ts": 1792353584
+  },
+  "851": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466153588957418",
+   "title": "تقرير: لاتسيو يسحق يوفنتوس 3-0 ويقترب من صدارة الدوري الإيطالي",
+   "ts": 1792358666
+  },
+  "852": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466153652290745",
+   "title": "تقرير: أولمبيك ليون يتغلب على نيس 2-1 ويعزز صدارة الدوري الفرنسي",
+   "ts": 1792358670
+  },
+  "853": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466169052289205",
+   "title": "تقرير: ريال مدريد يسحق إشبيلية 4-1 بثنائية مبابي في الدوري الإسباني",
+   "ts": 1792360422
+  },
+  "854": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466169135622530",
+   "title": "تقرير: ميلان يفوز 3-2 على أتالانتا ويصعد للمركز الرابع",
+   "ts": 1792360425
+  },
+  "855": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466456638927113",
+   "title": "إصابتا سوبوسلاي وفريمبونج تهددان ليفربول قبل فياريال",
+   "ts": 1792391068
+  },
+  "856": {
+   "og_ok": true,
+   "post_id": "104238901487012_1466480868924690",
+   "title": "تقرير: أرسنال يفوز على نوتنجهام فورست 0-1 في الدوري الإنجليزي",
+   "ts": 1792393683
   }
  },
  "failed": {
@@ -2706,12 +2766,6 @@
   "708": 3
  },
  "posted": {
-  "4804684": {
-   "post_id": "104238901487012_1459342496305194",
-   "s": "0-2",
-   "title": "الزمالك - الأهلي",
-   "ts": 1791745734
-  },
   "4804688": {
    "post_id": "104238901487012_1460361306203313",
    "s": "4-1",
@@ -2730,11 +2784,11 @@
    "title": "المريخ بنتو - بيراميدز",
    "ts": 1792165188
   },
-  "560598": {
-   "post_id": "104238901487012_1459276939645083",
-   "s": "0-3",
-   "title": "Liverpool FC - Manchester City FC",
-   "ts": 1791740361
+  "560608": {
+   "post_id": "104238901487012_1466009832305127",
+   "s": "0-1",
+   "title": "Nottingham Forest FC - Arsenal FC",
+   "ts": 1792345349
   },
   "575344": {
    "post_id": "104238901487012_1461380079434769",
@@ -2774,6 +2828,11 @@
   }
  },
  "posted_ft": {
+  "4742034": {
+   "post_id": "104238901487012_1465873842318726",
+   "title": "🏁 انتهت المباراة: ليدز يونايتد 1 - 1 مانشستر يونايتد",
+   "ts": 1792335236
+  },
   "4742036": {
    "post_id": "104238901487012_1464864982419612",
    "title": "🏁 انتهت المباراة: إيفرتون 0 - 2 تشيلسي",
@@ -2788,6 +2847,11 @@
    "post_id": "104238901487012_1464986042407506",
    "title": "🏁 انتهت المباراة: مانشستر سيتي 3 - 2 إبسويتش تاون",
    "ts": 1792252996
+  },
+  "4750823": {
+   "post_id": "104238901487012_1466140975625346",
+   "title": "🏁 انتهت المباراة: ريال مدريد 4 - 1 إشبيلية",
+   "ts": 1792357411
   },
   "4750830": {
    "post_id": "104238901487012_1465097025729741",
@@ -2807,9 +2871,9 @@
    "ts": 1792330610
   },
   "4742034:2": {
-   "post_id": null,
-   "title": "⚽ هدف! ليدز يونايتد 1 - 1 مانشستر يونايتد\n🥅 دومينيك كالفيرت لوين · الدقيقة 51\nالدوري الإنجليزي · المباراة لحظة بلحظة: https://yallascore.site/m/4742034\n#يلا_سكور #ليدز_يونايتد #مانشستر_يونايتد",
-   "ts": 1792332671
+   "post_id": "104238901487012_1465838648988912",
+   "title": "⚽ هدف! ليدز يونايتد 1 - 1 مانشستر يونايتد",
+   "ts": 1792332700
   },
   "4742036:2": {
    "post_id": "104238901487012_1464855595753884",
@@ -2860,6 +2924,31 @@
    "post_id": "104238901487012_1464977122408398",
    "title": "⚽ هدف! مانشستر سيتي 3 - 2 إبسويتش تاون",
    "ts": 1792252288
+  },
+  "4750823:1": {
+   "post_id": "104238901487012_1466086682297442",
+   "title": "⚽ هدف! ريال مدريد 1 - 0 إشبيلية",
+   "ts": 1792352089
+  },
+  "4750823:2": {
+   "post_id": "104238901487012_1466091115630332",
+   "title": "⚽ هدف! ريال مدريد 2 - 0 إشبيلية",
+   "ts": 1792352521
+  },
+  "4750823:3": {
+   "post_id": "104238901487012_1466121858960591",
+   "title": "⚽ هدف! ريال مدريد 3 - 0 إشبيلية",
+   "ts": 1792355491
+  },
+  "4750823:4": {
+   "post_id": "104238901487012_1466132365626207",
+   "title": "⚽ هدف! ريال مدريد 3 - 1 إشبيلية",
+   "ts": 1792356510
+  },
+  "4750823:5": {
+   "post_id": "104238901487012_1466133702292740",
+   "title": "⚽ هدف! ريال مدريد 4 - 1 إشبيلية",
+   "ts": 1792356632
   },
   "4750830:1": {
    "post_id": "104238901487012_1465017742404336",
@@ -2962,6 +3051,11 @@
    "post_id": "104238901487012_1460523846187059",
    "title": "📊 آخر 8 مواجهات بين روما وريال مدريد قبل لقاء الأربعاء 14 أكتوبر · 10 مساءً",
    "ts": 1791849918
+  },
+  "575367": {
+   "post_id": "104238901487012_1466456745593769",
+   "title": "📊 آخر 10 مواجهات بين باريس سان جيرمان وبرشلونة قبل لقاء الثلاثاء 20 أكتوبر · 10 مساءً",
+   "ts": 1792391074
   }
  },
  "posted_ht": {
@@ -2980,6 +3074,11 @@
    "title": "⏸️ نهاية الشوط الأول: مانشستر سيتي 2 - 1 إبسويتش تاون",
    "ts": 1792248627
   },
+  "4750823": {
+   "post_id": "104238901487012_1466099112296199",
+   "title": "⏸️ نهاية الشوط الأول: ريال مدريد 2 - 0 إشبيلية",
+   "ts": 1792353296
+  },
   "4750830": {
    "post_id": "104238901487012_1465048122401298",
    "title": "⏸️ نهاية الشوط الأول: ريال بيتيس 1 - 2 برشلونة",
@@ -2989,6 +3088,1710 @@
    "post_id": "104238901487012_1464874479085329",
    "title": "⏸️ نهاية الشوط الأول: كيتارا 1 - 0 الأهلي",
    "ts": 1792244840
+  }
+ },
+ "posted_indexnow": {
+  "https://yallascore.site/": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368606
+  },
+  "https://yallascore.site/a/838": {
+   "post_id": "1",
+   "title": "2026-10-18T09:09:03+03:00",
+   "ts": 1792338100
+  },
+  "https://yallascore.site/a/841": {
+   "post_id": "1",
+   "title": "2026-10-18T14:04:58+03:00",
+   "ts": 1792338100
+  },
+  "https://yallascore.site/a/842": {
+   "post_id": "1",
+   "title": "2026-10-18T14:39:39+03:00",
+   "ts": 1792338099
+  },
+  "https://yallascore.site/a/845": {
+   "post_id": "1",
+   "title": "2026-10-18T17:06:11+03:00",
+   "ts": 1792338099
+  },
+  "https://yallascore.site/a/847": {
+   "post_id": "1",
+   "title": "2026-10-18T20:10:29+03:00",
+   "ts": 1792344528
+  },
+  "https://yallascore.site/a/848": {
+   "post_id": "1",
+   "title": "2026-10-18T20:36:42+03:00",
+   "ts": 1792346354
+  },
+  "https://yallascore.site/a/849": {
+   "post_id": "1",
+   "title": "2026-10-18T22:45:51+03:00",
+   "ts": 1792353552
+  },
+  "https://yallascore.site/a/855": {
+   "post_id": "1",
+   "title": "2026-10-19T09:12:24+03:00",
+   "ts": 1792391033
+  },
+  "https://yallascore.site/analysis": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368607
+  },
+  "https://yallascore.site/analysis/afcon-qualifiers": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368609
+  },
+  "https://yallascore.site/analysis/caf-champions-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368609
+  },
+  "https://yallascore.site/analysis/caf-confederation-cup": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368609
+  },
+  "https://yallascore.site/analysis/champions-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368608
+  },
+  "https://yallascore.site/analysis/egypt": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368607
+  },
+  "https://yallascore.site/analysis/england": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368607
+  },
+  "https://yallascore.site/analysis/europa-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368608
+  },
+  "https://yallascore.site/analysis/france": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368608
+  },
+  "https://yallascore.site/analysis/germany": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368608
+  },
+  "https://yallascore.site/analysis/italy": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368608
+  },
+  "https://yallascore.site/analysis/nations-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368609
+  },
+  "https://yallascore.site/analysis/saudi": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368608
+  },
+  "https://yallascore.site/analysis/spain": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368607
+  },
+  "https://yallascore.site/analysis/turkey": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368607
+  },
+  "https://yallascore.site/fixtures/afcon-qualifiers": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368612
+  },
+  "https://yallascore.site/fixtures/champions-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368612
+  },
+  "https://yallascore.site/fixtures/egypt": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368611
+  },
+  "https://yallascore.site/fixtures/england": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368611
+  },
+  "https://yallascore.site/fixtures/europa-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368613
+  },
+  "https://yallascore.site/fixtures/france": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368612
+  },
+  "https://yallascore.site/fixtures/germany": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368611
+  },
+  "https://yallascore.site/fixtures/italy": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368611
+  },
+  "https://yallascore.site/fixtures/nations-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368612
+  },
+  "https://yallascore.site/fixtures/saudi": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368612
+  },
+  "https://yallascore.site/fixtures/spain": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368611
+  },
+  "https://yallascore.site/fixtures/turkey": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368612
+  },
+  "https://yallascore.site/insights": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368613
+  },
+  "https://yallascore.site/m/4763756": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370502
+  },
+  "https://yallascore.site/m/4763757": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370506
+  },
+  "https://yallascore.site/m/4763758": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370499
+  },
+  "https://yallascore.site/m/4763759": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792381332
+  },
+  "https://yallascore.site/m/4763760": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370510
+  },
+  "https://yallascore.site/m/4763761": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370512
+  },
+  "https://yallascore.site/m/4763762": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370510
+  },
+  "https://yallascore.site/m/4763763": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370511
+  },
+  "https://yallascore.site/m/4763764": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369850
+  },
+  "https://yallascore.site/m/4763765": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370493
+  },
+  "https://yallascore.site/m/4763766": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370493
+  },
+  "https://yallascore.site/m/4763767": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369853
+  },
+  "https://yallascore.site/m/4763769": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370489
+  },
+  "https://yallascore.site/m/4764316": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369836
+  },
+  "https://yallascore.site/m/4764317": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368622
+  },
+  "https://yallascore.site/m/4764318": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368617
+  },
+  "https://yallascore.site/m/4764319": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369834
+  },
+  "https://yallascore.site/m/4764320": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368618
+  },
+  "https://yallascore.site/m/4764321": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368620
+  },
+  "https://yallascore.site/m/4764322": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338101
+  },
+  "https://yallascore.site/m/4764323": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369832
+  },
+  "https://yallascore.site/m/4764324": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368616
+  },
+  "https://yallascore.site/m/4764325": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369847
+  },
+  "https://yallascore.site/m/4764326": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369846
+  },
+  "https://yallascore.site/m/4764327": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369844
+  },
+  "https://yallascore.site/m/4764328": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370493
+  },
+  "https://yallascore.site/m/4764329": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370501
+  },
+  "https://yallascore.site/m/4789429": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370499
+  },
+  "https://yallascore.site/m/4789430": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370502
+  },
+  "https://yallascore.site/m/4789431": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370498
+  },
+  "https://yallascore.site/m/4789432": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370500
+  },
+  "https://yallascore.site/m/4789433": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370498
+  },
+  "https://yallascore.site/m/4789434": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370497
+  },
+  "https://yallascore.site/m/4789435": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370508
+  },
+  "https://yallascore.site/m/4789436": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370504
+  },
+  "https://yallascore.site/m/4789437": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370498
+  },
+  "https://yallascore.site/m/4789438": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369849
+  },
+  "https://yallascore.site/m/4789439": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369851
+  },
+  "https://yallascore.site/m/4789440": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369844
+  },
+  "https://yallascore.site/m/4789441": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369843
+  },
+  "https://yallascore.site/m/4789442": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369849
+  },
+  "https://yallascore.site/m/4789443": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369844
+  },
+  "https://yallascore.site/m/4789444": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369843
+  },
+  "https://yallascore.site/m/4789445": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369843
+  },
+  "https://yallascore.site/m/4789446": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369843
+  },
+  "https://yallascore.site/m/4789447": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369838
+  },
+  "https://yallascore.site/m/4789448": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369839
+  },
+  "https://yallascore.site/m/4789449": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369837
+  },
+  "https://yallascore.site/m/4789450": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369839
+  },
+  "https://yallascore.site/m/4789451": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369837
+  },
+  "https://yallascore.site/m/4789452": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369835
+  },
+  "https://yallascore.site/m/4789453": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369834
+  },
+  "https://yallascore.site/m/4789454": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369839
+  },
+  "https://yallascore.site/m/4789456": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368619
+  },
+  "https://yallascore.site/m/4789457": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368621
+  },
+  "https://yallascore.site/m/4789459": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338100
+  },
+  "https://yallascore.site/m/4804696": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369835
+  },
+  "https://yallascore.site/m/4804702": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369836
+  },
+  "https://yallascore.site/m/4804706": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369836
+  },
+  "https://yallascore.site/m/4804707": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369838
+  },
+  "https://yallascore.site/m/4804710": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369838
+  },
+  "https://yallascore.site/m/4804711": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369839
+  },
+  "https://yallascore.site/m/4804717": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369841
+  },
+  "https://yallascore.site/m/4804718": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369838
+  },
+  "https://yallascore.site/m/4804719": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369842
+  },
+  "https://yallascore.site/m/4804720": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369842
+  },
+  "https://yallascore.site/m/4804721": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370495
+  },
+  "https://yallascore.site/m/4804722": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370495
+  },
+  "https://yallascore.site/m/4804723": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370497
+  },
+  "https://yallascore.site/m/4804724": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370497
+  },
+  "https://yallascore.site/m/4804725": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370499
+  },
+  "https://yallascore.site/m/4804726": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370500
+  },
+  "https://yallascore.site/m/4804727": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370500
+  },
+  "https://yallascore.site/m/4804729": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370505
+  },
+  "https://yallascore.site/m/4804730": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370507
+  },
+  "https://yallascore.site/m/4804731": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370508
+  },
+  "https://yallascore.site/m/4854068": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369844
+  },
+  "https://yallascore.site/m/4854069": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368617
+  },
+  "https://yallascore.site/m/4854345": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369843
+  },
+  "https://yallascore.site/m/4854347": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368617
+  },
+  "https://yallascore.site/m/4854348": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369479
+  },
+  "https://yallascore.site/m/4854349": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368617
+  },
+  "https://yallascore.site/m/4854764": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338101
+  },
+  "https://yallascore.site/m/4854766": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369850
+  },
+  "https://yallascore.site/m/4854767": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368619
+  },
+  "https://yallascore.site/m/4854773": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338101
+  },
+  "https://yallascore.site/m/4854774": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368618
+  },
+  "https://yallascore.site/m/4854837": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369479
+  },
+  "https://yallascore.site/m/4854838": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369845
+  },
+  "https://yallascore.site/m/4855275": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792373297
+  },
+  "https://yallascore.site/m/4855316": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792373297
+  },
+  "https://yallascore.site/m/4855317": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369851
+  },
+  "https://yallascore.site/m/4855320": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370490
+  },
+  "https://yallascore.site/m/4855321": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369851
+  },
+  "https://yallascore.site/m/4855322": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368620
+  },
+  "https://yallascore.site/m/4855323": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369833
+  },
+  "https://yallascore.site/m/4855325": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792376603
+  },
+  "https://yallascore.site/m/4855326": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369479
+  },
+  "https://yallascore.site/m/4855327": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338100
+  },
+  "https://yallascore.site/m/4856486": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338101
+  },
+  "https://yallascore.site/m/4875552": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370494
+  },
+  "https://yallascore.site/m/558539": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370502
+  },
+  "https://yallascore.site/m/558540": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370514
+  },
+  "https://yallascore.site/m/558541": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792381332
+  },
+  "https://yallascore.site/m/558542": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370506
+  },
+  "https://yallascore.site/m/558543": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370510
+  },
+  "https://yallascore.site/m/558544": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370511
+  },
+  "https://yallascore.site/m/558545": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792381332
+  },
+  "https://yallascore.site/m/558546": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370512
+  },
+  "https://yallascore.site/m/558547": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792371180
+  },
+  "https://yallascore.site/m/558548": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370508
+  },
+  "https://yallascore.site/m/558549": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370495
+  },
+  "https://yallascore.site/m/558550": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370496
+  },
+  "https://yallascore.site/m/558551": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370498
+  },
+  "https://yallascore.site/m/558552": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370496
+  },
+  "https://yallascore.site/m/558553": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370496
+  },
+  "https://yallascore.site/m/558554": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370496
+  },
+  "https://yallascore.site/m/558555": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370494
+  },
+  "https://yallascore.site/m/558556": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370494
+  },
+  "https://yallascore.site/m/558557": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370495
+  },
+  "https://yallascore.site/m/558558": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370497
+  },
+  "https://yallascore.site/m/558559": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370492
+  },
+  "https://yallascore.site/m/558560": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369846
+  },
+  "https://yallascore.site/m/558561": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369847
+  },
+  "https://yallascore.site/m/558562": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370488
+  },
+  "https://yallascore.site/m/558563": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369852
+  },
+  "https://yallascore.site/m/558564": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369849
+  },
+  "https://yallascore.site/m/558565": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369852
+  },
+  "https://yallascore.site/m/558566": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370492
+  },
+  "https://yallascore.site/m/558567": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369845
+  },
+  "https://yallascore.site/m/558568": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370488
+  },
+  "https://yallascore.site/m/558569": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369834
+  },
+  "https://yallascore.site/m/558570": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369834
+  },
+  "https://yallascore.site/m/558571": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368620
+  },
+  "https://yallascore.site/m/558572": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368621
+  },
+  "https://yallascore.site/m/558573": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338102
+  },
+  "https://yallascore.site/m/558574": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368622
+  },
+  "https://yallascore.site/m/558575": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368617
+  },
+  "https://yallascore.site/m/558576": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369836
+  },
+  "https://yallascore.site/m/558577": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369480
+  },
+  "https://yallascore.site/m/558578": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369837
+  },
+  "https://yallascore.site/m/559639": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370501
+  },
+  "https://yallascore.site/m/559640": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370509
+  },
+  "https://yallascore.site/m/559641": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370509
+  },
+  "https://yallascore.site/m/559642": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370513
+  },
+  "https://yallascore.site/m/559643": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370509
+  },
+  "https://yallascore.site/m/559644": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370499
+  },
+  "https://yallascore.site/m/559645": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792371181
+  },
+  "https://yallascore.site/m/559646": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370506
+  },
+  "https://yallascore.site/m/559647": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370512
+  },
+  "https://yallascore.site/m/559648": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370493
+  },
+  "https://yallascore.site/m/559649": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370490
+  },
+  "https://yallascore.site/m/559650": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370489
+  },
+  "https://yallascore.site/m/559651": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370490
+  },
+  "https://yallascore.site/m/559652": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369852
+  },
+  "https://yallascore.site/m/559653": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370490
+  },
+  "https://yallascore.site/m/559654": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369845
+  },
+  "https://yallascore.site/m/559655": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369849
+  },
+  "https://yallascore.site/m/559656": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370491
+  },
+  "https://yallascore.site/m/559657": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369832
+  },
+  "https://yallascore.site/m/559658": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369833
+  },
+  "https://yallascore.site/m/559659": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368621
+  },
+  "https://yallascore.site/m/559660": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368621
+  },
+  "https://yallascore.site/m/559661": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338102
+  },
+  "https://yallascore.site/m/559662": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368619
+  },
+  "https://yallascore.site/m/559663": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369833
+  },
+  "https://yallascore.site/m/559664": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369831
+  },
+  "https://yallascore.site/m/559665": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369835
+  },
+  "https://yallascore.site/m/560602": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368619
+  },
+  "https://yallascore.site/m/560603": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368616
+  },
+  "https://yallascore.site/m/560604": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369479
+  },
+  "https://yallascore.site/m/560605": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369480
+  },
+  "https://yallascore.site/m/560606": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369837
+  },
+  "https://yallascore.site/m/560607": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368620
+  },
+  "https://yallascore.site/m/560608": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369833
+  },
+  "https://yallascore.site/m/560609": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369480
+  },
+  "https://yallascore.site/m/560610": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368619
+  },
+  "https://yallascore.site/m/560611": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368619
+  },
+  "https://yallascore.site/m/560612": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369853
+  },
+  "https://yallascore.site/m/560613": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369853
+  },
+  "https://yallascore.site/m/560614": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369846
+  },
+  "https://yallascore.site/m/560615": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369853
+  },
+  "https://yallascore.site/m/560616": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369848
+  },
+  "https://yallascore.site/m/560617": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369850
+  },
+  "https://yallascore.site/m/560618": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369848
+  },
+  "https://yallascore.site/m/560619": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369854
+  },
+  "https://yallascore.site/m/560620": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369845
+  },
+  "https://yallascore.site/m/560621": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370491
+  },
+  "https://yallascore.site/m/560622": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792381332
+  },
+  "https://yallascore.site/m/560623": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370504
+  },
+  "https://yallascore.site/m/560624": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370504
+  },
+  "https://yallascore.site/m/560625": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370505
+  },
+  "https://yallascore.site/m/560626": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370501
+  },
+  "https://yallascore.site/m/560627": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370507
+  },
+  "https://yallascore.site/m/560628": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370509
+  },
+  "https://yallascore.site/m/560629": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370505
+  },
+  "https://yallascore.site/m/560630": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370505
+  },
+  "https://yallascore.site/m/560631": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370513
+  },
+  "https://yallascore.site/m/564685": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369842
+  },
+  "https://yallascore.site/m/564708": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368619
+  },
+  "https://yallascore.site/m/564709": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369835
+  },
+  "https://yallascore.site/m/564710": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368617
+  },
+  "https://yallascore.site/m/564711": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368622
+  },
+  "https://yallascore.site/m/564712": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369832
+  },
+  "https://yallascore.site/m/564713": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368620
+  },
+  "https://yallascore.site/m/564714": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369834
+  },
+  "https://yallascore.site/m/564715": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369479
+  },
+  "https://yallascore.site/m/564716": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338102
+  },
+  "https://yallascore.site/m/564717": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369837
+  },
+  "https://yallascore.site/m/564718": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369846
+  },
+  "https://yallascore.site/m/564719": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369845
+  },
+  "https://yallascore.site/m/564720": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369852
+  },
+  "https://yallascore.site/m/564721": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370494
+  },
+  "https://yallascore.site/m/564722": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369850
+  },
+  "https://yallascore.site/m/564723": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370493
+  },
+  "https://yallascore.site/m/564724": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369852
+  },
+  "https://yallascore.site/m/564725": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370489
+  },
+  "https://yallascore.site/m/564726": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370492
+  },
+  "https://yallascore.site/m/564727": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369849
+  },
+  "https://yallascore.site/m/564728": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792371180
+  },
+  "https://yallascore.site/m/564729": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792371181
+  },
+  "https://yallascore.site/m/564730": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370502
+  },
+  "https://yallascore.site/m/564731": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792381333
+  },
+  "https://yallascore.site/m/564732": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370509
+  },
+  "https://yallascore.site/m/564733": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370510
+  },
+  "https://yallascore.site/m/564734": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370512
+  },
+  "https://yallascore.site/m/564735": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370505
+  },
+  "https://yallascore.site/m/564736": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370507
+  },
+  "https://yallascore.site/m/564737": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370500
+  },
+  "https://yallascore.site/m/565821": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368618
+  },
+  "https://yallascore.site/m/565822": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368618
+  },
+  "https://yallascore.site/m/565823": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368618
+  },
+  "https://yallascore.site/m/565824": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368618
+  },
+  "https://yallascore.site/m/565825": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368620
+  },
+  "https://yallascore.site/m/565826": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369833
+  },
+  "https://yallascore.site/m/565827": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369832
+  },
+  "https://yallascore.site/m/565828": {
+   "post_id": "1",
+   "title": "2026-10-18",
+   "ts": 1792338101
+  },
+  "https://yallascore.site/m/565829": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368618
+  },
+  "https://yallascore.site/m/565830": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369847
+  },
+  "https://yallascore.site/m/565831": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369847
+  },
+  "https://yallascore.site/m/565832": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369847
+  },
+  "https://yallascore.site/m/565833": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369844
+  },
+  "https://yallascore.site/m/565834": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369848
+  },
+  "https://yallascore.site/m/565835": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370489
+  },
+  "https://yallascore.site/m/565836": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370492
+  },
+  "https://yallascore.site/m/565837": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369850
+  },
+  "https://yallascore.site/m/565838": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369848
+  },
+  "https://yallascore.site/m/565839": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370503
+  },
+  "https://yallascore.site/m/565840": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370503
+  },
+  "https://yallascore.site/m/565841": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370512
+  },
+  "https://yallascore.site/m/565842": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370503
+  },
+  "https://yallascore.site/m/565843": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370503
+  },
+  "https://yallascore.site/m/565844": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370513
+  },
+  "https://yallascore.site/m/565845": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370507
+  },
+  "https://yallascore.site/m/565846": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370500
+  },
+  "https://yallascore.site/m/565847": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792370504
+  },
+  "https://yallascore.site/m/575359": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369839
+  },
+  "https://yallascore.site/m/575361": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369840
+  },
+  "https://yallascore.site/m/575362": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369840
+  },
+  "https://yallascore.site/m/575363": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369840
+  },
+  "https://yallascore.site/m/575364": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369840
+  },
+  "https://yallascore.site/m/575366": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369840
+  },
+  "https://yallascore.site/m/575367": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369841
+  },
+  "https://yallascore.site/m/575368": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369841
+  },
+  "https://yallascore.site/m/575370": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792381332
+  },
+  "https://yallascore.site/m/575372": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792369842
+  },
+  "https://yallascore.site/matches": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368607
+  },
+  "https://yallascore.site/news": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368606
+  },
+  "https://yallascore.site/news/egypt": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368606
+  },
+  "https://yallascore.site/news/europe": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368606
+  },
+  "https://yallascore.site/predictions": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368607
+  },
+  "https://yallascore.site/scorers/champions-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368610
+  },
+  "https://yallascore.site/scorers/egypt": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368609
+  },
+  "https://yallascore.site/scorers/england": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368609
+  },
+  "https://yallascore.site/scorers/europa-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368611
+  },
+  "https://yallascore.site/scorers/france": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368610
+  },
+  "https://yallascore.site/scorers/germany": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368610
+  },
+  "https://yallascore.site/scorers/italy": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368610
+  },
+  "https://yallascore.site/scorers/saudi": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368610
+  },
+  "https://yallascore.site/scorers/spain": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368610
+  },
+  "https://yallascore.site/scorers/turkey": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368610
+  },
+  "https://yallascore.site/standings/champions-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368614
+  },
+  "https://yallascore.site/standings/egypt": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368613
+  },
+  "https://yallascore.site/standings/england": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368613
+  },
+  "https://yallascore.site/standings/europa-league": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368614
+  },
+  "https://yallascore.site/standings/france": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368614
+  },
+  "https://yallascore.site/standings/germany": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368613
+  },
+  "https://yallascore.site/standings/italy": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368613
+  },
+  "https://yallascore.site/standings/saudi": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368614
+  },
+  "https://yallascore.site/standings/spain": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368613
+  },
+  "https://yallascore.site/standings/turkey": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368614
+  },
+  "https://yallascore.site/team/al-ahly": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368614
+  },
+  "https://yallascore.site/team/arsenal": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368616
+  },
+  "https://yallascore.site/team/barcelona": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368615
+  },
+  "https://yallascore.site/team/chelsea": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368616
+  },
+  "https://yallascore.site/team/liverpool": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368616
+  },
+  "https://yallascore.site/team/man-city": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368615
+  },
+  "https://yallascore.site/team/man-united": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368615
+  },
+  "https://yallascore.site/team/pyramids": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368615
+  },
+  "https://yallascore.site/team/real-madrid": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368615
+  },
+  "https://yallascore.site/team/trabzonspor": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368616
+  },
+  "https://yallascore.site/team/zamalek": {
+   "post_id": "1",
+   "title": "2026-10-19",
+   "ts": 1792368615
+  }
+ },
+ "posted_ko": {
+  "4750823": {
+   "post_id": "104238901487012_1466066792299431",
+   "title": "🔔 انطلقت المباراة: ريال مدريد × إشبيلية",
+   "ts": 1792350306
   }
  },
  "posted_pred": {
@@ -3548,6 +5351,26 @@
    "post_id": "1/1",
    "title": "تقرير: ليفربول يهزم برينتفورد 2-1 في الدوري الإنجليزي",
    "ts": 1792318408
+  },
+  "849": {
+   "post_id": "1/1",
+   "title": "اتحاد الكرة يرفض طلب الزمالك سماع تسجيلات الفار بعد قمة الأهلي",
+   "ts": 1792386809
+  },
+  "850": {
+   "post_id": "1/1",
+   "title": "توقع يلا سكور: المصري يستضيف ابو قير للاسمدة في الدوري المصري",
+   "ts": 1792358637
+  },
+  "855": {
+   "post_id": "1/1",
+   "title": "إصابتا سوبوسلاي وفريمبونج تهددان ليفربول قبل فياريال",
+   "ts": 1792391043
+  },
+  "856": {
+   "post_id": "1/1",
+   "title": "تقرير: أرسنال يفوز على نوتنجهام فورست 0-1 في الدوري الإنجليزي",
+   "ts": 1792395498
   }
  },
  "posted_reel": {
@@ -3617,6 +5440,18 @@
    "title": "إيفرتون - تشيلسي",
    "ts": 1792245276
   },
+  "560605": {
+   "post_id": "3122983674735874",
+   "s": "1-1",
+   "title": "ليدز يونايتد - مانشستر يونايتد",
+   "ts": 1792336254
+  },
+  "560608": {
+   "post_id": "4241145916182777",
+   "s": "0-1",
+   "title": "نوتنجهام فورست - أرسنال",
+   "ts": 1792345404
+  },
   "560610": {
    "post_id": "39275062365474258",
    "s": "3-2",
@@ -3640,6 +5475,12 @@
    "s": "1-0",
    "title": "ريال مدريد - فياريال",
    "ts": 1791727861
+  },
+  "564709": {
+   "post_id": "1090871457267510",
+   "s": "4-1",
+   "title": "ريال مدريد - إشبيلية",
+   "ts": 1792358689
   },
   "564713": {
    "post_id": "1529804655640929",
@@ -4848,6 +6689,61 @@
    "post_id": "235",
    "title": "توقع يلا سكور: الفيحاء ضد الأهلي في الجولة 10 بالدوري السعودي",
    "ts": 1792325831
+  },
+  "844": {
+   "post_id": "236",
+   "title": "توقع يلا سكور: يوفنتوس × لاتسيو في الجولة 7 بالدوري الإيطالي",
+   "ts": 1792333373
+  },
+  "845": {
+   "post_id": "237",
+   "title": "أحمد ربيع يعلن إصابته بكسر في الأنف بعد عودة الزمالك من رواندا",
+   "ts": 1792333454
+  },
+  "846": {
+   "post_id": "238",
+   "title": "توقع يلا سكور: طرابزون سبور × بشكتاش في الدوري التركي",
+   "ts": 1792343440
+  },
+  "847": {
+   "post_id": "239",
+   "title": "رومانو: مانشستر يونايتد متمسك بكاريك وكونتي بلا مفاوضات جادة",
+   "ts": 1792344535
+  },
+  "848": {
+   "post_id": "240",
+   "title": "رسميًا.. برشلونة يعلن غياب كوندي وإريك جارسيا عن باريس سان جيرمان",
+   "ts": 1792347466
+  },
+  "849": {
+   "post_id": "241",
+   "title": "اتحاد الكرة يرفض طلب الزمالك سماع تسجيلات الفار بعد قمة الأهلي",
+   "ts": 1792353555
+  },
+  "850": {
+   "post_id": "242",
+   "title": "توقع يلا سكور: المصري يستضيف ابو قير للاسمدة في الدوري المصري",
+   "ts": 1792356432
+  },
+  "851": {
+   "post_id": "243",
+   "title": "تقرير: لاتسيو يسحق يوفنتوس 3-0 ويقترب من صدارة الدوري الإيطالي",
+   "ts": 1792358632
+  },
+  "852": {
+   "post_id": "244",
+   "title": "تقرير: أولمبيك ليون يتغلب على نيس 2-1 ويعزز صدارة الدوري الفرنسي",
+   "ts": 1792358634
+  },
+  "853": {
+   "post_id": "245",
+   "title": "تقرير: ريال مدريد يسحق إشبيلية 4-1 بثنائية مبابي في الدوري الإسباني",
+   "ts": 1792360390
+  },
+  "854": {
+   "post_id": "246",
+   "title": "تقرير: ميلان يفوز 3-2 على أتالانتا ويصعد للمركز الرابع",
+   "ts": 1792360391
   }
  },
  "posted_xi": {
@@ -4871,6 +6767,11 @@
    "title": "📋 التشكيل الرسمي: مانشستر سيتي × إبسويتش تاون",
    "ts": 1792240950
   },
+  "4750823": {
+   "post_id": "104238901487012_1466008565638587",
+   "title": "xi 4750823",
+   "ts": 1792345265
+  },
   "4750830": {
    "post_id": "104238901487012_1464944149078362",
    "title": "xi 4750830",
@@ -4882,10 +6783,5 @@
    "ts": 1791733245
   }
  },
- "seen": {
-  "564702": {
-   "s": "1-0",
-   "ts": 1791692822
-  }
- }
+ "seen": {}
 }
