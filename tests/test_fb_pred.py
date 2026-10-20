@@ -90,6 +90,28 @@ ck("23 the card's caption is the title line, the competition, the link and the t
    and "https://yallascore.site/m/4804707" in xc and "#بترول_أسيوط" in xc and "الدوري المصري" in xc, xc)
 ck("24 the text-only fallback still lists the eleven", "أمجد يوسف" in fp.xi_caption(xd) and "(4-3-3)" in fp.xi_caption(xd))
 
+# ---- --xi --redo (2026-10-20): the text post is deleted and the card posted
+import json as _json
+import lineup_card as LC
+_game = _json.load(open("tests/fixtures/game_4742043_lineups.json", encoding="utf-8"))["game"]
+calls = []
+_s, _r, _pe, _dp, _pp = LC._s365_game, LC.render_bytes, fp.post_exists, fp.delete_post, fp.post_photo
+LC._s365_game = lambda gid: _game
+LC.render_bytes = lambda data, photos_on=True: b"\xff\xd8\xffcard"
+fp.post_exists = lambda tok, pid: calls.append(("exists", pid)) or True
+fp.delete_post = lambda tok, pid: calls.append(("delete", pid)) or True
+fp.post_photo = lambda tok, img, cap: calls.append(("photo", cap.splitlines()[0])) or "777_new"
+store.record_post("xi", "4742043", "777_old", title="xi 4742043")
+ck("25 --xi on a posted game does nothing", fp.xi_post("tok", "4742043") == 0 and calls == [])
+rc = fp.xi_post("tok", "4742043", redo=True)
+ck("26 --redo deletes the old post, posts the card with the no-names caption, records the new id",
+   rc == 0 and calls == [("exists", "777_old"), ("delete", "777_old"), ("photo", "📋 التشكيل الرسمي لمباراة مانشستر سيتي × إبسويتش تاون")]
+   and store.get_post("xi", "4742043")["post_id"] == "777_new", str(calls))
+calls.clear()
+LC._s365_game = lambda gid: {}
+ck("27 --redo refuses while the card cannot be drawn: the old post stays", fp.xi_post("tok", "4742043", redo=True) == 1 and calls == [])
+LC._s365_game, LC.render_bytes, fp.post_exists, fp.delete_post, fp.post_photo = _s, _r, _pe, _dp, _pp
+
 print()
 print("ALL FB PREDICTION TESTS PASSED" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

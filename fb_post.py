@@ -730,19 +730,25 @@ def xi_caption(data, names=True):
     return "\n".join(x for x in lines if x)
 
 
-def xi_post(token, gid, dry=False):
+def xi_post(token, gid, dry=False, redo=False):
     """Draw the line-up card for a 365scores game and post it as a photo
     (user, 2026-10-17). The Worker holds the "xi" claim and dispatched us;
     run by hand, we take the claim ourselves. Since 2026-10-20 a side the
     feed lists without field positions is laid out from its formation, so
     the card goes out whenever both XIs are named; the text post remains
-    only for a detail with names the card cannot place."""
+    only for a detail with names the card cannot place.
+
+    redo (2026-10-20, user: «عايز اعدل بوست الزمالك واحط ليه صورة التشكيل»):
+    Facebook cannot add a photo to a published text post, so the recorded
+    post is DELETED from the page and the card goes out as a new photo post
+    - only once the card can be drawn, so the page is never left without
+    the line-up."""
     import lineup_card as LC
     gid = str(gid).strip()
     if not gid:
         print("--xi needs a 365scores game id"); return 1
     rec = store.get_post("xi", gid)
-    if rec and rec.get("post_id"):
+    if rec and rec.get("post_id") and not redo:
         print(f"xi {gid}: already posted ({rec['post_id']})"); return 0
     game = LC._s365_game(gid)
     data = LC.parse(game)
@@ -755,6 +761,18 @@ def xi_post(token, gid, dry=False):
         print(caption or f"xi {gid}: no full XI yet"); return 0
     if not token:
         print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if redo:
+        if not data:
+            print(f"xi {gid}: redo refused - the card cannot be drawn yet, the old post stays"); return 1
+        old = (rec or {}).get("post_id")
+        if old:
+            alive = post_exists(token, old)
+            if alive and not delete_post(token, old):
+                print(f"xi {gid}: redo refused - could not delete the old post {old}"); return 1
+            print(f"xi {gid}: old post {old} {'deleted' if alive else 'already gone'}")
+            if not store.reopen("xi", gid):
+                print(f"xi {gid}: claimed by another run - nothing posted"); return 1
+            rec = {"post_id": None}
     if not rec and not store.claim("xi", gid, title=f"xi {gid}"):
         print(f"xi {gid}: claimed by another run - nothing posted"); return 0
     try:
@@ -918,6 +936,17 @@ def whistle_post(token, payload, dry=False):
     return 0
 
 
+def delete_post(token, post_id):
+    """Remove one of the page's posts. True when Graph confirms."""
+    url = f"{GRAPH}/{post_id}?" + urllib.parse.urlencode({"access_token": token})
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, method="DELETE"), timeout=30) as r:
+            return bool(json.load(r).get("success"))
+    except Exception as e:  # noqa: BLE001
+        print(f"delete {post_id} failed: {e}")
+        return False
+
+
 def post_text(token, message):
     data = urllib.parse.urlencode({"message": message, "access_token": token}).encode()
     with urllib.request.urlopen(urllib.request.Request(GRAPH_FEED, data=data), timeout=30) as r:
@@ -964,7 +993,8 @@ def main() -> int:
         return goal_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
     if "--xi" in sys.argv[1:]:
         i = sys.argv.index("--xi")
-        return xi_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
+        return xi_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:],
+                       redo="--redo" in sys.argv[1:])
     if "--repost" in sys.argv[1:]:
         i = sys.argv.index("--repost")
         return repost(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "")

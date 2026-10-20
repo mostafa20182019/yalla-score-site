@@ -32,6 +32,10 @@ on:
         description: "Post the line-up CARD of a 365scores game id (dispatched by the Worker when both XIs are announced)."
         required: false
         default: ""
+      xi_redo:
+        description: "Replace a game's TEXT line-up post with the CARD: deletes the old post, posts the photo (365scores game id)."
+        required: false
+        default: ""
       goal:
         description: "Post one goal as a CARD: the JSON the Worker dispatched ({g, seq, ev})."
         required: false
@@ -100,6 +104,7 @@ jobs:
           REPOST: ${{ inputs.repost }}
           UPDATE: ${{ inputs.update }}
           XI: ${{ inputs.xi }}
+          XI_REDO: ${{ inputs.xi_redo }}
           GOAL: ${{ inputs.goal }}
           WHISTLE: ${{ inputs.whistle }}
           PREDICTION: ${{ inputs.prediction }}
@@ -113,6 +118,8 @@ jobs:
             python fb_post.py --goal "$GOAL" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$XI" ]; then
             python fb_post.py --xi "$XI" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+          elif [ -n "$XI_REDO" ]; then
+            python fb_post.py --xi "$XI_REDO" --redo | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$UPDATE" ]; then
             python fb_update_posts.py ${UPDATE//,/ } | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$H2H" ]; then
