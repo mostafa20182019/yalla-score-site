@@ -49,6 +49,10 @@ const SITE = "https://yallascore.site";
 export const XI_MIN_MS = 45 * 60 * 1000;    // post the XI when kick-off is
 export const XI_MAX_MS = 80 * 60 * 1000;    // 45..80 minutes away
 export const XI_FALLBACK_MS = 12 * 60 * 1000;   // a dispatched card not posted by then -> the text
+export const XI_POS_WAIT_MS = 10 * 60 * 1000;   // eleven names but no field positions yet: wait for
+                                                // them until this close to XI_MIN_MS (2026-10-20: the
+                                                // Petrol Assiut x Zamalek XI went out the minute the
+                                                // names appeared, before the feed placed Zamalek's)
 export const GOAL_FALLBACK_MS = 4 * 60 * 1000;  // a goal card not posted by then -> the text (a goal cannot wait 12)
 
 const COMP_AR = {
@@ -316,20 +320,24 @@ export async function livePosts(env, r, dispatch = null) {
 }
 
 /* ---------------------------------------------------------- lineups */
-// game/ detail -> {h: {f, xi: [names]}, a: {...}} only when BOTH sides carry
-// eleven named starters (mirrors fetch_data's "anything else = broken feed")
+// game/ detail -> {h: {f, xi: [names]}, a: {...}, pos} only when BOTH sides carry
+// eleven named starters (mirrors fetch_data's "anything else = broken feed");
+// pos = both sides also carry the feed's field positions (the card's layout)
 export function parseLineups(game) {
   const members = {};
   for (const m of game.members || []) members[m.id] = (m.name || "").trim();
-  const out = {};
+  const out = { pos: true };
   for (const [side, comp] of [["h", game.homeCompetitor || {}], ["a", game.awayCompetitor || {}]]) {
     const lu = comp.lineups;
     if (!lu || typeof lu !== "object") return null;
     const xi = [];
+    if (!lu.hasFieldPositions) out.pos = false;
     for (const mm of lu.members || []) {
       if (mm.status !== 1) continue;
       const name = members[mm.id || mm.playerId || mm.athleteId];
       if (name) xi.push(name);
+      const yf = mm.yardFormation;
+      if (!yf || yf.fieldLine == null || yf.fieldSide == null) out.pos = false;
     }
     if (xi.length !== 11) return null;
     const f = lu.formation;
@@ -362,6 +370,9 @@ export async function lineupPosts(env, upcoming, now, headers, dispatch = null) 
     if (row && row.post_id) continue;                       // already out
     const xi = await gameLineups(g.id, headers);
     if (!xi) { out.waiting += 1; continue; }                // not announced yet: next minute
+    // names without field positions: the feed usually places them within
+    // minutes - wait for the real layout while the window allows it
+    if (!xi.pos && !(row && !row.post_id) && g.start - now > XI_MIN_MS + XI_POS_WAIT_MS) { out.waiting += 1; continue; }
     const msg = xiMessage(g, xi);
     if (row && !row.post_id) {
       // claimed earlier (a dispatched card): give the runner XI_FALLBACK_MS,

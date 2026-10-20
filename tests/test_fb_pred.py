@@ -80,6 +80,16 @@ kc = fp.whistle_caption("ko", kg, [{"s": "h", "p": "x", "m": "1"}])
 ck("21 the kick-off caption opens with the bell and the two names, no score", kc.startswith("🔔 انطلقت المباراة: ليفربول × فياريال") and "0 - 0" not in kc)
 ck("22 ...carries the live link and the hashtags, and ignores any goal list", "https://yallascore.site/m/985" in kc and "#يلا_سكور" in kc and "x 1'" not in kc)
 
+# ---- the line-up caption (2026-10-20): with the card, no names in the text
+xd = {"gid": "4804707", "comp": "الدوري المصري",
+      "home": {"name": "بترول أسيوط", "formation": "4-3-3", "players": [{"name": "أمجد يوسف"}]},
+      "away": {"name": "الزمالك", "formation": "", "players": [{"name": "عمر جابر"}]}}
+xc = fp.xi_caption(xd, names=False)
+ck("23 the card's caption is the title line, the competition, the link and the tags - no names",
+   xc.splitlines()[0] == "📋 التشكيل الرسمي لمباراة بترول أسيوط × الزمالك" and "أمجد" not in xc and "عمر جابر" not in xc
+   and "https://yallascore.site/m/4804707" in xc and "#بترول_أسيوط" in xc and "الدوري المصري" in xc, xc)
+ck("24 the text-only fallback still lists the eleven", "أمجد يوسف" in fp.xi_caption(xd) and "(4-3-3)" in fp.xi_caption(xd))
+
 print()
 print("ALL FB PREDICTION TESTS PASSED" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

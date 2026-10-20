@@ -18,8 +18,19 @@ number inside and the name beneath, the brand row at the foot.
 
 The Worker (liveposts.js) knows the moment both XIs are announced; it holds
 the "xi" lock and dispatches fb-post.yml with `xi=<game id>`, and
-`fb_post.py --xi` renders this and posts it. No field positions on either
-side = None, and the caller falls back to the text post.
+`fb_post.py --xi` renders this and posts it.
+
+2026-10-20 (user: «نزل صورة ملعب عليه اللاعيبة وصورهم ... زى 365scores»):
+each disc is the player's photo from the feed's athlete images
+(imagecache.365scores.com, the same host our crests come from), ringed in
+the kit colour with the number in a small badge; a player the feed has no
+photo of (it answers its default silhouette) keeps the numbered disc. And
+a side the feed lists WITHOUT field positions (Zamalek that day: eleven
+names, no formation yet) no longer sends the post out as text: the eleven
+are laid out from the announced formation (4-3-3 -> rows of 4, 3, 3 in the
+feed's order) or, with no formation either, from their position groups
+(defenders / midfielders / attackers), and the foot of the card says the
+arrangement is approximate. None only when a side is short of eleven names.
 """
 import argparse
 import datetime
@@ -39,8 +50,14 @@ GOLD = (246, 192, 60)
 GRASS_A, GRASS_B = (34, 120, 68), (30, 108, 60)        # mown stripes
 LINE = (235, 245, 238)
 
-# the pitch rectangle on the card
-PITCH = (60, 372, W - 60, H - 80)                       # x0, y0, x1, y1 - under the restyled header (2026-10-17)
+# the pitch rectangle on the card: the header above it was compacted on
+# 2026-10-20 so that five lines of photo discs (keeper + four) fit a half
+PITCH = (60, 292, W - 60, H - 80)                       # x0, y0, x1, y1
+R = 33                                                  # the photo disc radius
+HEADSHOT = ("https://imagecache.365scores.com/image/upload/"
+            "f_png,w_120,h_120,c_limit,q_auto:eco,dpr_2,d_Athletes:default.png,r_max,c_thumb,g_face,z_0.65/"
+            "v{v}/Athletes/{id}")
+POS_ROWS = ((2, "DF"), (3, "MF"), (4, "FW"))            # the feed's position ids, keeper = 1
 
 
 def _s365_game(gid):
@@ -55,10 +72,53 @@ def _badge(c):
     return fd._s365_badge(c) if c.get("id") else None
 
 
+def formation_rows(formation, n_out):
+    """'4-2-3-1' -> [4, 2, 3, 1] when it accounts for exactly the n_out
+    outfield players, else None."""
+    try:
+        rows = [int(x) for x in str(formation or "").replace("–", "-").split("-") if x.strip()]
+    except ValueError:
+        return None
+    return rows if rows and all(r > 0 for r in rows) and sum(rows) == n_out else None
+
+
+def derive_positions(players, formation):
+    """Field coordinates for starters the feed lists without any: the keeper
+    on the goal line, the outfield rows from the announced formation (in
+    the feed's order, which runs defence -> attack) or, without one, from
+    the position groups. Mutates the players (x, y) and returns True when
+    it could place all of them."""
+    gks = [p for p in players if p.get("pos") == 1]
+    outs = [p for p in players if p.get("pos") != 1]
+    if len(gks) != 1:
+        return False
+    rows = formation_rows(formation, len(outs))
+    if rows:
+        groups, i = [], 0
+        for r in rows:
+            groups.append(outs[i:i + r]); i += r
+    else:
+        groups = [[p for p in outs if p.get("pos") == pid] for pid, _ in POS_ROWS]
+        groups = [g for g in groups if g]
+        if sum(len(g) for g in groups) != len(outs):
+            return False
+    gks[0]["x"], gks[0]["y"] = 50.0, 0.0
+    n = len(groups)
+    for i, g in enumerate(groups):
+        y = 100.0 * (i + 1) / n
+        for j, p in enumerate(g):
+            p["x"], p["y"] = 100.0 * (j + 0.5) / len(g), y
+    return True
+
+
 def parse(game):
     """{"comp", "comp_id", "start", "home": side, "away": side} or None.
-    side = {"name", "formation", "colour", "alt", "badge", "players":
-    [{"name", "no", "x", "y"}]} with exactly eleven positioned starters."""
+    side = {"name", "formation", "colour", "alt", "badge", "derived",
+    "players": [{"name", "no", "x", "y", "athlete", "img_v", "pos"}]} with
+    exactly eleven named starters; positions from the feed when it has
+    them, derived from the formation / position groups otherwise
+    ("derived": True). None when a side is short of eleven names or the
+    eleven cannot be placed."""
     members = {}
     for m in game.get("members") or []:
         members[m.get("id")] = m
@@ -67,26 +127,32 @@ def parse(game):
     for key, side in (("home", "homeCompetitor"), ("away", "awayCompetitor")):
         c = game.get(side) or {}
         lu = c.get("lineups") or {}
-        if not isinstance(lu, dict) or not lu.get("hasFieldPositions"):
+        if not isinstance(lu, dict):
             return None
-        players = []
+        players, positioned = [], bool(lu.get("hasFieldPositions"))
         for mm in lu.get("members") or []:
             if mm.get("status") != 1:
                 continue
-            yf = mm.get("yardFormation") or {}
-            if yf.get("fieldLine") is None or yf.get("fieldSide") is None:
-                return None
             m = members.get(mm.get("id") or mm.get("playerId") or mm.get("athleteId")) or {}
             name = (m.get("shortName") or m.get("name") or "").replace("\t", " ").strip()
             if not name:
                 return None
-            players.append({"name": name, "no": m.get("jerseyNumber"),
-                            "x": float(yf["fieldSide"]), "y": float(yf["fieldLine"])})
+            p = {"name": name, "no": m.get("jerseyNumber"), "athlete": m.get("athleteId"),
+                 "img_v": m.get("imageVersion"), "pos": (mm.get("position") or {}).get("id")}
+            yf = mm.get("yardFormation") or {}
+            if yf.get("fieldLine") is None or yf.get("fieldSide") is None:
+                positioned = False
+            else:
+                p["x"], p["y"] = float(yf["fieldSide"]), float(yf["fieldLine"])
+            players.append(p)
         if len(players) != 11:
             return None
-        out[key] = {"name": (c.get("name") or "").strip(), "formation": lu.get("formation") or "",
+        formation = lu.get("formation") or ""
+        if not positioned and not derive_positions(players, formation):
+            return None
+        out[key] = {"name": (c.get("name") or "").strip(), "formation": formation,
                     "colour": c.get("color"), "alt": c.get("awayColor"), "badge": _badge(c),
-                    "players": players}
+                    "derived": not positioned, "players": players}
     return out
 
 
@@ -139,6 +205,63 @@ def kit_colour(side, comp_id=None):
     return col
 
 
+# ------------------------------------------------------------ headshots
+_HS = {}                                                # url -> bytes | None, per process
+
+
+def fetch_bytes(url, timeout=10):
+    """GET -> bytes (tests replace this)."""
+    import urllib.request
+    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                                                            "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+                                               "Referer": "https://www.365scores.com/"})
+    with urllib.request.urlopen(req, timeout=timeout) as r:
+        return r.read()
+
+
+def headshot_url(p):
+    return HEADSHOT.format(v=p.get("img_v") or 1, id=p["athlete"]) if p.get("athlete") else None
+
+
+def headshots(players, size, workers=8):
+    """{athlete id: RGBA disc of `size`} for the players the feed has a real
+    photo of. The feed answers its default silhouette for the others
+    (d_Athletes:default.png) - that is fetched once under athlete 0 and any
+    photo identical to it counts as missing. A network error on a photo
+    just leaves that player on the numbered disc."""
+    from concurrent.futures import ThreadPoolExecutor
+    want = [(p["athlete"], headshot_url(p)) for p in players if headshot_url(p)]
+    if not want:
+        return {}
+    default_url = HEADSHOT.format(v=1, id=0)
+
+    def get(url):
+        if url not in _HS:
+            try:
+                _HS[url] = fetch_bytes(url)
+            except Exception:                           # noqa: BLE001
+                _HS[url] = None
+        return _HS[url]
+    with ThreadPoolExecutor(max_workers=workers) as ex:
+        default = get(default_url)
+        got = list(ex.map(get, [u for _, u in want]))
+    out = {}
+    for (aid, _), raw in zip(want, got):
+        if not raw or raw == default:
+            continue
+        try:
+            im = Image.open(io.BytesIO(raw)).convert("RGBA")
+        except Exception:                               # noqa: BLE001
+            continue
+        im = im.resize((size, size), Image.LANCZOS)
+        mask = Image.new("L", (size, size), 0)
+        ImageDraw.Draw(mask).ellipse([0, 0, size - 1, size - 1], fill=255)
+        disc = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+        disc.paste(im, (0, 0), mask)
+        out[aid] = disc
+    return out
+
+
 def _pitch(img, d):
     x0, y0, x1, y1 = PITCH
     stripes = 12
@@ -167,7 +290,11 @@ def _place(side, top):
     """pixel (x, y) per player: the feed's fieldSide across the pitch, its
     fieldLine from the keeper's goal line towards the halfway line."""
     x0, y0, x1, y1 = PITCH
-    padx, pady, gap = 90, 54, 66            # gap = the strip either side of halfway no disc enters
+    padx = 90
+    # the strip either side of halfway no disc enters: the top side's names
+    # hang towards halfway, so its forwards stop earlier than the bottom side's
+    gap = 72 if top else 42
+    pady = 42 if top else 76                # the bottom keeper's name sits under his disc, inside the pitch
     my = (y0 + y1) / 2
     span = (my - y0) - pady - gap           # keeper line -> forward line, per half
     out = []
@@ -178,7 +305,7 @@ def _place(side, top):
     return out
 
 
-def render(data, out):
+def render(data, out, photos_on=True):
     import fb_cards as FC
     img = Image.new("RGB", (W, H))
     d = ImageDraw.Draw(img)
@@ -220,17 +347,17 @@ def render(data, out):
         m = Image.new("L", (size, size), 0)
         ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
         img.paste(b, (bx - size // 2, by - size // 2), m)
-    fb = FC.font("ExtraBold", 44)
+    fb = FC.font("ExtraBold", 40)
     bn = FC.ar("يلا سكور")
     bw = d.textlength(bn, font=fb)
-    bx0 = W / 2 - (bw + 70) / 2
-    ball(58, int(bx0 + bw + 70 - 29), 62)
-    d.text((bx0, 38), bn, font=fb, fill=WHITE)
+    bx0 = W / 2 - (bw + 64) / 2
+    ball(52, int(bx0 + bw + 64 - 26), 52)
+    d.text((bx0, 30), bn, font=fb, fill=WHITE)
     tv = FC.ar("التشكيل الرسمي")
-    fh = FC.font("ExtraBold", 112)
+    fh = FC.font("ExtraBold", 80)
     tx = W / 2 - d.textlength(tv, font=fh) / 2
-    d.text((tx + 5, 112 + 8), tv, font=fh, fill=(4, 16, 36))
-    d.text((tx, 112), tv, font=fh, fill=WHITE)
+    d.text((tx + 4, 88 + 6), tv, font=fh, fill=(4, 16, 36))
+    d.text((tx, 88), tv, font=fh, fill=WHITE)
     when = ""
     try:
         from zoneinfo import ZoneInfo
@@ -240,61 +367,77 @@ def render(data, out):
     except Exception:                                   # noqa: BLE001
         when = ""
     sub_ = " · ".join(x for x in (data["comp"] or "", when) if x)
-    text_c(W // 2, 236, sub_, FC.font("Bold", 28), GOLD)
-    ry = 292
-    d.line([(90, ry), (W / 2 - 46, ry)], fill=WHITE, width=2)
-    d.line([(W / 2 + 46, ry), (W - 90, ry)], fill=WHITE, width=2)
-    ball(56, W // 2, ry)
+    text_c(W // 2, 176, sub_, FC.font("Bold", 26), GOLD)
+    ry = 222
+    d.line([(90, ry), (W / 2 - 40, ry)], fill=WHITE, width=2)
+    d.line([(W / 2 + 40, ry), (W - 90, ry)], fill=WHITE, width=2)
+    ball(48, W // 2, ry)
 
     # the two club bars: home right (RTL), away left
-    hy = 304
+    hy = 226
     for side, right in ((data["home"], True), (data["away"], False)):
         cx = W - 40 - 32 if right else 40 + 32
-        crest(cx, hy + 26, 32, side)
-        f = fit(side["name"], "ExtraBold", 32, 340)
+        crest(cx, hy + 26, 30, side)
+        f = fit(side["name"], "ExtraBold", 30, 340)
         if right:
-            text_r(cx - 46, hy + 2, side["name"], f)
-            text_r(cx - 46, hy + 40, side["formation"], FC.font("Bold", 22), SOFT)
+            text_r(cx - 44, hy + 2, side["name"], f)
+            text_r(cx - 44, hy + 38, side["formation"], FC.font("Bold", 21), SOFT)
         else:
-            text_l(cx + 46, hy + 2, side["name"], f)
-            text_l(cx + 46, hy + 40, side["formation"], FC.font("Bold", 22), SOFT)
+            text_l(cx + 44, hy + 2, side["name"], f)
+            text_l(cx + 44, hy + 38, side["formation"], FC.font("Bold", 21), SOFT)
 
     _pitch(img, d)
-    R = 27
-    fn = FC.font("Bold", 23)
-    fno = FC.font("ExtraBold", 24)
+    fn = FC.font("Bold", 20)
+    fno = FC.font("ExtraBold", 26)
+    fbadge = FC.font("ExtraBold", 15)
+    photos = {} if not photos_on else headshots(data["home"]["players"] + data["away"]["players"], 2 * R - 6)
     for side, top in ((data["home"], True), (data["away"], False)):
         col = kit_colour(side, data.get("comp_id"))
         ink = WHITE if _lum(col) < 0.6 else (20, 24, 40)
         for x, y, p in _place(side, top):
             x, y = int(x), int(y)
-            sh = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-            ImageDraw.Draw(sh).ellipse([x - R + 3, y - R + 6, x + R + 3, y + R + 6], fill=(0, 0, 0, 110))
+            sh = Image.new("RGBA", (2 * R + 30, 2 * R + 30), (0, 0, 0, 0))
+            ImageDraw.Draw(sh).ellipse([18, 21, 18 + 2 * R, 21 + 2 * R], fill=(0, 0, 0, 110))
             sh = sh.filter(ImageFilter.GaussianBlur(5))
-            img.paste(sh, (0, 0), sh)
-            d.ellipse([x - R, y - R, x + R, y + R], fill=col, outline=WHITE, width=3)
+            img.paste(sh, (x - R - 15, y - R - 15), sh)
             no = str(p["no"]) if p.get("no") not in (None, "") else ""
-            if no:
-                d.text((x - d.textlength(no, font=fno) / 2, y - 16), no, font=fno, fill=ink)
+            ph = photos.get(p.get("athlete"))
+            if ph is not None:
+                # the photo inside a ring of the kit colour, the number in a
+                # small badge at the lower left (365scores' arrangement)
+                d.ellipse([x - R, y - R, x + R, y + R], fill=col, outline=WHITE, width=2)
+                img.paste(ph, (x - ph.width // 2, y - ph.height // 2), ph)
+                if no:
+                    br = 13
+                    bx, by = x - R + br - 2, y + R - br + 2
+                    d.ellipse([bx - br, by - br, bx + br, by + br], fill=col, outline=WHITE, width=2)
+                    d.text((bx - d.textlength(no, font=fbadge) / 2, by - 10), no, font=fbadge, fill=ink)
+            else:
+                d.ellipse([x - R, y - R, x + R, y + R], fill=col, outline=WHITE, width=3)
+                if no:
+                    d.text((x - d.textlength(no, font=fno) / 2, y - 17), no, font=fno, fill=ink)
             name = FC.ar(p["name"])
             f = fn
-            while d.textlength(name, font=f) > 150 and f.size > 16:
-                f = FC.font("Bold", f.size - 2)
+            while d.textlength(name, font=f) > 140 and f.size > 15:
+                f = FC.font("Bold", f.size - 1)
             tw = d.textlength(name, font=f)
-            ov = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-            ImageDraw.Draw(ov).rounded_rectangle([x - tw / 2 - 8, y + R + 4, x + tw / 2 + 8, y + R + 4 + f.size + 10], 8, fill=(0, 0, 0, 150))
-            img.paste(ov, (0, 0), ov)
-            d.text((x - tw / 2, y + R + 7), name, font=f, fill=WHITE)
+            lh = f.size + 8
+            ov = Image.new("RGBA", (int(tw) + 20, lh), (0, 0, 0, 0))
+            ImageDraw.Draw(ov).rounded_rectangle([0, 0, int(tw) + 19, lh - 1], 7, fill=(0, 0, 0, 150))
+            img.paste(ov, (int(x - tw / 2) - 10, y + R + 2), ov)
+            d.text((x - tw / 2, y + R + 3), name, font=f, fill=WHITE)
 
     text_l(40, H - 52, "yallascore.site", FC.font("Bold", 22), SOFT)
-    text_r(W - 40, H - 52, "التشكيل كما أعلنه الناديان قبل المباراة", FC.font("Regular", 22), DIM)
+    note = ("ترتيب اللاعبين تقريبي حسب الخطة المعلنة" if data["home"].get("derived") or data["away"].get("derived")
+            else "التشكيل كما أعلنه الناديان قبل المباراة")
+    text_r(W - 40, H - 52, note, FC.font("Regular", 22), DIM)
     if out:
         img.save(out, quality=90, optimize=True)
     return img
 
 
-def render_bytes(data):
-    img = render(data, None)
+def render_bytes(data, photos_on=True):
+    img = render(data, None, photos_on)
     buf = io.BytesIO()
     img.save(buf, "JPEG", quality=90, optimize=True)
     return buf.getvalue()
@@ -306,6 +449,7 @@ def main():
     ap.add_argument("--game", help="365scores game id")
     ap.add_argument("--fixture", help="a saved game/ detail JSON instead of the network")
     ap.add_argument("--out", default=os.path.join(HERE, "data", "briefs", "xi.jpg"))
+    ap.add_argument("--no-photos", action="store_true", help="numbered discs only (offline)")
     a = ap.parse_args()
     if a.fixture:
         with open(a.fixture, encoding="utf-8") as fh:
@@ -316,8 +460,8 @@ def main():
         sys.exit("--game or --fixture")
     data = parse(game)
     if not data:
-        sys.exit("no positioned XI on both sides yet")
-    render(data, a.out)
+        sys.exit("no full XI on both sides yet")
+    render(data, a.out, not a.no_photos)
     print(a.out, data["home"]["name"], data["home"]["formation"], "x", data["away"]["name"], data["away"]["formation"])
 
 

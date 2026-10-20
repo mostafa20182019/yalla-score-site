@@ -114,7 +114,11 @@ const DETAIL = (hs, as_, goals, lineups) => ({ game: {
   events: goals.map(g => ({ eventType: { name: "هدف" }, competitorId: g.s === "h" ? 1 : 2, playerId: g.pid, gameTime: g.m })),
   statusText: "الشوط الثاني", shortStatusText: "2", gameTime: 70, gameTimeDisplay: "70'",
 } });
-const XI = (n) => ({ members: Array.from({ length: n }, (_, i) => ({ id: 100 + i, status: 1 })), formation: "4-3-3" });
+// pos = the feed's field positions (keeper on the goal line, three lines behind him)
+const XI = (n, pos = true) => ({
+  members: Array.from({ length: n }, (_, i) => ({ id: 100 + i, status: 1,
+    ...(pos ? { yardFormation: { fieldLine: i ? 25 * Math.min(4, Math.ceil(i / 3)) : 0, fieldSide: (i % 4) * 33 } } : {}) })),
+  formation: "4-3-3", hasFieldPositions: pos });
 
 let LIST = { games: [] };
 const fbCalls = [];
@@ -257,6 +261,18 @@ ck("18 both XIs complete: ONE lineup post, in the window, for مصر only",
    && posts()[n0].caption.includes("(4-3-3)") && posts()[n0].caption.split("لاعب").length === 23, JSON.stringify(posts().slice(-1)));
 await tick();
 ck("19 the XI is never posted twice", posts().length === n0 + 1);
+// 19b-19d (2026-10-20): names without field positions wait for them until
+// 55 minutes before kick-off, then go out as they are
+LIST = { games: [sched(963, 552, "بترول أسيوط", "الزمالك", now + 60 * 60 * 1000)] };
+detailFor[963] = DETAIL(0, 0, [], { h: XI(11), a: XI(11, false) });
+ck("19b parseLineups flags the missing positions", parseLineups(detailFor[963].game).pos === false
+   && parseLineups(DETAIL(0, 0, [], { h: XI(11), a: XI(11) }).game).pos === true);
+await tick();
+ck("19c one side without positions, 60 minutes before kick-off: wait, no lock", posts().length === n0 + 1 && !db.fb.has("xi|963"));
+LIST = { games: [sched(963, 552, "بترول أسيوط", "الزمالك", now + 52 * 60 * 1000)] };
+await tick();
+ck("19d ...52 minutes before: the XI goes out as it is", posts().length === n0 + 2
+   && posts()[n0 + 1].caption.startsWith("📋 التشكيل الرسمي: بترول أسيوط × الزمالك") && db.fb.get("xi|963").post_id);
 ck("20 the window: 44 minutes before is too late to start, 81 too early",
    XI_MIN_MS === 45 * 60 * 1000);
 

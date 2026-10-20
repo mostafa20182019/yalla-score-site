@@ -711,14 +711,19 @@ def whoami(token):
     return 0
 
 
-def xi_caption(data):
-    """The «📋 التشكيل الرسمي» text - the same lines liveposts.js writes."""
+def xi_caption(data, names=True):
+    """The «📋 التشكيل الرسمي» text. With the card the caption carries no
+    names (user, 2026-10-20: «نكتفى بالصورة فقط ... التشكيل الرسمى لمباراة»);
+    names=True is the text-only post, the same lines liveposts.js writes."""
     comp = data.get("comp") or ""
-    lines = [f"📋 التشكيل الرسمي: {data['home']['name']} × {data['away']['name']}", comp]
-    for side in (data["home"], data["away"]):
-        f = f" ({side['formation']})" if side.get("formation") else ""
-        lines.append(f"▪️ {side['name']}{f}:")
-        lines.append("، ".join(p["name"] for p in side["players"]))
+    if names:
+        lines = [f"📋 التشكيل الرسمي: {data['home']['name']} × {data['away']['name']}", comp]
+        for side in (data["home"], data["away"]):
+            f = f" ({side['formation']})" if side.get("formation") else ""
+            lines.append(f"▪️ {side['name']}{f}:")
+            lines.append("، ".join(p["name"] for p in side["players"]))
+    else:
+        lines = [f"📋 التشكيل الرسمي لمباراة {data['home']['name']} × {data['away']['name']}", comp]
     lines.append(f"المباراة لحظة بلحظة: https://yallascore.site/m/{data['gid']}")
     tag = lambda n: "#" + n.strip().replace(" ", "_")
     lines.append(f"#يلا_سكور {tag(data['home']['name'])} {tag(data['away']['name'])}")
@@ -728,9 +733,10 @@ def xi_caption(data):
 def xi_post(token, gid, dry=False):
     """Draw the line-up card for a 365scores game and post it as a photo
     (user, 2026-10-17). The Worker holds the "xi" claim and dispatched us;
-    run by hand, we take the claim ourselves. A game whose XI has no field
-    positions yet goes out as the text post, so the page is never left
-    without the line-up."""
+    run by hand, we take the claim ourselves. Since 2026-10-20 a side the
+    feed lists without field positions is laid out from its formation, so
+    the card goes out whenever both XIs are named; the text post remains
+    only for a detail with names the card cannot place."""
     import lineup_card as LC
     gid = str(gid).strip()
     if not gid:
@@ -742,11 +748,11 @@ def xi_post(token, gid, dry=False):
     data = LC.parse(game)
     if data:
         data["gid"] = gid
-        caption = xi_caption(data)
+        caption = xi_caption(data, names=False)
     else:
         caption = None
     if dry:
-        print(caption or f"xi {gid}: no positioned XI yet"); return 0
+        print(caption or f"xi {gid}: no full XI yet"); return 0
     if not token:
         print("FB_PAGE_TOKEN not set - skipping"); return 0
     if not rec and not store.claim("xi", gid, title=f"xi {gid}"):
