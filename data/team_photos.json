@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-19T11:05:11+00:00",
+ "generated_at": "2026-10-21T08:15:03+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -452,6 +452,17 @@
    "is_person": true,
    "source": "team-photos/zamalek/ashraf-sobhy-zamalek-statement.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "barcelona-dani-olmo-spain-world-cup-2026.jpg",
+   "credit": "صورة: داني أولمو بقميص منتخب إسبانيا خلال نهائي كأس العالم 2026 — تصوير Bryan Berlin (WikiPortraits)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "داني أولمو",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/barcelona/dani-olmo-spain-world-cup-2026.jpg",
+   "added": "2026-10-21"
   },
   {
    "file": "barcelona-hamza-abdelkarim-egypt-nt-2026.jpg",
