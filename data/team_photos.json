@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-21T17:25:47+03:00",
+ "generated_at": "2026-10-21T19:08:19+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1981,6 +1981,17 @@
    "is_person": false,
    "source": "team-photos/real-madrid/identity-card.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "real-madrid-vinicius-junior-brazil-closeup-2026.jpg",
+   "credit": "صورة: فينيسيوس جونيور بقميص منتخب البرازيل خلال مباراة البرازيل والمغرب بكأس العالم 2026، تصوير Bryan Berlin (WikiPortraits)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "فينيسيوس جونيور",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/real-madrid/vinicius-junior-brazil-closeup-2026.jpg",
+   "added": "2026-10-21"
   },
   {
    "file": "reda-slim-morocco-run.jpg",
