@@ -35,3 +35,6 @@ data/reels_auto.json
 data/match_stats.json
 data/.store_state.json
 data/odds/
+
+# WordPress import files (derived: python tools/wp_export.py)
+wp/*.xml
