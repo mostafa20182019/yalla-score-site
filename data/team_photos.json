@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-21T08:15:03+00:00",
+ "generated_at": "2026-10-21T17:25:47+03:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -443,17 +443,6 @@
    "added": "2026-10-13"
   },
   {
-   "file": "ashraf-sobhy-zamalek-statement.jpg",
-   "credit": "صورة: الدكتور أشرف صبحي، وزير الشباب والرياضة الأسبق، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
-   "subject": "الدكتور أشرف صبحي",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": true,
-   "source": "team-photos/zamalek/ashraf-sobhy-zamalek-statement.jpg",
-   "added": "2026-10-13"
-  },
-  {
    "file": "barcelona-dani-olmo-spain-world-cup-2026.jpg",
    "credit": "صورة: داني أولمو بقميص منتخب إسبانيا خلال نهائي كأس العالم 2026 — تصوير Bryan Berlin (WikiPortraits)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
    "subject": "داني أولمو",
@@ -660,17 +649,6 @@
    "year": 2019,
    "is_person": false,
    "source": "team-photos/egypt/cairo-stadium-egypt-youth-afcon.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "cairo-stadium-gate-league-opener.jpg",
-   "credit": "صورة: بوابة استاد القاهرة الدولي، ملعب مباراة الزمالك والاتحاد السكندري في افتتاح الدوري — تصوير Faris knight، رخصة CC BY-SA 3.0 (ويكيميديا كومنز)، عُدّلت الصورة بالقص",
-   "subject": "بوابة استاد القاهرة الدولي",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": true,
-   "source": "team-photos/zamalek/cairo-stadium-gate-league-opener.jpg",
    "added": "2026-10-13"
   },
   {
@@ -2412,39 +2390,6 @@
    "added": "2026-10-13"
   },
   {
-   "file": "zamalek-cairo-stadium-tifo-wide.jpg",
-   "credit": "صورة: جماهير الزمالك ترفع تيفو باسم النادي في استاد القاهرة الدولي أمام شباب بلوزداد — تصوير Hassan Hamdy wahidy، ملكية عامة (ويكيميديا كومنز) — عُدّل اتجاه الصورة",
-   "subject": "جماهير الزمالك ترفع تيفو باسم النادي",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-cairo-stadium-tifo-wide.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-club-gate-mosaddek.jpg",
-   "credit": "صورة: البوابة الرئيسية لنادي الزمالك بالقاهرة — تصوير Hassan Gaafar، رخصة CC BY 3.0 (ويكيميديا كومنز)، معدّلة بالاقتصاص",
-   "subject": "البوابة الرئيسية لنادي الزمالك بالقاهرة",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": true,
-   "source": "team-photos/zamalek/zamalek-club-gate-mosaddek.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-club-gate.jpg",
-   "credit": "صورة: البوابة الرئيسية لنادي الزمالك بالقاهرة — تصوير Hassan Gaafar، رخصة CC BY 3.0 (ويكيميديا كومنز)",
-   "subject": "البوابة الرئيسية لنادي الزمالك بالقاهرة",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": true,
-   "source": "team-photos/zamalek/zamalek-club-gate.jpg",
-   "added": "2026-10-13"
-  },
-  {
    "file": "zamalek-confed-cup-2024.jpg",
    "credit": "صورة: فريق الزمالك يحتفل بلقب كأس الكونفدرالية الإفريقية 2024 — البشاير، رخصة CC BY-SA 3.0 (ويكيميديا كومنز)",
    "subject": "الزمالك",
@@ -2453,39 +2398,6 @@
    "year": 2024,
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-confed-cup-2024.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-crowd-cairo-stadium-white.jpg",
-   "credit": "صورة: جماهير الزمالك في مدرجات استاد القاهرة الدولي — تصوير Hassan Hamdy wahidy، في الملك العام (ويكيميديا كومنز)",
-   "subject": "جماهير الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-crowd-cairo-stadium-white.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-fans-banner-borg-el-arab-03.jpg",
-   "credit": "صورة: جماهير الزمالك ترفع لافتة في مدرجات استاد برج العرب خلال مباراة بالدوري المصري — تصوير Hassan Hamdy wahidy، ملكية عامة (ويكيميديا كومنز)، عُدّلت الصورة بالتدوير والقص",
-   "subject": "جماهير الزمالك ترفع لافتة",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-fans-banner-borg-el-arab-03.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-fans-borg-el-arab-banner-02.jpg",
-   "credit": "صورة: جماهير الزمالك في استاد برج العرب — Hassan Hamdy wahidy، ملكية عامة (ويكيميديا)",
-   "subject": "جماهير الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-fans-borg-el-arab-banner-02.jpg",
    "added": "2026-10-13"
   },
   {
@@ -2498,28 +2410,6 @@
    "is_person": true,
    "source": "team-photos/zamalek/zamalek-fans-borg-el-arab-banner.jpg",
    "added": "2026-10-18"
-  },
-  {
-   "file": "zamalek-fans-cairo-stadium.jpg",
-   "credit": "صورة: جماهير الزمالك في مدرجات استاد القاهرة الدولي — تصوير Hassan Hamdy wahidy، في الملك العام (ويكيميديا كومنز)",
-   "subject": "جماهير الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-fans-cairo-stadium.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-fans-cairo.jpg",
-   "credit": "صورة: جماهير الزمالك في مدرجات استاد القاهرة الدولي — تصوير Hassan Hamdy wahidy، ملكية عامة Public domain (ويكيميديا كومنز)",
-   "subject": "جماهير الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-fans-cairo.jpg",
-   "added": "2026-10-13"
   },
   {
    "file": "zamalek-fans-tifo-cairo.jpg",
@@ -2541,28 +2431,6 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-fans-tifo-white.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-fans-white-shirt-banner.jpg",
-   "credit": "صورة: جماهير نادي الزمالك في استاد برج العرب — Hassan Hamdy wahidy، ملكية عامة (ويكيميديا)",
-   "subject": "جماهير نادي الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-fans-white-shirt-banner.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-fans-white-tifo-hbz.jpg",
-   "credit": "صورة: جماهير الزمالك ترفع التيفو في المدرجات — Saiflee100، رخصة CC BY-SA 4.0 (ويكيميديا)",
-   "subject": "جماهير الزمالك ترفع التيفو",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-fans-white-tifo-hbz.jpg",
    "added": "2026-10-13"
   },
   {
@@ -2596,72 +2464,6 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/zamalek-mural-1911.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-squad-numbers-fans-banner.jpg",
-   "credit": "صورة: لافتة جماهير الزمالك في مدرجات استاد برج العرب — تصوير Hassan Hamdy wahidy، ملكية عامة/Public domain (ويكيميديا كومنز)",
-   "subject": "لافتة جماهير الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-squad-numbers-fans-banner.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-tifo-ambition-cairo-stadium.jpg",
-   "credit": "صورة: جماهير الزمالك ترفع تيفو \"الطموح\" باستاد القاهرة الدولي — رخصة Public Domain (ويكيميديا كومنز)",
-   "subject": "الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-tifo-ambition-cairo-stadium.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-tifo-belouizdad-close.jpg",
-   "credit": "صورة: جماهير الزمالك ترفع تيفو باسم النادي في استاد القاهرة الدولي — تصوير Hassan Hamdy wahidy، ملكية عامة (ويكيميديا كومنز)",
-   "subject": "جماهير الزمالك ترفع تيفو باسم النادي",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-tifo-belouizdad-close.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-tifo-cairo-wide.jpg",
-   "credit": "صورة: جماهير الزمالك ترفع تيفو في ستاد القاهرة الدولي — Hassan Hamdy wahidy، ملكية عامة (ويكيميديا كومنز)",
-   "subject": "جماهير الزمالك ترفع تيفو",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-tifo-cairo-wide.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-tifo-cairo.jpg",
-   "credit": "صورة: جماهير الزمالك ترفع تيفو باسم النادي في ستاد القاهرة الدولي أمام شباب بلوزداد بكأس الكونفدرالية — Hassan Hamdy wahidy، رخصة الملكية العامة (ويكيميديا كومنز)",
-   "subject": "جماهير الزمالك ترفع تيفو باسم النادي",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": false,
-   "source": "team-photos/zamalek/zamalek-tifo-cairo.jpg",
-   "added": "2026-10-13"
-  },
-  {
-   "file": "zamalek-tifo-league-opener-2026.jpg",
-   "credit": "صورة: تيفو جماهير الزمالك في استاد القاهرة الدولي — تصوير Hassan Hamdy wahidy، ملكية عامة/Public domain (ويكيميديا كومنز، الصورة مدوّرة ومقتطعة)",
-   "subject": "تيفو جماهير الزمالك",
-   "club": "الزمالك",
-   "slug": "zamalek",
-   "year": null,
-   "is_person": true,
-   "source": "team-photos/zamalek/zamalek-tifo-league-opener-2026.jpg",
    "added": "2026-10-13"
   },
   {
