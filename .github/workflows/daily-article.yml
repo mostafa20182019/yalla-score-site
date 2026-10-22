@@ -130,8 +130,6 @@ jobs:
       - name: Write today's article
         id: write
         continue-on-error: true
-        env:
-          LANE: ${{ steps.lane.outputs.lane }}
         # 15, not 12. The 12 was set on 2026-09-17 on the estimate that "a
         # run that finds its story is done in 5-7 minutes" - and that estimate
         # was wrong. Measured on 2026-09-18 by matching run starts to the
@@ -147,6 +145,8 @@ jobs:
         # continue-on-error above keeps the run green: the next slot retries.
         timeout-minutes: 15
         env:
+          # the run's editorial lane (2026-10-22) - see the step above
+          LANE: ${{ steps.lane.outputs.lane }}
           CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
