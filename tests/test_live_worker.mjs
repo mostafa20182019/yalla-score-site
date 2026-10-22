@@ -138,4 +138,26 @@ assert.notEqual(okRes.status, 301, "the canonical origin itself is never redirec
   assert.equal(hitRes.status, 200);
   assert.equal(hitRes.headers.get("cache-control"), "public, max-age=604800", "a found file keeps its long cache");
 }
+// 14) the two jobs that ride on existing crons (2026-10-22): the nightly results
+// card at 22:16 UTC and the Monday 06:00 European round-up - and only then
+{
+  const seen = [];
+  const envD = { GH_TOKEN: "gh", DB: undefined };
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url, init) => {
+    const u = String(url);
+    if (u.includes("/actions/workflows/")) { seen.push([u.split("/workflows/")[1].split("/")[0], JSON.parse(init.body || "{}").inputs || null]); return new Response(null, { status: 204 }); }
+    return realFetch(url, init);
+  };
+  await worker.scheduled({ cron: "1,16,31,46 * * * *", scheduledTime: Date.UTC(2026, 9, 22, 22, 16) }, envD, { waitUntil() {} });
+  await worker.scheduled({ cron: "1,16,31,46 * * * *", scheduledTime: Date.UTC(2026, 9, 22, 21, 16) }, envD, { waitUntil() {} });
+  await worker.scheduled({ cron: "0 6,8,11,14,17,19 * * *", scheduledTime: Date.UTC(2026, 9, 26, 6, 0) }, envD, { waitUntil() {} });   // a Monday
+  await worker.scheduled({ cron: "0 6,8,11,14,17,19 * * *", scheduledTime: Date.UTC(2026, 9, 27, 6, 0) }, envD, { waitUntil() {} });   // a Tuesday
+  globalThis.fetch = realFetch;
+  const day = seen.filter(x => x[0] === "fb-post.yml");
+  const eu = seen.filter(x => x[0] === "round-article.yml");
+  assert.deepEqual(day, [["fb-post.yml", { daycard: "results" }]], "the results card only at 22:16 UTC: " + JSON.stringify(seen));
+  assert.deepEqual(eu, [["round-article.yml", { competition: "auto-europe" }]], "the European round-up only on Monday 06:00: " + JSON.stringify(seen));
+  assert.equal(seen.filter(x => x[0] === "daily-article.yml").length, 2, "the daily article still goes out both mornings");
+}
 console.log("ALL ASSERTIONS PASSED — detail calls:", gids.join(","), "dt =", j.dt);

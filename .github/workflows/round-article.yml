@@ -66,6 +66,12 @@ jobs:
         run: |
           if [ -n "$IN_COMP" ] && [ -n "$IN_ROUND" ]; then
             COMP="$IN_COMP"; RND="$IN_ROUND"
+          elif [ "$IN_COMP" = "auto-europe" ]; then
+            # the Monday European round-up (Worker, 2026-10-22): the newest
+            # finished, uncovered round of the big five leagues
+            J=$(python round_brief.py --pick --europe)
+            COMP=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('comp',''))" "$J")
+            RND=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('round',''))" "$J")
           else
             J=$(python round_brief.py --pick)
             COMP=$(python -c "import json,sys; print(json.loads(sys.argv[1]).get('comp',''))" "$J")

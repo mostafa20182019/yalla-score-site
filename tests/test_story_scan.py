@@ -35,10 +35,11 @@ PROMPT = io.open(".github/prompts/daily-article.md", encoding="utf-8").read()
 WF = io.open(".github/workflows/daily-article.yml", encoding="utf-8").read()
 
 print("== the shortlist covers the ground the prompt would have covered ==")
-missing = [q for q in S.EGY_QUERIES + S.CLUB_QUERIES if q not in PROMPT]
+missing = [q for q in S.EGY_QUERIES + S.CLUB_QUERIES + S.GLOBAL_QUERIES if q not in PROMPT]
 ok("1 every query the scan runs is one the prompt names", not missing, missing)
 # the other direction: the prompt lists its Egyptian queries in one bracket
-_egy = re.search(r"Egyptian queries \(([^)]+)\)", PROMPT)
+# since the lanes (2026-10-22) the prompt lists them after «`LANE=egypt`:» up to the semicolon
+_egy = re.search(r"`LANE=egypt`: ([^;]+);", PROMPT)
 _named = [w.strip() for w in _egy.group(1).split("،")] if _egy else []
 ok("2 and every Egyptian query the prompt names is one the scan runs",
    _named and all(q in S.EGY_QUERIES for q in _named),

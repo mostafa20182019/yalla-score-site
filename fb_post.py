@@ -936,6 +936,85 @@ def whistle_post(token, payload, dry=False):
     return 0
 
 
+# ---------------------------------------------------------------- the day's results card
+# User, 2026-10-22 (more spotlight on the global clubs' results): every night
+# the day's finished matches of the home page's nine leagues go out as ONE
+# results card (day_card.py, `--comp all`), the curated clubs' matches first.
+# Dispatched by the Worker's 15-minute cron at 22:16 UTC (00:16 / 01:16
+# Cairo) with `daycard=results`; the store key "card" / "day:<date>" makes
+# a second dispatch a no-op. Fewer than three finished matches = no post.
+DAYCARD_MIN = 3
+
+
+def daycard_date(now=None):
+    """The Cairo date whose results we post: before 04:00 Cairo the previous
+    day (the late European kick-offs end after midnight)."""
+    from zoneinfo import ZoneInfo
+    now = now or datetime.datetime.now(ZoneInfo("Africa/Cairo"))
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=ZoneInfo("Africa/Cairo"))
+    return (now - datetime.timedelta(hours=4)).strftime("%Y-%m-%d")
+
+
+def daycard_matches(matches, date):
+    """The day's FINISHED matches of the nine leagues, the curated clubs'
+    first, then the leagues' order, then kick-off - at most nine (one card)."""
+    import day_card as DC
+    from site_lib.competitions import LEAGUE_BAR
+    from site_lib.names import _is_ticker_team
+    ms = [m for m in DC.day_matches(matches, date, "all")
+          if m.get("competition") in LEAGUE_BAR and (m.get("status") or "").upper() == "FINISHED"
+          and m.get("home_score") is not None]
+    ms.sort(key=lambda m: (0 if _is_ticker_team(m) else 1, LEAGUE_BAR.index(m["competition"]), m.get("koff_time") or ""))
+    return ms[:DC.MAX_ROWS]
+
+
+def daycard_caption(ms, date):
+    from site_lib.names import ar_team, comp_label
+    lines = [f"📊 نتائج أبرز مباريات اليوم ({date})"]
+    for m in ms:
+        lines.append(f"{ar_team(m['home'])} {m['home_score']} - {m['away_score']} {ar_team(m['away'])} · {comp_label(m['competition'])}")
+    lines.append(f"كل النتائج والجداول: {SITE}/matches")
+    lines.append("#يلا_سكور #نتائج_المباريات")
+    return "\n".join(lines)
+
+
+def daycard_post(token, what="results", dry=False):
+    """Render and post the day's results card; 0 = done or nothing to do."""
+    import day_card as DC
+    import match_brief as MB
+    if what != "results":
+        print(f"daycard: unknown kind {what}"); return 1
+    date = daycard_date()
+    ref = f"day:{date}"
+    rec = store.get_post("card", ref)
+    if rec and rec.get("post_id"):
+        print(f"daycard {date}: already posted ({rec['post_id']})"); return 0
+    ms = daycard_matches(MB.load_all()["matches"], date)
+    if len(ms) < DAYCARD_MIN:
+        print(f"daycard {date}: only {len(ms)} finished match(es) of the nine leagues - nothing posted"); return 0
+    caption = daycard_caption(ms, date)
+    out = os.path.join(HERE, "data", "briefs", f"day-{date}.jpg")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    DC.render(ms, date, "all", out, title="أبرز مباريات")
+    if dry:
+        print(caption); print(out); return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if not store.claim("card", ref, title=f"day {date}"):
+        print(f"daycard {date}: claimed by another run - nothing posted"); return 0
+    try:
+        with open(out, "rb") as fh:
+            pid = post_photo(token, fh.read(), caption)
+        store.record_post("card", ref, pid, title=f"day {date}")
+        print(f"posted the day card for {date} ({len(ms)} matches): {pid}")
+    except Exception as e:  # noqa: BLE001
+        print(f"daycard {date}: post FAILED: {e}")
+        store.release("card", ref)
+        return 1
+    return 0
+
+
 def delete_post(token, post_id):
     """Remove one of the page's posts. True when Graph confirms."""
     url = f"{GRAPH}/{post_id}?" + urllib.parse.urlencode({"access_token": token})
@@ -957,7 +1036,7 @@ def post_text(token, message):
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle")):
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle", "--daycard")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -991,6 +1070,9 @@ def main() -> int:
     if "--goal" in sys.argv[1:]:
         i = sys.argv.index("--goal")
         return goal_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
+    if "--daycard" in sys.argv[1:]:
+        i = sys.argv.index("--daycard")
+        return daycard_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "results", dry="--dry" in sys.argv[1:])
     if "--xi" in sys.argv[1:]:
         i = sys.argv.index("--xi")
         return xi_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:],

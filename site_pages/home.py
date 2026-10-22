@@ -5,7 +5,7 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import datetime
 import json
-from site_lib.cards import (clubs_strip, fmb_block, headline_card, home_insights, home_record_strip,
+from site_lib.cards import (clubs_strip, fmb_block, global_clubs_block, headline_card, home_insights, home_record_strip,
                              league_bar, match_focus_block, news_card, news_cols, news_filter_bar)
 from site_lib.articles import held_analyses, insight_kind, pinned_first, stale_analyses
 from site_lib.config import FB_PAGE_URL, REF_TODAY, SHOW_HEADLINES, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
@@ -62,6 +62,9 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
         _upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
     blocks = []
     used = set()
+    # «الأندية العالمية» right after the match centre (user, 2026-10-22: more
+    # spotlight on the big clubs in news, results and tables)
+    blocks.append(global_clubs_block(matches, fixtures, articles, standings))
     lead, more_ins = home_insights(articles, pin_on, held=held_analyses(articles, matches, fixtures=fixtures),
                                     stale=stale_analyses(articles, matches, fixtures=fixtures))
     if lead and more_ins:

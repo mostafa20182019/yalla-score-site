@@ -41,6 +41,7 @@ RECENT_DAYS = 4          # a round review older than this is history, not news
 # the leagues this runs for, in the order --pick prefers them (Egyptian first)
 LEAGUES = ["Egyptian Premier League", "Premier League", "Primera Division", "Serie A",
            "Bundesliga", "Ligue 1", "Saudi Pro League", "Turkish Super Lig"]
+EUROPE = ("Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1")
 DATA_SOURCE_NAME = "بيانات يلا سكور"
 
 
@@ -281,6 +282,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--pick", action="store_true")
+    ap.add_argument("--europe", action="store_true", help="with --pick: a European league's round only (the Monday round-up, 2026-10-22)")
     ap.add_argument("--brief", nargs=2, metavar=("COMP", "ROUND"))
     ap.add_argument("--check", nargs=2, metavar=("DRAFT", "BRIEF"))
     ap.add_argument("--out")
@@ -304,6 +306,9 @@ def main():
                 print(f"{comp:26s} round {rnd:>2}  {d0}..{d1}  "
                       f"{'COVERED' if k in done else ('recent' if d1 >= cut else 'old')}")
             return 0
+        if args.europe:
+            # the Monday European round-up: the big five, newest finished round first
+            rows = sorted((t for t in rows if t[0] in EUROPE), key=lambda t: (t[3], t[0]), reverse=True)
         pick = next(({"comp": c, "round": r} for c, r, d0, d1, _ in rows
                      if d1 >= cut and round_key(c, r) not in done), {})
         print(json.dumps(pick, ensure_ascii=False))

@@ -112,6 +112,27 @@ LC._s365_game = lambda gid: {}
 ck("27 --redo refuses while the card cannot be drawn: the old post stays", fp.xi_post("tok", "4742043", redo=True) == 1 and calls == [])
 LC._s365_game, LC.render_bytes, fp.post_exists, fp.delete_post, fp.post_photo = _s, _r, _pe, _dp, _pp
 
+# ---- the nightly results card (2026-10-22)
+import datetime as _d2
+from zoneinfo import ZoneInfo as _Z
+ck("28 the card's date: before 04:00 Cairo it is the previous day",
+   fp.daycard_date(_d2.datetime(2026, 10, 23, 1, 16, tzinfo=_Z("Africa/Cairo"))) == "2026-10-22"
+   and fp.daycard_date(_d2.datetime(2026, 10, 23, 12, 0, tzinfo=_Z("Africa/Cairo"))) == "2026-10-23")
+_dm = [{"match_id": 1, "competition": "Premier League", "home": "Liverpool FC", "away": "Everton FC", "kickoff": "2026-10-22", "koff_time": "21:00", "status": "FINISHED", "home_score": 2, "away_score": 0},
+       {"match_id": 2, "competition": "UEFA Europa League", "home": "AS Roma", "away": "Lille OSC", "kickoff": "2026-10-22", "koff_time": "19:45", "status": "FINISHED", "home_score": 1, "away_score": 1},
+       {"match_id": 3, "competition": "Serie A", "home": "Juventus FC", "away": "AC Milan", "kickoff": "2026-10-22", "koff_time": "21:45", "status": "UPCOMING"},
+       {"match_id": 4, "competition": "Egyptian Premier League", "home": "الزمالك", "away": "سموحة", "kickoff": "2026-10-22", "koff_time": "17:00", "status": "FINISHED", "home_score": 1, "away_score": 0},
+       {"match_id": 5, "competition": "Bundesliga", "home": "FC Bayern München", "away": "VfB Stuttgart", "kickoff": "2026-10-21", "koff_time": "19:30", "status": "FINISHED", "home_score": 3, "away_score": 1}]
+got = fp.daycard_matches(_dm, "2026-10-22")
+ck("29 the card takes the day's FINISHED matches of the nine leagues only, curated first (Zamalek, Liverpool), not the Europa League, not tomorrow",
+   [m["match_id"] for m in got] == [4, 1], str([m["match_id"] for m in got]))
+cap = fp.daycard_caption(got, "2026-10-22")
+ck("30 the caption: the title line, one line per result with the league, the matches link, the tags",
+   cap.splitlines()[0].startswith("📊 نتائج أبرز مباريات اليوم") and "الزمالك 1 - 0 سموحة · الدوري المصري" in cap and "ليفربول 2 - 0 إيفرتون" in cap
+   and "https://yallascore.site/matches" in cap and "#يلا_سكور" in cap, cap)
+wf2 = io.open(".github/workflows/fb-post.yml", encoding="utf-8").read()
+ck("31 the workflow takes daycard=results", "daycard:" in wf2 and 'python fb_post.py --daycard "$DAYCARD"' in wf2)
+
 print()
 print("ALL FB PREDICTION TESTS PASSED" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

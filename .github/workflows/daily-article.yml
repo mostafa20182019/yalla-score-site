@@ -113,12 +113,25 @@ jobs:
         continue-on-error: true
         run: python story_scan.py
 
+      # the run's editorial LANE (user, 2026-10-22: «اهتم بالفرق العالمية
+      # أكتر»): the six daily slots alternate - 06/11/17 UTC lead with Egypt,
+      # 08/14/19 UTC with the global clubs. The prompt reads $LANE.
+      - name: The run's lane
+        id: lane
+        run: |
+          LANE=$(python -c "import story_scan; print(story_scan.run_lane())")
+          echo "lane=$LANE" >> "$GITHUB_OUTPUT"
+          echo "lane: $LANE"
+          echo "### 🛣 lane: $LANE" >> "$GITHUB_STEP_SUMMARY"
+
       # ONE Claude account since 2026-09-12 (the second-account failover was
       # removed on the user's decision). continue-on-error keeps the run green
       # when the account is out of quota: the next slot simply retries.
       - name: Write today's article
         id: write
         continue-on-error: true
+        env:
+          LANE: ${{ steps.lane.outputs.lane }}
         # 15, not 12. The 12 was set on 2026-09-17 on the estimate that "a
         # run that finds its story is done in 5-7 minutes" - and that estimate
         # was wrong. Measured on 2026-09-18 by matching run starts to the

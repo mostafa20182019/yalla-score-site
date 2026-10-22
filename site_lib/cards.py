@@ -18,6 +18,8 @@ from site_lib.predictions import conf_chip, pred_row
 from site_lib.shell import thumb_url
 from site_lib.text import _pct, esc, strip_src
 from site_lib.ticker import _tk_date
+from site_lib.matchdata import score_pill
+from site_lib.config import REF_TODAY
 from site_lib.urls import article_href, match_url
 from site_lib.widgets import prob_bar, prob_legend
 
@@ -158,6 +160,112 @@ def league_bar(standings):
         f'<a class="lq-chip" href="/standings/{COMP_SLUG[c]}.html" title="ترتيب وهدافو {esc(comp_label(c))}">'
         f'{comp_icon(c)}<span>{esc(comp_label(c))}</span></a>' for c in comps)
     return f'<nav class="lq" aria-label="الدوريات: الترتيب والهدافون">{chips}</nav>'
+
+
+def _pool(matches, fixtures):
+    """match_id -> match: the season's fixtures (every round) under the live
+    window's rows (those carry today's status and scores)."""
+    pool = {}
+    items = fixtures if isinstance(fixtures, list) else ((fixtures or {}).get("results") or [{}])[0].get("items") or []
+    for it in items:
+        for rd in (it.get("rounds") or []) if isinstance(it, dict) else []:
+            for m in rd.get("matches") or []:
+                if m.get("match_id"):
+                    pool[str(m["match_id"])] = m
+    for m in matches or []:
+        if m.get("match_id"):
+            pool[str(m["match_id"])] = m
+    return pool
+
+
+def _side_of(tp, m):
+    """"home" / "away" - the side the club plays on in this match."""
+    from site_lib.names import _team_match
+    for side in ("home", "away"):
+        probe = dict(m, home=m.get(side), away="")
+        if _team_match(tp, probe):
+            return side
+    return "home"
+
+
+def global_club_tile(tp, pool, articles):
+    """One tile: crest + name (the club page when it has one, else the next or
+    last match page), the last result, the next match, the latest story."""
+    from site_lib.names import _team_match, _team_news
+    from site_lib.ticker import _tk_date
+    cm = sorted((m for m in pool.values() if _team_match(tp, m) and m.get("home") and m.get("kickoff")),
+                key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    nxt = next((m for m in cm if (m.get("status") or "").upper() in ("UPCOMING", "LIVE") and m["kickoff"] >= REF_TODAY), None)
+    last = next((m for m in reversed(cm) if (m.get("status") or "").upper() == "FINISHED" and m.get("home_score") is not None), None)
+    story = next((a for a in articles if _team_news(tp, a)), None)
+    if not (nxt or last):
+        return ""
+    ref = nxt or last
+    side = _side_of(tp, ref)
+    badge = ref.get(side + "_badge")
+    crest = f'<img src="{esc(local_crest(badge))}" alt="" loading="lazy" width="30" height="30">' if badge else '<span class="ph">⚽</span>'
+    href = f'/team/{tp["slug"]}.html' if tp.get("slug") else (match_url(ref) or "#")
+    rows = []
+    if last:
+        ls = _side_of(tp, last)
+        mine, theirs = (last["home_score"], last["away_score"]) if ls == "home" else (last["away_score"], last["home_score"])
+        opp = ar_team(last["away"] if ls == "home" else last["home"])
+        verdict = "فاز" if mine > theirs else "خسر" if mine < theirs else "تعادل"
+        rows.append(f'<a class="gc-last" href="{esc(match_url(last) or "#")}"><small>آخر نتيجة</small>'
+                    f'<b class="gc-{"w" if mine > theirs else "l" if mine < theirs else "d"}">{verdict} {score_pill(mine, theirs, "gc-s")}</b> <bdi>{esc(opp)}</bdi></a>')
+    if nxt:
+        ns = _side_of(tp, nxt)
+        opp = ar_team(nxt["away"] if ns == "home" else nxt["home"])
+        live = (nxt.get("status") or "").upper() == "LIVE"
+        when = "مباشر الآن" if live else f'{_tk_date(nxt.get("kickoff"))}{(" · " + nxt["koff_time"]) if nxt.get("koff_time") else ""}'
+        rows.append(f'<a class="gc-next{" gc-live" if live else ""}" href="{esc(match_url(nxt) or "#")}"><small>{"الآن" if live else "القادمة"}</small>'
+                    f'<b>{esc(when)}</b> <bdi>× {esc(opp)}</bdi></a>')
+    if story:
+        rows.append(f'<a class="gc-news" href="{esc(article_href(story))}"><bdi>{esc(story.get("title") or "")}</bdi></a>')
+    today = bool(nxt) and nxt.get("kickoff") == REF_TODAY
+    return (f'<div class="gc-tile{" gc-today" if today else ""}">'
+            f'<a class="gc-head" href="{esc(href)}">{crest}<bdi>{esc(tp["name"])}</bdi></a>'
+            + "".join(rows) + "</div>")
+
+
+def mini_tables(standings, comps):
+    """Tabs of the top five of each league (CSS tabs, no script), each with a
+    link to the full table."""
+    from site_lib.competitions import COMP_SLUG
+    rows = standings if isinstance(standings, list) else (standings or {}).get("results") or []
+    by = {(r.get("competition") or ""): r for r in rows if isinstance(r, dict) and r.get("table")}
+    comps = [c for c in comps if c in by and c in COMP_SLUG]
+    if not comps:
+        return ""
+    tabs, panels = [], []
+    for i, c in enumerate(comps):
+        tabs.append(f'<label for="mt-{i}" class="mt-tab">{esc(comp_label(c))}</label>')
+        trs = []
+        for r in (by[c].get("table") or [])[:5]:
+            crest = f'<img src="{esc(local_crest(r["crest"]))}" alt="" loading="lazy" width="18" height="18">' if r.get("crest") else ""
+            trs.append(f'<tr><td>{r.get("pos", "")}</td><td class="mt-t">{crest}<bdi>{esc(ar_team(r.get("team") or ""))}</bdi></td>'
+                       f'<td>{r.get("played", "")}</td><td><b>{r.get("pts", "")}</b></td></tr>')
+        panels.append(f'<div class="mt-p"><table><thead><tr><th>#</th><th>الفريق</th><th>لعب</th><th>نقاط</th></tr></thead>'
+                      f'<tbody>{"".join(trs)}</tbody></table>'
+                      f'<a class="see-all" href="/standings/{COMP_SLUG[c]}.html">الجدول كاملًا ←</a></div>')
+    inputs = "".join(f'<input type="radio" name="mt" id="mt-{i}"{" checked" if i == 0 else ""}>' for i in range(len(comps)))
+    return f'<div class="mt">{inputs}<div class="mt-tabs">{"".join(tabs)}</div><div class="mt-panels">{"".join(panels)}</div></div>'
+
+
+def global_clubs_block(matches, fixtures, articles, standings):
+    """«الأندية العالمية» (user, 2026-10-22): the big clubs' tiles - those
+    playing today first, then by the next kick-off - and the mini tables."""
+    from site_lib.clubs import GLOBAL_CLUBS, GLOBAL_TABLES
+    pool = _pool(matches, fixtures)
+    tiles = [(tp, global_club_tile(tp, pool, articles)) for tp in GLOBAL_CLUBS]
+    tiles = [(tp, t) for tp, t in tiles if t]
+    if not tiles:
+        return ""
+    tiles.sort(key=lambda x: (0 if "gc-today" in x[1] else 1, GLOBAL_CLUBS.index(x[0])))
+    return ('<section class="gc"><div class="sec-h"><h2 class="page-h">🌍 الأندية العالمية</h2>'
+            '<a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
+            f'<div class="gc-row">{"".join(t for _, t in tiles)}</div>'
+            + mini_tables(standings, GLOBAL_TABLES) + '</section>')
 
 
 def follow_pills():

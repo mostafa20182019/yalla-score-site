@@ -1146,6 +1146,20 @@ export default {
     //                      summer and the winter UTC hour of every slot)
     //   anything else   -> publish.yml (the 15-minute refresh)
     let workflow = "publish.yml";
+    // The free plan allows five cron strings and all five are taken, so two
+    // daily jobs ride on existing firings (2026-10-22, user: more spotlight on
+    // the global clubs' results):
+    //   22:16 UTC (00:16 / 01:16 Cairo) -> fb-post.yml daycard=results, the
+    //   night's results card; Monday 06:00 UTC -> round-article.yml for a
+    //   European league's completed round (competition=auto-europe), beside
+    //   the daily article that hour.
+    const when = new Date(event.scheduledTime || Date.now());
+    if (event.cron === "1,16,31,46 * * * *" && when.getUTCHours() === 22 && when.getUTCMinutes() === 16) {
+      await dispatchWorkflow(env, "fb-post.yml", { daycard: "results" });
+    }
+    if (event.cron === "0 6,8,11,14,17,19 * * *" && when.getUTCDay() === 1 && when.getUTCHours() === 6) {
+      await dispatchWorkflow(env, "round-article.yml", { competition: "auto-europe" });
+    }
     if (event.cron === "0 6,8,11,14,17,19 * * *") {
       workflow = "daily-article.yml";
     } else if (MATCH_CRONS.has(event.cron)) {

@@ -180,3 +180,40 @@ LEGENDS = [
   ("محمد الشناوي",      "https://commons.wikimedia.org/wiki/Special:FilePath/Mohamed_El_Shenawy_Argentina_v_Egypt_7_July_2026-015.jpg?width=200", "50% 17%", 1.7),
   ("تريزيجيه",          "https://commons.wikimedia.org/wiki/Special:FilePath/Trezeguet_Argentina_v_Egypt_7_July_2026-267.jpg?width=200", "50% 15%", 1.7),
 ]
+
+
+# The big clubs the home page spotlights (user, 2026-10-22: «عايزك تهتم
+# بالفرق العالمية اكتر من كده فى الأخبار والنتائج والترتيب»). The same
+# token shapes as TEAM_PAGES so names._team_match / _team_news work on them;
+# `slug` links the tile to the club page when the club is curated, else the
+# tile opens its next (or last) match page. The Saudi pair plays under its
+# 365scores Arabic name, scoped to its league.
+def _gc(name, token, league, slug=None, news=None, scope=None):
+    return {"name": name, "slug": slug, "league": league,
+            "match_tokens": [(token, scope)], "news_tokens": news or [name],
+            "news_excl": [], "news_ctx": [], "news_anchor": []}
+
+
+GLOBAL_CLUBS = [
+    _gc("ريال مدريد", "Real Madrid", "Primera Division", "real-madrid"),
+    _gc("برشلونة", "FC Barcelona", "Primera Division", "barcelona"),
+    _gc("أتلتيكو مدريد", "Atlético de Madrid", "Primera Division", news=["أتلتيكو مدريد", "أتلتيكو"]),
+    _gc("مانشستر سيتي", "Manchester City", "Premier League", "man-city"),
+    _gc("مانشستر يونايتد", "Manchester United", "Premier League", "man-united"),
+    _gc("ليفربول", "Liverpool FC", "Premier League", "liverpool"),
+    _gc("أرسنال", "Arsenal FC", "Premier League", "arsenal"),
+    _gc("تشيلسي", "Chelsea FC", "Premier League", "chelsea"),
+    _gc("توتنهام", "Tottenham Hotspur", "Premier League", news=["توتنهام"]),
+    _gc("بايرن ميونخ", "Bayern München", "Bundesliga", news=["بايرن ميونخ", "بايرن"]),
+    _gc("بوروسيا دورتموند", "Borussia Dortmund", "Bundesliga", news=["دورتموند"]),
+    _gc("باريس سان جيرمان", "Paris Saint-Germain", "Ligue 1", news=["باريس سان جيرمان", "سان جيرمان"]),
+    _gc("يوفنتوس", "Juventus FC", "Serie A", news=["يوفنتوس"]),
+    _gc("إنتر ميلان", "Internazionale Milano", "Serie A", news=["إنتر ميلان", "إنتر "]),
+    _gc("ميلان", "AC Milan", "Serie A", news=["ميلان"]),
+    _gc("نابولي", "SSC Napoli", "Serie A", news=["نابولي"]),
+    _gc("النصر", "النصر", "Saudi Pro League", news=["النصر السعودي", "النصر"], scope="Saudi Pro League"),
+    _gc("الهلال", "الهلال", "Saudi Pro League", news=["الهلال السعودي", "الهلال"], scope="Saudi Pro League"),
+]
+# the mini tables under the tiles, in this order (the big leagues + the UCL + the Saudi league)
+GLOBAL_TABLES = ("Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1",
+                 "UEFA Champions League", "Saudi Pro League")

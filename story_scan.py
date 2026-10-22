@@ -40,6 +40,10 @@ import fetch_data as FD
 # core), then the curated clubs. Keep these in step with
 # .github/prompts/daily-article.md step 1.
 EGY_QUERIES = ["الدوري المصري", "الأهلي", "الزمالك", "بيراميدز", "منتخب مصر"]
+# the global clubs beyond the curated seven (user, 2026-10-22: more spotlight
+# on the big clubs) - the "global" lane's shortlist, same clustering
+GLOBAL_QUERIES = ["بايرن ميونخ", "باريس سان جيرمان", "يوفنتوس", "إنتر ميلان", "ميلان",
+                  "أتلتيكو مدريد", "دورتموند", "توتنهام", "نابولي", "النصر السعودي", "الهلال السعودي"]
 CLUB_QUERIES = ["ريال مدريد", "برشلونة", "ليفربول", "مانشستر يونايتد",
                 "مانشستر سيتي", "أرسنال", "تشيلسي", "طرابزون سبور"]
 
@@ -98,7 +102,9 @@ def covered_tokens():
 def scan():
     """-> (candidates, report lines)."""
     lines, items = [], []
-    for q in EGY_QUERIES + CLUB_QUERIES:
+    # every query belongs to a lane: egypt / club (the curated seven) / global
+    lanes = [(q, "egypt") for q in EGY_QUERIES] + [(q, "club") for q in CLUB_QUERIES] + [(q, "global") for q in GLOBAL_QUERIES]
+    for q, lane in lanes:
         try:
             got = rss(q)
         except Exception as e:
@@ -106,12 +112,12 @@ def scan():
             continue
         fresh = [x for x in got if x[2] <= MAX_AGE_H]
         # an Egyptian reader cannot open these, so they are not sources
-        items += [x for x in fresh
+        items += [tuple(x) + (lane,) for x in fresh
                   if not any(b in (x[1] or "") for b in FD.BLOCKED_SOURCE_NAMES)]
         lines.append(f"  {q}: {len(fresh)} fresh of {len(got)}")
 
-    clusters = []            # [tokens, {outlets}, title, [links], min_age]
-    for title, src, age, link in items:
+    clusters = []            # [tokens, {outlets}, title, [links], min_age, lane]
+    for title, src, age, link, lane in items:
         tok = FD._title_tokens(title, src)
         if not tok:
             continue
@@ -123,7 +129,7 @@ def scan():
                 c[4] = min(c[4], age)
                 break
         else:
-            clusters.append([tok, {src or "?"}, title, [link] if link else [], age])
+            clusters.append([tok, {src or "?"}, title, [link] if link else [], age, lane])
 
     strong = [c for c in clusters if len(c[1]) >= MIN_OUTLETS]
     done = covered_tokens()
@@ -134,9 +140,19 @@ def scan():
                  f"{MIN_OUTLETS}+ outlets, {len(new)} of those not yet on the site")
 
     cands = [{"title": c[2], "outlets": sorted(c[1]), "n_outlets": len(c[1]),
-              "hours_ago": round(c[4], 1), "links": c[3]}
+              "hours_ago": round(c[4], 1), "links": c[3], "lane": c[5]}
              for c in new[:MAX_CANDIDATES]]
     return cands, lines
+
+
+def run_lane(hour_utc=None):
+    """The run's lane from the UTC hour of the six daily slots (06, 08, 11,
+    14, 17, 19): three lead with Egypt, three with the global clubs - the
+    two alternate through the day. Any other hour (a hand-dispatched run)
+    is "egypt", the site's core."""
+    import datetime as _dt
+    h = _dt.datetime.now(_dt.timezone.utc).hour if hour_utc is None else int(hour_utc)
+    return "global" if h in (8, 14, 19) else "egypt"
 
 
 def main():
