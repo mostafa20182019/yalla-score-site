@@ -101,8 +101,11 @@ ck("23 the stylesheet knows the cards: ONE row of six on a desktop, a swipe row 
 STD = [{"competition": "Premier League", "table": [{"team": "x"}]},
        {"competition": "Egyptian Premier League", "table": [{"team": "y"}]},
        {"competition": "Ligue 1", "table": []},                      # no table yet -> no chip
-       {"competition": "Serie A", "table": [{"team": "z"}]}]
+       {"competition": "Serie A", "table": [{"team": "z"}]},
+       {"competition": "UEFA Europa League", "table": [{"team": "w"}]}]   # a table, but not one of the nine
 bar = CARDS.league_bar(STD)
+ck("23b only the nine chosen leagues get a chip (user: «عايز دول بس، شيل الباقى»)", "europa" not in bar and len(CARDS.__dict__) and
+   __import__("site_lib.competitions", fromlist=["LEAGUE_BAR"]).LEAGUE_BAR == ("Egyptian Premier League", "Premier League", "Primera Division", "Turkish Super Lig", "Saudi Pro League", "Ligue 1", "Bundesliga", "Serie A", "UEFA Champions League"))
 ck("24 one chip per league with a table, in the sidebar order, each its standings page",
    bar.startswith('<nav class="lq"') and bar.count('class="lq-chip"') == 3
    and bar.find('href="/standings/egypt.html"') < bar.find('href="/standings/england.html"') < bar.find('href="/standings/italy.html"')

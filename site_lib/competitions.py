@@ -114,6 +114,12 @@ COMP_LABEL = {
     "CAF Confederation Cup": "كأس الكونفدرالية الأفريقية",
 }
 
+# the league chips at the top of the home page (user, 2026-10-22: «عايز دول
+# بس، شيل الباقى»): these nine, in this order, nothing else
+LEAGUE_BAR = ("Egyptian Premier League", "Premier League", "Primera Division",
+              "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
+              "Bundesliga", "Serie A", "UEFA Champions League")
+
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
 COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",

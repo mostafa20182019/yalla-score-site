@@ -147,12 +147,11 @@ def league_bar(standings):
     order, each opening its /standings/<slug> page - where the table, the
     scorers, the next matches and the reading live (user, 2026-10-22: the
     league links at the top of the home page). Emblem + Arabic label."""
-    from site_lib.competitions import COMP_ORDER, COMP_SLUG
+    from site_lib.competitions import COMP_SLUG, LEAGUE_BAR
     from site_lib.crests import comp_icon
     rows = standings if isinstance(standings, list) else (standings or {}).get("results") or []
     with_table = {(r.get("competition") or ""): r for r in rows if isinstance(r, dict) and r.get("table")}
-    comps = [c for c in COMP_ORDER if c in with_table and c in COMP_SLUG]
-    comps += sorted(c for c in with_table if c not in comps and c in COMP_SLUG)
+    comps = [c for c in LEAGUE_BAR if c in with_table and c in COMP_SLUG]
     if not comps:
         return ""
     chips = "".join(
