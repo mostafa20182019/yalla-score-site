@@ -117,6 +117,10 @@ ck("27 the template places the row right above the day cards", 0 < home_tpl2.fin
 ck("28 home.py builds it from the standings", "league_bar(standings)" in io.open("site_pages/home.py", encoding="utf-8").read())
 ck("29 the stylesheet knows the row", ".lq{display:flex" in css and ".lq-chip{" in css)
 
+live_js = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
+ck("30 the live script repaints a day card's status label from the feed (finished -> «انتهت», live -> «مباشر الآن · min») and its class",
+   "e.querySelector('.tc-when')" in live_js and "'انتهت'" in live_js and "toggle('tc-live',!!g.live)" in live_js and "toggle('tc-fin',!g.live)" in live_js)
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

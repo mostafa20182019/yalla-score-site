@@ -67,6 +67,15 @@
       mid.innerHTML=sPill('tk-s'+(g.live?' tk-live':''),g.hs,g.as)
         +(g.live?'<span class="tk-dot"></span>':'');
       if(popped)flash(mid.querySelector('.tk-s'));
+      /* the home's day cards carry a status label baked at build time; it
+         follows the feed like the score (2026-10-22: finished matches still
+         read «مباشر الآن» until the next build) */
+      var wl=e.querySelector('.tc-when');
+      if(wl){
+        wl.textContent=g.live?('مباشر الآن'+(g.min?' · '+g.min:'')):'انتهت';
+        e.classList.toggle('tc-live',!!g.live);
+        e.classList.toggle('tc-fin',!g.live);
+      }
     }else{
       var mid=e.querySelector('.mid'); if(!mid)return;
       mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
