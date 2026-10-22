@@ -6,3 +6,5 @@ python-bidi
 Jinja2>=3.1
 # web push (push_send.py): VAPID signing + RFC 8291 payload encryption
 pywebpush>=2,<3
+# tests/test_workflow_yaml.py: strict workflow parsing (duplicate keys) in the deploy gate
+PyYAML>=6
