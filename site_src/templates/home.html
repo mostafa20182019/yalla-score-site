@@ -20,6 +20,10 @@
    cards, each opening its match page - the «بطاقة المباراة». Live scores
    are painted by LIVE_JS (the ticker contract), never baked. Empty on a day
    with no match -> the block is not rendered. #}
+{# the league links row (user, 2026-10-22): every league with a table this
+   season, emblem + name, opening its standings page (table, scorers, next
+   matches). Above the day's cards, the first thing on the page. #}
+{{ league_bar }}
 {{ today_cards }}
 {# OPTION «أ» - MATCH CENTRE (user, 2026-10-08): the page title «مباريات تحت
    المجهر» + follow pills, then the 4 most important predicted matches. The

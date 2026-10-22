@@ -97,6 +97,23 @@ home_py = io.open("site_pages/home.py", encoding="utf-8").read()
 ck("22 home.py builds the block from the matches and hands it to the template", "today_cards(matches, pills=follow_pills())" in home_py and "today_cards=Markup(_today_cards)" in home_py)
 ck("23 the stylesheet knows the cards: ONE row of six on a desktop, a swipe row below 1000px", ".tc-row{display:grid;grid-template-columns:repeat(6," in css and "@media(max-width:1000px){.tc-row{display:flex" in css)
 
+# ---- the league links row above the cards (2026-10-22)
+STD = [{"competition": "Premier League", "table": [{"team": "x"}]},
+       {"competition": "Egyptian Premier League", "table": [{"team": "y"}]},
+       {"competition": "Ligue 1", "table": []},                      # no table yet -> no chip
+       {"competition": "Serie A", "table": [{"team": "z"}]}]
+bar = CARDS.league_bar(STD)
+ck("24 one chip per league with a table, in the sidebar order, each its standings page",
+   bar.startswith('<nav class="lq"') and bar.count('class="lq-chip"') == 3
+   and bar.find('href="/standings/egypt.html"') < bar.find('href="/standings/england.html"') < bar.find('href="/standings/italy.html"')
+   and 'france' not in bar, bar[:200])
+ck("25 a chip carries the emblem (or an icon) and the Arabic label", "الدوري المصري" in bar and ("lg-logo" in bar or "lg-ico" in bar))
+ck("26 no table anywhere -> no row", CARDS.league_bar([]) == "" and CARDS.league_bar({"results": []}) == "")
+home_tpl2 = io.open("site_src/templates/home.html", encoding="utf-8").read()
+ck("27 the template places the row right above the day cards", 0 < home_tpl2.find("{{ league_bar }}") < home_tpl2.find("{{ today_cards }}"))
+ck("28 home.py builds it from the standings", "league_bar(standings)" in io.open("site_pages/home.py", encoding="utf-8").read())
+ck("29 the stylesheet knows the row", ".lq{display:flex" in css and ".lq-chip{" in css)
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

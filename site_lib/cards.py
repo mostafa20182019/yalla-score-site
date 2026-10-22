@@ -142,6 +142,25 @@ def _nf_icon_eur():
 NEWS_CHIPS = False
 
 
+def league_bar(standings):
+    """One chip per league that has a table this season, in the sidebar
+    order, each opening its /standings/<slug> page - where the table, the
+    scorers, the next matches and the reading live (user, 2026-10-22: the
+    league links at the top of the home page). Emblem + Arabic label."""
+    from site_lib.competitions import COMP_ORDER, COMP_SLUG
+    from site_lib.crests import comp_icon
+    rows = standings if isinstance(standings, list) else (standings or {}).get("results") or []
+    with_table = {(r.get("competition") or ""): r for r in rows if isinstance(r, dict) and r.get("table")}
+    comps = [c for c in COMP_ORDER if c in with_table and c in COMP_SLUG]
+    comps += sorted(c for c in with_table if c not in comps and c in COMP_SLUG)
+    if not comps:
+        return ""
+    chips = "".join(
+        f'<a class="lq-chip" href="/standings/{COMP_SLUG[c]}.html" title="ترتيب وهدافو {esc(comp_label(c))}">'
+        f'{comp_icon(c)}<span>{esc(comp_label(c))}</span></a>' for c in comps)
+    return f'<nav class="lq" aria-label="الدوريات: الترتيب والهدافون">{chips}</nav>'
+
+
 def follow_pills():
     """The Facebook + Telegram follow pills (icon-only, user 2026-09-23)."""
     fb = (f'<a class="nf-fb" href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener" '
