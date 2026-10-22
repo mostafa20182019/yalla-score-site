@@ -242,7 +242,7 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-{cf_beacon()}{push_js()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}"""
+{cf_beacon()}{push_js()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}{SWIPE_JS}"""
 
 
 # ---- web push (2026-09-27) ----
@@ -286,6 +286,7 @@ KO_SCRIPT = ""
 # normalized Arabic team-name pair; anything unmatched just stays on the
 # 15-minute static refresh - the site never depends on this script.
 LIVE_JS = _src("snippets/live_js.html")
+SWIPE_JS = _src("snippets/swipe_js.html")     # desktop arrows for the swipe rows (2026-10-22)
 # sitemap <lastmod> per URL path (set where the page's real change date is
 # known: articles = publish time, match pages = kickoff/today). Pages that
 # are rebuilt with fresh data every run default to today in the writer;

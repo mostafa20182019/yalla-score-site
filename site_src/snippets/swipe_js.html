@@ -1,0 +1,39 @@
+<script>
+/* Desktop arrows for the swipe rows (user, 2026-10-22: «على الكمبيوتر مبعرفش
+   اتحرك ازاى» - a mouse has no swipe and the scrollbars are hidden). Only on
+   hover-capable devices and only on a row that actually overflows: the row is
+   wrapped, two buttons are added at its inline edges, each scrolls by 80% of
+   the visible width; a button hides at its end of the row. RTL-aware: forward
+   = towards negative scrollLeft. */
+(function(){
+  if(!window.matchMedia||!matchMedia('(hover:hover)').matches)return;
+  var ROWS='.gc-row,.lq,.ts-row,.tc-row,.mf-row,.mt-tabs,.vstrip,.hgrid';
+  function arm(row){
+    if(row.dataset.sw||row.scrollWidth<=row.clientWidth+8)return;
+    row.dataset.sw='1';
+    var w=document.createElement('div');w.className='sw';
+    row.parentNode.insertBefore(w,row);w.appendChild(row);
+    var rtl=getComputedStyle(row).direction==='rtl';
+    function mk(fwd){
+      var b=document.createElement('button');b.type='button';
+      b.className='sw-b '+(fwd?'sw-fwd':'sw-back');
+      b.setAttribute('aria-label',fwd?'التالي':'السابق');
+      b.textContent=(fwd===rtl)?'‹':'›';
+      b.addEventListener('click',function(){
+        var d=Math.max(120,row.clientWidth*0.8);
+        row.scrollBy({left:(fwd?(rtl?-d:d):(rtl?d:-d)),behavior:'smooth'});
+      });
+      w.appendChild(b);return b;
+    }
+    var back=mk(false),fwd=mk(true);
+    function upd(){
+      var x=Math.abs(row.scrollLeft),end=row.scrollWidth-row.clientWidth-4;
+      back.hidden=x<=4;fwd.hidden=x>=end;
+    }
+    row.addEventListener('scroll',upd,{passive:true});
+    addEventListener('resize',upd);upd();
+  }
+  function all(){document.querySelectorAll(ROWS).forEach(arm);}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',all);else all();
+})();
+</script>

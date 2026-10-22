@@ -55,6 +55,13 @@ ck("11 the home builds the block first among the blocks", "blocks.append(global_
 css = io.open("site_src/style.css", encoding="utf-8").read()
 ck("12 the stylesheet knows the tiles and the tabs", ".gc-row{display:flex" in css and "#mt-0:checked~.mt-panels" in css)
 
+# the swipe rows get desktop arrows (user, 2026-10-22: «على الكمبيوتر مبعرفش اتحرك ازاى»)
+from site_lib.shell import foot, SWIPE_JS
+ft = foot()
+ck("13 every page's foot carries the swipe script, armed only on hover devices and only on an overflowing row",
+   SWIPE_JS in ft and "matchMedia('(hover:hover)')" in SWIPE_JS and "row.scrollWidth<=row.clientWidth+8" in SWIPE_JS and ".gc-row,.lq,.ts-row" in SWIPE_JS)
+ck("14 the arrows are RTL-aware and the stylesheet draws them at the inline edges", "rtl?-d:d" in SWIPE_JS and ".sw-back{inset-inline-start" in css and ".sw-fwd{inset-inline-end" in css)
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

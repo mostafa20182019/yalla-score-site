@@ -1109,6 +1109,15 @@ a{color:inherit}
 .mt-p .see-all{display:inline-block;margin-top:6px}
 #mt-0:checked~.mt-tabs label[for=mt-0],#mt-1:checked~.mt-tabs label[for=mt-1],#mt-2:checked~.mt-tabs label[for=mt-2],#mt-3:checked~.mt-tabs label[for=mt-3],#mt-4:checked~.mt-tabs label[for=mt-4],#mt-5:checked~.mt-tabs label[for=mt-5],#mt-6:checked~.mt-tabs label[for=mt-6]{color:#fff;background:var(--green)}
 #mt-0:checked~.mt-panels .mt-p:nth-child(1),#mt-1:checked~.mt-panels .mt-p:nth-child(2),#mt-2:checked~.mt-panels .mt-p:nth-child(3),#mt-3:checked~.mt-panels .mt-p:nth-child(4),#mt-4:checked~.mt-panels .mt-p:nth-child(5),#mt-5:checked~.mt-panels .mt-p:nth-child(6),#mt-6:checked~.mt-panels .mt-p:nth-child(7){display:block}
+/* swipe rows on a mouse device (2026-10-22): the wrapper the script adds, the
+   two edge arrows, and a thin scrollbar as the affordance */
+.sw{position:relative}
+.sw-b{position:absolute;top:50%;transform:translateY(-50%);z-index:2;width:34px;height:34px;border-radius:50%;border:1px solid #d6dee8;background:#fff;color:var(--green-d);font:900 22px/1 system-ui;cursor:pointer;box-shadow:0 2px 8px rgba(15,23,42,.14);display:grid;place-items:center;padding:0 0 3px}
+.sw-b:hover{background:var(--green);color:#fff;border-color:var(--green)}
+.sw-b[hidden]{display:none}
+.sw-back{inset-inline-start:-8px}
+.sw-fwd{inset-inline-end:-8px}
+@media(hover:hover){.gc-row,.lq,.ts-row{scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}.gc-row::-webkit-scrollbar,.lq::-webkit-scrollbar,.ts-row::-webkit-scrollbar{display:block;height:6px}.gc-row::-webkit-scrollbar-thumb,.lq::-webkit-scrollbar-thumb,.ts-row::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}}
 .tc{margin:4px 0 18px}
 .tc .sec-h{align-items:center}
 .tc-side{display:inline-flex;align-items:center;gap:10px}
