@@ -86,7 +86,7 @@ ck("21 the home template places the cards right after the live card and before Â
    0 < home_tpl.find('id="favLive"') < home_tpl.find("{{ today_cards }}") < home_tpl.find("{{ news_filter }}"))
 home_py = io.open("site_pages/home.py", encoding="utf-8").read()
 ck("22 home.py builds the block from the matches and hands it to the template", "today_cards(matches)" in home_py and "today_cards=Markup(_today_cards)" in home_py)
-ck("23 the stylesheet knows the cards, two columns on tablets, a swipe row on phones", ".tc-row{display:grid" in css and "@media(max-width:560px){.tc-row{display:flex" in css)
+ck("23 the stylesheet knows the cards: ONE row of six on a desktop, a swipe row below 1000px", ".tc-row{display:grid;grid-template-columns:repeat(6," in css and "@media(max-width:1000px){.tc-row{display:flex" in css)
 
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
