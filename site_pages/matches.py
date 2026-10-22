@@ -369,11 +369,15 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                                                         - datetime.timedelta(days=2)).isoformat()
                           else m["kickoff"])
         # AdSense "low value content" rejection (2026-09-04): a match page with
-        # no real content yet (no scorers, no lineups/details) stays reachable
-        # but is NOINDEXed and out of the sitemap; it becomes indexable once the
-        # data arrives. Since 2026-09-14 a fixture whose pre-match reading found
-        # at least four substantive facts counts as content (a guide, not a stub).
-        _rich = bool(_art) or bool(_goals) or bool(_det) or _pre_weight >= 4
+        # no real content yet stays reachable but is NOINDEXed and out of the
+        # sitemap; it becomes indexable once the content arrives. Since
+        # 2026-09-14 a fixture whose pre-match reading found at least four
+        # substantive facts counts as content (a guide, not a stub). Since
+        # 2026-10-22 (the 4th rejection named "thin content" and the sitemap
+        # carried 386 match pages) a score or a lineup sheet alone no longer
+        # counts: a finished match is content only with its reading (story,
+        # ratings or the table after), i.e. what no scoreboard site repeats.
+        _rich = bool(_art) or (st == "FINISHED" and bool(post_read)) or _pre_weight >= 4
         if not _rich:
             _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
         write(f"m/{mid}.html", _html)

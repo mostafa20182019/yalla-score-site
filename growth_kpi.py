@@ -10,10 +10,18 @@ half of the Monday read-out. Appends one row to data/growth_kpi.json:
   telegram                channel subscribers (Bot API getChatMemberCount)
   push_subs               web-push subscriptions in D1
 
-The manual half (Cloudflare visitors, GSC clicks/impressions/indexed, post
-reach per variant) stays in matches-guide/GROWTH_LOG.md: those need a
-browser session we do not hold. Everything here fails soft - a missing token
-leaves its cell null and the row still lands.
+  site                    Cloudflare Web Analytics (visits, page views, referrers)
+  fb_insights             the page's week: reach, post engagements, new follows
+                          (Graph: me/insights - the token needs read_insights)
+  ab_reach                the photo-vs-link A/B read-out: each article post's
+                          reach since the A/B began, averaged per variant
+                          (Graph: {post}/insights/post_impressions_unique)
+
+A page token WITHOUT read_insights leaves fb_insights/ab_reach as
+{"error": ...} and the step summary says so - re-issue the token with
+pages_read_engagement + read_insights. GSC clicks/impressions stay manual.
+Everything here fails soft - a missing token leaves its cell null and the
+row still lands.
 
     python growth_kpi.py            # append the row (needs the tokens)
     python growth_kpi.py --dry      # print the row, write nothing
@@ -139,6 +147,92 @@ def facebook(token):
         return {"followers": None, "fans": None}
 
 
+PAGE_METRICS = ("page_impressions_unique", "page_post_engagements", "page_daily_follows_unique")
+
+
+def _insight_error(e):
+    """The Graph error as a short string (a missing read_insights reads
+    '(#100) ... permission' or '(#10) ... requires ... read_insights')."""
+    msg = str(e)
+    try:
+        body = e.read().decode("utf-8", "replace")                 # urllib HTTPError
+        j = json.loads(body)
+        msg = (j.get("error") or {}).get("message") or body[:200]
+    except Exception:                                 # noqa: BLE001
+        pass
+    return msg[:300]
+
+
+def page_insights(token):
+    """{"reach_7d", "engagements_7d", "follows_7d"} for the last full week,
+    or {"error": ...}. period=week gives one value per week-ending day; the
+    newest is the week we report."""
+    if not token:
+        return None
+    try:
+        j = _get(f"{GRAPH}/me/insights?metric={','.join(PAGE_METRICS)}&period=week&access_token={urllib.parse.quote(token)}")
+    except Exception as e:                            # noqa: BLE001
+        return {"error": _insight_error(e)}
+    out = {}
+    for m in j.get("data") or []:
+        vals = m.get("values") or []
+        v = (vals[-1] or {}).get("value") if vals else None
+        if isinstance(v, dict):
+            v = sum(x for x in v.values() if isinstance(x, (int, float)))
+        key = {"page_impressions_unique": "reach_7d", "page_post_engagements": "engagements_7d",
+               "page_daily_follows_unique": "follows_7d"}.get(m.get("name"), m.get("name"))
+        out[key] = v
+    return out
+
+
+def post_reach(token, post_id):
+    """post_impressions_unique for one post, or None (a reel or a deleted
+    post answers an error - that post just drops out of the average)."""
+    j = _get(f"{GRAPH}/{post_id}/insights?metric=post_impressions_unique&access_token={urllib.parse.quote(token)}")
+    for m in j.get("data") or []:
+        vals = m.get("values") or []
+        if vals and isinstance(vals[0].get("value"), (int, float)):
+            return vals[0]["value"]
+    return None
+
+
+def ab_reach(token, now=None):
+    """The A/B read-out: every article post since the A/B began, its reach by
+    variant -> {"photo": {"n", "avg", "median"}, "link": {...}, "since"}; or
+    {"error": ...} when the token cannot read insights. Posts the Graph
+    refuses individually are skipped, not fatal."""
+    import fb_post as fp
+    if not token:
+        return None
+    try:
+        rows = store.posted_since("article", AB_START)
+    except Exception:                                 # noqa: BLE001
+        rows = []
+    reach = {"photo": [], "link": []}
+    first_err = None
+    for r in rows:
+        if r["posted_at"] < AB_START or not r.get("post_id") or str(r["post_id"]).startswith("seeded"):
+            continue
+        try:
+            v = post_reach(token, r["post_id"])
+        except Exception as e:                        # noqa: BLE001
+            if first_err is None:
+                first_err = _insight_error(e)
+            continue
+        if v is not None:
+            reach[fp.variant({"article_id": r["ref_id"]})].append(v)
+    if first_err and not (reach["photo"] or reach["link"]):
+        return {"error": first_err}
+
+    def agg(xs):
+        if not xs:
+            return {"n": 0, "avg": None, "median": None}
+        xs = sorted(xs)
+        return {"n": len(xs), "avg": round(sum(xs) / len(xs), 1), "median": xs[len(xs) // 2]}
+    return {"photo": agg(reach["photo"]), "link": agg(reach["link"]),
+            "since": datetime.datetime.fromtimestamp(AB_START, datetime.timezone.utc).strftime("%Y-%m-%d")}
+
+
 def telegram(bot, chat):
     if not bot or not chat:
         return None
@@ -201,10 +295,13 @@ def articles_7d(now=None):
 
 def row(now=None):
     now = now or time.time()
-    fb = facebook(os.environ.get("FB_PAGE_TOKEN", "").strip())
+    token = os.environ.get("FB_PAGE_TOKEN", "").strip()
+    fb = facebook(token)
     return {
         "date": datetime.datetime.fromtimestamp(now, datetime.timezone.utc).strftime("%Y-%m-%d"),
         "followers": fb["followers"], "fans": fb["fans"],
+        "fb_insights": page_insights(token),
+        "ab_reach": ab_reach(token, now),
         "telegram": telegram(os.environ.get("TG_BOT_TOKEN", "").strip(), os.environ.get("TG_CHAT_ID", "").strip()),
         "push_subs": push_subs(),
         "articles_7d": articles_7d(now),
@@ -248,6 +345,24 @@ def site_summary(r):
             f"مصادر الإحالة (14 يومًا): {refs}")
 
 
+def fb_summary(r):
+    """The page's week and the A/B read-out for the step summary."""
+    ins, ab = r.get("fb_insights"), r.get("ab_reach")
+    if ins is None:
+        return "فيسبوك: لا رمز صفحة"
+    if isinstance(ins, dict) and ins.get("error"):
+        return ("فيسبوك: الرمز لا يقرأ الإحصاءات - أعد إصداره بصلاحيتي pages_read_engagement و read_insights "
+                f"(الخطأ: {ins['error'][:120]})")
+    lines = [f"فيسبوك هذا الأسبوع: وصول **{ins.get('reach_7d')}** · تفاعل {ins.get('engagements_7d')} · متابعون جدد {ins.get('follows_7d')}"]
+    if isinstance(ab, dict) and not ab.get("error"):
+        p, l = ab.get("photo") or {}, ab.get("link") or {}
+        lines.append(f"A/B صورة مقابل رابط منذ {ab.get('since')}: صورة {p.get('n')} منشورًا بمتوسط وصول {p.get('avg')} (وسيط {p.get('median')}) · "
+                     f"رابط {l.get('n')} منشورًا بمتوسط {l.get('avg')} (وسيط {l.get('median')})")
+    elif isinstance(ab, dict):
+        lines.append(f"A/B: تعذّرت قراءة وصول المنشورات ({ab['error'][:120]})")
+    return "\n".join(lines)
+
+
 def main():
     sys.stdout.reconfigure(encoding="utf-8")
     r = row()
@@ -260,7 +375,7 @@ def main():
     if s:
         with open(s, "a", encoding="utf-8") as fh:
             fh.write("### Growth KPI\n\n| date | followers | telegram | push | articles 7d | posts photo/link | pred | h2h | goal | xi | cards |\n"
-                     "|---|---|---|---|---|---|---|---|---|---|---|\n" + summary(r) + "\n\n" + site_summary(r) + "\n")
+                     "|---|---|---|---|---|---|---|---|---|---|---|\n" + summary(r) + "\n\n" + site_summary(r) + "\n\n" + fb_summary(r) + "\n")
     return 0
 
 

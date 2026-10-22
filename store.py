@@ -381,13 +381,14 @@ def posted_since(kind, since_epoch):
     since the last notification from this."""
     since = int(since_epoch)
     if backend() == "json":
-        rows = [{"ref_id": k, "posted_at": int((v or {}).get("ts") or 0)}
+        rows = [{"ref_id": k, "posted_at": int((v or {}).get("ts") or 0), "post_id": (v or {}).get("post_id")}
                 for k, v in _fb_bucket(_fb_json(), kind).items()
                 if (v or {}).get("post_id") and int((v or {}).get("ts") or 0) >= since]
     else:
-        rows = sql("SELECT ref_id, posted_at FROM fb_posted WHERE kind = ? "
+        rows = sql("SELECT ref_id, posted_at, post_id FROM fb_posted WHERE kind = ? "
                    "AND post_id IS NOT NULL AND posted_at >= ?", [kind, since])
-    return sorted(({"ref_id": r["ref_id"], "posted_at": int(r["posted_at"] or 0)} for r in rows),
+    # post_id rides along since 2026-10-22 (growth_kpi reads each post's reach)
+    return sorted(({"ref_id": r["ref_id"], "posted_at": int(r["posted_at"] or 0), "post_id": r.get("post_id")} for r in rows),
                   key=lambda r: -r["posted_at"])
 
 

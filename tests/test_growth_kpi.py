@@ -32,7 +32,7 @@ store.sql("UPDATE fb_posted SET posted_at = ? WHERE ref_id = '601'", [int(now) -
 fp.load_articles = lambda: [{"article_id": 1, "pub_ts": "2026-01-01T00:00:00+00:00"},
                             {"article_id": 2, "pub_ts": __import__("datetime").datetime.now(__import__("datetime").timezone.utc).isoformat()}]
 r = K.row(now)
-ck("1 no tokens -> nulls, not failures", r["followers"] is None and r["telegram"] is None)
+ck("1 no tokens -> nulls, not failures", r["followers"] is None and r["telegram"] is None and r["fb_insights"] is None and r["ab_reach"] is None)
 ck("2 push_subs reads the store (0 rows)", r["push_subs"] == 0, str(r["push_subs"]))
 ck("3 posts of the last 7 days by kind, the A/B split", r["posts_7d"]["article_photo"] == 1 and r["posts_7d"]["article_link"] == 0
    and r["posts_7d"]["pred"] == 1 and r["posts_7d"]["h2h"] == 1 and r["posts_7d"]["goal"] == 1 and r["posts_7d"]["xi"] == 0, str(r["posts_7d"]))
@@ -75,5 +75,38 @@ try:
     ck("12 an API error gives nulls, not a failed KPI run", K.cloudflare_site("acc", "tok", "site", now)["visits_7d"] is None)
 finally:
     K._post_json = _pj
+
+# ---- Facebook insights + the A/B reach (2026-10-22), Graph mocked
+import urllib.error
+store.record_post("article", "700", "POST700")      # even -> photo
+store.record_post("article", "701", "POST701")      # odd  -> link
+store.record_post("article", "702", "POST702")      # even -> photo, the Graph refuses it (a reel)
+_calls = []
+def fake_get(url, timeout=30):
+    _calls.append(url)
+    if "/me/insights" in url:
+        return {"data": [{"name": "page_impressions_unique", "period": "week", "values": [{"value": 900}, {"value": 1200}]},
+                         {"name": "page_post_engagements", "period": "week", "values": [{"value": 80}, {"value": 95}]},
+                         {"name": "page_daily_follows_unique", "period": "week", "values": [{"value": 10}, {"value": 14}]}]}
+    if "/POST702/insights" in url:
+        raise urllib.error.HTTPError(url, 400, "Bad Request", {}, io.BytesIO(b'{"error":{"message":"(#100) Unsupported get request"}}'))
+    pid = url.split("/")[4]
+    return {"data": [{"name": "post_impressions_unique", "values": [{"value": {"POST700": 300, "POST701": 120}[pid]}]}]}
+import io
+K._get = fake_get
+ins = K.page_insights("tok")
+ck("8 page insights: the newest week's reach, engagements and follows", ins == {"reach_7d": 1200, "engagements_7d": 95, "follows_7d": 14}, str(ins))
+ab = K.ab_reach("tok", now)
+ck("9 the A/B read-out averages reach per variant and skips a post the Graph refuses",
+   ab["photo"] == {"n": 1, "avg": 300.0, "median": 300} and ab["link"] == {"n": 1, "avg": 120.0, "median": 120} and ab["since"] == "2026-10-08", str(ab))
+ck("10 posted_since carries the post id", all(x.get("post_id") for x in store.posted_since("article", 0)))
+def denied(url, timeout=30):
+    raise urllib.error.HTTPError(url, 403, "Forbidden", {}, io.BytesIO(b'{"error":{"message":"(#10) This endpoint requires the read_insights permission","code":10}}'))
+K._get = denied
+ins2, ab2 = K.page_insights("tok"), K.ab_reach("tok", now)
+ck("11 a token without read_insights -> {error} on both, never an exception", "read_insights" in ins2.get("error", "") and "read_insights" in ab2.get("error", ""), str(ins2))
+ck("12 the summary tells the user to re-issue the token", "read_insights" in K.fb_summary({"fb_insights": ins2, "ab_reach": ab2}))
+ck("13 ...and reports the numbers when it can", "1200" in K.fb_summary({"fb_insights": ins, "ab_reach": ab}) and "300.0" in K.fb_summary({"fb_insights": ins, "ab_reach": ab}))
+
 print("\nALL GROWTH KPI TESTS PASSED" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)
