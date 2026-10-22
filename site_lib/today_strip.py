@@ -113,6 +113,7 @@ def today_cards(matches, today=None, limit=CARDS):
             f'<span class="tc-mid tk-mid">{mid}</span>'
             f'<span class="tc-foot">{tv_html}<span class="tc-go">بطاقة المباراة ←</span></span>'
             f'</a>')
-    return ('<section class="tc" aria-label="مباريات اليوم">'
-            '<div class="sec-h"><h2 class="page-h">⚽ مباريات اليوم</h2><a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
+    # the heading: «أهم مباريات اليوم» (user, 2026-10-22, after seeing it live)
+    return ('<section class="tc" aria-label="أهم مباريات اليوم">'
+            '<div class="sec-h"><h2 class="page-h">⚽ أهم مباريات اليوم</h2><a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
             f'<div class="tc-row">{"".join(its)}</div></section>')

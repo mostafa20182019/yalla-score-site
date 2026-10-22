@@ -67,7 +67,7 @@ ck("13 the stylesheet knows the block", ".ts-row{" in css and ".ts .ts-item{" in
 # ---- the home cards (2026-10-22): the same pick, one card per match, the match page behind it
 cards = TS.today_cards(M, today=T)
 ck("14 the home block carries the heading, the all-matches link and one card per picked match",
-   cards.startswith('<section class="tc"') and "مباريات اليوم" in cards and 'href="/matches.html"' in cards
+   cards.startswith('<section class="tc"') and "⚽ أهم مباريات اليوم</h2>" in cards and 'href="/matches.html"' in cards
    and cards.count('class="tc-card tk-item') == len(rows), str(cards.count('class="tc-card tk-item')))
 ck("15 every card is a link to its match page in the live contract (data-lv, the two names, a .tk-mid)",
    cards.count("data-lv") == len(rows) and cards.count('class="tc-mid tk-mid"') == len(rows)
