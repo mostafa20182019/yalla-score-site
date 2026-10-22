@@ -8,7 +8,7 @@ rows reuse the ticker's contract so LIVE_JS paints the live score seconds
 after load (`data-lv` + `data-h`/`data-a`, a `.tk-mid` holding a `tk-s`
 pill): no second script, no baked live score (user rule 2026-08-31).
 """
-from site_lib.competitions import COMP_ORDER
+from site_lib.competitions import COMP_ORDER, COMP_TV
 from site_lib.config import REF_TODAY
 from site_lib.crests import local_crest
 from site_lib.matchdata import score_pill
@@ -66,3 +66,53 @@ def today_strip(matches, today=None, limit=LIMIT):
     return ('<section class="ts" aria-label="مباريات اليوم">'
             '<div class="ts-h"><h2>⚽ مباريات اليوم</h2><a class="ts-all" href="/matches.html">كل المباريات ←</a></div>'
             f'<div class="ts-row">{"".join(its)}</div></section>')
+
+
+# ------------------------------------------------------------ the home cards
+# User, 2026-10-22: «اليوزر بيدخل مواقع الكورة ليه؟ ... يشوف مواعيد مباريات ...
+# اظهر اهم مباريات اليوم ويكون فيه بطاقة المباراة لما يضغط عليها يجبله معلومات
+# المباراة». The home page opens with today's most important matches as
+# cards - the same pick as the article strip (live first, the curated clubs,
+# then competition order and kick-off), each card the competition, the
+# kick-off (or the live score painted by LIVE_JS, or the final score), the
+# two clubs with their crests, the TV channel, and a link into the match
+# page, which is the «بطاقة المباراة»: lineups, events, the reading, the
+# prediction. Nothing live is baked at build time (user rule 2026-08-31).
+CARDS = 6
+
+
+def today_cards(matches, today=None, limit=CARDS):
+    """The home block's HTML, or "" when nothing plays today."""
+    rows = pick_today(matches, today, limit)
+    if not rows:
+        return ""
+    its = []
+    for m in rows:
+        st = (m.get("status") or "").upper()
+        h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+
+        def crest(u):
+            return (f'<img src="{esc(local_crest(u))}" alt="" loading="lazy" width="26" height="26">'
+                    if u else '<span class="ph">⚽</span>')
+        if st == "LIVE":
+            when, mid, cls = "مباشر الآن", score_pill(None, None, "tk-s tk-live") + '<span class="tk-dot"></span>', " tc-live"
+        elif st == "FINISHED":
+            when, mid, cls = "انتهت", score_pill(m.get("home_score"), m.get("away_score"), "tk-s"), " tc-fin"
+        else:
+            t = m.get("koff_time") or ""
+            # the time sits in the middle pill; the top says only «اليوم»
+            when, mid, cls = "اليوم", f'<span class="tk-t">{esc(t)}</span>', ""
+        tv = m.get("channel") or COMP_TV.get(m.get("competition") or "") or ""
+        tv_html = f'<span class="tc-tv">📺 {esc(str(tv))}</span>' if tv else "<span></span>"
+        its.append(
+            f'<a class="tc-card tk-item{cls}" href="{esc(match_url(m))}" data-lv data-h="{esc(h)}" data-a="{esc(a)}">'
+            f'<span class="tc-top"><span class="tc-comp">{esc(comp_label(m.get("competition") or ""))}</span>'
+            f'<span class="tc-when">{esc(when)}</span></span>'
+            f'<span class="tc-t">{crest(m.get("home_badge"))}<bdi>{esc(h)}</bdi></span>'
+            f'<span class="tc-t">{crest(m.get("away_badge"))}<bdi>{esc(a)}</bdi></span>'
+            f'<span class="tc-mid tk-mid">{mid}</span>'
+            f'<span class="tc-foot">{tv_html}<span class="tc-go">بطاقة المباراة ←</span></span>'
+            f'</a>')
+    return ('<section class="tc" aria-label="مباريات اليوم">'
+            '<div class="sec-h"><h2 class="page-h">⚽ مباريات اليوم</h2><a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
+            f'<div class="tc-row">{"".join(its)}</div></section>')

@@ -64,6 +64,30 @@ ck("11 article_pages builds the strip once and hands it to the template",
 ck("12 the template places it right under the body", 0 < tpl.find('<div class="a-body">{{ body }}</div>') < tpl.find("{{ today_strip }}") < tpl.find("{% if sources %}"))
 ck("13 the stylesheet knows the block", ".ts-row{" in css and ".ts .ts-item{" in css)
 
+# ---- the home cards (2026-10-22): the same pick, one card per match, the match page behind it
+cards = TS.today_cards(M, today=T)
+ck("14 the home block carries the heading, the all-matches link and one card per picked match",
+   cards.startswith('<section class="tc"') and "مباريات اليوم" in cards and 'href="/matches.html"' in cards
+   and cards.count('class="tc-card tk-item') == len(rows), str(cards.count('class="tc-card tk-item')))
+ck("15 every card is a link to its match page in the live contract (data-lv, the two names, a .tk-mid)",
+   cards.count("data-lv") == len(rows) and cards.count('class="tc-mid tk-mid"') == len(rows)
+   and all(f'href="/m/{m["match_id"]}' in cards for m in rows))
+live_card = cards[cards.find("tc-live"):cards.find("</a>", cards.find("tc-live"))]
+fin_card = cards[cards.find("tc-fin"):cards.find("</a>", cards.find("tc-fin"))]
+up_card = cards[cards.find('href="/m/4'):cards.find("</a>", cards.find('href="/m/4'))]
+ck("16 live: «مباشر الآن», dashes and the dot, never a baked score", "مباشر الآن" in live_card and "tk-dot" in live_card and "0 - 1" not in live_card and "1 - 0" not in live_card)
+ck("17 finished: «انتهت» and the final score; upcoming: «اليوم · time» and the time pill",
+   "انتهت" in fin_card and ("2" in fin_card and "0" in fin_card) and 'class="tc-when">اليوم<' in up_card and 'class="tk-t">18:30' in up_card)
+ck("18 the foot: the TV channel when known and the «بطاقة المباراة» link", "بطاقة المباراة ←" in up_card and ("📺" in up_card or "<span></span>" in up_card))
+ck("19 nothing today -> no block", TS.today_cards(M, today="2026-10-20") == "")
+ck("20 the cap is six", len(TS.pick_today(M + [dict(M[0], match_id=str(i)) for i in range(10, 20)], today=T, limit=TS.CARDS)) == 6)
+home_tpl = io.open("site_src/templates/home.html", encoding="utf-8").read()
+ck("21 the home template places the cards right after the live card and before «تحت المجهر»",
+   0 < home_tpl.find('id="favLive"') < home_tpl.find("{{ today_cards }}") < home_tpl.find("{{ news_filter }}"))
+home_py = io.open("site_pages/home.py", encoding="utf-8").read()
+ck("22 home.py builds the block from the matches and hands it to the template", "today_cards(matches)" in home_py and "today_cards=Markup(_today_cards)" in home_py)
+ck("23 the stylesheet knows the cards, two columns on tablets, a swipe row on phones", ".tc-row{display:grid" in css and "@media(max-width:560px){.tc-row{display:flex" in css)
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

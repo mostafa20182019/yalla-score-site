@@ -16,6 +16,11 @@
    مباشر الآن with a stale score). It renders only from the first fresh
    /live.json reply, ~1 s after load. #}
 <div id="favLive" class="fav-wrap" hidden></div>
+{# «مباريات اليوم» (user, 2026-10-22): today's most important matches as
+   cards, each opening its match page - the «بطاقة المباراة». Live scores
+   are painted by LIVE_JS (the ticker contract), never baked. Empty on a day
+   with no match -> the block is not rendered. #}
+{{ today_cards }}
 {# OPTION «أ» - MATCH CENTRE (user, 2026-10-08): the page title «مباريات تحت
    المجهر» + follow pills, then the 4 most important predicted matches. The
    2026-09-01 rule «matches are NOT on the home page» stays true for the

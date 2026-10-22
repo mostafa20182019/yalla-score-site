@@ -1067,6 +1067,30 @@ a{color:inherit}
    matches under the body; rows share the ticker's live-score contract (tk-mid /
    tk-s / tk-dot are painted by LIVE_JS), the layout is this block's own */
 .ts{margin:22px 0 10px;padding:12px 12px 10px;border:1px solid #eef2f6;border-radius:12px;background:#f8fafc}
+/* «مباريات اليوم» cards on the home (2026-10-22): the focus cards' frame, a
+   time/score pill in the middle, LIVE_JS paints .tk-mid (the ticker contract) */
+.tc{margin:4px 0 18px}
+.tc-row{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.tc .tc-card{display:flex;flex-direction:column;gap:7px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--ink);transition:border-color .12s,transform .12s;min-width:0}
+.tc .tc-card:hover{border-color:var(--green);transform:translateY(-2px)}
+.tc-top{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;font-weight:800;color:var(--muted)}
+.tc-when{color:var(--green-d);white-space:nowrap}
+.tc-live .tc-when{color:#c8102e}
+.tc-t{display:flex;align-items:center;gap:8px;font-weight:900;font-size:.98rem;min-width:0}
+.tc-t bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-t img,.tc-t .ph{width:26px;height:26px;object-fit:contain;flex:none}
+.tc .tc-mid{display:flex;justify-content:center;align-items:center;gap:6px;min-height:30px;margin-top:2px}
+.tc .tk-s{font-weight:900;font-size:1.05rem;color:#fff;background:var(--green-d);padding:2px 14px;border-radius:8px;font-variant-numeric:tabular-nums}
+.tc .tk-live{background:#c8102e}
+.tc .tk-t{font-weight:900;font-size:1.05rem;color:var(--green-d);background:#eef6fc;padding:2px 14px;border-radius:8px;font-variant-numeric:tabular-nums}
+.tc .tk-dot{width:8px;height:8px;border-radius:50%;background:#c8102e;display:inline-block;animation:tsblink 1.2s infinite}
+.tc-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:4px;font-size:.75rem}
+.tc-tv{color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-go{font-weight:800;color:var(--green-d);white-space:nowrap}
+.tc-live{border-color:#f3c4cc !important}
+@media(max-width:1000px){.tc-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.tc-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:4px;scrollbar-width:none}.tc-row::-webkit-scrollbar{display:none}
+  .tc .tc-card{flex:0 0 76%;scroll-snap-align:start}}
 .ts-h{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 2px 10px}
 .ts-h h2{font-size:1.05rem;margin:0}
 .ts-all{font-size:.9rem;font-weight:700;color:var(--green-d);text-decoration:none}

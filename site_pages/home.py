@@ -51,6 +51,9 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     ad = adsense_slot()
     # option «أ» (2026-10-08): matches + predictions -> analyses -> the open
     # record -> news (see site_lib/cards.py, «home, option A»)
+    # «مباريات اليوم» first (user, 2026-10-22): the reason most visitors come
+    from site_lib.today_strip import today_cards
+    _today_cards = today_cards(matches)
     news_filter = news_filter_bar("مباريات تحت المجهر") + match_focus_block(
         _upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
     blocks = []
@@ -117,6 +120,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
                   + ';</script>')
     write("index.html", render(
         "home.html", page_head=Markup(page_head), org_ld=Markup(org_ld), ad=Markup(ad),
+        today_cards=Markup(_today_cards),
         news_filter=Markup(news_filter), blocks=[Markup(b) for b in blocks],
         predictions=Markup(predictions), show_videos=show_videos,
         video_facades=[Markup(f) for f in video_facades], video_js=Markup(VIDEO_JS),
