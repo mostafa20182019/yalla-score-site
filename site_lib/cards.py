@@ -289,7 +289,7 @@ def _mf_card(m, p):
             f'<span class="mf-t">{crest(m.get("home_badge"))}<bdi>{esc(h)}</bdi></span>'
             f'<span class="mf-t">{crest(m.get("away_badge"))}<bdi>{esc(a)}</bdi></span>'
             + prob_bar(p) + prob_legend(p, cls="mf-probs", home=h, away=a)
-            + f'<span class="mf-foot">{conf_chip(p["conf"])}<span class="mf-go">التوقع والتحليل ←</span></span></a>')
+            + f'<span class="mf-foot">{conf_chip(p["conf"])}<span class="mf-go">بطاقة المباراة ←</span></span></a>')   # user, 2026-10-22
 
 
 def match_focus_pick(upcoming, preds, today, focus=None, n=4):
