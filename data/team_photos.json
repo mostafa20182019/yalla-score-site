@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-21T19:08:19+00:00",
+ "generated_at": "2026-10-22T11:04:49+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -419,6 +419,17 @@
    "is_person": false,
    "source": "team-photos/liverpool/anfield-stadium-liverpool-2026.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "arsenal-bukayo-saka-england-wc2026.jpg",
+   "credit": "صورة: بوكايو ساكا بقميص منتخب إنجلترا قبل مباراة ضد غانا في بطولة كأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "بوكايو ساكا",
+   "club": "أرسنال",
+   "slug": "arsenal",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/arsenal/bukayo-saka-england-wc2026.jpg",
+   "added": "2026-10-22"
   },
   {
    "file": "arsenal-fans-emirates.jpg",
