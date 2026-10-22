@@ -81,8 +81,9 @@ def today_strip(matches, today=None, limit=LIMIT):
 CARDS = 6
 
 
-def today_cards(matches, today=None, limit=CARDS):
-    """The home block's HTML, or "" when nothing plays today."""
+def today_cards(matches, today=None, limit=CARDS, pills=""):
+    """The home block's HTML, or "" when nothing plays today. `pills` = the
+    follow pills' HTML for the heading row (the top of the home page)."""
     rows = pick_today(matches, today, limit)
     if not rows:
         return ""
@@ -115,5 +116,6 @@ def today_cards(matches, today=None, limit=CARDS):
             f'</a>')
     # the heading: «أهم مباريات اليوم» (user, 2026-10-22, after seeing it live)
     return ('<section class="tc" aria-label="أهم مباريات اليوم">'
-            '<div class="sec-h"><h2 class="page-h">⚽ أهم مباريات اليوم</h2><a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
+            '<div class="sec-h"><h2 class="page-h">⚽ أهم مباريات اليوم</h2>'
+            f'<span class="tc-side"><a class="see-all" href="/matches.html">كل المباريات ←</a>{pills}</span></div>'
             f'<div class="tc-row">{"".join(its)}</div></section>')

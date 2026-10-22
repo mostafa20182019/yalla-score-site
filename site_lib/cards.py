@@ -142,7 +142,26 @@ def _nf_icon_eur():
 NEWS_CHIPS = False
 
 
-def news_filter_bar(title="آخر الأخبار"):
+def follow_pills():
+    """The Facebook + Telegram follow pills (icon-only, user 2026-09-23)."""
+    fb = (f'<a class="nf-fb" href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener" '
+          'title="تابعنا على فيسبوك" aria-label="تابعنا على فيسبوك">'
+          '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" '
+          'd="M13.5 22v-8.2h2.8l.4-3.3h-3.2V8.4c0-.9.3-1.6 1.6-1.6h1.7V3.9c-.3 0-1.3-.1-2.5-.1'
+          '-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.3h2.8V22h3.4z"/></svg></a>')
+    tg = (f'<a class="nf-tg" href="{esc(TG_CHANNEL_URL)}" target="_blank" rel="noopener" '
+          'title="قناتنا على تيليجرام" aria-label="قناتنا على تيليجرام">'
+          '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" '
+          'd="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-.9.5l.3-4.6L18.2 7'
+          'c.4-.3-.1-.5-.6-.2L7.4 13.2 3 11.8c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.6.2 1.4 1.6z"/>'
+          '</svg></a>')
+    return fb + tg
+
+
+def news_filter_bar(title="آخر الأخبار", pills=True):
+    """The title row; `pills=False` when the follow pills sit higher on the
+    page (the home's day cards carry them since 2026-10-22, user: «طلع دول
+    فوق فى اعلى الصفحة»)."""
     chips = [
         ("trend", "الأكثر تداولًا", _NF_ICON_TREND),
         ("egy", "أخبار الكرة المصرية", _NF_ICON_EGY),
@@ -155,21 +174,11 @@ def news_filter_bar(title="آخر الأخبار"):
     # 2026-09-04): the site's Google visitors don't know the page exists.
     # icon-only, both of them (user ask 2026-09-23: «شيل كلمة تابعنا») — the
     # title/aria keep the words for hover and screen readers
-    fb = (f'<a class="nf-fb" href="{esc(FB_PAGE_URL)}" target="_blank" rel="noopener" '
-          'title="تابعنا على فيسبوك" aria-label="تابعنا على فيسبوك">'
-          '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" '
-          'd="M13.5 22v-8.2h2.8l.4-3.3h-3.2V8.4c0-.9.3-1.6 1.6-1.6h1.7V3.9c-.3 0-1.3-.1-2.5-.1'
-          '-2.5 0-4.2 1.5-4.2 4.3v2.4H7.3v3.3h2.8V22h3.4z"/></svg></a>')
-    tg = (f'<a class="nf-tg" href="{esc(TG_CHANNEL_URL)}" target="_blank" rel="noopener" '
-          'title="قناتنا على تيليجرام" aria-label="قناتنا على تيليجرام">'
-          '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="#fff" '
-          'd="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-.9.5l.3-4.6L18.2 7'
-          'c.4-.3-.1-.5-.6-.2L7.4 13.2 3 11.8c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.6.2 1.4 1.6z"/>'
-          '</svg></a>')
+    fbtg = follow_pills() if pills else ""
     if not NEWS_CHIPS:
-        return f'<div class="nf-bar"><h1 class="page-h">{esc(title)}</h1>{fb}{tg}</div>'
+        return f'<div class="nf-bar"><h1 class="page-h">{esc(title)}</h1>{fbtg}</div>'
     return ('<div class="nf-bar"><h1 class="page-h">آخر الأخبار</h1>'
-            f'<div class="nf-chips" role="group" aria-label="فلتر الأخبار">{btns}</div>{fb}{tg}</div>'
+            f'<div class="nf-chips" role="group" aria-label="فلتر الأخبار">{btns}</div>{fbtg}</div>'
             + NEWS_FILTER_JS)
 
 

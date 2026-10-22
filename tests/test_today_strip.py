@@ -80,12 +80,21 @@ ck("17 finished: «انتهت» and the final score; upcoming: «اليوم · t
    "انتهت" in fin_card and ("2" in fin_card and "0" in fin_card) and 'class="tc-when">اليوم<' in up_card and 'class="tk-t">18:30' in up_card)
 ck("18 the foot: the TV channel when known and the «بطاقة المباراة» link", "بطاقة المباراة ←" in up_card and ("📺" in up_card or "<span></span>" in up_card))
 ck("19 nothing today -> no block", TS.today_cards(M, today="2026-10-20") == "")
+import site_lib.cards as CARDS
+pills = CARDS.follow_pills()
+withp = TS.today_cards(M, today=T, pills=pills)
+ck("19b the follow pills ride on the heading row, after the all-matches link (top of the page, user 2026-10-22)",
+   'class="nf-fb"' in pills and 'class="nf-tg"' in pills and withp.find("كل المباريات ←") < withp.find('class="nf-fb"') < withp.find("</div>")
+   and 'class="nf-fb"' not in cards)
+ck("19c the title row below goes without them when asked", "nf-fb" not in CARDS.news_filter_bar("x", pills=False) and "nf-fb" in CARDS.news_filter_bar("x"))
+home_py0 = io.open("site_pages/home.py", encoding="utf-8").read()
+ck("19d home.py puts them on the cards, and back on the title row on a day with no match", "today_cards(matches, pills=follow_pills())" in home_py0 and "pills=not _today_cards" in home_py0)
 ck("20 the cap is six", len(TS.pick_today(M + [dict(M[0], match_id=str(i)) for i in range(10, 20)], today=T, limit=TS.CARDS)) == 6)
 home_tpl = io.open("site_src/templates/home.html", encoding="utf-8").read()
 ck("21 the home template places the cards right after the live card and before «تحت المجهر»",
    0 < home_tpl.find('id="favLive"') < home_tpl.find("{{ today_cards }}") < home_tpl.find("{{ news_filter }}"))
 home_py = io.open("site_pages/home.py", encoding="utf-8").read()
-ck("22 home.py builds the block from the matches and hands it to the template", "today_cards(matches)" in home_py and "today_cards=Markup(_today_cards)" in home_py)
+ck("22 home.py builds the block from the matches and hands it to the template", "today_cards(matches, pills=follow_pills())" in home_py and "today_cards=Markup(_today_cards)" in home_py)
 ck("23 the stylesheet knows the cards: ONE row of six on a desktop, a swipe row below 1000px", ".tc-row{display:grid;grid-template-columns:repeat(6," in css and "@media(max-width:1000px){.tc-row{display:flex" in css)
 
 print()

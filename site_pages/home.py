@@ -52,9 +52,12 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     # option «أ» (2026-10-08): matches + predictions -> analyses -> the open
     # record -> news (see site_lib/cards.py, «home, option A»)
     # «مباريات اليوم» first (user, 2026-10-22): the reason most visitors come
+    from site_lib.cards import follow_pills
     from site_lib.today_strip import today_cards
-    _today_cards = today_cards(matches)
-    news_filter = news_filter_bar("مباريات تحت المجهر") + match_focus_block(
+    _today_cards = today_cards(matches, pills=follow_pills())
+    # the follow pills live at the top of the page (user, 2026-10-22): on the
+    # day cards' heading, or on the title row below on a day with no match
+    news_filter = news_filter_bar("مباريات تحت المجهر", pills=not _today_cards) + match_focus_block(
         _upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
     blocks = []
     used = set()

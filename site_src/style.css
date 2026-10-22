@@ -1070,6 +1070,9 @@ a{color:inherit}
 /* «مباريات اليوم» cards on the home (2026-10-22): the focus cards' frame, a
    time/score pill in the middle, LIVE_JS paints .tk-mid (the ticker contract) */
 .tc{margin:4px 0 18px}
+.tc .sec-h{align-items:center}
+.tc-side{display:inline-flex;align-items:center;gap:10px}
+.tc-side .nf-fb{margin-inline-start:4px}
 /* one row (user, 2026-10-22: «خلى دول فى صف واحد»): six columns on a desktop,
    a swipe row of roughly three cards on tablets and one and a bit on phones */
 .tc-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
