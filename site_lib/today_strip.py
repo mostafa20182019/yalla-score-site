@@ -117,5 +117,6 @@ def today_cards(matches, today=None, limit=CARDS, pills=""):
     # the heading: «أهم مباريات اليوم» (user, 2026-10-22, after seeing it live)
     return ('<section class="tc" aria-label="أهم مباريات اليوم">'
             '<div class="sec-h"><h2 class="page-h">⚽ أهم مباريات اليوم</h2>'
-            f'<span class="tc-side"><a class="see-all" href="/matches.html">كل المباريات ←</a>{pills}</span></div>'
-            f'<div class="tc-row">{"".join(its)}</div></section>')
+            f'<span class="tc-side">{pills}</span></div>'
+            f'<div class="tc-row">{"".join(its)}</div>'
+            '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div></section>')

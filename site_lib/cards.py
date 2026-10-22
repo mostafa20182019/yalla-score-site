@@ -262,9 +262,9 @@ def global_clubs_block(matches, fixtures, articles, standings):
     if not tiles:
         return ""
     tiles.sort(key=lambda x: (0 if "gc-today" in x[1] else 1, GLOBAL_CLUBS.index(x[0])))
-    return ('<section class="gc"><div class="sec-h"><h2 class="page-h">🌍 الأندية العالمية</h2>'
-            '<a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
+    return ('<section class="gc"><div class="sec-h"><h2 class="page-h">🌍 الأندية العالمية</h2></div>'
             f'<div class="gc-row">{"".join(t for _, t in tiles)}</div>'
+            '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
             + mini_tables(standings, GLOBAL_TABLES) + '</section>')
 
 
@@ -457,10 +457,11 @@ def match_focus_block(upcoming, preds, today, focus=None, n=4):
     rows = match_focus_pick(upcoming, preds, today, focus, n)
     if not rows:
         return ""
+    # the «see all» link sits UNDER the cards (user, 2026-10-23: «اللينك ... يكون تحت مش فوق»)
     return ('<section class="mf"><div class="mf-head">'
-            '<small>توقعات يلا سكور: احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small>'
-            '<a class="see-all" href="/analysis.html">كل التوقعات ←</a></div>'
-            '<div class="mf-row">' + "".join(_mf_card(m, p) for m, p in rows) + '</div></section>')
+            '<small>توقعات يلا سكور: احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
+            '<div class="mf-row">' + "".join(_mf_card(m, p) for m, p in rows) + '</div>'
+            '<div class="blk-more"><a class="see-all" href="/analysis.html">كل التوقعات ←</a></div></section>')
 
 
 def home_record_strip(acc, cal):

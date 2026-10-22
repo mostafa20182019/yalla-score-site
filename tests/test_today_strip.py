@@ -83,8 +83,9 @@ ck("19 nothing today -> no block", TS.today_cards(M, today="2026-10-20") == "")
 import site_lib.cards as CARDS
 pills = CARDS.follow_pills()
 withp = TS.today_cards(M, today=T, pills=pills)
-ck("19b the follow pills ride on the heading row, after the all-matches link (top of the page, user 2026-10-22)",
-   'class="nf-fb"' in pills and 'class="nf-tg"' in pills and withp.find("كل المباريات ←") < withp.find('class="nf-fb"') < withp.find("</div>")
+ck("19b the follow pills ride on the heading row, the all-matches link sits UNDER the cards (user 2026-10-23)",
+   'class="nf-fb"' in pills and 'class="nf-tg"' in pills and withp.find('class="nf-fb"') < withp.find("</div>")
+   and withp.find('class="tc-row"') < withp.find('class="blk-more"') < withp.find("كل المباريات ←")
    and 'class="nf-fb"' not in cards)
 ck("19c the title row below goes without them when asked", "nf-fb" not in CARDS.news_filter_bar("x", pills=False) and "nf-fb" in CARDS.news_filter_bar("x"))
 home_py0 = io.open("site_pages/home.py", encoding="utf-8").read()

@@ -1118,6 +1118,8 @@ a{color:inherit}
 .sw-back{inset-inline-start:-8px}
 .sw-fwd{inset-inline-end:-8px}
 @media(hover:hover){.gc-row,.lq,.ts-row{scrollbar-width:thin;scrollbar-color:#cbd5e1 transparent}.gc-row::-webkit-scrollbar,.lq::-webkit-scrollbar,.ts-row::-webkit-scrollbar{display:block;height:6px}.gc-row::-webkit-scrollbar-thumb,.lq::-webkit-scrollbar-thumb,.ts-row::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:3px}}
+/* a block's «see all» link under the block, at its end (2026-10-23) */
+.blk-more{display:flex;justify-content:flex-end;margin:8px 2px 0}
 .tc{margin:4px 0 18px}
 .tc .sec-h{align-items:center}
 .tc-side{display:inline-flex;align-items:center;gap:10px}
