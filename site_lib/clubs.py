@@ -215,5 +215,6 @@ GLOBAL_CLUBS = [
     _gc("الهلال", "الهلال", "Saudi Pro League", news=["الهلال السعودي", "الهلال"], scope="Saudi Pro League"),
 ]
 # the mini tables under the tiles, in this order (the big leagues + the UCL + the Saudi league)
-GLOBAL_TABLES = ("Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1",
+# the Egyptian league first (user, 2026-10-22: «زود هنا الدورى المصرى»)
+GLOBAL_TABLES = ("Egyptian Premier League", "Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1",
                  "UEFA Champions League", "Saudi Pro League")

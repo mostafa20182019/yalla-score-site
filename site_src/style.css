@@ -1107,8 +1107,8 @@ a{color:inherit}
 .mt-t{display:flex;align-items:center;gap:7px;min-width:0}
 .mt-t img{width:18px;height:18px;object-fit:contain}
 .mt-p .see-all{display:inline-block;margin-top:6px}
-#mt-0:checked~.mt-tabs label[for=mt-0],#mt-1:checked~.mt-tabs label[for=mt-1],#mt-2:checked~.mt-tabs label[for=mt-2],#mt-3:checked~.mt-tabs label[for=mt-3],#mt-4:checked~.mt-tabs label[for=mt-4],#mt-5:checked~.mt-tabs label[for=mt-5],#mt-6:checked~.mt-tabs label[for=mt-6]{color:#fff;background:var(--green)}
-#mt-0:checked~.mt-panels .mt-p:nth-child(1),#mt-1:checked~.mt-panels .mt-p:nth-child(2),#mt-2:checked~.mt-panels .mt-p:nth-child(3),#mt-3:checked~.mt-panels .mt-p:nth-child(4),#mt-4:checked~.mt-panels .mt-p:nth-child(5),#mt-5:checked~.mt-panels .mt-p:nth-child(6),#mt-6:checked~.mt-panels .mt-p:nth-child(7){display:block}
+#mt-0:checked~.mt-tabs label[for=mt-0],#mt-1:checked~.mt-tabs label[for=mt-1],#mt-2:checked~.mt-tabs label[for=mt-2],#mt-3:checked~.mt-tabs label[for=mt-3],#mt-4:checked~.mt-tabs label[for=mt-4],#mt-5:checked~.mt-tabs label[for=mt-5],#mt-6:checked~.mt-tabs label[for=mt-6],#mt-7:checked~.mt-tabs label[for=mt-7]{color:#fff;background:var(--green)}
+#mt-0:checked~.mt-panels .mt-p:nth-child(1),#mt-1:checked~.mt-panels .mt-p:nth-child(2),#mt-2:checked~.mt-panels .mt-p:nth-child(3),#mt-3:checked~.mt-panels .mt-p:nth-child(4),#mt-4:checked~.mt-panels .mt-p:nth-child(5),#mt-5:checked~.mt-panels .mt-p:nth-child(6),#mt-6:checked~.mt-panels .mt-p:nth-child(7),#mt-7:checked~.mt-panels .mt-p:nth-child(8){display:block}
 /* swipe rows on a mouse device (2026-10-22): the wrapper the script adds, the
    two edge arrows, and a thin scrollbar as the affordance */
 .sw{position:relative}
