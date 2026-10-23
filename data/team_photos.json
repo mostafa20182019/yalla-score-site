@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-22T12:21:39+00:00",
+ "generated_at": "2026-10-23T12:05:07+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1981,6 +1981,17 @@
    "is_person": true,
    "source": "team-photos/barcelona/raphinha-brazil-nt-june2026.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "real-madrid-arda-guler-turkey-2025.jpg",
+   "credit": "صورة: أردا جولر لاعب ريال مدريد بقميص منتخب تركيا عام 2025، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "أردا جولر",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2025,
+   "is_person": true,
+   "source": "team-photos/real-madrid/arda-guler-turkey-2025.jpg",
+   "added": "2026-10-23"
   },
   {
    "file": "real-madrid-bernabeu-entrance.jpg",
