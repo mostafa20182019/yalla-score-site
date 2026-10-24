@@ -918,6 +918,16 @@ GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
 S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627"
 
+def _is_shootout(ev):
+    """True for an event of the penalty shoot-out (365scores stage 11, status
+    11, or a minute past 120 - extra time ends there)."""
+    try:
+        gt = float(ev.get("gameTime") or 0)
+    except (TypeError, ValueError):
+        gt = 0
+    return ev.get("stageId") == 11 or ev.get("statusId") == 11 or gt > 120
+
+
 def _goal_rows(game, fallback_home_id):
     """game detail -> (goals list, health) — tolerant of field-name drift."""
     members = {m.get("id"): m.get("name") for m in (game.get("members") or [])}
@@ -932,6 +942,13 @@ def _goal_rows(game, fallback_home_id):
         # a goal DISALLOWED by VAR is still named "هدف ..." — it must not be
         # listed (it inflated counts vs the scoreboard in 3 games on 18-08)
         if "ملغ" in nm or "ألغي" in nm or "الغي" in nm:
+            continue
+        # a penalty SHOOT-OUT kick is a «هدف» event too (stageId 11, statusId
+        # 11, gameTime past 120, hideFromLineup). 2026-10-24: El Merrikh 1-0
+        # Horoya carried nine of them, the per-side count no longer matched
+        # the scoreboard and the whole match was dropped - its one real
+        # scorer with it. The shoot-out is the result's footnote, not goals.
+        if _is_shootout(ev):
             continue
         cid = ev.get("competitorId")
         if cid is None:                     # some payloads carry num 1/2 instead

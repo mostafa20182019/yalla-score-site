@@ -106,6 +106,11 @@ async function gameDetail(gid) {
       const nm = typeof et === "object" ? (et.name || "") : String(et);
       if (!nm.includes("هدف")) continue;
       if (nm.includes("ملغ") || nm.includes("ألغي") || nm.includes("الغي")) continue;
+      // a penalty SHOOT-OUT kick is a «هدف» event too (stageId 11, statusId 11,
+      // gameTime past 120): 2026-10-24 El Merrikh 1-0 Horoya carried nine of
+      // them and the list no longer added up to the score, so the match lost
+      // its only real scorer. Not a goal; the shoot-out is the result's footnote.
+      if (ev.stageId === 11 || ev.statusId === 11 || Number(ev.gameTime) > 120) continue;
       let cid = ev.competitorId;
       if (cid == null) cid = ev.num === 1 ? home.id : -1;
       const player = members[ev.playerId]

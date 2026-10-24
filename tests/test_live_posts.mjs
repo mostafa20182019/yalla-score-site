@@ -545,5 +545,22 @@ ck("48 the detail naming it is the confirmation: posted ONCE, with the name, on 
 await tick();
 ck("49 and never again", posts().length === n7 + 1);
 
+/* ------------- 15 a penalty shoot-out is not a goal list (2026-10-24) */
+// El Merrikh 1-0 Horoya: the detail carried the 70' goal AND nine shoot-out
+// kicks as «هدف» events (stageId/statusId 11, minute past 120); counted as
+// goals, the list no longer matched the score and the match lost its scorer
+const n8 = posts().length;
+LIST = { games: [live(1000, 624, "الأهلي", "حوريا", 0, 0), ...filler] };
+await tick();                                                    // first sight
+const so = DETAIL(1, 0, [{ s: "h", pid: 11, m: 70 }]);
+for (let i = 0; i < 9; i++) so.game.events.push({ eventType: { name: "هدف", subTypeName: "ركلة جزاء" }, competitorId: i % 2 ? 2 : 1,
+                                                  playerId: 100 + i, gameTime: 121 + (i >> 1), stageId: 11, statusId: 11, hideFromLineup: true });
+detailFor[1000] = so;
+LIST.games[0] = live(1000, 624, "الأهلي", "حوريا", 1, 0);
+await tick();
+ck("50 the shoot-out kicks are ignored: the one real goal is posted, named",
+   posts().length === n8 + 1 && posts()[n8].caption.includes("🥅 زيزو · الدقيقة 70")
+   && db.goals.filter(g => g.game_id === 1000 && !g.cancelled).length === 1, JSON.stringify(posts().slice(-1)));
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);
