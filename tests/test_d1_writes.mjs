@@ -20,7 +20,7 @@ const ck = (name, cond, extra = "") => {
 };
 
 const WRITE_TAGS = ["/*ls_upsert*/", "/*ls_touch*/", "/*lm_set*/", "/*ls_purge*/",
-                    "/*lg_ins*/", "/*lg_name*/", "/*lg_cancel*/", "/*lg_cancel_last*/",
+                    "/*lg_ins*/", "/*lg_name*/", "/*lg_cancel*/", "/*lg_cancel_last*/", "/*lg_confirm*/",
                     "/*rq_ins*/", "/*rq_try*/", "/*rq_done*/", "/*rq_purge*/"];
 const isWrite = (sql) => WRITE_TAGS.some(t => sql.includes(t));
 
@@ -28,7 +28,7 @@ function fakeD1() {
   const state = new Map(), goals = [], meta = new Map(), writes = [];
   const exec = (sql, b) => {
     if (isWrite(sql)) writes.push(sql.match(/\/\*(\w+)\*\//)[1]);
-    if (sql.startsWith("CREATE TABLE")) return { results: [] };
+    if (sql.startsWith("CREATE TABLE") || sql.startsWith("ALTER TABLE")) return { results: [] };
     if (sql.includes("/*ls_rows*/")) {
       const r = [...state.values()];
       return { results: r, meta: { rows_read: r.length } };      // a full scan costs a row per row
@@ -42,6 +42,7 @@ function fakeD1() {
     if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0]).map(g => ({ seq: g.seq, side: "h", player: "x", cancelled: 0 })) };
     if (sql.includes("/*lg_name*/")) return { results: [] };
     if (sql.includes("/*lg_ins*/")) { goals.push({ game_id: b[0], seq: b[1] }); return { results: [] }; }
+    if (sql.includes("/*lg_confirm*/")) return { results: [], meta: { changes: 1 } };
     if (sql.includes("/*lg_cancel")) return { results: [] };
     if (sql.includes("/*ls_upsert*/")) {
       const [game_id, c, h, a, hs, as_, live, min, gt, hf, goalsJ, first_seen, seen_at, changed_at] = b;

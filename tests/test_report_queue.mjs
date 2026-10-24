@@ -27,7 +27,7 @@ function fakeD1() {
   const articles = [];           // the D1 articles table (id, match_id, kind, pub_date)
   const goals = [], meta = new Map();
   const exec = (sql, b) => {
-    if (sql.startsWith("CREATE TABLE")) return { results: [] };
+    if (sql.startsWith("CREATE TABLE") || sql.startsWith("ALTER TABLE")) return { results: [] };
     if (sql.includes("/*ls_rows*/")) return { results: [...state.values()] };
     if (sql.includes("/*ls_snap*/")) return { first: meta.has("snapshot") ? { v: meta.get("snapshot") } : null };
     if (sql.includes("/*ls_prev*/") && b.length > 100) throw new Error("D1_ERROR: too many SQL variables");   // the real cap (2026-10-18)
@@ -35,6 +35,7 @@ function fakeD1() {
     if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0]).map(g => ({ seq: g.seq, side: g.side, player: g.player || null, cancelled: g.cancelled ? 1 : 0 })) };
     if (sql.includes("/*lg_name*/")) { const g = goals.find(x => x.game_id === b[3] && x.seq === b[4]); if (g) { g.player = b[0]; g.minute = b[1] || ""; g.tag = b[2] || ""; } return { results: [] }; }
     if (sql.includes("/*lg_ins*/")) { goals.push({ game_id: b[0], seq: b[1] }); return { results: [] }; }
+    if (sql.includes("/*lg_confirm*/")) return { results: [], meta: { changes: 1 } };
     if (sql.includes("/*lg_cancel")) return { results: [] };
     if (sql.includes("/*ls_upsert*/")) {
       const [game_id, c, h, a, hs, as_, live, min, gt, hf, goalsJ, first_seen, seen_at, changed_at] = b;

@@ -23,7 +23,7 @@ function fakeD1() {
   const seen = [];
   const exec = (sql, b) => {
     seen.push(sql.slice(0, 14));
-    if (sql.startsWith("CREATE TABLE")) return { results: [] };
+    if (sql.startsWith("CREATE TABLE") || sql.startsWith("ALTER TABLE")) return { results: [] };
     // reads come back whole now; the SNAPSHOT decides what is servable
     if (sql.includes("/*ls_rows*/")) return { results: [...state.values()] };
     // .all() shape, not .first(): storeRead reads the snapshot with all() so
@@ -42,21 +42,22 @@ function fakeD1() {
       return { results: b.map(id => src.get(id)).filter(Boolean) };
     }
     if (sql.includes("/*lg_open*/")) return { results: goals.filter(g => g.game_id === b[0])
-      .map(g => ({ seq: g.seq, side: g.side, player: g.player, cancelled: g.cancelled ? 1 : 0 })) };
+      .map(g => ({ seq: g.seq, side: g.side, player: g.player, minute: g.minute, cancelled: g.cancelled ? 1 : 0, held: g.held || 0 })) };
     if (sql.includes("/*lg_name*/")) {
       const [player, minute, tag, game_id, seq] = b;
       const g = goals.find(x => x.game_id === game_id && x.seq === seq);
-      if (g) { g.player = player; g.minute = minute; g.tag = tag; }
+      if (g) { g.player = player; g.minute = minute; g.tag = tag; g.held = 0; }
       return { results: [] };
     }
     if (sql.includes("/*lg_ins*/")) {
-      const [game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at] = b;
+      const [game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at, held] = b;
       // the conditional form carries (game_id, changed_at) the refresh diffed against
-      if (b.length > 12 && (state.get(b[12]) || {}).changed_at !== b[13]) return { results: [], meta: { changes: 0 } };
+      if (b.length > 13 && (state.get(b[13]) || {}).changed_at !== b[14]) return { results: [], meta: { changes: 0 } };
       if (goals.find(g => g.game_id === game_id && g.seq === seq)) return { results: [], meta: { changes: 0 } };
-      goals.push({ game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at, cancelled: 0 });
+      goals.push({ game_id, seq, side, player, minute, tag, score_h, score_a, c, h, a, seen_at, cancelled: 0, held: held || 0 });
       return { results: [], meta: { changes: 1 } };
     }
+    if (sql.includes("/*lg_confirm*/")) { const g = goals.find(x => x.game_id === b[0] && x.seq === b[1] && x.held && !x.cancelled); if (g) g.held = 0; return { results: [], meta: { changes: g ? 1 : 0 } }; }
     if (sql.includes("/*lg_cancel_last*/")) {
       const [now, game_id, side] = b;
       const cand = goals.filter(g => g.game_id === game_id && g.side === side && !g.cancelled);

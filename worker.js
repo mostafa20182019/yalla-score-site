@@ -300,6 +300,11 @@ let storeReady = false;
 async function ensureStore(env) {
   if (storeReady || !env.DB) return;
   await env.DB.batch(STORE_SCHEMA.map(q => env.DB.prepare(q)));
+  // live_goals.held (2026-10-24): a score-only goal waits one refresh before
+  // it is posted. Added after the table existed, so it is an ALTER on its
+  // own - a batch would fail as a whole on «duplicate column» every run after
+  // the first.
+  try { await env.DB.prepare("ALTER TABLE live_goals ADD COLUMN held INTEGER DEFAULT 0").run(); } catch (e) { /* already there */ }
   storeReady = true;
 }
 
@@ -346,7 +351,7 @@ const REPORT_INS = "/*rq_ins*/ INSERT OR IGNORE INTO report_queue (game_id, c, h
 const KICKOFF_MAX_MIN = 5;   // a game first seen in play past this minute gets no «انطلقت» post
 const LS_PREV_CHUNK = 80;    // game ids per ls_prev query: D1 allows 100 bound parameters (2026-10-18)
 const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
-  "score_h, score_a, c, h, a, seen_at) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)";
+  "score_h, score_a, c, h, a, seen_at, held) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
 // The same insert, applied only while the game's state row is still the one
 // this refresh diffed against (changed_at unchanged). Two refreshes overlap
 // across isolates - the one-minute cron and a visitor's background refresh -
@@ -354,8 +359,10 @@ const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, sid
 // same goal under the next seq and posted it again (2026-10-17, Kitara x
 // Al Ahly: «هدف! 1 - 2» at 82' and again at 83').
 const GOAL_INS_IF = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
-  "score_h, score_a, c, h, a, seen_at) SELECT ?,?,?,?,?,?,?,?,?,?,?,? " +
+  "score_h, score_a, c, h, a, seen_at, held) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,? " +
   "WHERE EXISTS (SELECT 1 FROM live_state WHERE game_id = ? AND changed_at IS ?)";
+// a held goal confirmed by a later refresh: released for posting, once
+const GOAL_CONFIRM = "/*lg_confirm*/ UPDATE live_goals SET held = 0 WHERE game_id = ? AND seq = ? AND held = 1 AND cancelled = 0";
 const META_SET = "/*lm_set*/ INSERT INTO live_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v";
 
 async function storeRead(env, now) {
@@ -421,10 +428,10 @@ async function storeApply(env, fresh, now) {
   let upserts = 0, events = 0, ended = 0;
   const posts = [], cancels = [];   // goals discovered LIVE + VAR reversals -> liveposts.js
   const hts = [], ends = [], kos = [];   // half-time / final whistle / kick-off -> liveposts.js
-  const goalRow = (g, seq, ev, p = null) => (p
-    ? env.DB.prepare(GOAL_INS_IF).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now,
+  const goalRow = (g, seq, ev, p = null, held = 0) => (p
+    ? env.DB.prepare(GOAL_INS_IF).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now, held,
                                        g.id, p.changed_at == null ? null : Number(p.changed_at))
-    : env.DB.prepare(GOAL_INS).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now));
+    : env.DB.prepare(GOAL_INS).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now, held));
   for (const g of fresh.games) {
     if (!g.id) continue;
     const p = prev[g.id];
@@ -445,12 +452,21 @@ async function storeApply(env, fresh, now) {
       // post listed «لامين يامال 10'» twice)
       // (every row counts for the next seq - a cancelled seq is never reused;
       // only live rows can be named)
-      const logRows = ((await env.DB.prepare("/*lg_open*/ SELECT seq, side, player, cancelled FROM live_goals WHERE game_id = ? ORDER BY seq")
+      const logRows = ((await env.DB.prepare("/*lg_open*/ SELECT seq, side, player, minute, cancelled, held FROM live_goals WHERE game_id = ? ORDER BY seq")
         .bind(g.id).all()).results) || [];
       let seq = logRows.reduce((m, r) => Math.max(m, Number(r.seq) || 0), 0);
       const openRows = logRows.filter(r => !r.cancelled);
-      const nameless = { h: openRows.filter(r => r.side === "h" && !r.player).map(r => r.seq),
-                         a: openRows.filter(r => r.side === "a" && !r.player).map(r => r.seq) };
+      const nameless = { h: openRows.filter(r => r.side === "h" && !r.player),
+                         a: openRows.filter(r => r.side === "a" && !r.player) };
+      // THE HOLD (user, 2026-10-24: «انشر الهدف الذي لم تسمّه التفاصيل بعد تأكيد
+      // التحديث التالي»). A goal the detail names is posted at once. A goal
+      // known only from the score going up is logged with held = 1 and NOT
+      // posted; it goes out when the next refresh still carries the score
+      // (or when a detail names it, with the name), and a score that falls
+      // back before that cancels a row nobody ever saw. Pyramids 2-1 would
+      // have died here, unposted.
+      const heldRows = openRows.filter(r => Number(r.held));
+      const confirmed = new Set();
       // the live-post guard (liveposts.js): a goal is POSTED only while the
       // score itself went up since the last refresh, and a reversal is posted
       // only when it went down. A re-attributed goal (new key, same score) or
@@ -468,11 +484,13 @@ async function storeApply(env, fresh, now) {
         for (const ev of newGoals) if (!prevKeys.has(goalKey(ev))) {
           const open = ev.p && nameless[ev.s] && nameless[ev.s].length ? nameless[ev.s].shift() : null;
           if (open) {
-            // the score-only path already logged (and posted) this goal
-            // without a name: name that row, no second row, no second post
-            stmts.push(env.DB.prepare("/*lg_name*/ UPDATE live_goals SET player = ?, minute = ?, tag = ? WHERE game_id = ? AND seq = ?")
-              .bind(ev.p, ev.m || null, ev.t || null, g.id, open));
+            // the score-only path already logged this goal without a name:
+            // name that row, no second row. Posted now if it was still held
+            // (the name is the confirmation), never again if it already went out
+            stmts.push(env.DB.prepare("/*lg_name*/ UPDATE live_goals SET player = ?, minute = ?, tag = ?, held = 0 WHERE game_id = ? AND seq = ?")
+              .bind(ev.p, ev.m || null, ev.t || null, g.id, open.seq));
             events += 1;
+            if (Number(open.held)) { confirmed.add(open.seq); if (g.live) posts.push({ g, seq: open.seq, ev, at: stmts.length - 1 }); }
             continue;
           }
           seq += 1; stmts.push(goalRow(g, seq, ev, p)); events += 1;
@@ -489,16 +507,12 @@ async function storeApply(env, fresh, now) {
         // no goal list on either side: go by the score alone
         for (const [side, d] of [["h", g.hs - p.hs], ["a", g.as - p.as_]]) {
           for (let i = 0; i < d; i++) {
-            seq += 1; stmts.push(goalRow(g, seq, { s: side, m: goalMinute(g) }, p)); events += 1;
-            if (g.live) posts.push({ g, seq, ev: { s: side, m: goalMinute(g) }, at: stmts.length - 1 });
+            // held: the next refresh (or a detail naming it) posts it - see THE HOLD
+            seq += 1; stmts.push(goalRow(g, seq, { s: side, m: goalMinute(g) }, p, 1)); events += 1;
           }
           if (d < 0) {   // the score went DOWN: cancel that side's latest live goal
-            // ...and tell liveposts.js, so the goal's own post is edited like a
-            // detail-path reversal is. 2026-10-24 (Pyramids x El Merrikh
-            // Bentiu): the list showed 2-1 for one refresh, the phantom goal
-            // was posted, the next refresh cancelled the row here and the
-            // post stood untouched - the match ended 4-0.
-            if (g.live) cancels.push({ g, ev: { s: side } });
+            // (and liveposts.js edits its post, if one went out - a held row
+            // never had one, so the edit finds nothing and does nothing)
             stmts.push(env.DB.prepare("/*lg_cancel_last*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +
               "WHERE game_id = ? AND side = ? AND cancelled = 0 AND seq = " +
               "(SELECT MAX(seq) FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 0)")
@@ -507,6 +521,15 @@ async function storeApply(env, fresh, now) {
             cancels.push({ g, ev: { s: side } });
           }
         }
+      }
+      // THE HOLD, second half: a held row from an EARLIER refresh whose side's
+      // score did not fall this refresh is confirmed - released and posted
+      for (const r of heldRows) {
+        if (confirmed.has(r.seq)) continue;
+        const fell = r.side === "h" ? g.hs < p.hs : g.as < p.as_;
+        if (fell) continue;                      // cancelled above, never posted
+        stmts.push(env.DB.prepare(GOAL_CONFIRM).bind(g.id, r.seq)); events += 1;
+        if (g.live) posts.push({ g, seq: r.seq, ev: { s: r.side, m: r.minute || null }, at: stmts.length - 1 });
       }
     }
     // THE FINAL WHISTLE: a game we saw live is not live any more. This is the
