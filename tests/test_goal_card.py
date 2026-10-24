@@ -108,13 +108,17 @@ _ST.release = lambda kind, ref: _calls.append(("release", ref))
 _ST.record_post = lambda kind, ref, pid, title=None, score=None, og_ok=False: _calls.append(("record", ref))
 FP.post_photo = lambda tok, img, cap: _calls.append(("photo", cap)) or "P1"
 FP.post_text = lambda tok, cap: _calls.append(("text", cap)) or "P2"
-_rc = FP.goal_post("tok", json.dumps({"g": _g21, "seq": 3, "ev": {"s": "a", "m": "31'"}}))
+_rc = FP.goal_post("tok", json.dumps({"g": _g21, "seq": 3, "ev": {"s": "a", "p": "لاعب المريخ", "m": "31'"}}))
 ck("7d --goal refuses a goal the live score no longer carries: nothing posted, the claim released",
    _rc == 0 and _calls == [("release", "4855321:3")], str(_calls))
 _calls.clear()
 GC._s365_game = lambda gid: {"homeCompetitor": {"score": 3}, "awayCompetitor": {"score": 0}}
 _rc = FP.goal_post("tok", json.dumps({"g": {**_g21, "hs": 3, "as": 0}, "seq": 4, "ev": {"s": "h", "p": "مصطفى فتحي", "m": "45+3'"}}))
 ck("7e and posts a goal that stands", _rc == 0 and _calls and _calls[0][0] == "photo", str(_calls))
+_calls.clear()
+_rc = FP.goal_post("tok", json.dumps({"g": {**_g21, "hs": 3, "as": 0}, "seq": 5, "ev": {"s": "h", "m": "71'"}}))
+ck("7f --goal refuses a goal with no scorer named (user, 2026-10-24): nothing posted",
+   _rc == 0 and _calls == [], str(_calls))
 GC._s365_game, _ST.get_post, _ST.claim, _ST.release, _ST.record_post, FP.post_photo, FP.post_text = _saved
 
 print()

@@ -174,6 +174,10 @@ ck("4 goal text never carries a betting word", !gm.includes("مراهنة"));
 const gmHT = goalMessage({ id: 902, c: 624, h: "بيراميدز", a: "المريخ بنتو", hs: 3, as: 0 }, { s: "h", m: "استراحة" });
 ck("4b the break label is never printed as a minute",
    !gmHT.includes("الدقيقة") && !gmHT.includes("استراحة") && gmHT.startsWith("⚽ هدف! بيراميدز 3 - 0 المريخ بنتو"), gmHT);
+import { livePosts } from "../liveposts.js";
+const _skip = await livePosts({ DB: fakeD1(), FB_PAGE_TOKEN: "tok" }, { posts: [{ g: { id: 1, c: 552, h: "الزمالك", a: "الإسماعيلي", hs: 1, as: 0 }, seq: 1, ev: { s: "h", m: "70'" } }] });
+ck("4d the edge itself refuses a goal post with no scorer (nothing claimed, nothing posted)",
+   _skip.skipped === 1 && _skip.posted === 0 && _skip.dispatched === 0, JSON.stringify(_skip));
 ck("4c isMinute: digits or digits+digits only",
    isMinute("63") && isMinute("45+2") && !isMinute("استراحة") && !isMinute("") && !isMinute(null));
 ck("5 parseLineups: eleven named starters each side, else null",
@@ -227,9 +231,13 @@ await tick();
 ck("14 a score-only goal (no detail) is HELD: logged, not posted",
    posts().length === 1 && db.goals.some(g => g.game_id === 905 && g.held === 1), JSON.stringify(db.goals.filter(g => g.game_id === 905)));
 await tick();
-ck("14a the next refresh still carries the score: posted with the minute, the hold released",
-   posts().length === 2 && posts()[1].caption.startsWith("⚽ هدف! بيراميدز 1 - 0 زد") && posts()[1].caption.includes("الدقيقة 70'")
-   && db.goals.find(g => g.game_id === 905).held === 0, JSON.stringify(posts().slice(-1)));
+ck("14a the next refresh still carrying the score is NOT enough: no name, no post (user, 2026-10-24)",
+   posts().length === 1 && db.goals.find(g => g.game_id === 905).held === 1);
+detailFor[905] = DETAIL(1, 0, [{ s: "h", pid: 12, m: 70 }]);     // the detail arrives, naming it
+await tick();
+ck("14b the name is the confirmation: posted once, with the scorer, on the held row",
+   posts().length === 2 && posts()[1].caption.startsWith("⚽ هدف! بيراميدز 1 - 0 زد") && posts()[1].caption.includes("🥅 عمر جابر · الدقيقة 70")
+   && db.goals.filter(g => g.game_id === 905).length === 1 && db.goals.find(g => g.game_id === 905).held === 0, JSON.stringify(posts().slice(-1)));
 await tick();
 ck("14c ...and only once", posts().length === 2);
 
@@ -243,8 +251,8 @@ ck("14b a corrected scorer (same score) posts nothing and edits nothing",
 /* ------------------------------------------------- 7 no card -> text */
 cardOk = false;
 LIST.games[4] = live(905, 552, "بيراميدز", "زد", 2, 0);
-await tick();                                                    // held
-await tick();                                                    // confirmed
+detailFor[905] = DETAIL(2, 0, [{ s: "h", pid: 12, m: 70 }, { s: "h", pid: 11, m: 80 }]);
+await tick();
 ck("15 without our card the goal goes out as a text post", posts().length === 3 && posts()[2].path === "me/feed", JSON.stringify(posts().slice(-1)));
 cardOk = true;
 
@@ -482,11 +490,15 @@ ck("40 the score back down cancels the held row - the phantom never reaches the 
 // the score falls AFTER that, its post is edited
 LIST.games[0] = live(997, 624, "بيراميدز", "المريخ بنتو", 2, 1);
 await tick();                                                    // held (seq 2)
-await tick();                                                    // confirmed
-ck("41 a score-only goal the next refresh confirms is posted, with the minute it was seen at",
-   posts().length === n5 + 1 && posts()[n5].caption.startsWith("⚽ هدف! بيراميدز 2 - 1 المريخ بنتو") && posts()[n5].caption.includes("الدقيقة 70'"),
-   JSON.stringify(posts().slice(-1)));
+await tick();                                                    // still held: no name yet
+ck("41 a score-only goal stays held until a detail NAMES it; then it is posted with the name",
+   posts().length === n5 && (detailFor[997] = DETAIL(2, 1, [{ s: "h", pid: 11, m: 23 }, { s: "h", pid: 11, m: 28 }, { s: "a", pid: 12, m: 71 }]), true));   // the list must add up to the score or gameDetail drops it
+await tick();
+ck("41b ...posted once, named, on the held row",
+   posts().length === n5 + 1 && posts()[n5].caption.startsWith("⚽ هدف! بيراميدز 2 - 1 المريخ بنتو") && posts()[n5].caption.includes("🥅 عمر جابر · الدقيقة 71")
+   && db.goals.filter(g => g.game_id === 997 && g.side === "a" && !g.cancelled).length === 1, JSON.stringify(posts().slice(-1)));
 const phantomId = `P${fbCalls.indexOf(posts()[n5]) + 1}`;
+delete detailFor[997];                                           // the detail fails again; the list falls back to 2-0
 LIST.games[0] = live(997, 624, "بيراميدز", "المريخ بنتو", 2, 0);
 await tick();
 const edit2 = fbCalls.slice(-1)[0];
@@ -506,9 +518,12 @@ LIST.games[0] = live(998, 624, "بيراميدز", "المريخ بنتو", 2, 0
 await tickGh(); await tickGh();
 ck("44 ...and once the score fell back, never", ghCalls.length === gh2 && !db.fb.has("goal|998:1") && posts().length === n6);
 LIST.games[0] = live(998, 624, "بيراميدز", "المريخ بنتو", 2, 1);
-await tickGh(); await tickGh();                                  // held, then confirmed
-ck("45 a confirmed goal is dispatched as a card and claimed",
+await tickGh();                                                  // held
+detailFor[998] = DETAIL(2, 1, [{ s: "h", pid: 11, m: 23 }, { s: "h", pid: 11, m: 28 }, { s: "a", pid: 12, m: 71 }]);
+await tickGh();                                                  // named -> dispatched
+ck("45 a goal the detail names is dispatched as a card and claimed",
    ghCalls.length === gh2 + 1 && db.fb.has("goal|998:2") && !db.fb.get("goal|998:2").post_id && posts().length === n6, JSON.stringify(ghCalls.slice(-1)));
+delete detailFor[998];
 LIST.games[0] = live(998, 624, "بيراميدز", "المريخ بنتو", 2, 0);
 await tickGh();                                                  // the score is back: the row is cancelled
 db.fb.get("goal|998:2").claimed_at -= 5 * 60;                    // the runner never came back

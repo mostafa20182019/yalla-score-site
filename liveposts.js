@@ -280,6 +280,9 @@ export async function livePosts(env, r, dispatch = null) {
   if (!posts.length && !cancels.length && !hts.length && !ends.length && !kos.length) return out;
   if (!env.FB_PAGE_TOKEN) { console.log("live posts: no FB_PAGE_TOKEN -", posts.length + hts.length + ends.length, "post(s) not posted"); return out; }
   for (const { g, seq, ev } of posts) {
+    // no scorer, no goal post (user, 2026-10-24): the Worker holds nameless
+    // goals until a detail names them, and this is the edge's own refusal
+    if (!ev || !ev.p) { out.skipped += 1; continue; }
     const ref = `${g.id}:${seq}`;
     const msg = goalMessage(g, ev);
     // the claim keeps the whole text: goalFallbacks() resends it if the card never comes

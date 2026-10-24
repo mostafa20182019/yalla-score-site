@@ -361,8 +361,6 @@ const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, sid
 const GOAL_INS_IF = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
   "score_h, score_a, c, h, a, seen_at, held) SELECT ?,?,?,?,?,?,?,?,?,?,?,?,? " +
   "WHERE EXISTS (SELECT 1 FROM live_state WHERE game_id = ? AND changed_at IS ?)";
-// a held goal confirmed by a later refresh: released for posting, once
-const GOAL_CONFIRM = "/*lg_confirm*/ UPDATE live_goals SET held = 0 WHERE game_id = ? AND seq = ? AND held = 1 AND cancelled = 0";
 const META_SET = "/*lm_set*/ INSERT INTO live_meta (k, v) VALUES (?, ?) ON CONFLICT(k) DO UPDATE SET v = excluded.v";
 
 async function storeRead(env, now) {
@@ -458,15 +456,15 @@ async function storeApply(env, fresh, now) {
       const openRows = logRows.filter(r => !r.cancelled);
       const nameless = { h: openRows.filter(r => r.side === "h" && !r.player),
                          a: openRows.filter(r => r.side === "a" && !r.player) };
-      // THE HOLD (user, 2026-10-24: «انشر الهدف الذي لم تسمّه التفاصيل بعد تأكيد
-      // التحديث التالي»). A goal the detail names is posted at once. A goal
-      // known only from the score going up is logged with held = 1 and NOT
-      // posted; it goes out when the next refresh still carries the score
-      // (or when a detail names it, with the name), and a score that falls
-      // back before that cancels a row nobody ever saw. Pyramids 2-1 would
-      // have died here, unposted.
-      const heldRows = openRows.filter(r => Number(r.held));
-      const confirmed = new Set();
+      // THE HOLD (user, 2026-10-24, twice: first «انشر الهدف الذي لم تسمّه
+      // التفاصيل بعد تأكيد التحديث التالي», then - on a Tottenham 77' post with
+      // no scorer - «عايز كله يكون فيه اسم مسجل الهدف»). A goal the detail
+      // names is posted at once. A goal known only from the score going up is
+      // logged with held = 1 and NOT posted, by anyone, until a detail names
+      // it: the name IS the confirmation, and the post carries it. A score
+      // that falls back first cancels a row nobody ever saw (Pyramids 2-1). A
+      // goal the feed never names is never a goal post - the half-time and
+      // full-time posts still carry the score.
       // the live-post guard (liveposts.js): a goal is POSTED only while the
       // score itself went up since the last refresh, and a reversal is posted
       // only when it went down. A re-attributed goal (new key, same score) or
@@ -490,7 +488,7 @@ async function storeApply(env, fresh, now) {
             stmts.push(env.DB.prepare("/*lg_name*/ UPDATE live_goals SET player = ?, minute = ?, tag = ?, held = 0 WHERE game_id = ? AND seq = ?")
               .bind(ev.p, ev.m || null, ev.t || null, g.id, open.seq));
             events += 1;
-            if (Number(open.held)) { confirmed.add(open.seq); if (g.live) posts.push({ g, seq: open.seq, ev, at: stmts.length - 1 }); }
+            if (Number(open.held) && g.live) posts.push({ g, seq: open.seq, ev, at: stmts.length - 1 });
             continue;
           }
           seq += 1; stmts.push(goalRow(g, seq, ev, p)); events += 1;
@@ -507,7 +505,7 @@ async function storeApply(env, fresh, now) {
         // no goal list on either side: go by the score alone
         for (const [side, d] of [["h", g.hs - p.hs], ["a", g.as - p.as_]]) {
           for (let i = 0; i < d; i++) {
-            // held: the next refresh (or a detail naming it) posts it - see THE HOLD
+            // held: a detail naming it posts it - see THE HOLD
             seq += 1; stmts.push(goalRow(g, seq, { s: side, m: goalMinute(g) }, p, 1)); events += 1;
           }
           if (d < 0) {   // the score went DOWN: cancel that side's latest live goal
@@ -521,15 +519,6 @@ async function storeApply(env, fresh, now) {
             cancels.push({ g, ev: { s: side } });
           }
         }
-      }
-      // THE HOLD, second half: a held row from an EARLIER refresh whose side's
-      // score did not fall this refresh is confirmed - released and posted
-      for (const r of heldRows) {
-        if (confirmed.has(r.seq)) continue;
-        const fell = r.side === "h" ? g.hs < p.hs : g.as < p.as_;
-        if (fell) continue;                      // cancelled above, never posted
-        stmts.push(env.DB.prepare(GOAL_CONFIRM).bind(g.id, r.seq)); events += 1;
-        if (g.live) posts.push({ g, seq: r.seq, ev: { s: r.side, m: r.minute || null }, at: stmts.length - 1 });
       }
     }
     // THE FINAL WHISTLE: a game we saw live is not live any more. This is the

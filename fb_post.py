@@ -854,6 +854,13 @@ def goal_post(token, payload, dry=False):
     rec = store.get_post("goal", ref)
     if rec and rec.get("post_id"):
         print(f"goal {ref}: already posted ({rec['post_id']})"); return 0
+    if not (ev.get("p") or "").strip():
+        # user, 2026-10-24: every goal post names its scorer; a nameless
+        # dispatch is refused here too, and its claim released
+        print(f"goal {ref}: no scorer named - not posted")
+        if rec:
+            store.release("goal", ref)
+        return 0
     caption = goal_caption(g, ev)
     if dry:
         print(caption); return 0
