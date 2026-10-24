@@ -34,4 +34,33 @@ assert fix("POSTPONED", 48, None, None) == "POSTPONED"
 assert fd._norm_status("AWARDED") == "FINISHED"
 assert fd._norm_status("POSTPONED") == "POSTPONED" and fd._norm_status("CANCELLED") == "POSTPONED"
 assert fd._norm_status("TIMED") == "UPCOMING" and fd._norm_status("PAUSED") == "LIVE"
-print("ALL FD STATUS TESTS PASSED")
+
+# ---- reconcile_with_live (2026-10-24): football-data served Aston Villa x
+# Man City as TIMED (no score) eight hours after kick-off; 365scores had it
+# over at 2-1. An UPCOMING row past its kick-off with a live pair takes the
+# pair's score and status, exactly as a LIVE/FINISHED row does.
+import json as _json
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))   # reconcile imports build_site
+_real_get = fd.http_get
+fd.http_get = lambda url, *a, **k: _json.dumps({"games": [
+    {"h": "أستون فيلا", "a": "مانشستر سيتي", "hs": 2, "as": 1, "live": False},
+    {"h": "تشيلسي", "a": "توتنهام هوتسبر", "hs": 1, "as": 0, "live": True},
+]})
+_now = datetime.now(CAIRO)
+def _ko(hours_ago):
+    t = _now - timedelta(hours=hours_ago)
+    return t.strftime("%Y-%m-%d"), t.strftime("%H:%M")
+_rows = [
+    dict(zip(("kickoff", "koff_time"), _ko(8)), status="UPCOMING", home="Aston Villa FC", away="Manchester City FC", home_score=None, away_score=None),
+    dict(zip(("kickoff", "koff_time"), _ko(1)), status="UPCOMING", home="Chelsea FC", away="Tottenham Hotspur FC", home_score=None, away_score=None),
+    dict(zip(("kickoff", "koff_time"), _ko(-3)), status="UPCOMING", home="Arsenal FC", away="Everton FC", home_score=None, away_score=None),
+]
+_dbg = {}
+_n = fd.reconcile_with_live(_rows, _dbg)
+assert "FAIL" not in (_dbg.get("reconcile") or ""), _dbg
+assert _rows[0]["status"] == "FINISHED" and (_rows[0]["home_score"], _rows[0]["away_score"]) == (2, 1), _rows[0]
+assert _rows[1]["status"] == "LIVE" and (_rows[1]["home_score"], _rows[1]["away_score"]) == (1, 0), _rows[1]
+assert _rows[2]["status"] == "UPCOMING" and _rows[2]["home_score"] is None, _rows[2]   # not kicked off: untouched
+assert _n == 2, _dbg
+fd.http_get = _real_get
+print("ALL FD STATUS TESTS PASSED (incl. reconcile of a stale UPCOMING row)")

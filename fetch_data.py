@@ -412,7 +412,13 @@ def reconcile_with_live(matches, dbg=None):
     now = datetime.now(CAIRO)
     changed = 0
     for m in matches:
-        if m.get("status") not in ("LIVE", "FINISHED") or not m.get("kickoff"):
+        # UPCOMING rows too (2026-10-24): football-data served Aston Villa x
+        # Man City as TIMED with no score eight hours after kick-off, so the
+        # row never entered here and the home tile still said «القادمة · اليوم
+        # 14:30» while our own report of the 2-1 sat under it. A match that
+        # kicked off and has a live pair with a score is live or over,
+        # whatever the schedule feed still believes.
+        if m.get("status") not in ("UPCOMING", "LIVE", "FINISHED") or not m.get("kickoff"):
             continue
         try:
             ko = datetime.fromisoformat(f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00").replace(tzinfo=CAIRO)
