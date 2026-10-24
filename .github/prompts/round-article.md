@@ -14,6 +14,14 @@ You are writing ONE original Arabic **«الجولة بالأرقام»** articl
 ## THE HARD RULE ON NUMBERS — enforced by the publisher, not by trust
 Every number in the title, summary, body and FAQ must be one of the pack's numbers. **Do not compute new ones**: no percentages the pack does not carry, no sums or averages of your own, no "the third straight win" unless the pack says so. Dates are allowed only when the pack carries them (the round's days, the results' days, the next round's days). `python article_put.py --check --data-brief "$BRIEF_JSON" /tmp/draft.json` lists every number that is not in the pack — **fix the text until it passes; never "fix" it by dropping a true sentence's number for a vaguer invented one.** No press research: this article's story is our data. Never state a fact that is not in the pack (injuries, transfers, coaches' words).
 
+## PLAIN WORDING — the reader is a fan on his phone (user rule 2026-10-24: «عايز صياغة الخبر بسيطة للمستخدمين»)
+Applies to the body, the summary, the FAQ and `fb_post` alike — `fb_post` most of all, because that is where the user reads first.
+- ONE fact per sentence, short sentences (about 20 words), and never two counts of the same thing packed into one line.
+- A total and its ordinal are written so the arithmetic is on the page, in time order: «أدار مونويرا الكلاسيكو 4 مرات من قبل: فاز ريال مدريد في 3 منها وبرشلونة في واحدة، ومباراة الأحد ستكون الخامسة له». NEVER «هذا الكلاسيكو الخامس له.. فاز الريال في 3 من مواجهاته الأربع السابقة» — article 939's Facebook post said exactly that and the user read it as a contradiction («هما أربعة ولا خمسة؟»).
+- Say «المباراة رقم 18» rather than «الكلاسيكو الـ18»; digits for every number; «5 انتصارات و6 تعادلات و6 هزائم في 17 مباراة» rather than a tally with no total.
+- No nested clauses («الذي… بعدما… وذلك بعدما…»): split them into sentences. No journalistic flourishes in place of the club's name («الفريق الملكي», «القلعة البيضاء», «البلوجرانا») — the club's name, a nickname at most once per article.
+- Before publishing, reread the `fb_post` line by line: if a line needs a second reading to get its numbers, rewrite it.
+
 ## Structure — 500-750 words, HTML <p>/<h2>/<ul>/<li>/<a>
 1. **Lead (1 paragraph, no heading):** the round in its sharpest numbers — the one pattern that defines it (e.g. away wins vs home wins, goals, the leader's lead). Name the competition and the round.
 2. `<h2>نتائج الجولة</h2>` — a `<ul>` of every result: «<a href="{url}">الفريق أ 2-0 الفريق ب</a>». Then one sentence on the biggest margin.

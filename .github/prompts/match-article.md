@@ -22,6 +22,14 @@ Python deps (requirements.txt + pillow) are already installed by the workflow.
 Every number, name, minute, position, rating, formation and result in the article MUST come from the brief (or from data/*.json / a page of our own site). Never invent, estimate or "recall" a statistic, a fee, an injury, a quote or a lineup. If the brief lacks something (e.g. no head-to-head, no ratings), write the article WITHOUT that angle — a shorter true article beats a longer padded one. You MAY read 1-2 press sources via Google News RSS (news.google.com/rss/search?q=<urlencoded>&hl=ar&gl=EG&ceid=EG:ar) for context such as injuries/suspensions or the coach's pre-match comments, attributed as "بحسب تقارير صحفية" and only when two sources agree.
 **PERCENTAGES (2026-10-07):** every percentage in a PREVIEW must be one the brief states — `article_put.py --match-brief` refuses the draft otherwise. Copy the model's figures from `prediction` exactly as written there (62%, not «نحو 60%», not 0.62); never derive a new one (no adding two probabilities, no «ضعف الاحتمال»).
 
+## PLAIN WORDING — the reader is a fan on his phone (user rule 2026-10-24: «عايز صياغة الخبر بسيطة للمستخدمين»)
+Applies to the body, the summary, the FAQ and `fb_post` alike — `fb_post` most of all, because that is where the user reads first.
+- ONE fact per sentence, short sentences (about 20 words), and never two counts of the same thing packed into one line.
+- A total and its ordinal are written so the arithmetic is on the page, in time order: «أدار مونويرا الكلاسيكو 4 مرات من قبل: فاز ريال مدريد في 3 منها وبرشلونة في واحدة، ومباراة الأحد ستكون الخامسة له». NEVER «هذا الكلاسيكو الخامس له.. فاز الريال في 3 من مواجهاته الأربع السابقة» — article 939's Facebook post said exactly that and the user read it as a contradiction («هما أربعة ولا خمسة؟»).
+- Say «المباراة رقم 18» rather than «الكلاسيكو الـ18»; digits for every number; «5 انتصارات و6 تعادلات و6 هزائم في 17 مباراة» rather than a tally with no total.
+- No nested clauses («الذي… بعدما… وذلك بعدما…»): split them into sentences. No journalistic flourishes in place of the club's name («الفريق الملكي», «القلعة البيضاء», «البلوجرانا») — the club's name, a nickname at most once per article.
+- Before publishing, reread the `fb_post` line by line: if a line needs a second reading to get its numbers, rewrite it.
+
 ## Length and structure — 650-900 words, HTML <p>/<h2>/<ul> allowed
 ### PREVIEW (KIND=preview)
 1. Lead: what is at stake for the curated club in this fixture (position, streak, cup stage), kick-off time/day in Cairo, TV channel if in the brief.
