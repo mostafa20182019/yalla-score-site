@@ -7,6 +7,8 @@ sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from site_lib.articles import held_analyses
 from site_lib.cards import home_insights
+# the home block itself takes reports only since 2026-10-24 (HOME_INSIGHT_KINDS);
+# the hold rule is exercised here with the kinds it was written for
 
 fails = 0
 def ck(name, cond, extra=""):
@@ -26,12 +28,12 @@ matches = [{"match_id": 560598, "kickoff": "2026-10-11", "koff_time": "18:30", "
 held = held_analyses(arts, matches, now=now)
 ck("1 analyses of unplayed matches are held, in kick-off order", held == ["697", "687"], str(held))
 ck("2 a match 4h past kick-off or FINISHED is not held", "650" not in held and "640" not in held)
-lead, more = home_insights(arts, False, held=held)
+lead, more = home_insights(arts, False, held=held, kinds=("preview", "analysis"))
 ck("3 the held analysis leads the block and the other follows", lead["article_id"] == "697" and more[0]["article_id"] == "687", str([lead["article_id"]] + [a["article_id"] for a in more]))
 ck("4 newer previews come after the held ones", [a["article_id"] for a in more][1:3] == ["700", "699"])
-lead2, more2 = home_insights(arts, False, held=[])
+lead2, more2 = home_insights(arts, False, held=[], kinds=("preview", "analysis"))
 ck("5 nothing held: newest analytical piece leads, as before", lead2["article_id"] == "700")
-lead3, _ = home_insights(arts, True, held=held)
+lead3, _ = home_insights(arts, True, held=held, kinds=("preview", "analysis"))
 ck("6 HOME_PIN still wins the lead when it is on", lead3["article_id"] == "700")
 ck("7 the match ended -> released", held_analyses(arts, matches, now=now + datetime.timedelta(days=3)) == [])
 # a match that fell out of the day window (a degraded fetch) is still found in the season fixtures

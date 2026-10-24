@@ -21,6 +21,10 @@ def ck(name, cond, extra=""):
     if not cond:
         fails.append(name)
 
+# 2026-10-24 (user: «عايز تقارير بس»): the block's DEFAULT is reports only;
+# the tier-order rules below are exercised with every kind let in explicitly
+ALL_KINDS = ("preview", "report", "analysis", "round")
+
 def P(i, title, kind="preview"):
     return {"article_id": str(i), "title": title, "summary": "", "kind": kind, "match_id": str(1000 + i)}
 
@@ -39,7 +43,7 @@ ck("1b the Saudi «الأهلي» is not the Egyptian club",
    curated_tier(P(3, "توقع يلا سكور: الفتح × الأهلي السعودي في دوري روشن")) == 2)
 ck("1c the national team counts as Egyptian", curated_tier(P(2, "توقع يلا سكور: منتخب مصر يواجه غانا في تصفيات كأس الأمم")) == 0)
 
-lead, rest = C.home_insights(arts, pinned=False)
+lead, rest = C.home_insights(arts, pinned=False, kinds=ALL_KINDS)
 ids = [a["article_id"] for a in rest]
 ck("2a the lead is the Zamalek match, not the newest preview", lead["article_id"] == "8", lead["title"])
 ck("2b the second is the Pyramids match", ids[0] == "7", str(ids))
@@ -47,12 +51,12 @@ ck("2c then the other curated club (Liverpool), then the rest newest-first", ids
 
 # the pin still wins the lead
 pinned = [P(1, "تحليل: الديربي بالأرقام", "analysis")] + arts
-lead, rest = C.home_insights(pinned, pinned=True)
+lead, rest = C.home_insights(pinned, pinned=True, kinds=ALL_KINDS)
 ck("3a HOME_PIN keeps the lead", lead["article_id"] == "1")
 ck("3b ...and the list below it is still featured-first", [a["article_id"] for a in rest][:2] == ["8", "7"])
 
 # a held big-match analysis (unplayed) still comes before everything
-lead, rest = C.home_insights(arts, pinned=False, held=["4"])
+lead, rest = C.home_insights(arts, pinned=False, held=["4"], kinds=ALL_KINDS)
 ck("4 a held analysis keeps its precedence over the tiers", lead["article_id"] == "4" and [a["article_id"] for a in rest][:2] == ["8", "7"])
 
 # ------------------------------------------- stale pieces step back (same day)
@@ -87,13 +91,25 @@ ck("5d no match to read: the piece's own age decides (48 h) - old report + old r
 # the stale Pyramids/Ahly reports step behind every fresh piece, featured kept inside each group
 arts2 = arts + [P(3, "تقرير: بيراميدز يكتسح سيراميكا كليوباترا 4-1", "report"),
                 P(2, "تقرير: الأهلي يكسب قمة الزمالك 2-0", "report")]
-lead, rest = C.home_insights(arts2, pinned=False, stale={"3", "2", "4"})
+lead, rest = C.home_insights(arts2, pinned=False, stale={"3", "2", "4"}, kinds=ALL_KINDS)
 ids = [lead["article_id"]] + [a["article_id"] for a in rest]
 ck("6a fresh featured lead, fresh pieces of every tier next, stale ones last",
    ids == ["8", "7", "5", "9", "6"], str(ids))
-lead, rest = C.home_insights(arts2, pinned=False, stale={"8", "7", "5", "9", "6"})
+lead, rest = C.home_insights(arts2, pinned=False, stale={"8", "7", "5", "9", "6"}, kinds=ALL_KINDS)
 ck("6b when only stale pieces remain, the featured ones still lead them",
    [lead["article_id"]] + [a["article_id"] for a in rest][:2] == ["3", "2", "4"], lead["article_id"])
+
+# ------------------------------------------- reports only (user, 2026-10-24)
+ck("7a the default kinds are reports and round pieces, nothing forward-looking",
+   C.HOME_INSIGHT_KINDS == ("report", "round"))
+lead, rest = C.home_insights(arts2, pinned=False)
+ids = [lead["article_id"]] + [a["article_id"] for a in rest]
+ck("7b with the default, only reports are picked - featured first, previews gone",
+   ids == ["3", "2", "6", "4"] and all(a["kind"] == "report" for a in [lead, *rest]), str(ids))
+ck("7c a list of previews alone gives an empty block",
+   C.home_insights([a for a in arts if a["kind"] == "preview"], pinned=False) == (None, []))
+ck("7d the HOME_PIN lead still wins when the pin is on",
+   C.home_insights([P(1, "تحليل: الديربي بالأرقام", "analysis")] + arts2, pinned=True)[0]["article_id"] == "1")
 
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))

@@ -51,11 +51,14 @@ ck("both featured first, then Egypt, then one featured, then the rest",
 ck("nothing beyond 7 days, nothing without a prediction", 4 not in got and 5 not in got)
 ck("an empty pick renders nothing", C.match_focus_block([], {}, today, focus) == "")
 
+# the block takes reports only since 2026-10-24 (user: «عايز تقارير بس»)
 arts = [{"article_id": "9", "title": "news"},
-        {"article_id": "8", "title": "a", "kind": "analysis"},
-        {"article_id": "7", "title": "b", "kind": "analysis"}]
+        {"article_id": "8", "title": "a", "kind": "report", "match_id": "1"},
+        {"article_id": "7", "title": "b", "kind": "report", "match_id": "2"},
+        {"article_id": "6", "title": "c", "kind": "preview", "match_id": "3"}]
 lead, rest = C.home_insights(arts, pinned=False)
-ck("no pin: the newest analysis leads", lead["article_id"] == "8" and [a["article_id"] for a in rest] == ["7"])
+ck("no pin: the newest report leads, the preview is not in the block",
+   lead["article_id"] == "8" and [a["article_id"] for a in rest] == ["7"])
 lead, rest = C.home_insights(arts, pinned=True)
 ck("pin on: the pinned (first) article leads", lead["article_id"] == "9" and len(rest) == 2)
 

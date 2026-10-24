@@ -470,13 +470,22 @@ def home_record_strip(acc, cal):
     return f'<div class="hrec">{line}</div>' if line else ""
 
 
-def home_insights(articles, pinned, held=(), stale=()):
+# the home analyses block shows what HAPPENED (user, 2026-10-24: «مش عايز في
+# جزء التحليلات يكون فيه توقعات، عايز تقارير بس»): match reports and the round
+# pieces (a round read after it was played). Previews and pre-match analyses -
+# the «توقع يلا سكور» pieces - stay on /insights and on their match pages.
+HOME_INSIGHT_KINDS = ("report", "round")
+
+
+def home_insights(articles, pinned, held=(), stale=(), kinds=HOME_INSIGHT_KINDS):
     """(lead, the next 4) for the analysis block. The lead is the HOME_PIN
-    article while the pin is on (`pinned`), else the newest analytical piece.
+    article while the pin is on (`pinned`), else the newest piece of the
+    block's `kinds` (HOME_INSIGHT_KINDS: reports only since 2026-10-24).
     `held` (site_lib.articles.held_analyses): analyses of matches not yet
     played come first, in kick-off order, so a newer preview never pushes
-    the big-match analysis out before the match is over."""
-    ins = [a for a in articles if insight_kind(a)]
+    the big-match analysis out before the match is over - relevant only to
+    a caller that lets previews/analyses in through `kinds`."""
+    ins = [a for a in articles if insight_kind(a) in kinds]
     held = [str(x) for x in held]
     if held:
         front = sorted((a for a in ins if str(a["article_id"]) in held), key=lambda a: held.index(str(a["article_id"])))
