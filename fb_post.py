@@ -822,6 +822,21 @@ def goal_caption(g, ev):
     return "\n".join(lines)
 
 
+def goal_stands(game, g, ev):
+    """True / False / None: does the live detail's score still carry the goal
+    the Worker dispatched? None when the detail says nothing usable (no
+    game, score -1 before kick-off) - then the payload is trusted as before."""
+    side = ev.get("s") or "h"
+    comp = (game or {}).get("homeCompetitor" if side == "h" else "awayCompetitor") or {}
+    cur = comp.get("score")
+    if not isinstance(cur, (int, float)) or cur < 0:
+        return None
+    claimed = g.get("hs" if side == "h" else "as")
+    if claimed is None:
+        return None
+    return cur >= claimed
+
+
 def goal_post(token, payload, dry=False):
     """Draw the goal card and post it as a photo (user, 2026-10-17: «صورة زي
     دي مع الهدف»). `payload` = the JSON the Worker dispatched:
@@ -846,9 +861,22 @@ def goal_post(token, payload, dry=False):
         print("FB_PAGE_TOKEN not set - skipping"); return 0
     if not rec and not store.claim("goal", ref, title=caption.split("\n")[0]):
         print(f"goal {ref}: claimed by another run - nothing posted"); return 0
+    # the live detail is fetched for the crests anyway; it is also the one
+    # check that a dispatched goal still STANDS. 2026-10-24: the list showed
+    # Pyramids 2-1 El Merrikh Bentiu for one refresh, the Worker dispatched
+    # the phantom goal, and the match ended 4-0. A side whose current score
+    # is below the one the goal claims has not scored it - nothing to draw.
+    try:
+        game = GC._s365_game(g["id"])
+    except Exception:  # noqa: BLE001 - no detail: draw from the payload as before
+        game = {}
+    if goal_stands(game, g, ev) is False:
+        print(f"goal {ref}: the live score no longer carries it - not posted")
+        if not rec:
+            store.release("goal", ref)
+        return 0
     try:
         try:
-            game = GC._s365_game(g["id"])
             hb, ab = GC.badges_for(game)
             img = GC.render_bytes({"side": ev.get("s") or "h", "player": ev.get("p") or "", "minute": ev.get("m") or "",
                                    "tag": ev.get("t") or "", "home": g["h"], "away": g["a"], "hs": g["hs"], "as": g["as"],

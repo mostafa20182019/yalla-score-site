@@ -86,6 +86,37 @@ _wl = GC.render_whistle({"kind": "ht", "home": "x", "away": "y", "hs": 1, "as": 
                          "goals": [{"s": "h", "p": "زيزو", "m": "استراحة"}]}, os.path.join(tempfile.mkdtemp(), "w.jpg"))
 ck("6f the whistle card renders a break-label goal (name only, no «استراحة'»)", _wl.size == (GC.W, GC.H))
 
+# 2026-10-24 (same match): the list showed Pyramids 2-1 for ONE refresh, the
+# Worker dispatched the phantom away goal, the match ended 4-0. The runner
+# fetches the live detail for the crests anyway - it is also the check that
+# the goal still stands.
+_g21 = {"id": 4855321, "c": 624, "h": "بيراميدز", "a": "المريخ بنتو", "hs": 2, "as": 1}
+ck("7a a side whose live score is below the claimed one has not scored it",
+   FP.goal_stands({"awayCompetitor": {"score": 0}}, _g21, {"s": "a"}) is False)
+ck("7b the same or a higher score means the goal stands",
+   FP.goal_stands({"awayCompetitor": {"score": 1}}, _g21, {"s": "a"}) is True
+   and FP.goal_stands({"homeCompetitor": {"score": 3}}, _g21, {"s": "h"}) is True)
+ck("7c no usable detail (empty, or -1 before kick-off) decides nothing - the payload is trusted",
+   FP.goal_stands({}, _g21, {"s": "a"}) is None and FP.goal_stands({"awayCompetitor": {"score": -1}}, _g21, {"s": "a"}) is None)
+import store as _ST
+_calls = []
+_saved = (GC._s365_game, _ST.get_post, _ST.claim, _ST.release, _ST.record_post, FP.post_photo, FP.post_text)
+GC._s365_game = lambda gid: {"homeCompetitor": {"score": 2}, "awayCompetitor": {"score": 0}}
+_ST.get_post = lambda kind, ref: None
+_ST.claim = lambda kind, ref, title=None, score=None: True
+_ST.release = lambda kind, ref: _calls.append(("release", ref))
+_ST.record_post = lambda kind, ref, pid, title=None, score=None, og_ok=False: _calls.append(("record", ref))
+FP.post_photo = lambda tok, img, cap: _calls.append(("photo", cap)) or "P1"
+FP.post_text = lambda tok, cap: _calls.append(("text", cap)) or "P2"
+_rc = FP.goal_post("tok", json.dumps({"g": _g21, "seq": 3, "ev": {"s": "a", "m": "31'"}}))
+ck("7d --goal refuses a goal the live score no longer carries: nothing posted, the claim released",
+   _rc == 0 and _calls == [("release", "4855321:3")], str(_calls))
+_calls.clear()
+GC._s365_game = lambda gid: {"homeCompetitor": {"score": 3}, "awayCompetitor": {"score": 0}}
+_rc = FP.goal_post("tok", json.dumps({"g": {**_g21, "hs": 3, "as": 0}, "seq": 4, "ev": {"s": "h", "p": "مصطفى فتحي", "m": "45+3'"}}))
+ck("7e and posts a goal that stands", _rc == 0 and _calls and _calls[0][0] == "photo", str(_calls))
+GC._s365_game, _ST.get_post, _ST.claim, _ST.release, _ST.record_post, FP.post_photo, FP.post_text = _saved
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

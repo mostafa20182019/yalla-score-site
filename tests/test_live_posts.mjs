@@ -52,6 +52,7 @@ function fakeD1() {
       return { results: [] };
     }
     if (sql.includes("/*lg_list*/")) return { results: goals.filter(g => g.game_id === b[0] && !g.cancelled).map(g => ({ side: g.side, player: g.player, minute: g.minute, tag: g.tag || "" })) };
+    if (sql.includes("/*lg_row*/")) { const g = goals.find(x => x.game_id === b[0] && x.seq === b[1]); return { first: g ? { cancelled: g.cancelled ? 1 : 0 } : null }; }
     if (sql.includes("/*lg_cancelled*/")) {
       const [gid, side, p1, , m1] = b;
       const hit = goals.filter(g => g.game_id === gid && g.side === side && g.cancelled && (p1 === "" || g.player === p1) && (m1 === "" || g.minute === m1))
@@ -453,6 +454,44 @@ db.fb.get("ht|996").claimed_at -= 5 * 60;                     // the runner neve
 await tickGh();
 ck("38 ...and 4 minutes later the half-time text goes out from the edge",
    posts().length === n4 + 1 && posts()[n4].caption.startsWith("⏸️ نهاية الشوط الأول: الزمالك 1 - 0 إنبي") && posts()[n4].caption.includes("الزمالك: زيزو 30'"), JSON.stringify(posts().slice(-1)));
+
+/* ------------- 14 a phantom score-only goal (2026-10-24, Pyramids 2-1 -> 4-0) */
+// the list showed an away goal for ONE refresh and no detail named it: the
+// score-only path posted it, the next refresh saw the score back down.
+// Edge path (no GH_TOKEN): the goal's own post is EDITED, as a VAR one is.
+const n5 = posts().length;
+LIST = { games: [live(997, 624, "بيراميدز", "المريخ بنتو", 2, 0), ...filler] };
+await tick();                                                    // first sight at 2-0
+LIST.games[0] = live(997, 624, "بيراميدز", "المريخ بنتو", 2, 1);
+await tick();
+ck("39 the score-only away goal is posted from the edge", posts().length === n5 + 1
+   && posts()[n5].caption.startsWith("⚽ هدف! بيراميدز 2 - 1 المريخ بنتو"), JSON.stringify(posts().slice(-1)));
+const phantomId = `P${fbCalls.indexOf(posts()[n5]) + 1}`;
+LIST.games[0] = live(997, 624, "بيراميدز", "المريخ بنتو", 2, 0);
+await tick();
+const edit2 = fbCalls.slice(-1)[0];
+ck("40 the score going back down EDITS that post («لم يُحتسب», not «VAR» - nobody named it)",
+   posts().length === n5 + 1 && edit2 && edit2.path === phantomId && edit2.message.startsWith("❌ الهدف لم يُحتسب")
+   && !edit2.message.includes("VAR") && edit2.message.includes("كان: بيراميدز 2 - 0 المريخ بنتو"), JSON.stringify(edit2));
+ck("41 and the log row is cancelled", db.goals.find(g => g.game_id === 997 && g.side === "a").cancelled === 1);
+// Card path (GH_TOKEN): the claim is dispatched, the runner never posts (it
+// saw 2-0 on the live detail), and 4 minutes later the text fallback must
+// NOT announce a goal the store has cancelled
+const gh2 = ghCalls.length, n6 = posts().length;
+LIST = { games: [live(998, 624, "بيراميدز", "المريخ بنتو", 2, 0), ...filler] };
+await tickGh();                                                  // first sight
+LIST.games[0] = live(998, 624, "بيراميدز", "المريخ بنتو", 2, 1);
+await tickGh();
+ck("42 with GH_TOKEN the phantom is dispatched and claimed, not posted",
+   ghCalls.length === gh2 + 1 && db.fb.has("goal|998:1") && !db.fb.get("goal|998:1").post_id && posts().length === n6);
+LIST.games[0] = live(998, 624, "بيراميدز", "المريخ بنتو", 2, 0);
+await tickGh();                                                  // the score is back: the row is cancelled
+db.fb.get("goal|998:1").claimed_at -= 5 * 60;                    // the runner never came back
+await tickGh();
+ck("43 ...and the 4-minute text fallback does NOT resend a cancelled goal; the claim is dropped",
+   posts().length === n6 && !db.fb.has("goal|998:1"), JSON.stringify(posts().slice(-1)));
+await tickGh();
+ck("44 nothing later either", posts().length === n6);
 
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

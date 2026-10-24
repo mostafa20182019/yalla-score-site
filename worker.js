@@ -492,7 +492,13 @@ async function storeApply(env, fresh, now) {
             seq += 1; stmts.push(goalRow(g, seq, { s: side, m: goalMinute(g) }, p)); events += 1;
             if (g.live) posts.push({ g, seq, ev: { s: side, m: goalMinute(g) }, at: stmts.length - 1 });
           }
-          if (d < 0) {   // VAR took a goal back: cancel that side's latest live goal
+          if (d < 0) {   // the score went DOWN: cancel that side's latest live goal
+            // ...and tell liveposts.js, so the goal's own post is edited like a
+            // detail-path reversal is. 2026-10-24 (Pyramids x El Merrikh
+            // Bentiu): the list showed 2-1 for one refresh, the phantom goal
+            // was posted, the next refresh cancelled the row here and the
+            // post stood untouched - the match ended 4-0.
+            if (g.live) cancels.push({ g, ev: { s: side } });
             stmts.push(env.DB.prepare("/*lg_cancel_last*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +
               "WHERE game_id = ? AND side = ? AND cancelled = 0 AND seq = " +
               "(SELECT MAX(seq) FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 0)")

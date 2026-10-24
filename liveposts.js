@@ -164,6 +164,7 @@ const FB_ROW = "/*fb_row*/ SELECT post_id, claimed_at FROM fb_posted WHERE kind 
 const FB_STALE = "/*fb_stale*/ SELECT ref_id, title FROM fb_posted WHERE kind = ? AND post_id IS NULL AND claimed_at < ? AND claimed_at > ?";
 const FB_DROP = "/*fb_drop*/ DELETE FROM fb_posted WHERE kind = ? AND ref_id = ? AND post_id IS NULL";
 const LG_LIST = "/*lg_list*/ SELECT side, player, minute, tag FROM live_goals WHERE game_id = ? AND cancelled = 0 ORDER BY seq";
+const LG_ROW = "/*lg_row*/ SELECT cancelled FROM live_goals WHERE game_id = ? AND seq = ?";
 const LG_CANCELLED = "/*lg_cancelled*/ SELECT seq FROM live_goals WHERE game_id = ? AND side = ? AND cancelled = 1 " +
   "AND (? = '' OR COALESCE(player,'') = ?) AND (? = '' OR COALESCE(minute,'') = ?) ORDER BY cancelled_at DESC, seq DESC LIMIT 1";
 
@@ -251,7 +252,15 @@ export async function goalFallbacks(env, now) {
     catch (e) { continue; }
     for (const row of rows) {
       if (!row.title || !row.title.includes("\n")) continue;    // a claim from the old text path: nothing to resend
-      const gid = String(row.ref_id).split(":")[0];
+      const [gid, seq] = String(row.ref_id).split(":");
+      if (kind === "goal") {
+        // a goal the store has since taken back (the score went down again)
+        // is not resent four minutes later as if it stood: 2026-10-24 the
+        // text fallback announced a 2-1 the list had shown for one refresh
+        let lg = null;
+        try { lg = await env.DB.prepare(LG_ROW).bind(Number(gid), Number(seq)).first(); } catch (e) { lg = null; }
+        if (lg && Number(lg.cancelled)) { await drop(env, kind, String(row.ref_id)); continue; }
+      }
       const pid = await publish(env, row.title, await cardUrl(env, gid));
       if (pid) { await record(env, kind, String(row.ref_id), pid); out.posted += 1; }
     }
@@ -292,7 +301,10 @@ export async function livePosts(env, r, dispatch = null) {
     if (!row) continue;
     const pid = await findPost(env, "goal", `${g.id}:${row.seq}`);
     if (!pid) continue;
-    const msg = `❌ أُلغي الهدف بعد مراجعة الفيديو (VAR)\n` + goalMessage(g, ev).replace("⚽ هدف! ", "كان: ");
+    // a goal the detail named and then dropped was reviewed; a nameless one
+    // (the score-only path) only went back down - say that, not «VAR»
+    const head = ev.p ? "❌ أُلغي الهدف بعد مراجعة الفيديو (VAR)" : "❌ الهدف لم يُحتسب - تراجعت النتيجة";
+    const msg = `${head}\n` + goalMessage(g, ev).replace("⚽ هدف! ", "كان: ");
     const j = await graph(env, pid, { message: msg });
     if (j) out.edited += 1;
   }
