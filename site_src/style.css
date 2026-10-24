@@ -1148,8 +1148,12 @@ a{color:inherit}
 .tc .tk-t{font-weight:900;font-size:1.05rem;color:var(--green-d);background:#eef6fc;padding:2px 14px;border-radius:8px;font-variant-numeric:tabular-nums}
 .tc .tk-dot{width:8px;height:8px;border-radius:50%;background:#c8102e;display:inline-block;animation:tsblink 1.2s infinite}
 .tc-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;padding-top:4px;font-size:.72rem}
-.tc-tv{color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tc-go{font-weight:800;color:var(--green-d);white-space:nowrap}
+/* the channel is the only thing allowed to give way: a flex item will not
+   shrink below its text without min-width:0, so «STARZPLAY وقنوات أبوظبي
+   الرياضية» pushed «بطاقة المباراة» onto a second line (user, 2026-10-24:
+   «اظبط الكارت اللي في النص») - now it ends in an ellipsis instead */
+.tc-tv{color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0;flex:1 1 auto}
+.tc-go{font-weight:800;color:var(--green-d);white-space:nowrap;flex:0 0 auto}
 .tc-live{border-color:#f3c4cc !important}
 @media(max-width:1000px){.tc-row{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:10px;padding-bottom:4px;scrollbar-width:none}.tc-row::-webkit-scrollbar{display:none}
   .tc .tc-card{flex:0 0 31%;scroll-snap-align:start}}

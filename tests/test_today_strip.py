@@ -122,6 +122,17 @@ live_js = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
 ck("30 the live script repaints a day card's status label from the feed (finished -> «انتهت», live -> «مباشر الآن · min») and its class",
    "e.querySelector('.tc-when')" in live_js and "'انتهت'" in live_js and "toggle('tc-live',!!g.live)" in live_js and "toggle('tc-fin',!g.live)" in live_js)
 
+# 2026-10-24 (user: «اظبط الكارت اللي في النص»): a long channel name (STARZPLAY
+# وقنوات أبوظبي الرياضية) pushed «بطاقة المباراة ←» onto a second line - a flex
+# item does not shrink below its text unless min-width:0 lets it
+import re as _re
+_tv = _re.search(r"\.tc-tv\{([^}]*)\}", css); _go = _re.search(r"\.tc-go\{([^}]*)\}", css)
+ck("9a the channel may shrink and ends in an ellipsis",
+   _tv and "min-width:0" in _tv.group(1) and "text-overflow:ellipsis" in _tv.group(1) and "white-space:nowrap" in _tv.group(1),
+   _tv.group(1) if _tv else "no .tc-tv rule")
+ck("9b the «بطاقة المباراة» link never shrinks or wraps",
+   _go and "flex:0 0 auto" in _go.group(1) and "white-space:nowrap" in _go.group(1), _go.group(1) if _go else "")
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)
