@@ -126,6 +126,28 @@ ck("32 an unreadable store is NOT an empty posted set (that would double-post)",
    R._posted() is None)
 store.posted_ids = _real
 
+# ------------------------------------------------------------- 2026-10-24, the user's two asks
+# «أنا عايز أهداف كل فريق لوحده» — the goals scene is two club columns, one
+# row per scorer with his minutes side by side, never one mixed list
+cols = R.goal_columns([("h", "A", "12"), ("a", "B", "30"), ("h", "A", "45+2"),
+                       ("h", "C", ""), ("x", "Z", "9")])
+ck("33 each club gets its own column", set(cols) == {"h", "a"} and len(cols["h"]) == 2
+   and cols["a"] == [("B", "30'")], cols)
+ck("34 a scorer's minutes sit side by side on ONE row (hat-trick rule)",
+   cols["h"][0] == ("A", "12' 45+2'"), cols["h"][0])
+ck("35 a goal with no minute still names the scorer", cols["h"][1] == ("C", ""))
+ck("36 an unknown side is dropped, not drawn", "Z" not in str(cols))
+_scn = src[src.index("def scene_scorers"):src.index("def scene_rating")]
+ck("37 the scene draws both crests and names and a «بدون أهداف» for a side that did not score",
+   '"home_badge"' not in _scn and 'f"{key}_badge"' in _scn and "بدون أهداف" in _scn)
+ck("38 and it no longer prints the club name on every row (that was the mixed list)",
+   "C.ar(club)" not in _scn)
+# «الجزء الأخير بيعدي بسرعة» — the closing scene finishes animating at ~1.5s,
+# so it must hold well past that
+_cta = dict(R.SCENES)["cta"]
+ck("39 the closing scene holds at least 3 seconds after its last line lands", _cta >= 4.5, _cta)
+ck("40 and the whole reel still fits a Reel (under 90s)", sum(s for _, s in R.SCENES) < 90)
+
 wf = io.open(".github/workflows/publish.yml", encoding="utf-8").read()
 step = wf[wf.index("Is there a reel to make?"):][:1400]
 ck("27 the workflow runs it only after a real deploy, and never fails the publish",

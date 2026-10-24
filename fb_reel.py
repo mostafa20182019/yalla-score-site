@@ -53,7 +53,10 @@ OUT_FPS = 30                  # Reels wants a normal frame rate, not our 12
 
 W, H = 1080, 1920
 FPS = 12
-SCENES = [("intro", 2.0), ("score", 3.5), ("scorers", 3.5), ("rating", 2.5), ("cta", 2.0)]
+# cta 2.0 -> 5.0 (user, 2026-10-24: «الجزء الأخير بيعدي بسرعة»): its two
+# table lines finish sliding in at ~0.8s and the site line at ~1.5s, so a
+# two-second scene showed the finished frame for half a second
+SCENES = [("intro", 2.0), ("score", 3.5), ("scorers", 4.0), ("rating", 2.5), ("cta", 5.0)]
 
 
 # ---------------------------------------------------------------- easing
@@ -163,29 +166,71 @@ def scene_score(t, ctx):
     return im
 
 
+def goal_columns(scorers):
+    """{'h': [(name, "12' 45'"), ...], 'a': [...]} - one row per SCORER under
+    his own club, minutes side by side (the result card's group_goals rule).
+
+    User, 2026-10-24: «لما تيجي تقول الأهداف انت بتقول أهداف الفريقين مع بعض،
+    أنا عايز أهداف كل فريق لوحده» - the old scene was one mixed list with the
+    club name in small print on every row. Order = first goal of each scorer."""
+    cols = {"h": [], "a": []}
+    seen = {}
+    for side, name, minute in scorers:
+        if side not in cols:
+            continue
+        name = " ".join((name or "").split())
+        key = (side, name)
+        if key not in seen:
+            seen[key] = []
+            cols[side].append((name, seen[key]))
+        if minute:
+            seen[key].append(f"{minute}'")       # ASCII ' - Almarai has no U+2032
+    return {s: [(n, " ".join(m)) for n, m in rows] for s, rows in cols.items()}
+
+
+MAX_GOAL_ROWS = 5                 # per club; a sixth scorer becomes «+n»
+
+
 def scene_scorers(t, ctx):
-    """Each scorer slides up in turn: name, minute, and which side."""
+    """Two columns, home on the left like the score scene, away on the right:
+    the club's crest and name on top, then its scorers one under the other,
+    each row sliding up in turn. A side that did not score says so."""
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
     header(d, ctx["comp"], ctx["round"])
-    C.draw_center(d, W / 2, H * 0.22, C.ar("مسجلو الأهداف"), C.font("ExtraBold", 56), C.WHITE)
-    rows = ctx["scorers"][:6]
-    for i, (side, name, minute) in enumerate(rows):
-        start = 0.25 * i
-        if t < start:
+    C.draw_center(d, W / 2, H * 0.19, C.ar("مسجلو الأهداف"), C.font("ExtraBold", 56), C.WHITE)
+    cols = goal_columns(ctx["scorers"])
+    size = 150
+    cy = H * 0.30
+    colw = W / 2 - 70                           # each column's card width
+    y0 = H * 0.42
+    for side, cx, key in (("h", W * 0.26, "home"), ("a", W * 0.74, "away")):
+        crest_at(im, ctx["m"].get(f"{key}_badge"), ctx[key], size, cx, cy)
+        C.draw_center(d, cx, cy + size * 0.62, C.ar(ctx[key]),
+                      C.fit(d, C.ar(ctx[key]), "Bold", 40, colw - 20), C.WHITE)
+        rows = cols[side]
+        if not rows:
+            if t > 0.3:
+                C.draw_center(d, cx, y0 + 30, C.ar("بدون أهداف"), C.font("Bold", 34),
+                              (190, 212, 228))
             continue
-        k = ease(min(1.0, (t - start) / 0.5))
-        y = H * 0.32 + i * 130 + (1 - k) * 60
-        pad = 60
-        d.rounded_rectangle((pad, y, W - pad, y + 104), 26,
-                            fill=(255, 255, 255) if k > 0.5 else (235, 245, 252))
-        club = ctx["home"] if side == "h" else ctx["away"]
-        f = C.fit(d, C.ar(name), "ExtraBold", 46, W * 0.52)
-        d.text((W - pad - 40 - C.text_w(d, C.ar(name), f), y + 26), C.ar(name), font=f, fill=C.INK)
-        mt = f"{minute}'" if minute else ""
-        d.text((pad + 40, y + 30), mt, font=C.font("ExtraBold", 44), fill=C.BLUE)
-        cf = C.font("Bold", 30)
-        d.text((pad + 150, y + 38), C.ar(club), font=cf, fill=C.MUTED)
+        shown = rows[:MAX_GOAL_ROWS]
+        extra = len(rows) - len(shown)
+        if extra:
+            shown = shown[:-1] + [(f"+{extra + 1}", "")]
+        for i, (name, mins) in enumerate(shown):
+            start = 0.3 + 0.22 * i
+            if t < start:
+                continue
+            k = ease(min(1.0, (t - start) / 0.5))
+            y = y0 + i * 150 + (1 - k) * 60
+            x0 = cx - colw / 2
+            d.rounded_rectangle((x0, y, x0 + colw, y + 124), 26,
+                                fill=(255, 255, 255) if k > 0.5 else (235, 245, 252))
+            f = C.fit(d, C.ar(name), "ExtraBold", 40, colw - 48)
+            C.draw_center(d, cx, y + 18, C.ar(name), f, C.INK)
+            if mins:
+                C.draw_center(d, cx, y + 70, mins, C.font("ExtraBold", 36), C.BLUE)
     footer(d)
     return im
 
