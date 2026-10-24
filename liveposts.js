@@ -98,12 +98,14 @@ const tag = (name) => "#" + (name || "").trim().replace(/\s+/g, "_");
 // «الأهلي 1 - 0 الزمالك» with SPACES: a glued «1-0» is one LTR run and shows
 // the away score next to the home name in an RTL line (the .tl lesson)
 const scoreLine = (g) => `${g.h} ${g.hs} - ${g.as} ${g.a}`;
+// «63» / «45+2» - anything else (the break label «استراحة», 2026-10-24) is no minute
+export const isMinute = (m) => /^\d+(\+\d+)?['′]?$/.test(String(m || ""));
 
 export function goalMessage(g, ev) {
   const lines = [`⚽ هدف! ${scoreLine(g)}`];
   const who = [];
   if (ev && ev.p) who.push(ev.p);
-  if (ev && ev.m) who.push(`الدقيقة ${ev.m}`);
+  if (ev && isMinute(ev.m)) who.push(`الدقيقة ${ev.m}`);
   if (ev && ev.t === "ج") who.push("ركلة جزاء");
   if (ev && ev.t === "عكسية") who.push("هدف عكسي");
   if (who.length) lines.push("🥅 " + who.join(" · "));
@@ -120,7 +122,7 @@ export function scorerLines(g, goals) {
   for (const ev of goals || g.goals || []) {
     if (!ev || !ev.p) continue;
     const t = ev.t === "ج" ? " (ج)" : ev.t === "عكسية" ? " (عكسي)" : "";
-    (by[ev.s] || by.h).push(ev.m ? `${ev.p} ${ev.m}'${t}` : `${ev.p}${t}`);
+    (by[ev.s] || by.h).push(isMinute(ev.m) ? `${ev.p} ${ev.m}'${t}` : `${ev.p}${t}`);
   }
   const out = [];
   if (by.h.length) out.push(`${g.h}: ${by.h.join("، ")}`);

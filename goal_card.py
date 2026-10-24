@@ -15,6 +15,7 @@ import argparse
 import io
 import json
 import os
+import re
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -52,6 +53,19 @@ def _crest(url, size):
         return _big_crest(url, size) if url else None
     except Exception:  # noqa: BLE001
         return None
+
+
+_MINUTE = re.compile(r"^\d+(\+\d+)?$")
+
+
+def minute_text(m):
+    """«63» / «45+2» or '' - the minute chip and the «الدقيقة X» line take
+    numbers only. 2026-10-24: a score-only goal seen during the break carried
+    the Worker's break label «استراحة» as its minute; the caption read
+    «الدقيقة استراحة» and the chip (drawn LTR, unshaped, digits expected)
+    showed «ةحارتسا». An empty minute is honest; a wrong word is not."""
+    m = str(m or "").strip().replace("'", "").replace("′", "")
+    return m if _MINUTE.match(m) else ""
 
 
 def render(ev, out=None):
@@ -131,7 +145,7 @@ def render(ev, out=None):
     # scorer + minute
     y = 724
     name = ev.get("player") or ""
-    minute = str(ev.get("minute") or "").replace("'", "")
+    minute = minute_text(ev.get("minute"))
     tag = {"ج": "ركلة جزاء", "عكسية": "هدف عكسي"}.get(ev.get("tag") or "", "")
     fn = fit(name, "ExtraBold", 54, 600, 30)
     nw = d.textlength(FC.ar(name), font=fn)
@@ -259,7 +273,8 @@ def render_whistle(ev, out=None):
     goals = ev.get("goals") or []
     def line_of(g):
         t = {"ج": " (ج)", "عكسية": " (عكسي)"}.get(g.get("t") or "", "")
-        return f"{g.get('p') or ''} {g.get('m')}'{t}" if g.get("m") else f"{g.get('p') or ''}{t}"
+        m = minute_text(g.get("m"))
+        return f"{g.get('p') or ''} {m}'{t}" if m else f"{g.get('p') or ''}{t}"
     fl = FC.font("Bold", 30)
     for side_, xr, right in (("h", W - 100, True), ("a", 100, False)):
         rows = [line_of(g) for g in goals if g.get("s") == side_ and g.get("p")]

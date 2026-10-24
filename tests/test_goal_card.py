@@ -64,6 +64,28 @@ ck("5b WHISTLE_TITLE knows the kick-off", GC.WHISTLE_TITLE.get("ko") == "انط�
 kb = GC.render_whistle_bytes({**wev, "kind": "ko", "hs": 0, "as": 0, "goals": []})
 ck("5c render_whistle_bytes gives a JPEG for the kick-off", kb[:3] == b"\xff\xd8\xff")
 
+# 2026-10-24: Pyramids 3-0 El Merrikh Bentiu - a score-only goal first seen
+# during the break carried the Worker's break label as its minute. The post
+# read «الدقيقة استراحة» and the chip drew the word unshaped («ةحارتسا»).
+ck("6a a minute is digits, or digits+digits", GC.minute_text("66") == "66" and GC.minute_text("45+2'") == "45+2")
+ck("6b the break label is NOT a minute", GC.minute_text("استراحة") == "" and GC.minute_text("") == "" and GC.minute_text(None) == "")
+_ht = dict(ev, player="", minute="استراحة")
+_tmp2 = os.path.join(tempfile.mkdtemp(), "ht.jpg")
+_im2 = GC.render(_ht, _tmp2)
+# the chip is ORANGE; with no minute nothing orange is drawn on the scorer line
+_orange = sum(1 for x in range(0, GC.W, 4) for y in range(718, 790, 4)
+              if (lambda p: p[0] > 200 and 90 < p[1] < 170 and p[2] < 90)(_im2.getpixel((x, y))))
+ck("6c no chip is drawn for a goal whose minute is the break label", _orange == 0, _orange)
+import fb_post as FP
+_cap = FP.goal_caption({"id": 1, "c": 624, "h": "بيراميدز", "a": "المريخ بنتو", "hs": 3, "as": 0},
+                       {"s": "h", "m": "استراحة"})
+ck("6d and the caption carries no «الدقيقة» line", "الدقيقة" not in _cap and "استراحة" not in _cap, _cap)
+ck("6e a real minute still prints", "الدقيقة 63" in FP.goal_caption(
+    {"id": 1, "c": 624, "h": "x", "a": "y", "hs": 1, "as": 0}, {"s": "h", "p": "زيزو", "m": "63"}))
+_wl = GC.render_whistle({"kind": "ht", "home": "x", "away": "y", "hs": 1, "as": 0, "comp": 624,
+                         "goals": [{"s": "h", "p": "زيزو", "m": "استراحة"}]}, os.path.join(tempfile.mkdtemp(), "w.jpg"))
+ck("6f the whistle card renders a break-label goal (name only, no «استراحة'»)", _wl.size == (GC.W, GC.H))
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

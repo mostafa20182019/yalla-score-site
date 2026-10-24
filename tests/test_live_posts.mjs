@@ -10,7 +10,7 @@
 // post and no failure, and the official XI goes out once in its window only
 // when both sides have eleven names.
 import assert from "node:assert/strict";
-import { goalMessage, postScope, parseLineups, XI_MIN_MS, htMessage, ftMessage, CURATED_LIVE } from "../liveposts.js";
+import { goalMessage, isMinute, postScope, parseLineups, XI_MIN_MS, htMessage, ftMessage, CURATED_LIVE } from "../liveposts.js";
 
 let fails = [];
 const ck = (name, cond, extra = "") => {
@@ -166,6 +166,14 @@ ck("3 goal text: spaced score, scorer, minute, penalty, match link, hashtags",
    gm.startsWith("⚽ هدف! الزمالك 2 - 0 الإسماعيلي") && gm.includes("🥅 زيزو · الدقيقة 63 · ركلة جزاء")
    && gm.includes("https://yallascore.site/m/901") && gm.endsWith("#يلا_سكور #الزمالك #الإسماعيلي"), gm);
 ck("4 goal text never carries a betting word", !gm.includes("مراهنة"));
+// 2026-10-24 (Pyramids 3-0 El Merrikh Bentiu): a score-only goal first seen
+// during the break carried the Worker's break label as its minute and the
+// post read «الدقيقة استراحة». A minute is a number or nothing.
+const gmHT = goalMessage({ id: 902, c: 624, h: "بيراميدز", a: "المريخ بنتو", hs: 3, as: 0 }, { s: "h", m: "استراحة" });
+ck("4b the break label is never printed as a minute",
+   !gmHT.includes("الدقيقة") && !gmHT.includes("استراحة") && gmHT.startsWith("⚽ هدف! بيراميدز 3 - 0 المريخ بنتو"), gmHT);
+ck("4c isMinute: digits or digits+digits only",
+   isMinute("63") && isMinute("45+2") && !isMinute("استراحة") && !isMinute("") && !isMinute(null));
 ck("5 parseLineups: eleven named starters each side, else null",
    parseLineups(DETAIL(0, 0, [], { h: XI(11), a: XI(11) }).game).a.xi.length === 11
    && parseLineups(DETAIL(0, 0, [], { h: XI(11), a: XI(10) }).game) === null);

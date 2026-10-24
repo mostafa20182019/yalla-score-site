@@ -54,6 +54,13 @@ function halfTime(g) {
 // minute fields for a LIVE game object (list item or detail game — same shape):
 // min = display text, gt = numeric minute for the client-side minute clock
 // (LIVE_JS advances it locally between polls), hf = half (45+/90+ cap)
+// a goal's MINUTE is a number («63», «45+2»). The break label is not one:
+// on 2026-10-24 a score-only goal first seen during the break (Pyramids 3-0
+// El Merrikh Bentiu) went out as «الدقيقة استراحة», and the card drew the word
+// unshaped in its minute chip. No minute beats a wrong one.
+const MINUTE_RE = /^\d+(\+\d+)?['′]?$/;   // «70'» / «45+2'» as the feed writes them
+const goalMinute = (g) => MINUTE_RE.test(g.min || "") ? g.min : null;
+
 function liveFields(g) {
   const ht = halfTime(g);
   return {
@@ -482,8 +489,8 @@ async function storeApply(env, fresh, now) {
         // no goal list on either side: go by the score alone
         for (const [side, d] of [["h", g.hs - p.hs], ["a", g.as - p.as_]]) {
           for (let i = 0; i < d; i++) {
-            seq += 1; stmts.push(goalRow(g, seq, { s: side, m: g.min || null }, p)); events += 1;
-            if (g.live) posts.push({ g, seq, ev: { s: side, m: g.min || null }, at: stmts.length - 1 });
+            seq += 1; stmts.push(goalRow(g, seq, { s: side, m: goalMinute(g) }, p)); events += 1;
+            if (g.live) posts.push({ g, seq, ev: { s: side, m: goalMinute(g) }, at: stmts.length - 1 });
           }
           if (d < 0) {   // VAR took a goal back: cancel that side's latest live goal
             stmts.push(env.DB.prepare("/*lg_cancel_last*/ UPDATE live_goals SET cancelled = 1, cancelled_at = ? " +

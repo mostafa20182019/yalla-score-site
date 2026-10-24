@@ -807,11 +807,12 @@ GOAL_COMP_AR = {552: "الدوري المصري", 624: "دوري أبطال أف
 
 def goal_caption(g, ev):
     """The «⚽ هدف!» text - the same lines liveposts.js writes (goalMessage)."""
+    import goal_card
     tag = lambda n: "#" + (n or "").strip().replace(" ", "_")
     lines = [f"⚽ هدف! {g['h']} {g['hs']} - {g['as']} {g['a']}"]
     who = []
     if ev.get("p"): who.append(ev["p"])
-    if ev.get("m"): who.append(f"الدقيقة {ev['m']}")
+    if goal_card.minute_text(ev.get("m")): who.append(f"الدقيقة {ev['m']}")
     if ev.get("t") == "ج": who.append("ركلة جزاء")
     if ev.get("t") == "عكسية": who.append("هدف عكسي")
     if who: lines.append("🥅 " + " · ".join(who))
