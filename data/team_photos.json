@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-23T12:05:07+00:00",
+ "generated_at": "2026-10-24T08:05:27+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -716,6 +716,17 @@
    "is_person": false,
    "source": "team-photos/chelsea/identity-card.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "chelsea-martinez-worldcup-final-knee-2026.jpg",
+   "credit": "صورة: الحارس الأرجنتيني إيميليانو مارتينيز خلال نهائي كأس العالم 2026 أمام إسبانيا — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "الحارس الأرجنتيني إيميليانو مارتينيز",
+   "club": "تشيلسي",
+   "slug": "chelsea",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/chelsea/martinez-worldcup-final-knee-2026.jpg",
+   "added": "2026-10-24"
   },
   {
    "file": "cody-gakpo-liverpool.jpg",
