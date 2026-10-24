@@ -102,15 +102,24 @@ ok("22 a page with one does", B.pred_pop(["<div>", BTN, "</div>"]) == POP)
 
 print()
 print("== and the row itself ==")
+# user, 2026-10-24: «بدل ما فيه لينك اسمه توقع يلا سكور يكون لينك بطاقة
+# المباراة» - the row's visible label is now the match page (where the
+# prediction lives), worded like the day cards; the popup button is gone
+# from every list. pred_btn/done_btn stay in widgets.py, unwired.
 M = {"match_id": 1, "home": "A", "away": "B", "status": "UPCOMING",
      "kickoff": "2026-09-20", "koff_time": "20:00", "competition": "X"}
-row_on = B.match_row(M, link="/m/1.html", pred=P)
-row_off = B.match_row(M, link="/m/1.html")
-ok("23 a row with a prediction shows the button", 'class="pbtn"' in row_on)
-ok("24 a row without one is unchanged", 'pbtn' not in row_off)
-ok("25 the popup reads the team names off the row, so they are not duplicated",
-   'data-h="A"' in row_on and 'data-a="B"' in row_on
-   and ">A<" not in BTN)
+row_on = B.match_row(M, link="/m/1.html")
+row_off = B.match_row(M)
+ok("23 a row with a link shows «بطاقة المباراة» pointing at the match page",
+   '<a class="mgo" href="/m/1.html">بطاقة المباراة ←</a>' in row_on, row_on)
+ok("24 a row without a link shows no label at all",
+   'mgo' not in row_off and 'pbtn' not in row_off)
+ok("25 no row carries the prediction button or its data any more",
+   'pbtn' not in row_on and 'data-pp' not in row_on)
+ok("25b the label sits in the full-width row under the teams, above .mstretch",
+   'class="mgo-row"' in row_on
+   and re.search(r"\.mgo\{[^}]*z-index:2", css) is not None
+   and re.search(r"\.mgo-row\{|\.pbtn-row,\.mgo-row\{", css) is not None)
 
 print()
 print("== the RTL score rule, which a render caught twice ==")
@@ -169,12 +178,14 @@ ok("37 and offers the full record, so one lucky week is not read as the season",
    'ppop-rec' in POP and '/predictions' in POP)
 
 M_FIN = dict(M, status="FINISHED", home_score=3, away_score=2)
-ok("38 a finished row with a frozen record shows the button",
-   'class="pbtn"' in B.match_row(M_FIN, link="/m/1.html", done=E))
-ok("39 and one without a record does not",
-   "pbtn" not in B.match_row(M_FIN, link="/m/1.html", done=None))
-ok("40 both kinds open the same single dialog",
+_fin_row = B.match_row(M_FIN, link="/m/1.html")
+ok("38 a finished row wears the same «بطاقة المباراة» label",
+   'class="mgo" href="/m/1.html">بطاقة المباراة ←' in _fin_row, _fin_row)
+ok("39 and no prediction button", "pbtn" not in _fin_row)
+ok("40 both kinds of button (if ever re-wired) open the same single dialog",
    B.pred_pop(["x", DONE]) == POP and B.pred_pop(["x", BTN]) == POP)
+ok("40b a list page made of rows only ships no dialog",
+   B.pred_pop([row_on, _fin_row]) == "")
 
 print()
 print("== each label wears its segment's colour ==")

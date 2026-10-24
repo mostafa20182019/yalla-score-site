@@ -112,12 +112,9 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
                 block["icon"] = Markup(comp_icon(comp))
                 comp_label(comp)                 # (the old code asked twice; kept for order)
             for m in ms:
-                _mid, _mst = str(m.get("match_id")), (m.get("status") or "").upper()
                 row = match_row(m, show_time=True, show_comp=False,
                                 goals=match_goals(ge_idx, m),
-                                link=match_url(m),
-                                pred=_preds.get(_mid) if _mst == "UPCOMING" else None,
-                                done=_plog.get(_mid) if _mst == "FINISHED" else None)
+                                link=match_url(m))
                 # filter hooks: "على التلفزيون" = a known broadcaster (per-match
                 # channel or the verified COMP_TV map); "حسب الوقت" sorts by data-ko
                 tv = "1" if (m.get("channel") or COMP_TV.get(comp)) else "0"

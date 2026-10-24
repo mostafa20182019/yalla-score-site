@@ -637,8 +637,15 @@ a{color:inherit}
 /* «توقع يلا سكور» — the button on an upcoming match row, and its popup.
    z-index:2 puts the button above .mstretch (z-index:1), which otherwise
    covers the whole row and would swallow the click. */
-.pbtn-row{grid-column:1/-1;display:flex;justify-content:center;
+.pbtn-row,.mgo-row{grid-column:1/-1;display:flex;justify-content:center;
   margin-top:7px;padding-top:7px;border-top:1px solid #eef2f6}
+/* «بطاقة المباراة ←» on every match row (2026-10-24) - same pill as the old
+   prediction button, same z-index reason; .mstretch already goes to the same
+   page, the link is the visible label for it */
+.mgo{position:relative;z-index:2;font-size:.74rem;font-weight:800;
+  color:var(--green-d);background:#f1f7fb;border:1px solid #d7e7f2;
+  border-radius:999px;padding:3px 14px;text-decoration:none}
+.mgo:hover{background:var(--green);border-color:var(--green);color:#fff}
 .pbtn{position:relative;z-index:2;font:inherit;font-size:.74rem;font-weight:800;
   color:var(--green-d);background:#f1f7fb;border:1px solid #d7e7f2;
   border-radius:999px;padding:3px 14px;cursor:pointer}

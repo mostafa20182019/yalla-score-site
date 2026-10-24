@@ -12,7 +12,6 @@ from site_lib.names import ar_team, comp_label
 from site_lib.stats import form_dots
 from site_lib.text import _pval, esc
 from site_lib.ticker import _tk_date
-from site_lib.widgets import done_btn, pred_btn
 
 
 def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
@@ -359,7 +358,7 @@ def match_details_html(e, flipped, h_ar, a_ar):
 
 
 def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
-              pred=None, done=None, show_date=False):
+              show_date=False):
     """show_date (2026-10-08, user: «حط هنا برضه تواريخ المباريات» on the club
     page): the match's day on the competition line - for lists that are NOT
     grouped under a day heading (club pages, the standings page's next matches)."""
@@ -407,13 +406,15 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
         gblock = (f'<div class="mgoals"><div class="mg-side">{side_list("h")}</div>'
                   f'<div class="mg-gap"></div>'
                   f'<div class="mg-side">{side_list("a")}</div></div>')
-    # the prediction button rides its own full-width row under the teams.
-    # It sits ABOVE .mstretch (which covers the row) or the stretched link
-    # swallows the click and opens the match page instead of the popup.
-    # `pred` = a prediction for a match still to come; `done` = the frozen
-    # log row of one that is over. Never both.
-    _pb = pred_btn(pred) if pred else done_btn(done)
-    pbtn = f'<div class="pbtn-row">{_pb}</div>' if _pb else ""
+    # «بطاقة المباراة ←» rides its own full-width row under the teams (user,
+    # 2026-10-24: «بدل ما فيه لينك اسمه توقع يلا سكور يكون لينك بطاقة
+    # المباراة») - the same label the day cards and the article strip wear,
+    # pointing at the one page that holds everything about the match,
+    # the prediction included. It replaced the «توقع يلا سكور» popup
+    # button (pred_btn / done_btn, kept in widgets.py), so a row no longer
+    # carries any prediction data.
+    pbtn = (f'<div class="mgo-row"><a class="mgo" href="{esc(link)}">بطاقة المباراة ←</a></div>'
+            if link else "")
     stretch = (f'<a class="mstretch" href="{esc(link)}" '
                f'aria-label="تفاصيل مباراة {esc(ar_team(m.get("home")))} و{esc(ar_team(m.get("away")))}"></a>'
                if link else "")
