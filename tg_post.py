@@ -116,7 +116,10 @@ def _same(a, b):
 def message(art):
     """<b>title</b> + the condensed text + link + tags, within the caption limit."""
     title = clean(art.get("title"))
-    body, tags = strip_tail(strip_title(clean(art.get("fb_post") or art.get("summary")), title))
+    text = art.get("fb_post") or art.get("summary")
+    if not FB._PRED_ON:
+        text = FB._strip_pred(text or "")       # a report's «🤖 …» line never goes out
+    body, tags = strip_tail(strip_title(clean(text), title))
     link = FB.article_link(art)
     head = f"<b>{title}</b>"
     tail = f'\n\n<a href="{html.escape(link)}">اقرأ التفاصيل على يلا سكور</a>'
@@ -173,6 +176,10 @@ def pending(items):
             continue
         age = FB.article_age_hours(art)
         if age is None or age > MAX_AGE_H:
+            continue
+        # the same prediction rule as Facebook (FB_PREDICTIONS, forced off by
+        # the site-wide switch PREDICTIONS_ON) - Telegram had no such gate
+        if not FB.FB_PREDICTIONS and FB.is_prediction_post(art):
             continue
         todo.append((age, art))
     todo.sort(key=lambda t: -t[0])

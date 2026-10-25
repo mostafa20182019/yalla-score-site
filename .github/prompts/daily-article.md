@@ -13,6 +13,9 @@ You are publishing ONE original Arabic news article about football — Egyptian 
 
 Python deps (requirements.txt + googlenewsdecoder + pillow) are already installed by the workflow.
 
+## PREDICTIONS ARE SWITCHED OFF (user 2026-10-25: «عايز نوقف نموذج التوقعات من الموقع بشكل كامل، هنبقى نرجعله بعدين»)
+While `site_lib/config.py` has `PREDICTIONS_ON = False`, the briefs carry no `prediction`, `prediction_check` or `predictions`, so every rule below that says «ONLY when the brief has …» does not apply. Write NOTHING about our model anywhere (title, summary, body, FAQ, the Facebook post): no «توقع يلا سكور» title or section, no «نموذج يلا سكور», no model percentages, no «🤖» line, no link to /analysis or /predictions. A preview title names the match plainly (e.g. «الفتح × الأهلي في الدوري السعودي: الموعد والقناة والأرقام»). `article_put.py` refuses a draft that speaks for the model.
+
 ## Setup (do this first)
 1. `git config user.name "yalla-score-bot" && git config user.email "actions@users.noreply.github.com"`
 2. `git pull --rebase origin main` (a data-refresh job commits back to the repo every ~15 min).

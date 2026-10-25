@@ -7,7 +7,7 @@ imports these back under the same names."""
 import datetime
 import os
 from site_lib.competitions import COMP_SLUG
-from site_lib.config import DIST, REF_TODAY, SHOW_STATS_PAGE, SITE_BASE, SITE_NAME
+from site_lib.config import DIST, PREDICTIONS_ON, REF_TODAY, SHOW_STATS_PAGE, SITE_BASE, SITE_NAME
 from site_lib.names import comp_label
 from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
@@ -136,7 +136,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
-        if comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
+        if PREDICTIONS_ON and comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
             _links.append(f'<a href="/analysis/{slug}.html">توقعات {esc(label)} ←</a>')
         crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
                                    ("المباريات", SITE_BASE + "/matches.html"),

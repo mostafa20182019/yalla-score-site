@@ -579,7 +579,7 @@ def build_brief(d, m, kind):
                               "credit": "الصورة: تصميم يلا سكور"}
         except Exception as ex:                             # noqa: BLE001
             brief["image_error"] = str(ex)[:160]
-    if kind == "preview":
+    if kind == "preview" and b.PREDICTIONS_ON:     # the predictions switch (site_lib/config.py)
         try:
             pr = prediction_block(d, m)
         except Exception as ex:                             # noqa: BLE001
@@ -618,9 +618,10 @@ def build_brief(d, m, kind):
             brief["report"]["away_lineup"] = lineup_summary(e, ak)
             brief["report"]["cards"] = e.get("cards") or []
             brief["report"]["subs"] = e.get("subs") or []
-        # «هل أصاب توقعنا؟» + the performance numbers (2026-10-07)
+        # «هل أصاب توقعنا؟» + the performance numbers (2026-10-07) - not while
+        # the predictions switch is off
         try:
-            pc = prediction_check(m)
+            pc = prediction_check(m) if b.PREDICTIONS_ON else None
         except Exception as ex:                             # noqa: BLE001
             pc, brief["prediction_check_error"] = None, str(ex)[:160]
         if pc:

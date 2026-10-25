@@ -80,6 +80,13 @@ PHOTO_AB = True
 # reports (kind=report) always post. Flip: Settings > Secrets and variables > Actions >
 # Variables > FB_PREDICTIONS = on (both workflows pass it through).
 FB_PREDICTIONS = (os.environ.get("FB_PREDICTIONS", "") or "").strip().lower() == "on"
+# ...and the site-wide switch (site_lib/config.py PREDICTIONS_ON, user 2026-10-25)
+# wins over the variable: while it is off nothing about predictions is posted,
+# whatever FB_PREDICTIONS says
+from site_lib.config import PREDICTIONS_ON as _PRED_ON      # noqa: E402
+from site_lib.pred_off import strip_lines as _strip_pred    # noqa: E402
+if not _PRED_ON:
+    FB_PREDICTIONS = False
 PREDICTION_MARKS = ("توقع يلا سكور", "نموذج يلا سكور", "توقعات يلا سكور")
 
 
@@ -328,6 +335,10 @@ def post_article(token, art):
     # the article task writes a crafted fb_post (same text the user copies
     # from /fb.html) - prefer it; fall back to the plain generated format
     message = (art.get("fb_post") or "").strip() or f"⚽ {title}\n\n{summary}\n\n\U0001f449 {link}"
+    if not _PRED_ON:
+        # a report written while the model was on can still carry its line
+        # («🤖 …», «هل أصاب توقع يلا سكور») - those lines never go out now
+        message = _strip_pred(message)
     if variant(art) == "photo":
         img = image_bytes(art)
         if img:

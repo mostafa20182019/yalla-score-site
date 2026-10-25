@@ -6,6 +6,9 @@ You are writing ONE original Arabic **«الجولة بالأرقام»** articl
 
 **Why this article type exists (read it — it decides what a good article is):** Google indexes the pages that carry what only we have — our standings readings, our predictions, our analysis — and declines rewritten news that a hundred outlets already published. This article is valuable exactly as far as it says things no other site can: how OUR model's frozen predictions did, who moved in OUR strength rating (Elo), and what the round's numbers show together. Lean on those. A paragraph that any news site could have written adds nothing.
 
+## PREDICTIONS ARE SWITCHED OFF (user 2026-10-25: «عايز نوقف نموذج التوقعات من الموقع بشكل كامل، هنبقى نرجعله بعدين»)
+While `site_lib/config.py` has `PREDICTIONS_ON = False`, the briefs carry no `prediction`, `prediction_check` or `predictions`, so every rule below that says «ONLY when the brief has …» does not apply. Write NOTHING about our model anywhere (title, summary, body, FAQ, the Facebook post): no «توقع يلا سكور» title or section, no «نموذج يلا سكور», no model percentages, no «🤖» line, no link to /analysis or /predictions. A preview title names the match plainly (e.g. «الفتح × الأهلي في الدوري السعودي: الموعد والقناة والأرقام»). `article_put.py` refuses a draft that speaks for the model.
+
 ## Setup
 1. `git config user.name "yalla-score-bot" && git config user.email "actions@users.noreply.github.com"`
 2. `git pull --rebase origin main`
@@ -29,7 +32,7 @@ Applies to the body, the summary, the FAQ and `fb_post` alike — `fb_post` most
 4. `<h2>من صعد ومن هبط في تقييم القوة؟</h2>` — the Elo risers and fallers with before → after, and the top 5. Explain Elo in ONE plain sentence (a rating that rewards beating strong teams and weighs the margin). Say where it DISAGREES with the table if it does (e.g. a club level on points but rated higher) — that is our angle. Link `links.analysis`.
 5. `<h2>كيف أدّت توقعات يلا سكور؟</h2>` — ONLY if `predictions` is not null: n / hits / exact scores, the best call (the probability we gave), the biggest surprise (the low probability we gave to what happened). **Misses are stated as plainly as hits — that is the site's rule.** Say the predictions were frozen before kickoff and link the full record `links.predictions`.
 6. `<h2>هدافو الدوري</h2>` — the pack's scorers (name, club, goals).
-7. `<h2>ما التالي؟</h2>` — the next round's dates and 2-4 of its fixtures with their links; say our predictions for them appear on each match page before kickoff. Link `links.fixtures`.
+7. `<h2>ما التالي؟</h2>` — the next round's dates and 2-4 of its fixtures with their links; say our predictions for them appear on each match page before kickoff (ONLY when `predictions` is not null). Link `links.fixtures`.
 
 Tone: a clear sports analyst, not a press release. Every paragraph adds information the previous one did not. Team names exactly as the pack writes them.
 

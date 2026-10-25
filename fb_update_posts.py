@@ -48,6 +48,10 @@ def main():
         if not a or not rec or not rec.get("post_id") or str(rec["post_id"]).startswith("seeded"):
             print(f"{aid}: no article/post record - skipped"); continue
         msg = (a.get("fb_post") or "").strip()
+        from site_lib.config import PREDICTIONS_ON
+        if not PREDICTIONS_ON:                   # an edited post loses the model's lines too
+            from site_lib.pred_off import strip_lines
+            msg = strip_lines(msg)
         if not msg:
             print(f"{aid}: empty fb_post - skipped"); continue
         print(f"--- {aid} -> post {rec['post_id']} ({len(msg)} chars)\n{msg}\n")

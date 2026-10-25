@@ -8,7 +8,7 @@ import json
 from site_lib.cards import (clubs_strip, fmb_block, global_clubs_block, headline_card, home_insights, home_record_strip,
                              league_bar, match_focus_block, news_card, news_cols, news_filter_bar)
 from site_lib.articles import held_analyses, insight_kind, pinned_first, stale_analyses
-from site_lib.config import FB_PAGE_URL, REF_TODAY, SHOW_HEADLINES, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
+from site_lib.config import FB_PAGE_URL, PREDICTIONS_ON, REF_TODAY, SHOW_HEADLINES, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
 from site_lib.crests import local_crest
 from site_lib.names import _egy_article, _eur_article, _is_ticker_team, ar_team, fav_club_names
 from site_lib.render import Markup, render
@@ -58,8 +58,12 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     _league_bar = league_bar(standings)           # the league links row above the cards (2026-10-22)
     # the follow pills live at the top of the page (user, 2026-10-22): on the
     # day cards' heading, or on the title row below on a day with no match
-    news_filter = news_filter_bar("مباريات تحت المجهر", pills=not _today_cards) + match_focus_block(
-        _upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
+    # «مباريات تحت المجهر» is the model's cards (probability bar + confidence):
+    # with the predictions switch off `_preds` is empty, the block renders
+    # nothing, and its heading goes with it (the pills stay when they need a row)
+    _focus = match_focus_block(_upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
+    news_filter = ((news_filter_bar("مباريات تحت المجهر", pills=not _today_cards) + _focus) if _focus
+                   else ("" if _today_cards else news_filter_bar("آخر الأخبار", pills=True)))
     blocks = []
     used = set()
     # «الأندية العالمية» right after the match centre (user, 2026-10-22: more
@@ -72,7 +76,8 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
                       '<a class="see-all" href="/insights.html">كل التحليلات ←</a></div>'
                       + fmb_block(lead, more_ins, "أحدث التحليلات", "/insights.html", extra="fmb-an"))
         used = {a["article_id"] for a in [lead, *more_ins]}
-    blocks.append(home_record_strip(_acc, _cal))
+    if PREDICTIONS_ON:            # «سجلنا مفتوح» - the model's public record
+        blocks.append(home_record_strip(_acc, _cal))
     # «آخر الأخبار» is NEWS: a preview/report/analysis belongs to the analyses
     # block above and never spills here (user, 2026-10-09)
     news = [a for a in articles if a["article_id"] not in used and not insight_kind(a)][:6]

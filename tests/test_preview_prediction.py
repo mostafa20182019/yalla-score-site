@@ -25,6 +25,11 @@ def ck(name, cond, extra=""):
 
 
 import analysis as AN                                      # noqa: E402
+# the prediction pathway is tested as it works when the model is ON; the
+# predictions switch (site_lib/config.py, off since 2026-10-25) has its own
+# guard in tests/test_predictions_off.py
+import site_lib.config as _CFG                               # noqa: E402
+_CFG.PREDICTIONS_ON = True
 import article_put as AP                                   # noqa: E402
 import match_brief as MB                                   # noqa: E402
 import results_archive as RA                               # noqa: E402

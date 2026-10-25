@@ -33,7 +33,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import analysis as AN                      # noqa: E402
 import results_archive as RA               # noqa: E402
-from site_lib.config import load, SITE_BASE, REF_TODAY   # noqa: E402
+from site_lib.config import load, PREDICTIONS_ON, SITE_BASE, REF_TODAY   # noqa: E402
 from site_lib.names import ar_team, comp_label           # noqa: E402
 from site_lib.competitions import COMP_SLUG              # noqa: E402
 
@@ -179,7 +179,7 @@ def build_brief(comp, rnd):
                       "exact_score": bool(e.get("score_hit")),
                       "actual": f'{r["home_score"]}-{r["away_score"]}'})
     pred = None
-    if preds:
+    if preds and PREDICTIONS_ON:       # the predictions switch: no «كيف أدّت توقعات يلا سكور؟»
         def p_of_outcome(p):
             hs, as_ = map(int, p["actual"].split("-"))
             return p["p_home"] if hs > as_ else p["p_draw"] if hs == as_ else p["p_away"]
@@ -216,7 +216,8 @@ def build_brief(comp, rnd):
         "results": results, "totals": totals, "table": table, "elo": elo, "predictions": pred,
         "next_round": nxt, "scorers": scorers,
         "links": {"standings": f"{SITE_BASE}/standings/{slug}", "fixtures": f"{SITE_BASE}/fixtures/{slug}",
-                  "analysis": f"{SITE_BASE}/analysis/{slug}", "predictions": f"{SITE_BASE}/predictions"},
+                  **({"analysis": f"{SITE_BASE}/analysis/{slug}", "predictions": f"{SITE_BASE}/predictions"}
+                     if PREDICTIONS_ON else {})},
         "data_source": {"name": DATA_SOURCE_NAME, "url": f"{SITE_BASE}/fixtures/{slug}",
                         "note": round_key(comp, rnd)},
     }

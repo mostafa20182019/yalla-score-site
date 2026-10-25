@@ -4,7 +4,7 @@ videos.
 Moved verbatim out of build_site.py (2026-09-26, tools/move_names.py):
 source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
-from site_lib.config import CONTACT_EMAIL, EDITOR_EMAIL, EDITOR_NAME, EDITOR_ROLE, FB_PAGE_URL, REF_TODAY, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, VAPID_PUBLIC_KEY, _src
+from site_lib.config import CONTACT_EMAIL, EDITOR_EMAIL, EDITOR_NAME, EDITOR_ROLE, FB_PAGE_URL, PREDICTIONS_ON, REF_TODAY, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, VAPID_PUBLIC_KEY, _src
 from site_lib.media import VIDEO_CATS
 from site_lib.render import Markup, render
 from site_lib.shell import foot, head, write
@@ -108,7 +108,7 @@ def editorial_page(urls):
         page_head=Markup(head("السياسة التحريرية — " + SITE_NAME,
                               "منهج يلا سكور التحريري: التحقق من مصادر متعددة، صياغة أصلية، صور مرخصة، وتصحيح علني للأخطاء.",
                               SITE_BASE + "/editorial.html")),
-        editor_name=EDITOR_NAME, page_foot=Markup(foot())))
+        editor_name=EDITOR_NAME, pred_on=PREDICTIONS_ON, page_foot=Markup(foot())))
     urls.append("/editorial.html")
 
 

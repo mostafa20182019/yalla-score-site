@@ -97,6 +97,17 @@ SHOW_HEADLINES = False
 # the standalone page still builds (old links don't 404) but is unlinked,
 # out of the sitemap, and noindexed. Flip to True to bring it back.
 SHOW_STATS_PAGE = False
+# THE PREDICTIONS SWITCH (user, 2026-10-25: «عايز نوقف نموذج التوقعات من الموقع
+# بشكل كامل، هنبقى نرجعله بعدين. مش عايز أي حاجة تخص التوقعات على الموقع ولا في
+# بوستات الفيس القادمة»). False = nothing about predictions is SHOWN or POSTED:
+# no nav tab, no /analysis or /predictions pages (302 to /matches, temporary on
+# purpose), no prediction block on match pages or the home, the prediction parts
+# of existing articles hidden at render time (the stored text is untouched),
+# match_brief gives previews no prediction, article_put refuses prediction
+# wording, fb_post/tg_post never carry it. The MODEL STILL RUNS in the build and
+# keeps freezing its log, so the record stays continuous for the day this comes
+# back. True brings every surface back at once - see site_lib/pred_off.py.
+PREDICTIONS_ON = False
 # Generic fallback thumbnails (our own SVGs in media/, no licensing worries)
 # for headline cards whose source page offers no og:image.
 PLACEHOLDER_IMGS = ["/media/ph-pitch.svg", "/media/ph-ball.svg"]

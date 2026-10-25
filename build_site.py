@@ -60,7 +60,7 @@ from site_lib.config import (  # noqa: E402,F401
     SITE_BASE, SITE_NAME, SITE_TAGLINE, SITE_DESC, LOCALE, BUILD_DATE,
     ADSENSE_CLIENT, ADSENSE_SLOT, ADSENSE_SLOT_TOP, CONTACT_EMAIL, FB_PAGE_URL, TG_CHANNEL_URL,
     EDITOR_NAME, EDITOR_ROLE, EDITOR_EMAIL, GENERIC_BYLINES, CF_ANALYTICS_TOKEN, SHOW_VIDEOS,
-    SHOW_REELS, SHOW_HEADLINES, SHOW_STATS_PAGE, PLACEHOLDER_IMGS, HERE, DATA,
+    SHOW_REELS, SHOW_HEADLINES, SHOW_STATS_PAGE, PREDICTIONS_ON, PLACEHOLDER_IMGS, HERE, DATA,
     DIST, SITE_SRC, _src, load, REF_TODAY, ARTICLE_MIN_WORDS,
     NEWLINE)
 from site_lib.shell import (  # noqa: E402,F401
@@ -155,6 +155,11 @@ def build():
     # `articles`     -> what the SITE SHOWS anywhere: home blocks, archives,
     # club pages, match pages, related blocks, RSS, both sitemaps. Thin pieces
     # drop out of all of them at once (see ARTICLE_MIN_WORDS above).
+    if not PREDICTIONS_ON:
+        # the predictions switch (site_lib/config.py): the prediction parts of
+        # the stored articles are hidden for this build only - D1 keeps them
+        from site_lib.pred_off import hide_predictions
+        print(f"  predictions OFF: prediction text hidden in {hide_predictions(articles_all)} article(s)")
     print(f"  dropped headings from {drop_headings(articles_all)} article(s)")
     _miss = resolve_missing_media(articles_all)
     if _miss:
@@ -201,6 +206,11 @@ def build():
     _pins, _plog, _preds, _sins = model["pins"], model["plog"], model["preds"], model["sins"]
     _squad, _tstats, _upcoming, reels = model["squad"], model["tstats"], model["upcoming"], model["reels"]
     _mstats, _xg = model["mstats"], model["xg"]
+    _preds_all = _preds            # build-info still reports the model (it keeps running)
+    if not PREDICTIONS_ON:
+        # nothing below renders a prediction: no match-page block, no FAQ
+        # answer, no home cards, no «what we said» on a finished match
+        _preds, _plog = {}, {}
 
     urls = write_assets()          # css + logo; `urls` collects the sitemap from here on
 
@@ -221,8 +231,9 @@ def build():
     _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
                                              sc_by_comp, sc_ok, st_by_comp, urls)
     fixtures_pages(fx_by_comp, season, st_by_comp, urls)
-    analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
-                     _upcoming, forms, matches, urls, _xg)
+    if PREDICTIONS_ON:            # /analysis + /analysis/<league> + /predictions
+        analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
+                         _upcoming, forms, matches, urls, _xg)
     club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
     stats_page(comp_order, fixtures, forms, league["league_stats_sec"], matches, sc_by_comp,
                sc_ok, st_by_comp, urls)
@@ -246,7 +257,7 @@ def build():
     copy_root_files()              # Search Console verification etc.
     write_redirects(_moved)        # match pieces that moved into their match page
     copy_crests()                  # downloaded by local_crest during rendering
-    copy_media_and_build_info(_preds, articles, matches)
+    copy_media_and_build_info(_preds_all, articles, matches)
 
 
 if __name__ == "__main__":

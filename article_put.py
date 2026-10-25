@@ -189,6 +189,28 @@ def match_brief_problems(rec, brief):
     return out
 
 
+def prediction_off_problems(rec):
+    """The predictions switch (site_lib/config.py PREDICTIONS_ON, user 2026-10-25:
+    «مش عايز أي حاجة تخص التوقعات على الموقع ولا في بوستات الفيس»). While it is
+    off a draft that speaks for our model is refused - the briefs no longer
+    carry `prediction` / `prediction_check`, so the writer has nothing true to
+    say about it anyway. Only the model's own words count (MARKS), never a
+    plain «احتمال» or the xG «الأهداف المتوقعة»."""
+    from site_lib.config import PREDICTIONS_ON
+    if PREDICTIONS_ON:
+        return []
+    from site_lib.pred_off import MARKS
+    out = []
+    faq = " ".join(f'{q.get("q") or ""} {q.get("a") or ""}' for q in (rec.get("faq") or []) if isinstance(q, dict))
+    for field, text in (("title", rec.get("title")), ("summary", rec.get("summary")),
+                        ("body", rec.get("body")), ("fb_post", rec.get("fb_post")), ("faq", faq)):
+        hit = [k for k in MARKS if k in (text or "")]
+        if hit:
+            out.append(f"{field} speaks for the prediction model ({', '.join(hit[:3])}) - predictions are "
+                       f"switched OFF (site_lib/config.py PREDICTIONS_ON, user 2026-10-25): drop it")
+    return out
+
+
 NAME_GUARD = os.path.join(HERE, "data", "name_guard.json")
 
 
@@ -251,6 +273,7 @@ def validate(rec, updating=False, brief=None):
         bad.append("fb_post must not carry the betting disclaimer «ليست نصيحة للمراهنة» "
                    "(user rule 2026-10-08 - it stays in the article body only)")
     bad += name_guard_problems(rec)
+    bad += prediction_off_problems(rec)
     if is_match_brief(brief):
         bad += match_brief_problems(rec, brief)
     elif brief is not None:

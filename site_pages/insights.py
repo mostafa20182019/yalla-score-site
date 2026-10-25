@@ -66,7 +66,7 @@ def insights_page(articles, urls, m_all=None, fixtures=None):
     # every round number that appears, with its Arabic ordinal, for the JS
     rounds = {r["r"]: round_ordinal(r["r"]) for r in rows if r["r"]}
     page_head = head(f"التحليلات: قراءات المباريات بالأرقام — {SITE_NAME}",
-                     "تحليلات مباريات كرة القدم على يلا سكور: قراءات قبل المباراة بتوقعات النموذج، "
+                     "تحليلات مباريات كرة القدم على يلا سكور: قراءات ما قبل المباراة، "
                      "تقارير ما بعد المباراة، «الجولة بالأرقام»، وتحليلات المحرر.",
                      SITE_BASE + "/insights.html", active="insights")
     write("insights.html", render("insights.html", page_head=Markup(page_head), rows=rows,

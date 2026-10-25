@@ -3,6 +3,7 @@
 Moved verbatim out of build_site.py (slice 3, 2026-09-25): the source
 and its comments are exactly what they were there. Edit here; build_site
 imports these back under the same names."""
+from site_lib.config import PREDICTIONS_ON
 from site_lib.names import _gnorm, ar_team
 from site_lib.stats import _games
 from site_lib.text import _lam, _num, esc
@@ -175,9 +176,10 @@ def absence_block(squad, comp, m, h_ar, a_ar):
             + "".join(out)
             + '<p class="pd-note">«التشكيل المعتاد» يُحسب من التشكيلات السابقة لكل فريق هذا '
               'الموسم: من بدأ 60% منها فأكثر. الغياب هنا واقعة من التشكيل المعلن، وقد يكون '
-              'سببه إصابة أو إيقافًا أو قرارًا فنيًا — لا نخمّن السبب، ولا تدخل هذه المعلومة '
-              'في حساب <a href="/analysis.html#model">التوقع</a> حتى تثبت فائدتها بالأرقام.</p>'
-            '</section>')
+              'سببه إصابة أو إيقافًا أو قرارًا فنيًا — لا نخمّن السبب'
+            + ('، ولا تدخل هذه المعلومة في حساب <a href="/analysis.html#model">التوقع</a> '
+               'حتى تثبت فائدتها بالأرقام.</p>' if PREDICTIONS_ON else '.</p>')
+            + '</section>')
 
 
 def match_details_for(idx, m):
