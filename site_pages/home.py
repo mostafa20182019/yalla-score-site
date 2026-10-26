@@ -6,7 +6,7 @@ imports these back under the same names."""
 import datetime
 import json
 from site_lib.cards import (clubs_strip, fmb_block, global_clubs_block, headline_card, home_insights, home_record_strip,
-                             league_bar, match_focus_block, news_card, news_cols, news_filter_bar)
+                             match_focus_block, news_card, news_cols, news_filter_bar)
 from site_lib.articles import held_analyses, insight_kind, pinned_first, stale_analyses
 from site_lib.config import FB_PAGE_URL, PREDICTIONS_ON, REF_TODAY, SHOW_HEADLINES, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
 from site_lib.crests import local_crest
@@ -58,7 +58,6 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     # the follow pills every day, matches or not
     from site_lib.today_strip import match_centre
     _centre = match_centre(standings, matches, articles, pills=follow_pills())
-    _league_bar = league_bar(standings)           # the league links row above the cards (2026-10-22)
     # the follow pills live at the top of the page (user, 2026-10-22): on the
     # day cards' heading, or on the title row below on a day with no match
     # «مباريات تحت المجهر» is the model's cards (probability bar + confidence):
@@ -134,7 +133,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
                   + ';</script>')
     write("index.html", render(
         "home.html", page_head=Markup(page_head), org_ld=Markup(org_ld), ad=Markup(ad),
-        match_centre=Markup(_centre), league_bar=Markup(_league_bar),
+        match_centre=Markup(_centre),
         news_filter=Markup(news_filter), blocks=[Markup(b) for b in blocks],
         predictions=Markup(predictions), show_videos=show_videos,
         video_facades=[Markup(f) for f in video_facades], video_js=Markup(VIDEO_JS),

@@ -16,18 +16,20 @@
    مباشر الآن with a stale score). It renders only from the first fresh
    /live.json reply, ~1 s after load. #}
 <div id="favLive" class="fav-wrap" hidden></div>
-{# the league links row (user, 2026-10-22): every league with a table this
-   season, emblem + name, opening its standings page (table, scorers, next
-   matches). Above the day's cards, the first thing on the page. #}
-{# the nine-league chips row: phones only since 2026-10-26 (style.css
-   .home-lq) - the desktop has the leagues column of the match centre #}
-<div class="home-lq">{{ league_bar }}</div>
+{# the nine-league chips row (2026-10-22) left the home page on 2026-10-26:
+   the desktop has the match centre's leagues column, and the phone home is
+   matches only (FotMob) - league_bar() stays in site_lib/cards.py #}
 {# THE MATCH CENTRE, like FotMob (user, 2026-10-26: phones «الموقع يفتح على
    المباريات», then desktop «زى fotmob على الكمبيوتر»): leagues | every match
    of the day, one card per league | latest news. Phones show the middle
    column only. It replaced the «أهم مباريات اليوم» cards. Same HTML for
    everyone - Google sees one page, nothing is redirected. #}
 {{ match_centre }}
+{# everything below is the DESKTOP home only: on a phone the home page is the
+   matches and nothing else, like FotMob's (user, 2026-10-26: «بيجيب مباريات
+   اليوم والايام الاخرى فقط بدون اخبار») - news, clubs and analyses live in
+   the bottom bar's tabs there. style.css hides .home-rest under 760px. #}
+<div class="home-rest">
 {# OPTION «أ» - MATCH CENTRE (user, 2026-10-08): the page title «مباريات تحت
    المجهر» + follow pills, then the 4 most important predicted matches. The
    2026-09-01 rule «matches are NOT on the home page» was lifted by the user
@@ -66,6 +68,7 @@
 {# the curated-clubs crest strip closes the page (2026-09-02): each crest
    opens the club's /team/ page #}
 {{ clubs_strip }}
+</div>
 {# crests + match URL for the live card, curated clubs only #}
 {{ fav_script }}
 {{ page_foot }}

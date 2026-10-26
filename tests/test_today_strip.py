@@ -118,8 +118,10 @@ ck("24 one chip per league with a table, in the sidebar order, each its standing
 ck("25 a chip carries the emblem (or an icon) and the Arabic label", "الدوري المصري" in bar and ("lg-logo" in bar or "lg-ico" in bar))
 ck("26 no table anywhere -> no row", CARDS.league_bar([]) == "" and CARDS.league_bar({"results": []}) == "")
 home_tpl2 = io.open("site_src/templates/home.html", encoding="utf-8").read()
-ck("27 the template places the row right above the match centre", 0 < home_tpl2.find("{{ league_bar }}") < home_tpl2.find("{{ match_centre }}"))
-ck("28 home.py builds it from the standings", "league_bar(standings)" in io.open("site_pages/home.py", encoding="utf-8").read())
+# 2026-10-26: the row left the home page (desktop = the match centre's leagues
+# column, phone = matches only, like FotMob); league_bar() itself is kept
+ck("27 the home template no longer carries the row", "{{ league_bar }}" not in home_tpl2)
+ck("28 home.py no longer builds it", "league_bar(standings)" not in io.open("site_pages/home.py", encoding="utf-8").read())
 ck("29 the stylesheet knows the row", ".lq{display:flex" in css and ".lq-chip{" in css)
 
 live_js = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()

@@ -1235,9 +1235,8 @@ a{color:inherit}
 /* scorers under their own team, between the status and spacer columns */
 .mlist>.mrow .mgoals{grid-column:2/5;grid-template-columns:1fr 64px 1fr}
 
-/* home: the match centre - leagues · today's matches · news (the /matches
-   columns); the nine-league chips row is for phones, where the leagues
-   column is not shown */
+/* home: the match centre - leagues · the day's matches under FotMob's day
+   card (‹ اليوم ›, yesterday/today/tomorrow built in) · news */
 .home-mc{margin:6px 0 22px}
 .home-mc .lg-item{text-decoration:none}
 .home-mc .mp-extra .mp-h{margin-bottom:12px}
@@ -1245,7 +1244,6 @@ a{color:inherit}
 .ph-today .sec-h{margin-top:0}
 .ph-none{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;text-align:center;
   color:var(--muted);font-weight:700;margin:0 0 12px}
-@media(min-width:761px){.home-lq{display:none}}
 
 @media(max-width:760px){
   body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
@@ -1272,8 +1270,10 @@ a{color:inherit}
   .nt-match{order:-1}
   .nav-en{display:none}
   .daynav{top:60px}
-  /* home: today's matches first; the leagues are the chips row above */
-  .home-mc .mp-leagues{display:none}
+  /* home = the matches and nothing else, like FotMob's phone site (user:
+     «بيجيب مباريات اليوم والايام الاخرى فقط بدون اخبار»): no leagues or news
+     column, no heading, none of the desktop blocks below */
+  .home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h,.home-rest{display:none}
   .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;gap:4px 8px;padding:12px 6px}
   .mlist>.mrow .pill{padding:2px 6px;font-size:.62rem}
   .mlist>.mrow .team{gap:7px;font-size:.84rem}

@@ -39,13 +39,20 @@ ms = [
      "competition": "Primera Division"},
 ]
 h = today_list(ms, today=T)
-ck("1 only today's matches, one row each", h.count('class="mrow ') == 3, str(h.count('class="mrow ')))
-ck("2 one card per league", h.count('<div class="comp">') == 2)
+import re as _re
+days = _re.findall(r'<section class="hd-day" data-day="([^"]+)"[^>]*?( hidden)?>', h)
+ck("1 FotMob's day card: yesterday, today, tomorrow built in, only today shown without JS",
+   [d for d, _ in days] == ["2026-10-25", T, "2026-10-27"] and [bool(x) for _, x in days] == [True, False, True], str(days))
+today_sec = h[h.find(f'data-day="{T}"'):h.find('data-day="2026-10-27"')]
+ck("2 today: one card per league, one row per match", today_sec.count('<div class="comp">') == 2 and today_sec.count('class="mrow ') == 3)
+ck("2b tomorrow's match sits in tomorrow's section", h[h.find('data-day="2026-10-27"'):].count('class="mrow ') == 1)
 ck("3 rows open the match page (stretch link) and carry the LIVE_JS hooks",
-   h.count('class="mstretch"') == 3 and h.count("data-lv") == 3)
-ck("4 inside a league, kick-off order (the 19:00 result before the 21:30 kick-off)", 0 <= h.find("2 - 1") < h.find("21:30"))
-ck("5 the section links to the full /matches", 'href="/matches.html"' in h)
-ck("6 a day with no match says so instead of an empty block", "لا توجد مباريات اليوم" in today_list([], today=T))
+   h.count('class="mstretch"') == 4 and h.count("data-lv") == 4)
+ck("4 inside a league, kick-off order (the 19:00 result before the 21:30 kick-off)", 0 <= today_sec.find("2 - 1") < today_sec.find("21:30"))
+ck("5 the arrows step between the days and past either end open /matches",
+   'class="dn-arrow hd-prev"' in h and 'class="dn-arrow hd-next"' in h and "location.href='/matches.html'" in h
+   and 'href="/matches.html"' in h and "اليوم · " in h)
+ck("6 a day with no match says so instead of an empty block", "لا توجد مباريات في هذا اليوم" in today_list([], today=T))
 
 def nav(active):
     page = shell.head("t", "d", "https://x/", active=active)
@@ -67,10 +74,8 @@ ck("11 everywhere: no crowd photo, no ticker; one-line rows without the «بطا
    ".head-crowd,.site-head .ticker{display:none!important}" in glob and ".mlist>.mrow .mgo-row{display:none}" in glob)
 ck("12 the phone «أخبار» tab is hidden on desktop, the desktop one on phones",
    ".nt-ph{display:none}" in glob and ".nt-desk{display:none}" in block)
-ck("13 phones: the bottom bar, and no leagues column on the home page",
-   "position:fixed" in block and ".home-mc .mp-leagues{display:none}" in block)
-ck("14 the nine-league chips row is phones-only (desktop has the leagues column)",
-   "@media(min-width:761px){.home-lq{display:none}}" in css)
+ck("13 phones: the bottom bar, and the home is the matches only (no columns, no blocks below)",
+   "position:fixed" in block and ".home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h,.home-rest{display:none}" in block)
 
 # ---- the desktop home (2026-10-26, «زى fotmob على الكمبيوتر»)
 from site_lib.today_strip import match_centre         # noqa: E402
@@ -87,10 +92,13 @@ ck("16 the leagues column = the nine-league list with a table, each to its stand
 ck("17 the news column: one featured story with a picture + the rest as rows, and /news",
    mc.count('class="mp-feat"') == 1 and mc.count('class="mn-item"') == 5 and 'href="/news.html"' in mc,
    f'{mc.count(chr(34) + "mp-feat" + chr(34))} {mc.count("mn-item")}')
-ck("18 today's list is inside it, every match of the day", mc.count('class="mrow ') == 3)
+ck("18 the day list is inside it (today + tomorrow's match here)", mc.count('class="mrow ') == 4)
 home_src = open("site_src/templates/home.html", encoding="utf-8").read()
-ck("19 the home template renders the match centre and no longer the day cards",
-   "{{ match_centre }}" in home_src and "{{ today_cards }}" not in home_src)
+ck("19 the home template renders the match centre and no longer the day cards or the chips row",
+   "{{ match_centre }}" in home_src and "{{ today_cards }}" not in home_src and "{{ league_bar }}" not in home_src)
+ck("20 every block after the match centre is inside .home-rest (phones hide it)",
+   home_src.find("{{ match_centre }}") < home_src.find('<div class="home-rest">') < home_src.find("{{ news_filter }}")
+   < home_src.find("{{ clubs_strip }}") < home_src.find("</div>", home_src.find("{{ clubs_strip }}")) < home_src.find("{{ fav_script }}"))
 
 print("\nALL PHONE HOME TESTS PASSED" if not fails else f"\n{len(fails)} FAILED")
 sys.exit(1 if fails else 0)
