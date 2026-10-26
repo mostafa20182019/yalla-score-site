@@ -63,9 +63,10 @@ lead, rest = C.home_insights(arts, pinned=True)
 ck("pin on: the pinned (first) article leads", lead["article_id"] == "9" and len(rest) == 2)
 
 src = io.open("site_pages/home.py", encoding="utf-8").read()
-order = [src.index(s) for s in ("match_focus_block(", "home_insights(articles", "home_record_strip(",
-                                 '"hn-grid"', "news_cols(")]
-ck("page order: matches -> analyses -> record -> news -> Egypt|Europe", order == sorted(order), order)
+# 2026-10-26: the home page is the match centre only (user: «دى هتكون
+# الرئيسية، والاخبار اللى تحت تظهر فى تاب اسمها اخبار وشيل ترتيب الدوريات»)
+ck("the home page builds none of the old blocks any more",
+   all(s not in src for s in ("match_focus_block(", "home_insights(", "home_record_strip(", '"hn-grid"', "news_cols(")))
 
 print(f"\n{len(fails)} failed" if fails else "\nall passed")
 sys.exit(1 if fails else 0)

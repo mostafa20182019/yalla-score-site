@@ -75,7 +75,7 @@ if not PREDICTIONS_ON:
     ck("10 the model's URLs answer 302 (temporary) to /matches",
        '"/analysis/*"' in f_src and '/matches 302' in f_src)
     h_src = io.open("site_pages/home.py", encoding="utf-8").read()
-    ck("11 the home drops the record strip", "if PREDICTIONS_ON:            # «سجلنا مفتوح»" in h_src)
+    ck("11 the home has no record strip (the home is the match centre only since 2026-10-26)", "home_record_strip" not in h_src)
     # ------------------------------------------------------------ the posts
     import fb_post as FB
     ck("12a FB_PREDICTIONS=on in the environment does not win over the switch", FB.FB_PREDICTIONS is False)

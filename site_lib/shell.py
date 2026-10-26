@@ -146,18 +146,14 @@ def head(title, desc, url, image=None, og_type="website", active="",
     ) if ogw else ""
     preload = (f'\n<link rel="preload" as="image" href="{esc(preload_img)}">'
                if preload_img else "")
-    ha = " is-active" if active in ("home", "news") else ""   # "news" = the /news lists
-    ma = " is-active" if active == "matches" else ""
-    la = " is-active" if active == "leagues" else ""   # «البطولات» (2026-10-26): /leagues + every league page
-    # phones (2026-10-26, FotMob): the bottom bar opens on المباريات - the home
-    # page leads with today's matches there, so «/» lights that tab, and the
-    # phone «أخبار» tab is the news list (/news.html); .ph-on is the phone
-    # highlight, .is-active stays the desktop one. The phone المباريات tab
-    # opens «/» - the home IS the matches list there (user, 2026-10-26: «لما
-    # بضغط تحت على تاب المباريات بيودينى على الصفحة القديمة ... عايز يودينى
-    # على الرئيسية»); the desktop tab keeps /matches
-    mph = " ph-on" if active in ("home", "matches") else ""
-    nph = " ph-on" if active == "news" else ""
+    # ONE tab set for phones and desktop since 2026-10-26 (FotMob): المباريات
+    # = the home page (it IS the matches - user: «دى هتكون الرئيسية»), lit on
+    # «/» and /matches · البطولات (/leagues + every league page) · أخبار =
+    # the news list (/news, «الاخبار ... تظهر فى تاب اسمها اخبار») · التحليلات.
+    # Phones turn the same <nav> into the bottom bar (style.css).
+    ma = " is-active" if active in ("home", "matches") else ""
+    la = " is-active" if active == "leagues" else ""
+    na = " is-active" if active == "news" else ""
     aa = " is-active" if active == "analysis" else ""
     ia = " is-active" if active == "insights" else ""
     sa = " is-active" if active == "stats" else ""
@@ -218,11 +214,9 @@ def head(title, desc, url, image=None, og_type="website", active="",
   <div class="wrap head-in">
     <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>
     <nav class="site-nav"><div class="nav-in">
-    <a href="/" class="navtab nt-desk{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
-    <a href="/news.html" class="navtab nt-ph{nph}"><span class="ico">📰</span> أخبار</a>
-    <a href="/" class="navtab nt-ph nt-match{mph}"><span class="ico">⚽</span> المباريات</a>
-    <a href="/matches.html" class="navtab nt-desk{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/" class="navtab nt-match{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
     <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>
+    <a href="/news.html" class="navtab nt-news{na}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
 {pred_tab}    <a href="/insights.html" class="navtab{ia}"><span class="ico">🧠</span> التحليلات<span class="nav-en"> | Analysis</span></a>
 {stats_tab}{vids_tab}{reels_tab}
     </div></nav>{push_bell}

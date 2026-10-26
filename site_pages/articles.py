@@ -216,7 +216,7 @@ def headlines_page(headlines, urls):
     if SHOW_HEADLINES:
         hp = [head(f"عناوين الصحف — {SITE_NAME}",
                    "آخر عناوين كرة القدم من الصحف والمواقع الإخبارية — تتحدث تلقائيًا على مدار الساعة.",
-                   SITE_BASE + "/headlines.html", active="home")]
+                   SITE_BASE + "/headlines.html", active="news")]
         hp.append('<h1 class="page-h">عناوين الصحف</h1>')
         if headlines:
             # same calm list rows as /news.html (the card grid read as scattered)

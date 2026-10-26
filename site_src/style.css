@@ -1197,7 +1197,6 @@ a{color:inherit}
 .head-in .brand{flex:none;white-space:nowrap}
 .head-in .site-nav{flex:0 1 auto;min-width:0}       /* tabs scroll before the bell is pushed out */
 @media(max-width:1080px){.nav-en{display:none}}
-.nt-ph{display:none}                       /* the phone «أخبار» tab (/news) */
 .daynav{top:68px}
 .mp-side{top:72px}
 
@@ -1275,19 +1274,15 @@ a{color:inherit}
   .navtab{flex:1 1 0;flex-direction:column;justify-content:center;gap:3px;padding:0 4px;min-width:0;
     color:#64748b;font-size:.72rem;border-bottom:0;background:transparent}
   .navtab:hover{background:transparent;color:var(--ink)}
-  .navtab.is-active,.navtab.ph-on{color:var(--green-d);background:transparent}
+  .navtab.is-active{color:var(--green-d);background:transparent}
   .navtab .ico{font-size:1.3rem;line-height:1;filter:grayscale(1);opacity:.6;transform:none!important}
-  .navtab.is-active .ico,.navtab.ph-on .ico{filter:none;opacity:1}
-  /* phone tabs: المباريات first (FotMob opens on Matches), «أخبار» = /news */
-  .nt-desk{display:none}
-  .navtab.nt-ph{display:inline-flex}
-  .nt-match,.nt-leagues{order:-1}          /* المباريات · البطولات first, like FotMob */
+  .navtab.is-active .ico{filter:none;opacity:1}
   .nav-en{display:none}
   .daynav{top:60px}
   /* home = the matches and nothing else, like FotMob's phone site (user:
      «بيجيب مباريات اليوم والايام الاخرى فقط بدون اخبار»): no leagues or news
-     column, no heading, none of the desktop blocks below */
-  .home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h,.home-rest{display:none}
+     column, no heading */
+  .home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h{display:none}
   .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;gap:4px 8px;padding:12px 6px}
   .mlist>.mrow .pill{padding:2px 6px;font-size:.62rem}
   .mlist>.mrow .team{gap:7px;font-size:.84rem}

@@ -1,74 +1,32 @@
 {# / - the home page. Templated 2026-09-26. Lines are joined with NO separator
    by site_lib.render: break between tags, never inside a sentence.
-   The user's standing rules for this page live next to what they govern. #}
+   The user's standing rules for this page live next to what they govern.
+   Since 2026-10-26 the home page IS the matches, like FotMob's - phones
+   first, then the desktop («دى هتكون الرئيسية، والاخبار اللى تحت تظهر فى
+   تاب اسمها اخبار وشيل ترتيب الدوريات»). The news, analyses and the clubs
+   block with its league tables left for their tabs (/news, /insights,
+   /leagues). #}
 {{ page_head }}
 {# Organization (publisher identity: logo + Facebook page + contact) and
    WebSite in one graph - the entity Google ties every NewsArticle's
    `publisher` and the brand-name query to. #}
 {{ org_ld }}
-{# single-column home since 2026-09-01. The ad strip keeps its place ABOVE
-   آخر الأخبار - FIRM USER RULE: never move the ad slot. #}
+{# the ad strip keeps its place at the top - FIRM USER RULE: never move the
+   ad slot. #}
 <div class="home-topad">{{ ad }}</div>
 {# the LIVE card for one of the curated clubs, filled by LIVE_JS in the
    visitor's browser - a 15-minute-old build cannot know what is live now.
    NO static seed (removed 2026-08-31, USER RULE: never show data that may be
    wrong - a build-time "live" snapshot once showed a finished match as
    مباشر الآن with a stale score). It renders only from the first fresh
-   /live.json reply, ~1 s after load. #}
+   /live.json reply, ~1 s after load. Featured clubs only (TICKER_TEAMS -
+   user, 2026-10-26: «المباريات اللى تظهر فوق عشان هيه مباشر تكون للفرق
+   المميزة بس»). #}
 <div id="favLive" class="fav-wrap" hidden></div>
-{# the nine-league chips row (2026-10-22) left the home page on 2026-10-26:
-   the desktop has the match centre's leagues column, and the phone home is
-   matches only (FotMob) - league_bar() stays in site_lib/cards.py #}
-{# THE MATCH CENTRE, like FotMob (user, 2026-10-26: phones «الموقع يفتح على
-   المباريات», then desktop «زى fotmob على الكمبيوتر»): leagues | every match
-   of the day, one card per league | latest news. Phones show the middle
-   column only. It replaced the «أهم مباريات اليوم» cards. Same HTML for
-   everyone - Google sees one page, nothing is redirected. #}
+{# THE MATCH CENTRE (site_lib/today_strip.match_centre): leagues | the
+   /matches day list with its filters | latest news. Phones show the middle
+   column only. #}
 {{ match_centre }}
-{# everything below is the DESKTOP home only: on a phone the home page is the
-   matches and nothing else, like FotMob's (user, 2026-10-26: «بيجيب مباريات
-   اليوم والايام الاخرى فقط بدون اخبار») - news, clubs and analyses live in
-   the bottom bar's tabs there. style.css hides .home-rest under 760px. #}
-<div class="home-rest">
-{# OPTION «أ» - MATCH CENTRE (user, 2026-10-08): the page title «مباريات تحت
-   المجهر» + follow pills, then the 4 most important predicted matches. The
-   2026-09-01 rule «matches are NOT on the home page» was lifted by the user
-   on 2026-10-26 (the match centre above); these are prediction cards. #}
-{{ news_filter }}
-{# then: التحليلات (HOME_PIN / newest analysis + 4) -> the open record strip
-   -> آخر الأخبار (6 cards) -> Egypt | Europe lists (4 rows each). Each
-   skips what an earlier block showed; older news lives behind المزيد. #}
-{% for block in blocks %}
-{{ block }}
-{% endfor %}
-{# the old «توقعات يلا سكور» block (2026-09-12) - empty since option «أ» #}
-{{ predictions }}
-{% if show_videos %}
-<div class="sec-h"><h2 class="page-h">أحدث الفيديوهات</h2><a class="see-all" href="/videos.html">كل الفيديوهات ←</a></div>
-<div class="vstrip">
-  {% for facade in video_facades %}
-  {{ facade }}
-  {% endfor %}
-</div>
-{{ video_js }}
-{% endif %}
-{# reels teaser: ONE banner -> the swipe feed on /reels (built in Python: its
-   markup is multi-line and the line-join would change it) #}
-{{ reels_banner }}
-{# external headlines (24 = 8 rows, matches IMG_ENRICH_TOP so every card
-   gets a thumbnail; the full list lives on /headlines) #}
-{% if show_headlines %}
-<div class="sec-h"><h2 class="page-h">عناوين</h2><a class="see-all" href="/headlines.html">كل العناوين ←</a></div>
-<div class="hgrid">
-  {% for card in headline_cards %}
-  {{ card }}
-  {% endfor %}
-</div>
-{% endif %}
-{# the curated-clubs crest strip closes the page (2026-09-02): each crest
-   opens the club's /team/ page #}
-{{ clubs_strip }}
-</div>
 {# crests + match URL for the live card, curated clubs only #}
 {{ fav_script }}
 {{ page_foot }}

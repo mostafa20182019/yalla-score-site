@@ -61,16 +61,16 @@ def nav(active):
     return page[page.find('<nav class="site-nav"'):page.find("</nav>")]
 
 n = nav("home")
-ck("7 the phone news tab is /news, the desktop one stays «/»",
-   'href="/news.html" class="navtab nt-ph' in n and 'href="/" class="navtab nt-desk is-active' in n)
-ck("8 on «/» the phone bar lights المباريات", re.search(r'href="/" class="navtab nt-ph nt-match[^"]*ph-on', n) is not None)
-ck("8b the phone المباريات tab opens the home (the new list), the desktop one /matches (user 2026-10-26)",
-   'href="/" class="navtab nt-ph nt-match' in n and 'href="/matches.html" class="navtab nt-desk' in n)
-ck("8c on /matches the phone tab is lit too", re.search(r'class="navtab nt-ph nt-match[^"]*ph-on', nav("matches")) is not None)
-ck("9 /news lights the phone «أخبار» tab, not المباريات",
-   re.search(r'href="/news.html" class="navtab nt-ph[^"]*ph-on', nav("news")) is not None
-   and "ph-on" not in re.search(r'class="(navtab nt-ph nt-match[^"]*)"', nav("news")).group(1))
-ck("10 matches_js still finds exactly one /matches tab", n.count('href="/matches.html"') == 1)
+# ONE tab set for phones and desktop (2026-10-26, «دى هتكون الرئيسية ...
+# والاخبار ... تظهر فى تاب اسمها اخبار»)
+tabs = re.findall(r'<a href="([^"]+)" class="navtab[^"]*"><span class="ico">[^<]*</span> ([^<]+)', n)
+ck("7 the tabs, in order: المباريات (the home) · البطولات · أخبار (/news) · التحليلات",
+   [(h, t.strip()) for h, t in tabs] == [("/", "المباريات"), ("/leagues.html", "البطولات"),
+                                        ("/news.html", "أخبار"), ("/insights.html", "التحليلات")], str(tabs))
+ck("8 «/» and /matches light المباريات", all(re.search(r'href="/" class="navtab nt-match is-active"', nav(a)) for a in ("home", "matches")))
+ck("9 the news lists light أخبار, not المباريات",
+   'href="/news.html" class="navtab nt-news is-active"' in nav("news") and 'nt-match is-active' not in nav("news"))
+ck("10 no tab to /matches any more (MATCHES_JS then never hijacks one)", 'href="/matches.html"' not in n)
 
 # «البطولات» tab (user, 2026-10-26: «عايز يكون فيه تاب اسمها البطولات»)
 ck("10b the «البطولات» tab is on every page, to /leagues, lit on the league pages",
@@ -86,10 +86,9 @@ m = css.find("@media(max-width:760px){\n  body{padding-bottom")
 glob, block = css[:m], css[m:]
 ck("11 everywhere: no crowd photo, no ticker; one-line rows without the «بطاقة المباراة» pill",
    ".head-crowd,.site-head .ticker{display:none!important}" in glob and ".mlist>.mrow .mgo-row{display:none}" in glob)
-ck("12 the phone «أخبار» tab is hidden on desktop, the desktop one on phones",
-   ".nt-ph{display:none}" in glob and ".nt-desk{display:none}" in block)
-ck("13 phones: the bottom bar, and the home is the matches only (no columns, no blocks below)",
-   "position:fixed" in block and ".home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h,.home-rest{display:none}" in block)
+ck("12 no phone/desktop tab split left in the stylesheet", "nt-ph" not in css and "nt-desk" not in css and "ph-on" not in css)
+ck("13 phones: the bottom bar, and the home is the matches column only",
+   "position:fixed" in block and ".home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h{display:none}" in block)
 
 # ---- the desktop home (2026-10-26, «زى fotmob على الكمبيوتر»)
 from site_lib.today_strip import match_centre         # noqa: E402
@@ -111,9 +110,9 @@ ck("18 the whole /matches day list is inside it, with its filters and its script
 home_src = open("site_src/templates/home.html", encoding="utf-8").read()
 ck("19 the home template renders the match centre and no longer the day cards or the chips row",
    "{{ match_centre }}" in home_src and "{{ today_cards }}" not in home_src and "{{ league_bar }}" not in home_src)
-ck("20 every block after the match centre is inside .home-rest (phones hide it)",
-   home_src.find("{{ match_centre }}") < home_src.find('<div class="home-rest">') < home_src.find("{{ news_filter }}")
-   < home_src.find("{{ clubs_strip }}") < home_src.find("</div>", home_src.find("{{ clubs_strip }}")) < home_src.find("{{ fav_script }}"))
+ck("20 the home page is the live card + the match centre, nothing below (desktop too)",
+   all(x not in home_src for x in ("{{ news_filter }}", "{% for block in blocks %}", "{{ clubs_strip }}", "home-rest"))
+   and home_src.find('id="favLive"') < home_src.find("{{ match_centre }}") < home_src.find("{{ fav_script }}"))
 
 print("\nALL PHONE HOME TESTS PASSED" if not fails else f"\n{len(fails)} FAILED")
 sys.exit(1 if fails else 0)

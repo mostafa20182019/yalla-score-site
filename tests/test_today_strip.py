@@ -92,12 +92,13 @@ home_py0 = io.open("site_pages/home.py", encoding="utf-8").read()
 # 2026-10-26: the day cards gave way to the match centre's full list (user:
 # «زى fotmob») - its heading carries the pills every day, so the title row
 # below never does
-ck("19d home.py puts them on the match centre, never on the title row below",
-   "match_centre(standings, matches, articles, ge_idx, pills=follow_pills())" in home_py0 and 'news_filter_bar("مباريات تحت المجهر", pills=False)' in home_py0)
+ck("19d home.py puts them on the match centre (no title row below any more)",
+   "match_centre(standings, matches, articles, ge_idx, pills=follow_pills())" in home_py0 and "news_filter_bar" not in home_py0)
 ck("20 the cap is six", len(TS.pick_today(M + [dict(M[0], match_id=str(i)) for i in range(10, 20)], today=T, limit=TS.CARDS)) == 6)
 home_tpl = io.open("site_src/templates/home.html", encoding="utf-8").read()
-ck("21 the home template places the match centre right after the live card and before «تحت المجهر»",
-   0 < home_tpl.find('id="favLive"') < home_tpl.find("{{ match_centre }}") < home_tpl.find("{{ news_filter }}"))
+# 2026-10-26: the home page is the live card + the match centre and nothing else
+ck("21 the home template places the match centre right after the live card, nothing below it",
+   0 < home_tpl.find('id="favLive"') < home_tpl.find("{{ match_centre }}") and "{{ news_filter }}" not in home_tpl)
 home_py = io.open("site_pages/home.py", encoding="utf-8").read()
 ck("22 home.py builds the match centre from the matches and hands it to the template", "match_centre(standings, matches" in home_py and "match_centre=Markup(_centre)" in home_py)
 ck("23 the stylesheet knows the cards: ONE row of six on a desktop, a swipe row below 1000px", ".tc-row{display:grid;grid-template-columns:repeat(6," in css and "@media(max-width:1000px){.tc-row{display:flex" in css)

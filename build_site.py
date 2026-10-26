@@ -214,8 +214,7 @@ def build():
 
     urls = write_assets()          # css + logo; `urls` collects the sitemap from here on
 
-    home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, ge_idx, headlines, matches, reels,
-              standings, videos)
+    home_page(articles, fixtures, ge_idx, matches, standings)
     _match_arts, _moved = article_pages(articles, articles_all, matches, urls)
 
     # shared per-league data (matches page, league pages, /stats)

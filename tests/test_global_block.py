@@ -50,8 +50,9 @@ ck("8 the first tab is checked and the inputs carry no script", 'id="mt-0" check
 ck("9 nothing in the pool -> no block", C.global_clubs_block([], [], arts, std) == "")
 ck("10 eighteen clubs listed, every one with a token and a league", len(GLOBAL_CLUBS) == 18 and all(c["match_tokens"] and c["league"] for c in GLOBAL_CLUBS) and GLOBAL_TABLES[0] == "Egyptian Premier League" and len(GLOBAL_TABLES) == 8 and "#mt-7:checked~.mt-panels .mt-p:nth-child(8)" in io.open("site_src/style.css", encoding="utf-8").read())
 home_py = io.open("site_pages/home.py", encoding="utf-8").read()
-ck("11 the home builds the block first among the blocks", "blocks.append(global_clubs_block(matches, fixtures, articles, standings))" in home_py
-   and home_py.find("global_clubs_block(matches") < home_py.find("home_insights(articles"))
+# 2026-10-26: the block and its league tables left the home page («شيل ترتيب
+# الدوريات»); global_clubs_block() itself is kept
+ck("11 the home page no longer builds the block", "global_clubs_block" not in home_py)
 css = io.open("site_src/style.css", encoding="utf-8").read()
 ck("12 the stylesheet knows the tiles and the tabs", ".gc-row{display:flex" in css and "#mt-0:checked~.mt-panels" in css)
 
