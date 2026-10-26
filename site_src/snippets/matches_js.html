@@ -85,7 +85,9 @@
   prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
   next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
   var lviews=[].slice.call(document.querySelectorAll('.lview'));
-  var lgItems=[].slice.call(document.querySelectorAll('.lg-item'));
+  /* buttons only: the home page's leagues column (same .lg-item look) is
+     plain links to the standings pages, not a filter (2026-10-26) */
+  var lgItems=[].slice.call(document.querySelectorAll('button.lg-item'));
   var pane='table';                /* remembered across league switches */
   function showPane(view,key){
     var tabs=[].slice.call(view.querySelectorAll('.ltab'));
@@ -142,7 +144,8 @@
   if(h) pane=h;                    /* deep link: /matches.html#scorers */
   lgItems.forEach(function(b){ b.addEventListener('click',function(){ selectLeague(b); }); });
   var mTab=document.querySelector('a.navtab[href="/matches.html"]');
-  if(mTab) mTab.addEventListener('click',function(e){ e.preventDefault(); reset(); window.scrollTo({top:0,behavior:'smooth'}); });
+  /* on /matches the tab resets the view; on the home page it goes to /matches */
+  if(mTab && !wrap.closest('.home-mc')) mTab.addEventListener('click',function(e){ e.preventDefault(); reset(); window.scrollTo({top:0,behavior:'smooth'}); });
   show(idx);
 })();
 </script>

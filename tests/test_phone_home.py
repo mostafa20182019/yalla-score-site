@@ -24,7 +24,9 @@ def ck(name, cond, extra=""):
         fails.append(name)
 
 
-from site_lib.today_strip import today_list   # noqa: E402
+from site_lib.daylist import day_sections     # noqa: E402
+from site_lib.render import Markup, render     # noqa: E402
+from site_lib.snippets import FILTERS_HTML, MATCHES_JS   # noqa: E402
 from site_lib import shell                    # noqa: E402
 
 T = "2026-10-26"
@@ -38,21 +40,21 @@ ms = [
     {"match_id": 4, "kickoff": "2026-10-27", "koff_time": "20:00", "status": "UPCOMING", "home": "A", "away": "B",
      "competition": "Primera Division"},
 ]
-h = today_list(ms, today=T)
-import re as _re
-days = _re.findall(r'<section class="hd-day" data-day="([^"]+)"[^>]*?( hidden)?>', h)
-ck("1 FotMob's day card: yesterday, today, tomorrow built in, only today shown without JS",
-   [d for d, _ in days] == ["2026-10-25", T, "2026-10-27"] and [bool(x) for _, x in days] == [True, False, True], str(days))
-today_sec = h[h.find(f'data-day="{T}"'):h.find('data-day="2026-10-27"')]
-ck("2 today: one card per league, one row per match", today_sec.count('<div class="comp">') == 2 and today_sec.count('class="mrow ') == 3)
-ck("2b tomorrow's match sits in tomorrow's section", h[h.find('data-day="2026-10-27"'):].count('class="mrow ') == 1)
-ck("3 rows open the match page (stretch link) and carry the LIVE_JS hooks",
-   h.count('class="mstretch"') == 4 and h.count("data-lv") == 4)
-ck("4 inside a league, kick-off order (the 19:00 result before the 21:30 kick-off)", 0 <= today_sec.find("2 - 1") < today_sec.find("21:30"))
-ck("5 the arrows step between the days and past either end open /matches",
-   'class="dn-arrow hd-prev"' in h and 'class="dn-arrow hd-next"' in h and "location.href='/matches.html'" in h
-   and 'href="/matches.html"' in h and "اليوم · " in h)
-ck("6 a day with no match says so instead of an empty block", "لا توجد مباريات في هذا اليوم" in today_list([], today=T))
+# 2026-10-26 (third ask): the home's list IS the /matches day list - one
+# builder (daylist.day_sections), one partial (_days.html), one script
+days, rows = day_sections(ms, {})
+ck("1 one section per day in the feed, in date order", [d["day"] for d in days] == [T, "2026-10-27"])
+ck("2 today: one card per league in the sidebar order, one row per match",
+   [c["comp"] for c in days[0]["comps"]] == ["Primera Division", "Turkish Super Lig"]
+   and sum(len(c["rows"]) for c in days[0]["comps"]) == 3)
+ck("3 rows open the match page and carry the LIVE_JS + filter hooks",
+   all('class="mstretch"' in r and "data-lv" in r and "data-ko=" in r for r in rows) and len(rows) == 4)
+h = render("_days.html", filters=Markup(FILTERS_HTML), today=T, days=days)
+ck("4 the partial: day arrows, the filters, the days", all(x in h for x in ('id="daynav"', 'id="prevDay"', 'id="mfilters"', 'id="mfQ"', f'data-today="{T}"', 'class="day"')))
+mt = open("site_src/templates/matches.html", encoding="utf-8").read()
+ck("5 /matches renders the same partial", '{% include "_days.html" %}' in mt and 'id="daynav"' not in mt)
+ck("6 the script leaves the home page's league LINKS and «المباريات» tab alone",
+   "querySelectorAll('button.lg-item')" in MATCHES_JS and "!wrap.closest('.home-mc')" in MATCHES_JS)
 
 def nav(active):
     page = shell.head("t", "d", "https://x/", active=active)
@@ -84,7 +86,7 @@ arts = [{"article_id": i, "title": f"خبر {i}", "slug": f"s{i}", "image_url": 
 st = [{"competition": "Primera Division", "table": [{"team": "x"}]},
       {"competition": "Turkish Super Lig", "table": [{"team": "y"}]},
       {"competition": "Some Cup", "table": [{"team": "z"}]}]
-mc = match_centre(st, ms, arts)
+mc = match_centre(st, ms, arts, {})
 ck("15 three columns: leagues | today's matches | news",
    0 <= mc.find("mp-leagues") < mc.find("ph-today") < mc.find("mp-extra"))
 ck("16 the leagues column = the nine-league list with a table, each to its standings page",
@@ -92,7 +94,8 @@ ck("16 the leagues column = the nine-league list with a table, each to its stand
 ck("17 the news column: one featured story with a picture + the rest as rows, and /news",
    mc.count('class="mp-feat"') == 1 and mc.count('class="mn-item"') == 5 and 'href="/news.html"' in mc,
    f'{mc.count(chr(34) + "mp-feat" + chr(34))} {mc.count("mn-item")}')
-ck("18 the day list is inside it (today + tomorrow's match here)", mc.count('class="mrow ') == 4)
+ck("18 the whole /matches day list is inside it, with its filters and its script",
+   mc.count('class="mrow ') == 4 and 'id="mfilters"' in mc and 'id="daynav"' in mc and MATCHES_JS in mc)
 home_src = open("site_src/templates/home.html", encoding="utf-8").read()
 ck("19 the home template renders the match centre and no longer the day cards or the chips row",
    "{{ match_centre }}" in home_src and "{{ today_cards }}" not in home_src and "{{ league_bar }}" not in home_src)

@@ -1235,8 +1235,8 @@ a{color:inherit}
 /* scorers under their own team, between the status and spacer columns */
 .mlist>.mrow .mgoals{grid-column:2/5;grid-template-columns:1fr 64px 1fr}
 
-/* home: the match centre - leagues · the day's matches under FotMob's day
-   card (‹ اليوم ›, yesterday/today/tomorrow built in) · news */
+/* home: the match centre - leagues · the /matches day list itself (same
+   partial, filters and day arrows: site_lib/daylist.py) · news */
 .home-mc{margin:6px 0 22px}
 .home-mc .lg-item{text-decoration:none}
 .home-mc .mp-extra .mp-h{margin-bottom:12px}

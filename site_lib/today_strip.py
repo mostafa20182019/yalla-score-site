@@ -122,71 +122,17 @@ def today_cards(matches, today=None, limit=CARDS, pills=""):
             '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div></section>')
 
 
-def _day_comps(matches, day):
-    """One day's matches: one card per league in the /matches order, one-line
-    rows (tables.match_row, so LIVE_JS paints them like /matches)."""
-    from site_lib.crests import comp_icon
-    from site_lib.tables import match_row
-    comps = {}
-    for m in matches or []:
-        if m.get("kickoff") == day and m.get("home") and m.get("away"):
-            comps.setdefault(m.get("competition") or "", []).append(m)
-    blocks = []
-    for comp in sorted(comps, key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER), c)):
-        rows = "".join(match_row(m, show_time=True, show_comp=False,
-                                 link=match_url(m) if m.get("match_id") else None)
-                       for m in sorted(comps[comp], key=lambda m: m.get("koff_time") or "99:99"))
-        icon = comp_icon(comp) if comp else ""
-        blocks.append(f'<div class="comp"><div class="comp-h">{icon} {esc(comp_label(comp))}</div>'
-                      f'<div class="mlist">{rows}</div></div>')
-    return "".join(blocks) or '<p class="ph-none">لا توجد مباريات في هذا اليوم.</p>'
-
-
-# the day card's arrows: one day back / forward inside the three built in, and
-# past either end to /matches, which holds the whole window
-DAY_JS = ("<script>(function(){var r=document.currentScript.parentNode,"
-          "ds=[].slice.call(r.querySelectorAll('.hd-day')),i=0,lab=r.querySelector('.hd-label');"
-          "ds.forEach(function(d,k){if(!d.hidden)i=k;});"
-          "function show(n){ds.forEach(function(d,k){d.hidden=k!==n;});i=n;lab.textContent=ds[n].getAttribute('data-lab');}"
-          "r.querySelector('.hd-prev').addEventListener('click',function(){if(i>0)show(i-1);else location.href='/matches.html';});"
-          "r.querySelector('.hd-next').addEventListener('click',function(){if(i<ds.length-1)show(i+1);else location.href='/matches.html';});"
-          "})();</script>")
-
-
-def today_list(matches, today=None, pills=""):
-    """The home page opens on the matches, like FotMob's (user, 2026-10-26:
-    «الموقع يفتح على المباريات», then on the phone «بيجيب مباريات اليوم والايام
-    الاخرى فقط بدون اخبار»): FotMob's day card (‹ اليوم ›) over the day's
-    matches, one card per league. Yesterday, today and tomorrow are built in
-    (today shows without JS); the arrows step between them and past either
-    end open /matches for the rest."""
-    import datetime
-    from site_lib.dates import fmt_day
-    today = today or REF_TODAY
-    t = datetime.date.fromisoformat(today)
-    days = []
-    for off, name in ((-1, "أمس"), (0, "اليوم"), (1, "غدًا")):
-        d = (t + datetime.timedelta(days=off)).isoformat()
-        lab = f"{name} · {fmt_day(d)}"
-        days.append(f'<section class="hd-day" data-day="{d}" data-lab="{esc(lab)}"{"" if off == 0 else " hidden"}>'
-                    f'{_day_comps(matches, d)}</section>')
-    return ('<section class="ph-today" aria-label="المباريات">'
-            '<div class="sec-h"><h2 class="page-h">المباريات</h2>'
-            f'<span class="tc-side">{pills}</span></div>'
-            '<div class="daynav hd-nav">'
-            '<button type="button" class="dn-arrow hd-prev" aria-label="اليوم السابق">‹</button>'
-            f'<span class="dn-label hd-label">{esc("اليوم · " + fmt_day(today))}</span>'
-            '<button type="button" class="dn-arrow hd-next" aria-label="اليوم التالي">›</button></div>'
-            + "".join(days)
-            + '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
-            + DAY_JS + '</section>')
-
-
-def match_centre(standings, matches, articles, pills=""):
+def match_centre(standings, matches, articles, ge_idx, pills=""):
     """The top of the home page like FotMob's (user, 2026-10-26: phones «الموقع
     يفتح على المباريات», then the desktop «زى fotmob على الكمبيوتر»): the
-    /matches columns - leagues | today's matches | news. Phones show only the
-    middle column (style.css); the leagues are the chips row there."""
+    /matches columns - leagues | the matches | news. The middle column IS the
+    /matches day list - same partial (_days.html), same data
+    (daylist.day_sections), same filters and day arrows (MATCHES_JS): the
+    phone home «تجيب كل المباريات زى ما كانت صفحة المباريات بتجيب بالظبط».
+    Phones show only that column (style.css)."""
+    from site_lib.daylist import day_sections
+    from site_lib.render import Markup, render
+    from site_lib.snippets import FILTERS_HTML, MATCHES_JS
     from site_lib.competitions import COMP_SLUG, LEAGUE_BAR
     from site_lib.articles import insight_kind
     from site_lib.crests import comp_icon
@@ -215,8 +161,13 @@ def match_centre(standings, matches, articles, pills=""):
         items.append(f'<a class="mn-item" href="{esc(article_href(a))}">{th}'
                      f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span></span></a>')
     side += f'<div class="mp-news">{"".join(items)}</div>'
+    days, _ = day_sections(matches, ge_idx)
+    days_html = render("_days.html", filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days)
     return ('<div class="mpage home-mc">'
             f'<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">{leagues}</div></aside>'
-            f'<div class="mp-main">{today_list(matches, pills=pills)}</div>'
+            '<div class="mp-main"><section class="ph-today" aria-label="المباريات">'
+            '<div class="sec-h"><h2 class="page-h">المباريات</h2>'
+            f'<span class="tc-side">{pills}</span></div>{days_html}</section></div>'
             '<aside class="mp-side mp-extra"><h2 class="mp-h">آخر الأخبار</h2>'
-            f'{side}<a class="see-all" href="/news.html">كل الأخبار ←</a></aside></div>')
+            f'{side}<a class="see-all" href="/news.html">كل الأخبار ←</a></aside></div>'
+            + MATCHES_JS)

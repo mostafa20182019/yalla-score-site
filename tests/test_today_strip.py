@@ -93,7 +93,7 @@ home_py0 = io.open("site_pages/home.py", encoding="utf-8").read()
 # «زى fotmob») - its heading carries the pills every day, so the title row
 # below never does
 ck("19d home.py puts them on the match centre, never on the title row below",
-   "match_centre(standings, matches, articles, pills=follow_pills())" in home_py0 and 'news_filter_bar("مباريات تحت المجهر", pills=False)' in home_py0)
+   "match_centre(standings, matches, articles, ge_idx, pills=follow_pills())" in home_py0 and 'news_filter_bar("مباريات تحت المجهر", pills=False)' in home_py0)
 ck("20 the cap is six", len(TS.pick_today(M + [dict(M[0], match_id=str(i)) for i in range(10, 20)], today=T, limit=TS.CARDS)) == 6)
 home_tpl = io.open("site_src/templates/home.html", encoding="utf-8").read()
 ck("21 the home template places the match centre right after the live card and before «تحت المجهر»",

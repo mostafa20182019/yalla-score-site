@@ -20,7 +20,7 @@ from site_lib.widgets import video_facade
 from site_pages.predictions import HUB_FOCUS
 
 
-def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matches, reels,
+def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, ge_idx, headlines, matches, reels,
               standings, videos):
     """/ - markup and the user's standing rules for it: site_src/templates/
     home.html (templated 2026-09-26). The pieces are built here in the same
@@ -57,7 +57,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     # match centre's full list of the day (2026-10-26); its heading carries
     # the follow pills every day, matches or not
     from site_lib.today_strip import match_centre
-    _centre = match_centre(standings, matches, articles, pills=follow_pills())
+    _centre = match_centre(standings, matches, articles, ge_idx, pills=follow_pills())
     # the follow pills live at the top of the page (user, 2026-10-22): on the
     # day cards' heading, or on the title row below on a day with no match
     # «مباريات تحت المجهر» is the model's cards (probability bar + confidence):

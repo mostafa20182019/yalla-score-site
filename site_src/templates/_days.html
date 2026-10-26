@@ -1,0 +1,33 @@
+{# The day navigator, the FotMob-style filters and the day sections - one
+   partial for /matches and the home page (user, 2026-10-26: the phone home
+   «تجيب كل المباريات زى ما كانت صفحة المباريات بتجيب بالظبط» with the same
+   filters). Data: site_lib/daylist.day_sections; behaviour: MATCHES_JS. The
+   ids are unique per page - include it ONCE. Same line-join rule as every
+   template: break between tags, never inside a sentence. #}
+<div id="daynav" class="daynav" hidden>
+  <button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>
+  <span id="dayLabel" class="dn-label"></span>
+  <button type="button" id="nextDay" class="dn-arrow" aria-label="اليوم التالي">›</button>
+</div>
+{# FotMob-style match filters (user ask 2026-09-02) #}
+{{ filters }}
+<div id="days" data-today="{{ today }}">
+  {% for d in days %}
+  <section class="day" data-day="{{ d.day }}">
+    <h2 class="day-h">{{ d.heading }}</h2>
+    {% for c in d.comps %}
+    <div class="comp" data-comp="{{ c.comp }}" data-label="{{ c.label }}">
+      {% if c.comp %}
+      <div class="comp-h">{{ c.icon }} {{ c.label }}</div>
+      {% endif %}
+      <div class="mlist">
+        {% for row in c.rows %}
+        {{ row }}
+        {% endfor %}
+      </div>
+    </div>
+    {% endfor %}
+    <p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>
+  </section>
+  {% endfor %}
+</div>

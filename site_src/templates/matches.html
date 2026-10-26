@@ -35,33 +35,9 @@
     </div>
     {% endfor %}
     <div id="noTable" class="no-table" hidden></div>
-    <div id="daynav" class="daynav" hidden>
-      <button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>
-      <span id="dayLabel" class="dn-label"></span>
-      <button type="button" id="nextDay" class="dn-arrow" aria-label="اليوم التالي">›</button>
-    </div>
-    {# FotMob-style match filters (user ask 2026-09-02) #}
-    {{ filters }}
-    <div id="days" data-today="{{ today }}">
-      {% for d in days %}
-      <section class="day" data-day="{{ d.day }}">
-        <h2 class="day-h">{{ d.heading }}</h2>
-        {% for c in d.comps %}
-        <div class="comp" data-comp="{{ c.comp }}" data-label="{{ c.label }}">
-          {% if c.comp %}
-          <div class="comp-h">{{ c.icon }} {{ c.label }}</div>
-          {% endif %}
-          <div class="mlist">
-            {% for row in c.rows %}
-            {{ row }}
-            {% endfor %}
-          </div>
-        </div>
-        {% endfor %}
-        <p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>
-      </section>
-      {% endfor %}
-    </div>
+    {# the day navigator + filters + the days: shared with the home page
+       (site_lib/daylist.py, 2026-10-26) #}
+    {% include "_days.html" %}
   </div>
   {# left rail (RTL end): per-league fixtures for leagues WITHOUT round data
      (day-grouped fallback; leagues with rounds use the «الجولات» tab), then

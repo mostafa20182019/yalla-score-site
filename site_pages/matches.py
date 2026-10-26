@@ -11,6 +11,7 @@ from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
 from site_lib.crests import comp_icon, local_crest
 from site_lib.dates import fmt_day
+from site_lib.daylist import day_sections
 from site_lib.league_desc import matches_desc
 from site_lib.matchdata import absence_block, match_details_for, match_goals, prematch_for
 from site_lib.names import _team_match, ar_team, comp_label
@@ -22,7 +23,7 @@ from site_lib.snippets import FILTERS_HTML, MATCHES_JS, ROUNDS_JS
 from site_lib.stats import _finished_by_comp
 from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, standings_table
 from site_lib.text import esc
-from site_lib.urls import article_href, breadcrumb_ld, match_url, pick_match_article
+from site_lib.urls import article_href, breadcrumb_ld, pick_match_article
 
 
 def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, league_stats_parts,
@@ -96,34 +97,9 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
             view_panes.append((k, Markup(panes[k])))
             pieces.append(panes[k])
         views.append({"comp": c, "tabs": tabs, "panes": view_panes})
-    days = []
-    for d in sorted_days:
-        day = {"day": d, "heading": fmt_day(d), "comps": []}
-        comps = OrderedDict()
-        for m in daymap[d]:
-            comps.setdefault(m.get("competition") or "", []).append(m)
-        # same fixed league order as the sidebar
-        for comp, ms in sorted(comps.items(),
-                               key=lambda kv: (COMP_ORDER.index(kv[0])
-                                               if kv[0] in COMP_ORDER
-                                               else len(COMP_ORDER), kv[0])):
-            block = {"comp": comp, "label": comp_label(comp), "rows": []}
-            if comp:
-                block["icon"] = Markup(comp_icon(comp))
-                comp_label(comp)                 # (the old code asked twice; kept for order)
-            for m in ms:
-                row = match_row(m, show_time=True, show_comp=False,
-                                goals=match_goals(ge_idx, m),
-                                link=match_url(m))
-                # filter hooks: "على التلفزيون" = a known broadcaster (per-match
-                # channel or the verified COMP_TV map); "حسب الوقت" sorts by data-ko
-                tv = "1" if (m.get("channel") or COMP_TV.get(comp)) else "0"
-                row = row.replace('<div class="mrow ',
-                                  f'<div data-tv="{tv}" data-ko="{esc(m.get("koff_time") or "")}" class="mrow ', 1)
-                block["rows"].append(Markup(row))
-                pieces.append(row)
-            day["comps"].append(block)
-        days.append(day)
+    # the days (shared with the home page since 2026-10-26: site_lib/daylist)
+    days, _rows = day_sections(matches, ge_idx)
+    pieces.extend(_rows)
     # left rail: per-league fixtures BY DAY for leagues without round data
     comp_fix = {}
     for d in sorted_days:
