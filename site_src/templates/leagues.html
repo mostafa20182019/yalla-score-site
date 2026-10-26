@@ -1,0 +1,15 @@
+{# /leagues - «البطولات», FotMob's Leagues tab (user, 2026-10-26). One card
+   per group, one row per competition opening its own page. Lines are joined
+   with NO separator by site_lib.render: break between tags, never inside a
+   sentence - and keep "{icon} <span" on one line (the space is data). #}
+{{ page_head }}
+<h1 class="page-h">البطولات</h1>
+{% for title, rows in groups %}
+<section class="lgx-card">
+  <h2 class="lgx-h">{{ title }}</h2>
+  {% for r in rows %}
+  <a class="lgx-row" href="{{ r.href }}">{{ r.icon }} <span class="lgx-b"><b class="lgx-t">{{ r.label }}</b><span class="lgx-s">{{ r.what }}</span></span><span class="lgx-go" aria-hidden="true">‹</span></a>
+  {% endfor %}
+</section>
+{% endfor %}
+{{ page_foot }}

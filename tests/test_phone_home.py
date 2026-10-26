@@ -72,6 +72,15 @@ ck("9 /news lights the phone «أخبار» tab, not المباريات",
    and "ph-on" not in re.search(r'class="(navtab nt-ph nt-match[^"]*)"', nav("news")).group(1))
 ck("10 matches_js still finds exactly one /matches tab", n.count('href="/matches.html"') == 1)
 
+# «البطولات» tab (user, 2026-10-26: «عايز يكون فيه تاب اسمها البطولات»)
+ck("10b the «البطولات» tab is on every page, to /leagues, lit on the league pages",
+   'href="/leagues.html" class="navtab nt-leagues"' in n
+   and 'href="/leagues.html" class="navtab nt-leagues is-active"' in nav("leagues"))
+lg_py = open("site_pages/leagues.py", encoding="utf-8").read()
+ck("10c /standings, /scorers and /fixtures light it; build() writes /leagues",
+   lg_py.count('active="leagues"') == 4 and "leagues_page(_comps_with_table, fx_by_comp, urls)"
+   in open("build_site.py", encoding="utf-8").read())
+
 css = open("site_src/style.css", encoding="utf-8").read()
 m = css.find("@media(max-width:760px){\n  body{padding-bottom")
 glob, block = css[:m], css[m:]

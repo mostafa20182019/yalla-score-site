@@ -51,9 +51,9 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
         if st and st.get("table"):
             page_head = Markup(head(f"ترتيب {label} اليوم — جدول الترتيب الكامل {season} | {SITE_NAME}",
                                     standings_desc(label, season, st["table"], st.get("zeroed")),
-                                    SITE_BASE + st_url, active="matches"))
+                                    SITE_BASE + st_url, active="leagues"))
             crumbs_ld = Markup(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                                              ("المباريات", SITE_BASE + "/matches.html"),
+                                              ("البطولات", SITE_BASE + "/leagues.html"),
                                               (f"ترتيب {label}", SITE_BASE + st_url)]))
             table = standings_table(comp, st["table"], past=st.get("past"),
                                     season_label=st.get("season_label"),
@@ -83,7 +83,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             # gets a placeholder, never last season's names
             page_head = Markup(head(f"هداف {label} {season} — ترتيب الهدافين وصناع الأهداف | {SITE_NAME}",
                                     scorers_desc(label, season, sc),
-                                    SITE_BASE + sc_url, active="matches"))
+                                    SITE_BASE + sc_url, active="leagues"))
             scorers = scorers_list(sc, "أهداف") if sc else ""
             assists = scorers_list(asst, "صناعة") if asst else ""
             # a list of ten names is not a page; the reading is what makes it
@@ -113,6 +113,42 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
     return _comps_with_table, season
 
 
+def leagues_page(_comps_with_table, fx_by_comp, urls):
+    """/leagues - «البطولات», FotMob's Leagues tab (user, 2026-10-26: «عايز
+    يكون فيه تاب اسمها البطولات»): every competition we cover, one row each,
+    opening its own page - the table (/standings) when it has one, otherwise
+    its season's fixtures (/fixtures). A competition with neither (the CAF
+    cups have no feed of their own yet) is left out, never a dead row.
+    Domestic leagues first, then the continental and international ones."""
+    from site_lib.competitions import COMP_ORDER
+    from site_lib.crests import comp_icon
+    domestic, rest = [], []
+    for comp in sorted(COMP_SLUG, key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER), c)):
+        slug = COMP_SLUG[comp]
+        if comp in _comps_with_table:
+            href, what = f"/standings/{slug}.html", "الترتيب والهدافون والمباريات"
+        elif (fx_by_comp.get(comp) or {}).get("rounds"):
+            href, what = f"/fixtures/{slug}.html", "جدول المباريات"
+        else:
+            continue
+        row = {"href": href, "icon": Markup(comp_icon(comp)), "label": comp_label(comp), "what": what}
+        (domestic if slug in DOMESTIC_SLUGS else rest).append(row)
+    groups = [(t, rows) for t, rows in (("الدوريات", domestic), ("البطولات القارية والدولية", rest)) if rows]
+    page_head = Markup(head(f"البطولات: الترتيب والهدافون ومواعيد المباريات | {SITE_NAME}",
+                            "كل البطولات على يلا سكور: الدوري المصري والإنجليزي والإسباني والإيطالي "
+                            "والألماني والفرنسي والتركي والسعودي ودوري أبطال أوروبا - الترتيب "
+                            "والهدافون ومواعيد المباريات لكل بطولة.",
+                            SITE_BASE + "/leagues.html", active="leagues"))
+    write("leagues.html", render("leagues.html", page_head=page_head, groups=groups,
+                                 page_foot=Markup(foot())))
+    urls.append("/leagues.html")
+    print(f"  + leagues page: {sum(len(r) for _, r in groups)} competitions")
+
+
+# the national leagues - the first card of /leagues
+DOMESTIC_SLUGS = ("egypt", "england", "spain", "italy", "germany", "france", "turkey", "saudi")
+
+
 def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
     """/fixtures/<slug> - a league's whole season. These used to be INSIDE
     /matches, hidden behind the league filter: 2,206 fixture rows and 4,955
@@ -131,7 +167,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         n_m = sum(len(r.get("matches") or []) for r in rounds)
         page_head = Markup(head(f"جدول مباريات {label} اليوم والجولة القادمة {season} | {SITE_NAME}",
                                 fixtures_desc(label, season, rounds, n_m),
-                                SITE_BASE + f"/fixtures/{slug}.html", active="matches"))
+                                SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True)
         _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
@@ -139,7 +175,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         if PREDICTIONS_ON and comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
             _links.append(f'<a href="/analysis/{slug}.html">توقعات {esc(label)} ←</a>')
         crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
-                                   ("المباريات", SITE_BASE + "/matches.html"),
+                                   ("البطولات", SITE_BASE + "/leagues.html"),
                                    (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")])
         write(f"fixtures/{slug}.html", render(
             "fixtures.html", page_head=page_head, label=label, season=season,
