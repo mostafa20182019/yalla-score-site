@@ -176,6 +176,11 @@ def head(title, desc, url, image=None, og_type="website", active="",
                  '\n<link rel="apple-touch-icon" href="/assets/icon-192.png">'
                  if VAPID_PUBLIC_KEY else "")
     push_bell = (f'\n    {PUSH_BELL}' if VAPID_PUBLIC_KEY else "")
+    # Facebook + Telegram next to the bell, on every page (user, 2026-10-26:
+    # «حط ايقونات الفيس والتليجرام جنب ايقونة ال notifications») - they
+    # used to sit on the match list's heading, which is gone
+    from site_lib.cards import follow_pills
+    social = follow_pills()
     ads_head = (f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={ADSENSE_CLIENT}" crossorigin="anonymous"></script>'
                 if ADSENSE_CLIENT else "")
     t = f"""<!doctype html>
@@ -219,7 +224,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
     <a href="/news.html" class="navtab nt-news{na}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
 {pred_tab}    <a href="/insights.html" class="navtab{ia}"><span class="ico">🧠</span> التحليلات<span class="nav-en"> | Analysis</span></a>
 {stats_tab}{vids_tab}{reels_tab}
-    </div></nav>{push_bell}
+    </div></nav><span class="head-social">{social}</span>{push_bell}
   </div>
   {TICKER_HTML}
 </header>

@@ -90,7 +90,10 @@ ck("12 no phone/desktop tab split left in the stylesheet", "nt-ph" not in css an
 ck("12b «البطولات» is a phone tab: hidden on desktop, shown in the bottom bar (user 2026-10-26)",
    ".navtab.nt-leagues{display:none}" in glob and ".navtab.nt-leagues{display:inline-flex}" in block)
 ck("13 phones: the bottom bar, and the home is the matches column only",
-   "position:fixed" in block and ".home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h{display:none}" in block)
+   "position:fixed" in block and ".home-mc .mp-leagues,.home-mc .mp-extra{display:none}" in block)
+ck("13b the Facebook + Telegram icons sit in the header beside the bell, on every page (user 2026-10-26)",
+   '</nav><span class="head-social"><a class="nf-fb"' in shell.head("t", "d", "https://x/", active="news")
+   and ".head-social{margin-inline-start:auto" in glob)
 
 # ---- the desktop home (2026-10-26, «زى fotmob على الكمبيوتر»)
 from site_lib.today_strip import match_centre         # noqa: E402
@@ -100,6 +103,8 @@ st = [{"competition": "Primera Division", "table": [{"team": "x"}]},
       {"competition": "Turkish Super Lig", "table": [{"team": "y"}]},
       {"competition": "Some Cup", "table": [{"team": "z"}]}]
 mc = match_centre(st, ms, arts, {})
+ck("14b no «المباريات» heading over the list (user 2026-10-26: «شيل كلمة المباريات»)",
+   '<h2 class="page-h">المباريات</h2>' not in mc and "nf-fb" not in mc)
 ck("15 three columns: leagues | today's matches | news",
    0 <= mc.find("mp-leagues") < mc.find("ph-today") < mc.find("mp-extra"))
 ck("16 the leagues column = the nine-league list with a table, each to its standings page",

@@ -1063,6 +1063,11 @@ a{color:inherit}
 .head-bell:hover{background:rgba(15,23,42,.55)}
 .head-bell.is-on{background:#fff;color:var(--green-d);border-color:#fff}
 .head-bell.is-on .bell-fill{fill:currentColor}
+/* Facebook + Telegram beside the bell (2026-10-26), same size and ring */
+.head-social{margin-inline-start:auto;display:inline-flex;gap:8px;flex:none}
+.head-social~.head-bell{margin-inline-start:8px}
+.head-social .nf-fb,.head-social .nf-tg{width:40px;height:40px;border:1.5px solid rgba(255,255,255,.85);box-shadow:none}
+.head-social svg{width:20px;height:20px}
 .push-cta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 6px;padding:12px 14px;border:1px solid #cfe6f5;background:#f1f8fd;border-radius:12px;font-size:.92rem;font-weight:700}
 .push-cta-btn{border:0;border-radius:999px;background:var(--green);color:#fff;font:inherit;font-weight:800;padding:7px 16px;cursor:pointer}
 .push-cta-btn.is-on{background:#fff;color:var(--green-d);border:1px solid var(--green)}
@@ -1243,7 +1248,6 @@ a{color:inherit}
 .home-mc .lg-item{text-decoration:none}
 .home-mc .mp-extra .mp-h{margin-bottom:12px}
 .home-mc .mp-extra .see-all{font-size:.82rem}
-.ph-today .sec-h{margin-top:0}
 .ph-none{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;text-align:center;
   color:var(--muted);font-weight:700;margin:0 0 12px}
 
@@ -1269,6 +1273,10 @@ a{color:inherit}
   .brand .ball{width:26px;height:26px}
   .head-bell{width:34px;height:34px}
   .head-bell svg{width:18px;height:18px}
+  .head-social{gap:6px}
+  .head-social~.head-bell{margin-inline-start:6px}
+  .head-social .nf-fb,.head-social .nf-tg{width:34px;height:34px}
+  .head-social svg{width:18px;height:18px}
   /* the tabs become a fixed white bar at the bottom (no ancestor transforms,
      so position:fixed escapes the sticky header) */
   .head-in .site-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid #e2e8f0;
@@ -1286,7 +1294,7 @@ a{color:inherit}
   /* home = the matches and nothing else, like FotMob's phone site (user:
      «بيجيب مباريات اليوم والايام الاخرى فقط بدون اخبار»): no leagues or news
      column, no heading */
-  .home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h{display:none}
+  .home-mc .mp-leagues,.home-mc .mp-extra{display:none}
   .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;gap:4px 8px;padding:12px 6px}
   .mlist>.mrow .pill{padding:2px 6px;font-size:.62rem}
   .mlist>.mrow .team{gap:7px;font-size:.84rem}

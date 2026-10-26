@@ -5,7 +5,6 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import json
 from site_lib.articles import pinned_first
-from site_lib.cards import follow_pills
 from site_lib.config import FB_PAGE_URL, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
 from site_lib.crests import local_crest
 from site_lib.names import _is_ticker_team, ar_team, fav_club_names
@@ -40,9 +39,8 @@ def home_page(articles, fixtures, ge_idx, matches, standings):
              "inLanguage": "ar", "description": strip_tags(SITE_DESC),
              "publisher": {"@id": SITE_BASE + "/#org"}}]})
     ad = adsense_slot()
-    # the follow pills ride on the match list's heading (user, 2026-10-22:
-    # at the top of the page)
-    _centre = match_centre(standings, matches, articles, ge_idx, pills=follow_pills())
+    # the follow pills live in the header now, next to the bell (2026-10-26)
+    _centre = match_centre(standings, matches, articles, ge_idx)
     # crests + per-match page URL for the live card, curated clubs only
     # (keyed by the Arabic name pair - LIVE_JS normalizes both sides)
     fav_meta = {}

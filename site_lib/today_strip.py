@@ -122,7 +122,7 @@ def today_cards(matches, today=None, limit=CARDS, pills=""):
             '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div></section>')
 
 
-def match_centre(standings, matches, articles, ge_idx, pills=""):
+def match_centre(standings, matches, articles, ge_idx):
     """The top of the home page like FotMob's (user, 2026-10-26: phones «الموقع
     يفتح على المباريات», then the desktop «زى fotmob على الكمبيوتر»): the
     /matches columns - leagues | the matches | news. The middle column IS the
@@ -165,9 +165,9 @@ def match_centre(standings, matches, articles, ge_idx, pills=""):
     days_html = render("_days.html", filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days)
     return ('<div class="mpage home-mc">'
             f'<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">{leagues}</div></aside>'
-            '<div class="mp-main"><section class="ph-today" aria-label="المباريات">'
-            '<div class="sec-h"><h2 class="page-h">المباريات</h2>'
-            f'<span class="tc-side">{pills}</span></div>{days_html}</section></div>'
+            # no heading over the list (user, 2026-10-26: «شيل كلمة المباريات»);
+            # the follow icons moved next to the header bell
+            f'<div class="mp-main"><section class="ph-today" aria-label="المباريات">{days_html}</section></div>'
             '<aside class="mp-side mp-extra"><h2 class="mp-h">آخر الأخبار</h2>'
             f'{side}<a class="see-all" href="/news.html">كل الأخبار ←</a></aside></div>'
             + MATCHES_JS)

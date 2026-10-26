@@ -92,8 +92,9 @@ home_py0 = io.open("site_pages/home.py", encoding="utf-8").read()
 # 2026-10-26: the day cards gave way to the match centre's full list (user:
 # «زى fotmob») - its heading carries the pills every day, so the title row
 # below never does
-ck("19d home.py puts them on the match centre (no title row below any more)",
-   "match_centre(standings, matches, articles, ge_idx, pills=follow_pills())" in home_py0 and "news_filter_bar" not in home_py0)
+# 2026-10-26: the pills moved into the header beside the bell (shell.head)
+ck("19d the home page no longer places them itself (they live in the header)",
+   "follow_pills" not in home_py0 and "news_filter_bar" not in home_py0)
 ck("20 the cap is six", len(TS.pick_today(M + [dict(M[0], match_id=str(i)) for i in range(10, 20)], today=T, limit=TS.CARDS)) == 6)
 home_tpl = io.open("site_src/templates/home.html", encoding="utf-8").read()
 # 2026-10-26: the home page is the live card + the match centre and nothing else
