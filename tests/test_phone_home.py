@@ -1,13 +1,12 @@
-r"""Phones look and open like FotMob (2026-10-26).
+r"""The site looks and opens like FotMob, phones and desktop (2026-10-26).
 
     python tests/test_phone_home.py   (from the repo root)
 
-The user asked for FotMob's mobile site: slim top bar, tabs at the bottom,
-one card per league with one-line rows, and the site OPENING ON THE MATCHES.
-The home page carries today's matches (today_strip.today_list) for phones
-only; the bottom bar puts المباريات first and lights it on «/», and the phone
-«أخبار» tab is /news. Desktop keeps its own tabs and the «أهم مباريات اليوم»
-cards.
+The user asked for FotMob's mobile site (slim top bar, tabs at the bottom,
+one card per league with one-line rows, the site OPENING ON THE MATCHES),
+then for FotMob's desktop site (one header row, the same rows, the home page
+= leagues | today's matches | news - home.match_centre). The phone bottom bar
+puts المباريات first and lights it on «/»; its «أخبار» tab is /news.
 """
 import os
 import re
@@ -63,10 +62,35 @@ ck("10 matches_js still finds exactly one /matches tab", n.count('href="/matches
 
 css = open("site_src/style.css", encoding="utf-8").read()
 m = css.find("@media(max-width:760px){\n  body{padding-bottom")
-block = css[m:]
-ck("11 phone-only pieces are hidden on desktop", ".nt-ph,.ph-today{display:none}" in css[:m])
-ck("12 on phones the list shows and the day cards hide",
-   ".ph-today{display:block}" in block and ".tc{display:none}" in block and ".nt-desk{display:none}" in block)
+glob, block = css[:m], css[m:]
+ck("11 everywhere: no crowd photo, no ticker; one-line rows without the «بطاقة المباراة» pill",
+   ".head-crowd,.site-head .ticker{display:none!important}" in glob and ".mlist>.mrow .mgo-row{display:none}" in glob)
+ck("12 the phone «أخبار» tab is hidden on desktop, the desktop one on phones",
+   ".nt-ph{display:none}" in glob and ".nt-desk{display:none}" in block)
+ck("13 phones: the bottom bar, and no leagues column on the home page",
+   "position:fixed" in block and ".home-mc .mp-leagues{display:none}" in block)
+ck("14 the nine-league chips row is phones-only (desktop has the leagues column)",
+   "@media(min-width:761px){.home-lq{display:none}}" in css)
+
+# ---- the desktop home (2026-10-26, «زى fotmob على الكمبيوتر»)
+from site_lib.today_strip import match_centre         # noqa: E402
+arts = [{"article_id": i, "title": f"خبر {i}", "slug": f"s{i}", "image_url": "/media/x.jpg" if i == 2 else None}
+        for i in range(1, 9)]
+st = [{"competition": "Primera Division", "table": [{"team": "x"}]},
+      {"competition": "Turkish Super Lig", "table": [{"team": "y"}]},
+      {"competition": "Some Cup", "table": [{"team": "z"}]}]
+mc = match_centre(st, ms, arts)
+ck("15 three columns: leagues | today's matches | news",
+   0 <= mc.find("mp-leagues") < mc.find("ph-today") < mc.find("mp-extra"))
+ck("16 the leagues column = the nine-league list with a table, each to its standings page",
+   mc.count('class="lg-item"') == 2 and "/standings/" in mc and "Some Cup" not in mc, str(mc.count('class="lg-item"')))
+ck("17 the news column: one featured story with a picture + the rest as rows, and /news",
+   mc.count('class="mp-feat"') == 1 and mc.count('class="mn-item"') == 5 and 'href="/news.html"' in mc,
+   f'{mc.count(chr(34) + "mp-feat" + chr(34))} {mc.count("mn-item")}')
+ck("18 today's list is inside it, every match of the day", mc.count('class="mrow ') == 3)
+home_src = open("site_src/templates/home.html", encoding="utf-8").read()
+ck("19 the home template renders the match centre and no longer the day cards",
+   "{{ match_centre }}" in home_src and "{{ today_cards }}" not in home_src)
 
 print("\nALL PHONE HOME TESTS PASSED" if not fails else f"\n{len(fails)} FAILED")
 sys.exit(1 if fails else 0)

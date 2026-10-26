@@ -151,3 +151,43 @@ def today_list(matches, today=None, pills=""):
             f'<span class="tc-side">{pills}</span></div>'
             f'{body}'
             '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div></section>')
+
+
+def match_centre(standings, matches, articles, pills=""):
+    """The top of the home page like FotMob's (user, 2026-10-26: phones «الموقع
+    يفتح على المباريات», then the desktop «زى fotmob على الكمبيوتر»): the
+    /matches columns - leagues | today's matches | news. Phones show only the
+    middle column (style.css); the leagues are the chips row there."""
+    from site_lib.competitions import COMP_SLUG, LEAGUE_BAR
+    from site_lib.articles import insight_kind
+    from site_lib.crests import comp_icon
+    from site_lib.shell import thumb_url
+    from site_lib.urls import article_href
+    rows = standings if isinstance(standings, list) else (standings or {}).get("results") or []
+    with_table = {r.get("competition") for r in rows if isinstance(r, dict) and r.get("table")}
+    leagues = "".join(
+        f'<a class="lg-item" href="/standings/{COMP_SLUG[c]}.html">{comp_icon(c)} '
+        f'<span class="lg-name">{esc(comp_label(c))}</span></a>'
+        for c in LEAGUE_BAR if c in with_table and c in COMP_SLUG)
+    news = [a for a in articles if not insight_kind(a)][:6]
+    feat = next((a for a in news if a.get("image_url")), None)
+    side = ""
+    if feat:
+        side += (f'<a class="mp-feat" href="{esc(article_href(feat))}">'
+                 f'<img class="mp-feat-img" src="{esc(thumb_url(feat["image_url"]))}" alt="" loading="lazy" decoding="async">'
+                 f'<b class="mp-feat-t">{esc(feat.get("title"))}</b><span class="mp-feat-cta">اقرأ الخبر ←</span></a>')
+    items = []
+    for a in news:
+        if a is feat:
+            continue
+        img = thumb_url(a.get("image_url"))
+        th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
+              if img else '<span class="mn-th noimg">⚽</span>')
+        items.append(f'<a class="mn-item" href="{esc(article_href(a))}">{th}'
+                     f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span></span></a>')
+    side += f'<div class="mp-news">{"".join(items)}</div>'
+    return ('<div class="mpage home-mc">'
+            f'<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">{leagues}</div></aside>'
+            f'<div class="mp-main">{today_list(matches, pills=pills)}</div>'
+            '<aside class="mp-side mp-extra"><h2 class="mp-h">آخر الأخبار</h2>'
+            f'{side}<a class="see-all" href="/news.html">كل الأخبار ←</a></aside></div>')

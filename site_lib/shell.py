@@ -212,16 +212,16 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <header class="site-head">
   <div class="head-crowd" aria-hidden="true"></div>
   <div class="wrap head-in">
-    <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>{push_bell}
-  </div>
-  {TICKER_HTML}
-  <nav class="site-nav"><div class="wrap nav-in">
+    <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>
+    <nav class="site-nav"><div class="nav-in">
     <a href="/" class="navtab nt-desk{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
     <a href="/news.html" class="navtab nt-ph{nph}"><span class="ico">📰</span> أخبار</a>
     <a href="/matches.html" class="navtab nt-match{ma}{mph}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
 {pred_tab}    <a href="/insights.html" class="navtab{ia}"><span class="ico">🧠</span> التحليلات<span class="nav-en"> | Analysis</span></a>
 {stats_tab}{vids_tab}{reels_tab}
-  </div></nav>
+    </div></nav>{push_bell}
+  </div>
+  {TICKER_HTML}
 </header>
 <main class="wrap">
 {adsense_top_banner()}

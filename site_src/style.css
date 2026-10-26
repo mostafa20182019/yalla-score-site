@@ -1177,30 +1177,89 @@ a{color:inherit}
 @keyframes tsblink{50%{opacity:.25}}
 .ts-live{border-color:#f3c4cc !important}
 
-/* ---- phones look like FotMob's mobile site (user, 2026-10-26: «عايز شكل
-   الموقع على الموبايل يكون زى شكل موقع fotmob على الموبايل»; he picked all
-   three: compact rows, slim top bar + tabs at the bottom, light grey with
-   our blue). Phones only - the desktop layout above is untouched.
-   1. slim blue top bar: no crowd photo, no ticker, brand + bell only
-   2. the nav tabs become a fixed white tab bar at the bottom (the <nav> stays
-      inside <header>; position:fixed works because no ancestor transforms)
-   3. a league = ONE white card: grey title strip, one-line rows
-      (status · home · score/time · away), the whole row opens the match
-      card, so the «بطاقة المباراة ←» pill is dropped here */
-.nt-ph,.ph-today{display:none}              /* phone-only pieces, shown below */
+/* ---- the FotMob look (user, 2026-10-26), in three asks the same day:
+   PHONES  «عايز شكل الموقع على الموبايل يكون زى شكل موقع fotmob على الموبايل»
+           -> slim top bar, the tabs as a fixed bottom bar; then «عايز المحتوى
+           برضه يتغير» -> the home page opens on today's matches
+   DESKTOP «عايز برضه الموقع على الكمبيوتر يكون زى fotmob على الكمبيوتر»
+           -> one blue header row (brand · tabs · bell): no crowd photo, no
+           ticker; the home opens on leagues · today's matches · news
+   BOTH    a league = ONE white card: grey title strip, one-line rows
+           (status · home · score/time · away); the whole row opens the match
+           card, so the «بطاقة المباراة ←» pill is not shown
+   He picked the recommended option every time, our blue kept throughout. */
+
+/* header: one row - brand, the tabs, the bell (the <nav> sits inside .head-in) */
+.head-crowd,.site-head .ticker{display:none!important}
+.head-in{height:60px;gap:26px}
+.head-in .site-nav{align-self:stretch;background:transparent;border-top:0}
+.head-in .nav-in{height:100%}
+.head-in .brand{flex:none;white-space:nowrap}
+.head-in .site-nav{flex:0 1 auto;min-width:0}       /* tabs scroll before the bell is pushed out */
+@media(max-width:1080px){.nav-en{display:none}}
+.nt-ph{display:none}                       /* the phone «أخبار» tab (/news) */
+.daynav{top:68px}
+.mp-side{top:72px}
+
+/* match lists: one card per league, one-line rows */
+.mlist{gap:0;background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;
+  box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.comp{background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;margin-bottom:12px;
+  box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.comp-h{margin:0;padding:11px 16px;background:#f6f8fa;border-bottom:1px solid #eef2f6;color:var(--ink);
+  font-size:.9rem;text-transform:none;letter-spacing:0}
+.comp .mlist{border:0;border-radius:0;box-shadow:none;margin:0}
+.mlist>.mrow{grid-template-columns:56px minmax(0,1fr) auto minmax(0,1fr) 56px;grid-template-areas:"pill home mid away .";
+  gap:4px 10px;padding:12px 10px;background:transparent;border:0;border-top:1px solid #eef2f6;
+  border-radius:0;box-shadow:none}
+.mlist>.mrow:first-child{border-top:0}
+.mlist>.mrow:has(.pill){padding-top:12px}
+.mlist>.mrow:has(.mstretch):hover{background:#f8fafc;border-color:#eef2f6;box-shadow:none}
+.mlist>.mrow .mstretch{border-radius:0}
+.mlist>.mrow .pill{position:static;grid-area:pill;justify-self:center;padding:2px 8px;font-size:.66rem;
+  background:#eef2f6;color:var(--muted)}
+.mlist>.mrow .pill-live{background:var(--live);color:#fff}
+.mlist>.mrow .team{flex-direction:row;gap:8px;font-size:.92rem;line-height:1.3;text-align:start}
+.mlist>.mrow .team.th{grid-area:home;flex-direction:row-reverse;justify-content:flex-start;text-align:start}
+.mlist>.mrow .team.ta{grid-area:away;justify-content:flex-start}
+/* a long name takes another line (FotMob does the same), never «بشكتا...» */
+.mlist>.mrow .team>span{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+  overflow-wrap:normal}
+.mlist>.mrow .team img{width:24px;height:24px;flex:none}
+.mlist>.mrow .team .ph{font-size:1.05rem}
+.mlist>.mrow .mid{min-width:64px}
+.mlist>.mrow .score{font-size:1.05rem}
+.mlist>.mrow .ko{font-size:.9rem;color:var(--ink)}
+.mlist>.mrow .mgo-row{display:none}
+.mlist>.mrow .mcomp{border-top:0;padding-top:0;font-size:.74rem}
+/* scorers under their own team, between the status and spacer columns */
+.mlist>.mrow .mgoals{grid-column:2/5;grid-template-columns:1fr 64px 1fr}
+
+/* home: the match centre - leagues · today's matches · news (the /matches
+   columns); the nine-league chips row is for phones, where the leagues
+   column is not shown */
+.home-mc{margin:6px 0 22px}
+.home-mc .lg-item{text-decoration:none}
+.home-mc .mp-extra .mp-h{margin-bottom:12px}
+.home-mc .mp-extra .see-all{font-size:.82rem}
+.ph-today .sec-h{margin-top:0}
+.ph-none{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;text-align:center;
+  color:var(--muted);font-weight:700;margin:0 0 12px}
+@media(min-width:761px){.home-lq{display:none}}
+
 @media(max-width:760px){
   body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
   .wrap{padding:0 12px}
   .head-in{height:52px}
-  .head-crowd,.site-head .ticker{display:none!important}
   .brand{font-size:1.12rem}
   .brand .ball{width:26px;height:26px}
   .head-bell{width:34px;height:34px}
   .head-bell svg{width:18px;height:18px}
-  .site-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid #e2e8f0;
+  /* the tabs become a fixed white bar at the bottom (no ancestor transforms,
+     so position:fixed escapes the sticky header) */
+  .head-in .site-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid #e2e8f0;
     box-shadow:0 -2px 12px rgba(15,23,42,.08);padding-bottom:env(safe-area-inset-bottom,0px)}
-  .site-nav .wrap{padding:0}
-  .nav-in{height:60px;justify-content:space-around}
+  .head-in .nav-in{height:60px;justify-content:space-around}
   .navtab{flex:1 1 0;flex-direction:column;justify-content:center;gap:3px;padding:0 4px;min-width:0;
     color:#64748b;font-size:.72rem;border-bottom:0;background:transparent}
   .navtab:hover{background:transparent;color:var(--ink)}
@@ -1211,46 +1270,18 @@ a{color:inherit}
   .nt-desk{display:none}
   .navtab.nt-ph{display:inline-flex}
   .nt-match{order:-1}
-  /* the home page opens on today's matches (site_lib/today_strip.today_list);
-     the «أهم مباريات اليوم» cards would repeat them */
-  .ph-today{display:block}
-  .tc{display:none}
-  .ph-none{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;text-align:center;
-    color:var(--muted);font-weight:700;margin:0 0 12px}
   .nav-en{display:none}
   .daynav{top:60px}
-
-  .mlist{gap:0;background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;
-    box-shadow:0 1px 3px rgba(15,23,42,.05)}
-  .comp{background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;margin-bottom:12px;
-    box-shadow:0 1px 3px rgba(15,23,42,.05)}
-  .comp-h{margin:0;padding:11px 14px;background:#f6f8fa;border-bottom:1px solid #eef2f6;color:var(--ink);
-    font-size:.86rem;text-transform:none;letter-spacing:0}
-  .comp .mlist{border:0;border-radius:0;box-shadow:none;margin:0}
-  .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;grid-template-areas:"pill home mid away .";
-    gap:4px 8px;padding:12px 6px;background:transparent;border:0;border-top:1px solid #eef2f6;
-    border-radius:0;box-shadow:none}
-  .mlist>.mrow:first-child{border-top:0}
-  .mlist>.mrow:has(.pill){padding-top:12px}
-  .mlist>.mrow:has(.mstretch):hover{background:#f8fafc;box-shadow:none}
-  .mlist>.mrow .mstretch{border-radius:0}
-  .mlist>.mrow .pill{position:static;grid-area:pill;justify-self:center;padding:2px 6px;font-size:.62rem;
-    background:#eef2f6;color:var(--muted)}
-  .mlist>.mrow .pill-live{background:var(--live);color:#fff}
-  .mlist>.mrow .team{flex-direction:row;gap:7px;font-size:.84rem;line-height:1.3;text-align:start}
-  .mlist>.mrow .team.th{grid-area:home;flex-direction:row-reverse;justify-content:flex-start;text-align:start}
-  .mlist>.mrow .team.ta{grid-area:away;justify-content:flex-start}
-  /* a long name takes a second line (FotMob does the same), never «بشكتا...» */
-  .mlist>.mrow .team>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
-    overflow-wrap:normal}
-  .mlist>.mrow .team img{width:22px;height:22px;flex:none}
+  /* home: today's matches first; the leagues are the chips row above */
+  .home-mc .mp-leagues{display:none}
+  .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;gap:4px 8px;padding:12px 6px}
+  .mlist>.mrow .pill{padding:2px 6px;font-size:.62rem}
+  .mlist>.mrow .team{gap:7px;font-size:.84rem}
+  .mlist>.mrow .team img{width:22px;height:22px}
   .mlist>.mrow .team .ph{font-size:1rem}
   .mlist>.mrow .mid{min-width:46px}
   .mlist>.mrow .score{font-size:1rem}
-  .mlist>.mrow .ko{font-size:.86rem;color:var(--ink)}
-  .mlist>.mrow .mgo-row{display:none}
-  .mlist>.mrow .mcomp{border-top:0;padding-top:0;font-size:.7rem}
-  /* scorers under their own team, between the status and spacer columns */
-  .mlist>.mrow .mgoals{grid-column:2/5;grid-template-columns:1fr 46px 1fr}
-  .mlist>.mrow .team>span{-webkit-line-clamp:3}
+  .mlist>.mrow .ko{font-size:.86rem}
+  .mlist>.mrow .mcomp{font-size:.7rem}
+  .mlist>.mrow .mgoals{grid-template-columns:1fr 46px 1fr}
 }

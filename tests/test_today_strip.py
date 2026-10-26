@@ -89,13 +89,17 @@ ck("19b the follow pills ride on the heading row, the all-matches link sits UNDE
    and 'class="nf-fb"' not in cards)
 ck("19c the title row below goes without them when asked", "nf-fb" not in CARDS.news_filter_bar("x", pills=False) and "nf-fb" in CARDS.news_filter_bar("x"))
 home_py0 = io.open("site_pages/home.py", encoding="utf-8").read()
-ck("19d home.py puts them on the cards, and back on the title row on a day with no match", "today_cards(matches, pills=follow_pills())" in home_py0 and "pills=not _today_cards" in home_py0)
+# 2026-10-26: the day cards gave way to the match centre's full list (user:
+# «زى fotmob») - its heading carries the pills every day, so the title row
+# below never does
+ck("19d home.py puts them on the match centre, never on the title row below",
+   "match_centre(standings, matches, articles, pills=follow_pills())" in home_py0 and 'news_filter_bar("مباريات تحت المجهر", pills=False)' in home_py0)
 ck("20 the cap is six", len(TS.pick_today(M + [dict(M[0], match_id=str(i)) for i in range(10, 20)], today=T, limit=TS.CARDS)) == 6)
 home_tpl = io.open("site_src/templates/home.html", encoding="utf-8").read()
-ck("21 the home template places the cards right after the live card and before «تحت المجهر»",
-   0 < home_tpl.find('id="favLive"') < home_tpl.find("{{ today_cards }}") < home_tpl.find("{{ news_filter }}"))
+ck("21 the home template places the match centre right after the live card and before «تحت المجهر»",
+   0 < home_tpl.find('id="favLive"') < home_tpl.find("{{ match_centre }}") < home_tpl.find("{{ news_filter }}"))
 home_py = io.open("site_pages/home.py", encoding="utf-8").read()
-ck("22 home.py builds the block from the matches and hands it to the template", "today_cards(matches, pills=follow_pills())" in home_py and "today_cards=Markup(_today_cards)" in home_py)
+ck("22 home.py builds the match centre from the matches and hands it to the template", "match_centre(standings, matches" in home_py and "match_centre=Markup(_centre)" in home_py)
 ck("23 the stylesheet knows the cards: ONE row of six on a desktop, a swipe row below 1000px", ".tc-row{display:grid;grid-template-columns:repeat(6," in css and "@media(max-width:1000px){.tc-row{display:flex" in css)
 
 # ---- the league links row above the cards (2026-10-22)
@@ -114,7 +118,7 @@ ck("24 one chip per league with a table, in the sidebar order, each its standing
 ck("25 a chip carries the emblem (or an icon) and the Arabic label", "الدوري المصري" in bar and ("lg-logo" in bar or "lg-ico" in bar))
 ck("26 no table anywhere -> no row", CARDS.league_bar([]) == "" and CARDS.league_bar({"results": []}) == "")
 home_tpl2 = io.open("site_src/templates/home.html", encoding="utf-8").read()
-ck("27 the template places the row right above the day cards", 0 < home_tpl2.find("{{ league_bar }}") < home_tpl2.find("{{ today_cards }}"))
+ck("27 the template places the row right above the match centre", 0 < home_tpl2.find("{{ league_bar }}") < home_tpl2.find("{{ match_centre }}"))
 ck("28 home.py builds it from the standings", "league_bar(standings)" in io.open("site_pages/home.py", encoding="utf-8").read())
 ck("29 the stylesheet knows the row", ".lq{display:flex" in css and ".lq-chip{" in css)
 

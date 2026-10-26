@@ -53,9 +53,11 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     # record -> news (see site_lib/cards.py, «home, option A»)
     # «مباريات اليوم» first (user, 2026-10-22): the reason most visitors come
     from site_lib.cards import follow_pills
-    from site_lib.today_strip import today_cards, today_list
-    _today_cards = today_cards(matches, pills=follow_pills())
-    _phone_today = today_list(matches, pills=follow_pills())   # phones only (2026-10-26)
+    # the «أهم مباريات اليوم» cards (today_strip.today_cards) gave way to the
+    # match centre's full list of the day (2026-10-26); its heading carries
+    # the follow pills every day, matches or not
+    from site_lib.today_strip import match_centre
+    _centre = match_centre(standings, matches, articles, pills=follow_pills())
     _league_bar = league_bar(standings)           # the league links row above the cards (2026-10-22)
     # the follow pills live at the top of the page (user, 2026-10-22): on the
     # day cards' heading, or on the title row below on a day with no match
@@ -63,8 +65,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     # with the predictions switch off `_preds` is empty, the block renders
     # nothing, and its heading goes with it (the pills stay when they need a row)
     _focus = match_focus_block(_upcoming, _preds, datetime.date.fromisoformat(REF_TODAY), focus=HUB_FOCUS)
-    news_filter = ((news_filter_bar("مباريات تحت المجهر", pills=not _today_cards) + _focus) if _focus
-                   else ("" if _today_cards else news_filter_bar("آخر الأخبار", pills=True)))
+    news_filter = (news_filter_bar("مباريات تحت المجهر", pills=False) + _focus) if _focus else ""
     blocks = []
     used = set()
     # «الأندية العالمية» right after the match centre (user, 2026-10-22: more
@@ -133,8 +134,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
                   + ';</script>')
     write("index.html", render(
         "home.html", page_head=Markup(page_head), org_ld=Markup(org_ld), ad=Markup(ad),
-        phone_today=Markup(_phone_today),
-        league_bar=Markup(_league_bar), today_cards=Markup(_today_cards),
+        match_centre=Markup(_centre), league_bar=Markup(_league_bar),
         news_filter=Markup(news_filter), blocks=[Markup(b) for b in blocks],
         predictions=Markup(predictions), show_videos=show_videos,
         video_facades=[Markup(f) for f in video_facades], video_js=Markup(VIDEO_JS),
