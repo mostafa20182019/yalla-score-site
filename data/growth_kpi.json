@@ -243,5 +243,124 @@
     "2026-10-18"
    ]
   }
+ },
+ {
+  "date": "2026-10-26",
+  "followers": 1139,
+  "fans": 1139,
+  "fb_insights": {
+   "error": "(#100) The value must be a valid insights metric"
+  },
+  "ab_reach": {
+   "error": "(#100) The value must be a valid insights metric"
+  },
+  "telegram": 3,
+  "push_subs": 1,
+  "articles_7d": 115,
+  "posts_7d": {
+   "article": 94,
+   "article_photo": 47,
+   "article_link": 47,
+   "pred": 0,
+   "h2h": 1,
+   "goal": 72,
+   "xi": 14,
+   "card": 4,
+   "reel": 18
+  },
+  "site": {
+   "visits_7d": 710,
+   "pageviews_7d": 840,
+   "visits_prev7": 610,
+   "pageviews_prev7": 800,
+   "by_day": {
+    "2026-10-12": [
+     120,
+     170
+    ],
+    "2026-10-13": [
+     80,
+     80
+    ],
+    "2026-10-14": [
+     100,
+     110
+    ],
+    "2026-10-15": [
+     40,
+     90
+    ],
+    "2026-10-16": [
+     120,
+     120
+    ],
+    "2026-10-17": [
+     70,
+     70
+    ],
+    "2026-10-18": [
+     80,
+     160
+    ],
+    "2026-10-19": [
+     130,
+     150
+    ],
+    "2026-10-20": [
+     160,
+     170
+    ],
+    "2026-10-21": [
+     60,
+     70
+    ],
+    "2026-10-22": [
+     80,
+     110
+    ],
+    "2026-10-23": [
+     50,
+     50
+    ],
+    "2026-10-24": [
+     120,
+     170
+    ],
+    "2026-10-25": [
+     110,
+     120
+    ]
+   },
+   "top_referrers_14d": [
+    [
+     "m.facebook.com",
+     530
+    ],
+    [
+     "www.facebook.com",
+     480
+    ],
+    [
+     "(direct)",
+     150
+    ],
+    [
+     "com.google.android.googlequicksearchbox",
+     60
+    ],
+    [
+     "lm.facebook.com",
+     30
+    ],
+    [
+     "www.google.com",
+     20
+    ]
+   ],
+   "window": [
+    "2026-10-19",
+    "2026-10-25"
+   ]
+  }
  }
 ]
