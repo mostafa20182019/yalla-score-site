@@ -1187,6 +1187,7 @@ a{color:inherit}
    3. a league = ONE white card: grey title strip, one-line rows
       (status · home · score/time · away), the whole row opens the match
       card, so the «بطاقة المباراة ←» pill is dropped here */
+.nt-ph,.ph-today{display:none}              /* phone-only pieces, shown below */
 @media(max-width:760px){
   body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
   .wrap{padding:0 12px}
@@ -1203,9 +1204,19 @@ a{color:inherit}
   .navtab{flex:1 1 0;flex-direction:column;justify-content:center;gap:3px;padding:0 4px;min-width:0;
     color:#64748b;font-size:.72rem;border-bottom:0;background:transparent}
   .navtab:hover{background:transparent;color:var(--ink)}
-  .navtab.is-active{color:var(--green-d);background:transparent}
+  .navtab.is-active,.navtab.ph-on{color:var(--green-d);background:transparent}
   .navtab .ico{font-size:1.3rem;line-height:1;filter:grayscale(1);opacity:.6;transform:none!important}
-  .navtab.is-active .ico{filter:none;opacity:1}
+  .navtab.is-active .ico,.navtab.ph-on .ico{filter:none;opacity:1}
+  /* phone tabs: المباريات first (FotMob opens on Matches), «أخبار» = /news */
+  .nt-desk{display:none}
+  .navtab.nt-ph{display:inline-flex}
+  .nt-match{order:-1}
+  /* the home page opens on today's matches (site_lib/today_strip.today_list);
+     the «أهم مباريات اليوم» cards would repeat them */
+  .ph-today{display:block}
+  .tc{display:none}
+  .ph-none{background:#fff;border:1px solid #e6ebf1;border-radius:14px;padding:18px;text-align:center;
+    color:var(--muted);font-weight:700;margin:0 0 12px}
   .nav-en{display:none}
   .daynav{top:60px}
 

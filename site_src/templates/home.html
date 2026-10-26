@@ -16,6 +16,11 @@
    مباشر الآن with a stale score). It renders only from the first fresh
    /live.json reply, ~1 s after load. #}
 <div id="favLive" class="fav-wrap" hidden></div>
+{# PHONES open on today's matches, like FotMob (user, 2026-10-26: «الموقع
+   يفتح على المباريات»): every match of the day, one card per league. Hidden
+   above 760px; on phones it replaces the «أهم مباريات اليوم» cards below.
+   Same HTML for everyone - Google sees one page, nothing is redirected. #}
+{{ phone_today }}
 {# «مباريات اليوم» (user, 2026-10-22): today's most important matches as
    cards, each opening its match page - the «بطاقة المباراة». Live scores
    are painted by LIVE_JS (the ticker contract), never baked. Empty on a day

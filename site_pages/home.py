@@ -53,8 +53,9 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
     # record -> news (see site_lib/cards.py, «home, option A»)
     # «مباريات اليوم» first (user, 2026-10-22): the reason most visitors come
     from site_lib.cards import follow_pills
-    from site_lib.today_strip import today_cards
+    from site_lib.today_strip import today_cards, today_list
     _today_cards = today_cards(matches, pills=follow_pills())
+    _phone_today = today_list(matches, pills=follow_pills())   # phones only (2026-10-26)
     _league_bar = league_bar(standings)           # the league links row above the cards (2026-10-22)
     # the follow pills live at the top of the page (user, 2026-10-22): on the
     # day cards' heading, or on the title row below on a day with no match
@@ -132,6 +133,7 @@ def home_page(_acc, _cal, _preds, _upcoming, articles, fixtures, headlines, matc
                   + ';</script>')
     write("index.html", render(
         "home.html", page_head=Markup(page_head), org_ld=Markup(org_ld), ad=Markup(ad),
+        phone_today=Markup(_phone_today),
         league_bar=Markup(_league_bar), today_cards=Markup(_today_cards),
         news_filter=Markup(news_filter), blocks=[Markup(b) for b in blocks],
         predictions=Markup(predictions), show_videos=show_videos,

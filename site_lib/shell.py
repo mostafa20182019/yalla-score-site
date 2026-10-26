@@ -146,8 +146,14 @@ def head(title, desc, url, image=None, og_type="website", active="",
     ) if ogw else ""
     preload = (f'\n<link rel="preload" as="image" href="{esc(preload_img)}">'
                if preload_img else "")
-    ha = " is-active" if active == "home" else ""
+    ha = " is-active" if active in ("home", "news") else ""   # "news" = the /news lists
     ma = " is-active" if active == "matches" else ""
+    # phones (2026-10-26, FotMob): the bottom bar opens on المباريات - the home
+    # page leads with today's matches there, so «/» lights that tab, and the
+    # phone «أخبار» tab is the news list (/news.html); .ph-on is the phone
+    # highlight, .is-active stays the desktop one
+    mph = " ph-on" if active in ("home", "matches") else ""
+    nph = " ph-on" if active == "news" else ""
     aa = " is-active" if active == "analysis" else ""
     ia = " is-active" if active == "insights" else ""
     sa = " is-active" if active == "stats" else ""
@@ -210,8 +216,9 @@ def head(title, desc, url, image=None, og_type="website", active="",
   </div>
   {TICKER_HTML}
   <nav class="site-nav"><div class="wrap nav-in">
-    <a href="/" class="navtab{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
-    <a href="/matches.html" class="navtab{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/" class="navtab nt-desk{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
+    <a href="/news.html" class="navtab nt-ph{nph}"><span class="ico">📰</span> أخبار</a>
+    <a href="/matches.html" class="navtab nt-match{ma}{mph}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
 {pred_tab}    <a href="/insights.html" class="navtab{ia}"><span class="ico">🧠</span> التحليلات<span class="nav-en"> | Analysis</span></a>
 {stats_tab}{vids_tab}{reels_tab}
   </div></nav>

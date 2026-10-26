@@ -146,7 +146,7 @@ def news_archive_pages(articles, urls):
     read as scattered ("شتات"). Template: site_src/templates/news_archive.html."""
     def news_archive(fname, h1, title, desc, arts):
         page_head = Markup(head(f"{title} — {SITE_NAME}", desc,
-                                SITE_BASE + "/" + fname, active="home"))
+                                SITE_BASE + "/" + fname, active="news"))
         rows = []
         for a in arts:
             img = thumb_url(a.get("image_url"))
