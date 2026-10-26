@@ -84,14 +84,19 @@ store.record_post("article", "702", "POST702")      # even -> photo, the Graph r
 _calls = []
 def fake_get(url, timeout=30):
     _calls.append(url)
+    if "_impressions" in url:                      # retired 2025-06-15
+        raise urllib.error.HTTPError(url, 400, "Bad Request", {}, io.BytesIO(b'{"error":{"message":"(#100) The value must be a valid insights metric"}}'))
     if "/me/insights" in url:
-        return {"data": [{"name": "page_impressions_unique", "period": "week", "values": [{"value": 900}, {"value": 1200}]},
-                         {"name": "page_post_engagements", "period": "week", "values": [{"value": 80}, {"value": 95}]},
-                         {"name": "page_daily_follows_unique", "period": "week", "values": [{"value": 10}, {"value": 14}]}]}
+        assert url.count("metric=") == 1 and "," not in url.split("metric=")[1].split("&")[0], url   # one metric per call
+        page = {"page_total_media_view_unique": [900, 1200], "page_post_engagements": [80, 95],
+                "page_daily_follows_unique": [10, 14]}
+        name = url.split("metric=")[1].split("&")[0]
+        return {"data": [{"name": name, "period": "week", "values": [{"value": v} for v in page[name]]}]}
     if "/POST702/insights" in url:
         raise urllib.error.HTTPError(url, 400, "Bad Request", {}, io.BytesIO(b'{"error":{"message":"(#100) Unsupported get request"}}'))
+    assert "metric=post_total_media_view_unique" in url, url
     pid = url.split("/")[4]
-    return {"data": [{"name": "post_impressions_unique", "values": [{"value": {"POST700": 300, "POST701": 120}[pid]}]}]}
+    return {"data": [{"name": "post_total_media_view_unique", "values": [{"value": {"POST700": 300, "POST701": 120}[pid]}]}]}
 import io
 K._get = fake_get
 ins = K.page_insights("tok")
@@ -107,6 +112,31 @@ ins2, ab2 = K.page_insights("tok"), K.ab_reach("tok", now)
 ck("11 a token without read_insights -> {error} on both, never an exception", "read_insights" in ins2.get("error", "") and "read_insights" in ab2.get("error", ""), str(ins2))
 ck("12 the summary tells the user to re-issue the token", "read_insights" in K.fb_summary({"fb_insights": ins2, "ab_reach": ab2}))
 ck("13 ...and reports the numbers when it can", "1200" in K.fb_summary({"fb_insights": ins, "ab_reach": ab}) and "300.0" in K.fb_summary({"fb_insights": ins, "ab_reach": ab}))
+
+# ---- Meta's retired metrics (2026-10-26: the 10-26 row had "(#100) The value
+# must be a valid insights metric" in both cells, the token was fine)
+ck("14 no metric we ask for is one Meta retired on 2025-06-15 / 2025-11-15",
+   not any("impressions" in m or m == "page_fans" for m in list(K.PAGE_METRICS.values()) + [K.POST_REACH_METRIC]))
+K._get = fake_get
+_calls.clear()
+K.page_insights("tok")
+ck("15 one Graph call per page metric", len([u for u in _calls if "/me/insights" in u]) == len(K.PAGE_METRICS), str(len(_calls)))
+_pm = dict(K.PAGE_METRICS)
+K.PAGE_METRICS["reach_7d"] = "page_impressions_unique"          # Meta retires one more name
+try:
+    ins3 = K.page_insights("tok")
+    ck("16 a retired metric blanks only its own cell, the others still land",
+       ins3["reach_7d"] is None and ins3["engagements_7d"] == 95 and ins3["follows_7d"] == 14
+       and "valid insights metric" in ins3["errors"]["reach_7d"], str(ins3))
+    ck("17 ...and the summary names it", "reach_7d" in K.fb_summary({"fb_insights": ins3, "ab_reach": None}))
+    for k in K.PAGE_METRICS:
+        K.PAGE_METRICS[k] = "page_impressions"
+    ins4 = K.page_insights("tok")
+    ck("18 every metric retired -> {error}, and the summary blames the metric name, not the token",
+       "valid insights metric" in ins4.get("error", "") and "PAGE_METRICS" in K.fb_summary({"fb_insights": ins4, "ab_reach": None})
+       and "read_insights" not in K.fb_summary({"fb_insights": ins4, "ab_reach": None}), str(ins4))
+finally:
+    K.PAGE_METRICS.clear(); K.PAGE_METRICS.update(_pm)
 
 print("\nALL GROWTH KPI TESTS PASSED" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

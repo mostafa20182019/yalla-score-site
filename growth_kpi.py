@@ -15,7 +15,7 @@ half of the Monday read-out. Appends one row to data/growth_kpi.json:
                           (Graph: me/insights - the token needs read_insights)
   ab_reach                the photo-vs-link A/B read-out: each article post's
                           reach since the A/B began, averaged per variant
-                          (Graph: {post}/insights/post_impressions_unique)
+                          (Graph: {post}/insights/post_total_media_view_unique)
 
 A page token WITHOUT read_insights leaves fb_insights/ab_reach as
 {"error": ...} and the step summary says so - re-issue the token with
@@ -147,7 +147,16 @@ def facebook(token):
         return {"followers": None, "fans": None}
 
 
-PAGE_METRICS = ("page_impressions_unique", "page_post_engagements", "page_daily_follows_unique")
+# Meta retired page_/post_impressions_unique on 2025-06-15 (all API versions;
+# the Graph answers "(#100) The value must be a valid insights metric") - the
+# stated alternatives are the *_total_media_view_unique ("views") metrics.
+# Not the same methodology: a viewer reach, not the old impressions reach.
+# One Graph call per metric, so a metric Meta retires next only blanks its
+# own cell instead of the whole row (the 10-26 row lost all three).
+PAGE_METRICS = {"reach_7d": "page_total_media_view_unique",
+                "engagements_7d": "page_post_engagements",
+                "follows_7d": "page_daily_follows_unique"}
+POST_REACH_METRIC = "post_total_media_view_unique"
 
 
 def _insight_error(e):
@@ -165,30 +174,36 @@ def _insight_error(e):
 
 def page_insights(token):
     """{"reach_7d", "engagements_7d", "follows_7d"} for the last full week,
-    or {"error": ...}. period=week gives one value per week-ending day; the
-    newest is the week we report."""
+    or {"error": ...} when every metric fails. period=week gives one value per
+    week-ending day; the newest is the week we report. A metric that fails on
+    its own leaves its key None and its message under "errors"."""
     if not token:
         return None
-    try:
-        j = _get(f"{GRAPH}/me/insights?metric={','.join(PAGE_METRICS)}&period=week&access_token={urllib.parse.quote(token)}")
-    except Exception as e:                            # noqa: BLE001
-        return {"error": _insight_error(e)}
-    out = {}
-    for m in j.get("data") or []:
-        vals = m.get("values") or []
-        v = (vals[-1] or {}).get("value") if vals else None
-        if isinstance(v, dict):
-            v = sum(x for x in v.values() if isinstance(x, (int, float)))
-        key = {"page_impressions_unique": "reach_7d", "page_post_engagements": "engagements_7d",
-               "page_daily_follows_unique": "follows_7d"}.get(m.get("name"), m.get("name"))
-        out[key] = v
+    out, errors = {}, {}
+    for key, metric in PAGE_METRICS.items():
+        out[key] = None
+        try:
+            j = _get(f"{GRAPH}/me/insights?metric={metric}&period=week&access_token={urllib.parse.quote(token)}")
+        except Exception as e:                        # noqa: BLE001
+            errors[key] = f"{metric}: {_insight_error(e)}"
+            continue
+        for m in j.get("data") or []:
+            vals = m.get("values") or []
+            v = (vals[-1] or {}).get("value") if vals else None
+            if isinstance(v, dict):
+                v = sum(x for x in v.values() if isinstance(x, (int, float)))
+            out[key] = v
+    if len(errors) == len(PAGE_METRICS):
+        return {"error": next(iter(errors.values()))}
+    if errors:
+        out["errors"] = errors
     return out
 
 
 def post_reach(token, post_id):
-    """post_impressions_unique for one post, or None (a reel or a deleted
-    post answers an error - that post just drops out of the average)."""
-    j = _get(f"{GRAPH}/{post_id}/insights?metric=post_impressions_unique&access_token={urllib.parse.quote(token)}")
+    """POST_REACH_METRIC for one post, or None (a reel or a deleted post
+    answers an error - that post just drops out of the average)."""
+    j = _get(f"{GRAPH}/{post_id}/insights?metric={POST_REACH_METRIC}&access_token={urllib.parse.quote(token)}")
     for m in j.get("data") or []:
         vals = m.get("values") or []
         if vals and isinstance(vals[0].get("value"), (int, float)):
@@ -351,9 +366,14 @@ def fb_summary(r):
     if ins is None:
         return "فيسبوك: لا رمز صفحة"
     if isinstance(ins, dict) and ins.get("error"):
+        if "valid insights metric" in ins["error"]:
+            return ("فيسبوك: ميتا ألغت اسم مقياس نطلبه - حدّث PAGE_METRICS في growth_kpi.py "
+                    f"(الخطأ: {ins['error'][:160]})")
         return ("فيسبوك: الرمز لا يقرأ الإحصاءات - أعد إصداره بصلاحيتي pages_read_engagement و read_insights "
                 f"(الخطأ: {ins['error'][:120]})")
     lines = [f"فيسبوك هذا الأسبوع: وصول **{ins.get('reach_7d')}** · تفاعل {ins.get('engagements_7d')} · متابعون جدد {ins.get('follows_7d')}"]
+    for key, msg in (ins.get("errors") or {}).items():
+        lines.append(f"تعذّر {key}: {msg[:160]}")
     if isinstance(ab, dict) and not ab.get("error"):
         p, l = ab.get("photo") or {}, ab.get("link") or {}
         lines.append(f"A/B صورة مقابل رابط منذ {ab.get('since')}: صورة {p.get('n')} منشورًا بمتوسط وصول {p.get('avg')} (وسيط {p.get('median')}) · "
