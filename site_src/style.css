@@ -1194,6 +1194,9 @@ a{color:inherit}
 .head-in{height:60px;gap:26px}
 .head-in .site-nav{align-self:stretch;background:transparent;border-top:0}
 .head-in .nav-in{height:100%}
+/* «البطولات» is a PHONE tab (user, 2026-10-26: «شيل تاب البطولات من جهاز
+   الكمبيوتر») - the desktop home has the leagues column instead */
+.navtab.nt-leagues{display:none}
 .head-in .brand{flex:none;white-space:nowrap}
 .head-in .site-nav{flex:0 1 auto;min-width:0}       /* tabs scroll before the bell is pushed out */
 @media(max-width:1080px){.nav-en{display:none}}
@@ -1274,6 +1277,7 @@ a{color:inherit}
   .navtab{flex:1 1 0;flex-direction:column;justify-content:center;gap:3px;padding:0 4px;min-width:0;
     color:#64748b;font-size:.72rem;border-bottom:0;background:transparent}
   .navtab:hover{background:transparent;color:var(--ink)}
+  .navtab.nt-leagues{display:inline-flex}
   .navtab.is-active{color:var(--green-d);background:transparent}
   .navtab .ico{font-size:1.3rem;line-height:1;filter:grayscale(1);opacity:.6;transform:none!important}
   .navtab.is-active .ico{filter:none;opacity:1}

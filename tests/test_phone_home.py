@@ -87,6 +87,8 @@ glob, block = css[:m], css[m:]
 ck("11 everywhere: no crowd photo, no ticker; one-line rows without the «بطاقة المباراة» pill",
    ".head-crowd,.site-head .ticker{display:none!important}" in glob and ".mlist>.mrow .mgo-row{display:none}" in glob)
 ck("12 no phone/desktop tab split left in the stylesheet", "nt-ph" not in css and "nt-desk" not in css and "ph-on" not in css)
+ck("12b «البطولات» is a phone tab: hidden on desktop, shown in the bottom bar (user 2026-10-26)",
+   ".navtab.nt-leagues{display:none}" in glob and ".navtab.nt-leagues{display:inline-flex}" in block)
 ck("13 phones: the bottom bar, and the home is the matches column only",
    "position:fixed" in block and ".home-mc .mp-leagues,.home-mc .mp-extra,.ph-today>.sec-h{display:none}" in block)
 
