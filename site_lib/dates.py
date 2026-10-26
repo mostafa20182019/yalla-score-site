@@ -59,6 +59,19 @@ def rel_ar(iso):
     return _ar_ago(h // 24, "يوم", "يومين", "أيام")
 
 
+def art_date(a):
+    """<time> «26 أكتوبر 2026» for an article's publication day - the date
+    the news and analysis LISTS show next to each piece (user, 2026-10-26:
+    «زود جنب الخبر التاريخ وجنب التحليل التاريخ»). The bylines stay
+    date-less (the 10-07 decision); this is the list rows only."""
+    d = a.get("pub_date") or (a.get("pub_ts") or "")[:10]
+    try:
+        dt = datetime.date.fromisoformat(d)
+    except Exception:
+        return ""
+    return f'<time class="al-date" datetime="{dt.isoformat()}">{dt.day} {_AR_MONTHS[dt.month]} {dt.year}</time>'
+
+
 def art_reltime(a):
     """<time> element showing 'منذ X' for an article carrying pub_ts (full ISO
     timestamp, present on articles published since 2026-08-31). Older articles
