@@ -63,10 +63,13 @@ def nav(active):
 n = nav("home")
 ck("7 the phone news tab is /news, the desktop one stays «/»",
    'href="/news.html" class="navtab nt-ph' in n and 'href="/" class="navtab nt-desk is-active' in n)
-ck("8 on «/» the phone bar lights المباريات", re.search(r'href="/matches.html" class="navtab nt-match[^"]*ph-on', n) is not None)
+ck("8 on «/» the phone bar lights المباريات", re.search(r'href="/" class="navtab nt-ph nt-match[^"]*ph-on', n) is not None)
+ck("8b the phone المباريات tab opens the home (the new list), the desktop one /matches (user 2026-10-26)",
+   'href="/" class="navtab nt-ph nt-match' in n and 'href="/matches.html" class="navtab nt-desk' in n)
+ck("8c on /matches the phone tab is lit too", re.search(r'class="navtab nt-ph nt-match[^"]*ph-on', nav("matches")) is not None)
 ck("9 /news lights the phone «أخبار» tab, not المباريات",
    re.search(r'href="/news.html" class="navtab nt-ph[^"]*ph-on', nav("news")) is not None
-   and "ph-on" not in re.search(r'href="/matches.html" class="([^"]*)"', nav("news")).group(1))
+   and "ph-on" not in re.search(r'class="(navtab nt-ph nt-match[^"]*)"', nav("news")).group(1))
 ck("10 matches_js still finds exactly one /matches tab", n.count('href="/matches.html"') == 1)
 
 css = open("site_src/style.css", encoding="utf-8").read()

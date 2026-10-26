@@ -151,7 +151,10 @@ def head(title, desc, url, image=None, og_type="website", active="",
     # phones (2026-10-26, FotMob): the bottom bar opens on المباريات - the home
     # page leads with today's matches there, so «/» lights that tab, and the
     # phone «أخبار» tab is the news list (/news.html); .ph-on is the phone
-    # highlight, .is-active stays the desktop one
+    # highlight, .is-active stays the desktop one. The phone المباريات tab
+    # opens «/» - the home IS the matches list there (user, 2026-10-26: «لما
+    # بضغط تحت على تاب المباريات بيودينى على الصفحة القديمة ... عايز يودينى
+    # على الرئيسية»); the desktop tab keeps /matches
     mph = " ph-on" if active in ("home", "matches") else ""
     nph = " ph-on" if active == "news" else ""
     aa = " is-active" if active == "analysis" else ""
@@ -216,7 +219,8 @@ def head(title, desc, url, image=None, og_type="website", active="",
     <nav class="site-nav"><div class="nav-in">
     <a href="/" class="navtab nt-desk{ha}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
     <a href="/news.html" class="navtab nt-ph{nph}"><span class="ico">📰</span> أخبار</a>
-    <a href="/matches.html" class="navtab nt-match{ma}{mph}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/" class="navtab nt-ph nt-match{mph}"><span class="ico">⚽</span> المباريات</a>
+    <a href="/matches.html" class="navtab nt-desk{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
 {pred_tab}    <a href="/insights.html" class="navtab{ia}"><span class="ico">🧠</span> التحليلات<span class="nav-en"> | Analysis</span></a>
 {stats_tab}{vids_tab}{reels_tab}
     </div></nav>{push_bell}
