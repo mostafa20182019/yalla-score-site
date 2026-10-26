@@ -1176,3 +1176,70 @@ a{color:inherit}
 .ts .tk-dot{width:7px;height:7px;border-radius:50%;background:#c8102e;display:inline-block;animation:tsblink 1.2s infinite}
 @keyframes tsblink{50%{opacity:.25}}
 .ts-live{border-color:#f3c4cc !important}
+
+/* ---- phones look like FotMob's mobile site (user, 2026-10-26: «عايز شكل
+   الموقع على الموبايل يكون زى شكل موقع fotmob على الموبايل»; he picked all
+   three: compact rows, slim top bar + tabs at the bottom, light grey with
+   our blue). Phones only - the desktop layout above is untouched.
+   1. slim blue top bar: no crowd photo, no ticker, brand + bell only
+   2. the nav tabs become a fixed white tab bar at the bottom (the <nav> stays
+      inside <header>; position:fixed works because no ancestor transforms)
+   3. a league = ONE white card: grey title strip, one-line rows
+      (status · home · score/time · away), the whole row opens the match
+      card, so the «بطاقة المباراة ←» pill is dropped here */
+@media(max-width:760px){
+  body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
+  .wrap{padding:0 12px}
+  .head-in{height:52px}
+  .head-crowd,.site-head .ticker{display:none!important}
+  .brand{font-size:1.12rem}
+  .brand .ball{width:26px;height:26px}
+  .head-bell{width:34px;height:34px}
+  .head-bell svg{width:18px;height:18px}
+  .site-nav{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid #e2e8f0;
+    box-shadow:0 -2px 12px rgba(15,23,42,.08);padding-bottom:env(safe-area-inset-bottom,0px)}
+  .site-nav .wrap{padding:0}
+  .nav-in{height:60px;justify-content:space-around}
+  .navtab{flex:1 1 0;flex-direction:column;justify-content:center;gap:3px;padding:0 4px;min-width:0;
+    color:#64748b;font-size:.72rem;border-bottom:0;background:transparent}
+  .navtab:hover{background:transparent;color:var(--ink)}
+  .navtab.is-active{color:var(--green-d);background:transparent}
+  .navtab .ico{font-size:1.3rem;line-height:1;filter:grayscale(1);opacity:.6;transform:none!important}
+  .navtab.is-active .ico{filter:none;opacity:1}
+  .nav-en{display:none}
+  .daynav{top:60px}
+
+  .mlist{gap:0;background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;
+    box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  .comp{background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;margin-bottom:12px;
+    box-shadow:0 1px 3px rgba(15,23,42,.05)}
+  .comp-h{margin:0;padding:11px 14px;background:#f6f8fa;border-bottom:1px solid #eef2f6;color:var(--ink);
+    font-size:.86rem;text-transform:none;letter-spacing:0}
+  .comp .mlist{border:0;border-radius:0;box-shadow:none;margin:0}
+  .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;grid-template-areas:"pill home mid away .";
+    gap:4px 8px;padding:12px 6px;background:transparent;border:0;border-top:1px solid #eef2f6;
+    border-radius:0;box-shadow:none}
+  .mlist>.mrow:first-child{border-top:0}
+  .mlist>.mrow:has(.pill){padding-top:12px}
+  .mlist>.mrow:has(.mstretch):hover{background:#f8fafc;box-shadow:none}
+  .mlist>.mrow .mstretch{border-radius:0}
+  .mlist>.mrow .pill{position:static;grid-area:pill;justify-self:center;padding:2px 6px;font-size:.62rem;
+    background:#eef2f6;color:var(--muted)}
+  .mlist>.mrow .pill-live{background:var(--live);color:#fff}
+  .mlist>.mrow .team{flex-direction:row;gap:7px;font-size:.84rem;line-height:1.3;text-align:start}
+  .mlist>.mrow .team.th{grid-area:home;flex-direction:row-reverse;justify-content:flex-start;text-align:start}
+  .mlist>.mrow .team.ta{grid-area:away;justify-content:flex-start}
+  /* a long name takes a second line (FotMob does the same), never «بشكتا...» */
+  .mlist>.mrow .team>span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+    overflow-wrap:normal}
+  .mlist>.mrow .team img{width:22px;height:22px;flex:none}
+  .mlist>.mrow .team .ph{font-size:1rem}
+  .mlist>.mrow .mid{min-width:46px}
+  .mlist>.mrow .score{font-size:1rem}
+  .mlist>.mrow .ko{font-size:.86rem;color:var(--ink)}
+  .mlist>.mrow .mgo-row{display:none}
+  .mlist>.mrow .mcomp{border-top:0;padding-top:0;font-size:.7rem}
+  /* scorers under their own team, between the status and spacer columns */
+  .mlist>.mrow .mgoals{grid-column:2/5;grid-template-columns:1fr 46px 1fr}
+  .mlist>.mrow .team>span{-webkit-line-clamp:3}
+}
