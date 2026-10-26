@@ -249,18 +249,20 @@
   "followers": 1139,
   "fans": 1139,
   "fb_insights": {
-   "error": "(#100) The value must be a valid insights metric"
+   "reach_7d": null,
+   "engagements_7d": null,
+   "follows_7d": null
   },
   "ab_reach": {
-   "error": "(#100) The value must be a valid insights metric"
+   "error": "Unsupported get request. Object with ID '104238901487012_1465999978972779' does not exist, cannot be loaded due to missing permissions, or does not support this operation. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api"
   },
   "telegram": 3,
   "push_subs": 1,
-  "articles_7d": 115,
+  "articles_7d": 116,
   "posts_7d": {
-   "article": 94,
-   "article_photo": 47,
-   "article_link": 47,
+   "article": 97,
+   "article_photo": 49,
+   "article_link": 48,
    "pred": 0,
    "h2h": 1,
    "goal": 72,
@@ -269,92 +271,56 @@
    "reel": 18
   },
   "site": {
-   "visits_7d": 710,
-   "pageviews_7d": 840,
-   "visits_prev7": 610,
-   "pageviews_prev7": 800,
+   "visits_7d": 500,
+   "pageviews_7d": 500,
+   "visits_prev7": 200,
+   "pageviews_prev7": 400,
    "by_day": {
     "2026-10-12": [
-     120,
-     170
-    ],
-    "2026-10-13": [
-     80,
-     80
-    ],
-    "2026-10-14": [
      100,
-     110
-    ],
-    "2026-10-15": [
-     40,
-     90
-    ],
-    "2026-10-16": [
-     120,
-     120
-    ],
-    "2026-10-17": [
-     70,
-     70
+     300
     ],
     "2026-10-18": [
-     80,
-     160
-    ],
-    "2026-10-19": [
-     130,
-     150
+     100,
+     100
     ],
     "2026-10-20": [
-     160,
-     170
+     100,
+     100
     ],
     "2026-10-21": [
-     60,
-     70
+     100,
+     100
     ],
     "2026-10-22": [
-     80,
-     110
-    ],
-    "2026-10-23": [
-     50,
-     50
+     100,
+     100
     ],
     "2026-10-24": [
-     120,
-     170
+     100,
+     100
     ],
     "2026-10-25": [
-     110,
-     120
+     100,
+     100
     ]
    },
    "top_referrers_14d": [
     [
-     "m.facebook.com",
-     530
+     "www.facebook.com",
+     400
     ],
     [
-     "www.facebook.com",
-     480
+     "m.facebook.com",
+     100
     ],
     [
      "(direct)",
-     150
+     100
     ],
     [
      "com.google.android.googlequicksearchbox",
-     60
-    ],
-    [
-     "lm.facebook.com",
-     30
-    ],
-    [
-     "www.google.com",
-     20
+     100
     ]
    ],
    "window": [
