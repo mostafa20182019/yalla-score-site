@@ -88,8 +88,8 @@ glob, block = css[:m], css[m:]
 ck("11 everywhere: no crowd photo, no ticker; one-line rows without the «بطاقة المباراة» pill",
    ".head-crowd,.site-head .ticker{display:none!important}" in glob and ".mlist>.mrow .mgo-row{display:none}" in glob)
 ck("12 no phone/desktop tab split left in the stylesheet", "nt-ph" not in css and "nt-desk" not in css and "ph-on" not in css)
-ck("12b «البطولات» is a phone tab: hidden on desktop, shown in the bottom bar (user 2026-10-26)",
-   ".navtab.nt-leagues{display:none}" in glob and ".navtab.nt-leagues{display:inline-flex}" in block)
+ck("12b «البطولات» is a tab on desktop too again (user 2026-10-27: «اعمل تاب للبطولات على جهاز الكمبيوتر»)",
+   "nt-leagues{display:none}" not in css)
 ck("13 phones: the bottom bar, and the home is the matches column only",
    "position:fixed" in block and ".home-mc .mp-leagues,.home-mc .mp-extra{display:none}" in block)
 ck("13b the Facebook + Telegram icons sit in the header beside the bell, on every page (user 2026-10-26)",
@@ -108,6 +108,8 @@ ck("14b no «المباريات» heading over the list (user 2026-10-26: «شي
    '<h2 class="page-h">المباريات</h2>' not in mc and "nf-fb" not in mc)
 ck("15 three columns: leagues | today's matches | news",
    0 <= mc.find("mp-leagues") < mc.find("ph-today") < mc.find("mp-extra"))
+ck("16b the column is «أهم البطولات» with «كل البطولات ←» to /leagues",
+   '<h2 class="mp-h">أهم البطولات</h2>' in mc and '<a class="see-all" href="/leagues.html">كل البطولات ←</a>' in mc)
 ck("16 the leagues column = the nine-league list with a table, each to its standings page",
    mc.count('class="lg-item"') == 2 and "/standings/" in mc and "Some Cup" not in mc, str(mc.count('class="lg-item"')))
 ck("17 the news column: one featured story with a picture + the rest as rows, and /news",

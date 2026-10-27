@@ -163,7 +163,12 @@ def match_centre(standings, matches, articles, ge_idx):
     days, _ = day_sections(matches, ge_idx)
     days_html = render("_days.html", filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days)
     return ('<div class="mpage home-mc">'
-            f'<aside class="mp-side mp-leagues"><h2 class="mp-h">البطولات</h2><div class="lg-list">{leagues}</div></aside>'
+            # the IMPORTANT leagues here; every competition is on /leagues, the
+            # «البطولات» tab (user, 2026-10-27: «اعمل تاب للبطولات على جهاز
+            # الكمبيوتر يكون فيها كل البطولات، اما البطولات الموجودة فى صفحة
+            # المباريات فهتكون عارضة البطولات المهمة»)
+            f'<aside class="mp-side mp-leagues"><h2 class="mp-h">أهم البطولات</h2><div class="lg-list">{leagues}</div>'
+            '<a class="see-all" href="/leagues.html">كل البطولات ←</a></aside>'
             # no heading over the list (user, 2026-10-26: «شيل كلمة المباريات»);
             # the follow icons moved next to the header bell
             f'<div class="mp-main"><section class="ph-today" aria-label="المباريات">{days_html}</section></div>'
