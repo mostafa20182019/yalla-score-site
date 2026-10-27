@@ -66,8 +66,13 @@ ck("admin form: a match preview/report hides it (kind untouched)", 'a.kind==="pr
 b = io.open("build_site.py", encoding="utf-8").read()
 ck("build() writes the page (with the match index inputs)", "insights_page(articles, urls, m_all, fixtures)" in b)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()
-ck("nav: «التوقعات» -> /analysis, «التحليلات» -> /insights",
-   '📈</span> التوقعات' in sh and 'href="/insights.html" class="navtab{ia}"' in sh and "🧠</span> التحليلات" in sh)
+# 2026-10-26: the analyses live in the news (user: «دخل التحليلات جوه الاخبار
+# وحذف التاب الخاصة بالتحليلات») - no tab; /insights stays and lights أخبار
+ck("nav: «التوقعات» -> /analysis (behind the switch); no «التحليلات» tab",
+   '📈</span> التوقعات' in sh and 'href="/insights.html" class="navtab' not in sh and "🧠</span> التحليلات" not in sh)
+na = io.open("site_src/templates/news_archive.html", encoding="utf-8").read()
+ck("the news lists label an analysis with its kind, like /insights did",
+   '<span class="ins-k ins-{{ r.k }}">{{ r.kl }}</span>' in na and '"kl": kind_label.get(k' in io.open("site_pages/articles.py", encoding="utf-8").read())
 
 print(f"\n{len(fails)} failed" if fails else "\nall passed")
 sys.exit(1 if fails else 0)

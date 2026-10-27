@@ -6,7 +6,7 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import hashlib
 import os
-from site_lib.articles import _MOVED_LINKS, article_clubs, author_ld, article_moved_stub, article_url, byline, embeds_block, fix_moved_links, match_data_sources, related_articles
+from site_lib.articles import _MOVED_LINKS, article_clubs, author_ld, article_moved_stub, article_url, byline, embeds_block, fix_moved_links, insight_kind, match_data_sources, related_articles
 from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_RELTIME, DIST, FB_PAGE_URL, PLACEHOLDER_IMGS, SHOW_HEADLINES, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, load
 from site_lib.dates import art_date, art_reltime, rel_ar
 from site_lib.names import _egy_article, _eur_article
@@ -148,8 +148,14 @@ def news_archive_pages(articles, urls):
         page_head = Markup(head(f"{title} — {SITE_NAME}", desc,
                                 SITE_BASE + "/" + fname, active="news"))
         rows = []
+        # the analyses live in the news lists since 2026-10-26 (user: «دخل
+        # التحليلات جوه الاخبار وحذف التاب الخاصة بالتحليلات») - a piece that is
+        # one wears the same chip the /insights list gave it
+        from site_pages.insights import INSIGHT_KINDS
+        kind_label = dict(INSIGHT_KINDS)
         for a in arts:
             img = thumb_url(a.get("image_url"))
+            k = insight_kind(a)
             rows.append({
                 "href": Markup(article_href(a)),
                 "th": Markup(f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
@@ -158,6 +164,7 @@ def news_archive_pages(articles, urls):
                 "summary": strip_tags(a.get("summary") or ""),
                 "byline": byline(a),
                 "when": Markup(art_reltime(a) or esc(a.get("pub_date") or "")) if BYLINE_RELTIME else Markup(art_date(a)),
+                "k": k or "", "kl": kind_label.get(k, "") if k else "",
             })
         write(fname, render("news_archive.html", page_head=page_head, h1=h1,
                             crumbs=(fname != "news.html"), rows=rows, page_foot=Markup(foot())))

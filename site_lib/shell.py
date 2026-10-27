@@ -153,9 +153,10 @@ def head(title, desc, url, image=None, og_type="website", active="",
     # Phones turn the same <nav> into the bottom bar (style.css).
     ma = " is-active" if active in ("home", "matches") else ""
     la = " is-active" if active == "leagues" else ""
-    na = " is-active" if active == "news" else ""
+    # no «التحليلات» tab since 2026-10-26 (user: «دخل التحليلات جوه الاخبار
+    # وحذف التاب الخاصة بالتحليلات») - /insights lights أخبار
+    na = " is-active" if active in ("news", "insights") else ""
     aa = " is-active" if active == "analysis" else ""
-    ia = " is-active" if active == "insights" else ""
     sa = " is-active" if active == "stats" else ""
     # the predictions switch (site_lib/config.py): no tab while it is off
     pred_tab = (f'    <a href="/analysis.html" class="navtab{aa}"><span class="ico">📈</span> التوقعات<span class="nav-en"> | Predictions</span></a>' + "\n"
@@ -222,8 +223,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
     <a href="/" class="navtab nt-match{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
     <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>
     <a href="/news.html" class="navtab nt-news{na}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
-{pred_tab}    <a href="/insights.html" class="navtab{ia}"><span class="ico">🧠</span> التحليلات<span class="nav-en"> | Analysis</span></a>
-{stats_tab}{vids_tab}{reels_tab}
+{pred_tab}{stats_tab}{vids_tab}{reels_tab}
     </div></nav><span class="head-social">{social}</span>{push_bell}
   </div>
   {TICKER_HTML}

@@ -64,9 +64,10 @@ n = nav("home")
 # ONE tab set for phones and desktop (2026-10-26, «دى هتكون الرئيسية ...
 # والاخبار ... تظهر فى تاب اسمها اخبار»)
 tabs = re.findall(r'<a href="([^"]+)" class="navtab[^"]*"><span class="ico">[^<]*</span> ([^<]+)', n)
-ck("7 the tabs, in order: المباريات (the home) · البطولات · أخبار (/news) · التحليلات",
+ck("7 the tabs, in order: المباريات (the home) · البطولات · أخبار (/news) - no التحليلات tab since 2026-10-26",
    [(h, t.strip()) for h, t in tabs] == [("/", "المباريات"), ("/leagues.html", "البطولات"),
-                                        ("/news.html", "أخبار"), ("/insights.html", "التحليلات")], str(tabs))
+                                        ("/news.html", "أخبار")], str(tabs))
+ck("7b /insights lights أخبار (the analyses live in the news)", 'nt-news is-active' in nav("insights"))
 ck("8 «/» and /matches light المباريات", all(re.search(r'href="/" class="navtab nt-match is-active"', nav(a)) for a in ("home", "matches")))
 ck("9 the news lists light أخبار, not المباريات",
    'href="/news.html" class="navtab nt-news is-active"' in nav("news") and 'nt-match is-active' not in nav("news"))

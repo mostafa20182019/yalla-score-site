@@ -134,7 +134,6 @@ def match_centre(standings, matches, articles, ge_idx):
     from site_lib.render import Markup, render
     from site_lib.snippets import FILTERS_HTML, MATCHES_JS
     from site_lib.competitions import COMP_SLUG, LEAGUE_BAR
-    from site_lib.articles import insight_kind
     from site_lib.crests import comp_icon
     from site_lib.shell import thumb_url
     from site_lib.urls import article_href
@@ -144,7 +143,7 @@ def match_centre(standings, matches, articles, ge_idx):
         f'<a class="lg-item" href="/standings/{COMP_SLUG[c]}.html">{comp_icon(c)} '
         f'<span class="lg-name">{esc(comp_label(c))}</span></a>'
         for c in LEAGUE_BAR if c in with_table and c in COMP_SLUG)
-    news = [a for a in articles if not insight_kind(a)][:6]
+    news = articles[:6]          # analyses are news too since 2026-10-26
     feat = next((a for a in news if a.get("image_url")), None)
     side = ""
     if feat:
