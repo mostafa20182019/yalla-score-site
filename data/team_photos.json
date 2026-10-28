@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-10-24T08:05:27+00:00",
+ "generated_at": "2026-10-28T19:53:47+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2014,6 +2014,17 @@
    "is_person": true,
    "source": "team-photos/real-madrid/real-madrid-bernabeu-entrance.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "real-madrid-eduardo-camavinga-real-madrid-2022.jpg",
+   "credit": "صورة: إدواردو كامافينجا لاعب ريال مدريد خلال احتفال الفريق بالثنائية في مدريد عام 2022 — تصوير Fotografías Archimadrid.es، رخصة CC BY 2.0 (ويكيميديا كومنز)",
+   "subject": "إدواردو كامافينجا لاعب ريال مدريد",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2022,
+   "is_person": true,
+   "source": "team-photos/real-madrid/eduardo-camavinga-real-madrid-2022.jpg",
+   "added": "2026-10-28"
   },
   {
    "file": "real-madrid-identity-card.jpg",
