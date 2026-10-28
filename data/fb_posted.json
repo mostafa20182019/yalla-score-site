@@ -1,5 +1,29 @@
 {
  "articles": {
+  "1000": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474636271442483",
+   "title": "تقرير: لاتسيو يسحق ساسولو 6-2 ويواصل صدارة الدوري الإيطالي",
+   "ts": 1793134011
+  },
+  "1001": {
+   "og_ok": true,
+   "post_id": "104238901487012_1475057618067015",
+   "title": "الأهلي يفرض غرامة مالية على أحمد رضا بعد مشادة مع الجهاز الفني",
+   "ts": 1793168490
+  },
+  "1002": {
+   "og_ok": true,
+   "post_id": "104238901487012_1475090651397045",
+   "title": "تقرير: روما يتغلب على كالياري 4-2 في مباراة أهداف بالدوري الإيطالي",
+   "ts": 1793171348
+  },
+  "1003": {
+   "og_ok": true,
+   "post_id": "104238901487012_1475139904725453",
+   "title": "غرامة 602 يورو على برشلونة بسبب أزمة ألفاريز.. والنادي يستأنف",
+   "ts": 1793175698
+  },
   "350": {
    "post_id": "104238901487012_1425812626324848",
    "title": "رسميًا.. طرابزون سبور يتعاقد مع فرانكولينو دجو لتعزيز هجوم فريق محمد صلاح",
@@ -3408,6 +3432,66 @@
    "post_id": "104238901487012_1473980798174697",
    "title": "تقرير: باريس سان جيرمان يفوز على أولمبيك ليون 2-0 في الدوري الفرنسي",
    "ts": 1793084926
+  },
+  "990": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474028398169937",
+   "title": "إيقاف مدرب نابولي أليجري مباراتين بعد طرده أمام روما",
+   "ts": 1793089082
+  },
+  "991": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474113818161395",
+   "title": "البنك الاهلي × المصري في الدوري المصري: الموعد والقناة والأرقام",
+   "ts": 1793095953
+  },
+  "992": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474172844822159",
+   "title": "معتصم سالم: جماهير الأهلي لن تشجع بيراميدز في أبطال أفريقيا",
+   "ts": 1793100285
+  },
+  "993": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474209721485138",
+   "title": "الزمالك يستضيف المقاولون العرب في الجولة 8 من الدوري المصري",
+   "ts": 1793103075
+  },
+  "994": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474248714814572",
+   "title": "نادر السيد يرد 100 ألف دولار للزمالك بعد قرار بالتحفظ عليه",
+   "ts": 1793105784
+  },
+  "995": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474318351474275",
+   "title": "قبل المباراة: ميلان يستضيف بولونيا في الدوري الإيطالي",
+   "ts": 1793110581
+  },
+  "996": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474471614792282",
+   "title": "قبل المباراة: فينيزيا يستضيف إنتر ميلان المتصدر في الدوري الإيطالي",
+   "ts": 1793121089
+  },
+  "997": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474476598125117",
+   "title": "الزمالك يعلن إصابة محمد عواد قبل مواجهة المقاولون العرب",
+   "ts": 1793121457
+  },
+  "998": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474577694781674",
+   "title": "باريس سان جيرمان يعلن نجاح جراحة الرباط الصليبي لكفاراتسخيليا",
+   "ts": 1793129162
+  },
+  "999": {
+   "og_ok": true,
+   "post_id": "104238901487012_1474596491446461",
+   "title": "باريس سان جيرمان يتوج بجائزة أفضل نادٍ في العالم 2026",
+   "ts": 1793130839
   }
  },
  "failed": {
@@ -3463,6 +3547,11 @@
    "post_id": "104238901487012_1473637118209065",
    "title": "day 2026-10-26",
    "ts": 1793053041
+  },
+  "day:2026-10-27": {
+   "post_id": "104238901487012_1474693318103445",
+   "title": "day 2026-10-27",
+   "ts": 1793139439
   }
  },
  "posted_ft": {
@@ -4331,8 +4420,18 @@
  "posted_indexnow": {
   "https://yallascore.site/": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059788
+   "title": "2026-10-28",
+   "ts": 1793146028
+  },
+  "https://yallascore.site/a/1001": {
+   "post_id": "1",
+   "title": "2026-10-28T09:08:44+03:00",
+   "ts": 1793168366
+  },
+  "https://yallascore.site/a/1003": {
+   "post_id": "1",
+   "title": "2026-10-28T11:05:33+03:00",
+   "ts": 1793175659
   },
   "https://yallascore.site/a/838": {
    "post_id": "1",
@@ -4669,6 +4768,36 @@
    "title": "2026-10-27T09:10:09+03:00",
    "ts": 1793082117
   },
+  "https://yallascore.site/a/990": {
+   "post_id": "1",
+   "title": "2026-10-27T11:05:01+03:00",
+   "ts": 1793089049
+  },
+  "https://yallascore.site/a/992": {
+   "post_id": "1",
+   "title": "2026-10-27T14:08:29+03:00",
+   "ts": 1793100250
+  },
+  "https://yallascore.site/a/994": {
+   "post_id": "1",
+   "title": "2026-10-27T15:43:56+03:00",
+   "ts": 1793105756
+  },
+  "https://yallascore.site/a/997": {
+   "post_id": "1",
+   "title": "2026-10-27T20:01:37+03:00",
+   "ts": 1793121417
+  },
+  "https://yallascore.site/a/998": {
+   "post_id": "1",
+   "title": "2026-10-27T22:09:52+03:00",
+   "ts": 1793129120
+  },
+  "https://yallascore.site/a/999": {
+   "post_id": "1",
+   "title": "2026-10-27T22:39:00+03:00",
+   "ts": 1793130801
+  },
   "https://yallascore.site/analysis": {
    "post_id": "1",
    "title": "2026-10-25",
@@ -4746,153 +4875,153 @@
   },
   "https://yallascore.site/fixtures/afcon-qualifiers": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059795
+   "title": "2026-10-28",
+   "ts": 1793146032
   },
   "https://yallascore.site/fixtures/champions-league": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059795
+   "title": "2026-10-28",
+   "ts": 1793146032
   },
   "https://yallascore.site/fixtures/egypt": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059793
+   "title": "2026-10-28",
+   "ts": 1793146030
   },
   "https://yallascore.site/fixtures/england": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059793
+   "title": "2026-10-28",
+   "ts": 1793146030
   },
   "https://yallascore.site/fixtures/europa-league": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059796
+   "title": "2026-10-28",
+   "ts": 1793146032
   },
   "https://yallascore.site/fixtures/france": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059794
+   "title": "2026-10-28",
+   "ts": 1793146031
   },
   "https://yallascore.site/fixtures/germany": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059794
+   "title": "2026-10-28",
+   "ts": 1793146031
   },
   "https://yallascore.site/fixtures/italy": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059794
+   "title": "2026-10-28",
+   "ts": 1793146031
   },
   "https://yallascore.site/fixtures/nations-league": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059796
+   "title": "2026-10-28",
+   "ts": 1793146032
   },
   "https://yallascore.site/fixtures/saudi": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059795
+   "title": "2026-10-28",
+   "ts": 1793146031
   },
   "https://yallascore.site/fixtures/spain": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059793
+   "title": "2026-10-28",
+   "ts": 1793146031
   },
   "https://yallascore.site/fixtures/turkey": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059795
+   "title": "2026-10-28",
+   "ts": 1793146031
   },
   "https://yallascore.site/insights": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059796
+   "title": "2026-10-28",
+   "ts": 1793146032
   },
   "https://yallascore.site/m/4763747": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061515
+   "title": "2026-10-28",
+   "ts": 1793146973
   },
   "https://yallascore.site/m/4763748": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061527
+   "title": "2026-10-28",
+   "ts": 1793147956
   },
   "https://yallascore.site/m/4763749": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061522
+   "title": "2026-10-28",
+   "ts": 1793147952
   },
   "https://yallascore.site/m/4763750": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061518
+   "title": "2026-10-28",
+   "ts": 1793146976
   },
   "https://yallascore.site/m/4763751": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061518
+   "title": "2026-10-28",
+   "ts": 1793146977
   },
   "https://yallascore.site/m/4763752": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061521
+   "title": "2026-10-28",
+   "ts": 1793146980
   },
   "https://yallascore.site/m/4763753": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061525
+   "title": "2026-10-28",
+   "ts": 1793147954
   },
   "https://yallascore.site/m/4763754": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061514
+   "title": "2026-10-28",
+   "ts": 1793146973
   },
   "https://yallascore.site/m/4763755": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060708
+   "title": "2026-10-28",
+   "ts": 1793146971
   },
   "https://yallascore.site/m/4763756": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060691
+   "title": "2026-10-28",
+   "ts": 1793146043
   },
   "https://yallascore.site/m/4763757": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060694
+   "title": "2026-10-28",
+   "ts": 1793146955
   },
   "https://yallascore.site/m/4763758": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060688
+   "title": "2026-10-28",
+   "ts": 1793146041
   },
   "https://yallascore.site/m/4763759": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060702
+   "title": "2026-10-28",
+   "ts": 1793146963
   },
   "https://yallascore.site/m/4763760": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060697
+   "title": "2026-10-28",
+   "ts": 1793146958
   },
   "https://yallascore.site/m/4763761": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060700
+   "title": "2026-10-28",
+   "ts": 1793146961
   },
   "https://yallascore.site/m/4763762": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060698
+   "title": "2026-10-28",
+   "ts": 1793146959
   },
   "https://yallascore.site/m/4763763": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060698
+   "title": "2026-10-28",
+   "ts": 1793146959
   },
   "https://yallascore.site/m/4763764": {
    "post_id": "1",
@@ -4901,13 +5030,13 @@
   },
   "https://yallascore.site/m/4763765": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059809
+   "title": "2026-10-28",
+   "ts": 1793146037
   },
   "https://yallascore.site/m/4763766": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059809
+   "title": "2026-10-28",
+   "ts": 1793146036
   },
   "https://yallascore.site/m/4763767": {
    "post_id": "1",
@@ -4981,103 +5110,103 @@
   },
   "https://yallascore.site/m/4764328": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059809
+   "title": "2026-10-28",
+   "ts": 1793146036
   },
   "https://yallascore.site/m/4764329": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060690
+   "title": "2026-10-28",
+   "ts": 1793146043
   },
   "https://yallascore.site/m/4789420": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060707
+   "title": "2026-10-28",
+   "ts": 1793146970
   },
   "https://yallascore.site/m/4789421": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061515
+   "title": "2026-10-28",
+   "ts": 1793146974
   },
   "https://yallascore.site/m/4789422": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060707
+   "title": "2026-10-28",
+   "ts": 1793146970
   },
   "https://yallascore.site/m/4789423": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060708
+   "title": "2026-10-28",
+   "ts": 1793146971
   },
   "https://yallascore.site/m/4789424": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060707
+   "title": "2026-10-28",
+   "ts": 1793146971
   },
   "https://yallascore.site/m/4789425": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060707
+   "title": "2026-10-28",
+   "ts": 1793146970
   },
   "https://yallascore.site/m/4789426": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061516
+   "title": "2026-10-28",
+   "ts": 1793146975
   },
   "https://yallascore.site/m/4789427": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060707
+   "title": "2026-10-28",
+   "ts": 1793146970
   },
   "https://yallascore.site/m/4789428": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061519
+   "title": "2026-10-28",
+   "ts": 1793146977
   },
   "https://yallascore.site/m/4789429": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060688
+   "title": "2026-10-28",
+   "ts": 1793146041
   },
   "https://yallascore.site/m/4789430": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060691
+   "title": "2026-10-28",
+   "ts": 1793146043
   },
   "https://yallascore.site/m/4789431": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060687
+   "title": "2026-10-28",
+   "ts": 1793146040
   },
   "https://yallascore.site/m/4789432": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060689
+   "title": "2026-10-28",
+   "ts": 1793146041
   },
   "https://yallascore.site/m/4789433": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060687
+   "title": "2026-10-28",
+   "ts": 1793146040
   },
   "https://yallascore.site/m/4789434": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059813
+   "title": "2026-10-28",
+   "ts": 1793146039
   },
   "https://yallascore.site/m/4789435": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060696
+   "title": "2026-10-28",
+   "ts": 1793146957
   },
   "https://yallascore.site/m/4789436": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060692
+   "title": "2026-10-28",
+   "ts": 1793146045
   },
   "https://yallascore.site/m/4789437": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060688
+   "title": "2026-10-28",
+   "ts": 1793146040
   },
   "https://yallascore.site/m/4789438": {
    "post_id": "1",
@@ -5231,53 +5360,53 @@
   },
   "https://yallascore.site/m/4804721": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059811
+   "title": "2026-10-28",
+   "ts": 1793146038
   },
   "https://yallascore.site/m/4804722": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059811
+   "title": "2026-10-28",
+   "ts": 1793146038
   },
   "https://yallascore.site/m/4804723": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059813
+   "title": "2026-10-28",
+   "ts": 1793146039
   },
   "https://yallascore.site/m/4804724": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059813
+   "title": "2026-10-28",
+   "ts": 1793146040
   },
   "https://yallascore.site/m/4804725": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060688
+   "title": "2026-10-28",
+   "ts": 1793146041
   },
   "https://yallascore.site/m/4804726": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060689
+   "title": "2026-10-28",
+   "ts": 1793146041
   },
   "https://yallascore.site/m/4804727": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060689
+   "title": "2026-10-28",
+   "ts": 1793146041
   },
   "https://yallascore.site/m/4804729": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060694
+   "title": "2026-10-28",
+   "ts": 1793146955
   },
   "https://yallascore.site/m/4804730": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060695
+   "title": "2026-10-28",
+   "ts": 1793146957
   },
   "https://yallascore.site/m/4804731": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060696
+   "title": "2026-10-28",
+   "ts": 1793146957
   },
   "https://yallascore.site/m/4828711": {
    "post_id": "1",
@@ -5541,158 +5670,158 @@
   },
   "https://yallascore.site/m/4875552": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059810
+   "title": "2026-10-28",
+   "ts": 1793146037
   },
   "https://yallascore.site/m/558529": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061528
+   "title": "2026-10-28",
+   "ts": 1793147956
   },
   "https://yallascore.site/m/558530": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061526
+   "title": "2026-10-28",
+   "ts": 1793147955
   },
   "https://yallascore.site/m/558531": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061520
+   "title": "2026-10-28",
+   "ts": 1793146979
   },
   "https://yallascore.site/m/558532": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061515
+   "title": "2026-10-28",
+   "ts": 1793146974
   },
   "https://yallascore.site/m/558533": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061521
+   "title": "2026-10-28",
+   "ts": 1793146980
   },
   "https://yallascore.site/m/558534": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061516
+   "title": "2026-10-28",
+   "ts": 1793146974
   },
   "https://yallascore.site/m/558535": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061519
+   "title": "2026-10-28",
+   "ts": 1793146977
   },
   "https://yallascore.site/m/558536": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061523
+   "title": "2026-10-28",
+   "ts": 1793147953
   },
   "https://yallascore.site/m/558537": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060708
+   "title": "2026-10-28",
+   "ts": 1793146972
   },
   "https://yallascore.site/m/558538": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061523
+   "title": "2026-10-28",
+   "ts": 1793147953
   },
   "https://yallascore.site/m/558539": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060691
+   "title": "2026-10-28",
+   "ts": 1793146044
   },
   "https://yallascore.site/m/558540": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060701
+   "title": "2026-10-28",
+   "ts": 1793146962
   },
   "https://yallascore.site/m/558541": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060702
+   "title": "2026-10-28",
+   "ts": 1793146964
   },
   "https://yallascore.site/m/558542": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060695
+   "title": "2026-10-28",
+   "ts": 1793146956
   },
   "https://yallascore.site/m/558543": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060698
+   "title": "2026-10-28",
+   "ts": 1793146959
   },
   "https://yallascore.site/m/558544": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060699
+   "title": "2026-10-28",
+   "ts": 1793146960
   },
   "https://yallascore.site/m/558545": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060702
+   "title": "2026-10-28",
+   "ts": 1793146964
   },
   "https://yallascore.site/m/558546": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060699
+   "title": "2026-10-28",
+   "ts": 1793146960
   },
   "https://yallascore.site/m/558547": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060701
+   "title": "2026-10-28",
+   "ts": 1793146963
   },
   "https://yallascore.site/m/558548": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060696
+   "title": "2026-10-28",
+   "ts": 1793146957
   },
   "https://yallascore.site/m/558549": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059811
+   "title": "2026-10-28",
+   "ts": 1793146038
   },
   "https://yallascore.site/m/558550": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059812
+   "title": "2026-10-28",
+   "ts": 1793146038
   },
   "https://yallascore.site/m/558551": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060687
+   "title": "2026-10-28",
+   "ts": 1793146040
   },
   "https://yallascore.site/m/558552": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059812
+   "title": "2026-10-28",
+   "ts": 1793146039
   },
   "https://yallascore.site/m/558553": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059812
+   "title": "2026-10-28",
+   "ts": 1793146039
   },
   "https://yallascore.site/m/558554": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059812
+   "title": "2026-10-28",
+   "ts": 1793146039
   },
   "https://yallascore.site/m/558555": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059810
+   "title": "2026-10-28",
+   "ts": 1793146037
   },
   "https://yallascore.site/m/558556": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059810
+   "title": "2026-10-28",
+   "ts": 1793146037
   },
   "https://yallascore.site/m/558557": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059811
+   "title": "2026-10-28",
+   "ts": 1793146038
   },
   "https://yallascore.site/m/558558": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059813
+   "title": "2026-10-28",
+   "ts": 1793146040
   },
   "https://yallascore.site/m/558559": {
    "post_id": "1",
@@ -5796,98 +5925,98 @@
   },
   "https://yallascore.site/m/559630": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061528
+   "title": "2026-10-28",
+   "ts": 1793147956
   },
   "https://yallascore.site/m/559631": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061525
+   "title": "2026-10-28",
+   "ts": 1793147954
   },
   "https://yallascore.site/m/559632": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061525
+   "title": "2026-10-28",
+   "ts": 1793147954
   },
   "https://yallascore.site/m/559633": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061525
+   "title": "2026-10-28",
+   "ts": 1793147954
   },
   "https://yallascore.site/m/559634": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061526
+   "title": "2026-10-28",
+   "ts": 1793147954
   },
   "https://yallascore.site/m/559635": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061521
+   "title": "2026-10-28",
+   "ts": 1793146979
   },
   "https://yallascore.site/m/559636": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061524
+   "title": "2026-10-28",
+   "ts": 1793147953
   },
   "https://yallascore.site/m/559637": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061518
+   "title": "2026-10-28",
+   "ts": 1793146977
   },
   "https://yallascore.site/m/559638": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060709
+   "title": "2026-10-28",
+   "ts": 1793146972
   },
   "https://yallascore.site/m/559639": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060690
+   "title": "2026-10-28",
+   "ts": 1793146043
   },
   "https://yallascore.site/m/559640": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060696
+   "title": "2026-10-28",
+   "ts": 1793146961
   },
   "https://yallascore.site/m/559641": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060697
+   "title": "2026-10-28",
+   "ts": 1793146964
   },
   "https://yallascore.site/m/559642": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060700
+   "title": "2026-10-28",
+   "ts": 1793146961
   },
   "https://yallascore.site/m/559643": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060697
+   "title": "2026-10-28",
+   "ts": 1793146958
   },
   "https://yallascore.site/m/559644": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060689
+   "title": "2026-10-28",
+   "ts": 1793146041
   },
   "https://yallascore.site/m/559645": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060701
+   "title": "2026-10-28",
+   "ts": 1793146963
   },
   "https://yallascore.site/m/559646": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060694
+   "title": "2026-10-28",
+   "ts": 1793146042
   },
   "https://yallascore.site/m/559647": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060699
+   "title": "2026-10-28",
+   "ts": 1793146960
   },
   "https://yallascore.site/m/559648": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059810
+   "title": "2026-10-28",
+   "ts": 1793146037
   },
   "https://yallascore.site/m/559649": {
    "post_id": "1",
@@ -6076,103 +6205,103 @@
   },
   "https://yallascore.site/m/560622": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060702
+   "title": "2026-10-28",
+   "ts": 1793146965
   },
   "https://yallascore.site/m/560623": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060692
+   "title": "2026-10-28",
+   "ts": 1793146045
   },
   "https://yallascore.site/m/560624": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060693
+   "title": "2026-10-28",
+   "ts": 1793146045
   },
   "https://yallascore.site/m/560625": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060693
+   "title": "2026-10-28",
+   "ts": 1793146045
   },
   "https://yallascore.site/m/560626": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060690
+   "title": "2026-10-28",
+   "ts": 1793146043
   },
   "https://yallascore.site/m/560627": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060695
+   "title": "2026-10-28",
+   "ts": 1793146956
   },
   "https://yallascore.site/m/560628": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060697
+   "title": "2026-10-28",
+   "ts": 1793146958
   },
   "https://yallascore.site/m/560629": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060693
+   "title": "2026-10-28",
+   "ts": 1793146045
   },
   "https://yallascore.site/m/560630": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060693
+   "title": "2026-10-28",
+   "ts": 1793146955
   },
   "https://yallascore.site/m/560631": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060700
+   "title": "2026-10-28",
+   "ts": 1793146962
   },
   "https://yallascore.site/m/560632": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061514
+   "title": "2026-10-28",
+   "ts": 1793146973
   },
   "https://yallascore.site/m/560633": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061517
+   "title": "2026-10-28",
+   "ts": 1793146976
   },
   "https://yallascore.site/m/560634": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061514
+   "title": "2026-10-28",
+   "ts": 1793146972
   },
   "https://yallascore.site/m/560635": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061522
+   "title": "2026-10-28",
+   "ts": 1793147952
   },
   "https://yallascore.site/m/560636": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061522
+   "title": "2026-10-28",
+   "ts": 1793147952
   },
   "https://yallascore.site/m/560637": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061523
+   "title": "2026-10-28",
+   "ts": 1793147953
   },
   "https://yallascore.site/m/560638": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061523
+   "title": "2026-10-28",
+   "ts": 1793147953
   },
   "https://yallascore.site/m/560639": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061526
+   "title": "2026-10-28",
+   "ts": 1793147955
   },
   "https://yallascore.site/m/560640": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061517
+   "title": "2026-10-28",
+   "ts": 1793146976
   },
   "https://yallascore.site/m/560641": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061520
+   "title": "2026-10-28",
+   "ts": 1793146978
   },
   "https://yallascore.site/m/564685": {
    "post_id": "1",
@@ -6246,8 +6375,8 @@
   },
   "https://yallascore.site/m/564721": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059810
+   "title": "2026-10-28",
+   "ts": 1793146037
   },
   "https://yallascore.site/m/564722": {
    "post_id": "1",
@@ -6281,103 +6410,103 @@
   },
   "https://yallascore.site/m/564728": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060701
+   "title": "2026-10-28",
+   "ts": 1793146962
   },
   "https://yallascore.site/m/564729": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060701
+   "title": "2026-10-28",
+   "ts": 1793146963
   },
   "https://yallascore.site/m/564730": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060690
+   "title": "2026-10-28",
+   "ts": 1793146043
   },
   "https://yallascore.site/m/564731": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060703
+   "title": "2026-10-28",
+   "ts": 1793146965
   },
   "https://yallascore.site/m/564732": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060697
+   "title": "2026-10-28",
+   "ts": 1793146958
   },
   "https://yallascore.site/m/564733": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060698
+   "title": "2026-10-28",
+   "ts": 1793146959
   },
   "https://yallascore.site/m/564734": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060700
+   "title": "2026-10-28",
+   "ts": 1793146961
   },
   "https://yallascore.site/m/564735": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060694
+   "title": "2026-10-28",
+   "ts": 1793146955
   },
   "https://yallascore.site/m/564736": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060695
+   "title": "2026-10-28",
+   "ts": 1793146956
   },
   "https://yallascore.site/m/564737": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060690
+   "title": "2026-10-28",
+   "ts": 1793146042
   },
   "https://yallascore.site/m/564738": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061522
+   "title": "2026-10-28",
+   "ts": 1793146980
   },
   "https://yallascore.site/m/564739": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061520
+   "title": "2026-10-28",
+   "ts": 1793146978
   },
   "https://yallascore.site/m/564740": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061514
+   "title": "2026-10-28",
+   "ts": 1793146972
   },
   "https://yallascore.site/m/564741": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061521
+   "title": "2026-10-28",
+   "ts": 1793146979
   },
   "https://yallascore.site/m/564742": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061527
+   "title": "2026-10-28",
+   "ts": 1793147955
   },
   "https://yallascore.site/m/564743": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061524
+   "title": "2026-10-28",
+   "ts": 1793147954
   },
   "https://yallascore.site/m/564744": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061515
+   "title": "2026-10-28",
+   "ts": 1793146973
   },
   "https://yallascore.site/m/564745": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061518
+   "title": "2026-10-28",
+   "ts": 1793146976
   },
   "https://yallascore.site/m/564746": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061528
+   "title": "2026-10-28",
+   "ts": 1793147956
   },
   "https://yallascore.site/m/564747": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061527
+   "title": "2026-10-28",
+   "ts": 1793147955
   },
   "https://yallascore.site/m/565821": {
    "post_id": "1",
@@ -6471,93 +6600,93 @@
   },
   "https://yallascore.site/m/565839": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060691
+   "title": "2026-10-28",
+   "ts": 1793146044
   },
   "https://yallascore.site/m/565840": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060691
+   "title": "2026-10-28",
+   "ts": 1793146044
   },
   "https://yallascore.site/m/565841": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060699
+   "title": "2026-10-28",
+   "ts": 1793146960
   },
   "https://yallascore.site/m/565842": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060692
+   "title": "2026-10-28",
+   "ts": 1793146044
   },
   "https://yallascore.site/m/565843": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060692
+   "title": "2026-10-28",
+   "ts": 1793146044
   },
   "https://yallascore.site/m/565844": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060700
+   "title": "2026-10-28",
+   "ts": 1793146962
   },
   "https://yallascore.site/m/565845": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060695
+   "title": "2026-10-28",
+   "ts": 1793146956
   },
   "https://yallascore.site/m/565846": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060689
+   "title": "2026-10-28",
+   "ts": 1793146042
   },
   "https://yallascore.site/m/565847": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060692
+   "title": "2026-10-28",
+   "ts": 1793146045
   },
   "https://yallascore.site/m/565848": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061516
+   "title": "2026-10-28",
+   "ts": 1793146975
   },
   "https://yallascore.site/m/565849": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061520
+   "title": "2026-10-28",
+   "ts": 1793146979
   },
   "https://yallascore.site/m/565850": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061516
+   "title": "2026-10-28",
+   "ts": 1793146975
   },
   "https://yallascore.site/m/565851": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061517
+   "title": "2026-10-28",
+   "ts": 1793146975
   },
   "https://yallascore.site/m/565852": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060708
+   "title": "2026-10-28",
+   "ts": 1793146971
   },
   "https://yallascore.site/m/565853": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061517
+   "title": "2026-10-28",
+   "ts": 1793146976
   },
   "https://yallascore.site/m/565854": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061526
+   "title": "2026-10-28",
+   "ts": 1793147955
   },
   "https://yallascore.site/m/565855": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061524
+   "title": "2026-10-28",
+   "ts": 1793147953
   },
   "https://yallascore.site/m/565856": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793061527
+   "title": "2026-10-28",
+   "ts": 1793147956
   },
   "https://yallascore.site/m/575359": {
    "post_id": "1",
@@ -6626,113 +6755,113 @@
   },
   "https://yallascore.site/m/575377": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060703
+   "title": "2026-10-28",
+   "ts": 1793146965
   },
   "https://yallascore.site/m/575378": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060703
+   "title": "2026-10-28",
+   "ts": 1793146965
   },
   "https://yallascore.site/m/575379": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060703
+   "title": "2026-10-28",
+   "ts": 1793146966
   },
   "https://yallascore.site/m/575380": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060703
+   "title": "2026-10-28",
+   "ts": 1793146966
   },
   "https://yallascore.site/m/575381": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060704
+   "title": "2026-10-28",
+   "ts": 1793146966
   },
   "https://yallascore.site/m/575382": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060704
+   "title": "2026-10-28",
+   "ts": 1793146966
   },
   "https://yallascore.site/m/575383": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060704
+   "title": "2026-10-28",
+   "ts": 1793146967
   },
   "https://yallascore.site/m/575384": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060704
+   "title": "2026-10-28",
+   "ts": 1793146967
   },
   "https://yallascore.site/m/575385": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060705
+   "title": "2026-10-28",
+   "ts": 1793146967
   },
   "https://yallascore.site/m/575386": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060705
+   "title": "2026-10-28",
+   "ts": 1793146967
   },
   "https://yallascore.site/m/575387": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060705
+   "title": "2026-10-28",
+   "ts": 1793146968
   },
   "https://yallascore.site/m/575388": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060705
+   "title": "2026-10-28",
+   "ts": 1793146968
   },
   "https://yallascore.site/m/575389": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060705
+   "title": "2026-10-28",
+   "ts": 1793146968
   },
   "https://yallascore.site/m/575390": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060706
+   "title": "2026-10-28",
+   "ts": 1793146968
   },
   "https://yallascore.site/m/575391": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060706
+   "title": "2026-10-28",
+   "ts": 1793146969
   },
   "https://yallascore.site/m/575392": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060706
+   "title": "2026-10-28",
+   "ts": 1793146969
   },
   "https://yallascore.site/m/575393": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060706
+   "title": "2026-10-28",
+   "ts": 1793146969
   },
   "https://yallascore.site/m/575394": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793060706
+   "title": "2026-10-28",
+   "ts": 1793146969
   },
   "https://yallascore.site/matches": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059789
+   "title": "2026-10-28",
+   "ts": 1793146028
   },
   "https://yallascore.site/news": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059788
+   "title": "2026-10-28",
+   "ts": 1793146028
   },
   "https://yallascore.site/news/egypt": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059789
+   "title": "2026-10-28",
+   "ts": 1793146028
   },
   "https://yallascore.site/news/europe": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059789
+   "title": "2026-10-28",
+   "ts": 1793146028
   },
   "https://yallascore.site/predictions": {
    "post_id": "1",
@@ -6741,158 +6870,158 @@
   },
   "https://yallascore.site/scorers/champions-league": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059791
+   "title": "2026-10-28",
+   "ts": 1793146030
   },
   "https://yallascore.site/scorers/egypt": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059790
+   "title": "2026-10-28",
+   "ts": 1793146028
   },
   "https://yallascore.site/scorers/england": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059790
+   "title": "2026-10-28",
+   "ts": 1793146029
   },
   "https://yallascore.site/scorers/europa-league": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059792
+   "title": "2026-10-28",
+   "ts": 1793146030
   },
   "https://yallascore.site/scorers/france": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059791
+   "title": "2026-10-28",
+   "ts": 1793146029
   },
   "https://yallascore.site/scorers/germany": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059791
+   "title": "2026-10-28",
+   "ts": 1793146029
   },
   "https://yallascore.site/scorers/italy": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059790
+   "title": "2026-10-28",
+   "ts": 1793146029
   },
   "https://yallascore.site/scorers/saudi": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059791
+   "title": "2026-10-28",
+   "ts": 1793146030
   },
   "https://yallascore.site/scorers/spain": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059790
+   "title": "2026-10-28",
+   "ts": 1793146029
   },
   "https://yallascore.site/scorers/turkey": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059791
+   "title": "2026-10-28",
+   "ts": 1793146030
   },
   "https://yallascore.site/standings/champions-league": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059798
+   "title": "2026-10-28",
+   "ts": 1793146034
   },
   "https://yallascore.site/standings/egypt": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059796
+   "title": "2026-10-28",
+   "ts": 1793146032
   },
   "https://yallascore.site/standings/england": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059797
+   "title": "2026-10-28",
+   "ts": 1793146033
   },
   "https://yallascore.site/standings/europa-league": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059798
+   "title": "2026-10-28",
+   "ts": 1793146034
   },
   "https://yallascore.site/standings/france": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059798
+   "title": "2026-10-28",
+   "ts": 1793146033
   },
   "https://yallascore.site/standings/germany": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059797
+   "title": "2026-10-28",
+   "ts": 1793146033
   },
   "https://yallascore.site/standings/italy": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059797
+   "title": "2026-10-28",
+   "ts": 1793146033
   },
   "https://yallascore.site/standings/saudi": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059798
+   "title": "2026-10-28",
+   "ts": 1793146034
   },
   "https://yallascore.site/standings/spain": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059797
+   "title": "2026-10-28",
+   "ts": 1793146033
   },
   "https://yallascore.site/standings/turkey": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059798
+   "title": "2026-10-28",
+   "ts": 1793146034
   },
   "https://yallascore.site/team/al-ahly": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059799
+   "title": "2026-10-28",
+   "ts": 1793146034
   },
   "https://yallascore.site/team/arsenal": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059800
+   "title": "2026-10-28",
+   "ts": 1793146036
   },
   "https://yallascore.site/team/barcelona": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059800
+   "title": "2026-10-28",
+   "ts": 1793146035
   },
   "https://yallascore.site/team/chelsea": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059801
+   "title": "2026-10-28",
+   "ts": 1793146036
   },
   "https://yallascore.site/team/liverpool": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059801
+   "title": "2026-10-28",
+   "ts": 1793146036
   },
   "https://yallascore.site/team/man-city": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059800
+   "title": "2026-10-28",
+   "ts": 1793146035
   },
   "https://yallascore.site/team/man-united": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059800
+   "title": "2026-10-28",
+   "ts": 1793146035
   },
   "https://yallascore.site/team/pyramids": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059799
+   "title": "2026-10-28",
+   "ts": 1793146035
   },
   "https://yallascore.site/team/real-madrid": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059800
+   "title": "2026-10-28",
+   "ts": 1793146035
   },
   "https://yallascore.site/team/trabzonspor": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059801
+   "title": "2026-10-28",
+   "ts": 1793146036
   },
   "https://yallascore.site/team/zamalek": {
    "post_id": "1",
-   "title": "2026-10-27",
-   "ts": 1793059799
+   "title": "2026-10-28",
+   "ts": 1793146035
   }
  },
  "posted_ko": {
@@ -7010,6 +7139,21 @@
   }
  },
  "posted_push": {
+  "1000": {
+   "post_id": "1/1",
+   "title": "تقرير: لاتسيو يسحق ساسولو 6-2 ويواصل صدارة الدوري الإيطالي",
+   "ts": 1793164090
+  },
+  "1001": {
+   "post_id": "1/1",
+   "title": "الأهلي يفرض غرامة مالية على أحمد رضا بعد مشادة مع الجهاز الفني",
+   "ts": 1793168370
+  },
+  "1003": {
+   "post_id": "1/1",
+   "title": "غرامة 602 يورو على برشلونة بسبب أزمة ألفاريز.. والنادي يستأنف",
+   "ts": 1793175666
+  },
   "623": {
    "post_id": "1/1",
    "title": "الأهلي يكشف إصابتي بنشرقي والدبيس قبل ديربي الزمالك",
@@ -7774,6 +7918,21 @@
    "post_id": "1/1",
    "title": "تقرير: هوفنهايم يصدم باير ليفركوزن بثلاثية في الدوري الألماني",
    "ts": 1793081376
+  },
+  "991": {
+   "post_id": "1/1",
+   "title": "البنك الاهلي × المصري في الدوري المصري: الموعد والقناة والأرقام",
+   "ts": 1793095921
+  },
+  "992": {
+   "post_id": "1/1",
+   "title": "معتصم سالم: جماهير الأهلي لن تشجع بيراميدز في أبطال أفريقيا",
+   "ts": 1793100255
+  },
+  "998": {
+   "post_id": "1/1",
+   "title": "باريس سان جيرمان يعلن نجاح جراحة الرباط الصليبي لكفاراتسخيليا",
+   "ts": 1793135439
   }
  },
  "posted_reel": {
@@ -8037,6 +8196,21 @@
   }
  },
  "posted_tg": {
+  "1000": {
+   "post_id": "375",
+   "title": "تقرير: لاتسيو يسحق ساسولو 6-2 ويواصل صدارة الدوري الإيطالي",
+   "ts": 1793133983
+  },
+  "1001": {
+   "post_id": "376",
+   "title": "الأهلي يفرض غرامة مالية على أحمد رضا بعد مشادة مع الجهاز الفني",
+   "ts": 1793168367
+  },
+  "1003": {
+   "post_id": "377",
+   "title": "غرامة 602 يورو على برشلونة بسبب أزمة ألفاريز.. والنادي يستأنف",
+   "ts": 1793175662
+  },
   "580": {
    "post_id": "2",
    "title": "معتمد جمال يعيد سيف جعفر لتدريبات الزمالك بعد أزمة الاستبعاد",
@@ -9856,6 +10030,51 @@
    "post_id": "365",
    "title": "هاري كين يتوج بالكرة الذهبية 2026 متقدمًا على مبابي ويامال",
    "ts": 1793082119
+  },
+  "990": {
+   "post_id": "366",
+   "title": "إيقاف مدرب نابولي أليجري مباراتين بعد طرده أمام روما",
+   "ts": 1793089052
+  },
+  "991": {
+   "post_id": "367",
+   "title": "البنك الاهلي × المصري في الدوري المصري: الموعد والقناة والأرقام",
+   "ts": 1793095915
+  },
+  "992": {
+   "post_id": "368",
+   "title": "معتصم سالم: جماهير الأهلي لن تشجع بيراميدز في أبطال أفريقيا",
+   "ts": 1793100252
+  },
+  "993": {
+   "post_id": "369",
+   "title": "الزمالك يستضيف المقاولون العرب في الجولة 8 من الدوري المصري",
+   "ts": 1793103044
+  },
+  "994": {
+   "post_id": "370",
+   "title": "نادر السيد يرد 100 ألف دولار للزمالك بعد قرار بالتحفظ عليه",
+   "ts": 1793105759
+  },
+  "995": {
+   "post_id": "371",
+   "title": "قبل المباراة: ميلان يستضيف بولونيا في الدوري الإيطالي",
+   "ts": 1793110552
+  },
+  "997": {
+   "post_id": "372",
+   "title": "الزمالك يعلن إصابة محمد عواد قبل مواجهة المقاولون العرب",
+   "ts": 1793121420
+  },
+  "998": {
+   "post_id": "373",
+   "title": "باريس سان جيرمان يعلن نجاح جراحة الرباط الصليبي لكفاراتسخيليا",
+   "ts": 1793129125
+  },
+  "999": {
+   "post_id": "374",
+   "title": "باريس سان جيرمان يتوج بجائزة أفضل نادٍ في العالم 2026",
+   "ts": 1793130805
   }
  },
  "posted_xi": {
