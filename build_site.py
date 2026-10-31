@@ -228,7 +228,8 @@ def build():
     m_all = match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
                         articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, _mstats)
     _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
-                                             sc_by_comp, sc_ok, st_by_comp, urls)
+                                             sc_by_comp, sc_ok, st_by_comp, urls,
+                                             fx_by_comp, m_all, ge_idx)
     fixtures_pages(fx_by_comp, season, st_by_comp, urls)
     leagues_page(_comps_with_table, fx_by_comp, urls)   # «البطولات» tab (2026-10-26)
     if PREDICTIONS_ON:            # /analysis + /analysis/<league> + /predictions

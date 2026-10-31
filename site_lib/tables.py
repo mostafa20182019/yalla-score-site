@@ -112,6 +112,22 @@ def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=N
     return "".join(parts)
 
 
+def round_on_show(fx):
+    """(round number, its matches) for the «الجولة» block of /standings: the
+    round with a live match, else the round of the nearest upcoming one, else
+    the feed's `current`. Not `current` alone: on 2026-10-31 it still said
+    Spain 8 (all played but one match postponed to December) while round 11
+    was on, and Saudi 10 while 12 was on. POSTPONED rows never pick a round."""
+    rounds = (fx or {}).get("rounds") or []
+    pool = [m for r in rounds for m in r.get("matches", [])]
+    live = [m for m in pool if (m.get("status") or "").upper() == "LIVE"]
+    up = sorted((m for m in pool if (m.get("status") or "").upper() == "UPCOMING"),
+                key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    rn = (live or up or [{}])[0].get("round", (fx or {}).get("current"))
+    rd = next((r for r in rounds if r.get("round") == rn), None)
+    return (rn, rd.get("matches") or []) if rd else (None, [])
+
+
 def _scorer_face(sc):
     """Player photo when the feed has one, else the club crest, else a ball."""
     u = sc.get("photo") or sc.get("crest") or ""

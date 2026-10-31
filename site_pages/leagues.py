@@ -8,20 +8,22 @@ import datetime
 import os
 from site_lib.competitions import COMP_SLUG
 from site_lib.config import DIST, PREDICTIONS_ON, REF_TODAY, SHOW_STATS_PAGE, SITE_BASE, SITE_NAME
+from site_lib.matchdata import match_goals
 from site_lib.names import comp_label
 from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, foot, head, page_head_ad, write
 from site_lib.snippets import ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import scorers_read, standings_analysis
-from site_lib.tables import clubs_panel, league_rounds_panel, match_row, scorers_list, standings_table
+from site_lib.tables import (clubs_panel, league_rounds_panel, match_row, round_on_show,
+                             scorers_list, standings_table)
 from site_lib.text import esc
 from site_lib.urls import breadcrumb_ld, match_url
 from site_lib.league_desc import fixtures_desc, scorers_desc, standings_desc
 
 
 def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp, sc_ok,
-                 st_by_comp, urls):
+                 st_by_comp, urls, fx_by_comp=None, m_all=None, ge_idx=None):
     """Evergreen SEO landing pages with their own URLs: «ترتيب الدوري المصري» and
     «هدافو الدوري المصري» are huge monthly queries that a tab inside /matches can
     never rank for. One /standings/<slug> per league with a table, and one
@@ -68,10 +70,24 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             _an = ""
             scorers = scorers_list(sc, "أهداف") if sc else ""
             assists = scorers_list(asst, "صناعة") if asst else ""
+            # the whole round on show, played + live + to come (user, 2026-10-31:
+            # «عايز فى دى يجيب مباريات الجولة كلها»); the freshest copy of each
+            # match comes from m_all, and only a match with a page gets a link.
+            # A league without round data keeps the next six matches.
+            rn, rd_ms = round_on_show((fx_by_comp or {}).get(comp))
+            if rd_ms:
+                m_all = m_all or {}
+                shown = sorted((m_all.get(m.get("match_id"), m) for m in rd_ms),
+                               key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+                next_title = f"الجولة {rn} من {label}"
+            else:
+                shown, next_title = up_next, f"مباريات {label} القادمة"
             next_rows = []
-            for m in up_next:
+            for m in shown:
+                has_page = m_all is None or m.get("match_id") in m_all
                 next_rows.append(match_row(m, show_time=True, show_comp=False, show_date=True,
-                                           link=match_url(m)))
+                                           goals=match_goals(ge_idx, m) if ge_idx else None,
+                                           link=match_url(m) if has_page else None))
             # the popup is added only when a row carries a prediction button
             popup = pred_pop([table, scorers, assists] + next_rows + [_faq])
             write(f"standings/{slug}.html", render(
@@ -79,8 +95,8 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                 season=season, table=Markup(table), has_sc=bool(sc),
                 sc_url=Markup(sc_url), scorers=Markup(scorers),
                 has_asst=bool(asst), assists=Markup(assists), tabs_js=Markup(ST_TABS_JS),
-                next_rows=[Markup(r) for r in next_rows], faq=Markup(_faq),
-                popup=Markup(popup), page_foot=Markup(foot())))
+                next_rows=[Markup(r) for r in next_rows], next_title=next_title,
+                faq=Markup(_faq), popup=Markup(popup), page_foot=Markup(foot())))
             urls.append(st_url)
             n_lp += 1
         if sc or (st and st.get("table")):
