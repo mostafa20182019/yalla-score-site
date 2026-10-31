@@ -1316,7 +1316,9 @@ def fetch_prematch_lineups():
 # Category id 1 = goals; typeId 1 = the goal count; typeId 10 = penalties.
 # NOTE the feed carries LAST season's list until a new season produces goals,
 # so build_site sanity-checks the totals before rendering anything.
-SCORERS_TOP = 5
+# top 10 of each chart under every league table (user, 2026-10-31: «اعلى 10
+# هدافين واعلى 10 اسيستات»); 5 before
+SCORERS_TOP = 10
 
 # competition id -> the name matches/standings/fixtures already use, so
 # build_site can key scorers by competition like every other section
@@ -1342,22 +1344,34 @@ S365_CHARTS = [
     ("assists", 3, ("صناعة",)),
 ]
 
+def _athlete_tables(j):
+    """The chart list of a stats response, in either shape. Since late October
+    2026 most leagues answer {"athletesStats": {"tables": [...], "filters":
+    ...}} instead of the bare list (Ligue 1 still sends the list); iterating
+    the dict crashed on its keys and left only Ligue 1 with scorers. The
+    combined multi-league call now also answers for the FIRST id only, so the
+    per-league fallback in fetch_player_charts carries the rest."""
+    ath = (j.get("stats") or {}).get("athletesStats") or []
+    if isinstance(ath, dict):
+        ath = ath.get("tables") or []
+    return [c for c in ath if isinstance(c, dict)]
+
 def s365_chart_names(j):
     """The available charts as "id:title" - reported in data/fetch_debug.json so
     a renamed or missing chart is visible instead of failing silently. The list
     is identical for every league, so one competition's copy is enough."""
-    for cat in ((j.get("stats") or {}).get("athletesStats") or []):
+    tables = _athlete_tables(j)
+    for cat in tables:
         cid = cat.get("competitionId")
         return {cid: [f'{c.get("id")}:{c.get("name")}'
-                      for c in ((j.get("stats") or {}).get("athletesStats") or [])
-                      if c.get("competitionId") == cid]}
+                      for c in tables if c.get("competitionId") == cid]}
     return {}
 
 def _s365_stat_rows(j, want, cat_id=1, cat_names=("الأهداف",)):
     """Parse one athlete chart -> {competition_id: [row, ...]}."""
     clubs = {c.get("id"): c for c in (j.get("competitors") or [])}
     out = {}
-    for cat in ((j.get("stats") or {}).get("athletesStats") or []):
+    for cat in _athlete_tables(j):
         cid = cat.get("competitionId")
         if cid not in want:
             continue
