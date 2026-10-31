@@ -5,22 +5,38 @@
 <nav class="crumbs"><a href="/">أخبار</a> › <a href="/leagues.html">البطولات</a> › ترتيب {{ label }}</nav>
 <h1 class="page-h">ترتيب {{ label }} {{ season }}</h1>
 <p class="hintline">جدول {{ label }} الكامل — يتحدّث تلقائيًا بعد كل مباراة، مع نتائج آخر 5 مباريات لكل فريق.</p>
-{{ table }}
+{# the table, the scorers and the assists as tabs (user, 2026-10-31: «عايز
+   الهدافين وصانعى الاهداف فى تابات جنب الترتيب»). All three panes are in the
+   HTML (indexable, and readable without JS); ST_TABS_JS shows the tab bar and
+   one pane at a time. #}
 {% if has_sc or has_asst %}
-<div class="st-charts">
+<div class="st-tabs">
+  <div class="ltabs" role="tablist" hidden>
+    <button type="button" class="ltab is-on" role="tab" data-pane="table">الترتيب</button>
+    {% if has_sc %}
+    <button type="button" class="ltab" role="tab" data-pane="scorers">الهدافون</button>
+    {% endif %}
+    {% if has_asst %}
+    <button type="button" class="ltab" role="tab" data-pane="assists">صناعة الأهداف</button>
+    {% endif %}
+  </div>
+  <div class="lpane" data-pane="table">{{ table }}</div>
   {% if has_sc %}
-  <section class="minfo">
+  <section class="minfo lpane" data-pane="scorers">
     <h2><a href="{{ sc_url }}">هدافو {{ label }} ←</a></h2>
     {{ scorers }}
   </section>
   {% endif %}
   {% if has_asst %}
-  <section class="minfo">
-    <h2><a href="{{ sc_url }}">الأكثر صناعة للأهداف ←</a></h2>
+  <section class="minfo lpane" data-pane="assists">
+    <h2><a href="{{ sc_url }}">الأكثر صناعة للأهداف في {{ label }} ←</a></h2>
     {{ assists }}
   </section>
   {% endif %}
 </div>
+{{ tabs_js }}
+{% else %}
+{{ table }}
 {% endif %}
 {% if next_rows %}
 <section class="minfo">

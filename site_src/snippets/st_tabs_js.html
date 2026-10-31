@@ -1,0 +1,26 @@
+<script>
+(function(){
+  /* /standings/<slug>: الترتيب · الهدافون · صناعة الأهداف as tabs (user,
+     2026-10-31). Runs right after the block, so the panes never flash.
+     A #scorers / #assists hash opens that tab (shareable link). */
+  var box=document.currentScript&&document.currentScript.previousElementSibling;
+  if(!box||!box.classList.contains('st-tabs')) box=document.querySelector('.st-tabs');
+  if(!box) return;
+  var bar=box.querySelector('.ltabs');
+  var tabs=[].slice.call(box.querySelectorAll('.ltab'));
+  var panes=[].slice.call(box.querySelectorAll('.lpane'));
+  function show(key){
+    if(!tabs.some(function(t){return t.getAttribute('data-pane')===key;})) key='table';
+    tabs.forEach(function(t){ var on=t.getAttribute('data-pane')===key;
+      t.classList.toggle('is-on',on); t.setAttribute('aria-selected',on?'true':'false'); });
+    panes.forEach(function(p){ p.hidden=p.getAttribute('data-pane')!==key; });
+  }
+  bar.hidden=false;
+  show((location.hash||'').replace('#',''));
+  bar.addEventListener('click',function(e){
+    var t=e.target.closest('.ltab'); if(!t) return;
+    var key=t.getAttribute('data-pane'); show(key);
+    try{ history.replaceState(null,'',key==='table'?location.pathname+location.search:'#'+key); }catch(_){}
+  });
+})();
+</script>

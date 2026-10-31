@@ -12,7 +12,7 @@ from site_lib.names import comp_label
 from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, foot, head, page_head_ad, write
-from site_lib.snippets import ROUNDS_JS
+from site_lib.snippets import ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import scorers_read, standings_analysis
 from site_lib.tables import clubs_panel, league_rounds_panel, match_row, scorers_list, standings_table
 from site_lib.text import esc
@@ -60,8 +60,8 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                                     zeroed=st.get("zeroed"),
                                     form_map=forms.get(comp, {}), embedded=True)
             # the written «قراءة في ترتيب» block left the page (user, 2026-10-31):
-            # the scorers + assists charts take its place under the table. Its
-            # FAQ stays - same numbers in question form.
+            # the scorers + assists charts take its place, as tabs beside the
+            # table (same day). Its FAQ stays - same numbers in question form.
             _an, _faq = standings_analysis(comp, label, season, st["table"],
                                            forms.get(comp, {}), sc or [], up_next,
                                            zeroed=st.get("zeroed"))
@@ -78,7 +78,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                 "standings.html", page_head=page_head, crumbs_ld=crumbs_ld, label=label,
                 season=season, table=Markup(table), has_sc=bool(sc),
                 sc_url=Markup(sc_url), scorers=Markup(scorers),
-                has_asst=bool(asst), assists=Markup(assists),
+                has_asst=bool(asst), assists=Markup(assists), tabs_js=Markup(ST_TABS_JS),
                 next_rows=[Markup(r) for r in next_rows], faq=Markup(_faq),
                 popup=Markup(popup), page_foot=Markup(foot())))
             urls.append(st_url)

@@ -30,6 +30,8 @@ FILTERS_HTML = (
     '<input type="search" id="mfQ" placeholder="فلتر: فريق أو بطولة" autocomplete="off" aria-label="فلتر المباريات"></label>'
     '</div>')
 MATCHES_JS = _src("snippets/matches_js.html")
+# /standings/<slug>: table · scorers · assists as tabs (2026-10-31)
+ST_TABS_JS = _src("snippets/st_tabs_js.html")
 FBCOPY_JS = _src("snippets/fbcopy_js.html")
 SHELF_JS = _src("snippets/shelf_js.html")
 REELS_FEED_JS = _src("snippets/reels_feed_js.html")
