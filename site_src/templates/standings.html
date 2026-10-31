@@ -1,4 +1,4 @@
-{# /standings/<slug> - the full table + its reading (evergreen «ترتيب …» landing page) - templated 2026-09-26. Lines are joined with NO separator by
+{# /standings/<slug> - the full table + scorers/assists charts (evergreen «ترتيب …» landing page) - templated 2026-09-26. Lines are joined with NO separator by
    site_lib.render: break between tags, never inside a sentence. #}
 {{ page_head }}
 {{ crumbs_ld }}
@@ -6,12 +6,21 @@
 <h1 class="page-h">ترتيب {{ label }} {{ season }}</h1>
 <p class="hintline">جدول {{ label }} الكامل — يتحدّث تلقائيًا بعد كل مباراة، مع نتائج آخر 5 مباريات لكل فريق.</p>
 {{ table }}
-{{ analysis }}
-{% if has_sc %}
-<section class="minfo">
-  <h2><a href="{{ sc_url }}">هدافو {{ label }} ←</a></h2>
-  {{ scorers }}
-</section>
+{% if has_sc or has_asst %}
+<div class="st-charts">
+  {% if has_sc %}
+  <section class="minfo">
+    <h2><a href="{{ sc_url }}">هدافو {{ label }} ←</a></h2>
+    {{ scorers }}
+  </section>
+  {% endif %}
+  {% if has_asst %}
+  <section class="minfo">
+    <h2><a href="{{ sc_url }}">الأكثر صناعة للأهداف ←</a></h2>
+    {{ assists }}
+  </section>
+  {% endif %}
+</div>
 {% endif %}
 {% if next_rows %}
 <section class="minfo">

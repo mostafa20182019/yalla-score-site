@@ -59,20 +59,26 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                                     season_label=st.get("season_label"),
                                     zeroed=st.get("zeroed"),
                                     form_map=forms.get(comp, {}), embedded=True)
+            # the written «قراءة في ترتيب» block left the page (user, 2026-10-31):
+            # the scorers + assists charts take its place under the table. Its
+            # FAQ stays - same numbers in question form.
             _an, _faq = standings_analysis(comp, label, season, st["table"],
                                            forms.get(comp, {}), sc or [], up_next,
                                            zeroed=st.get("zeroed"))
+            _an = ""
             scorers = scorers_list(sc, "أهداف") if sc else ""
+            assists = scorers_list(asst, "صناعة") if asst else ""
             next_rows = []
             for m in up_next:
                 next_rows.append(match_row(m, show_time=True, show_comp=False, show_date=True,
                                            link=match_url(m)))
             # the popup is added only when a row carries a prediction button
-            popup = pred_pop([table, _an, scorers] + next_rows + [_faq])
+            popup = pred_pop([table, scorers, assists] + next_rows + [_faq])
             write(f"standings/{slug}.html", render(
                 "standings.html", page_head=page_head, crumbs_ld=crumbs_ld, label=label,
-                season=season, table=Markup(table), analysis=Markup(_an), has_sc=bool(sc),
+                season=season, table=Markup(table), has_sc=bool(sc),
                 sc_url=Markup(sc_url), scorers=Markup(scorers),
+                has_asst=bool(asst), assists=Markup(assists),
                 next_rows=[Markup(r) for r in next_rows], faq=Markup(_faq),
                 popup=Markup(popup), page_foot=Markup(foot())))
             urls.append(st_url)

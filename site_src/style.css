@@ -206,6 +206,9 @@ a{color:inherit}
   .cl-grid::-webkit-scrollbar{display:none}
   .cl-card{flex:0 0 208px}
 }
+/* /standings: scorers + assists side by side under the table (2026-10-31) */
+.st-charts{display:grid;grid-template-columns:1fr;gap:0 14px;align-items:start}
+@media(min-width:900px){.st-charts{grid-template-columns:1fr 1fr}}
 .sc-list{border:1px solid #eef2f6;border-radius:11px;overflow:hidden}
 .sc-hd,.sc-row{display:grid;grid-template-columns:30px 1fr 62px 48px;align-items:center;gap:6px;padding:7px 10px}
 .sc-nom .sc-hd,.sc-nom .sc-row{grid-template-columns:30px 1fr 48px}
