@@ -7,28 +7,13 @@
 {# .mp-hero: LIVE_JS repaints THIS row's pill/score like any match row, and
    since 2026-09-13 also the «الحالة» line of the info card below #}
 <div class="mlist mp-hero">{{ hero_row }}</div>
-{# «موعد المباراة والقنوات الناقلة» - a direct answer for the highest-volume
-   pre-match queries. Pre-match only. The channel is the match's own, else
-   the verified per-league COMP_TV map, else an honest «not announced» -
-   never a guess. #}
-{% if kickoff_info %}
-<section class="minfo">
-  <h2>موعد مباراة {{ h_ar }} و{{ a_ar }} والقنوات الناقلة</h2>
-  <p>تُقام مباراة <b>{{ h_ar }}</b> و<b>{{ a_ar }}</b> ضمن {{ round_txt }}{{ comp }} {{ when_txt }}.</p>
-  {% if channel %}
-  <p>وتُنقل المباراة مباشرة عبر قناة <b>{{ channel }}</b>.</p>
-  {% elif comp_tv %}
-  <p>وتُنقل مباريات {{ comp }} في المنطقة العربية عبر قنوات <b>{{ comp_tv }}</b>.</p>
-  {% else %}
-  <p>لم تتوفر بعد معلومات القناة الناقلة لهذه المباراة — تُحدَّث هذه الصفحة تلقائيًا فور توفرها.</p>
-  {% endif %}
-</section>
-{% endif %}
-{# the match's own article (layer 3), then «قراءة قبل المباراة» (layer 1) or
-   «قراءة المباراة» (layer 2) - the summary ABOVE the evidence - then the
-   timeline/XI, who is missing, and «توقع يلا سكور» #}
+{# «موعد المباراة والقنوات الناقلة» and «قراءة قبل المباراة» left the page
+   (user, 2026-10-31): the same facts repeat elsewhere; new pre-match
+   information is to come. Kick-off and channel stay in «معلومات المباراة». #}
+{# the match's own article (layer 3), then «قراءة المباراة» (layer 2) - the
+   summary ABOVE the evidence - then the timeline/XI, who is missing, and
+   «توقع يلا سكور» #}
 {{ article_block }}
-{{ pre_read }}
 {{ post_read }}
 {{ details }}
 {{ absence }}

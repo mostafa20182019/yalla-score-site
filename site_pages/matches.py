@@ -241,7 +241,10 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         # the story sits above the computed reading, which is what backs it
         # with numbers (_art picked above, with its image settled)
         article_block = match_article_block(_art, m.get("competition") or "") if _art else ""
-        # «قراءة قبل المباراة» (layer 1): how the two clubs arrive
+        # «قراءة قبل المباراة» (layer 1): how the two clubs arrive. No longer
+        # SHOWN (user, 2026-10-31 - match.html); still computed because its
+        # weight keeps the upcoming page indexed (user: keep them indexed, new
+        # pre-match information is coming) and its FAQ still renders.
         _pre_weight = 0
         pre_read = ""
         if st == "UPCOMING":
