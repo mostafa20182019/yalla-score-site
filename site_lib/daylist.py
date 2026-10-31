@@ -8,7 +8,7 @@ MATCHES_JS drives the day arrows and the filters on both.
 """
 from collections import OrderedDict
 
-from site_lib.competitions import COMP_ORDER, COMP_TV
+from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
 from site_lib.crests import comp_icon
 from site_lib.dates import fmt_day
 from site_lib.matchdata import match_goals
@@ -19,10 +19,25 @@ from site_lib.text import esc
 from site_lib.urls import match_url
 
 
-def day_sections(matches, ge_idx):
-    """[{day, heading, comps: [{comp, label, icon, rows}]}] for every day in
-    the feed, leagues in the sidebar order, plus the raw row HTML (the
-    matches page hands it to pred_pop)."""
+def comp_hrefs(with_table, with_rounds):
+    """{competition: its own page} for the league headings of the day list
+    (user, 2026-10-31: «الدوري المصري» above its matches opens the league).
+    Same rule as /leagues: the table (/standings) when it has one, otherwise
+    the season's fixtures (/fixtures), otherwise no link - never a dead one."""
+    out = {}
+    for comp, slug in COMP_SLUG.items():
+        if comp in with_table:
+            out[comp] = f"/standings/{slug}.html"
+        elif comp in with_rounds:
+            out[comp] = f"/fixtures/{slug}.html"
+    return out
+
+
+def day_sections(matches, ge_idx, hrefs=None):
+    """[{day, heading, comps: [{comp, label, icon, href, rows}]}] for every day
+    in the feed, leagues in the sidebar order, plus the raw row HTML (the
+    matches page hands it to pred_pop). hrefs = comp_hrefs(...)."""
+    hrefs = hrefs or {}
     daymap = OrderedDict()
     for m in matches:
         daymap.setdefault(m.get("kickoff") or "", []).append(m)
@@ -37,7 +52,7 @@ def day_sections(matches, ge_idx):
                                key=lambda kv: (COMP_ORDER.index(kv[0])
                                                if kv[0] in COMP_ORDER
                                                else len(COMP_ORDER), kv[0])):
-            block = {"comp": comp, "label": comp_label(comp), "rows": []}
+            block = {"comp": comp, "label": comp_label(comp), "href": hrefs.get(comp, ""), "rows": []}
             if comp:
                 block["icon"] = Markup(comp_icon(comp))
             for m in ms:

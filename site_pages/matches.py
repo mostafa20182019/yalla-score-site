@@ -11,7 +11,7 @@ from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
 from site_lib.crests import comp_icon, local_crest
 from site_lib.dates import fmt_day
-from site_lib.daylist import day_sections
+from site_lib.daylist import comp_hrefs, day_sections
 from site_lib.league_desc import matches_desc
 from site_lib.matchdata import absence_block, match_details_for, match_goals, prematch_for
 from site_lib.names import _team_match, ar_team, comp_label
@@ -98,7 +98,8 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
             pieces.append(panes[k])
         views.append({"comp": c, "tabs": tabs, "panes": view_panes})
     # the days (shared with the home page since 2026-10-26: site_lib/daylist)
-    days, _rows = day_sections(matches, ge_idx)
+    days, _rows = day_sections(matches, ge_idx, comp_hrefs(
+        {c for c, st in st_by_comp.items() if (st or {}).get("table")}, set(fx_by_comp)))
     pieces.extend(_rows)
     # left rail: per-league fixtures BY DAY for leagues without round data
     comp_fix = {}

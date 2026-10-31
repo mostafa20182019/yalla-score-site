@@ -18,7 +18,11 @@
     {% for c in d.comps %}
     <div class="comp" data-comp="{{ c.comp }}" data-label="{{ c.label }}">
       {% if c.comp %}
+      {% if c.href %}
+      <div class="comp-h"><a class="comp-a" href="{{ c.href }}">{{ c.icon }} {{ c.label }}</a></div>
+      {% else %}
       <div class="comp-h">{{ c.icon }} {{ c.label }}</div>
+      {% endif %}
       {% endif %}
       <div class="mlist">
         {% for row in c.rows %}

@@ -40,7 +40,7 @@ def home_page(articles, fixtures, ge_idx, matches, standings):
              "publisher": {"@id": SITE_BASE + "/#org"}}]})
     ad = adsense_slot()
     # the follow pills live in the header now, next to the bell (2026-10-26)
-    _centre = match_centre(standings, matches, articles, ge_idx)
+    _centre = match_centre(standings, matches, articles, ge_idx, fixtures)
     # crests + per-match page URL for the live card, curated clubs only
     # (keyed by the Arabic name pair - LIVE_JS normalizes both sides)
     fav_meta = {}

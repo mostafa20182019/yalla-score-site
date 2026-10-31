@@ -122,7 +122,7 @@ def today_cards(matches, today=None, limit=CARDS, pills=""):
             '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div></section>')
 
 
-def match_centre(standings, matches, articles, ge_idx):
+def match_centre(standings, matches, articles, ge_idx, fixtures=None):
     """The top of the home page like FotMob's (user, 2026-10-26: phones «الموقع
     يفتح على المباريات», then the desktop «زى fotmob على الكمبيوتر»): the
     /matches columns - leagues | the matches | news. The middle column IS the
@@ -130,7 +130,7 @@ def match_centre(standings, matches, articles, ge_idx):
     (daylist.day_sections), same filters and day arrows (MATCHES_JS): the
     phone home «تجيب كل المباريات زى ما كانت صفحة المباريات بتجيب بالظبط».
     Phones show only that column (style.css)."""
-    from site_lib.daylist import day_sections
+    from site_lib.daylist import comp_hrefs, day_sections
     from site_lib.render import Markup, render
     from site_lib.snippets import FILTERS_HTML, MATCHES_JS
     from site_lib.competitions import COMP_SLUG, LEAGUE_BAR
@@ -160,7 +160,10 @@ def match_centre(standings, matches, articles, ge_idx):
         items.append(f'<a class="mn-item" href="{esc(article_href(a))}">{th}'
                      f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span></span></a>')
     side += f'<div class="mp-news">{"".join(items)}</div>'
-    days, _ = day_sections(matches, ge_idx)
+    # league headings open the league's page - same rule as /matches
+    with_rounds = {f.get("competition") for f in (fixtures or [])
+                   if isinstance(f, dict) and f.get("rounds")}
+    days, _ = day_sections(matches, ge_idx, comp_hrefs(with_table, with_rounds))
     days_html = render("_days.html", filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days)
     return ('<div class="mpage home-mc">'
             # the IMPORTANT leagues here; every competition is on /leagues, the
