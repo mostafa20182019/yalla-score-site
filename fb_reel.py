@@ -2,25 +2,25 @@
 # -*- coding: utf-8 -*-
 """Yalla Score — vertical match reel (1080x1920) from OUR data and design.
 
-    python fb_reel.py --match 560586 --gif        # preview: a GIF + a contact sheet
-    python fb_reel.py --match 560586 --frames out # the PNG frames (for ffmpeg)
+    python fb_reel.py --match 560586              # preview: the card as a PNG
+    python fb_reel.py --match 560586 --mp4        # the MP4: the card + music
 
 Why a reel: on a page this size, Reels is the one Facebook surface with organic
 reach left, and the site's bottleneck is distribution, not content
 (7 pages indexed, 732 «Discovered – not indexed» — see the indexing note).
 
-What is in it: the crests from the site's own cache, the final score, the
-scorers with their minutes, the match ratings and the table line — the same
-numbers the match page shows. **No broadcast footage, ever**: match video is
-licensed to the rights holders, and an AdSense review is not the moment to
-borrow any.
+What is in it (since 2026-11-01, the user's ask): ONE still card - the two
+crests and names, home on the right, and the final score - held ten seconds
+under music (our own generated loop, or a royalty-free file from music/).
+Before that it was a 17-second animation with scorers, ratings and the table.
+**No broadcast footage, ever**: match video is licensed to the rights
+holders, and an AdSense review is not the moment to borrow any.
 
 It reuses fb_cards.py for every primitive (fonts, the Arabic reshaper with its
-libraqm lesson, crests, scorers) so a reel cannot drift from the cards.
+libraqm lesson, crests) so a reel cannot drift from the cards.
 
-Assembling the MP4 needs ffmpeg, which GitHub runners have and this machine
-does not — hence --gif, which needs nothing but Pillow and is what a preview
-is for.
+Assembling the MP4 needs ffmpeg: the GitHub runner installs it, the laptop
+uses the binary from `pip install imageio-ffmpeg`.
 """
 import argparse
 import datetime
@@ -33,6 +33,7 @@ import tempfile
 import time
 import urllib.error
 import urllib.request
+import zlib
 
 from PIL import Image, ImageDraw, ImageFilter
 
@@ -49,25 +50,12 @@ KIND = "reel"                 # its own dedup namespace next to article/card/tg
 GRAPH = "https://graph.facebook.com/v23.0"
 MAX_AGE_H = 20                # a reel of a two-day-old match is not a reel
 MAX_PER_RUN = 1               # one reel a run; the page is not a video channel
-OUT_FPS = 30                  # Reels wants a normal frame rate, not our 12
+OUT_FPS = 30                  # Reels wants a normal frame rate
 
 W, H = 1080, 1920
-FPS = 12
-# cta 2.0 -> 5.0 (user, 2026-10-24: «الجزء الأخير بيعدي بسرعة»): its two
-# table lines finish sliding in at ~0.8s and the site line at ~1.5s, so a
-# two-second scene showed the finished frame for half a second
-SCENES = [("intro", 2.0), ("score", 3.5), ("scorers", 4.0), ("rating", 2.5), ("cta", 5.0)]
-
-
-# ---------------------------------------------------------------- easing
-def ease(t):
-    """0..1 → 0..1, fast then settling. Linear motion looks mechanical."""
-    t = max(0.0, min(1.0, t))
-    return 1 - (1 - t) ** 3
-
-
-def lerp(a, b, t):
-    return a + (b - a) * t
+# One still card held REEL_SECS under music (user, 2026-11-01). It was a
+# five-scene animation (intro, score, scorers, rating, table) at 12 fps.
+REEL_SECS = 10.0
 
 
 # ---------------------------------------------------------------- canvas
@@ -110,215 +98,164 @@ def crest_at(im, url, name, size, cx, cy, alpha=255):
     im.paste(cr, (int(cx - size / 2), int(cy - size / 2)), cr)
 
 
-# ---------------------------------------------------------------- scenes
-def scene_intro(t, ctx):
-    """Crests slide in from the edges, names fade under them."""
+# ---------------------------------------------------------------- the card
+def card(ctx):
+    """The whole reel: ONE still (user, 2026-11-01: «يكون عبارة عن صورة فقط
+    فيها الفريقين والنتيجة»). Home on the RIGHT - Arabic reads right to left,
+    so the first-named club sits where the eye starts - and its goals on the
+    right of the score box too («صاحب الارض يكون على اليمين»). The animated
+    five-scene reel (intro, score, scorers, rating, table) is gone."""
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
     header(d, ctx["comp"], ctx["round"])
-    p = ease(t / 1.4)
-    size = 300
-    y = H * 0.40
-    crest_at(im, ctx["m"].get("home_badge"), ctx["home"], size,
-             lerp(-size, W * 0.28, p), y)
-    crest_at(im, ctx["m"].get("away_badge"), ctx["away"], size,
-             lerp(W + size, W * 0.72, p), y)
-    if t > 0.7:
-        a = int(255 * ease((t - 0.7) / 0.7))
-        nf = C.fit(d, C.ar(ctx["home"]), "ExtraBold", 52, W * 0.42)
-        C.draw_center(d, W * 0.28, y + size * 0.62, C.ar(ctx["home"]), nf, (255, 255, 255, a))
-        nf = C.fit(d, C.ar(ctx["away"]), "ExtraBold", 52, W * 0.42)
-        C.draw_center(d, W * 0.72, y + size * 0.62, C.ar(ctx["away"]), nf, (255, 255, 255, a))
-    footer(d)
-    return im
-
-
-def scene_score(t, ctx):
-    """The score lands digit by digit, then holds."""
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    header(d, ctx["comp"], ctx["round"])
-    size = 230
-    y = H * 0.32
-    crest_at(im, ctx["m"].get("home_badge"), ctx["home"], size, W * 0.24, y)
-    crest_at(im, ctx["m"].get("away_badge"), ctx["away"], size, W * 0.76, y)
-    C.draw_center(d, W * 0.24, y + size * 0.62, C.ar(ctx["home"]),
-                  C.fit(d, C.ar(ctx["home"]), "Bold", 44, W * 0.40), C.WHITE)
-    C.draw_center(d, W * 0.76, y + size * 0.62, C.ar(ctx["away"]),
-                  C.fit(d, C.ar(ctx["away"]), "Bold", 44, W * 0.40), C.WHITE)
-    # the score: home digit at 0.3s, away at 0.9s, each popping in
-    sy = H * 0.56
-    box = 260
-    d.rounded_rectangle((W / 2 - box, sy - 110, W / 2 + box, sy + 130), 36, fill=C.WHITE)
-    for i, (val, x) in enumerate(((ctx["hs"], W / 2 - box * 0.48),
-                                  (ctx["as"], W / 2 + box * 0.48))):
-        start = 0.3 + i * 0.6
-        if t < start:
-            continue
-        k = ease((t - start) / 0.45)
-        fs = int(lerp(60, 150, k))
+    size, y = 300, H * 0.36
+    for x, key, name in ((W * 0.74, "home", ctx["home"]), (W * 0.26, "away", ctx["away"])):
+        crest_at(im, ctx["m"].get(f"{key}_badge"), name, size, x, y)
+        C.draw_center(d, x, y + size * 0.62, C.ar(name),
+                      C.fit(d, C.ar(name), "ExtraBold", 54, W * 0.44), C.WHITE)
+    sy, box, fs = H * 0.60, 280, 170
+    d.rounded_rectangle((W / 2 - box, sy - 130, W / 2 + box, sy + 150), 40, fill=C.WHITE)
+    for val, x in ((ctx["hs"], W / 2 + box * 0.5), (ctx["as"], W / 2 - box * 0.5)):
         C.draw_center(d, x, sy - fs * 0.42, str(val), C.font("ExtraBold", fs), C.INK)
-    C.draw_center(d, W / 2, sy - 40, "-", C.font("ExtraBold", 90), (190, 205, 215))
-    if t > 1.9:
-        C.draw_center(d, W / 2, sy + 160, C.ar(ctx["when"]), C.font("Bold", 34),
-                      (226, 240, 250))
+    C.draw_center(d, W / 2, sy - 40, "-", C.font("ExtraBold", 100), (190, 205, 215))
+    C.draw_center(d, W / 2, sy + 190, C.ar(f"انتهت · {ctx['when']}"), C.font("Bold", 38),
+                  (226, 240, 250))
+    # the scorers (user, same day: «ضيف كمان مسجلى الاهداف»): each club's under
+    # its own side, home right, one row per player with all his minutes
+    cols = goal_columns(ctx["scorers"])
+    gy = sy + 270
+    for x, key in ((W * 0.74, "h"), (W * 0.26, "a")):
+        rows = cols.get(key) or []
+        shown = rows[:MAX_GOAL_ROWS] if len(rows) <= MAX_GOAL_ROWS else rows[:MAX_GOAL_ROWS - 1]
+        for i, (name, mins) in enumerate(shown):
+            line = C.ar(f"{name} {mins}".strip())
+            C.draw_center(d, x, gy + i * 58, line, C.fit(d, line, "Bold", 38, W * 0.44, 26),
+                          C.WHITE)
+        if len(rows) > len(shown):
+            C.draw_center(d, x, gy + len(shown) * 58, C.ar(f"+{len(rows) - len(shown)}"),
+                          C.font("Bold", 34), (222, 238, 248))
     footer(d)
     return im
-
-
-def goal_columns(scorers):
-    """{'h': [(name, "12' 45'"), ...], 'a': [...]} - one row per SCORER under
-    his own club, minutes side by side (the result card's group_goals rule).
-
-    User, 2026-10-24: «لما تيجي تقول الأهداف انت بتقول أهداف الفريقين مع بعض،
-    أنا عايز أهداف كل فريق لوحده» - the old scene was one mixed list with the
-    club name in small print on every row. Order = first goal of each scorer."""
-    cols = {"h": [], "a": []}
-    seen = {}
-    for side, name, minute in scorers:
-        if side not in cols:
-            continue
-        name = " ".join((name or "").split())
-        key = (side, name)
-        if key not in seen:
-            seen[key] = []
-            cols[side].append((name, seen[key]))
-        if minute:
-            seen[key].append(f"{minute}'")       # ASCII ' - Almarai has no U+2032
-    return {s: [(n, " ".join(m)) for n, m in rows] for s, rows in cols.items()}
 
 
 MAX_GOAL_ROWS = 5                 # per club; a sixth scorer becomes «+n»
 
 
-def scene_scorers(t, ctx):
-    """Two columns, home on the left like the score scene, away on the right:
-    the club's crest and name on top, then its scorers one under the other,
-    each row sliding up in turn. A side that did not score says so."""
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    header(d, ctx["comp"], ctx["round"])
-    C.draw_center(d, W / 2, H * 0.19, C.ar("مسجلو الأهداف"), C.font("ExtraBold", 56), C.WHITE)
-    cols = goal_columns(ctx["scorers"])
-    size = 150
-    cy = H * 0.30
-    colw = W / 2 - 70                           # each column's card width
-    y0 = H * 0.42
-    for side, cx, key in (("h", W * 0.26, "home"), ("a", W * 0.74, "away")):
-        crest_at(im, ctx["m"].get(f"{key}_badge"), ctx[key], size, cx, cy)
-        C.draw_center(d, cx, cy + size * 0.62, C.ar(ctx[key]),
-                      C.fit(d, C.ar(ctx[key]), "Bold", 40, colw - 20), C.WHITE)
-        rows = cols[side]
-        if not rows:
-            if t > 0.3:
-                C.draw_center(d, cx, y0 + 30, C.ar("بدون أهداف"), C.font("Bold", 34),
-                              (190, 212, 228))
+def goal_columns(scorers):
+    """{'h': [(name, "12' 45+2'"), ...], 'a': [...]}: one row per SCORER, in
+    the order of his first goal, with every minute side by side (a hat-trick is
+    one row, not three). A goal without a minute still names the scorer; a
+    goal with an unknown side is dropped rather than put under the wrong club."""
+    cols = {"h": [], "a": []}
+    for side, name, minute in scorers:
+        if side not in cols:
             continue
-        shown = rows[:MAX_GOAL_ROWS]
-        extra = len(rows) - len(shown)
-        if extra:
-            shown = shown[:-1] + [(f"+{extra + 1}", "")]
-        for i, (name, mins) in enumerate(shown):
-            start = 0.3 + 0.22 * i
-            if t < start:
-                continue
-            k = ease(min(1.0, (t - start) / 0.5))
-            y = y0 + i * 150 + (1 - k) * 60
-            x0 = cx - colw / 2
-            d.rounded_rectangle((x0, y, x0 + colw, y + 124), 26,
-                                fill=(255, 255, 255) if k > 0.5 else (235, 245, 252))
-            f = C.fit(d, C.ar(name), "ExtraBold", 40, colw - 48)
-            C.draw_center(d, cx, y + 18, C.ar(name), f, C.INK)
-            if mins:
-                C.draw_center(d, cx, y + 70, mins, C.font("ExtraBold", 36), C.BLUE)
-    footer(d)
-    return im
+        row = next((r for r in cols[side] if r[0] == name), None)
+        if row is None:
+            row = [name, []]
+            cols[side].append(row)
+        if minute:
+            row[1].append(minute.rstrip("'") + "'")
+    return {k: [(n, " ".join(ms)) for n, ms in v] for k, v in cols.items()}
 
 
-def scene_rating(t, ctx):
-    """Best player of the match and the two team averages."""
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    header(d, ctx["comp"], ctx["round"])
-    r = ctx["rating"]
-    C.draw_center(d, W / 2, H * 0.24, C.ar("الأفضل في اللقاء"), C.font("ExtraBold", 54), C.WHITE)
-    k = ease(min(1.0, t / 0.6))
-    box_h = int(300 * k)
-    d.rounded_rectangle((90, H * 0.33, W - 90, H * 0.33 + box_h), 34, fill=C.WHITE)
-    if k > 0.6:
-        C.draw_center(d, W / 2, H * 0.36, C.ar(r["best"]["name"]),
-                      C.fit(d, C.ar(r["best"]["name"]), "ExtraBold", 62, W * 0.7), C.INK)
-        C.draw_center(d, W / 2, H * 0.36 + 90, C.ar(r["best"]["club"]),
-                      C.font("Bold", 40), C.MUTED)
-        C.draw_center(d, W / 2, H * 0.36 + 150, f'{r["best"]["rt"]:.1f}',
-                      C.font("ExtraBold", 72), C.BLUE)
-    if t > 1.0:
-        a = ease((t - 1.0) / 0.6)
-        y = H * 0.62
-        C.draw_center(d, W / 2, y, C.ar("متوسط تقييم التشكيلة"), C.font("Bold", 36),
-                      (226, 240, 250))
-        for i, s in enumerate(r["sides"]):
-            x = W * (0.28 if i == 0 else 0.72)
-            C.draw_center(d, x, y + 70, C.ar(s["club"]),
-                          C.fit(d, C.ar(s["club"]), "Bold", 40, W * 0.40), C.WHITE)
-            C.draw_center(d, x, y + 130, f'{s["avg"]:.1f}',
-                          C.font("ExtraBold", int(64 * a)), C.WHITE)
-    footer(d)
-    return im
+# ---------------------------------------------------------------- the music
+# «وضيف موسيقى» (user, 2026-11-01). The tracks are the files in music/, one
+# picked per match id so consecutive reels vary. Every one must be
+# royalty-free: Facebook mutes or blocks a reel carrying a copyrighted song.
+# music/yalla-loop.m4a is OUR OWN, made by compose() below
+# (`python fb_reel.py --compose music/yalla-loop.m4a`) - committed rather
+# than made per run, because compose needs numpy and the runner does not
+# install it. With music/ empty: compose if numpy is there, else the silent
+# track Reels needs (None -> anullsrc in encode).
+MUSIC_DIR = os.path.join(HERE, "music")
+MUSIC_EXT = (".mp3", ".m4a", ".aac", ".wav", ".ogg")
+SR = 44100
 
 
-def scene_cta(t, ctx):
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    header(d, ctx["comp"], ctx["round"])
-    lines = ctx["table"] or [ctx["headline"]]
-    C.draw_center(d, W / 2, H * 0.26, C.ar("بعد هذه النتيجة" if ctx["table"] else "التفاصيل"),
-                  C.font("ExtraBold", 54), C.WHITE)
-    y = H * 0.36
-    f = C.font("Bold", 38)
-    for i, line in enumerate(lines[:2]):
-        if t < 0.3 * i:
-            continue
-        k = ease(min(1.0, (t - 0.3 * i) / 0.5))
-        for chunk in wrap(d, line, f, W - 240, lines=3):
-            # a white card with DARK text: white-on-white drew four empty bars
-            # in the first preview, and an RGB canvas ignores the alpha in a
-            # fill colour, so there is no translucent shortcut here
-            slide = int((1 - k) * 40)
-            d.rounded_rectangle((90, y - 14 + slide, W - 90, y + 64 + slide), 20, fill=C.WHITE)
-            C.draw_center(d, W / 2, y + slide, chunk, f, C.INK)
-            y += 92
-        y += 24
-    k = ease(min(1.0, max(0.0, (t - 0.9) / 0.6)))
-    if k > 0.02:
-        C.draw_center(d, W / 2, H * 0.76, C.ar("التحليل الكامل بالأرقام على"),
-                      C.font("Bold", max(1, int(42 * k))), (226, 240, 250))
-        C.draw_center(d, W / 2, H * 0.76 + 70, "yallascore.site",
-                      C.font("ExtraBold", max(1, int(68 * k))), C.WHITE)
-    return im                      # no footer here: it would say the same twice
+def music_track(seed, tmp_dir, secs=REEL_SECS):
+    files = (sorted(f for f in os.listdir(MUSIC_DIR) if f.lower().endswith(MUSIC_EXT))
+             if os.path.isdir(MUSIC_DIR) else [])
+    if files:
+        return os.path.join(MUSIC_DIR, files[zlib.crc32(str(seed).encode()) % len(files)])
+    path = os.path.join(tmp_dir, "music.wav")
+    try:
+        compose(path, secs)
+    except ImportError:
+        print("  music/ is empty and numpy is missing: silent track")
+        return None
+    return path
 
 
-def wrap(d, s, f, max_w, lines=3):
-    """Greedy wrap on LOGICAL Arabic; each line is shaped on the way out.
+def compose(path, secs=REEL_SECS, bpm=120):
+    """An upbeat 120 BPM loop - kick, clap, hats, bass, pad and a plucked
+    arpeggio over C-G-Am-F - synthesised here, written as 16-bit stereo WAV.
+    Deterministic (fixed noise seed): every reel carries the same jingle."""
+    import numpy as np                              # noqa: PLC0415
+    import wave                                     # noqa: PLC0415
+    n = int(secs * SR)
+    left, right = np.zeros(n), np.zeros(n)
+    rng = np.random.default_rng(7)
+    beat = 60.0 / bpm
+    bar = 4 * beat
 
-    Wrapping the shaped string instead put the end of the sentence on the first
-    line: C.ar() returns visual order, so its leading words are the ones that
-    print leftmost - the tail. Split first, shape after."""
-    words, out, cur = (s or "").split(), [], ""
-    for w in words:
-        t = (cur + " " + w).strip()
-        if C.text_w(d, C.ar(t), f) <= max_w or not cur:
-            cur = t
-        else:
-            out.append(cur)
-            cur = w
-    if cur:
-        out.append(cur)
-    return [C.ar(x) for x in out[:lines]]
+    def hz(midi):
+        return 440.0 * 2 ** ((midi - 69) / 12)
 
+    def at(sig, start, pan=0.0):
+        i = int(start * SR)
+        if i >= n:
+            return
+        sig = sig[:n - i]
+        left[i:i + len(sig)] += sig * (1 - max(pan, 0))
+        right[i:i + len(sig)] += sig * (1 + min(pan, 0))
 
-SCENE_FN = {"intro": scene_intro, "score": scene_score, "scorers": scene_scorers,
-            "rating": scene_rating, "cta": scene_cta}
+    def tt(dur):
+        return np.arange(int(dur * SR)) / SR
+
+    def tone(f, dur, decay, harm=(1.0,), detune=0.0):
+        t = tt(dur)
+        s = sum(a * np.sin(2 * np.pi * f * (k + 1) * (1 + detune) * t) for k, a in enumerate(harm))
+        return s * np.exp(-t * decay)
+
+    t = tt(0.28)
+    kick = np.sin(2 * np.pi * np.cumsum(45 + 110 * np.exp(-t * 30)) / SR) * np.exp(-t * 14)
+    t = tt(0.18)
+    noise = rng.standard_normal(len(t))
+    clap = (np.diff(noise, prepend=0) * 0.5 + np.sin(2 * np.pi * 190 * t)) * np.exp(-t * 26)
+    t = tt(0.05)
+    hat = np.diff(np.diff(rng.standard_normal(len(t)), prepend=0), prepend=0) * np.exp(-t * 90)
+
+    prog = [(36, (60, 64, 67)), (43, (59, 62, 67)), (45, (57, 60, 64)), (41, (57, 60, 65))]
+    for bi in range(int(secs / bar) + 1):
+        root, chord = prog[bi % len(prog)]
+        t0 = bi * bar
+        for q in range(4):
+            at(kick * 0.9, t0 + q * beat)
+            if q % 2:
+                at(clap * 0.35, t0 + q * beat)
+        for e in range(8):
+            at(hat * 0.12, t0 + e * beat / 2 + beat / 4, pan=0.3)
+            at(tone(hz(root), beat / 2 * 0.9, 7, harm=(1, .5, .33, .25, .2)) * 0.22,
+               t0 + e * beat / 2)
+        for k, m in enumerate(chord):                # the pad, wide
+            t = tt(bar)
+            env = np.minimum(t / 0.25, 1) * np.exp(-t * 0.4)
+            at(np.sin(2 * np.pi * hz(m) * t) * env * 0.06, t0, pan=-0.5 + k * 0.5)
+            at(np.sin(2 * np.pi * hz(m) * 1.004 * t) * env * 0.04, t0, pan=0.5 - k * 0.5)
+        arp = [chord[0] + 12, chord[1] + 12, chord[2] + 12, chord[1] + 12]
+        for s in range(16):
+            at(tone(hz(arp[s % 4]), beat / 4 * 1.6, 11, harm=(1, .35, .15)) * 0.11,
+               t0 + s * beat / 4, pan=0.25 if s % 2 else -0.25)
+    mix = np.stack([left, right], axis=1)
+    fade = int(1.2 * SR)
+    mix[-fade:] *= np.linspace(1, 0, fade)[:, None]
+    mix = np.tanh(mix / (np.abs(mix).max() or 1) * 1.4) * 0.89
+    with wave.open(path, "wb") as w:
+        w.setnchannels(2)
+        w.setsampwidth(2)
+        w.setframerate(SR)
+        w.writeframes((mix * 32767).astype("<i2").tobytes())
 
 
 # ---------------------------------------------------------------- data
@@ -349,18 +286,6 @@ def context(match_id):
             "bg": background()}
 
 
-def frames(ctx):
-    out = []
-    for name, secs in SCENES:
-        if name == "scorers" and not ctx["scorers"]:
-            continue
-        if name == "rating" and not ctx["rating"]:
-            continue
-        for i in range(int(secs * FPS)):
-            out.append(SCENE_FN[name](i / FPS, ctx))
-    return out
-
-
 # ---------------------------------------------------------------- encoding
 def ffmpeg():
     """ffmpeg on PATH (the GitHub runner), else the binary the imageio-ffmpeg
@@ -375,50 +300,40 @@ def ffmpeg():
         return None
 
 
-def encode(fs, path):
+def encode(im, path, seed="", secs=REEL_SECS):
     """Write an MP4 the Reels API accepts. Returns True when it is uploadable.
 
-    H.264 / yuv420p / 30 fps, faststart, and a SILENT AAC track: Reels is a
-    video surface and a file with no audio stream is rejected outright, so the
-    track is muxed in rather than hoped for.
+    The card held `secs` seconds under the music: H.264 / yuv420p / 30 fps,
+    faststart, AAC stereo. Reels refuses a file with no audio stream, and the
+    music IS that stream now (it was a silent track before 2026-11-01). A
+    short user track loops (-stream_loop) instead of cutting the video;
+    the sound fades in and out.
 
-    ffmpeg is on the GitHub runner and not on this machine, so there is a cv2
-    fallback — and it says so, because what cv2 writes here (MPEG-4 Part 2, no
-    audio) is fine to LOOK at and would be refused on upload. A preview that
-    pretends to be publishable is worse than no preview."""
+    No ffmpeg (this laptop without imageio-ffmpeg) = no MP4 and it says so,
+    rather than writing a preview that pretends to be publishable."""
+    exe = ffmpeg()
+    if not exe:
+        print("  no ffmpeg: pip install imageio-ffmpeg (laptop) or apt ffmpeg (runner)")
+        return False
     tmp = tempfile.mkdtemp(prefix="reel-")
     try:
-        for i, im in enumerate(fs):
-            im.save(os.path.join(tmp, f"{i:04d}.png"))
-        exe = ffmpeg()
-        if exe:
-            cmd = [exe, "-y", "-loglevel", "error",
-                   "-framerate", str(FPS), "-i", os.path.join(tmp, "%04d.png"),
-                   "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
-                   "-c:v", "libx264", "-preset", "medium", "-crf", "20",
-                   "-pix_fmt", "yuv420p", "-r", str(OUT_FPS), "-profile:v", "high",
-                   "-c:a", "aac", "-b:a", "64k", "-shortest",
-                   "-movflags", "+faststart", path]
-            subprocess.run(cmd, check=True)
-            return True
-        return _encode_preview(fs, path)
+        png = os.path.join(tmp, "card.png")
+        im.save(png)
+        audio = music_track(seed, tmp, secs)
+        a_in = (["-stream_loop", "-1", "-i", audio] if audio
+                else ["-f", "lavfi", "-i", f"anullsrc=r={SR}:cl=stereo"])
+        cmd = [exe, "-y", "-loglevel", "error",
+               "-loop", "1", "-framerate", str(OUT_FPS), "-i", png, *a_in,
+               "-map", "0:v", "-map", "1:a", "-t", f"{secs:.2f}",
+               "-c:v", "libx264", "-preset", "medium", "-tune", "stillimage", "-crf", "20",
+               "-pix_fmt", "yuv420p", "-r", str(OUT_FPS), "-profile:v", "high",
+               "-af", f"afade=t=in:d=0.3,afade=t=out:st={secs - 1.5:.2f}:d=1.5",
+               "-c:a", "aac", "-b:a", "128k", "-ar", str(SR), "-ac", "2",
+               "-movflags", "+faststart", path]
+        subprocess.run(cmd, check=True)
+        return True
     finally:
         shutil.rmtree(tmp, ignore_errors=True)
-
-
-def _encode_preview(fs, path):
-    try:
-        import cv2                                  # noqa: PLC0415
-        import numpy as np                          # noqa: PLC0415
-    except Exception:                               # noqa: BLE001
-        print("  no ffmpeg and no cv2: install ffmpeg to write an MP4")
-        return False
-    vw = cv2.VideoWriter(path, cv2.VideoWriter_fourcc(*"mp4v"), FPS, (W, H))
-    for im in fs:
-        vw.write(cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR))
-    vw.release()
-    print("  WARNING: written by cv2 (no ffmpeg) — preview only, NOT uploadable")
-    return False
 
 
 # ---------------------------------------------------------------- Facebook
@@ -481,9 +396,10 @@ def candidates(hours=MAX_AGE_H, limit=4):
     (matches.json and matches_archive.json overlap), then finished + curated +
     inside the window, and only then the per-match context.
 
-    Worth a reel = we can NAME the goals. طرابزون 4-0 غلطة سراي passed an
-    earlier "scorers or ratings" rule with zero named scorers, and a reel that
-    announces four goals and then skips the goals scene reads as broken."""
+    Until 2026-11-01 a reel also needed NAMED scorers (a 4-0 whose goals scene
+    was skipped read as broken). The reel is now the score card alone, so any
+    finished curated match qualifies; the score is still verified against
+    365scores before the claim (auto)."""
     seen, ms = set(), []
     for m in b.load("matches_archive.json") + b.load("matches.json"):
         mid = str(m.get("match_id") or "")
@@ -497,10 +413,7 @@ def candidates(hours=MAX_AGE_H, limit=4):
             ctx = context(str(m["match_id"]))
         except SystemExit:
             continue
-        goals = (m.get("home_score") or 0) + (m.get("away_score") or 0)
-        if goals and not ctx["scorers"]:
-            continue
-        if not (ctx["scorers"] or ctx["rating"]):
+        if m.get("home_score") is None or m.get("away_score") is None:
             continue
         out.append((m, ctx))
     return out
@@ -547,7 +460,7 @@ def auto(dry=False, out_dir=None):
             continue
         path = os.path.join(out_dir, f"{mid}.mp4")
         try:
-            if not encode(frames(ctx), path):
+            if not encode(card(ctx), path, seed=mid):
                 print(f"reel {mid}: no usable encoder, deferring")
                 store.release(KIND, mid)
                 continue
@@ -591,9 +504,9 @@ def plan():
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--match", help="render this match only")
-    ap.add_argument("--gif", action="store_true", help="preview GIF + contact sheet")
-    ap.add_argument("--mp4", action="store_true", help="write the MP4")
-    ap.add_argument("--frames", help="write the PNG frames to this directory")
+    ap.add_argument("--png", action="store_true", help="write the card as a PNG")
+    ap.add_argument("--mp4", action="store_true", help="write the MP4 (card + music)")
+    ap.add_argument("--compose", metavar="PATH", help="write our own music loop (.wav or .m4a)")
     ap.add_argument("--auto", action="store_true", help="publish the newest eligible reel")
     ap.add_argument("--dry", action="store_true", help="say what --auto would do")
     ap.add_argument("--plan", action="store_true", help="print yes/no for the workflow")
@@ -601,6 +514,15 @@ def main():
     args = ap.parse_args()
     if args.plan:
         return plan()
+    if args.compose:
+        wav = args.compose if args.compose.lower().endswith(".wav") else args.compose + ".wav"
+        compose(wav, REEL_SECS)
+        if wav != args.compose:          # .m4a: AAC is a tenth of the WAV's size
+            subprocess.run([ffmpeg(), "-y", "-loglevel", "error", "-i", wav, "-c:a", "aac",
+                            "-b:a", "128k", args.compose], check=True)
+            os.remove(wav)
+        print(f"music → {args.compose}  ({os.path.getsize(args.compose) / 1024:.0f} KB)")
+        return 0
     if args.auto or args.dry:
         return auto(dry=args.dry, out_dir=args.out)
     if not args.match:
@@ -608,33 +530,16 @@ def main():
         return 0
     os.makedirs(args.out, exist_ok=True)
     ctx = context(args.match)
-    fs = frames(ctx)
-    print(f"{len(fs)} frames ({len(fs) / FPS:.1f}s) — {ctx['home']} {ctx['hs']}-{ctx['as']} {ctx['away']}")
-    if args.frames:
-        os.makedirs(args.frames, exist_ok=True)
-        for i, im in enumerate(fs):
-            im.save(os.path.join(args.frames, f"{i:04d}.png"))
-        print(f"frames → {args.frames}")
-    if args.gif:
-        small = [f.resize((W // 3, H // 3), Image.LANCZOS) for f in fs[::2]]
-        gif = os.path.join(args.out, f"{args.match}.gif")
-        small[0].save(gif, save_all=True, append_images=small[1:],
-                      duration=int(2000 / FPS), loop=0, optimize=True)
-        print(f"gif → {gif}  ({os.path.getsize(gif) / 1024:.0f} KB)")
-        # a contact sheet, so the motion can be judged in one still
-        picks = [fs[int(len(fs) * p)] for p in (0.05, 0.18, 0.32, 0.45, 0.58, 0.72, 0.85, 0.97)]
-        cols, cw = 4, W // 4
-        sheet = Image.new("RGB", (cols * cw, 2 * (H // 4)), (12, 20, 28))
-        for i, im in enumerate(picks):
-            sheet.paste(im.resize((cw, H // 4), Image.LANCZOS), ((i % cols) * cw, (i // cols) * (H // 4)))
-        sh = os.path.join(args.out, f"{args.match}-sheet.jpg")
-        sheet.save(sh, quality=88)
-        print(f"sheet → {sh}")
+    im = card(ctx)
+    print(f"{ctx['home']} {ctx['hs']}-{ctx['as']} {ctx['away']} ({REEL_SECS:.0f}s)")
+    if args.png or not args.mp4:
+        png = os.path.join(args.out, f"{args.match}.png")
+        im.save(png)
+        print(f"png → {png}")
     if args.mp4:
         mp4 = os.path.join(args.out, f"{args.match}.mp4")
-        ok = encode(fs, mp4)
-        print(f"mp4 → {mp4}  ({os.path.getsize(mp4) / 1024:.0f} KB)"
-              + ("" if ok else "  [preview only]"))
+        if encode(im, mp4, seed=args.match):
+            print(f"mp4 → {mp4}  ({os.path.getsize(mp4) / 1024:.0f} KB)")
     return 0
 
 

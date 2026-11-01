@@ -6,10 +6,10 @@ Built because Reels is the one surface on a page this size with organic reach
 left and the site's bottleneck is distribution, not content (7 pages indexed,
 732 «Discovered – not indexed»).
 
-The tests are the lessons this one taught, in the order it taught them:
-the RTL wrap that read bottom-to-top, the white-on-white card, a 4-0 with no
-nameable scorers, the duplicate match list — and the two rules that were
-already the site's: never publish a score 365scores has not confirmed, and
+2026-11-01: the reel became ONE card (both clubs, home on the right, the
+score, the scorers) held ten seconds under music - the animation's tests
+(RTL wrap, scenes, frames) went with it. What stays: the duplicate match list,
+and the two rules that were already the site's: never publish a score 365scores has not confirmed, and
 never publish to the page without the user's switch.
 """
 import io
@@ -35,57 +35,104 @@ def ck(name, cond, extra=""):
 src = io.open("fb_reel.py", encoding="utf-8").read()
 MID = "560586"                                          # برايتون 3-0 أرسنال
 
-# ------------------------------------------------------------- the Arabic
-d = ImageDraw.Draw(R.background())
-f = C.font("Bold", 38)
-SENT = "برايتون في المركز الثالث برصيد 10 نقاط، بفارق نقطتين خلف أرسنال (الثاني)"
-lines = R.wrap(d, SENT, f, R.W - 240, lines=3)
-ck("1 a long sentence wraps to more than one line", len(lines) > 1, f"{len(lines)} lines")
-ck("2 it reads TOP to bottom: the first line starts the sentence",
-   C.ar("برايتون") in lines[0] and C.ar("برايتون") not in lines[-1])
-ck("3 every line comes out SHAPED, not logical", all(l != l[::-1] for l in lines) and
-   all(C.text_w(d, l, f) <= R.W - 240 for l in lines))
-ck("4 no word is lost between the lines",
-   sum(len(l.split()) for l in lines) == len(SENT.split()))
-
-# the closing scene: white text on a white card drew four empty bars
-ck("5 the table cards are drawn with dark text, not white-on-white",
-   "C.draw_center(d, W / 2, y + slide, chunk, f, C.INK)" in src
-   and "(255, 255, 255, 30)" not in src)
-
 # ------------------------------------------------------------- the picking
 cands = R.candidates(hours=400, limit=8)
 ids = [str(m["match_id"]) for m, _ in cands]
 ck("6 matches.json and matches_archive.json overlap - no match appears twice",
    len(ids) == len(set(ids)), f"{len(ids)} rows")
-ck("7 a scoreline we cannot name is not worth a reel",
-   all(ctx["scorers"] for m, ctx in cands
-       if (m.get("home_score") or 0) + (m.get("away_score") or 0)))
+ck("7 a match without a final score is never a candidate",
+   all(m.get("home_score") is not None and m.get("away_score") is not None for m, _ in cands))
 ck("8 only curated clubs, only finished matches", cands and all(
     m.get("status") == "FINISHED" for m, _ in cands))
 ck("9 newest first", ids == [i for i, _ in sorted(
     [(str(m["match_id"]), (m.get("kickoff"), m.get("koff_time") or "")) for m, _ in cands],
     key=lambda t: t[1], reverse=True)])
 
-# ------------------------------------------------------------- the frames
+# ------------------------------------------------------------- the card (2026-11-01)
+# «يكون عبارة عن صورة فقط فيها الفريقين والنتيجة واعدل مكان الفريقين صاحب
+# الارض يكون على اليمين وضيف موسيقى» + «ضيف كمان مسجلى الاهداف»
 ctx = R.context(MID)
-fs = R.frames(ctx)
-ck("10 a reel is long enough for Reels to accept it (>3s) and short enough to watch",
-   3.0 < len(fs) / R.FPS < 90.0, f"{len(fs) / R.FPS:.1f}s")
-ck("11 it is 9:16 at a size Reels accepts", (R.W, R.H) == (1080, 1920))
-ck("12 a scene with no data is skipped, not drawn empty",
-   len(R.frames(dict(ctx, scorers=[], rating=None))) < len(fs))
-ck("13 every frame is a full RGB canvas", all(
-    im.size == (R.W, R.H) and im.mode == "RGB" for im in fs[::40]))
+im = R.card(ctx)
+ck("10 the reel is ONE card, 9:16 at a size Reels accepts, full RGB",
+   im.size == (R.W, R.H) == (1080, 1920) and im.mode == "RGB")
+ck("11 it is held long enough for Reels (>3s) and short enough to watch",
+   3.0 < R.REEL_SECS < 90.0, R.REEL_SECS)
+ck("12 no animation is left (the five scenes are gone)",
+   not hasattr(R, "frames") and not hasattr(R, "SCENES") and "def scene_" not in src)
+_card = src[src.index("def card"):src.index("def goal_columns")]
+ck("13 home on the RIGHT: its crest, name and scorers at x=0.74, the away club at 0.26",
+   '(W * 0.74, "home"' in _card and '(W * 0.26, "away"' in _card
+   and '(W * 0.74, "h")' in _card and '(W * 0.26, "a")' in _card)
+ck("14 and the home goals on the right of the score box",
+   '(ctx["hs"], W / 2 + box' in _card and '(ctx["as"], W / 2 - box' in _card)
+# the crest really lands on the right: Brighton's blue at 0.74, Arsenal's red at 0.26
+from PIL import ImageStat                                # noqa: E402
+_px = lambda x: [round(v) for v in ImageStat.Stat(im.crop(
+    (int(R.W * x) - 90, int(R.H * 0.36) - 90, int(R.W * x) + 90, int(R.H * 0.36) + 90))).mean]
+ck("15 the rendered card agrees: the blue crest (home) right, the red one (away) left",
+   _px(0.74)[2] > _px(0.74)[0] and _px(0.26)[0] > _px(0.26)[2], (_px(0.74), _px(0.26)))
+
+cols = R.goal_columns([("h", "A", "12"), ("a", "B", "30"), ("h", "A", "45+2"),
+                       ("h", "C", ""), ("x", "Z", "9")])
+ck("16 each club's scorers in their own column", set(cols) == {"h", "a"}
+   and len(cols["h"]) == 2 and cols["a"] == [("B", "30'")], cols)
+ck("33 a scorer's minutes sit side by side on ONE row (hat-trick rule)",
+   cols["h"][0] == ("A", "12' 45+2'"), cols["h"][0])
+ck("34 a goal with no minute still names the scorer", cols["h"][1] == ("C", ""))
+ck("35 an unknown side is dropped, not put under the wrong club", "Z" not in str(cols))
+ck("36 a card with no scorers still draws (score only)",
+   R.card(dict(ctx, scorers=[])).size == (R.W, R.H))
+
+# ------------------------------------------------------------- the music
+import tempfile, wave                                   # noqa: E402
+_tmp = tempfile.mkdtemp()
+_real_dir = R.MUSIC_DIR
+ck("37 the committed track is in music/ and is ours (made by --compose)",
+   os.path.isfile(os.path.join("music", "yalla-loop.m4a")) and "--compose" in src)
+os.makedirs(os.path.join(_tmp, "m"))
+for n in ("a.mp3", "b.m4a", "notes.txt"):
+    open(os.path.join(_tmp, "m", n), "w").close()
+R.MUSIC_DIR = os.path.join(_tmp, "m")
+picks = {os.path.basename(R.music_track(i, _tmp)) for i in range(20)}
+ck("38 a file in music/ is used, one per match id, never a non-audio file",
+   picks == {"a.mp3", "b.m4a"}, picks)
+ck("39 the same match always gets the same track",
+   R.music_track("560586", _tmp) == R.music_track("560586", _tmp))
+R.MUSIC_DIR = os.path.join(_tmp, "empty")
+try:
+    import numpy                                         # noqa: F401
+    w = R.music_track("1", _tmp)
+    with wave.open(w) as f:
+        frames_n, ch, sr = f.getnframes(), f.getnchannels(), f.getframerate()
+        peak = max(abs(int.from_bytes(f.readframes(4000)[i:i + 2], "little", signed=True))
+                   for i in range(0, 16000, 2))
+    ck("40 music/ empty: compose() writes our own stereo 44.1 kHz loop of the reel's length",
+       ch == 2 and sr == 44100 and abs(frames_n / sr - R.REEL_SECS) < 0.05, (ch, sr, frames_n))
+    ck("41 and it is not silence", peak > 3000, peak)
+except ImportError:
+    print("  skip 40-41: numpy not installed (the runner uses the committed track)")
+R.MUSIC_DIR = _real_dir
 
 # ------------------------------------------------------------- the video
-ck("14 the MP4 carries a silent audio track (Reels refuses a file without one)",
-   "anullsrc" in src and "-c:a" in src and "aac" in src)
-ck("15 H.264 / yuv420p / faststart, the combination that plays everywhere",
-   "libx264" in src and "yuv420p" in src and "+faststart" in src)
-ck("16 the cv2 fallback says it is NOT uploadable instead of pretending",
-   src.index("preview only, NOT uploadable") > 0
-   and "return False" in src[src.index("def _encode_preview"):])
+_enc = src[src.index("def encode"):src.index("# ---------------------------------------------------------------- Facebook")]
+ck("42 the MP4 carries the music as its audio stream (Reels refuses a file without one)",
+   '"-map", "1:a"' in _enc and "aac" in _enc and "music_track(" in _enc)
+ck("43 a short track loops instead of cutting the video, and the sound fades out",
+   '"-stream_loop", "-1"' in _enc and "afade=t=out" in _enc)
+ck("44 no track at all still gives Reels a (silent) audio stream", "anullsrc" in _enc)
+ck("45 H.264 / yuv420p / faststart, the combination that plays everywhere",
+   "libx264" in _enc and "yuv420p" in _enc and "+faststart" in _enc)
+if R.ffmpeg():
+    _mp4 = os.path.join(_tmp, "r.mp4")
+    ok = R.encode(im, _mp4, seed=MID)
+    import subprocess                                    # noqa: E402
+    probe = subprocess.run([R.ffmpeg(), "-hide_banner", "-i", _mp4], capture_output=True,
+                           text=True, errors="replace").stderr
+    ck("46 a real encode: one video and one audio stream, the reel's length",
+       ok and "Video: h264" in probe and "Audio: aac" in probe
+       and f"Duration: 00:00:{int(R.REEL_SECS):02d}" in probe, probe[-300:])
+else:
+    print("  skip 46: no ffmpeg here")
 
 # ------------------------------------------------------------- publishing
 ck("17 it uses the Reels upload, not the feed endpoint fb_post.py posts to",
@@ -125,28 +172,6 @@ ck("31 and --plan answers no rather than crashing the step", R.plan() == 0)
 ck("32 an unreadable store is NOT an empty posted set (that would double-post)",
    R._posted() is None)
 store.posted_ids = _real
-
-# ------------------------------------------------------------- 2026-10-24, the user's two asks
-# «أنا عايز أهداف كل فريق لوحده» — the goals scene is two club columns, one
-# row per scorer with his minutes side by side, never one mixed list
-cols = R.goal_columns([("h", "A", "12"), ("a", "B", "30"), ("h", "A", "45+2"),
-                       ("h", "C", ""), ("x", "Z", "9")])
-ck("33 each club gets its own column", set(cols) == {"h", "a"} and len(cols["h"]) == 2
-   and cols["a"] == [("B", "30'")], cols)
-ck("34 a scorer's minutes sit side by side on ONE row (hat-trick rule)",
-   cols["h"][0] == ("A", "12' 45+2'"), cols["h"][0])
-ck("35 a goal with no minute still names the scorer", cols["h"][1] == ("C", ""))
-ck("36 an unknown side is dropped, not drawn", "Z" not in str(cols))
-_scn = src[src.index("def scene_scorers"):src.index("def scene_rating")]
-ck("37 the scene draws both crests and names and a «بدون أهداف» for a side that did not score",
-   '"home_badge"' not in _scn and 'f"{key}_badge"' in _scn and "بدون أهداف" in _scn)
-ck("38 and it no longer prints the club name on every row (that was the mixed list)",
-   "C.ar(club)" not in _scn)
-# «الجزء الأخير بيعدي بسرعة» — the closing scene finishes animating at ~1.5s,
-# so it must hold well past that
-_cta = dict(R.SCENES)["cta"]
-ck("39 the closing scene holds at least 3 seconds after its last line lands", _cta >= 4.5, _cta)
-ck("40 and the whole reel still fits a Reel (under 90s)", sum(s for _, s in R.SCENES) < 90)
 
 wf = io.open(".github/workflows/publish.yml", encoding="utf-8").read()
 step = wf[wf.index("Is there a reel to make?"):][:1400]
