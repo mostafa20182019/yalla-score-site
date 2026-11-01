@@ -4,7 +4,7 @@ panel, match rows and the match-details block.
 Moved verbatim out of build_site.py (2026-09-26, tools/move_names.py):
 source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
-from site_lib.clubs import TICKER_TEAMS
+from site_lib.clubs import TEAM_SPELLINGS, TICKER_TEAMS
 from site_lib.crests import comp_icon, local_crest
 from site_lib.dates import fmt_day
 from site_lib.matchdata import _athlete_img, _min_key, _pitch_rows, _pshort, _rt_class, score_pill
@@ -14,28 +14,85 @@ from site_lib.text import _pval, esc
 from site_lib.ticker import _tk_date
 
 
+def team_key(name):
+    """A team as counted by team_results: one key for a club's spellings."""
+    return TEAM_SPELLINGS.get(name, name)
+
+
+def team_results(games):
+    """team_key -> [(match, 'w'|'d'|'l')] in kick-off order, from finished matches."""
+    out = {}
+    for m in sorted(games or [], key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or "")):
+        hs, as_ = m.get("home_score"), m.get("away_score")
+        if hs is None or as_ is None:
+            continue
+        for team, mine, theirs in ((m.get("home"), hs, as_), (m.get("away"), as_, hs)):
+            r = "w" if mine > theirs else "d" if mine == theirs else "l"
+            out.setdefault(team_key(team), []).append((m, r))
+    return out
+
+
 def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
-                    embedded=False):
+                    embedded=False, games=None, pages=None):
     """League standings table (FotMob-style). Hidden until its league is picked.
     `zeroed` = the new season hasn't kicked off yet, so this is the new season's
     team list with everything at 0; it gets a "new season" badge.
-    `past` = legacy flag (last season's final table) kept for old data files."""
+    `past` = legacy flag (last season's final table) kept for old data files.
+
+    `games` = the competition's finished matches (the season pool): then
+    «لعب / ف / ت / خ» become buttons opening those matches (user, 2026-11-01:
+    «عايز ارقام الخاصة ب لعب و فاز وتعادل وخسر تكون لينكات ولما نضغط عليها يجيب
+    المباريات دى»; LT_GAMES_JS draws the list). Only for a team whose four
+    numbers ALL equal what we hold - a «لعب 10» opening four matches would be
+    worse than a plain number. `pages(m)` = the id of m's /m page or None
+    (no link); the season pool and the pages can carry different ids for the
+    same 365scores match, so the caller also matches by clubs + day."""
     def cell(v):
         return "0" if v is None else esc(str(v))
+    res = team_results(games) if games is not None else {}
+    used = {}
     body = []
     for r in rows:
         crest = (f'<img src="{esc(local_crest(r.get("crest")))}" alt="" loading="lazy">'
                  if r.get("crest") else "")
         fm = form_dots((form_map or {}).get(r.get("team"), [])) if form_map is not None else ""
         fmtd = f'<td class="lt-form">{fm}</td>' if form_map is not None else ""
+        mine = res.get(team_key(r.get("team"))) or []
+        n = {k: sum(1 for _, x in mine if x == k) for k in "wdl"}
+        live = bool(mine) and (len(mine), n["w"], n["d"], n["l"]) == tuple(
+            r.get(k) or 0 for k in ("played", "won", "draw", "lost"))
+
+        def num(key, k):
+            v = cell(r.get(key))
+            if not live or not (r.get(key) or 0):
+                return f'<td>{v}</td>'
+            return f'<td><button type="button" class="lt-n" data-k="{k}">{v}</button></td>'
+        tr_attr = ""
+        if live:
+            for m, _ in mine:
+                used[str(m["match_id"])] = m
+            tr_attr = (f' data-tn="{esc(ar_team(r.get("team")))}" data-gm="'
+                       + ",".join(f'{m["match_id"]}:{x}' for m, x in mine) + '"')
         body.append(
-            f'<tr><td class="lt-pos">{cell(r.get("pos"))}</td>'
+            f'<tr{tr_attr}><td class="lt-pos">{cell(r.get("pos"))}</td>'
             f'<td class="lt-team">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></td>'
             f'{fmtd}'
-            f'<td>{cell(r.get("played"))}</td><td>{cell(r.get("won"))}</td>'
-            f'<td>{cell(r.get("draw"))}</td><td>{cell(r.get("lost"))}</td>'
+            f'{num("played", "p")}{num("won", "w")}'
+            f'{num("draw", "d")}{num("lost", "l")}'
             f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
             f'<td>{cell(r.get("gd"))}</td><td class="lt-pts">{cell(r.get("pts"))}</td></tr>')
+    # every match once; the buttons' rows list ids and the script clones these
+    store = ""
+    if used:
+        items = []
+        for mid, m in used.items():
+            inner = f'<span class="lgm-d">{esc(fmt_day(m.get("kickoff")))}</span>{fixture_mini(m)}'
+            page = m["match_id"] if pages is None else pages(m)
+            if page:
+                items.append(f'<a class="lgm" data-id="{mid}" href="/m/{page}">{inner}</a>')
+            else:
+                items.append(f'<div class="lgm" data-id="{mid}">{inner}</div>')
+        store = f'<div class="lt-games" hidden>{"".join(items)}</div>'
     if zeroed:
         badge = (f'<span class="lt-past">الموسم الجديد'
                  f'{(" " + esc(season_label)) if season_label else ""} — لم ينطلق بعد</span>')
@@ -52,7 +109,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'<th title="لعب">لعب</th><th title="فاز">ف</th><th title="تعادل">ت</th>'
             f'<th title="خسر">خ</th><th title="له">له</th><th title="عليه">عليه</th>'
             f'<th title="الفارق">+/-</th><th class="lt-pts">نقاط</th></tr></thead>'
-            f'<tbody>{"".join(body)}</tbody></table></div></div>')
+            f'<tbody>{"".join(body)}</tbody></table></div>{store}</div>')
 
 
 def fixture_mini(m):

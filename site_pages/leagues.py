@@ -9,11 +9,11 @@ import os
 from site_lib.competitions import COMP_SLUG
 from site_lib.config import DIST, PREDICTIONS_ON, REF_TODAY, SHOW_STATS_PAGE, SITE_BASE, SITE_NAME
 from site_lib.matchdata import match_goals
-from site_lib.names import comp_label
+from site_lib.names import ar_team, comp_label
 from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, foot, head, page_head_ad, write
-from site_lib.snippets import ROUNDS_JS, ST_TABS_JS
+from site_lib.snippets import LT_GAMES_JS, ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import scorers_read, standings_analysis
 from site_lib.tables import (clubs_panel, league_rounds_panel, match_row, round_on_show,
                              scorers_list, standings_table)
@@ -39,6 +39,17 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
               else f"{_n.year - 1}-{_n.year}")
     n_lp = 0
     _comps_with_table = set()
+    # a season-pool match -> its /m page id: by id, else by clubs + day (the
+    # 365scores leagues' pool and pages can hold the same match under two ids)
+    _by_fx = {(ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff")): mid
+              for mid, m in (m_all or {}).items()}
+
+    def page_of(m):
+        if m_all is None:
+            return m.get("match_id")
+        if m.get("match_id") in m_all:
+            return m["match_id"]
+        return _by_fx.get((ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff")))
     for comp, slug in COMP_SLUG.items():
         label = comp_label(comp)
         st = st_by_comp.get(comp)
@@ -60,7 +71,10 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             table = standings_table(comp, st["table"], past=st.get("past"),
                                     season_label=st.get("season_label"),
                                     zeroed=st.get("zeroed"),
-                                    form_map=forms.get(comp, {}), embedded=True)
+                                    form_map=forms.get(comp, {}), embedded=True,
+                                    # «لعب / ف / ت / خ» open the matches (2026-11-01)
+                                    games=(_bycomp or {}).get(comp) or [],
+                                    pages=page_of)
             # the written «قراءة في ترتيب» block left the page (user, 2026-10-31):
             # the scorers + assists charts take its place, as tabs beside the
             # table (same day). Its FAQ stays - same numbers in question form.
@@ -94,7 +108,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                 "standings.html", page_head=page_head, crumbs_ld=crumbs_ld, label=label,
                 season=season, table=Markup(table), has_sc=bool(sc),
                 sc_url=Markup(sc_url), scorers=Markup(scorers),
-                has_asst=bool(asst), assists=Markup(assists), tabs_js=Markup(ST_TABS_JS),
+                has_asst=bool(asst), assists=Markup(assists), tabs_js=Markup(ST_TABS_JS), games_js=Markup(LT_GAMES_JS),
                 next_rows=[Markup(r) for r in next_rows], next_title=next_title,
                 faq=Markup(_faq), popup=Markup(popup), page_foot=Markup(foot())))
             urls.append(st_url)

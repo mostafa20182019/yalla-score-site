@@ -79,6 +79,13 @@ TEAM_PAGES = [
      "news_tokens": ["طرابزون", "محمد صلاح"]},
 ]
 
+# One club, several spellings over a season: 365scores wrote «غلطة سراي» until
+# mid-October 2026 and «جلطة سراي» since, so the standings' «لعب / ف / ت / خ»
+# lists (tables.team_results) found 4 of Galatasaray's 10 matches. ONLY for
+# counting a team's results - not display, and not the live layer, which
+# matches the feed's current spelling exactly.
+TEAM_SPELLINGS = {"غلطة سراي": "جلطة سراي", "جالطة سراي": "جلطة سراي"}
+
 # Arabic display names for football-data's Latin team names (365scores
 # leagues arrive Arabic-native). Unmapped names fall through unchanged.
 AR_TEAM = {

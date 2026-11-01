@@ -32,6 +32,8 @@ FILTERS_HTML = (
 MATCHES_JS = _src("snippets/matches_js.html")
 # /standings/<slug>: table · scorers · assists as tabs (2026-10-31)
 ST_TABS_JS = _src("snippets/st_tabs_js.html")
+# /standings/<slug>: «لعب / ف / ت / خ» open the team's matches (2026-11-01)
+LT_GAMES_JS = _src("snippets/lt_games_js.html")
 FBCOPY_JS = _src("snippets/fbcopy_js.html")
 SHELF_JS = _src("snippets/shelf_js.html")
 REELS_FEED_JS = _src("snippets/reels_feed_js.html")

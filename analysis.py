@@ -99,7 +99,10 @@ def season_matches(fixtures, archive):
         if not _fin(m) or not m.get("competition"):
             continue
         fixture = fixture_key(m)
-        mid = m.get("match_id")
+        # as TEXT: fixtures.json holds 4764313, results_archive "4764313"; with
+        # the club respelt in between («غلطة سراي» -> «جلطة سراي») neither key
+        # matched and Galatasaray-Kasimpasa counted twice (2026-11-01)
+        mid = str(m.get("match_id") or "") or None
         if fixture in seen or (mid and ("id", mid) in seen):
             continue
         seen.add(fixture)

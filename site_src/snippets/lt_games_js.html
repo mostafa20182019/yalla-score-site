@@ -1,0 +1,39 @@
+<script>
+(function(){
+  /* /standings/<slug>: «لعب / ف / ت / خ» open the team's matches (user,
+     2026-11-01). The table row carries data-gm="id:w,id:l,..." (kick-off
+     order) and the matches sit once each in .lt-games; this clones them into
+     one popup, newest first. Escape, the × and the backdrop close it. */
+  var store=document.querySelector('.lt-games'); if(!store) return;
+  var byId={};
+  [].forEach.call(store.children,function(e){ byId[e.getAttribute('data-id')]=e; });
+  var LBL={p:'كل المباريات',w:'الفوز',d:'التعادل',l:'الخسارة'};
+  var pop=document.createElement('div');
+  pop.className='lt-pop'; pop.hidden=true;
+  pop.innerHTML='<div class="lt-pop-box" role="dialog" aria-modal="true">'
+    +'<div class="lt-pop-h"><b></b><button type="button" class="lt-pop-x" aria-label="إغلاق">×</button></div>'
+    +'<div class="lt-pop-l"></div></div>';
+  document.body.appendChild(pop);
+  var last=null;
+  function close(){ pop.hidden=true; document.documentElement.classList.remove('lt-lock'); if(last) last.focus(); }
+  pop.addEventListener('click',function(e){
+    if(e.target===pop||e.target.closest('.lt-pop-x')) close();
+  });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!pop.hidden) close(); });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest('.lt-n'); if(!b) return;
+    var tr=b.closest('tr'), k=b.getAttribute('data-k');
+    var items=(tr.getAttribute('data-gm')||'').split(',').filter(Boolean)
+      .map(function(x){ return x.split(':'); })
+      .filter(function(x){ return k==='p'||x[1]===k; });
+    var list=pop.querySelector('.lt-pop-l'); list.innerHTML='';
+    items.slice().reverse().forEach(function(x){
+      var el=byId[x[0]]; if(!el) return;
+      var c=el.cloneNode(true); c.classList.add('r-'+x[1]); list.appendChild(c);
+    });
+    pop.querySelector('b').textContent=tr.getAttribute('data-tn')+' — '+LBL[k]+' ('+items.length+')';
+    last=b; pop.hidden=false; document.documentElement.classList.add('lt-lock');
+    pop.querySelector('.lt-pop-x').focus();
+  });
+})();
+</script>
