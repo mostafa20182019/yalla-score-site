@@ -212,7 +212,7 @@ a{color:inherit}
 .st-tabs .minfo.lpane{margin-top:0}
 /* /standings: «لعب / ف / ت / خ» open the team's matches in a popup (2026-11-01) */
 .lt-n{appearance:none;background:none;border:0;padding:2px 6px;margin:-2px -6px;border-radius:6px;
-  font:inherit;color:var(--green-d);font-weight:800;cursor:pointer;text-decoration:underline dotted;
+  font:inherit;color:var(--green-d);font-weight:800;cursor:pointer;text-decoration:none;
   text-underline-offset:3px}
 .lt-n:hover{background:#eef6fb;text-decoration:underline}
 .lt-n:focus-visible{outline:2px solid var(--green);outline-offset:1px}
