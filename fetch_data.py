@@ -894,7 +894,75 @@ def fetch_s365_league(matches_out, lid, comp_name):
                            for i, r in enumerate(srows)]}
     print(f"  + {comp_name} (365scores): {len(day_rows)} matches, "
           f"{len(rounds)} rounds, table: {'yes' if entry else 'no'}")
+    if entry and not entry.get("zeroed"):
+        try:
+            note = backfill_results(lid, comp_name, season_num, entry["table"], game_row)
+            if note and "_DBG" in globals():
+                _DBG[f"backfill:{comp_name}"] = note
+        except Exception as e:                           # noqa: BLE001
+            print(f"  ! {comp_name} backfill failed ({e}) - the archive is unchanged")
     return entry
+
+# --------------------------------- missing results of the season (backfill)
+# games/results/ returns only the last ~3 weeks, so a match that slipped past
+# every run (Europa League matchday 1, before the league was added on 10-17;
+# seven Turkish teams one or two short) was never stored - and the standings'
+# «لعب / ف / ت / خ» lists stay plain numbers while we hold fewer matches than
+# the table counts (user, 2026-11-01: «اسحب النتائج الناقصة»). When a table
+# counts more matches than the results archive holds, walk the results'
+# previousPage links back to the season start and fold what is missing into
+# results_archive.json (unfrozen: score only - the pool needs no scorers).
+# At most once per BACKFILL_EVERY_H per league: a gap that cannot close (a
+# match 365scores lists without a score) must not cost pages on every run.
+BACKFILL_EVERY_H = 6
+BACKFILL_PAGES = 12
+
+
+def backfill_gap(comp_name, table, archive):
+    """How many finished matches the table counts beyond the archive's."""
+    counted = sum(int(r.get("played") or 0) for r in table or []) // 2
+    held = sum(1 for r in archive.values() if r.get("competition") == comp_name
+               and r.get("home_score") is not None)
+    return counted - held
+
+
+def backfill_results(lid, comp_name, season_num, table, game_row):
+    """Fill the season's missing results for one 365scores league. Returns a
+    note for fetch_debug.json, or None when nothing was needed."""
+    import results_archive as RA                      # noqa: PLC0415
+    key = f"backfill:{comp_name}"
+    prev = (globals().get("_PREV_DBG") or {}).get(key) or ""
+    last = prev.split(" @ ")[-1] if " @ " in prev else ""
+    try:
+        if last and (datetime.now(timezone.utc) - datetime.fromisoformat(last)).total_seconds() < BACKFILL_EVERY_H * 3600:
+            return prev
+    except ValueError:
+        pass
+    arch = RA.load()
+    gap = backfill_gap(comp_name, table, arch)
+    if gap <= 0 or not season_num:
+        return None
+    q = f"competitions={lid}&langId=27&timezoneName=Africa/Cairo"
+    rows, path = [], f"games/results/?{q}&showOdds=false"
+    for _ in range(BACKFILL_PAGES):
+        time.sleep(1)
+        page = _s365(path)
+        games = page.get("games") or []
+        rows += [game_row(g) for g in games if g.get("seasonNum") == season_num]
+        prev_page = (page.get("paging") or {}).get("previousPage") or ""
+        # older than this season reached, or the start of the list
+        if not games or any(g.get("seasonNum") != season_num for g in games) or not prev_page:
+            break
+        path = prev_page.split("/web/", 1)[-1]
+    fin = [r for r in rows if r["status"] == "FINISHED" and str(r["match_id"]) not in arch]
+    added = RA.update(arch, fin, lambda m: None)[0]
+    if added:
+        RA.save(arch)
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    note = (f"gap {gap}: {len(rows)} season rows read, +{added} added, "
+            f"gap now {backfill_gap(comp_name, table, arch)} @ {now}")
+    print(f"  + {comp_name} backfill: {note}")
+    return note
 
 # ------------------------------------------- Top transfers (365scores)
 # FotMob-style "أبرز الانتقالات" widget on the home page. Confirmed moves
