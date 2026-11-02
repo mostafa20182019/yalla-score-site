@@ -785,6 +785,15 @@ def _s365_badge(c):
             "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/"
             f"v{c.get('imageVersion', 1)}/Competitors/{c.get('id')}")
 
+def season_start(today=None):
+    """July 1 of the season in progress, ISO. 365scores' games/current/ for
+    the Conference League returned 30 FINISHED games of November 2025 under
+    the CURRENT seasonNum (2026-11-03) - they reached its rounds panel and the
+    archive. A game before this date is never this season's, whatever its
+    seasonNum says."""
+    t = today or datetime.now(CAIRO).date()
+    return f"{t.year if t.month >= 7 else t.year - 1}-07-01"
+
 def _egy_season():
     now = datetime.now(CAIRO)
     y = now.year if now.month >= 7 else now.year - 1
@@ -835,6 +844,7 @@ def fetch_s365_league(matches_out, lid, comp_name):
 
     rows, seen = [], set()
     today = datetime.now(CAIRO).date()
+    _start = season_start(today)
     # fixtures/ only returns the next batch (~2 rounds), which stalled the
     # day view around Friday (2026-08-24) - the dated games/ call tops the
     # window up to UPCOMING_DAYS ahead (365scores date params are dd/mm/yyyy)
@@ -855,7 +865,7 @@ def fetch_s365_league(matches_out, lid, comp_name):
                 if season_num and g.get("seasonNum") != season_num:
                     continue
                 r = game_row(g)
-                if r["match_id"] not in seen and r["kickoff"]:
+                if r["match_id"] not in seen and r["kickoff"] and r["kickoff"] >= _start:
                     seen.add(r["match_id"])
                     rows.append(r)
         except Exception as e:
@@ -873,7 +883,7 @@ def fetch_s365_league(matches_out, lid, comp_name):
                 for g in games:
                     if g.get("seasonNum") == season_num:
                         r = game_row(g)
-                        if r["match_id"] not in seen and r["kickoff"]:
+                        if r["match_id"] not in seen and r["kickoff"] and r["kickoff"] >= _start:
                             seen.add(r["match_id"])
                             rows.append(r)
                 prev_page = (page.get("paging") or {}).get("previousPage") or ""
@@ -1014,7 +1024,8 @@ def backfill_results(lid, comp_name, season_num, table, game_row):
                 or not league or not prev_page):
             break
         path = prev_page.split("/web/", 1)[-1]
-    fin = [r for r in rows if r["status"] == "FINISHED" and str(r["match_id"]) not in arch]
+    fin = [r for r in rows if r["status"] == "FINISHED" and str(r["match_id"]) not in arch
+           and (r.get("kickoff") or "") >= season_start()]
     added = RA.update(arch, fin, lambda m: None)[0]
     if added:
         RA.save(arch)

@@ -48,10 +48,15 @@ ok("4 a plausible list inside the season's own totals",
 print()
 print("== the denominator, on this repo's real data ==")
 fx = B.load("fixtures.json")
-arch = B.load("matches_archive.json")
 st = B.load("standings.json")
 sc = B.load("scorers.json")
-pool = AN.season_matches(fx, arch)
+# the pool the BUILD uses (site_lib.model.model_core): fixtures + the frozen
+# results_archive + matches_archive. This test used fixtures + matches_archive
+# only, which saw 23 of the Moroccan league's 101 goals the week it joined
+# (2026-11-03) - the site was right, the test's denominator was a step behind
+import results_archive as _RA
+from site_lib.model import model_core as _mc
+pool = _mc(fx, _RA.load())[0]
 fx_by = {f.get("competition"): f for f in fx if f.get("rounds")}
 st_by = {s.get("competition"): s for s in st if s.get("table")}
 sc_by = {s.get("competition"): (s.get("scorers") or []) for s in sc if s.get("scorers")}
