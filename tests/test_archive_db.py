@@ -30,12 +30,13 @@ ok("1b and fetch_data's guard starts it on July 1 (365scores filed Nov-2025 Conf
    F.season_start(date(2026, 11, 3)) == "2026-07-01" and F.season_start(date(2027, 3, 1)) == "2026-07-01"
    and F.season_start(date(2027, 7, 1)) == "2027-07-01")
 
-n1 = A.run(seed=True, today="2026-11-02")
+n1 = A.run(seed=False, today="2026-11-02")   # an EMPTY archive seeds itself
 tables = {r["name"] for r in store.sql("SELECT name FROM sqlite_master WHERE type='table'")}
 ok("2 every archive table exists", {"arch_matches", "arch_goals", "arch_details", "arch_standings",
                                     "arch_top_players", "arch_highlights"} <= tables, tables)
 cnt = lambda t: store.sql(f"SELECT COUNT(*) AS n FROM {t}")[0]["n"]
-ok("3 the season's matches are in, with scorers and details", cnt("arch_matches") > 500
+ok("3 the first (daily) run on an empty archive seeded the whole season, with scorers and details",
+   store.sql("SELECT MIN(kickoff) AS k FROM arch_matches")[0]["k"] < "2026-09-01" and cnt("arch_matches") > 500
    and cnt("arch_goals") > 1000 and cnt("arch_details") > 100, (cnt("arch_matches"), cnt("arch_goals")))
 ok("4 every match carries its season, its competition's Arabic label and both scores",
    store.sql("SELECT COUNT(*) AS n FROM arch_matches WHERE season = '' OR comp_label IS NULL "

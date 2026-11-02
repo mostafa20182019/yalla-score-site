@@ -159,6 +159,11 @@ def run(seed=False, today=None):
     since = None if seed else (datetime.date.fromisoformat(today)
                                - datetime.timedelta(days=LOOKBACK_DAYS)).isoformat()
     init_schema()
+    if not seed and not store.sql("SELECT 1 AS x FROM arch_matches LIMIT 1"):
+        # an empty archive (the first scheduled run) seeds itself: nobody has
+        # to remember the manual seed=true dispatch
+        seed, since = True, None
+        print("archive: empty - seeding everything the data store holds")
     ms, gs, ds = match_rows(since)
     st, tp = table_rows(today)
     hl = highlight_rows(since)
