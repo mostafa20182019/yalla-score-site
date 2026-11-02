@@ -19,6 +19,10 @@ on:
         description: "write everything the data store holds (first run)"
         type: boolean
         default: false
+      details:
+        description: "matches to fetch missing scorers / lineups for from 365scores (2026-11-03 backfill)"
+        type: number
+        default: 400
 
 permissions:
   contents: read
@@ -30,7 +34,7 @@ concurrency:
 jobs:
   archive:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40            # the details backfill: ~1.2 s a game, 400 a night
     steps:
       - uses: actions/checkout@v4
         with:
@@ -52,5 +56,5 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: |
-          python archive_db.py ${{ inputs.seed && '--seed' || '' }} | tee -a "$GITHUB_STEP_SUMMARY"
+          python archive_db.py ${{ inputs.seed && '--seed' || '' }} --details ${{ inputs.details || 400 }} | tee -a "$GITHUB_STEP_SUMMARY"
           python archive_db.py --check | tee -a "$GITHUB_STEP_SUMMARY"

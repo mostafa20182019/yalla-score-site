@@ -197,6 +197,148 @@ def run(seed=False, today=None):
     return n
 
 
+# ------------------------------------------------------------------ details backfill
+# User, 2026-11-03: «ايوه اعمله» - fill the scorers, lineups, cards and subs the
+# archive lacks for matches played before it existed (match_details.json kept
+# 45 days; the new leagues' season backfill brought scores only). 365scores
+# still serves every game's detail. Runs after each nightly write, at most
+# DETAILS_PER_RUN games a night, until nothing is missing - and afterwards it
+# keeps catching any match that ends up without its detail.
+DETAILS_PER_RUN = 400
+# the leagues whose matches the site stores under football-data ids: their
+# 365scores game ids are found by date + clubs in that league's results pages
+FD_365 = {"Premier League": 7, "Primera Division": 11, "Serie A": 17, "Bundesliga": 25,
+          "Ligue 1": 35, "UEFA Champions League": 572}
+
+
+def _missing(limit):
+    """Archived matches with no detail record, or with fewer named goals than
+    the score - newest first."""
+    return store.sql(
+        "SELECT m.match_id, m.competition, m.kickoff, m.home_ar, m.away_ar, m.home_score, m.away_score "
+        "FROM arch_matches m "
+        "WHERE NOT EXISTS (SELECT 1 FROM arch_details d WHERE d.match_id = m.match_id) "
+        "   OR (m.home_score + m.away_score) > "
+        "      (SELECT COUNT(*) FROM arch_goals g WHERE g.match_id = m.match_id) "
+        "ORDER BY m.kickoff DESC LIMIT ?", [limit])
+
+
+def _fd_index(comps):
+    """{competition: {(date, home, away) normalized: 365 game id}} from each
+    league's season results pages (the walk fetch_data's backfill uses)."""
+    import fetch_data as F
+    from site_lib.names import _gnorm
+    out = {}
+    start = F.season_start()
+    for comp in comps:
+        lid = FD_365[comp]
+        q = f"competitions={lid}&langId=27&timezoneName=Africa/Cairo"
+        sn = (F._s365(f"competitions/?{q}").get("competitions") or [{}])[0].get("currentSeasonNum")
+        idx, path = {}, f"games/results/?{q}&showOdds=false"
+        for _ in range(F.BACKFILL_PAGES * 2):
+            F.time.sleep(1)
+            page = F._s365(path)
+            games = page.get("games") or []
+            for g in games:
+                if g.get("seasonNum") != sn:
+                    continue
+                try:
+                    day = F.datetime.fromisoformat(g["startTime"]).astimezone(F.CAIRO).strftime("%Y-%m-%d")
+                except (KeyError, ValueError):
+                    continue
+                if day < start:
+                    continue
+                h = _gnorm((g.get("homeCompetitor") or {}).get("name"))
+                a = _gnorm((g.get("awayCompetitor") or {}).get("name"))
+                idx[(day, h, a)] = g["id"]
+            prev = (page.get("paging") or {}).get("previousPage") or ""
+            if not games or any(g.get("seasonNum") != sn for g in games) or not prev:
+                break
+            path = prev.split("/web/", 1)[-1]
+        out[comp] = idx
+    return out
+
+
+def _find_365(row, idx):
+    """(365 game id, flipped) for a football-data-id match, or (None, False)."""
+    from site_lib.names import _gnorm
+    h, a = _gnorm(row["home_ar"]), _gnorm(row["away_ar"])
+    d0 = datetime.date.fromisoformat(row["kickoff"])
+    for dd in (0, -1, 1):                       # a kick-off near midnight
+        day = (d0 + datetime.timedelta(days=dd)).isoformat()
+        if (day, h, a) in idx:
+            return idx[(day, h, a)], False
+        if (day, a, h) in idx:
+            return idx[(day, a, h)], True
+    return None, False
+
+
+def backfill_details(limit=DETAILS_PER_RUN):
+    """Fetch the missing details from 365scores into arch_details / arch_goals.
+    Returns a note. Never raises on one game: it is skipped and retried later."""
+    import fetch_data as F
+    from site_lib.competitions import S365_COMPETITIONS
+    rows = _missing(limit)
+    if not rows:
+        return "details: nothing missing"
+    need_fd = sorted({r["competition"] for r in rows if r["competition"] in FD_365})
+    try:
+        fd_idx = _fd_index(need_fd) if need_fd else {}
+    except Exception as e:                                    # noqa: BLE001
+        print(f"  ! 365scores index failed ({e}) - football-data leagues skipped this run")
+        fd_idx = {}
+    now = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+    got = goals_n = unmatched = fails = 0
+    for r in rows:
+        flipped = False
+        if r["competition"] in FD_365:
+            gid, flipped = _find_365(r, fd_idx.get(r["competition"]) or {})
+        elif r["competition"] in S365_COMPETITIONS:
+            gid = r["match_id"]
+        else:
+            gid = None
+        if not gid:
+            unmatched += 1
+            continue
+        try:
+            F.time.sleep(0.6)
+            game = (F._s365(f"game/?appTypeId=5&langId=27&gameId={gid}").get("game") or {})
+        except Exception:                                     # noqa: BLE001
+            fails += 1
+            continue
+        fb_home = (game.get("homeCompetitor") or {}).get("id")
+        goals, _health = F._goal_rows(game, fb_home)
+        det = F._detail_rows(game, fb_home)
+        if flipped:          # 365scores has the clubs the other way round
+            sw = {"h": "a", "a": "h"}
+            goals = [dict(g, side=sw.get(g.get("side"), g.get("side"))) for g in goals]
+            det = dict(det, cards=[dict(c, side=sw.get(c.get("side"), c.get("side"))) for c in det["cards"]],
+                       subs=[dict(s, side=sw.get(s.get("side"), s.get("side"))) for s in det["subs"]],
+                       lineups={sw.get(k, k): v for k, v in (det.get("lineups") or {}).items()})
+        if det["cards"] or det["subs"] or det["lineups"] or goals:
+            entry = {"match_id": str(gid), "home": r["home_ar"], "away": r["away_ar"],
+                     "date": r["kickoff"], "goals": goals, **det, "src": "backfill"}
+            store.upsert_many("arch_details", ["match_id", "season", "details_json", "updated_at"],
+                              [{"match_id": r["match_id"], "season": season_of(r["kickoff"]),
+                                "details_json": json.dumps(entry, ensure_ascii=False), "updated_at": now}],
+                              ["match_id"])
+            got += 1
+        # the scorers only when the list accounts for the score (a partial
+        # list would read as the whole story)
+        if goals and len(goals) == (r["home_score"] or 0) + (r["away_score"] or 0):
+            store.sql("DELETE FROM arch_goals WHERE match_id = ?", [r["match_id"]])
+            store.upsert_many("arch_goals", ["match_id", "seq", "side", "player", "minute", "tag"],
+                              [{"match_id": r["match_id"], "seq": i, "side": g.get("side"),
+                                "player": g.get("player"), "minute": str(g.get("minute") or ""),
+                                "tag": g.get("tag") or ""} for i, g in enumerate(goals, 1)],
+                              ["match_id", "seq"])
+            goals_n += 1
+    note = (f"details backfill: {len(rows)} missing looked at, {got} details stored, "
+            f"{goals_n} scorer lists completed, {unmatched} not found on 365scores, {fails} failed")
+    print(note)
+    return note
+
+
 def check():
     for r in store.sql("SELECT season, comp_label, COUNT(*) AS n, MIN(kickoff) AS first, MAX(kickoff) AS last "
                        "FROM arch_matches GROUP BY season, comp_label ORDER BY season, n DESC"):
@@ -209,6 +351,8 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--seed", action="store_true")
     ap.add_argument("--check", action="store_true")
+    ap.add_argument("--details", type=int, default=DETAILS_PER_RUN,
+                    help="games to backfill details for after the write (0 = skip)")
     a = ap.parse_args()
     if store.backend() == "json":
         sys.exit("archive_db: no database - set CF_API_TOKEN + CF_ACCOUNT_ID + CF_D1_ID (or D1_SQLITE for a local file)")
@@ -216,3 +360,8 @@ if __name__ == "__main__":
         check()
     else:
         run(seed=a.seed)
+        if a.details:
+            try:
+                backfill_details(a.details)
+            except Exception as e:                             # noqa: BLE001
+                print(f"  ! details backfill stopped ({e}) - the next run carries on")
