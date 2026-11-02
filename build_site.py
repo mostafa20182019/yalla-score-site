@@ -15,6 +15,7 @@ import base64, json, os, re, html, shutil, datetime, hashlib, io
 import analysis as AN     # تحليلات: strength model, predictions, accuracy, player insights
 import store              # prediction log (D1 when configured, else the json file)
 import results_archive as RA   # every finished match of the season, frozen once complete
+import highlights as HL        # /goals: YouTube highlight links (beIN SPORTS / ON Sport)
 from site_lib.render import render, Markup   # Jinja2 page templates (site_src/templates/)
 # Football reference tables (competitions, clubs, Arabic spellings, legends,
 # calendar words) live in site_lib/ since slice 2 of the split - edit them
@@ -101,7 +102,7 @@ from site_lib.snippets import (  # noqa: E402,F401
 from site_pages.prep import prepare_model, prepare_league_data  # noqa: E402
 from site_pages.static import (  # noqa: E402
     not_found_page, privacy_page, about_page, contact_page, terms_page, editorial_page,
-    reels_page, videos_page)
+    reels_page, videos_page, goals_page)
 from site_pages.articles import (  # noqa: E402
     article_pages, news_archive_pages, fb_helper_page, headlines_page)
 from site_pages.home import home_page  # noqa: E402
@@ -251,6 +252,8 @@ def build():
     headlines_page(headlines, urls)        # gated by SHOW_HEADLINES
     reels_page(reels, urls)
     videos_page(videos, urls)
+    # «أهداف المباريات» (2026-11-02): data/highlights.json from highlights.py
+    goals_page(list(HL.load()[0].values()), m_all, urls)
 
     # files that are not pages - robots/sitemap last among the writers of
     # `urls`, so the sitemap lists every page above

@@ -1778,6 +1778,14 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! match stats failed ({e}) - keeping existing file")
         _DBG["match_stats"] = f"FAIL: {e!r}"
+    try:
+        # «أهداف المباريات» (2026-11-02): highlight links from beIN SPORTS /
+        # ON Sport's YouTube channels, tied to our finished matches
+        import highlights as _HL
+        _DBG["highlights"] = _HL.run()
+    except Exception as e:
+        print(f"  ! highlights failed ({e}) - keeping existing file")
+        _DBG["highlights"] = f"FAIL: {e!r}"
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)

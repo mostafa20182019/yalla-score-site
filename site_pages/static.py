@@ -12,6 +12,8 @@ from site_lib.snippets import REELS_FEED_JS, VIDEO_JS
 from site_lib.text import esc, jsonld
 from site_lib.widgets import reel_slide, video_facade
 
+GOALS_DAYS = 30       # /goals shows the last month of highlights
+
 
 def not_found_page():
     """/404 - served by Cloudflare for any missing asset; not in the sitemap on
@@ -146,3 +148,54 @@ def videos_page(videos, urls):
     if SHOW_VIDEOS:
         write("videos.html", html_)
         urls.append("/videos.html")
+
+
+def goals_page(videos, m_all, urls):
+    """/goals - «أهداف المباريات» (user, 2026-11-02): highlight LINKS from
+    beIN SPORTS (European matches) and ON Sport (Egyptian matches), each tied
+    to one of our finished matches by highlights.py. One card per match and
+    channel - ON Sport uploads «أهداف مباراة» and «ملخص مباراة» of the same
+    game, the summary wins - newest first, the last GOALS_DAYS only. A match
+    with a /m page links to it. Template: site_src/templates/goals.html."""
+    import datetime
+    from site_lib.crests import local_crest
+    from site_lib.dates import fmt_day
+    from site_lib.matchdata import score_pill
+    from site_lib.names import comp_label
+    from site_lib.snippets import GOALS_JS
+    cut = (datetime.date.fromisoformat(REF_TODAY) - datetime.timedelta(days=GOALS_DAYS)).isoformat()
+    best = {}
+    for v in videos or []:
+        if (v.get("kickoff") or "") < cut or not v.get("vid"):
+            continue
+        k = (v.get("match_id"), v.get("ch"))
+        rank = 1 if "ملخص" in (v.get("title") or "") else 0
+        if k not in best or rank > best[k][0]:
+            best[k] = (rank, v)
+    rows = sorted((v for _, v in best.values()),
+                  key=lambda v: (v.get("kickoff") or "", v.get("published") or ""), reverse=True)
+
+    def crest(u):
+        return Markup(f'<img src="{esc(local_crest(u))}" alt="" loading="lazy" width="22" height="22">'
+                      if u else "")
+    cards = []
+    for v in rows:
+        mid = v.get("match_id")
+        cards.append({
+            "ch": v["ch"], "channel": v.get("channel") or "", "title": v.get("title") or "",
+            "yt": f"https://www.youtube.com/watch?v={v['vid']}",
+            "img": f"https://i.ytimg.com/vi/{v['vid']}/mqdefault.jpg",
+            "comp": comp_label(v.get("competition") or ""),
+            "home": v.get("home") or "", "away": v.get("away") or "",
+            "home_crest": crest(v.get("home_badge")), "away_crest": crest(v.get("away_badge")),
+            "score": Markup(score_pill(v.get("home_score"), v.get("away_score"), "gl-sc sc-in")),
+            "day": fmt_day(v.get("kickoff")),
+            "match_url": f"/m/{mid}.html" if m_all is None or mid in {str(k) for k in m_all} else ""})
+    page_head = Markup(head(f"أهداف المباريات اليوم — ملخصات الدوري المصري والدوريات الأوروبية | {SITE_NAME}",
+                            "شاهد أهداف وملخصات مباريات الدوري المصري والدوريات الأوروبية ودوري أبطال أوروبا "
+                            "من القنوات الرسمية beIN SPORTS وON Sport على يوتيوب.",
+                            SITE_BASE + "/goals.html", active="goals"))
+    write("goals.html", render("goals.html", page_head=page_head, cards=cards,
+                               goals_js=Markup(GOALS_JS), page_foot=Markup(foot())))
+    urls.append("/goals.html")
+    print(f"  + goals page: {len(cards)} highlight links")

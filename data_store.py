@@ -67,6 +67,7 @@ STORE_FILES = [
     "scorers.json", "assists.json", "goal_events.json", "match_details.json",
     "headlines.json", "fetch_debug.json", "results_archive.json", "reels_auto.json",
     "match_stats.json",     # xG + shots per finished match (match_stats.py, 2026-10-07)
+    "highlights.json",      # YouTube highlight links for /goals (highlights.py, 2026-11-02)
 ]
 
 # accumulating files: key function per item, for the merge and the shrink guard
@@ -97,6 +98,7 @@ ACCUMULATING = {
     "matches_archive.json": lambda e: str(e.get("match_id")),
     "match_details.json": lambda e: f'{e.get("date")}|{e.get("home")}|{e.get("away")}',
     "match_stats.json": lambda e: str(e.get("match_id")),
+    "highlights.json": lambda e: str(e.get("vid")),
 }
 SHRINK_LIMIT = 0.90        # refuse a push that loses >10% of an archive's entries
 

@@ -1,0 +1,43 @@
+{# /goals - «أهداف المباريات» (user, 2026-11-02): highlight LINKS from the
+   rights holders' own YouTube channels - beIN SPORTS for the European
+   matches, ON Sport for the Egyptian ones (highlights.py). Each card opens
+   the video on YouTube; nothing is embedded or re-hosted. Lines are joined
+   with NO separator by site_lib.render: break between tags, never inside a
+   sentence. #}
+{{ page_head }}
+<nav class="crumbs"><a href="/">الرئيسية</a> › أهداف المباريات</nav>
+<h1 class="page-h">أهداف المباريات</h1>
+<p class="hintline">ملخصات وأهداف المباريات من القنوات الرسمية على يوتيوب: قناة <bdi>beIN SPORTS</bdi> للبطولات الأوروبية، وقناة <bdi>ON Sport</bdi> للمباريات المصرية.</p>
+{% if cards %}
+<div class="gl-chips" role="group" aria-label="فلتر الفيديوهات">
+  <button type="button" class="gl-chip is-on" data-f="all" aria-pressed="true">الكل</button>
+  <button type="button" class="gl-chip" data-f="on" aria-pressed="false">مصر</button>
+  <button type="button" class="gl-chip" data-f="bein" aria-pressed="false">أوروبا</button>
+</div>
+<div class="gl-grid">
+  {% for c in cards %}
+  <article class="gl-card" data-ch="{{ c.ch }}">
+    <a class="gl-thumb" href="{{ c.yt }}" target="_blank" rel="noopener" aria-label="شاهد {{ c.title }} على يوتيوب">
+      <img src="{{ c.img }}" alt="" loading="lazy" width="320" height="180">
+      <span class="gl-play" aria-hidden="true">▶</span>
+      <span class="gl-ch gl-ch-{{ c.ch }}">{{ c.channel }}</span>
+    </a>
+    <div class="gl-body">
+      <span class="gl-comp">{{ c.comp }}</span>
+      <a class="gl-line" href="{{ c.yt }}" target="_blank" rel="noopener">
+        <span class="gl-t">{{ c.home_crest }}<bdi>{{ c.home }}</bdi></span>
+        {{ c.score }}
+        <span class="gl-t">{{ c.away_crest }}<bdi>{{ c.away }}</bdi></span>
+      </a>
+      <span class="gl-foot"><span>{{ c.day }}</span>
+        {% if c.match_url %}<a class="gl-mp" href="{{ c.match_url }}">صفحة المباراة ←</a>{% endif %}</span>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+<p class="no-comp gl-none" hidden>لا فيديوهات لهذا الفلتر الآن.</p>
+{{ goals_js }}
+{% else %}
+<p class="empty-note">الملخصات تظهر هنا بعد نهاية المباريات — تابعونا.</p>
+{% endif %}
+{{ page_foot }}

@@ -1,0 +1,14 @@
+<script>
+(function(){
+  /* /goals: الكل · مصر · أوروبا (2026-11-02) - hides cards by channel */
+  var chips=[].slice.call(document.querySelectorAll('.gl-chip'));
+  var cards=[].slice.call(document.querySelectorAll('.gl-card'));
+  var none=document.querySelector('.gl-none');
+  chips.forEach(function(c){ c.addEventListener('click',function(){
+    var f=c.getAttribute('data-f'), n=0;
+    chips.forEach(function(x){ var on=x===c; x.classList.toggle('is-on',on); x.setAttribute('aria-pressed',on?'true':'false'); });
+    cards.forEach(function(k){ var show=f==='all'||k.getAttribute('data-ch')===f; k.hidden=!show; if(show) n++; });
+    if(none) none.hidden=n>0;
+  }); });
+})();
+</script>
