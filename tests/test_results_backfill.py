@@ -105,6 +105,25 @@ arch = RA.load()
 ok("9 qualifiers (no round number) are not added, and the walk stops at them",
    sorted(arch) == ["14", "15"] and "games/?q=3" not in calls, (sorted(arch), calls))
 
+# the repair of what the pre-fix backfill already stored (2026-11-03): 258
+# Conference League qualifiers in the LIVE archive; removing 16.6% of it at once
+# must not be refused by the store's shrink guard
+fake = {str(i): {"match_id": str(i), "competition": "UEFA Conference League", "round": None,
+                 "kickoff": "2026-08-14", "home_score": 1, "away_score": 0} for i in range(300)}
+fake.update({f"L{i}": {"match_id": f"L{i}", "competition": "UEFA Conference League", "round": 1,
+                       "kickoff": "2026-10-22", "home_score": 0, "away_score": 0} for i in range(36)})
+fake.update({f"P{i}": {"match_id": f"P{i}", "competition": "Premier League", "round": None,
+                       "kickoff": "2026-08-14", "home_score": 0, "away_score": 0} for i in range(20)})
+ok("10 the dated repair drops the round-less Conference qualifiers only (league phase and other comps stay)",
+   RA.repair(fake) == 300 and len(fake) == 56 and RA.repair(fake) == 0)
+import json as _json, data_store as _DS
+_rem = _json.dumps({"results": [{"match_id": str(i)} for i in range(1000)]}).encode()
+_loc = lambda purged: _json.dumps({"meta": {"purged_now": purged},
+                                   "results": [{"match_id": str(i)} for i in range(800)]}).encode()
+ok("11 the store's shrink guard counts a purposeful purge back, and still refuses an unexplained one",
+   _DS.shrink_problems({"results_archive.json": _loc(200)}, {"results_archive.json": _rem}) == []
+   and _DS.shrink_problems({"results_archive.json": _loc(0)}, {"results_archive.json": _rem}) != [])
+
 src = open("fetch_data.py", encoding="utf-8").read()
 ok("8 a failing backfill can never fail the fetch (caught, archive unchanged)",
    "backfill failed" in src and 'if entry and not entry.get("zeroed")' in src)

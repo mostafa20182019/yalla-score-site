@@ -210,7 +210,12 @@ def shrink_problems(local, remote):
     out = []
     for name in ACCUMULATING:
         if name in local and name in remote:
-            n_l, n_r = len(_items(json.loads(local[name]))), len(_items(json.loads(remote[name])))
+            doc = json.loads(local[name])
+            n_l, n_r = len(_items(doc)), len(_items(json.loads(remote[name])))
+            # entries the writer removed ON PURPOSE this run (results_archive:
+            # NOT_PLAYED + REPAIRS, 2026-11-03) are not a shrink
+            if isinstance(doc, dict):
+                n_l += int(((doc.get("meta") or {}).get("purged_now")) or 0)
             if n_r >= 20 and n_l < n_r * SHRINK_LIMIT:
                 out.append(f"{name}: {n_l} entries vs {n_r} remote")
     return out

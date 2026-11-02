@@ -60,11 +60,14 @@ def load(path=FILE):
     return {str(r["match_id"]): r for r in rows if r.get("match_id") is not None}
 
 
-def save(arch, path=FILE):
+def save(arch, path=FILE, purged=0):
+    """purged = entries this run removed ON PURPOSE (NOT_PLAYED, REPAIRS):
+    data_store's shrink guard counts them back before refusing a push."""
     rows = sorted(arch.values(), key=lambda r: (r.get("kickoff") or "", r.get("koff_time") or "",
                                                 str(r.get("match_id"))))
     doc = {"meta": {"generated_at": _now(), "count": len(rows),
-                    "frozen": sum(1 for r in rows if r.get("frozen"))},
+                    "frozen": sum(1 for r in rows if r.get("frozen")),
+                    "purged_now": purged},
            "results": rows}
     tmp = path + ".tmp"
     with io.open(tmp, "w", encoding="utf-8", newline="\n") as f:
@@ -173,19 +176,43 @@ def _feed_rows():
     return rows
 
 
+# Dated repairs: entries a past bug put into the archive. Applied on every run
+# and idempotent - once they are gone nothing matches again.
+REPAIRS = [
+    # 2026-11-02 16:54 UTC: the first backfill of the Conference League walked
+    # its July-August qualifiers (the same seasonNum, NO round number) into the
+    # archive - 258 matches the league-phase table never counts (294 archived vs
+    # 36 played). The backfill keeps round-numbered games only since 7da4ad2f.
+    {"competition": "UEFA Conference League", "round": None, "before": "2026-10-01"},
+]
+
+
+def repair(arch):
+    """Drop the entries REPAIRS describes. Returns how many."""
+    gone = {k for k, r in arch.items() for rule in REPAIRS
+            if r.get("competition") == rule["competition"]
+            and r.get("round") == rule["round"]
+            and (r.get("kickoff") or "") < rule["before"]}
+    for k in gone:
+        del arch[k]
+    return len(gone)
+
+
 def run():
     """What publish.yml runs: fold today's finished matches in, freeze what is
     complete. Goals come from the python sources only (match_details +
     goal_events) - an entry this file already froze is never re-derived."""
     import build_site as b
     arch = load()
+    fixed = repair(arch)
     idx = b.goals_index(frozen=[])
     a, f, u, rm = update(arch, _feed_rows(), lambda m: b.match_goals(idx, m))
-    save(arch)
+    save(arch, purged=rm + fixed)
     fz = sum(1 for r in arch.values() if r.get("frozen"))
     print(f"results archive: {len(arch)} finished matches ({fz} frozen); "
           f"this run +{a} new, {f} frozen, {u} updated"
-          + (f", {rm} REMOVED (the feed says not played)" if rm else ""))
+          + (f", {rm} REMOVED (the feed says not played)" if rm else "")
+          + (f", {fixed} REPAIRED away (see REPAIRS)" if fixed else ""))
     return 0
 
 
