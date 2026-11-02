@@ -175,7 +175,10 @@ def run(seed=False, today=None):
         "goals": store.upsert_many("arch_goals", ["match_id", "seq", "side", "player", "minute", "tag"],
                                    gs, ["match_id", "seq"]),
         "details": store.upsert_many("arch_details", ["match_id", "season", "details_json", "updated_at"],
-                                     ds, ["match_id"], chunk=10),
+                                     # 4 a statement: up to ~5.4 KB of Arabic JSON each,
+                                     # sent u-escaped by store.sql (about x3) - D1 caps a
+                                     # statement near 100 KB
+                                     ds, ["match_id"], chunk=4),
         "standings": store.upsert_many("arch_standings", ["snap_date", "season", "competition", "pos", "team",
                                                           "team_ar", "played", "won", "draw", "lost", "gf",
                                                           "ga", "gd", "pts"],
