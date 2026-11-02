@@ -55,7 +55,9 @@ def scorers_desc(label, season, sc):
 
 
 def fixtures_desc(label, season, rounds, n_m):
-    flat = [(r.get("round"), m) for r in rounds for m in (r.get("matches") or [])]
+    # a cup's rounds are its stages («دور الـ 32»): named, and counted as أدوار
+    staged = any(r.get("label") for r in rounds)
+    flat = [(r.get("label") or r.get("round"), m) for r in rounds for m in (r.get("matches") or [])]
     fin = [(rn, m) for rn, m in flat if (m.get("status") or "").upper() == "FINISHED"
            and m.get("home_score") is not None]
     up = [(rn, m) for rn, m in flat if (m.get("status") or "").upper() in ("UPCOMING", "LIVE", "TIMED", "SCHEDULED")]
@@ -67,12 +69,12 @@ def fixtures_desc(label, season, rounds, n_m):
         parts.append(f"القادمة: {ar_team(m.get('home'))} × {ar_team(m.get('away'))} "
                      f"{day_month(m.get('kickoff'), weekday=True)}"
                      + (f" {m.get('koff_time')} بتوقيت القاهرة" if m.get("koff_time") else "")
-                     + (f" (الجولة {rn})." if rn else "."))
+                     + ((f" ({rn})." if staged else f" (الجولة {rn}).") if rn else "."))
     if fin:
         rn, m = fin[-1]
         parts.append(f"آخر نتيجة: {ar_team(m.get('home'))} {m.get('home_score')} - "
                      f"{m.get('away_score')} {ar_team(m.get('away'))} ({day_month(m.get('kickoff'))}).")
-    parts.append(f"جدول مباريات {label} {season}: {len(rounds)} جولة و{n_m} مباراة بمواعيدها ونتائجها.")
+    parts.append(f"جدول مباريات {label} {season}: {len(rounds)} {'دور' if staged else 'جولة'} و{n_m} مباراة بمواعيدها ونتائجها.")
     return " ".join(parts)
 
 

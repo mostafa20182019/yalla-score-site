@@ -763,7 +763,10 @@ S365_LEAGUES = [
     (553, "Egypt Cup"),
     (7808, "Egyptian League Cup"),
 ]
-EGY_ENABLED = True                      # master switch for the 365scores leagues
+EGY_ENABLED = True
+# knock-out cups whose page is built STAGE by stage (no round numbers in the
+# feed): كأس مصر (user ask 2026-11-03: «اعمل صفحة لكأس مصر مقسمة بالأدوار»)
+STAGE_ROUNDS = {553}                      # master switch for the 365scores leagues
 
 def _s365(path):
     # full browser-ish headers: webws.365scores.com sits behind Cloudflare and
@@ -824,6 +827,10 @@ def fetch_s365_league(matches_out, lid, comp_name):
             "away_score": int(aws) if scored else None,
             "round": int(rd) if rd else None,
             "channel": None,
+            # a knock-out cup's stage («تصفيات», «دور الـ 32»): its rounds
+            # panel is built from these (STAGE_ROUNDS, 2026-11-03)
+            **({"stage": g.get("stageName") or "", "stage_num": g.get("stageNum")}
+               if lid in STAGE_ROUNDS else {}),
         }
 
     rows, seen = [], set()
@@ -853,6 +860,28 @@ def fetch_s365_league(matches_out, lid, comp_name):
                     rows.append(r)
         except Exception as e:
             print(f"  ! 365scores {path.split('?')[0]} failed: {e}")
+    if lid in STAGE_ROUNDS:
+        # a cup page shows EVERY stage, but results/ returns only ~3 weeks:
+        # walk its previousPage links to the season start (a cup season is a
+        # handful of pages)
+        try:
+            path = f"games/results/?{q}&showOdds=false"
+            for _ in range(BACKFILL_PAGES):
+                time.sleep(1)
+                page = _s365(path)
+                games = page.get("games") or []
+                for g in games:
+                    if g.get("seasonNum") == season_num:
+                        r = game_row(g)
+                        if r["match_id"] not in seen and r["kickoff"]:
+                            seen.add(r["match_id"])
+                            rows.append(r)
+                prev_page = (page.get("paging") or {}).get("previousPage") or ""
+                if not games or any(g.get("seasonNum") != season_num for g in games) or not prev_page:
+                    break
+                path = prev_page.split("/web/", 1)[-1]
+        except Exception as e:
+            print(f"  ! {comp_name} stages walk failed ({e}) - this run's rows only")
 
     cutoff = (today - timedelta(days=5)).isoformat()
     horizon = (today + timedelta(days=UPCOMING_DAYS)).isoformat()
@@ -864,10 +893,14 @@ def fetch_s365_league(matches_out, lid, comp_name):
     global _FIXTURES
     rounds = {}
     for r in rows:
-        if r.get("round"):
-            rounds.setdefault(r["round"], []).append(r)
+        # a cup's stage number stands in for the round (STAGE_ROUNDS)
+        rk = r.get("round") or (r.get("stage_num") if lid in STAGE_ROUNDS else None)
+        if rk:
+            rounds.setdefault(rk, []).append(r)
     if rounds:
         rlist = [{"round": rd,
+                  **({"label": next((m.get("stage") for m in ms if m.get("stage")), "")}
+                     if lid in STAGE_ROUNDS else {}),
                   "matches": sorted(ms, key=lambda x: (x["kickoff"], x["koff_time"] or ""))}
                  for rd, ms in sorted(rounds.items())]
         today_s = today.isoformat()

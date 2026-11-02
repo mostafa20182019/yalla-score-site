@@ -152,7 +152,7 @@ def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=N
     for r in rounds:
         _hid = "" if only_current else " hidden"
         parts.append(f'<div class="round" data-round="{r["round"]}" '
-                     f'data-label="الجولة {r["round"]}"{_hid}>')
+                     f'data-label="{esc(r.get("label") or "الجولة " + str(r["round"]))}"{_hid}>')
         days = OrderedDict()
         for m in r.get("matches", []):
             days.setdefault(m.get("kickoff") or "", []).append(m)

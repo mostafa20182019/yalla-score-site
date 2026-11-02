@@ -100,6 +100,18 @@ ck("11h the Egyptian cups (2026-11-03): same id everywhere, right after the leag
        for n, (i, s) in _CUPS.items())
    and bs.COMP_ORDER[1:3] == ["Egypt Cup", "Egyptian League Cup"]
    and bs.COMP_LABEL["Egyptian League Cup"] == "كأس عاصمة مصر" and bs.COMP_LABEL["Egypt Cup"] == "كأس مصر")
+# «اعمل صفحة لكأس مصر مقسمة بالأدوار» (2026-11-03): a knock-out cup's page is
+# split by its STAGES - 365scores gives it no round numbers
+from site_lib.tables import league_rounds_panel as _lrp
+from site_lib.league_desc import fixtures_desc as _fd
+_cup = {"current": 2, "rounds": [
+    {"round": 1, "label": "تصفيات", "matches": [{"home": "A", "away": "B", "kickoff": "2026-10-24", "status": "FINISHED", "home_score": 1, "away_score": 0}]},
+    {"round": 2, "label": "دور الـ 32", "matches": [{"home": "C", "away": "D", "kickoff": "2026-11-04", "status": "UPCOMING"}]}]}
+_p = _lrp("Egypt Cup", _cup, embedded=True)
+ck("11i the Egypt Cup page is split by stages: named rounds, «دور» in the description",
+   553 in fd.STAGE_ROUNDS and 'data-label="تصفيات"' in _p and 'data-label="دور الـ 32"' in _p
+   and "(دور الـ 32)" in _fd("كأس مصر", "2026-2027", _cup["rounds"], 2) and "2 دور" in _fd("كأس مصر", "2026-2027", _cup["rounds"], 2)
+   and 'data-label="الجولة 3"' in _lrp("X", {"current": 3, "rounds": [{"round": 3, "matches": []}]}, embedded=True))
 ck("11g ...the Conference League right after the Europa League; no TV channel claimed without a source",
    bs.COMP_ORDER.index("UEFA Conference League") == bs.COMP_ORDER.index("UEFA Europa League") + 1
    and not any(n in bs.COMP_TV for n in _NEW))

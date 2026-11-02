@@ -206,7 +206,8 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
             continue
         label = comp_label(comp)
         n_m = sum(len(r.get("matches") or []) for r in rounds)
-        page_head = Markup(head(f"جدول مباريات {label} اليوم والجولة القادمة {season} | {SITE_NAME}",
+        _next = "والدور القادم" if any(r.get("label") for r in rounds) else "والجولة القادمة"   # a cup's stages
+        page_head = Markup(head(f"جدول مباريات {label} اليوم {_next} {season} | {SITE_NAME}",
                                 fixtures_desc(label, season, rounds, n_m),
                                 SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True)
@@ -221,6 +222,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         write(f"fixtures/{slug}.html", render(
             "fixtures.html", page_head=page_head, label=label, season=season,
             n_rounds=len(rounds), n_matches=n_m, rounds_panel=Markup(rounds_panel),
+            staged=any(r.get("label") for r in rounds),
             links=[Markup(x) for x in _links], crumbs_ld=Markup(crumbs_ld),
             page_foot=Markup(foot()), rounds_js=Markup(ROUNDS_JS)))
         urls.append(f"/fixtures/{slug}.html")

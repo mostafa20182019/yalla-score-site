@@ -4,7 +4,12 @@
 <nav class="crumbs"><a href="/">أخبار</a> › <a href="/leagues.html">البطولات</a> › جدول {{ label }}</nav>
 <h1 class="page-h">جدول مباريات {{ label }} {{ season }}</h1>
 <section class="minfo">
+  {# a cup is split by its stages, not rounds (كأس مصر, 2026-11-03) #}
+  {% if staged %}
+  <p>كل أدوار {{ label }} لموسم {{ season }} — <b>{{ n_rounds }}</b> دور و<b>{{ n_matches }}</b> مباراة. المباريات المنتهية تظهر بنتيجتها والقادمة بموعدها بتوقيت القاهرة، ويتحدّث الجدول تلقائيًا بعد كل مباراة. استخدم ‹ و› للتنقل بين الأدوار.</p>
+  {% else %}
   <p>كل جولات {{ label }} لموسم {{ season }} — <b>{{ n_rounds }}</b> جولة و<b>{{ n_matches }}</b> مباراة. المباريات المنتهية تظهر بنتيجتها والقادمة بموعدها بتوقيت القاهرة، ويتحدّث الجدول تلقائيًا بعد كل مباراة. استخدم ‹ و› للتنقل بين الجولات.</p>
+  {% endif %}
 </section>
 {{ rounds_panel }}
 <p class="more-link">{% for link in links %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>

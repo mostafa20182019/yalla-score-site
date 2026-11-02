@@ -239,7 +239,8 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                             f"({_sa} بتوقيت مكة المكرمة)")
                 else:
                     _tw += f" في تمام الساعة {m['koff_time']} بتوقيت القاهرة"
-            _rd = f"الجولة {m['round']} من " if m.get("round") else ""
+            _rd = (f"الجولة {m['round']} من " if m.get("round")
+                   else f"{m['stage']} من " if m.get("stage") else "")   # a cup's stage (2026-11-03)
         # the story sits above the computed reading, which is what backs it
         # with numbers (_art picked above, with its image settled)
         article_block = match_article_block(_art, m.get("competition") or "") if _art else ""
@@ -290,6 +291,8 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         info = [("البطولة", comp)]
         if m.get("round"):
             info.append(("الجولة", str(m["round"])))
+        elif m.get("stage"):
+            info.append(("الدور", m["stage"]))     # كأس مصر (2026-11-03)
         info.append(("التاريخ", day_txt))
         if m.get("koff_time"):
             info.append(("موعد الانطلاق", f"{m['koff_time']} بتوقيت القاهرة"))
