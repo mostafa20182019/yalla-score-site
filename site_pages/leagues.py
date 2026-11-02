@@ -169,7 +169,7 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
             continue
         row = {"href": href, "icon": Markup(comp_icon(comp)), "label": comp_label(comp), "what": what}
         (domestic if slug in DOMESTIC_SLUGS else arab if slug in ARAB_SLUGS else rest).append(row)
-    groups = [(t, rows) for t, rows in (("الدوريات", domestic), ("الدوريات العربية", arab),
+    groups = [(t, rows) for t, rows in (("الدوريات الأوروبية", domestic), ("الدوريات العربية", arab),
                                         ("البطولات القارية والدولية", rest)) if rows]
     page_head = Markup(head(f"البطولات: الترتيب والهدافون ومواعيد المباريات | {SITE_NAME}",
                             "كل البطولات على يلا سكور: الدوري المصري والإنجليزي والإسباني والإيطالي "
@@ -182,12 +182,14 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
     print(f"  + leagues page: {sum(len(r) for _, r in groups)} competitions")
 
 
-# the national leagues - the first card of /leagues
-DOMESTIC_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup",   # the Egyptian cups (2026-11-03)
-                  "england", "spain", "italy", "germany", "france", "turkey", "saudi")
-# their own card, after the national leagues (user, 2026-11-02: «تطلعلى الدوريات
-# الجديدة من هنا وتحطهم فى تاب ليهم باسم الدوريات العربية»)
-ARAB_SLUGS = ("morocco", "algeria", "tunisia", "libya")
+# the first card of /leagues, «الدوريات الأوروبية» (user, 2026-11-03: «سمى
+# المجموعة الاولى بالدوريات الاوروبية») - Turkey stays here (a UEFA league)
+DOMESTIC_SLUGS = ("england", "spain", "italy", "germany", "france", "turkey")
+# «الدوريات العربية» - the North African leagues (2026-11-02), joined by the
+# Egyptian league and cups and the Saudi league (user, 2026-11-03: «انقل الدورى
+# المصرى وكأس مصر والدورى السعودى للدوريات العربية»)
+ARAB_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup", "saudi",
+              "morocco", "algeria", "tunisia", "libya")
 
 
 def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
