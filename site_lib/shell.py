@@ -165,9 +165,9 @@ def head(title, desc, url, image=None, og_type="website", active="",
                  '<span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>'
                  if SHOW_STATS_PAGE else "")
     va = " is-active" if active == "videos" else ""
-    # «أهداف المباريات» (user, 2026-11-02): highlight links from beIN SPORTS
-    # and ON Sport's own YouTube channels (highlights.py, site_pages/static.py)
-    ga = " is-active" if active == "goals" else ""
+    # /goals («أهداف المباريات», 2026-11-02) has NO tab: the user moved the
+    # goals onto the match rows the same day («نستغنى عن التاب ... ونحط زرار»,
+    # tables.match_row highlight=); the page stays, linked from the footer
     ra = " is-active" if active == "reels" else ""
     vids_tab = (f'\n    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>'
                 if SHOW_VIDEOS else "")
@@ -226,7 +226,6 @@ def head(title, desc, url, image=None, og_type="website", active="",
     <a href="/" class="navtab nt-match{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
     <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>
     <a href="/news.html" class="navtab nt-news{na}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
-    <a href="/goals.html" class="navtab nt-goals{ga}"><span class="ico">🎥</span> أهداف<span class="nav-en"> | Goals</span></a>
 {pred_tab}{stats_tab}{vids_tab}{reels_tab}
     </div></nav><span class="head-social">{social}</span>{push_bell}
   </div>

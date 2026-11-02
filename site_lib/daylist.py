@@ -12,6 +12,7 @@ from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
 from site_lib.crests import comp_icon
 from site_lib.dates import fmt_day
 from site_lib.matchdata import match_goals
+from site_lib.media import highlight_links
 from site_lib.names import comp_label
 from site_lib.render import Markup
 from site_lib.tables import match_row
@@ -38,6 +39,7 @@ def day_sections(matches, ge_idx, hrefs=None):
     in the feed, leagues in the sidebar order, plus the raw row HTML (the
     matches page hands it to pred_pop). hrefs = comp_hrefs(...)."""
     hrefs = hrefs or {}
+    hls = highlight_links()     # the «الأهداف» button (2026-11-02)
     daymap = OrderedDict()
     for m in matches:
         daymap.setdefault(m.get("kickoff") or "", []).append(m)
@@ -58,7 +60,8 @@ def day_sections(matches, ge_idx, hrefs=None):
             for m in ms:
                 row = match_row(m, show_time=True, show_comp=False,
                                 goals=match_goals(ge_idx, m),
-                                link=match_url(m))
+                                link=match_url(m),
+                                highlight=hls.get(str(m.get("match_id"))))
                 # filter hooks: "على التلفزيون" = a known broadcaster (per-match
                 # channel or the verified COMP_TV map); "حسب الوقت" sorts by data-ko
                 tv = "1" if (m.get("channel") or COMP_TV.get(comp)) else "0"

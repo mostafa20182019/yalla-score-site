@@ -431,10 +431,13 @@ def match_details_html(e, flipped, h_ar, a_ar):
 
 
 def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
-              show_date=False):
+              show_date=False, highlight=None):
     """show_date (2026-10-08, user: «حط هنا برضه تواريخ المباريات» on the club
     page): the match's day on the competition line - for lists that are NOT
-    grouped under a day heading (club pages, the standings page's next matches)."""
+    grouped under a day heading (club pages, the standings page's next matches).
+    highlight = (youtube url, channel) of the match's goals video
+    (media.highlight_links): a «الأهداف» button in the row's spare column,
+    opening the video on YouTube (user, 2026-11-02)."""
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up"), "POSTPONED": ("", "pp")}.get(st, ("", "up"))
@@ -491,8 +494,13 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
     stretch = (f'<a class="mstretch" href="{esc(link)}" '
                f'aria-label="تفاصيل مباراة {esc(ar_team(m.get("home")))} و{esc(ar_team(m.get("away")))}"></a>'
                if link else "")
+    hl = ""
+    if highlight and st == "FINISHED":
+        hl = (f'<a class="mhl" href="{esc(highlight[0])}" target="_blank" rel="noopener" '
+              f'title="أهداف المباراة على {esc(highlight[1])}" aria-label="أهداف المباراة على يوتيوب">'
+              f'<span class="mhl-i" aria-hidden="true">▶</span><span class="mhl-t">الأهداف</span></a>')
     return f"""<div class="mrow mrow-{badge[1]}" data-lv data-h="{esc(ar_team(m.get('home')))}" data-a="{esc(ar_team(m.get('away')))}">
-  {stretch}{pill}
+  {stretch}{pill}{hl}
   <div class="team th">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>
   <div class="team ta">{crest(m.get('away_badge'))}<span><bdi>{esc(ar_team(m.get('away')))}</bdi></span></div>

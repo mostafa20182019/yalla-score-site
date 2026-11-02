@@ -97,7 +97,25 @@ if html:
        len({(re.search(r'data-ch="(\w+)"', c).group(1), x.group(1)) for c, x in zip(lines, mps) if x})
        == len([x for x in mps if x]))
     nav = open("dist/index.html", encoding="utf-8").read()
-    ok("18 the page is in the header tabs and the footer", "nt-goals" in nav and "أهداف المباريات" in nav)
+    ok("18 no header tab (user, same day: «نستغنى عن التاب»), the page stays in the footer",
+       "nt-goals" not in nav and "أهداف المباريات" in nav)
+    mx = open("dist/matches.html", encoding="utf-8").read()
+    btns = re.findall(r'<a class="mhl" href="(https://www\.youtube\.com/watch\?v=[\w-]{11})" target="_blank" rel="noopener"', mx)
+    ok("18b the day list carries a «الأهداف» button on matches that have a video, opening YouTube",
+       btns and mx.count('class="mhl"') == len(btns), len(btns))
+    import glob as _g
+    ok("18c the match page's own row carries it too",
+       any('class="mhl"' in open(f, encoding="utf-8").read() for f in _g.glob("dist/m/*.html")[:400]))
+
+from site_lib.tables import match_row
+_fin = {"status": "FINISHED", "home": "A", "away": "B", "home_score": 1, "away_score": 0, "match_id": 1}
+ok("18d only a FINISHED row gets the button (never a live or upcoming one)",
+   'class="mhl"' in match_row(_fin, highlight=("https://www.youtube.com/watch?v=x", "ON Sport"))
+   and 'class="mhl"' not in match_row(dict(_fin, status="LIVE"), highlight=("u", "c"))
+   and 'class="mhl"' not in match_row(_fin))
+css = open("site_src/style.css", encoding="utf-8").read()
+ok("18e the button sits above the row's stretched link (z-index 2 > .mstretch 1)",
+   ".mlist>.mrow .mhl{grid-area:hl" in css and "z-index:2" in css[css.index(".mlist>.mrow .mhl{"):][:200])
 
 src = open("fetch_data.py", encoding="utf-8").read()
 ok("19 a failing highlights fetch never fails the data fetch", "highlights failed" in src)

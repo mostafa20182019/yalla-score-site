@@ -14,6 +14,7 @@ from site_lib.dates import fmt_day
 from site_lib.daylist import comp_hrefs, day_sections
 from site_lib.league_desc import matches_desc
 from site_lib.matchdata import absence_block, match_details_for, match_goals, prematch_for
+from site_lib.media import highlight_links
 from site_lib.names import _team_match, ar_team, comp_label
 from site_lib.predictions import pred_block, pred_pop
 from site_lib.reads import post_match_read, pre_match_read
@@ -214,7 +215,8 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         murl = f"/m/{mid}.html"
         _goals = match_goals(ge_idx, m)
         page_head = head(title, desc, SITE_BASE + murl, image=img, active="matches")
-        hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals)
+        hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals,
+                             highlight=highlight_links().get(str(m.get("match_id"))))
         kickoff_info = st not in ("FINISHED", "POSTPONED")
         _tw = _rd = ""
         if kickoff_info:

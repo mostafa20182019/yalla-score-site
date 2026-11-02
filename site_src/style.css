@@ -1274,7 +1274,7 @@ html.lt-lock{overflow:hidden}
 .comp-h{margin:0;padding:11px 16px;background:#f6f8fa;border-bottom:1px solid #eef2f6;color:var(--ink);
   font-size:.9rem;text-transform:none;letter-spacing:0}
 .comp .mlist{border:0;border-radius:0;box-shadow:none;margin:0}
-.mlist>.mrow{grid-template-columns:56px minmax(0,1fr) auto minmax(0,1fr) 56px;grid-template-areas:"pill home mid away .";
+.mlist>.mrow{grid-template-columns:56px minmax(0,1fr) auto minmax(0,1fr) 56px;grid-template-areas:"pill home mid away hl";
   gap:4px 10px;padding:12px 10px;background:transparent;border:0;border-top:1px solid #eef2f6;
   border-radius:0;box-shadow:none}
 .mlist>.mrow:first-child{border-top:0}
@@ -1296,6 +1296,14 @@ html.lt-lock{overflow:hidden}
 .mlist>.mrow .score{font-size:1.05rem}
 .mlist>.mrow .ko{font-size:.9rem;color:var(--ink)}
 .mlist>.mrow .mgo-row{display:none}
+/* «الأهداف» - the match's goals video on YouTube, in the row's spare column
+   (2026-11-02); z-index 2 lifts it over .mstretch like the old row buttons */
+.mlist>.mrow .mhl{grid-area:hl;justify-self:center;position:relative;z-index:2;display:flex;flex-direction:column;
+  align-items:center;gap:2px;text-decoration:none;color:#e11d48;font-size:.62rem;font-weight:800}
+.mhl-i{width:26px;height:26px;border-radius:50%;background:#e11d48;color:#fff;display:flex;align-items:center;
+  justify-content:center;font-size:.7rem;padding-inline-start:2px;box-shadow:0 2px 6px rgba(225,29,72,.35);transition:transform .15s}
+.mlist>.mrow .mhl:hover .mhl-i{transform:scale(1.12)}
+.mrow:not(.mlist>.mrow) .mhl{display:none}
 .mlist>.mrow .mcomp{border-top:0;padding-top:0;font-size:.74rem}
 /* scorers under their own team, between the status and spacer columns */
 .mlist>.mrow .mgoals{grid-column:2/5;grid-template-columns:1fr 64px 1fr}
@@ -1363,4 +1371,6 @@ html.lt-lock{overflow:hidden}
   .mlist>.mrow .ko{font-size:.86rem}
   .mlist>.mrow .mcomp{font-size:.7rem}
   .mlist>.mrow .mgoals{grid-template-columns:1fr 46px 1fr}
+  .mlist>.mrow .mhl-t{display:none}
+  .mhl-i{width:24px;height:24px}
 }
