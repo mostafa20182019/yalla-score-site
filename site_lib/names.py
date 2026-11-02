@@ -168,6 +168,12 @@ def comp_emoji(name):
     if "egypt" in n or "المصري" in n: return "🇪🇬"   # before "premier" (Egyptian Premier League)
     if "turk" in n or "التركي" in n: return "🇹🇷"
     if "saudi" in n or "السعودي" in n: return "🇸🇦"
+    # before "premier" (Libyan Premier League) - 2026-11-02
+    if "morocc" in n or "المغربي" in n: return "🇲🇦"
+    if "algeria" in n or "الجزائري" in n: return "🇩🇿"
+    if "tunisia" in n or "التونسي" in n: return "🇹🇳"
+    if "libya" in n or "الليبي" in n: return "🇱🇾"
+    if "conference" in n or "المؤتمر" in n: return "🇪🇺"
     if "premier" in n: return "🦁"
     if "primera" in n or "laliga" in n or "la liga" in n: return "🇪🇸"
     if "serie a" in n: return "🇮🇹"

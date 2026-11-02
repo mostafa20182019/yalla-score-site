@@ -742,6 +742,18 @@ S365_LEAGUES = [
     # Preliminary rounds carry no table; the group stage is multi-group and
     # the standings guards skip it like the CAF CL.
     (627, "CAF Confederation Cup"),
+    # user ask 2026-11-02: «ضفلى الدورى المغربى والجزائرى والتونسى والليبى
+    # ودورى المؤتمر الاوروبى». Ids from 365scores' own search (langId=27):
+    # 557 botola-pro, 560 ligue-1 (Algeria), 554 division-1 (Tunisia),
+    # 559 premier-league (Libya), 7685 uefa-conference-league. Probed the
+    # same day: one-group tables of 16 (MAR/ALG/TUN) and 36 (UECL); Libya
+    # plays in TWO groups, so the multi-group guard leaves it without a table
+    # (rounds and results only).
+    (557, "Moroccan Botola Pro"),
+    (560, "Algerian Ligue 1"),
+    (554, "Tunisian Ligue 1"),
+    (559, "Libyan Premier League"),
+    (7685, "UEFA Conference League"),
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
@@ -984,7 +996,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685"
 
 def _is_shootout(ev):
     """True for an event of the penalty shoot-out (365scores stage 11, status
@@ -1397,6 +1409,9 @@ S365_SCORER_COMPS = [
     (35, "Ligue 1"), (572, "UEFA Champions League"),
     (624, "CAF Champions League"), (573, "UEFA Europa League"),
     (627, "CAF Confederation Cup"),
+    (557, "Moroccan Botola Pro"), (560, "Algerian Ligue 1"),
+    (554, "Tunisian Ligue 1"), (559, "Libyan Premier League"),
+    (7685, "UEFA Conference League"),
 ]
 
 # the response carries several athlete charts per competition; these are the

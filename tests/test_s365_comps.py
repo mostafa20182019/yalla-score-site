@@ -82,6 +82,19 @@ ck("11e the CAF Confederation Cup is 627 everywhere, after the CAF CL, inside th
 ck("11d ...has its slug, label, emblem and TV entry",
    bs.COMP_SLUG.get("UEFA Europa League") == "europa-league" and "UEFA Europa League" in bs.COMP_LABEL
    and "UEFA Europa League" in bs.COMP_LOGO and "UEFA Europa League" in bs.COMP_TV)
+# 2026-11-02 (user ask): the four North African leagues + the Conference League
+_NEW = {"Moroccan Botola Pro": (557, "morocco", "🇲🇦"), "Algerian Ligue 1": (560, "algeria", "🇩🇿"),
+        "Tunisian Ligue 1": (554, "tunisia", "🇹🇳"), "Libyan Premier League": (559, "libya", "🇱🇾"),
+        "UEFA Conference League": (7685, "conference-league", "🇪🇺")}
+from site_lib.names import comp_emoji as _ce
+ck("11f the North African leagues + the Conference League: same id in fetch_data, build and the worker; slug, label, emblem, flag",
+   all(ids.get(n) == i and bs.S365_COMP_IDS.get(n) == i and str(i) in live.split(",")
+       and bs.COMP_SLUG.get(n) == s and n in bs.COMP_LABEL and n in bs.COMP_LOGO
+       and _ce(n) == f and _ce(bs.COMP_LABEL[n]) == f for n, (i, s, f) in _NEW.items()),
+   {n: (ids.get(n), bs.S365_COMP_IDS.get(n), _ce(n)) for n in _NEW})
+ck("11g ...the Conference League right after the Europa League; no TV channel claimed without a source",
+   bs.COMP_ORDER.index("UEFA Conference League") == bs.COMP_ORDER.index("UEFA Europa League") + 1
+   and not any(n in bs.COMP_TV for n in _NEW))
 
 # ---- the standings guard: BOTH multi-group shapes are skipped ------------
 body = fds.split("def fetch_s365_league", 1)[1]

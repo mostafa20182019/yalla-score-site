@@ -13,7 +13,10 @@ S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
                      "Saudi Pro League", "CAF Champions League",
                      "Africa Cup of Nations Qualification",
                      "UEFA Nations League", "UEFA Europa League",
-                     "CAF Confederation Cup")
+                     "CAF Confederation Cup",
+                     # 2026-11-02 (user ask)
+                     "Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1",
+                     "Libyan Premier League", "UEFA Conference League")
 
 # The header ticker shows ONLY these clubs' matches (user pick 2026-08-08).
 # Tokens are substring-matched against football-data team names, so keep them
@@ -40,6 +43,11 @@ COMP_SLUG = {
     "UEFA Nations League": "nations-league",
     "UEFA Europa League": "europa-league",
     "CAF Confederation Cup": "caf-confederation-cup",
+    "Moroccan Botola Pro": "morocco",
+    "Algerian Ligue 1": "algeria",
+    "Tunisian Ligue 1": "tunisia",
+    "Libyan Premier League": "libya",
+    "UEFA Conference League": "conference-league",
 }
 
 # MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
@@ -94,6 +102,27 @@ COMP_LOGO = {
         "https://imagecache.365scores.com/image/upload/"
         "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
         "d_Competitions:default1.png/v4/Competitions/627",
+    # 2026-11-02: the four North African leagues + the Conference League
+    "Moroccan Botola Pro":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/557",
+    "Algerian Ligue 1":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/560",
+    "Tunisian Ligue 1":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/554",
+    "Libyan Premier League":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/559",
+    "UEFA Conference League":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/7685",
 }
 
 # friendlier display names (data-comp keeps the raw API name for filtering)
@@ -112,6 +141,11 @@ COMP_LABEL = {
     "UEFA Nations League": "دوري الأمم الأوروبية",
     "UEFA Europa League": "الدوري الأوروبي",
     "CAF Confederation Cup": "كأس الكونفدرالية الأفريقية",
+    "Moroccan Botola Pro": "الدوري المغربي",
+    "Algerian Ligue 1": "الدوري الجزائري",
+    "Tunisian Ligue 1": "الدوري التونسي",
+    "Libyan Premier League": "الدوري الليبي",
+    "UEFA Conference League": "دوري المؤتمر الأوروبي",
 }
 
 # the league chips at the top of the home page (user, 2026-10-22: «عايز دول
@@ -125,14 +159,18 @@ COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
               "Bundesliga", "Serie A", "UEFA Champions League",
               "UEFA Europa League",     # right after the UCL (user ask 2026-10-15)
+              "UEFA Conference League", # right after the UEL (user ask 2026-11-02)
               "CAF Champions League",   # after UCL (user pick 2026-09-02)
               "CAF Confederation Cup",  # right after the CAF CL (user ask 2026-10-17)
+              # the North African leagues (user ask 2026-11-02)
+              "Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1",
+              "Libyan Premier League",
               "Africa Cup of Nations Qualification",  # user ask 2026-09-20
               "UEFA Nations League"]                  # user ask 2026-09-21
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
 # must agree with LIVE_COMPS in worker.js
-# (552,78,649,7,11,17,25,35,572,624,588,7016,573,627).
+# (552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685).
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
     "Turkish Super Lig": 78,
@@ -142,4 +180,9 @@ S365_COMP_IDS = {
     "UEFA Nations League": 7016,
     "UEFA Europa League": 573,
     "CAF Confederation Cup": 627,
+    "Moroccan Botola Pro": 557,
+    "Algerian Ligue 1": 560,
+    "Tunisian Ligue 1": 554,
+    "Libyan Premier League": 559,
+    "UEFA Conference League": 7685,
 }

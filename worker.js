@@ -18,7 +18,7 @@ import { livePosts, lineupPosts, postScope, curatedLive, goalFallbacks } from ".
 // and 365scores sees at most ~2 requests/minute regardless of traffic.
 // Fail-empty by design: any upstream problem returns {games:[]} and the
 // static site simply behaves as before (15-min refresh).
-const LIVE_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627"; // EGY,TUR,KSA,PL,PD,SA,BL1,FL1,UCL,CAF-CL,AFCON-Q,UNL,UEL,CAF-CC
+const LIVE_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685"; // EGY,TUR,KSA,PL,PD,SA,BL1,FL1,UCL,CAF-CL,AFCON-Q,UNL,UEL,CAF-CC,MAR,ALG,TUN,LBY,UECL
 
 const S365_HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",

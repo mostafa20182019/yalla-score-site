@@ -47,6 +47,7 @@ HUB_FOCUS["UEFA Champions League"] = tuple(sorted({n for v in HUB_FOCUS.values()
 # Europa League (2026-10-15): the same featured clubs - whichever of them
 # drop into it are the ones readers follow
 HUB_FOCUS["UEFA Europa League"] = HUB_FOCUS["UEFA Champions League"]
+HUB_FOCUS["UEFA Conference League"] = HUB_FOCUS["UEFA Champions League"]   # 2026-11-02
 
 
 def prediction_history_page(plog, acc):
