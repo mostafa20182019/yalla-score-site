@@ -328,5 +328,126 @@
     "2026-10-25"
    ]
   }
+ },
+ {
+  "date": "2026-11-02",
+  "followers": 1143,
+  "fans": 1143,
+  "fb_insights": {
+   "reach_7d": null,
+   "engagements_7d": null,
+   "follows_7d": null
+  },
+  "ab_reach": {
+   "error": "Unsupported get request. Object with ID '104238901487012_1465999978972779' does not exist, cannot be loaded due to missing permissions, or does not support this operation. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api"
+  },
+  "telegram": 3,
+  "push_subs": 1,
+  "articles_7d": 84,
+  "posts_7d": {
+   "article": 85,
+   "article_photo": 43,
+   "article_link": 42,
+   "pred": 0,
+   "h2h": 1,
+   "goal": 32,
+   "xi": 7,
+   "card": 7,
+   "reel": 10
+  },
+  "site": {
+   "visits_7d": 810,
+   "pageviews_7d": 990,
+   "visits_prev7": 710,
+   "pageviews_prev7": 840,
+   "by_day": {
+    "2026-10-19": [
+     130,
+     150
+    ],
+    "2026-10-20": [
+     160,
+     170
+    ],
+    "2026-10-21": [
+     60,
+     70
+    ],
+    "2026-10-22": [
+     80,
+     110
+    ],
+    "2026-10-23": [
+     50,
+     50
+    ],
+    "2026-10-24": [
+     120,
+     170
+    ],
+    "2026-10-25": [
+     110,
+     120
+    ],
+    "2026-10-26": [
+     110,
+     150
+    ],
+    "2026-10-27": [
+     60,
+     90
+    ],
+    "2026-10-28": [
+     120,
+     130
+    ],
+    "2026-10-29": [
+     70,
+     70
+    ],
+    "2026-10-30": [
+     40,
+     80
+    ],
+    "2026-10-31": [
+     210,
+     260
+    ],
+    "2026-11-01": [
+     200,
+     210
+    ]
+   },
+   "top_referrers_14d": [
+    [
+     "www.facebook.com",
+     670
+    ],
+    [
+     "m.facebook.com",
+     600
+    ],
+    [
+     "com.google.android.googlequicksearchbox",
+     110
+    ],
+    [
+     "(direct)",
+     70
+    ],
+    [
+     "www.google.com",
+     30
+    ],
+    [
+     "lm.facebook.com",
+     20
+    ]
+   ],
+   "window": [
+    "2026-10-26",
+    "2026-11-01"
+   ]
+  }
  }
 ]
