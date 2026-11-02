@@ -960,10 +960,17 @@ def backfill_results(lid, comp_name, season_num, table, game_row):
         time.sleep(1)
         page = _s365(path)
         games = page.get("games") or []
-        rows += [game_row(g) for g in games if g.get("seasonNum") == season_num]
+        # a ROUND number = the phase the table counts. The Conference League
+        # files its August qualifiers under the SAME seasonNum, without a
+        # round (stageName «تصفيات الجولة الفاصلة»): they would add matches the
+        # table never counts, and walking back through them reached a page
+        # 365scores answered only after a timeout (2026-11-02)
+        league = [g for g in games if g.get("seasonNum") == season_num and g.get("roundNum")]
+        rows += [game_row(g) for g in league]
         prev_page = (page.get("paging") or {}).get("previousPage") or ""
-        # older than this season reached, or the start of the list
-        if not games or any(g.get("seasonNum") != season_num for g in games) or not prev_page:
+        # older than this season reached, the qualifiers reached, or the start
+        if (not games or any(g.get("seasonNum") != season_num for g in games)
+                or not league or not prev_page):
             break
         path = prev_page.split("/web/", 1)[-1]
     fin = [r for r in rows if r["status"] == "FINISHED" and str(r["match_id"]) not in arch]

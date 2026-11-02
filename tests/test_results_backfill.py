@@ -85,6 +85,26 @@ calls.clear()
 F.backfill_results(1, "L", 75, table, row)
 ok("7 no gap = no request at all", calls == [], calls)
 
+# the Conference League files its August qualifiers under the same season
+# WITHOUT a round number: they are not what the table counts, and walking back
+# through them reached a page 365scores answered only after a timeout
+def qual(gid):
+    g = game(gid, 75)
+    g["roundNum"] = None
+    return g
+PAGES.update({
+    "first": {"games": [game(15, 75), game(14, 75)], "paging": {"previousPage": "/web/games/?q=2"}},
+    "games/?q=2": {"games": [qual(13), qual(12)], "paging": {"previousPage": "/web/games/?q=3"}},
+    "games/?q=3": {"games": [qual(11)], "paging": {}},
+})
+calls.clear()
+RA.save({})
+F._PREV_DBG = {}
+F.backfill_results(1, "L", 75, [{"team": t, "played": 2} for t in "ab"], row)
+arch = RA.load()
+ok("9 qualifiers (no round number) are not added, and the walk stops at them",
+   sorted(arch) == ["14", "15"] and "games/?q=3" not in calls, (sorted(arch), calls))
+
 src = open("fetch_data.py", encoding="utf-8").read()
 ok("8 a failing backfill can never fail the fetch (caught, archive unchanged)",
    "backfill failed" in src and 'if entry and not entry.get("zeroed")' in src)

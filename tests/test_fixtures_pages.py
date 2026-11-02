@@ -42,14 +42,17 @@ kb = os.path.getsize(os.path.join(DIST, "matches.html")) / 1024
 # budgets re-based 2026-10-15 for the 13th competition (Europa League: 636 KB,
 # 1,532 img tags the day it joined - the guard is against the SEASON coming
 # back in, thousands of rows, not against one more league's current round)
-ck("1 /matches is no longer a megabyte of HTML", kb < 720, f"{kb:.0f} KB (was 958; budget 720)")
+# re-based 2026-11-02 for competitions 15-19 (the Moroccan, Algerian, Tunisian
+# and Libyan leagues + the Conference League joined: 755 KB, 1,811 img tags
+# measured that day) - same reasoning, five more leagues' current rounds
+ck("1 /matches is no longer a megabyte of HTML", kb < 860, f"{kb:.0f} KB (was 958; budget 860)")
 # 300 since 2026-10-17: 14 competitions' current rounds on a full Saturday
 # measured 207 (the Confederation Cup's 32 ties joined that day); the guard is
 # against the SEASON coming back (2,206 rows), not the day's own fixtures
 ck("2 the hidden season is gone: a handful of fixture rows, not thousands",
    len(re.findall(r'class="fx"', m)) < 300, f'{len(re.findall(r"class=\"fx\"", m))} rows (budget 300)')
 ck("3 and the crest tags went with it",
-   m.count("<img") < 1800, f'{m.count("<img")} img tags (was 4,959; budget 1,800)')
+   m.count("<img") < 2100, f'{m.count("<img")} img tags (was 4,959; budget 2,100)')
 panels = re.findall(r'<div class="lg-fix rounds-panel.*?(?=<div class="lg-fix rounds-panel|\Z)',
                     m_html, re.S)
 ck("4 every league ships ONE round inline",
