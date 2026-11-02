@@ -92,6 +92,14 @@ ck("11f the North African leagues + the Conference League: same id in fetch_data
        and bs.COMP_SLUG.get(n) == s and n in bs.COMP_LABEL and n in bs.COMP_LOGO
        and _ce(n) == f and _ce(bs.COMP_LABEL[n]) == f for n, (i, s, f) in _NEW.items()),
    {n: (ids.get(n), bs.S365_COMP_IDS.get(n), _ce(n)) for n in _NEW})
+_CUPS = {"Egypt Cup": (553, "egypt-cup"), "Egyptian League Cup": (7808, "egypt-capital-cup")}
+from site_lib.clubs import EGY_SCOPE as _EGY
+ck("11h the Egyptian cups (2026-11-03): same id everywhere, right after the league, inside the Egyptian scope, detail-first, «كأس عاصمة مصر» as the label",
+   all(ids.get(n) == i and bs.S365_COMP_IDS.get(n) == i and str(i) in live.split(",") and str(i) in first
+       and bs.COMP_SLUG.get(n) == s and n in bs.COMP_LOGO and n in _EGY and _ce(n) == "🇪🇬"
+       for n, (i, s) in _CUPS.items())
+   and bs.COMP_ORDER[1:3] == ["Egypt Cup", "Egyptian League Cup"]
+   and bs.COMP_LABEL["Egyptian League Cup"] == "كأس عاصمة مصر" and bs.COMP_LABEL["Egypt Cup"] == "كأس مصر")
 ck("11g ...the Conference League right after the Europa League; no TV channel claimed without a source",
    bs.COMP_ORDER.index("UEFA Conference League") == bs.COMP_ORDER.index("UEFA Europa League") + 1
    and not any(n in bs.COMP_TV for n in _NEW))

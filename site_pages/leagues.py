@@ -183,7 +183,8 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
 
 
 # the national leagues - the first card of /leagues
-DOMESTIC_SLUGS = ("egypt", "england", "spain", "italy", "germany", "france", "turkey", "saudi")
+DOMESTIC_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup",   # the Egyptian cups (2026-11-03)
+                  "england", "spain", "italy", "germany", "france", "turkey", "saudi")
 # their own card, after the national leagues (user, 2026-11-02: «تطلعلى الدوريات
 # الجديدة من هنا وتحطهم فى تاب ليهم باسم الدوريات العربية»)
 ARAB_SLUGS = ("morocco", "algeria", "tunisia", "libya")

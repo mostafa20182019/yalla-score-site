@@ -16,7 +16,9 @@ S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
                      "CAF Confederation Cup",
                      # 2026-11-02 (user ask)
                      "Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1",
-                     "Libyan Premier League", "UEFA Conference League")
+                     "Libyan Premier League", "UEFA Conference League",
+                     # 2026-11-03 (user ask)
+                     "Egypt Cup", "Egyptian League Cup")
 
 # The header ticker shows ONLY these clubs' matches (user pick 2026-08-08).
 # Tokens are substring-matched against football-data team names, so keep them
@@ -48,6 +50,8 @@ COMP_SLUG = {
     "Tunisian Ligue 1": "tunisia",
     "Libyan Premier League": "libya",
     "UEFA Conference League": "conference-league",
+    "Egypt Cup": "egypt-cup",
+    "Egyptian League Cup": "egypt-capital-cup",
 }
 
 # MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
@@ -123,6 +127,14 @@ COMP_LOGO = {
         "https://imagecache.365scores.com/image/upload/"
         "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
         "d_Competitions:default1.png/v4/Competitions/7685",
+    "Egypt Cup":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/553",
+    "Egyptian League Cup":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/7808",
 }
 
 # friendlier display names (data-comp keeps the raw API name for filtering)
@@ -146,6 +158,8 @@ COMP_LABEL = {
     "Tunisian Ligue 1": "الدوري التونسي",
     "Libyan Premier League": "الدوري الليبي",
     "UEFA Conference League": "دوري المؤتمر الأوروبي",
+    "Egypt Cup": "كأس مصر",
+    "Egyptian League Cup": "كأس عاصمة مصر",   # 365scores: «كأس الرابطة المصرية»
 }
 
 # the league chips at the top of the home page (user, 2026-10-22: «عايز دول
@@ -155,7 +169,9 @@ LEAGUE_BAR = ("Egyptian Premier League", "Premier League", "Primera Division",
               "Bundesliga", "Serie A", "UEFA Champions League")
 
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
-COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
+COMP_ORDER = ["Egyptian Premier League",
+              "Egypt Cup", "Egyptian League Cup",   # right after the league (user ask 2026-11-03)
+              "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
               "Bundesliga", "Serie A", "UEFA Champions League",
               "UEFA Europa League",     # right after the UCL (user ask 2026-10-15)
@@ -170,7 +186,7 @@ COMP_ORDER = ["Egyptian Premier League", "Premier League", "Primera Division",
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
 # must agree with LIVE_COMPS in worker.js
-# (552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685).
+# (552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808).
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
     "Turkish Super Lig": 78,
@@ -185,4 +201,6 @@ S365_COMP_IDS = {
     "Tunisian Ligue 1": 554,
     "Libyan Premier League": 559,
     "UEFA Conference League": 7685,
+    "Egypt Cup": 553,
+    "Egyptian League Cup": 7808,
 }

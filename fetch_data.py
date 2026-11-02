@@ -754,6 +754,14 @@ S365_LEAGUES = [
     (554, "Tunisian Ligue 1"),
     (559, "Libyan Premier League"),
     (7685, "UEFA Conference League"),
+    # user ask 2026-11-03: «ضيف بطولتى كأس مصر وكأس عاصمة مصر». 553 egypt-cup
+    # (knock-out: no table, no round numbers - its matches, results and
+    # match pages, no rounds panel); 7808 = 365scores' «كأس الرابطة المصرية»
+    # (egypt-league-cup), the competition sold as «كأس عاصمة مصر» - verified
+    # the same day: الأهلي / الزمالك / بيراميدز in it, 4 groups, rounds 1-5
+    # (multi-group -> no table, rounds panel yes).
+    (553, "Egypt Cup"),
+    (7808, "Egyptian League Cup"),
 ]
 EGY_ENABLED = True                      # master switch for the 365scores leagues
 
@@ -1003,7 +1011,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808"
 
 def _is_shootout(ev):
     """True for an event of the penalty shoot-out (365scores stage 11, status
@@ -1419,6 +1427,7 @@ S365_SCORER_COMPS = [
     (557, "Moroccan Botola Pro"), (560, "Algerian Ligue 1"),
     (554, "Tunisian Ligue 1"), (559, "Libyan Premier League"),
     (7685, "UEFA Conference League"),
+    (553, "Egypt Cup"), (7808, "Egyptian League Cup"),
 ]
 
 # the response carries several athlete charts per competition; these are the

@@ -106,7 +106,7 @@ const gids = calls.filter(u => u.includes("gameId=")).map(u => u.match(/gameId=(
 assert.deepEqual(gids, ["111", "222", "333", "555", "777"]);
 // 10) Egyptian-scope comps are ALWAYS fetched individually and merged without duplicates
 const listCalls = calls.filter(u => u.includes("/games/current/"));
-assert.equal(listCalls.length, 5, listCalls);                      // multi + 552 + 624 + 588 + 627 (Confederation Cup, 2026-10-17)
+assert.equal(listCalls.length, 7, listCalls);                      // multi + 552 + 624 + 588 + 627 (Confederation Cup, 2026-10-17) + 553 + 7808 (the Egyptian cups, 2026-11-03)
 assert.ok(listCalls.some(u => u.endsWith("competitions=552")) && listCalls.some(u => u.endsWith("competitions=624"))
        && listCalls.some(u => u.endsWith("competitions=588"))     // AFCON qualifiers (2026-09-20)
        && listCalls.some(u => u.endsWith("competitions=627")));    // CAF Confederation Cup (2026-10-17)

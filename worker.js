@@ -18,7 +18,7 @@ import { livePosts, lineupPosts, postScope, curatedLive, goalFallbacks } from ".
 // and 365scores sees at most ~2 requests/minute regardless of traffic.
 // Fail-empty by design: any upstream problem returns {games:[]} and the
 // static site simply behaves as before (15-min refresh).
-const LIVE_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685"; // EGY,TUR,KSA,PL,PD,SA,BL1,FL1,UCL,CAF-CL,AFCON-Q,UNL,UEL,CAF-CC,MAR,ALG,TUN,LBY,UECL
+const LIVE_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808"; // EGY,TUR,KSA,PL,PD,SA,BL1,FL1,UCL,CAF-CL,AFCON-Q,UNL,UEL,CAF-CC,MAR,ALG,TUN,LBY,UECL,EGY-CUP,EGY-LCUP
 
 const S365_HEADERS = {
   "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -33,7 +33,7 @@ const DETAIL_CAP = 12;   // per cache-miss ceiling on game/ detail calls
 // league + CAF CL + AFCON qualifiers, where مصر plays) — the rest fill the
 // remaining cap slots. These are also always fetched individually beside a
 // healthy multi reply (the AS Port x Zamalek partial-degradation lesson).
-const DETAIL_FIRST = new Set([552, 624, 588, 627]);   // + the Confederation Cup (Egyptian clubs)
+const DETAIL_FIRST = new Set([552, 624, 588, 627, 553, 7808]);   // + the Confederation Cup (Egyptian clubs); + the two Egyptian cups (2026-11-03)
 
 // half-time: measured live on 2026-08-23 (Hull x Man Utd) - during the break
 // statusText AND shortStatusText are the bare word "شوط" with gameTimeDisplay

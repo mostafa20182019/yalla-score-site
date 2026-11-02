@@ -45,7 +45,8 @@ FILE = os.path.join(HERE, "data", "highlights.json")
 
 EUROPE = {"Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1",
           "UEFA Champions League", "UEFA Europa League", "Turkish Super Lig"}
-EGYPT = {"Egyptian Premier League", "CAF Champions League", "CAF Confederation Cup"}
+EGYPT = {"Egyptian Premier League", "CAF Champions League", "CAF Confederation Cup",
+         "Egypt Cup", "Egyptian League Cup"}
 CHANNELS = [
     {"key": "bein", "name": "beIN SPORTS", "id": "UCJUCcJUeh0Cz2xyKwkw5Q1w",
      "handle": "@beINSPORTS", "scope": EUROPE, "search": "ملخص مباراة"},

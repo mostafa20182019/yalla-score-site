@@ -165,7 +165,7 @@ def comp_label(name):
 def comp_emoji(name):
     n = (name or "").lower()
     if "world cup" in n or "مونديال" in n or "كأس العالم" in n: return "🏆"
-    if "egypt" in n or "المصري" in n: return "🇪🇬"   # before "premier" (Egyptian Premier League)
+    if "egypt" in n or "المصري" in n or "مصر" in n: return "🇪🇬"   # before "premier" (Egyptian Premier League); «كأس مصر» (2026-11-03)
     if "turk" in n or "التركي" in n: return "🇹🇷"
     if "saudi" in n or "السعودي" in n: return "🇸🇦"
     # before "premier" (Libyan Premier League) - 2026-11-02

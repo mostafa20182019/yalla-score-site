@@ -62,6 +62,7 @@ const COMP_AR = {
   572: "دوري أبطال أوروبا", 573: "الدوري الأوروبي", 7016: "دوري الأمم الأوروبية",
   7685: "دوري المؤتمر الأوروبي", 557: "الدوري المغربي", 560: "الدوري الجزائري",
   554: "الدوري التونسي", 559: "الدوري الليبي",
+  553: "كأس مصر", 7808: "كأس عاصمة مصر",
 };
 
 // The curated clubs as 365scores spells them (the live feed is langId=27, so
@@ -69,7 +70,7 @@ const COMP_AR = {
 // الأهلي is also a Saudi club and a Dubai club, so the Egyptian three count
 // only in the Egyptian league (552) and the CAF Champions League (624);
 // «مصر» only exactly (it is a substring of «المصري»); comps null = anywhere.
-const EGY_LIVE_COMPS = [552, 624, 627];   // league, CAF CL, CAF Confederation Cup
+const EGY_LIVE_COMPS = [552, 624, 627, 553, 7808];   // league, CAF CL, CAF Confederation Cup, Egypt Cup, Capital Cup (2026-11-03)
 export const CURATED_LIVE = [
   // exact (2026-10-17): «الأهلي طرابلس» plays the same Confederation Cup
   { t: "الأهلي", comps: EGY_LIVE_COMPS, exact: true },
