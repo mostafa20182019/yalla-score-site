@@ -158,7 +158,7 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
     Domestic leagues first, then the continental and international ones."""
     from site_lib.competitions import COMP_ORDER
     from site_lib.crests import comp_icon
-    domestic, rest = [], []
+    domestic, arab, rest = [], [], []
     for comp in sorted(COMP_SLUG, key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER), c)):
         slug = COMP_SLUG[comp]
         if comp in _comps_with_table:
@@ -168,8 +168,9 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
         else:
             continue
         row = {"href": href, "icon": Markup(comp_icon(comp)), "label": comp_label(comp), "what": what}
-        (domestic if slug in DOMESTIC_SLUGS else rest).append(row)
-    groups = [(t, rows) for t, rows in (("الدوريات", domestic), ("البطولات القارية والدولية", rest)) if rows]
+        (domestic if slug in DOMESTIC_SLUGS else arab if slug in ARAB_SLUGS else rest).append(row)
+    groups = [(t, rows) for t, rows in (("الدوريات", domestic), ("الدوريات العربية", arab),
+                                        ("البطولات القارية والدولية", rest)) if rows]
     page_head = Markup(head(f"البطولات: الترتيب والهدافون ومواعيد المباريات | {SITE_NAME}",
                             "كل البطولات على يلا سكور: الدوري المصري والإنجليزي والإسباني والإيطالي "
                             "والألماني والفرنسي والتركي والسعودي ودوري أبطال أوروبا - الترتيب "
@@ -183,6 +184,9 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
 
 # the national leagues - the first card of /leagues
 DOMESTIC_SLUGS = ("egypt", "england", "spain", "italy", "germany", "france", "turkey", "saudi")
+# their own card, after the national leagues (user, 2026-11-02: «تطلعلى الدوريات
+# الجديدة من هنا وتحطهم فى تاب ليهم باسم الدوريات العربية»)
+ARAB_SLUGS = ("morocco", "algeria", "tunisia", "libya")
 
 
 def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
