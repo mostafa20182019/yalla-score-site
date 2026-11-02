@@ -97,8 +97,8 @@ if html:
        len({(re.search(r'data-ch="(\w+)"', c).group(1), x.group(1)) for c, x in zip(lines, mps) if x})
        == len([x for x in mps if x]))
     nav = open("dist/index.html", encoding="utf-8").read()
-    ok("18 no header tab (user, same day: «نستغنى عن التاب»), the page stays in the footer",
-       "nt-goals" not in nav and "أهداف المباريات" in nav)
+    ok("18 the «أهداف» tab is back in the header (user: «ترجعلى برضه تاب الأهداف») and the footer link stays",
+       "nt-goals" in nav and "أهداف المباريات" in nav)
     mx = open("dist/matches.html", encoding="utf-8").read()
     btns = re.findall(r'<a class="mhl" href="(https://www\.youtube\.com/watch\?v=[\w-]{11})" target="_blank" rel="noopener"', mx)
     ok("18b the day list carries a «الأهداف» button on matches that have a video, opening YouTube",

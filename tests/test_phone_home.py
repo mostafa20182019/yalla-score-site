@@ -64,11 +64,11 @@ n = nav("home")
 # ONE tab set for phones and desktop (2026-10-26, «دى هتكون الرئيسية ...
 # والاخبار ... تظهر فى تاب اسمها اخبار»)
 tabs = re.findall(r'<a href="([^"]+)" class="navtab[^"]*"><span class="ico">[^<]*</span> ([^<]+)', n)
-# /goals had a tab for a few hours on 2026-11-02, then the user moved the goals
-# onto the match rows: «احنا ممكن نستغنى عن التاب» - three tabs again
-ck("7 the tabs, in order: المباريات (the home) · البطولات · أخبار (/news) - no التحليلات tab since 2026-10-26, no أهداف tab",
+# + أهداف (/goals): added 2026-11-02, removed the same day when the goals went
+# onto the match rows, then back («عايزك ترجعلى برضه تاب الأهداف») - row buttons stay
+ck("7 the tabs, in order: المباريات (the home) · البطولات · أخبار (/news) · أهداف (/goals) - no التحليلات tab since 2026-10-26",
    [(h, t.strip()) for h, t in tabs] == [("/", "المباريات"), ("/leagues.html", "البطولات"),
-                                        ("/news.html", "أخبار")], str(tabs))
+                                        ("/news.html", "أخبار"), ("/goals.html", "أهداف")], str(tabs))
 ck("7b /insights lights أخبار (the analyses live in the news)", 'nt-news is-active' in nav("insights"))
 ck("8 «/» and /matches light المباريات", all(re.search(r'href="/" class="navtab nt-match is-active"', nav(a)) for a in ("home", "matches")))
 ck("9 the news lists light أخبار, not المباريات",
