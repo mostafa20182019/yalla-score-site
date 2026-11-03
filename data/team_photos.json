@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-01T08:06:28+00:00",
+ "generated_at": "2026-11-03T19:05:56+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -452,6 +452,17 @@
    "is_person": false,
    "source": "team-photos/arsenal/identity-card.jpg",
    "added": "2026-10-13"
+  },
+  {
+   "file": "arsenal-william-saliba-france-wc2026.jpg",
+   "credit": "صورة: ويليام ساليبا بقميص منتخب فرنسا خلال مباراة نصف نهائي كأس العالم 2026 أمام إسبانيا، نفس المباراة التي خرج منها مصابًا في ظهره — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "ويليام ساليبا",
+   "club": "أرسنال",
+   "slug": "arsenal",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/arsenal/william-saliba-france-wc2026.jpg",
+   "added": "2026-11-03"
   },
   {
    "file": "barcelona-dani-olmo-spain-world-cup-2026.jpg",
