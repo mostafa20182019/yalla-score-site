@@ -1374,7 +1374,8 @@ html.lt-lock{overflow:hidden}
   .mlist>.mrow .score{font-size:1rem}
   .mlist>.mrow .ko{font-size:.86rem}
   .mlist>.mrow .mcomp{font-size:.7rem}
-  .mlist>.mrow .mgoals{grid-template-columns:1fr 46px 1fr}
+  .mlist>.mrow .mgoals{grid-column:1/-1;grid-template-columns:1fr 12px 1fr}   /* full row width: scorer + minute on ONE line (user, 2026-11-03; 281/281 fit at 360px) */
+  .mlist>.mrow .mg{font-size:.64rem}
   .mlist>.mrow .mhl-t{font-size:.56rem;white-space:nowrap}   /* the word shows on phones too (user, 2026-11-02) */
   .mhl-i{width:24px;height:24px}
 }
