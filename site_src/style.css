@@ -752,9 +752,10 @@ html.lt-lock{overflow:hidden}
 .mgoals{grid-column:1/-1;display:grid;grid-template-columns:1fr 40px 1fr;gap:2px 6px;
   margin-top:7px;padding-top:6px;border-top:1px dashed #e8eef4}
 .mg-side{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:center}
-.mg{font-size:.7rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* names WRAP, never ellipsis: on phones «مروان عثمان أوتاك…» lost the name end AND the minute (user, 2026-11-03) */
+.mg{font-size:.7rem;color:var(--muted);font-weight:700;line-height:1.35;overflow-wrap:anywhere}
 .mg bdi{color:var(--ink)}
-.mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#15658f}
+.mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#15658f;white-space:nowrap}
 .mg small{font-size:.62rem}
 @media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.66rem}}
 /* match details: events timeline + starting lineups (/m/<id>.html).
