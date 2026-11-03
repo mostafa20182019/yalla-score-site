@@ -43,18 +43,46 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 FILE = os.path.join(HERE, "data", "highlights.json")
 
-EUROPE = {"Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1",
-          "UEFA Champions League", "UEFA Europa League", "Turkish Super Lig"}
+# Each competition goes to the channel holding its MENA rights (2026-11-03: the
+# Serie A, Bundesliga and Saudi videos never came, beIN does not carry them).
+# beIN: the leagues and UEFA cups it broadcasts (Serie A / Bundesliga left it).
+EUROPE = {"Premier League", "Primera Division", "Ligue 1", "Turkish Super Lig",
+          "UEFA Champions League", "UEFA Europa League", "UEFA Conference League"}
 EGYPT = {"Egyptian Premier League", "CAF Champions League", "CAF Confederation Cup",
          "Egypt Cup", "Egyptian League Cup"}
 CHANNELS = [
     {"key": "bein", "name": "beIN SPORTS", "id": "UCJUCcJUeh0Cz2xyKwkw5Q1w",
-     "handle": "@beINSPORTS", "scope": EUROPE, "search": "ملخص مباراة"},
+     "handle": "@beINSPORTS", "scope": EUROPE, "search": "ملخص مباراة", "region": "eu"},
     {"key": "on", "name": "ON Sport", "id": "UCo2TvjBHS1BtyIkeGGTMe6w",
-     "handle": "@ONSportEG", "scope": EGYPT, "search": "أهداف مباراة"},
+     "handle": "@ONSportEG", "scope": EGYPT, "search": "أهداف مباراة", "region": "eg"},
+    # 2026-11-03 (user: «ضيف القنوات الجديدة»), each checked the same day:
+    # AD Sports = Serie A (STARZPLAY's sports channel has been silent since
+    # 2024). Its titles carry no «ملخص»: «ساسولو 2 - 4 فيورنتينا | الجولة 10 -
+    # الدوري الإيطالي» - so a title with OUR score + both clubs is the highlight.
+    {"key": "ad", "name": "AD Sports", "id": "UCF8Fpc7bPHC8Jrflci-mUiQ",
+     "handle": "@ADSportsTV", "scope": {"Serie A"}, "search": "الدوري الإيطالي",
+     "region": "eu", "score_titles": True},
+    # MBC Action = Bundesliga: «شتوتجارت يفوز على ليفركوزن بنتيجة 4-2.. أهداف المباراة»
+    {"key": "mbc", "name": "MBC Action", "id": "UCNYIXeDQovRVy0TlmSta2Ow",
+     "handle": "@MBCAction", "scope": {"Bundesliga"}, "search": "أهداف المباراة", "region": "eu",
+     # its older titles spell the score in words («بثلاثية نظيفة») - one tied a
+     # 3-0 to this season's 0-0; only a title with the score in digits counts
+     "needs_score": True},
+    # رياضة ثمانية = the Saudi league: «ملخص المباراة: الهلال ضد الفتح 2-0 | الجولة
+    # 12 من دوري روشن» (its «من أرض الملعب» clips are pitch-side, not highlights)
+    {"key": "thm", "name": "ثمانية", "id": "UCj-2hfXdYPPNcLqcBeW3y8g",
+     "handle": "@thmanyahsports", "scope": {"Saudi Pro League"}, "search": "ملخص المباراة",
+     "region": "sa"},
 ]
-HIGHLIGHT = ("ملخص مباراة", "أهداف مباراة", "اهداف مباراة", "ملخص وأهداف مباراة")
+HIGHLIGHT = ("ملخص مباراة", "أهداف مباراة", "اهداف مباراة", "ملخص وأهداف مباراة",
+             "ملخص المباراة", "أهداف المباراة", "أهداف اللقاء")
 SEARCH_EVERY_H = 6
+# one targeted search per match still without a video (user, 2026-11-03: «فيه
+# مباريات اتلعبت امبارح ومنزلش ليها فيديوهات الاهداف»): every TARGET_EVERY_H
+# for TARGET_DAYS after the match, at most TARGET_PER_RUN searches a run
+TARGET_EVERY_H = 2
+TARGET_DAYS = 3
+TARGET_PER_RUN = 12
 MATCH_DAYS = 4          # an upload is about a match played in the 4 days before it
 UA = ("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
       "(KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36")
@@ -133,6 +161,32 @@ def team_hits(team, title_tokens, clubs=()):
     return 0
 
 
+def _season_start_year(day):
+    try:
+        d = datetime.fromisoformat((day or "")[:10])
+    except ValueError:
+        return None
+    return d.year if d.month >= 7 else d.year - 1
+
+
+def title_season(title):
+    """The season a title names, as its first year («2024-2025» / «2026 - 2027»
+    / «23-24»), or None."""
+    m = re.search(r"(?<!\d)(20\d\d)\s*[-/]\s*(20\d\d)(?!\d)", title or "")
+    if m and int(m.group(2)) == int(m.group(1)) + 1:
+        return int(m.group(1))
+    m = re.search(r"(?<![\d:])(\d\d)-(\d\d)(?![\d:])", title or "")
+    if m and int(m.group(2)) == int(m.group(1)) + 1 and 15 <= int(m.group(1)) <= 40:
+        return 2000 + int(m.group(1))
+    return None
+
+
+def title_round(title):
+    """«الجولة 9» / «الجولة 12» -> 9 / 12 (digits only), or None."""
+    m = re.search(r"الجولة\s*(?:الـ\s*)?(\d{1,2})(?!\d)", title or "")
+    return int(m.group(1)) if m else None
+
+
 def title_score(title):
     """The score a title states («| 2/1 |», «1 - 2»), as a sorted pair, or None.
     ON Sport writes it, beIN does not."""
@@ -143,6 +197,23 @@ def title_score(title):
 def is_highlight(title):
     t = norm(title)
     return any(norm(h) in t for h in HIGHLIGHT)
+
+
+def qualifies(ch, title):
+    """A highlight title for this channel: the highlight words, or - on a
+    channel whose highlight titles are just «X 2 - 4 Y | ...» (AD Sports) - a
+    stated score; match_for then demands it be OUR score for both clubs."""
+    if ch.get("needs_score") and not title_score(title):
+        return False
+    return is_highlight(title) or bool(ch.get("score_titles") and title_score(title))
+
+
+def key_word(team):
+    """How a search names this club: its name without the generic words, as
+    written («وادي دجلة», «زد» for «زد اف سي»). The whole name, not one word:
+    YouTube's search is fuzzy enough, and «وادي» alone is a worse query."""
+    words = [w for w in re.split(r"\s+", team or "") if w and norm(w) not in GENERIC]
+    return " ".join(words) or (team or "")
 
 
 # ------------------------------------------------------------------ fetching
@@ -163,10 +234,11 @@ def rss(ch):
     return out
 
 
-def search(ch):
+def search(ch, query=None):
     """[(video_id, title, None)] from the channel's search page (no exact date:
-    the page only says «قبل يومين»)."""
-    q = urllib.parse.quote(ch["search"])
+    the page only says «قبل يومين»). query: the channel's own highlight words
+    by default, or one match's clubs (the targeted search)."""
+    q = urllib.parse.quote(query or ch["search"])
     h = _get(f"https://www.youtube.com/{ch['handle']}/search?query={q}")
     m = re.search(r"var ytInitialData = (\{.*?\});</script>", h, re.S)
     if not m:
@@ -211,6 +283,12 @@ def match_for(title, published, scope, pool, now=None):
     not الأهلي - المصري), then the most recent."""
     tt = set(tokens(title))
     said = title_score(title)
+    # an explicit season / round in the title must be the match's own: the
+    # channels' search pages also return LAST seasons' uploads of the same
+    # pairing («جنوى 2-1 ليتشي | الجولة 29 | الدوري الإيطالي 2024-2025» had
+    # tied itself to this season's Lecce 1-2 Genoa, 2026-11-03)
+    said_season = title_season(title)
+    said_round = title_round(title)
     now = now or datetime.now(timezone.utc)
     try:
         up = datetime.fromisoformat(published.replace("Z", "+00:00")) if published else None
@@ -228,6 +306,10 @@ def match_for(title, published, scope, pool, now=None):
             continue
         if said and said != tuple(sorted((m.get("home_score") or 0, m.get("away_score") or 0))):
             continue
+        if said_season and said_season != _season_start_year(m.get("kickoff")):
+            continue
+        if said_round and m.get("round") and said_round != int(m["round"]):
+            continue
         key = (h + a, m.get("kickoff") or "")
         if best_key is None or key > best_key:
             best, best_key = m, key
@@ -235,7 +317,8 @@ def match_for(title, published, scope, pool, now=None):
 
 
 def entry(ch, vid, title, published, m):
-    return {"vid": vid, "ch": ch["key"], "channel": ch["name"], "title": title,
+    return {"vid": vid, "ch": ch["key"], "channel": ch["name"], "region": ch.get("region", ""),
+            "title": title,
             "published": published or "", "match_id": str(m["match_id"]),
             "competition": m.get("competition"), "kickoff": m.get("kickoff"),
             "home": m["ar_home"], "away": m["ar_away"],
@@ -274,7 +357,7 @@ def run(now=None):
         due = (now - last).total_seconds() >= SEARCH_EVERY_H * 3600
     except ValueError:
         pass
-    added, notes = 0, []
+    added, notes, unmatched = 0, [], []
     for ch in CHANNELS:
         vids = []
         try:
@@ -289,14 +372,59 @@ def run(now=None):
                 notes.append(f"{ch['key']} search FAIL {str(e)[:60]}")
         n_ch = 0
         for vid, title, published in vids:
-            if vid in store or not is_highlight(title):
+            if vid in store or not qualifies(ch, title):
                 continue
             m = match_for(title, published, ch["scope"], pool, now)
             if m:
                 store[vid] = entry(ch, vid, title, published, m)
                 added += 1
                 n_ch += 1
+            elif is_highlight(title):
+                unmatched.append(f"{ch['key']}: {title[:90]}")
         notes.append(f"{ch['key']} {len(vids)} read +{n_ch}")
+    # the targeted search: every finished match of the last TARGET_DAYS still
+    # without a video, by its clubs' names on its rights holder's channel
+    tried = {k: v for k, v in (meta.get("tried") or {}).items()
+             if v >= (now - timedelta(days=TARGET_DAYS + 1)).isoformat()}
+    have = {str(v.get("match_id")) for v in store.values()}
+    cutoff = (now - timedelta(days=TARGET_DAYS)).date().isoformat()
+    todo = []
+    for m in pool:
+        mid = str(m["match_id"])
+        if (m.get("kickoff") or "") < cutoff or mid in have:
+            continue
+        ch = next((c for c in CHANNELS if m.get("competition") in c["scope"]), None)
+        if not ch:
+            continue
+        last = tried.get(mid)
+        if last and last > (now - timedelta(hours=TARGET_EVERY_H)).isoformat():
+            continue
+        todo.append((m, ch))
+    todo.sort(key=lambda mc: (mc[0].get("kickoff") or "", mc[0].get("koff_time") or ""), reverse=True)
+    n_t = 0
+    for m, ch in todo[:TARGET_PER_RUN]:
+        tried[str(m["match_id"])] = now.isoformat(timespec="seconds")
+        try:
+            time.sleep(1)
+            vids = search(ch, f"{key_word(m['ar_home'])} {key_word(m['ar_away'])}")
+        except Exception as e:                              # noqa: BLE001
+            notes.append(f"target {ch['key']} FAIL {str(e)[:50]}")
+            continue
+        for vid, title, published in vids:
+            if vid in store or not qualifies(ch, title):
+                continue
+            mm = match_for(title, published, ch["scope"], pool, now)
+            if mm:
+                store[vid] = entry(ch, vid, title, published, mm)
+                added += 1
+                n_t += 1
+    have = {str(v.get("match_id")) for v in store.values()}
+    meta["tried"] = tried
+    meta["missing"] = [f'{m.get("kickoff")} {m.get("competition")}: {m["ar_home"]} - {m["ar_away"]}'
+                       for m, _ in todo if str(m["match_id"]) not in have][:20]
+    meta["unmatched"] = unmatched[:10]
+    notes.append(f"targeted {min(len(todo), TARGET_PER_RUN)} searched +{n_t}, "
+                 f"{len(meta['missing'])} still missing")
     if due:
         meta["searched_at"] = now.isoformat(timespec="seconds")
     meta["updated"] = now.isoformat(timespec="seconds")

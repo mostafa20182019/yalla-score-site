@@ -1,22 +1,25 @@
 {# /goals - «أهداف المباريات» (user, 2026-11-02): highlight LINKS from the
-   rights holders' own YouTube channels - beIN SPORTS for the European
-   matches, ON Sport for the Egyptian ones (highlights.py). Each card opens
+   rights holders' own YouTube channels, each competition from the channel
+   holding its rights - beIN SPORTS, AD Sports (Serie A), MBC Action
+   (Bundesliga), ثمانية (Saudi league), ON Sport (Egypt) - see highlights.py
+   CHANNELS; the chips filter by region (data-reg). Each card opens
    the video on YouTube; nothing is embedded or re-hosted. Lines are joined
    with NO separator by site_lib.render: break between tags, never inside a
    sentence. #}
 {{ page_head }}
 <nav class="crumbs"><a href="/">الرئيسية</a> › أهداف المباريات</nav>
 <h1 class="page-h">أهداف المباريات</h1>
-<p class="hintline">ملخصات وأهداف المباريات من القنوات الرسمية على يوتيوب: قناة <bdi>beIN SPORTS</bdi> للبطولات الأوروبية، وقناة <bdi>ON Sport</bdi> للمباريات المصرية.</p>
+<p class="hintline">ملخصات وأهداف المباريات من القنوات الرسمية على يوتيوب، كل بطولة من القناة صاحبة حقوقها: <bdi>beIN SPORTS</bdi> و<bdi>AD Sports</bdi> و<bdi>MBC Action</bdi> للبطولات الأوروبية، وثمانية للدوري السعودي، و<bdi>ON Sport</bdi> للمباريات المصرية.</p>
 {% if cards %}
 <div class="gl-chips" role="group" aria-label="فلتر الفيديوهات">
   <button type="button" class="gl-chip is-on" data-f="all" aria-pressed="true">الكل</button>
-  <button type="button" class="gl-chip" data-f="on" aria-pressed="false">مصر</button>
-  <button type="button" class="gl-chip" data-f="bein" aria-pressed="false">أوروبا</button>
+  <button type="button" class="gl-chip" data-f="eg" aria-pressed="false">مصر</button>
+  <button type="button" class="gl-chip" data-f="sa" aria-pressed="false">السعودية</button>
+  <button type="button" class="gl-chip" data-f="eu" aria-pressed="false">أوروبا</button>
 </div>
 <div class="gl-grid">
   {% for c in cards %}
-  <article class="gl-card" data-ch="{{ c.ch }}">
+  <article class="gl-card" data-ch="{{ c.ch }}" data-reg="{{ c.reg }}">
     <a class="gl-thumb" href="{{ c.yt }}" target="_blank" rel="noopener" aria-label="شاهد {{ c.title }} على يوتيوب">
       <img src="{{ c.img }}" alt="" loading="lazy" width="320" height="180">
       <span class="gl-play" aria-hidden="true">▶</span>

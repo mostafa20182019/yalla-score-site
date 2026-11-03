@@ -88,9 +88,9 @@ if html:
        yt and "<iframe" not in html, len(yt))
     ok("15 the score is the RTL pill (home number on the home side)",
        'class="gl-sc sc-in"' in html)
-    ids = re.findall(r'data-ch="(on|bein)"', html)
-    ok("16 both channels are tagged for the الكل · مصر · أوروبا chips",
-       set(ids) <= {"on", "bein"} and 'data-f="on"' in html and 'data-f="bein"' in html)
+    regs = re.findall(r'data-reg="(\w+)"', html)
+    ok("16 every card carries its region for the الكل · مصر · السعودية · أوروبا chips",
+       regs and set(regs) <= {"eg", "sa", "eu"} and all(f'data-f="{r}"' in html for r in ("eg", "sa", "eu")))
     lines = re.findall(r'<article class="gl-card"[^>]*>.*?</article>', html, re.S)
     mps = [re.search(r'href="(/m/\d+)', c) for c in lines]
     ok("17 no match appears twice for one channel (ON Sport's أهداف + ملخص of one game)",
@@ -116,6 +116,33 @@ ok("18d only a FINISHED row gets the button (never a live or upcoming one)",
 css = open("site_src/style.css", encoding="utf-8").read()
 ok("18e the button sits above the row's stretched link (z-index 2 > .mstretch 1)",
    ".mlist>.mrow .mhl{grid-area:hl" in css and "z-index:2" in css[css.index(".mlist>.mrow .mhl{"):][:200])
+
+# ---- 2026-11-03: a channel per rights holder, and the guards that came with them
+chans = {c["key"]: c for c in H.CHANNELS}
+ok("21 each competition comes from its rights holder: Serie A AD Sports, Bundesliga MBC, Saudi ثمانية, never beIN",
+   "Serie A" in chans["ad"]["scope"] and "Bundesliga" in chans["mbc"]["scope"]
+   and "Saudi Pro League" in chans["thm"]["scope"]
+   and not ({"Serie A", "Bundesliga", "Saudi Pro League"} & chans["bein"]["scope"])
+   and all(len([c for c in H.CHANNELS if comp in c["scope"]]) == 1
+           for c in H.CHANNELS for comp in c["scope"]))
+pool_it = [m(20, "ساسولو", "فيورنتينا", 2, 4, "2026-11-02", "Serie A"),
+           dict(m(21, "ليتشي", "جنوى", 1, 2, "2026-11-01", "Serie A"), round=10),
+           m(22, "يونيون برلين", "بوروسيا دورتموند", 0, 0, "2026-10-17", "Bundesliga")]
+mi = lambda t, ch, pub=None: (lambda r: r and r["match_id"])(
+    H.match_for(t, pub, chans[ch]["scope"], pool_it, NOW) if H.qualifies(chans[ch], t) else None)
+ok("22 AD Sports: a title with OUR score and both clubs is the highlight (no «ملخص» in its titles)",
+   mi("ساسولو 2 - 4 فيورنتينا | الجولة 10 - الدوري الإيطالي موسم 2026 - 2027", "ad") == 20
+   and mi("ساسولو 1 - 4 فيورنتينا | الجولة 10", "ad") is None)
+ok("23 a title naming ANOTHER season is never this season's match (the Genoa-Lecce 2024-25 upload)",
+   mi("جنوى 2-1 ليتشي | الجولة 29 | الدوري الإيطالي 2024-2025", "ad") is None
+   and mi("ملخص المباراة | جنوى ضد ليتشي | الجولة 38 | الدوري الإيطالي 23-24", "ad") is None)
+ok("24 a title naming another ROUND is not the match", mi("جنوى 2-1 ليتشي | الجولة 3 - الدوري الإيطالي", "ad") is None
+   and mi("جنوى 2-1 ليتشي | الجولة 10 - الدوري الإيطالي", "ad") == 21)
+ok("25 MBC: the score must be in digits (a «بثلاثية نظيفة» title tied a 3-0 to a 0-0)",
+   mi("بوروسيا دورتموند يفوز على يونيون برلين بثلاثية نظيفة.. ملخص المباراة", "mbc", "2026-10-18T12:00:00+00:00") is None)
+ok("26 the targeted search names each club without its generic words",
+   H.key_word("وادي دجلة") == "وادي دجلة" and H.key_word("زد اف سي") == "زد"
+   and H.key_word("آمد سبور") == "آمد")
 
 src = open("fetch_data.py", encoding="utf-8").read()
 ok("19 a failing highlights fetch never fails the data fetch", "highlights failed" in src)

@@ -183,6 +183,9 @@ def goals_page(videos, m_all, urls):
         mid = v.get("match_id")
         cards.append({
             "ch": v["ch"], "channel": v.get("channel") or "", "title": v.get("title") or "",
+            # the chip it answers to: مصر / السعودية / أوروبا (entries from before
+            # 2026-11-03 carry no region - beIN was Europe, ON Sport Egypt)
+            "reg": v.get("region") or {"bein": "eu", "on": "eg"}.get(v["ch"], "eu"),
             "yt": f"https://www.youtube.com/watch?v={v['vid']}",
             "img": f"https://i.ytimg.com/vi/{v['vid']}/mqdefault.jpg",
             "comp": comp_label(v.get("competition") or ""),
