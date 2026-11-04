@@ -185,7 +185,17 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         hs, as_ = m.get("home_score"), m.get("away_score")
         when = day_txt + (f" الساعة {m['koff_time']} بتوقيت القاهرة"
                           if m.get("koff_time") else "")
-        if st == "FINISHED" and hs is not None:
+        # a highlight video from the rights holder (highlights.py) - the title
+        # then answers «أهداف مباراة X وY» / «ملخص مباراة X وY», what readers
+        # type the day after (user, 2026-11-04: «Yes, change it»)
+        _hl = highlight_links().get(str(m.get("match_id")))
+        if st == "FINISHED" and hs is not None and _hl:
+            title = f"أهداف وملخص مباراة {h_ar} و{a_ar} {hs}-{as_} — {comp} | {SITE_NAME}"
+            _chn = f" من {_hl[1]}" if _hl[1] else ""
+            desc = (f"شاهد أهداف وملخص مباراة {h_ar} و{a_ar} بالفيديو{_chn}. "
+                    f"انتهت المباراة بنتيجة {hs}-{as_} في {comp} يوم {day_txt}. "
+                    "مسجلو الأهداف وترتيب البطولة هنا.")
+        elif st == "FINISHED" and hs is not None:
             title = f"نتيجة مباراة {h_ar} و{a_ar} {hs}-{as_} — {comp} | {SITE_NAME}"
             desc = (f"انتهت مباراة {h_ar} و{a_ar} في {comp} يوم {day_txt} "
                     f"بنتيجة {hs}-{as_}. مسجلو الأهداف وترتيب البطولة هنا.")
@@ -216,7 +226,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         _goals = match_goals(ge_idx, m)
         page_head = head(title, desc, SITE_BASE + murl, image=img, active="matches")
         hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals,
-                             highlight=highlight_links().get(str(m.get("match_id"))))
+                             highlight=_hl)
         kickoff_info = st not in ("FINISHED", "POSTPONED")
         _tw = _rd = ""
         if kickoff_info:
