@@ -34,6 +34,7 @@ data/results_archive.json
 data/reels_auto.json
 data/match_stats.json
 data/highlights.json
+data/details_archive.json
 data/.store_state.json
 data/odds/
 

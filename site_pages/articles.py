@@ -139,12 +139,39 @@ def article_pages(articles, articles_all, matches, urls):
     return _match_arts, _moved
 
 
+NEWS_PAGE = 40      # rows per archive page (SEO pass, 2026-11-04)
+
+
 def news_archive_pages(articles, urls):
     """/news = everything; /news/egypt + /news/europe = the section archives each
     home block's «المزيد» opens (user 2026-09-01: the blocks stay at 4 rows - the
     rest lives behind المزيد). Same calm list rows everywhere - the old card grid
     read as scattered ("شتات"). Template: site_src/templates/news_archive.html."""
+    # One list of 900 rows was a 738 KB page (SEO pass, 2026-11-04): every
+    # crawl of /news spent its budget on a page nobody scrolls to the end of.
+    # NEWS_PAGE rows a page, the newest first; /news, /news/p2, /news/p3 ... and
+    # /news/egypt, /news/egypt-p2 ... Each page is its own canonical URL and in
+    # the sitemap, with «الأحدث» / «الأقدم» links so a crawler walks the whole
+    # archive one page at a time.
     def news_archive(fname, h1, title, desc, arts):
+        pages = [arts[i:i + NEWS_PAGE] for i in range(0, len(arts), NEWS_PAGE)] or [[]]
+        stem = fname[:-len(".html")]
+
+        def pname(k):
+            if k == 1:
+                return fname
+            return f"news/p{k}.html" if stem == "news" else f"{stem}-p{k}.html"
+
+        for k, chunk in enumerate(pages, 1):
+            _news_archive_page(pname(k), h1, title, desc, chunk,
+                               {"k": k, "n": len(pages),
+                                "prev": "/" + pname(k - 1) if k > 1 else "",
+                                "next": "/" + pname(k + 1) if k < len(pages) else ""})
+
+    def _news_archive_page(fname, h1, title, desc, arts, pager):
+        if pager["k"] > 1:
+            title = f"{title} — صفحة {pager['k']}"
+            desc = f"{desc} (الصفحة {pager['k']} من {pager['n']})"
         page_head = Markup(head(f"{title} — {SITE_NAME}", desc,
                                 SITE_BASE + "/" + fname, active="news"))
         rows = []
@@ -167,13 +194,14 @@ def news_archive_pages(articles, urls):
                 "k": k or "", "kl": kind_label.get(k, "") if k else "",
             })
         write(fname, render("news_archive.html", page_head=page_head, h1=h1,
-                            crumbs=(fname != "news.html"), rows=rows, page_foot=Markup(foot())))
+                            crumbs=(fname != "news.html" and not fname.startswith("news/p")),
+                            rows=rows, pager=pager, page_foot=Markup(foot())))
         urls.append("/" + fname)
 
+    os.makedirs(os.path.join(DIST, "news"), exist_ok=True)   # /news/p2 ... live there too
     news_archive("news.html", "كل الأخبار", "كل الأخبار",
                  "أرشيف أخبار كرة القدم على يلا سكور — كل المقالات والتقارير.",
                  articles)
-    os.makedirs(os.path.join(DIST, "news"), exist_ok=True)
     news_archive("news/egypt.html", "أخبار الكرة المصرية",
                  "أخبار الكرة المصرية اليوم",
                  "كل أخبار الكرة المصرية على يلا سكور: الأهلي والزمالك "

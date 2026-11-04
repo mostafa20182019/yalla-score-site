@@ -127,6 +127,31 @@ def match_details_index(entries):
     return idx
 
 
+def merge_details(store_items, archive_items):
+    """The 45-day store first; an archive entry (archive_db.py --export, the
+    season's arch_details) fills a (home|away, date) the store no longer
+    holds. Without it a finished match older than 45 days had no lineups, no
+    story and no reading, and its page stayed NOINDEX - 46 Egyptian league
+    results on 2026-11-04. Either orientation of the pair counts as held."""
+    if not archive_items:
+        return store_items
+    seen = set()
+    for e in store_items:
+        h, a = _gnorm(e.get("home")), _gnorm(e.get("away"))
+        seen.add((f"{h}|{a}", e.get("date")))
+        seen.add((f"{a}|{h}", e.get("date")))
+    out = list(store_items)
+    for e in archive_items:
+        h, a = _gnorm(e.get("home")), _gnorm(e.get("away"))
+        k = (f"{h}|{a}", e.get("date"))
+        if k in seen or not (h and a and e.get("date")):
+            continue
+        seen.add(k)
+        seen.add((f"{a}|{h}", e.get("date")))
+        out.append(e)
+    return out
+
+
 def prematch_for(idx, m):
     """(entry, flipped) for an UPCOMING match whose XI is already announced
     (fetch_data stores those with pre=True from ~1h before kick-off), else

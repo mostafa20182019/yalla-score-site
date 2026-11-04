@@ -20,6 +20,15 @@
   </a>
   {% endfor %}
 </div>
+{% if pager and pager.n > 1 %}
+{# «الأحدث» = the page before this one, «الأقدم» = the page after (the list
+   runs newest first); the count tells a reader and a crawler how deep it goes #}
+<nav class="pager" aria-label="صفحات الأرشيف">
+  {% if pager.prev %}<a class="pg-a" href="{{ pager.prev }}">الأحدث</a>{% endif %}
+  <span class="pg-n">صفحة {{ pager.k }} من {{ pager.n }}</span>
+  {% if pager.next %}<a class="pg-a" href="{{ pager.next }}">الأقدم</a>{% endif %}
+</nav>
+{% endif %}
 {% else %}
 <p class="empty-note">لا توجد أخبار بعد.</p>
 {% endif %}

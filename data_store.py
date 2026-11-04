@@ -68,6 +68,7 @@ STORE_FILES = [
     "headlines.json", "fetch_debug.json", "results_archive.json", "reels_auto.json",
     "match_stats.json",     # xG + shots per finished match (match_stats.py, 2026-10-07)
     "highlights.json",      # YouTube highlight links for /goals (highlights.py, 2026-11-02)
+    "details_archive.json", # the season's lineups/cards/subs from D1 (archive_db.py --export, 2026-11-04)
 ]
 
 # accumulating files: key function per item, for the merge and the shrink guard
@@ -97,6 +98,7 @@ ACCUMULATING = {
     "results_archive.json": lambda e: str(e.get("match_id")),
     "matches_archive.json": lambda e: str(e.get("match_id")),
     "match_details.json": lambda e: f'{e.get("date")}|{e.get("home")}|{e.get("away")}',
+    "details_archive.json": lambda e: f'{e.get("date")}|{e.get("home")}|{e.get("away")}',
     "match_stats.json": lambda e: str(e.get("match_id")),
     "highlights.json": lambda e: str(e.get("vid")),
 }
@@ -243,8 +245,14 @@ def pull():
     return 0
 
 
-def push(seed=False, by=None):
+def push(seed=False, by=None, only=None):
+    """`only`: push just these files; every other file in the bundle is taken
+    from the store as it is now. For a job that produces ONE file (the nightly
+    archive export) and must not stomp the fetch files it pulled an hour
+    earlier with that hour-old copy."""
     local = read_local()
+    if only:
+        local = {n: b for n, b in local.items() if n in only}
     if not local:
         print("::error::no data files to push")
         return 2
@@ -258,6 +266,9 @@ def push(seed=False, by=None):
         return 2
     meta, remote = remote_get()
     if meta is not None:
+        if only:
+            for n, b in remote.items():
+                local.setdefault(n, b)
         probs = shrink_problems(local, remote)
         if probs:
             print("::error::refusing to push - an accumulating file shrank: " + "; ".join(probs))
@@ -329,9 +340,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["push", "pull", "verify", "status", "nsid"])
     ap.add_argument("--seed", action="store_true", help="first push into an empty store")
+    ap.add_argument("--only", nargs="+", metavar="FILE",
+                    help="push: write only these files, keep the store's copy of the rest")
     a = ap.parse_args()
     try:
-        rc = {"push": lambda: push(seed=a.seed), "pull": pull, "verify": verify,
+        rc = {"push": lambda: push(seed=a.seed, only=a.only), "pull": pull, "verify": verify,
               "status": status, "nsid": nsid}[a.cmd]()
     except (urllib.error.URLError, OSError, ValueError, KeyError) as e:
         print(f"::error::data store {a.cmd} failed: {e!r}")

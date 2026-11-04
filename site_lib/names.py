@@ -132,6 +132,26 @@ def ar_team(name):
     return AR_TEAM.get(name or "", name or "")
 
 
+# The feed spells Al-Ahli Jeddah «الأهلي», the same word every Egyptian types
+# for Al Ahly Cairo. On a /m/ page that word is the <title>, the H1 and the
+# description, i.e. what the search result shows: «نتيجة مباراة الأهلي
+# والتعاون» read as the Egyptian club's match, were ignored, and taught Google
+# the two entities are one (SEO pass, 2026-11-04 - 13 Saudi pages). The
+# Libyan sides already arrive distinct («الأهلي طرابلس» / «الأهلي بنغازي»).
+# Standings tables, tickers and club matchers keep the bare feed name - they
+# are scoped by competition already (clubs.EGY_SCOPE, names._tok_hit).
+_AHLI_BY_COMP = {"Saudi Pro League": "الأهلي السعودي"}
+
+
+def ar_team_in(name, comp):
+    """ar_team(), qualified where the bare name belongs to another club in
+    that competition. For page text (title, H1, readings), not for matching."""
+    nm = ar_team(name)
+    if nm == "الأهلي":
+        return _AHLI_BY_COMP.get(comp or "", nm)
+    return nm
+
+
 def _team_link(comp, raw_name):
     """Arabic team name, linked to its /team/ page when it is a curated club."""
     nm = ar_team(raw_name)

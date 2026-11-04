@@ -129,6 +129,18 @@ def _same_bytes(a, b):
     return h(a) == h(b)
 
 
+def _width(path):
+    """Pixel width of a published copy, or None. Recorded on every registry
+    entry so the writer can prefer a photo at Google Discover's 1200px floor
+    (SEO pass, 2026-11-04: 33 of 233 pool photos are narrower, and the small
+    ones kept being picked for new stories)."""
+    try:
+        with Image.open(path) as im:
+            return im.width
+    except (OSError, ValueError):
+        return None
+
+
 def _web_bytes(path):
     """The photo at web size as JPEG bytes (EXIF rotation applied, RGB,
     at most MAX_W wide, never upscaled)."""
@@ -235,6 +247,11 @@ def sync(folder_root=FOLDER, media=MEDIA, registry_path=REGISTRY, teams=TEAMS,
                     res["updated"].append(source)
                 else:
                     res["kept"] += 1
+                w = _width(os.path.join(media, entry["file"]))
+                if w and entry.get("width") != w:
+                    entry["width"] = w          # a first read, or a re-fetched wider copy
+                    if not changed:
+                        res["updated"].append(source)
                 continue
             # A photo that already lives in media/ under this very name with
             # the very same bytes (the vetted photos our articles used, seeded
@@ -244,7 +261,7 @@ def sync(folder_root=FOLDER, media=MEDIA, registry_path=REGISTRY, teams=TEAMS,
             if os.path.exists(same) and _same_bytes(same, os.path.join(folder, name)):
                 p = {"file": name, "credit": credit, "subject": subject, "club": club,
                      "slug": slug, "year": year, "is_person": is_person,
-                     "source": source, "added": today}
+                     "source": source, "added": today, "width": _width(same)}
                 reg["photos"] = [q for q in reg["photos"] if q["file"] != name]
                 reg["photos"].append(p)
                 by_source[source] = p
@@ -264,7 +281,8 @@ def sync(folder_root=FOLDER, media=MEDIA, registry_path=REGISTRY, teams=TEAMS,
                     f.write(_web_bytes(os.path.join(folder, name)))
             p = {"file": fname, "credit": credit, "subject": subject, "club": club,
                  "slug": slug, "year": year, "is_person": is_person,
-                 "source": source, "added": today}
+                 "source": source, "added": today,
+                 "width": _width(os.path.join(media, fname))}
             reg["photos"].append(p)
             by_source[source] = p
             by_file.add(fname)

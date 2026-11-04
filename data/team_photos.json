@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-03T19:05:56+00:00",
+ "generated_at": "2026-11-04T19:42:03+02:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -11,7 +11,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/pyramids/30-june-stadium-pyramids.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "abdallah-elsaid-egypt.jpg",
@@ -22,7 +23,8 @@
    "year": 2018,
    "is_person": true,
    "source": "team-photos/egypt/abdallah-elsaid-egypt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1200
   },
   {
    "file": "abdelkader-pyramids.jpg",
@@ -33,7 +35,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/pyramids/abdelkader-pyramids.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1103
   },
   {
    "file": "ahly-afsha-zed.jpg",
@@ -44,7 +47,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-afsha-zed.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1050
   },
   {
    "file": "ahly-ammouta-gamper.jpg",
@@ -55,7 +59,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-ammouta-gamper.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1000
   },
   {
    "file": "ahly-ashour-renewal.jpg",
@@ -66,7 +71,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-ashour-renewal.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 900
   },
   {
    "file": "ahly-ashour-transfer-file.jpg",
@@ -77,7 +83,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-ashour-transfer-file.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1123
   },
   {
    "file": "ahly-badalona-friendly.jpg",
@@ -88,7 +95,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-badalona-friendly.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1050
   },
   {
    "file": "ahly-belammari.jpg",
@@ -99,7 +107,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-belammari.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1500
   },
   {
    "file": "ahly-ben-romdhane.jpg",
@@ -110,7 +119,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-ben-romdhane.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1000
   },
   {
    "file": "ahly-cairo-stadium-crowd.jpg",
@@ -121,7 +131,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-cairo-stadium-crowd.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "ahly-cairo-stadium-signing.jpg",
@@ -132,7 +143,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-cairo-stadium-signing.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "ahly-cairo-stadium-sundowns.jpg",
@@ -143,7 +155,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-cairo-stadium-sundowns.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "ahly-dari-squad.jpg",
@@ -154,7 +167,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-dari-squad.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1050
   },
   {
    "file": "ahly-elshahat-goal.jpg",
@@ -165,7 +179,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-elshahat-goal.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 995
   },
   {
    "file": "ahly-emam-ashour.jpg",
@@ -176,7 +191,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-emam-ashour.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "ahly-fans-tifo-supercup.jpg",
@@ -187,7 +203,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-fans-tifo-supercup.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "ahly-kit-2026.jpg",
@@ -198,7 +215,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-kit-2026.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1050
   },
   {
    "file": "ahly-mahmoud-salah-deal.jpg",
@@ -209,7 +227,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-mahmoud-salah-deal.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1050
   },
   {
    "file": "ahly-military-academy-stadium.jpg",
@@ -220,7 +239,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-military-academy-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "ahly-red-kit-cwc-monterrey.jpg",
@@ -231,7 +251,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-red-kit-cwc-monterrey.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1050
   },
   {
    "file": "ahly-red-shirt-cwc.jpg",
@@ -242,7 +263,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-red-shirt-cwc.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1050
   },
   {
    "file": "ahly-reda-slim.jpg",
@@ -253,7 +275,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-reda-slim.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1500
   },
   {
    "file": "ahly-spain-camp-ashour.jpg",
@@ -264,7 +287,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ahly-spain-camp-ashour.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "ahly-stadium-gate-of-champs.jpg",
@@ -275,7 +299,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-stadium-gate-of-champs.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 960
   },
   {
    "file": "ahly-stadium-morning.jpg",
@@ -286,7 +311,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-stadium-morning.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 960
   },
   {
    "file": "ahly-tetsh-stadium.jpg",
@@ -297,7 +323,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-tetsh-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1131
   },
   {
    "file": "ahly-we-stadium-league.jpg",
@@ -308,7 +335,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-we-stadium-league.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "ahly-we-stadium-panorama.jpg",
@@ -319,7 +347,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-we-stadium-panorama.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "ahly-we-stadium.jpg",
@@ -330,7 +359,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/ahly-we-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "ahly-yasser-ibrahim-shabab.jpg",
@@ -341,7 +371,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/ahly-yasser-ibrahim-shabab.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1000
   },
   {
    "file": "ahmed-abdelkader.jpg",
@@ -352,7 +383,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/pyramids/ahmed-abdelkader.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1103
   },
   {
    "file": "ahmed-zizo-egypt-nt.jpg",
@@ -363,7 +395,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/ahmed-zizo-egypt-nt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "akram-tawfik.jpg",
@@ -374,7 +407,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/akram-tawfik.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 720
   },
   {
    "file": "al-ahly-red-castle-card.jpg",
@@ -385,7 +419,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/al-ahly/red-castle-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "alexander-isak-sweden-2026.jpg",
@@ -396,7 +431,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/liverpool/alexander-isak-sweden-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1544
   },
   {
    "file": "anfield-kop-stand-panorama.jpg",
@@ -407,7 +443,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/liverpool/anfield-kop-stand-panorama.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "anfield-stadium-liverpool-2026.jpg",
@@ -418,7 +455,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/liverpool/anfield-stadium-liverpool-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "arsenal-bukayo-saka-england-wc2026.jpg",
@@ -429,7 +467,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/arsenal/bukayo-saka-england-wc2026.jpg",
-   "added": "2026-10-22"
+   "added": "2026-10-22",
+   "width": 1600
   },
   {
    "file": "arsenal-fans-emirates.jpg",
@@ -440,7 +479,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/arsenal/arsenal-fans-emirates.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "arsenal-identity-card.jpg",
@@ -451,7 +491,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/arsenal/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "arsenal-william-saliba-france-wc2026.jpg",
@@ -462,7 +503,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/arsenal/william-saliba-france-wc2026.jpg",
-   "added": "2026-11-03"
+   "added": "2026-11-03",
+   "width": 1600
   },
   {
    "file": "barcelona-dani-olmo-spain-world-cup-2026.jpg",
@@ -473,7 +515,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/barcelona/dani-olmo-spain-world-cup-2026.jpg",
-   "added": "2026-10-21"
+   "added": "2026-10-21",
+   "width": 1600
   },
   {
    "file": "barcelona-hamza-abdelkarim-egypt-nt-2026.jpg",
@@ -484,7 +527,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/barcelona/hamza-abdelkarim-egypt-nt-2026.jpg",
-   "added": "2026-10-19"
+   "added": "2026-10-19",
+   "width": 1600
   },
   {
    "file": "barcelona-identity-card.jpg",
@@ -495,7 +539,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/barcelona/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "barcelona-jersey-macro-wide.jpg",
@@ -506,7 +551,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/barcelona/jersey-macro-wide.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "barcelona-paint-split-wide.jpg",
@@ -517,7 +563,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/barcelona/paint-split-wide.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "barcola-liverpool-france-nt.jpg",
@@ -528,7 +575,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/liverpool/barcola-liverpool-france-nt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "belammari-ahly-acl-surgery.jpg",
@@ -539,7 +587,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/belammari-ahly-acl-surgery.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "belammari-morocco-norway.jpg",
@@ -550,7 +599,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/belammari-morocco-norway.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "ben-romdhane.jpg",
@@ -561,7 +611,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/ben-romdhane.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "bencharki-al-ahly-2026.jpg",
@@ -572,7 +623,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/bencharki-al-ahly-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "bencharki-goal-celebration-2026.jpg",
@@ -583,7 +635,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/bencharki-goal-celebration-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "bernabeu-interior-roof.jpg",
@@ -594,7 +647,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/bernabeu-interior-roof.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "bernabeu-west-facade.jpg",
@@ -605,7 +659,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/real-madrid/bernabeu-west-facade.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "bruno-fernandes-manutd-dec2025.jpg",
@@ -616,7 +671,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/man-united/bruno-fernandes-manutd-dec2025.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 864
   },
   {
    "file": "bukayo-saka-arsenal-2025.jpg",
@@ -627,7 +683,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/arsenal/bukayo-saka-arsenal-2025.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "cairo-stadium-ahly-smouha-reschedule.jpg",
@@ -638,7 +695,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/al-ahly/cairo-stadium-ahly-smouha-reschedule.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "cairo-stadium-egypt-fifa-case.jpg",
@@ -649,7 +707,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/egypt/cairo-stadium-egypt-fifa-case.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "cairo-stadium-egypt-qualifier-night.jpg",
@@ -660,7 +719,8 @@
    "year": 2022,
    "is_person": false,
    "source": "team-photos/egypt/cairo-stadium-egypt-qualifier-night.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "cairo-stadium-egypt-youth-afcon.jpg",
@@ -671,7 +731,8 @@
    "year": 2019,
    "is_person": false,
    "source": "team-photos/egypt/cairo-stadium-egypt-youth-afcon.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "camp-nou-ahly-barcelona.jpg",
@@ -682,7 +743,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/barcelona/camp-nou-ahly-barcelona.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "camp-nou-matchday.jpg",
@@ -693,7 +755,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/barcelona/camp-nou-matchday.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "camp-nou-under-renovation.jpg",
@@ -704,7 +767,8 @@
    "year": 2025,
    "is_person": false,
    "source": "team-photos/barcelona/camp-nou-under-renovation.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "carlos-baleba-manutd.jpg",
@@ -715,7 +779,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/man-united/carlos-baleba-manutd.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "chelsea-identity-card.jpg",
@@ -726,7 +791,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/chelsea/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "chelsea-martinez-worldcup-final-knee-2026.jpg",
@@ -737,7 +803,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/chelsea/martinez-worldcup-final-knee-2026.jpg",
-   "added": "2026-10-24"
+   "added": "2026-10-24",
+   "width": 1600
   },
   {
    "file": "cody-gakpo-liverpool.jpg",
@@ -748,7 +815,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/liverpool/cody-gakpo-liverpool.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "cole-palmer-chelsea-arrival-2025.jpg",
@@ -759,7 +827,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/chelsea/cole-palmer-chelsea-arrival-2025.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1084
   },
   {
    "file": "dani-carvajal-spain-2019.jpg",
@@ -770,7 +839,8 @@
    "year": 2019,
    "is_person": true,
    "source": "team-photos/real-madrid/dani-carvajal-spain-2019.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "david-alaba-austria-2018.jpg",
@@ -781,7 +851,8 @@
    "year": 2018,
    "is_person": true,
    "source": "team-photos/real-madrid/david-alaba-austria-2018.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "djylian-nguessan-saint-etienne.jpg",
@@ -792,7 +863,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/liverpool/djylian-nguessan-saint-etienne.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1544
   },
   {
    "file": "egypt-identity-card.jpg",
@@ -803,7 +875,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/egypt/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "egypt-nt-lineup-anthem.jpg",
@@ -814,7 +887,8 @@
    "year": 2018,
    "is_person": true,
    "source": "team-photos/egypt/egypt-nt-lineup-anthem.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "egypt-nt-marmoush-wc2026.jpg",
@@ -825,7 +899,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/egypt-nt-marmoush-wc2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "egypt-nt-wc2026-seattle.jpg",
@@ -836,7 +911,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/egypt-nt-wc2026-seattle.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "egypt-wc2026-flag.jpg",
@@ -847,7 +923,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/egypt-wc2026-flag.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1500
   },
   {
    "file": "egypt-women-elmitwalli.jpg",
@@ -858,7 +935,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/egypt-women-elmitwalli.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "egypt-youth-cairo-stadium.jpg",
@@ -869,7 +947,8 @@
    "year": 2019,
    "is_person": false,
    "source": "team-photos/egypt/egypt-youth-cairo-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "elshahat-amouta-bench.jpg",
@@ -880,7 +959,8 @@
    "year": 2019,
    "is_person": true,
    "source": "team-photos/al-ahly/elshahat-amouta-bench.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "emam-ashour-ahly.jpg",
@@ -891,7 +971,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/emam-ashour-ahly.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "emam-ashour-egypt-argentina-2026.jpg",
@@ -902,7 +983,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/emam-ashour-egypt-argentina-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "emam-ashour-ittihad-file.jpg",
@@ -913,7 +995,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/emam-ashour-ittihad-file.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "emam-ashour-medical-report-nt.jpg",
@@ -924,7 +1007,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/emam-ashour-medical-report-nt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "emirates-arsenal-2026.jpg",
@@ -935,7 +1019,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/arsenal/emirates-arsenal-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "enzo-fernandez-city-2026.jpg",
@@ -946,7 +1031,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/man-city/enzo-fernandez-city-2026.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "enzo-fernandez-city-official-2026.jpg",
@@ -957,7 +1043,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/man-city/enzo-fernandez-city-official-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "etihad-stadium-bowl-2026.jpg",
@@ -968,7 +1055,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/man-city/etihad-stadium-bowl-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "etihad-stadium-mancity-2026.jpg",
@@ -979,7 +1067,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/man-city/etihad-stadium-mancity-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "fatih-tekke-trabzonspor-coach.jpg",
@@ -990,7 +1079,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/trabzonspor/fatih-tekke-trabzonspor-coach.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "federico-chiesa-liverpool-2026.jpg",
@@ -1001,7 +1091,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/liverpool/federico-chiesa-liverpool-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "federico-valverde-real-madrid.jpg",
@@ -1012,7 +1103,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/federico-valverde-real-madrid.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1210
   },
   {
    "file": "flick-barcelona-presser.jpg",
@@ -1023,7 +1115,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/barcelona/flick-barcelona-presser.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "florentino-perez-laureus-2024.jpg",
@@ -1034,7 +1127,8 @@
    "year": 2024,
    "is_person": true,
    "source": "team-photos/real-madrid/florentino-perez-laureus-2024.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "gabriel-jesus-arsenal-2026.jpg",
@@ -1045,7 +1139,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/arsenal/gabriel-jesus-arsenal-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "gabriel-jesus-arsenal-barcelona.jpg",
@@ -1056,7 +1151,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/arsenal/gabriel-jesus-arsenal-barcelona.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "gradisar-ahly.jpg",
@@ -1067,7 +1163,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/gradisar-ahly.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 531
   },
   {
    "file": "grealish-everton-loan-sep2026.jpg",
@@ -1078,7 +1175,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/man-city/grealish-everton-loan-sep2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hamdy-fathy-egypt-worldcup2026.jpg",
@@ -1089,7 +1187,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/hamdy-fathy-egypt-worldcup2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hamza-abdelkarim-barca-debut.jpg",
@@ -1100,7 +1199,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/hamza-abdelkarim-barca-debut.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hamza-abdelkarim-bench-elche.jpg",
@@ -1111,7 +1211,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/hamza-abdelkarim-bench-elche.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hamza-abdelkarim-clause-2026.jpg",
@@ -1122,7 +1223,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/hamza-abdelkarim-clause-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hamza-abdelkarim-egypt-portrait.jpg",
@@ -1133,7 +1235,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/hamza-abdelkarim-egypt-portrait.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "hamza-abdelkarim-egypt.jpg",
@@ -1144,7 +1247,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/hamza-abdelkarim-egypt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "harvey-elliott-valencia.jpg",
@@ -1155,7 +1259,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/liverpool/harvey-elliott-valencia.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hitham-hassan-egypt-celtic.jpg",
@@ -1166,7 +1271,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/hitham-hassan-egypt-celtic.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1200
   },
   {
    "file": "hossam-abdelmaguid-egypt-2024.jpg",
@@ -1177,7 +1283,8 @@
    "year": 2024,
    "is_person": true,
    "source": "team-photos/egypt/hossam-abdelmaguid-egypt-2024.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hossam-abdelmaguid-europe-focus.jpg",
@@ -1188,7 +1295,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/hossam-abdelmaguid-europe-focus.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hossam-abdelmaguid-ludogorets-stance.jpg",
@@ -1199,7 +1307,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/hossam-abdelmaguid-ludogorets-stance.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "hossam-abdelmaguid-worldcup-2026.jpg",
@@ -1210,7 +1319,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/hossam-abdelmaguid-worldcup-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "hossam-abdelmaguid.jpg",
@@ -1221,7 +1331,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/hossam-abdelmaguid.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "ibrahima-konate-france-2026.jpg",
@@ -1232,7 +1343,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/real-madrid/ibrahima-konate-france-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "iliman-ndiaye-man-city.jpg",
@@ -1243,7 +1355,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/man-city/iliman-ndiaye-man-city.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "img-20260828-184637.jpg",
@@ -1254,7 +1367,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/chelsea/img-20260828-184637.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "img-20260910-130122.jpg",
@@ -1265,7 +1379,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/img-20260910-130122.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1267
   },
   {
    "file": "jarell-quansah-england-2026.jpg",
@@ -1276,7 +1391,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/jarell-quansah-england-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "javier-tebas-2019-websummit.jpg",
@@ -1287,7 +1403,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/javier-tebas-2019-websummit.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "javier-tebas-2024.jpg",
@@ -1298,7 +1415,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/javier-tebas-2024.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "jude-bellingham-england-2026.jpg",
@@ -1309,7 +1427,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/real-madrid/jude-bellingham-england-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "june30-stadium.jpg",
@@ -1320,7 +1439,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/pyramids/june30-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "khaldoon-almubarak-wef-davos-2025.jpg",
@@ -1331,7 +1451,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/man-city/khaldoon-almubarak-wef-davos-2025.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "lautaro-martinez-argentina-2026.jpg",
@@ -1342,7 +1463,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/barcelona/lautaro-martinez-argentina-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "liverpool-identity-card.jpg",
@@ -1353,7 +1475,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/liverpool/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mahmoud-elkhatib-ahly-president.jpg",
@@ -1364,7 +1487,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/mahmoud-elkhatib-ahly-president.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1470
   },
   {
    "file": "mahmoud-elkhatib-ahly-tv-launch.jpg",
@@ -1375,7 +1499,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/mahmoud-elkhatib-ahly-tv-launch.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 934
   },
   {
    "file": "man-city-identity-card.jpg",
@@ -1386,7 +1511,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/man-city/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "man-united-arne-slot-liverpool-press-2024.jpg",
@@ -1397,7 +1523,8 @@
    "year": 2024,
    "is_person": true,
    "source": "team-photos/man-united/arne-slot-liverpool-press-2024.jpg",
-   "added": "2026-10-22"
+   "added": "2026-10-22",
+   "width": 1600
   },
   {
    "file": "man-united-identity-card.jpg",
@@ -1408,7 +1535,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/man-united/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "man-united-marble-crest-wide.jpg",
@@ -1419,7 +1547,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/man-united/marble-crest-wide.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "marcel-koller-austria.jpg",
@@ -1430,7 +1559,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/marcel-koller-austria.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "marmoush-spurs-2031.jpg",
@@ -1441,7 +1571,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/marmoush-spurs-2031.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "marmoush-tottenham-medical-aug2026.jpg",
@@ -1452,7 +1583,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/marmoush-tottenham-medical-aug2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "martinelli-arsenal-alhilal-2026.jpg",
@@ -1463,7 +1595,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/arsenal/martinelli-arsenal-alhilal-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "martinelli-brazil-wc2026.jpg",
@@ -1474,7 +1607,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/arsenal/martinelli-brazil-wc2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "martinez-chelsea-signing.jpg",
@@ -1485,7 +1619,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/chelsea/martinez-chelsea-signing.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "marwan-attia.jpg",
@@ -1496,7 +1631,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/marwan-attia.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mbappe-kidnap-plot-real-madrid.jpg",
@@ -1507,7 +1643,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/real-madrid/mbappe-kidnap-plot-real-madrid.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mikel-arteta-arsenal-premier-league-2026.jpg",
@@ -1518,7 +1655,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/arsenal/mikel-arteta-arsenal-premier-league-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mikel-arteta-arsenal-training-2021.jpg",
@@ -1529,7 +1667,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/arsenal/mikel-arteta-arsenal-training-2021.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-abdelmonem-egypt.jpg",
@@ -1540,7 +1679,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-abdelmonem-egypt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-abu-gabal-egypt-nt.jpg",
@@ -1551,7 +1691,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-abu-gabal-egypt-nt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-hany-ahly-403-matches.jpg",
@@ -1562,7 +1703,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-hany-ahly-403-matches.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-hany-ahly-final-offer.jpg",
@@ -1573,7 +1715,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-hany-ahly-final-offer.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-hany-ahly-official-announcement.jpg",
@@ -1584,7 +1727,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/mohamed-hany-ahly-official-announcement.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-hany-ahly-renewal-near.jpg",
@@ -1595,7 +1739,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-hany-ahly-renewal-near.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "mohamed-hany-egypt-action-worldcup2026.jpg",
@@ -1606,7 +1751,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/al-ahly/mohamed-hany-egypt-action-worldcup2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-hany-egypt-worldcup2026-portrait.jpg",
@@ -1617,7 +1763,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-hany-egypt-worldcup2026-portrait.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mohamed-salah-egypt-argentina-wc2026-163.jpg",
@@ -1628,7 +1775,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-salah-egypt-argentina-wc2026-163.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "mohamed-salah-egypt-argentina-wc2026-front.jpg",
@@ -1639,7 +1787,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-salah-egypt-argentina-wc2026-front.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "mohamed-salah-egypt-national-team-camp.jpg",
@@ -1650,7 +1799,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-salah-egypt-national-team-camp.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "mohamed-salah-egypt-portrait-wc2026.jpg",
@@ -1661,7 +1811,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-salah-egypt-portrait-wc2026.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "mohamed-salah-egypt-wc2026.jpg",
@@ -1672,7 +1823,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohamed-salah-egypt-wc2026.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "mohamed-salah-super-cup-istanbul.jpg",
@@ -1683,7 +1835,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/trabzonspor/mohamed-salah-super-cup-istanbul.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1050
   },
   {
    "file": "mohamed-sherif-interview.jpg",
@@ -1694,7 +1847,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/mohamed-sherif-interview.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1200
   },
   {
    "file": "mohamed-sherif.jpg",
@@ -1705,7 +1859,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/mohamed-sherif.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 453
   },
   {
    "file": "mohanad-lasheen-egypt-wc2026.jpg",
@@ -1716,7 +1871,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohanad-lasheen-egypt-wc2026.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "mohaned-lasheen-egypt.jpg",
@@ -1727,7 +1883,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mohaned-lasheen-egypt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1400
   },
   {
    "file": "mostafa-mohamed-nantes-egypt.jpg",
@@ -1738,7 +1895,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/mostafa-mohamed-nantes-egypt.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mostafa-shobeir-clause.jpg",
@@ -1749,7 +1907,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mostafa-shobeir-clause.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mostafa-shobeir-egypt-gk.jpg",
@@ -1760,7 +1919,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/mostafa-shobeir-egypt-gk.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mostafa-shobeir-egypt.jpg",
@@ -1771,7 +1931,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/mostafa-shobeir-egypt.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "mostafa-shobeir-renewal-2029.jpg",
@@ -1782,7 +1943,8 @@
    "year": 2029,
    "is_person": true,
    "source": "team-photos/al-ahly/mostafa-shobeir-renewal-2029.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "mostafa-shobeir.jpg",
@@ -1793,7 +1955,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/mostafa-shobeir.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "mostafa-zico-pyramids-2026.jpg",
@@ -1804,7 +1967,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/mostafa-zico-pyramids-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "mostafa-zikou-egypt-argentina.jpg",
@@ -1815,7 +1979,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/mostafa-zikou-egypt-argentina.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "mudryk-tottenham.jpg",
@@ -1826,7 +1991,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/chelsea/mudryk-tottenham.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "odegaard-arsenal-champions-league.jpg",
@@ -1837,7 +2003,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/arsenal/odegaard-arsenal-champions-league.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "odegaard-norway-nt-2026.jpg",
@@ -1848,7 +2015,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/arsenal/odegaard-norway-nt-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "old-trafford-aerial.jpg",
@@ -1859,7 +2027,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/man-united/old-trafford-aerial.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "old-trafford-exterior.jpg",
@@ -1870,7 +2039,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/man-united/old-trafford-exterior.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "old-trafford-stretford-end.jpg",
@@ -1881,7 +2051,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/man-united/old-trafford-stretford-end.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "omar-kamal-abdelwahed.jpg",
@@ -1892,7 +2063,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/omar-kamal-abdelwahed.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1200
   },
   {
    "file": "omar-marmoush-egypt-argentina-wc2026.jpg",
@@ -1903,7 +2075,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/omar-marmoush-egypt-argentina-wc2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "omar-sayed-moawad-ahly.jpg",
@@ -1914,7 +2087,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/omar-sayed-moawad-ahly.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "pedro-neto-chelsea-2026.jpg",
@@ -1925,7 +2099,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/chelsea/pedro-neto-chelsea-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "pyramids-30june-stadium.jpg",
@@ -1936,7 +2111,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/pyramids/pyramids-30june-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "pyramids-air-defence-stadium.jpg",
@@ -1947,7 +2123,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/pyramids/pyramids-air-defence-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1400
   },
   {
    "file": "pyramids-identity-card.jpg",
@@ -1958,7 +2135,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/pyramids/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "pyramids-june30-mayele-exit.jpg",
@@ -1969,7 +2147,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/pyramids/pyramids-june30-mayele-exit.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "raphinha-barcelona-2025.jpg",
@@ -1980,7 +2159,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/barcelona/raphinha-barcelona-2025.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "raphinha-brazil-nt-2026.jpg",
@@ -1991,7 +2171,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/barcelona/raphinha-brazil-nt-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "raphinha-brazil-nt-june2026.jpg",
@@ -2002,7 +2183,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/barcelona/raphinha-brazil-nt-june2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "real-madrid-arda-guler-turkey-2025.jpg",
@@ -2013,7 +2195,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/real-madrid/arda-guler-turkey-2025.jpg",
-   "added": "2026-10-23"
+   "added": "2026-10-23",
+   "width": 1600
   },
   {
    "file": "real-madrid-bernabeu-entrance.jpg",
@@ -2024,7 +2207,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/real-madrid-bernabeu-entrance.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "real-madrid-eder-militao-real-madrid-2023.jpg",
@@ -2035,7 +2219,8 @@
    "year": 2023,
    "is_person": true,
    "source": "team-photos/real-madrid/eder-militao-real-madrid-2023.jpg",
-   "added": "2026-11-01"
+   "added": "2026-11-01",
+   "width": 1600
   },
   {
    "file": "real-madrid-eduardo-camavinga-real-madrid-2022.jpg",
@@ -2046,7 +2231,8 @@
    "year": 2022,
    "is_person": true,
    "source": "team-photos/real-madrid/eduardo-camavinga-real-madrid-2022.jpg",
-   "added": "2026-10-28"
+   "added": "2026-10-28",
+   "width": 1600
   },
   {
    "file": "real-madrid-identity-card.jpg",
@@ -2057,7 +2243,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/real-madrid/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "real-madrid-vinicius-junior-brazil-closeup-2026.jpg",
@@ -2068,7 +2255,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/real-madrid/vinicius-junior-brazil-closeup-2026.jpg",
-   "added": "2026-10-21"
+   "added": "2026-10-21",
+   "width": 1600
   },
   {
    "file": "reda-slim-morocco-run.jpg",
@@ -2079,7 +2267,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/reda-slim-morocco-run.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1120
   },
   {
    "file": "reda-slim-royal-army.jpg",
@@ -2090,7 +2279,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/reda-slim-royal-army.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "richarlison-portrait-honored.jpg",
@@ -2101,7 +2291,8 @@
    "year": 2019,
    "is_person": true,
    "source": "team-photos/trabzonspor/richarlison-portrait-honored.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1176
   },
   {
    "file": "richarlison-tottenham-exit-2026.jpg",
@@ -2112,7 +2303,8 @@
    "year": 2022,
    "is_person": true,
    "source": "team-photos/trabzonspor/richarlison-tottenham-exit-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "richarlison-trabzonspor-2026.jpg",
@@ -2123,7 +2315,8 @@
    "year": 2022,
    "is_person": true,
    "source": "team-photos/trabzonspor/richarlison-trabzonspor-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 800
   },
   {
    "file": "rio-ngumoha-liverpool-training.jpg",
@@ -2134,7 +2327,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/liverpool/rio-ngumoha-liverpool-training.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "rudiger-germany-retirement-2026.jpg",
@@ -2145,7 +2339,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/real-madrid/rudiger-germany-retirement-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "salah-cbc-interview-title-race.jpg",
@@ -2156,7 +2351,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/trabzonspor/salah-cbc-interview-title-race.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "salah-trabzonspor-first-appearance.jpg",
@@ -2167,7 +2363,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/trabzonspor/salah-trabzonspor-first-appearance.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "salah-trabzonspor-super-lig-debut.jpg",
@@ -2178,7 +2375,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/trabzonspor/salah-trabzonspor-super-lig-debut.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1200
   },
   {
    "file": "salah-yomra-street.jpg",
@@ -2189,7 +2387,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/trabzonspor/salah-yomra-street.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1600
   },
   {
    "file": "sayed-and-omar-moawad-ahly.jpg",
@@ -2200,7 +2399,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/sayed-and-omar-moawad-ahly.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1319
   },
   {
    "file": "shenawy-egypt-argentina.jpg",
@@ -2211,7 +2411,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/shenawy-egypt-argentina.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "shenawy-egypt-nt-crisis-denial.jpg",
@@ -2222,7 +2423,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/shenawy-egypt-nt-crisis-denial.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "stamford-bridge-chelsea.jpg",
@@ -2233,7 +2435,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/chelsea/stamford-bridge-chelsea.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "stamford-bridge-interior-2026.jpg",
@@ -2244,7 +2447,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/chelsea/stamford-bridge-interior-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "stefano-pioli-al-nassr.jpg",
@@ -2255,7 +2459,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/trabzonspor/stefano-pioli-al-nassr.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "taher-mohamed-taher-ahly-heads-2021-cwc.jpg",
@@ -2266,7 +2471,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/taher-mohamed-taher-ahly-heads-2021-cwc.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1050
   },
   {
    "file": "taher-mohamed-taher-al-ahly-2021.jpg",
@@ -2277,7 +2483,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/taher-mohamed-taher-al-ahly-2021.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1050
   },
   {
    "file": "thibaut-courtois-belgium-2026.jpg",
@@ -2288,7 +2495,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/real-madrid/thibaut-courtois-belgium-2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "trabzonspor-identity-card.jpg",
@@ -2299,7 +2507,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/trabzonspor/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "trabzonspor-medical-park-arena.jpg",
@@ -2310,7 +2519,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/trabzonspor/trabzonspor-medical-park-arena.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "trabzonspor-senol-gunes-stadium.jpg",
@@ -2321,7 +2531,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/trabzonspor/trabzonspor-senol-gunes-stadium.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "trabzonspor-tsc-mosaic.jpg",
@@ -2332,7 +2543,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/trabzonspor/trabzonspor-tsc-mosaic.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "trezeguet-best-player.jpg",
@@ -2343,7 +2555,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/trezeguet-best-player.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1280
   },
   {
    "file": "trezeguet-egypt.jpg",
@@ -2354,7 +2567,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/egypt/trezeguet-egypt.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "trezeguet-injury-worldcup.jpg",
@@ -2365,7 +2579,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/trezeguet-injury-worldcup.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "trezeguet-worldcup-argentina.jpg",
@@ -2376,7 +2591,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/trezeguet-worldcup-argentina.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "vinicius-junior-appeal-oct2026.jpg",
@@ -2387,7 +2603,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/real-madrid/vinicius-junior-appeal-oct2026.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1200
   },
   {
    "file": "virgil-van-dijk-liverpool-trophy-parade.jpg",
@@ -2398,7 +2615,8 @@
    "year": 2025,
    "is_person": true,
    "source": "team-photos/liverpool/virgil-van-dijk-liverpool-trophy-parade.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "yasser-ibrahim-alshabab-deal-off.jpg",
@@ -2409,7 +2627,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/yasser-ibrahim-alshabab-deal-off.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "yasser-ibrahim-contract-numbers.jpg",
@@ -2420,7 +2639,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/yasser-ibrahim-contract-numbers.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "yasser-ibrahim-egypt-worldcup-portrait.jpg",
@@ -2431,7 +2651,8 @@
    "year": 2026,
    "is_person": true,
    "source": "team-photos/egypt/yasser-ibrahim-egypt-worldcup-portrait.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "yasser-ibrahim-fair-play-renewal.jpg",
@@ -2442,7 +2663,8 @@
    "year": 2021,
    "is_person": true,
    "source": "team-photos/al-ahly/yasser-ibrahim-fair-play-renewal.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "yasser-ibrahim-final-agreement.jpg",
@@ -2453,7 +2675,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/al-ahly/yasser-ibrahim-final-agreement.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "zamalek-caf-tifo.jpg",
@@ -2464,7 +2687,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-caf-tifo.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "zamalek-cairo-stadium-caf-scoreboard.jpg",
@@ -2475,7 +2699,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-cairo-stadium-caf-scoreboard.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "zamalek-confed-cup-2024.jpg",
@@ -2486,7 +2711,8 @@
    "year": 2024,
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-confed-cup-2024.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 999
   },
   {
    "file": "zamalek-fans-borg-el-arab-banner.jpg",
@@ -2497,7 +2723,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/zamalek-fans-borg-el-arab-banner.jpg",
-   "added": "2026-10-18"
+   "added": "2026-10-18",
+   "width": 1280
   },
   {
    "file": "zamalek-fans-tifo-cairo.jpg",
@@ -2508,7 +2735,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-fans-tifo-cairo.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "zamalek-fans-tifo-white.jpg",
@@ -2519,7 +2747,8 @@
    "year": null,
    "is_person": false,
    "source": "team-photos/zamalek/zamalek-fans-tifo-white.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "zamalek-gate-jefali-fine.jpg",
@@ -2530,7 +2759,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/zamalek-gate-jefali-fine.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1127
   },
   {
    "file": "zamalek-identity-card.jpg",
@@ -2541,7 +2771,8 @@
    "year": 2026,
    "is_person": false,
    "source": "team-photos/zamalek/identity-card.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   },
   {
    "file": "zamalek-mural-1911.jpg",
@@ -2552,7 +2783,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/zamalek-mural-1911.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1200
   },
   {
    "file": "zizo-zamalek-black-kit.jpg",
@@ -2563,7 +2795,8 @@
    "year": null,
    "is_person": true,
    "source": "team-photos/zamalek/zizo-zamalek-black-kit.jpg",
-   "added": "2026-10-13"
+   "added": "2026-10-13",
+   "width": 1600
   }
  ]
 }

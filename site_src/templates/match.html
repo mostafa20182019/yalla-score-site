@@ -3,7 +3,10 @@
    site_lib.render: break between tags, never inside a sentence. #}
 {{ page_head }}
 <nav class="crumbs"><a href="/">أخبار</a> › <a href="/matches.html">المباريات</a> › {{ comp }}</nav>
-<h1 class="page-h">مباراة {{ h_ar }} و{{ a_ar }}</h1>
+{# the H1 is the query the <title> answers («نتيجة مباراة X وY 2-1»،
+   «موعد مباراة X وY والقنوات الناقلة») - not a bare «مباراة X وY» that
+   names nothing the reader asked (SEO pass, 2026-11-04). #}
+<h1 class="page-h">{{ h1 }}</h1>
 {# .mp-hero: LIVE_JS repaints THIS row's pill/score like any match row, and
    since 2026-09-13 also the «الحالة» line of the info card below #}
 <div class="mlist mp-hero">{{ hero_row }}</div>

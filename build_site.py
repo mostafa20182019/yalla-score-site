@@ -48,7 +48,7 @@ from site_lib.stats import (  # noqa: E402,F401
     league_pcts, chart_is_current, _form_counts, _pts_phrase, _per_game)
 from site_lib.matchdata import (  # noqa: E402,F401
     score_pill, score_txt, goal_events_index, match_goals, frozen_scores_index, apply_frozen_scores,
-    match_details_index, prematch_for, absence_block, match_details_for, _min_key, _pshort,
+    match_details_index, merge_details, prematch_for, absence_block, match_details_for, _min_key, _pshort,
     _athlete_img, _pitch_rows, _rt_class, _played_names, _side_of, match_story,
     match_ratings)
 from site_lib.widgets import (  # noqa: E402,F401
@@ -177,6 +177,10 @@ def build():
     goal_events = load("goal_events.json")  # [{home, away, date, goals:[{side,player,minute,tag}]}]
     # per-match lineups/cards/subs, accumulated by fetch_data (45 days)
     _details_raw = load("match_details.json")
+    # the season's details from the D1 archive (archive-db.yml exports them
+    # nightly): the store keeps 45 days, the archive keeps the season, so an
+    # older result gets its lineups, story and reading back - and its index
+    _details_raw = merge_details(_details_raw, load("details_archive.json"))
     md_idx = match_details_index(_details_raw)
     # ONE rule for a finished match: the frozen archive first (results_archive.py,
     # 2026-09-24 - python's heir to Oracle's MATCH_RESULTS), the feed files below

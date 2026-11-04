@@ -339,6 +339,29 @@ def backfill_details(limit=DETAILS_PER_RUN):
     return note
 
 
+# ------------------------------------------------------------------ export
+def export_details(path):
+    """data/details_archive.json - every arch_details record, in the shape of
+    match_details.json's items, for the build (site_lib.matchdata.merge_details).
+    The store keeps 45 days; this keeps the season, so a result older than that
+    gets its lineups, its story and its reading back - and its page its index
+    (SEO pass, 2026-11-04: 46 Egyptian league results were NOINDEX for lack of
+    exactly this). Written by archive-db.yml after the nightly write and
+    pushed to the data store on its own (data_store.py push --only)."""
+    items = []
+    for r in store.sql("SELECT match_id, details_json FROM arch_details ORDER BY match_id"):
+        try:
+            e = json.loads(r["details_json"])
+        except (TypeError, ValueError):
+            continue
+        if e.get("date") and e.get("home") and e.get("away"):
+            items.append(e)
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump({"results": [{"items": items}]}, f, ensure_ascii=False)
+    print(f"details export: {len(items)} entries -> {os.path.relpath(path, HERE)}")
+    return len(items)
+
+
 def check():
     for r in store.sql("SELECT season, comp_label, COUNT(*) AS n, MIN(kickoff) AS first, MAX(kickoff) AS last "
                        "FROM arch_matches GROUP BY season, comp_label ORDER BY season, n DESC"):
@@ -353,11 +376,15 @@ if __name__ == "__main__":
     ap.add_argument("--check", action="store_true")
     ap.add_argument("--details", type=int, default=DETAILS_PER_RUN,
                     help="games to backfill details for after the write (0 = skip)")
+    ap.add_argument("--export", metavar="PATH",
+                    help="write arch_details as match_details items for the build (data/details_archive.json)")
     a = ap.parse_args()
     if store.backend() == "json":
         sys.exit("archive_db: no database - set CF_API_TOKEN + CF_ACCOUNT_ID + CF_D1_ID (or D1_SQLITE for a local file)")
     if a.check:
         check()
+    elif a.export:
+        export_details(a.export)
     else:
         run(seed=a.seed)
         if a.details:

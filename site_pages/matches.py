@@ -15,7 +15,7 @@ from site_lib.daylist import comp_hrefs, day_sections
 from site_lib.league_desc import matches_desc
 from site_lib.matchdata import absence_block, match_details_for, match_goals, prematch_for
 from site_lib.media import highlight_links
-from site_lib.names import _team_match, ar_team, comp_label
+from site_lib.names import _team_match, ar_team, ar_team_in, comp_label
 from site_lib.predictions import pred_block, pred_pop
 from site_lib.reads import post_match_read, pre_match_read
 from site_lib.render import Markup, render
@@ -178,7 +178,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
     for mid, m in sorted(m_all.items(), key=lambda kv: kv[1].get("kickoff") or ""):
         if not (m.get("home") and m.get("away") and m.get("kickoff")):
             continue
-        h_ar, a_ar = ar_team(m.get("home")), ar_team(m.get("away"))
+        # qualified names for the page text: Saudi «الأهلي» -> «الأهلي السعودي»
+        h_ar = ar_team_in(m.get("home"), m.get("competition"))
+        a_ar = ar_team_in(m.get("away"), m.get("competition"))
         comp = comp_label(m.get("competition") or "")
         st = (m.get("status") or "").upper()
         day_txt = fmt_day(m["kickoff"])
@@ -345,6 +347,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                                    (comp, SITE_BASE + murl)])
         _html = render(
             "match.html", page_head=Markup(page_head), comp=comp, h_ar=h_ar, a_ar=a_ar,
+            h1=title.split(" — ")[0],
             hero_row=Markup(hero_row), kickoff_info=kickoff_info, round_txt=Markup(_rd),
             when_txt=Markup(_tw), channel=str(m["channel"]) if m.get("channel") else "",
             comp_tv=COMP_TV.get(m.get("competition")) or "",
