@@ -15,6 +15,9 @@ from site_lib.today_strip import match_centre
 from site_lib.urls import match_url
 
 
+BRAND_ALIASES = ["Yalla Score", "yallascore", "yallascore.site", "يلا سكور"]
+
+
 def home_page(articles, fixtures, ge_idx, matches, standings):
     """/ - the match centre and nothing else (user, 2026-10-26: phones first,
     then the desktop «دى هتكون الرئيسية، والاخبار اللى تحت تظهر فى تاب اسمها
@@ -31,11 +34,14 @@ def home_page(articles, fixtures, ge_idx, matches, standings):
         "@graph": [
             {"@type": "Organization", "@id": SITE_BASE + "/#org",
              "name": SITE_NAME, "url": SITE_BASE + "/",
+             # GSC 2026-11-04: «yallascore» ranks 3rd and «يلا سكور» 75th for
+             # our own site - the Latin and Arabic spellings are one entity
+             "alternateName": BRAND_ALIASES,
              "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"},
              "sameAs": [FB_PAGE_URL, TG_CHANNEL_URL],
              "email": "yallascore.eg@gmail.com"},
             {"@type": "WebSite", "@id": SITE_BASE + "/#website",
-             "name": SITE_NAME, "url": SITE_BASE + "/",
+             "name": SITE_NAME, "alternateName": BRAND_ALIASES, "url": SITE_BASE + "/",
              "inLanguage": "ar", "description": strip_tags(SITE_DESC),
              "publisher": {"@id": SITE_BASE + "/#org"}}]})
     ad = adsense_slot()
