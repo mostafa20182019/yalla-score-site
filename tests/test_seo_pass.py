@@ -112,6 +112,21 @@ ok("2i push --only writes the named file and keeps the store's copy of the rest"
    rc == 0 and b"STALE" not in after["matches.json"] and b"fresh" in after["matches.json"]
    and after.get("details_archive.json") and b"2026-08-21" in after["details_archive.json"])
 
+# a plain push from a job whose data/ lacks a store file keeps the store's
+# copy - the archive export was lost exactly this way on its first day
+os.remove(os.path.join(DS.DATA, "details_archive.json"))
+_w("matches.json", {"results": [{"items": [{"match_id": "fresher"}]}]})
+with open(DS.STATE, encoding="utf-8") as f:
+    _st = json.load(f)
+_st["remote_ver"] = "stale"                    # pulled before someone else pushed
+with open(DS.STATE, "w", encoding="utf-8") as f:
+    json.dump(_st, f)
+rc = DS.push()
+_, after = DS.remote_get()
+ok("2j a plain push never drops a store file the job did not have (the union rule)",
+   rc == 0 and after.get("details_archive.json") and b"2026-08-21" in after["details_archive.json"]
+   and b"fresher" in after["matches.json"])
+
 # ---- 3. the paginated news archives ----------------------------------------
 import site_lib.shell as SH                                      # noqa: E402
 import site_pages.articles as AP                                 # noqa: E402

@@ -266,9 +266,14 @@ def push(seed=False, by=None, only=None):
         return 2
     meta, remote = remote_get()
     if meta is not None:
-        if only:
-            for n, b in remote.items():
-                local.setdefault(n, b)
+        # A file the store holds and this job does not is KEPT, on every push:
+        # the bundle is the union, never "whatever this checkout has". The
+        # first archive export (2026-11-04) was dropped minutes later by a
+        # publish run that had pulled before it and pushed after it - its
+        # data/ simply lacked details_archive.json. (--only relies on the same
+        # rule for every file but the named ones.)
+        for n, b in remote.items():
+            local.setdefault(n, b)
         probs = shrink_problems(local, remote)
         if probs:
             print("::error::refusing to push - an accumulating file shrank: " + "; ".join(probs))
