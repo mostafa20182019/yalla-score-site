@@ -259,7 +259,7 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
                 max_w=640, size=34, weight="Regular")
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
     bs = 52
-    ball = icon.crop((218, 105, 806, 693)).resize((bs, bs), Image.LANCZOS)
+    ball = icon.crop((0, 0, 1024, 1024)).resize((bs, bs), Image.LANCZOS)
     m = Image.new("L", (bs, bs), 0)
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
     img.paste(ball, (x1 - bs, 480), m)
@@ -336,7 +336,7 @@ def render_club(name, out, badge=None, comp=None, label=""):
     x0, _, x1, _ = SAFE
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
     bs = 52
-    ball = icon.crop((218, 105, 806, 693)).resize((bs, bs), Image.LANCZOS)
+    ball = icon.crop((0, 0, 1024, 1024)).resize((bs, bs), Image.LANCZOS)
     m = Image.new("L", (bs, bs), 0)
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
     img.paste(ball, (x1 - bs, 480), m)

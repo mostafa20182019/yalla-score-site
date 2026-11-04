@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""Redraw the favicon as OUR ball, filling the whole canvas.
+"""SUPERSEDED 2026-11-04 by tools/make_tiger_icons.py - the tiger replaced
+the ball. Running this script puts the OLD ball icons back.
+
+Redraw the favicon as OUR ball, filling the whole canvas.
 
 What was wrong: the icon was the ball INVERTED - a solid brand-blue disc with
 white panels - while the ball everyone sees on the site (the app icon, the

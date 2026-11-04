@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-"""The icons web push needs, drawn from the favicon's own geometry.
+"""SUPERSEDED 2026-11-04 by tools/make_tiger_icons.py - the tiger replaced
+the ball. Running this script puts the OLD ball icons back.
+
+The icons web push needs, drawn from the favicon's own geometry.
 
     python tools/make_push_icons.py
 

@@ -170,7 +170,7 @@ def render(m, games, out, when="", official=False):
 
     # brand + title
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
-    ball = icon.crop((218, 105, 806, 693)).resize((52, 52), Image.LANCZOS)
+    ball = icon.crop((0, 0, 1024, 1024)).resize((52, 52), Image.LANCZOS)
     bm = Image.new("L", (52, 52), 0)
     ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
     img.paste(ball, (W - 52 - 40, 36), bm)

@@ -100,7 +100,7 @@ def render(ev, out=None):
 
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
     def ball(size, cx, cy):
-        b = icon.crop((218, 105, 806, 693)).resize((size, size), Image.LANCZOS)
+        b = icon.crop((0, 0, 1024, 1024)).resize((size, size), Image.LANCZOS)
         m = Image.new("L", (size, size), 0)
         ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
         img.paste(b, (cx - size // 2, cy - size // 2), m)
@@ -223,7 +223,7 @@ def render_whistle(ev, out=None):
         return f
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
     def ball(size, cx, cy):
-        b = icon.crop((218, 105, 806, 693)).resize((size, size), Image.LANCZOS)
+        b = icon.crop((0, 0, 1024, 1024)).resize((size, size), Image.LANCZOS)
         m = Image.new("L", (size, size), 0)
         ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
         img.paste(b, (cx - size // 2, cy - size // 2), m)

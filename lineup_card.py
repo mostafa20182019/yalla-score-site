@@ -343,7 +343,7 @@ def render(data, out, photos_on=True):
     # the rule with the ball logo, then the two clubs (crest, name, formation)
     icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
     def ball(size, bx, by):
-        b = icon.crop((218, 105, 806, 693)).resize((size, size), Image.LANCZOS)
+        b = icon.crop((0, 0, 1024, 1024)).resize((size, size), Image.LANCZOS)
         m = Image.new("L", (size, size), 0)
         ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
         img.paste(b, (bx - size // 2, by - size // 2), m)
