@@ -169,11 +169,11 @@ def render(m, games, out, when="", official=False):
         d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=WHITE, width=6)
 
     # brand + title
-    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
-    ball = icon.crop((0, 0, 1024, 1024)).resize((52, 52), Image.LANCZOS)
+    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    ball = icon.resize((52, 52), Image.LANCZOS)
     bm = Image.new("L", (52, 52), 0)
     ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
-    img.paste(ball, (W - 52 - 40, 36), bm)
+    img.paste(ball, (W - 52 - 40, 36), ball)
     text_r(W - 40 - 52 - 12, 40, "يلا سكور", FC.font("ExtraBold", 34))
     sub = " · ".join(x for x in (comp_label(m.get("competition")), when) if x)
     if sub:

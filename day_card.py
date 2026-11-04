@@ -101,11 +101,11 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
             d.text((cx - d.textlength(s, font=f) / 2, cy - r * 0.6), s, font=f, fill=(16, 62, 108))
 
     # brand + title
-    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
-    ball = icon.crop((0, 0, 1024, 1024)).resize((52, 52), Image.LANCZOS)
+    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    ball = icon.resize((52, 52), Image.LANCZOS)
     bm = Image.new("L", (52, 52), 0)
     ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
-    img.paste(ball, (W - 52 - 40, 36), bm)
+    img.paste(ball, (W - 52 - 40, 36), ball)
     text_r(W - 40 - 52 - 12, 40, "يلا سكور", FC.font("ExtraBold", 34))
     when = MC.when_ar(date, None)
     text_l(40, 46, when, FC.font("Bold", 26), SOFT)

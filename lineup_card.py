@@ -341,12 +341,12 @@ def render(data, out, photos_on=True):
     # the header in the goal card's style (user, 2026-10-17: «نفس الصورة لبوست
     # التشكيلة»): the brand centred at the top, the big shadowed headline,
     # the rule with the ball logo, then the two clubs (crest, name, formation)
-    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
+    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
     def ball(size, bx, by):
-        b = icon.crop((0, 0, 1024, 1024)).resize((size, size), Image.LANCZOS)
+        b = icon.resize((size, size), Image.LANCZOS)
         m = Image.new("L", (size, size), 0)
         ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
-        img.paste(b, (bx - size // 2, by - size // 2), m)
+        img.paste(b, (bx - size // 2, by - size // 2), b)
     fb = FC.font("ExtraBold", 40)
     bn = FC.ar("يلا سكور")
     bw = d.textlength(bn, font=fb)

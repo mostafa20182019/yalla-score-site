@@ -257,12 +257,12 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
     if bottom:
         _text_c(d, FC, W // 2, 486, bottom, FC.font("Regular", 34), (235, 244, 251),
                 max_w=640, size=34, weight="Regular")
-    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
+    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
     bs = 52
-    ball = icon.crop((0, 0, 1024, 1024)).resize((bs, bs), Image.LANCZOS)
+    ball = icon.resize((bs, bs), Image.LANCZOS)
     m = Image.new("L", (bs, bs), 0)
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
-    img.paste(ball, (x1 - bs, 480), m)
+    img.paste(ball, (x1 - bs, 480), ball)
     fb = FC.font("ExtraBold", 34)
     s = FC.ar("يلا سكور")
     d.text((x1 - bs - 12 - d.textlength(s, font=fb), 484), s, font=fb, fill=WHITE)
@@ -334,12 +334,12 @@ def render_club(name, out, badge=None, comp=None, label=""):
     if label:
         _text_c(d, FC, W // 2, 92, label, FC.font("Bold", 36), SOFT, max_w=700, size=36, weight="Bold")
     x0, _, x1, _ = SAFE
-    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
+    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
     bs = 52
-    ball = icon.crop((0, 0, 1024, 1024)).resize((bs, bs), Image.LANCZOS)
+    ball = icon.resize((bs, bs), Image.LANCZOS)
     m = Image.new("L", (bs, bs), 0)
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
-    img.paste(ball, (x1 - bs, 480), m)
+    img.paste(ball, (x1 - bs, 480), ball)
     fb = FC.font("ExtraBold", 34)
     sname = FC.ar("يلا سكور")
     d.text((x1 - bs - 12 - d.textlength(sname, font=fb), 484), sname, font=fb, fill=WHITE)

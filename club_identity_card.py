@@ -127,12 +127,12 @@ def render(name, out, tagline="", colour=None, badge=None, bare=False):
         MC._text_c(d, FC, cx, 90, tagline, FC.font("Bold", 38), soft, max_w=800, size=38, weight="Bold")
     WHITE_, SOFT_ = text, soft                         # the brand row follows the ink
     x0, _, x1, _ = SAFE
-    icon = Image.open(os.path.join(HERE, "assets-src", "app-icon-1024.png")).convert("RGB")
+    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
     bs = 52
-    ball = icon.crop((0, 0, 1024, 1024)).resize((bs, bs), Image.LANCZOS)
+    ball = icon.resize((bs, bs), Image.LANCZOS)
     m = Image.new("L", (bs, bs), 0)
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
-    img.paste(ball, (x1 - bs, 480), m)
+    img.paste(ball, (x1 - bs, 480), ball)
     fb = FC.font("ExtraBold", 34)
     s = FC.ar("يلا سكور")
     d.text((x1 - bs - 12 - d.textlength(s, font=fb), 484), s, font=fb, fill=WHITE_)

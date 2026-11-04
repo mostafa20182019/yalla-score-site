@@ -6,8 +6,8 @@
 
 One geometry, drawn here as SVG, every file below rendered from it:
 
-  assets-src/favicon.svg        the source, facing LEFT (the site is RTL)
-  assets-src/favicon.png  192   header logo + <link rel=icon>
+  assets-src/favicon.svg        the source, facing LEFT (the site is RTL), no tile
+  assets-src/favicon.png  192   <link rel=icon> - the head alone, transparent
   assets-src/favicon.ico        16/32/48/64 - /favicon.ico for Google's fetcher
   assets-src/logo.png     192   publisher logo (NewsArticle / RSS)
   assets-src/icon-192.png       home-screen + notification icon. "maskable":
@@ -15,7 +15,8 @@ One geometry, drawn here as SVG, every file below rendered from it:
                                 is drawn smaller there
   assets-src/badge-96.png       status-bar badge: Android draws only the ALPHA,
                                 so it is a white glyph with the stripes as holes
-  assets-src/app-icon-1024.png  the brand corner on the Facebook cards
+  assets-src/app-icon-1024.png  the tile at full size (app-store style)
+  assets-src/tiger-head-512.png the brand corner on the Facebook cards
   assets-src/brand-tiger.png 128  the header logo: the head alone, transparent
   assets-src/fb-profile-1024.png  facing RIGHT - for the Facebook page photo,
                                 uploaded by hand
@@ -114,14 +115,12 @@ def render(svg_text, size=1024, transparent=False):
 
 def main():
     with open(os.path.join(OUT, "favicon.svg"), "w", encoding="utf-8") as f:
-        f.write(svg(left=True))
+        f.write(svg(left=True, bg=False))
     left = render(svg(left=True))
     mask = render(svg(left=True, scale=0.76))          # inside the 80% safe zone
     right = render(svg(left=False))
     glyph = render(svg(left=True, bg=False, bw=True, scale=0.92)).convert("L")
     out = {}
-    out["favicon.png"] = left.resize((192, 192), Image.LANCZOS)
-    out["logo.png"] = out["favicon.png"]
     out["icon-192.png"] = mask.resize((192, 192), Image.LANCZOS).convert("RGB")
     out["icon-512.png"] = mask.resize((512, 512), Image.LANCZOS).convert("RGB")
     out["app-icon-1024.png"] = left.convert("RGB")
@@ -137,9 +136,15 @@ def main():
     sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
     sq.alpha_composite(head, ((side - head.size[0]) // 2, (side - head.size[1]) // 2))
     out["brand-tiger.png"] = sq.resize((128, 128), Image.LANCZOS)
+    # 2026-11-04 (user: «النمر فقط من غير خلفية»): the tab icon, the logo and
+    # the cards' brand corner are the head alone too. Only the home-screen
+    # icons and the push badge keep a tile - the OS fills transparency there.
+    out["favicon.png"] = sq.resize((192, 192), Image.LANCZOS)
+    out["logo.png"] = out["favicon.png"]
+    out["tiger-head-512.png"] = sq.resize((512, 512), Image.LANCZOS)
     for name, im in out.items():
         im.save(os.path.join(OUT, name))
-    left.resize((256, 256), Image.LANCZOS).save(
+    sq.resize((256, 256), Image.LANCZOS).save(
         os.path.join(OUT, "favicon.ico"), sizes=[(16, 16), (32, 32), (48, 48), (64, 64)])
     for name in list(out) + ["favicon.ico", "favicon.svg"]:
         p = os.path.join(OUT, name)
