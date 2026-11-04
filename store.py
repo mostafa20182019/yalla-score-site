@@ -1,4 +1,4 @@
-"""State store for Yalla Score — Cloudflare D1, with a JSON fallback.
+"""State store for Elgoon — Cloudflare D1, with a JSON fallback.
 
 The one small module the whole D1 decision rests on: every caller talks to the
 functions here, so swapping the backend later is a change in ONE file.

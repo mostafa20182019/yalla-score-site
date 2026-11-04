@@ -54,7 +54,7 @@ ck("1b ...and nothing reached media/", not os.path.isdir(media) or not os.listdi
 ck("1c ...and no registry was written", not os.path.exists(reg))
 
 # ------------------------------------------------------ 2. the folder default
-credits(ahly, "# تعليق\n* | الصورة: من أرشيف يلا سكور | 2026\n")
+credits(ahly, "# تعليق\n* | الصورة: من أرشيف الجون | 2026\n")
 r = run(check=True)
 ck("2a --check reports the add", len(r["added"]) == 1 and r["added"][0].startswith("team-photos/al-ahly/Trezeguet-2026.jpg -> media/al-ahly-trezeguet-2026.jpg"), str(r["added"]))
 ck("2b --check writes nothing", not os.path.exists(reg) and not os.path.exists(os.path.join(media, "al-ahly-trezeguet-2026.jpg")))
@@ -68,7 +68,7 @@ with Image.open(os.path.join(ahly, "Trezeguet-2026.jpg")) as im:
 d = json.load(open(reg, encoding="utf-8"))
 p = d["photos"][0]
 ck("2f registry record carries file/credit/club/year/source", (p["file"], p["credit"], p["club"], p["year"], p["source"]) ==
-   ("al-ahly-trezeguet-2026.jpg", "الصورة: من أرشيف يلا سكور", "الأهلي", 2026, "team-photos/al-ahly/Trezeguet-2026.jpg"))
+   ("al-ahly-trezeguet-2026.jpg", "الصورة: من أرشيف الجون", "الأهلي", 2026, "team-photos/al-ahly/Trezeguet-2026.jpg"))
 ck("2g no subject -> the club itself, not a person", p["subject"] == "الأهلي" and p["is_person"] is False)
 
 # ---------------------------------------------- 3. idempotent + credit update
@@ -76,7 +76,7 @@ before = os.path.getmtime(f)
 r = run()
 ck("3a a second run adds nothing", r["added"] == [] and r["kept"] == 1)
 ck("3b ...and does not rewrite the media file", os.path.getmtime(f) == before)
-credits(ahly, "* | الصورة: من أرشيف يلا سكور | 2026\n"
+credits(ahly, "* | الصورة: من أرشيف الجون | 2026\n"
               "Trezeguet-2026.jpg | الصورة: تريزيجيه في تدريبات الأهلي، رخصة CC BY 4.0 | 2025 | تريزيجيه\n")
 r = run()
 p = json.load(open(reg, encoding="utf-8"))["photos"][0]

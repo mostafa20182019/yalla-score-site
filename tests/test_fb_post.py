@@ -38,13 +38,13 @@ def fake_urlopen(req, timeout=0):
         link = url.split("?")[0]
         if SITE_404.get(link, 0) > 0:
             SITE_404[link] -= 1
-            return FakeResp(f"<title>{fp.NOT_FOUND_MARK} — يلا سكور</title>".encode())
+            return FakeResp(f"<title>{fp.NOT_FOUND_MARK} — الجون</title>".encode())
         return FakeResp(b"<title>Real article</title>")
     if url.rstrip("/") == fp.GRAPH:                           # scrape
         link = urllib.parse.parse_qs(body)["id"][0]
         if FB_404.get(link, 0) > 0:
             FB_404[link] -= 1
-            return FakeResp(json.dumps({"title": f"{fp.NOT_FOUND_MARK} — يلا سكور"}).encode())
+            return FakeResp(json.dumps({"title": f"{fp.NOT_FOUND_MARK} — الجون"}).encode())
         return FakeResp(json.dumps({"title": "scraped title"}).encode())
     return FakeResp(json.dumps({"id": f"POST_{len(calls)}"}).encode())
 import urllib.parse
@@ -76,26 +76,26 @@ L = lambda i: f"{fp.SITE}/a/{i}"
 # 1) backlog of 5 fresh articles → oldest 3 posted in order, each live-checked + scraped first
 items = [A(362, 0.5), A(361, 0.8), A(360, 1.7), A(359, 2.6), A(358, 4.1)]
 run(items)
-assert feed_links() == [f"https%3A%2F%2Fyallascore.site%2Fa%2F{i}" for i in (358, 359, 360)], feed_links()
+assert feed_links() == [f"https%3A%2F%2Felgoon.com%2Fa%2F{i}" for i in (358, 359, 360)], feed_links()
 assert posted_ids() == ["358", "359", "360"] and all(state()[k]["og_ok"] for k in posted_ids())
 assert live_checks_of(358) == 1 and scrapes_of(358) == 1
 print("1 OK: backlog → oldest 3 posted, live-checked and scraped, og_ok recorded")
 
 # 2) next run → the remaining 2
 run(items)
-assert feed_links() == [f"https%3A%2F%2Fyallascore.site%2Fa%2F{i}" for i in (361, 362)]
+assert feed_links() == [f"https%3A%2F%2Felgoon.com%2Fa%2F{i}" for i in (361, 362)]
 print("2 OK: remaining two posted")
 
 # 3) edge lag: SITE answers 404 twice, then the page → wait, then post
 SITE_404[L(370)] = 2
 run([A(370, 0.3)])
-assert live_checks_of(370) == 3 and feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F370"]
+assert live_checks_of(370) == 3 and feed_links() == ["https%3A%2F%2Felgoon.com%2Fa%2F370"]
 print("3 OK: site not live yet → waited 2 tries, then posted")
 
 # 4) Facebook's crawler still sees the 404 twice, then the page → retried scrape, posted
 FB_404[L(371)] = 2
 run([A(371, 0.3)])
-assert scrapes_of(371) == 3 and feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F371"]
+assert scrapes_of(371) == 3 and feed_links() == ["https%3A%2F%2Felgoon.com%2Fa%2F371"]
 print("4 OK: FB saw 404 twice → re-scraped, then posted")
 
 # 5) Facebook keeps seeing the 404 → DEFERRED: no post, not recorded (retried next run)
@@ -104,7 +104,7 @@ run([A(372, 0.3)])
 assert feed_links() == [] and "372" not in posted_ids() and scrapes_of(372) == fp.SCRAPE_TRIES
 FB_404[L(372)] = 0
 run([A(372, 0.4)])
-assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F372"] and "372" in posted_ids()
+assert feed_links() == ["https%3A%2F%2Felgoon.com%2Fa%2F372"] and "372" in posted_ids()
 print("5 OK: persistent 404 preview → deferred, then posted on the next run")
 
 # 6) site never comes up → deferred too
@@ -133,7 +133,7 @@ print("8 OK: old/undated skipped; no token → inert")
 
 # 9) legacy positional mode: scrape check then post top only, no state
 run([A(390, 1), A(389, 2)], argv=("0",))
-assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F390"]
+assert feed_links() == ["https%3A%2F%2Felgoon.com%2Fa%2F390"]
 assert "390" in posted_ids(), "legacy mode now records too, so --auto cannot repost it"
 print("9 OK: legacy mode posts the top article and records it")
 
@@ -153,7 +153,7 @@ print("11 OK: an article claimed by another run is never posted twice")
 
 # 12) a genuinely new article still goes out while the claimed one is skipped
 run([A(501, 1)])
-assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F501"], feed_links()
+assert feed_links() == ["https%3A%2F%2Felgoon.com%2Fa%2F501"], feed_links()
 assert "501" in posted_ids()
 print("12 OK: new article still posted next to a claimed one")
 
@@ -164,7 +164,7 @@ run([A(502, 1)])
 assert feed_links() == [] and store.get_post("article", 502) is None,     "a deferred article must not keep its claim"
 SITE_404[L(502)] = 0
 run([A(502, 1)])
-assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F502"]
+assert feed_links() == ["https%3A%2F%2Felgoon.com%2Fa%2F502"]
 print("13 OK: deferral releases the claim and the retry succeeds")
 
 # 14) an article that has failed MAX_POST_ATTEMPTS times stops eating a slot
@@ -190,7 +190,7 @@ assert len(photos) == 1 and photos[0][0] == 5002, photos
 assert photos[0][1].endswith(f"\n{fp.SITE}/a/600"), "the link must live in the caption text"
 # order-free: the three share one pub_ts to the millisecond on Windows and
 # differ by microseconds on Linux, so the posting order is not the point here
-assert sorted(feed_links()) == ["https%3A%2F%2Fyallascore.site%2Fa%2F601", "https%3A%2F%2Fyallascore.site%2Fa%2F602"], feed_links()
+assert sorted(feed_links()) == ["https%3A%2F%2Felgoon.com%2Fa%2F601", "https%3A%2F%2Felgoon.com%2Fa%2F602"], feed_links()
 assert posted_ids() == ["600", "601", "602"] and state()["600"]["post_id"] == "PHOTO_1"
 assert fp.variant({"article_id": "600"}) == "photo" and fp.variant({"article_id": "601"}) == "link"
 fp.PHOTO_AB = False
@@ -256,7 +256,7 @@ assert run(old, argv=("--repost", "687")) == 1 and feed_links() == []
 assert state()["687"]["post_id"] == "OLD_POST"
 GONE.add("OLD_POST")
 assert run(old, argv=("--repost", "687")) == 0
-assert feed_links() == ["https%3A%2F%2Fyallascore.site%2Fa%2F687"] and scrapes_of(687) >= 1, feed_links()
+assert feed_links() == ["https%3A%2F%2Felgoon.com%2Fa%2F687"] and scrapes_of(687) >= 1, feed_links()
 assert state()["687"]["post_id"] not in (None, "OLD_POST") and state()["687"]["og_ok"]
 assert run(old, argv=("--repost", "999")) == 1
 urllib.request.urlopen = _base

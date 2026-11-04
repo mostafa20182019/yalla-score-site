@@ -4,14 +4,14 @@
 site_lib/config.py for every surface it turns off.
 
 Existing articles carry prediction parts written while the model was on: 142
-bodies have an «توقع يلا سكور» / «هل أصاب توقع يلا سكور؟» section, 53 titles
-start «توقع يلا سكور:», 87 FAQs ask what the model said, and most of their
+bodies have an «توقع الجون» / «هل أصاب توقع الجون؟» section, 53 titles
+start «توقع الجون:», 87 FAQs ask what the model said, and most of their
 Facebook texts carry a «🤖» model line. hide_predictions() takes those parts
 out IN MEMORY at build time - D1 and the export keep the full text, so turning
 the switch back on restores every article exactly as it was.
 
-The rules are deliberately narrow: our model's own words («توقع يلا سكور»,
-«نموذج يلا سكور», «رجّح النموذج»…), its percentages («احتمال … 58%»), the
+The rules are deliberately narrow: our model's own words («توقع الجون»,
+«نموذج الجون», «رجّح النموذج»…), its percentages («احتمال … 58%»), the
 betting disclaimer that only ever travels with them, and links to the model's
 pages. «الأهداف المتوقعة» (xG) is match data, not a prediction, and stays.
 """
@@ -19,12 +19,14 @@ import re
 
 from site_lib.config import PREDICTIONS_ON
 
-MARKS = ("توقع يلا سكور", "توقعات يلا سكور", "نموذج يلا سكور", "رجّح النموذج", "يرجّح النموذج",
+# both names: articles written before the rebrand (2026-11-04) say «يلا سكور»
+MARKS = ("توقع الجون", "توقعات الجون", "نموذج الجون",
+         "توقع يلا سكور", "توقعات يلا سكور", "نموذج يلا سكور", "رجّح النموذج", "يرجّح النموذج",
          "يرجح النموذج", "رجح النموذج", "النموذج يرجّح", "النموذج يرجح", "توقع النموذج", "توقعات النموذج",
          "ليست نصيحة للمراهنة", "🤖", "/predictions", "/analysis")
 # a probability in prose: «احتمال 58%», «باحتمال 22%», «احتمالات الفوز … 40%»
 _PROB = re.compile(r"احتمال[^.<\n]{0,60}?\d+\s*[%٪]")
-_TITLE = re.compile(r"^\s*توقع(?:ات)?\s+يلا\s+سكور\s*(?:قبل\s+المباراة)?\s*[:：]\s*")
+_TITLE = re.compile(r"^\s*توقع(?:ات)?\s+(?:يلا\s+سكور|الجون)\s*(?:قبل\s+المباراة)?\s*[:：]\s*")
 _H2_SECTION = re.compile(r"<h2\b[^>]*>(?P<h>(?:(?!</h2>).)*)</h2>(?P<rest>.*?)(?=<h2\b|\Z)", re.S)
 _BLOCK = re.compile(r"<(p|li|blockquote)\b[^>]*>(?:(?!</\1>).)*</\1>", re.S)
 _EMPTY_LIST = re.compile(r"<(ul|ol)\b[^>]*>\s*</\1>", re.S)
@@ -40,7 +42,7 @@ def has_marks(text):
 
 
 def strip_title(title):
-    """«توقع يلا سكور: ليفربول يستضيف برايتون» -> «قبل المباراة: ليفربول يستضيف برايتون»."""
+    """«توقع الجون: ليفربول يستضيف برايتون» -> «قبل المباراة: ليفربول يستضيف برايتون»."""
     t = title or ""
     return _TITLE.sub("قبل المباراة: ", t) if _TITLE.match(t) else t
 
@@ -90,13 +92,13 @@ def strip_faq(faq):
     return keep
 
 
-# «…التشكيلتان والتقييمات، وتوقع يلا سكور قبل المباراة» in a source note: the
+# «…التشكيلتان والتقييمات، وتوقع الجون قبل المباراة» in a source note: the
 # phrase goes, the source (365scores, our standings page) stays
-_SRC_PHRASE = re.compile(r"\s*[،,]?\s*(?:و)?(?:سجل\s+)?(?:توقع(?:ات)?|نموذج)\s+يلا\s+سكور[^،,]*")
+_SRC_PHRASE = re.compile(r"\s*[،,]?\s*(?:و)?(?:سجل\s+)?(?:توقع(?:ات)?|نموذج)\s+(?:يلا\s+سكور|الجون)[^،,]*")
 
 
 def strip_sources(sources):
-    """A source that IS the model (its record page, «نموذج يلا سكور») goes;
+    """A source that IS the model (its record page, «نموذج الجون») goes;
     a source that only mentions it keeps its name with the phrase removed."""
     if not isinstance(sources, list):
         return sources

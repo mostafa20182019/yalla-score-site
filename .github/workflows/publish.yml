@@ -1,4 +1,4 @@
-name: Publish Yalla Score
+name: Publish Elgoon
 
 # Runs on GitHub's servers (free, no PC needed). Fetches latest news + matches,
 # rebuilds the static site, and deploys it to Cloudflare.

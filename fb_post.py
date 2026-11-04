@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Post new articles to the Yalla Score Facebook page via the Graph API.
+"""Post new articles to the Elgoon Facebook page via the Graph API.
 
 Called by .github/workflows/publish.yml AFTER the site is deployed:
 
@@ -56,9 +56,9 @@ sys.stdout.reconfigure(encoding="utf-8")
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
 import store  # noqa: E402 - needs HERE on sys.path first
-SITE = "https://yallascore.site"
+SITE = "https://elgoon.com"
 GRAPH = "https://graph.facebook.com/v23.0"
-# the Yalla Score page (2026-10-09): every post id on record starts with it.
+# the Elgoon page (2026-10-09): every post id on record starts with it.
 # --whoami refuses a token that is not THIS page's - a page token of another
 # page the same user manages posts green runs to the wrong page.
 PAGE_ID = "104238901487012"
@@ -75,7 +75,7 @@ PHOTO_AB = True
 # PREDICTION POSTS ARE OFF unless the repo variable FB_PREDICTIONS is "on"
 # (user, 2026-10-18: «مش عايز بوستات للتوقعات على الفيس بوك الفترة دى»). Covers
 # the prediction CARD post (--prediction), and the auto-posting of articles
-# that ARE a prediction: kind=analysis, a preview titled «توقع يلا سكور:», or
+# that ARE a prediction: kind=analysis, a preview titled «توقع الجون:», or
 # any article whose fb_post text carries the model line. News and match
 # reports (kind=report) always post. Flip: Settings > Secrets and variables > Actions >
 # Variables > FB_PREDICTIONS = on (both workflows pass it through).
@@ -87,7 +87,8 @@ from site_lib.config import PREDICTIONS_ON as _PRED_ON      # noqa: E402
 from site_lib.pred_off import strip_lines as _strip_pred    # noqa: E402
 if not _PRED_ON:
     FB_PREDICTIONS = False
-PREDICTION_MARKS = ("توقع يلا سكور", "نموذج يلا سكور", "توقعات يلا سكور")
+PREDICTION_MARKS = ("توقع الجون", "نموذج الجون", "توقعات الجون",
+                    "توقع يلا سكور", "نموذج يلا سكور", "توقعات يلا سكور")   # both names (rebrand 2026-11-04)
 
 
 def is_prediction_post(art):
@@ -100,7 +101,7 @@ def is_prediction_post(art):
     if (art.get("kind") or "") == "analysis":
         return True
     title = (art.get("title") or "").strip()
-    if (art.get("kind") or "") == "preview" and title.startswith("توقع يلا سكور"):
+    if (art.get("kind") or "") == "preview" and title.startswith(("توقع الجون", "توقع يلا سكور")):
         return True
     text = title + chr(10) + str(art.get("fb_post") or "")
     return any(k in text for k in PREDICTION_MARKS)
@@ -337,7 +338,7 @@ def post_article(token, art):
     message = (art.get("fb_post") or "").strip() or f"⚽ {title}\n\n{summary}\n\n\U0001f449 {link}"
     if not _PRED_ON:
         # a report written while the model was on can still carry its line
-        # («🤖 …», «هل أصاب توقع يلا سكور») - those lines never go out now
+        # («🤖 …», «هل أصاب توقع الجون») - those lines never go out now
         message = _strip_pred(message)
     if variant(art) == "photo":
         img = image_bytes(art)
@@ -520,7 +521,7 @@ def prediction_text(m, pr, tv=None):
     when = MC.when_ar(m.get("kickoff"), m.get("koff_time"))
     comp = comp_label(m.get("competition"))
     top = (pr.get("likely_scores") or [{}])[0]
-    lines = [f"توقع يلا سكور قبل المباراة: {h} × {a}",
+    lines = [f"توقع الجون قبل المباراة: {h} × {a}",
              "⚽ " + " · ".join(x for x in (when, comp, f"على {tv}" if tv else "") if x),
              f"🤖 النموذج: {h} {pr['home_win']} · تعادل {pr['draw']} · {a} {pr['away_win']}"]
     extra = []
@@ -570,7 +571,7 @@ def prediction_post(token, mid, dry=False):
         venue, feed = hb.get("venue") or "", hb.get("colors")
     except Exception:                                   # noqa: BLE001 - offline: names + our kits
         pass
-    MC.for_match(m, out, venue=venue, top_label="توقع يلا سكور", feed=feed)
+    MC.for_match(m, out, venue=venue, top_label="توقع الجون", feed=feed)
     print(text)
     print(f"[card: {out}]")
     if dry:
@@ -696,7 +697,7 @@ def h2h_post(token, which, dry=False):
 
 
 def whoami(token):
-    """Print who the token is and refuse anything but the Yalla Score page.
+    """Print who the token is and refuse anything but the Elgoon page.
     0 = the page token; 1 = no token, a user token, another page, or a dead
     token (HTTP 190). Run first in the workflow so a wrong secret fails the
     job loudly instead of posting to the wrong page for a day."""
@@ -715,7 +716,7 @@ def whoami(token):
         return 1
     who = f"{me.get('name')!r} (id {me.get('id')})"
     if str(me.get("id")) != PAGE_ID:
-        print(f"whoami: the token belongs to {who}, NOT the Yalla Score page (id {PAGE_ID}) - "
+        print(f"whoami: the token belongs to {who}, NOT the Elgoon page (id {PAGE_ID}) - "
               "paste the page's own access_token from me/accounts")
         return 1
     print(f"whoami: page token OK - {who}")
@@ -735,7 +736,7 @@ def xi_caption(data, names=True):
             lines.append("، ".join(p["name"] for p in side["players"]))
     else:
         lines = [f"📋 التشكيل الرسمي لمباراة {data['home']['name']} × {data['away']['name']}", comp]
-    lines.append(f"المباراة لحظة بلحظة: https://yallascore.site/m/{data['gid']}")
+    lines.append(f"المباراة لحظة بلحظة: https://elgoon.com/m/{data['gid']}")
     tag = lambda n: "#" + n.strip().replace(" ", "_")
     lines.append(f"#يلا_سكور {tag(data['home']['name'])} {tag(data['away']['name'])}")
     return "\n".join(x for x in lines if x)
@@ -828,7 +829,7 @@ def goal_caption(g, ev):
     if ev.get("t") == "عكسية": who.append("هدف عكسي")
     if who: lines.append("🥅 " + " · ".join(who))
     comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
-    lines.append((f"{comp} · " if comp else "") + f"المباراة لحظة بلحظة: https://yallascore.site/m/{g['id']}")
+    lines.append((f"{comp} · " if comp else "") + f"المباراة لحظة بلحظة: https://elgoon.com/m/{g['id']}")
     lines.append(f"#يلا_سكور {tag(g['h'])} {tag(g['a'])}")
     return "\n".join(lines)
 
@@ -934,7 +935,7 @@ def whistle_caption(kind, g, goals):
     if by["a"]: lines.append(f"{g['a']}: " + "، ".join(by["a"]))
     comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
     link = "المباراة لحظة بلحظة" if kind in ("ht", "ko") else "تفاصيل المباراة والهدافون"
-    lines.append((f"{comp} · " if comp else "") + f"{link}: https://yallascore.site/m/{g['id']}")
+    lines.append((f"{comp} · " if comp else "") + f"{link}: https://elgoon.com/m/{g['id']}")
     lines.append(f"#يلا_سكور {tag(g['h'])} {tag(g['a'])}")
     return "\n".join(lines)
 

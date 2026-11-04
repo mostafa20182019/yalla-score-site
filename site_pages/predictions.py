@@ -62,8 +62,8 @@ def prediction_history_page(plog, acc):
     ex = AN.extremes(plog)
     first = min(r.get("kickoff") or "" for r in rows)
     last = max(r.get("kickoff") or "" for r in rows)
-    title = f"سجل توقعات يلا سكور: الإصابات والإخفاقات كاملة — {SITE_NAME}"
-    desc = (f"كل توقع أصدره نموذج يلا سكور مُثبَّتًا قبل المباراة ومقارنًا بالنتيجة: "
+    title = f"سجل توقعات الجون: الإصابات والإخفاقات كاملة — {SITE_NAME}"
+    desc = (f"كل توقع أصدره نموذج الجون مُثبَّتًا قبل المباراة ومقارنًا بالنتيجة: "
             f"{a['n']} مباراة مقيَّمة، نسبة إصابة الاتجاه {_pct(a['hit_rate'])} مقابل "
             f"{_pct(a['home_baseline'])} لمعيار ساذج، ومعايرة الاحتمالات كاملة.")
     url = "/predictions.html"
@@ -112,7 +112,7 @@ def prediction_history_page(plog, acc):
         days[-1][2].append(Markup(_pred_item_html(e)))
 
     faq = [
-        ("هل توقعات يلا سكور دقيقة؟",
+        ("هل توقعات الجون دقيقة؟",
          f"على {a['n']} مباراة مقيَّمة أصاب النموذج اتجاه النتيجة في {_pct(a['hit_rate'])} من الحالات، "
          f"مقابل {_pct(a['home_baseline'])} لو توقعنا فوز صاحب الأرض دائمًا. الأهم أن الاحتمالات "
          f"نفسها مُعايَرة: متوسط انحرافها {cal['ece'] * 100:.1f} نقطة مئوية عمّا يحدث فعلًا."),
@@ -162,7 +162,7 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
     comps = [c for c in COMP_ORDER if c in tstats] + [c for c in tstats if c not in COMP_ORDER]
     n_pred = sum(len(v) for v in by_comp.values())
     # ---- hub ----
-    page_head = head("توقعات المباريات بالأرقام — يلا سكور",
+    page_head = head("توقعات المباريات بالأرقام — الجون",
                      "توقعات مباريات الأسبوع باحتمالات مبنية على بيانات الموسم، تقييم قوة الأندية، تحليل اللاعبين، "
                      "وسجل شفاف لدقة التوقعات في الدوري المصري وأبرز الدوريات.",
                      SITE_BASE + "/analysis.html", active="analysis")
@@ -219,7 +219,7 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
         stats, params = tstats[c], lparams[c]
         if not stats:
             continue
-        page_head = head(f"توقعات {label}: احتمالات المباريات وقوة الأندية واللاعبون — يلا سكور",
+        page_head = head(f"توقعات {label}: احتمالات المباريات وقوة الأندية واللاعبون — الجون",
                          f"توقعات مباريات {label} القادمة باحتمالات مبنية على نتائج الموسم، ترتيب قوة الأندية (Elo) "
                          f"ومؤشرات الهجوم والدفاع، توقيت الأهداف، وأعلى اللاعبين تقييمًا.",
                          SITE_BASE + f"/analysis/{slug}.html", active="analysis")

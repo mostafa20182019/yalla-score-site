@@ -55,7 +55,7 @@ globalThis.caches = { default: { match: async () => undefined, put: async (k, r)
 
 // ---- run ---------------------------------------------------------------------------
 const worker = (await import(new URL("../worker.js", import.meta.url).href)).default;
-const res = await worker.fetch(new Request("https://yallascore.site/live.json"), {}, { waitUntil() {} });
+const res = await worker.fetch(new Request("https://elgoon.com/live.json"), {}, { waitUntil() {} });
 const j = await res.json();
 console.log(JSON.stringify(j, null, 1));
 
@@ -112,15 +112,15 @@ assert.ok(listCalls.some(u => u.endsWith("competitions=552")) && listCalls.some(
        && listCalls.some(u => u.endsWith("competitions=627")));    // CAF Confederation Cup (2026-10-17)
 assert.equal(new Set(j.games.map(g => g.h + "|" + g.a)).size, j.games.length, "duplicated game after merge");
 // 12) one canonical origin (2026-10-18): http and www both 301 straight to https on the bare host
-for (const [from, to] of [["http://yallascore.site/m/1?b=2", "https://yallascore.site/m/1?b=2"],
-                          ["http://www.yallascore.site/", "https://yallascore.site/"],
-                          ["https://www.yallascore.site/news", "https://yallascore.site/news"],
-                          ["https://yalla-score.someone.workers.dev/a/5", "https://yallascore.site/a/5"]]) {
+for (const [from, to] of [["http://elgoon.com/m/1?b=2", "https://elgoon.com/m/1?b=2"],
+                          ["http://www.elgoon.com/", "https://elgoon.com/"],
+                          ["https://www.elgoon.com/news", "https://elgoon.com/news"],
+                          ["https://yalla-score.someone.workers.dev/a/5", "https://elgoon.com/a/5"]]) {
   const r = await worker.fetch(new Request(from), {}, { waitUntil() {} });
   assert.equal(r.status, 301, from);
   assert.equal(r.headers.get("location"), to, from);
 }
-const okRes = await worker.fetch(new Request("https://yallascore.site/live.json"), {}, { waitUntil() {} });
+const okRes = await worker.fetch(new Request("https://elgoon.com/live.json"), {}, { waitUntil() {} });
 assert.notEqual(okRes.status, 301, "the canonical origin itself is never redirected");
 // 13) a missing asset is never cached for a week (2026-10-18): root-extras/_headers
 // gives /media/* max-age=604800 and the assets layer puts it on the 404 too, so the
@@ -130,11 +130,11 @@ assert.notEqual(okRes.status, 301, "the canonical origin itself is never redirec
   const ASSETS = { fetch: async (req) => new URL(req.url).pathname.endsWith("missing.jpg")
     ? new Response("not found", { status: 404, headers: { "cache-control": "public, max-age=0, must-revalidate, public, max-age=604800" } })
     : new Response("jpg", { status: 200, headers: { "cache-control": "public, max-age=604800" } }) };
-  const miss = await worker.fetch(new Request("https://yallascore.site/media/missing.jpg"), { ASSETS }, { waitUntil() {} });
+  const miss = await worker.fetch(new Request("https://elgoon.com/media/missing.jpg"), { ASSETS }, { waitUntil() {} });
   assert.equal(miss.status, 404);
   assert.equal(miss.headers.get("cache-control"), "no-store", "a 404 must not inherit the 7-day media cache");
   assert.equal(await miss.text(), "not found", "the body passes through");
-  const hitRes = await worker.fetch(new Request("https://yallascore.site/media/found.jpg"), { ASSETS }, { waitUntil() {} });
+  const hitRes = await worker.fetch(new Request("https://elgoon.com/media/found.jpg"), { ASSETS }, { waitUntil() {} });
   assert.equal(hitRes.status, 200);
   assert.equal(hitRes.headers.get("cache-control"), "public, max-age=604800", "a found file keeps its long cache");
 }

@@ -19,7 +19,7 @@ from site_lib.urls import match_url
 from site_lib.widgets import prob_bar, prob_legend
 
 
-AN_DISCLAIMER = ('التوقعات احتمالات إحصائية من نموذج يلا سكور مبنية على نتائج الموسم الحالي فقط، '
+AN_DISCLAIMER = ('التوقعات احتمالات إحصائية من نموذج الجون مبنية على نتائج الموسم الحالي فقط، '
                  'وليست نصيحة للمراهنة. كلما زاد عدد المباريات زادت دقة النموذج.')
 # Everything here is namespaced ppop-*, NOT pp-*: «.pp» and its family
 # (.pp-ava, .pp-fb) are the player markers on the pitch graphic, and the last
@@ -169,7 +169,7 @@ def why_block(m, p, ex, cal):
 
 
 def pred_block(m, p, logged, comp_stats, params=None, cal=None):
-    """«توقع يلا سكور» section on a match page. Upcoming: live model output.
+    """«توقع الجون» section on a match page. Upcoming: live model output.
     Finished (with a frozen prediction): what we said vs what happened."""
     h, a = ar_team(m.get("home")), ar_team(m.get("away"))
     st = (m.get("status") or "").upper()
@@ -183,7 +183,7 @@ def pred_block(m, p, logged, comp_stats, params=None, cal=None):
         if as_ and as_["played"]:
             facts.append(f'{esc(a)}: {_goals(as_["gf"])} له و{_goals(as_["ga"])} عليه في {AN_games(as_["played"])} '
                          f'(تقييم القوة {round(as_["elo"])})')
-        return (f'<section class="minfo predict"><h2>توقع يلا سكور لمباراة {esc(h)} و{esc(a)}</h2>'
+        return (f'<section class="minfo predict"><h2>توقع الجون لمباراة {esc(h)} و{esc(a)}</h2>'
                 f'<div class="pd-heads"><span>{esc(h)} <b>{_pct(p["ph"])}</b></span>'
                 f'<span>تعادل <b>{_pct(p["pd"])}</b></span><span>{esc(a)} <b>{_pct(p["pa"])}</b></span></div>'
                 + prob_bar(p) +
@@ -200,7 +200,7 @@ def pred_block(m, p, logged, comp_stats, params=None, cal=None):
         verdict = ('<span class="hit ok">✔ أصاب التوقع</span>' if logged.get("hit")
                    else '<span class="hit no">✘ لم يُصب التوقع</span>')
         fake = {"ph": logged["ph"], "pd": logged["pd"], "pa": logged["pa"]}
-        return (f'<section class="minfo predict"><h2>ماذا توقع نموذج يلا سكور قبل المباراة؟</h2>'
+        return (f'<section class="minfo predict"><h2>ماذا توقع نموذج الجون قبل المباراة؟</h2>'
                 + prob_bar(fake) +
                 f'<p class="pd-line">{prob_legend(fake, "pd-probs", h, a)}</p>'
                 f'<p class="pd-line">رجّح النموذج <b>{esc(pick_ar)}</b> باحتمال {_pct(max(fake.values()))} '

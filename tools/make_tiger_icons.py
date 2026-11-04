@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""The tiger - Yalla Score's mark since 2026-11-04 (user: «انا هستخدم الصورة d
+"""The tiger - Elgoon's mark since 2026-11-04 (user: «انا هستخدم الصورة d
 ... بس فى الموقع خليه باصص شمال»). Replaces the ball (tools/make_favicon.py).
 
     python tools/make_tiger_icons.py

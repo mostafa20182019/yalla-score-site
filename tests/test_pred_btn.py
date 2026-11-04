@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""«توقع يلا سكور» — the button on a match row, and the popup it opens.
+"""«توقع الجون» — the button on a match row, and the popup it opens.
 
 Run from the site root:  python tests/test_pred_btn.py
 

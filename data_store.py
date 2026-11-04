@@ -56,7 +56,7 @@ DATA = os.path.join(HERE, "data")
 STATE = os.path.join(DATA, ".store_state.json")
 NAMESPACE_TITLE = "yallascore-data"
 KEY = "bundle-v1"
-PUBLIC = "https://yallascore.site/data/bundle"
+PUBLIC = "https://elgoon.com/data/bundle"
 API = "https://api.cloudflare.com/client/v4/accounts/{acct}/storage/kv/namespaces"
 
 # What fetch_data.py and results_archive.py produce every run. Hand-curated

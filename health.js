@@ -156,7 +156,7 @@ const BEATS_DDL = "CREATE TABLE IF NOT EXISTS health_beats (name TEXT PRIMARY KE
 export async function gather(env) {
   let build = null;
   try {
-    const r = await env.ASSETS.fetch(new Request("https://yallascore.site/build-info.json"));
+    const r = await env.ASSETS.fetch(new Request("https://elgoon.com/build-info.json"));
     if (r.ok) build = await r.json();
   } catch (e) { /* stays null -> "deploy" warns */ }
 
@@ -184,7 +184,7 @@ export async function gather(env) {
 /* ---------------------------------------------------------------- /health */
 export async function healthResponse(env, ctx) {
   const cache = caches.default;
-  const key = new Request("https://yallascore.site/health");
+  const key = new Request("https://elgoon.com/health");
   const hit = await cache.match(key);
   if (hit) return hit;
   const verdict = evaluate(await gather(env), Date.now());
@@ -213,23 +213,23 @@ export function decideAlert(prev, verdict, now) {
   const was = (prev && prev.failing) || [];
   const same = failing.length === was.length && failing.every((k, i) => k === was[i]);
   const lines = failing.map(k => `• ${LABEL[k] || k}: ${verdict.checks[k].msg}`);
-  const link = "\nhttps://yallascore.site/health";
+  const link = "\nhttps://elgoon.com/health";
 
   if (!failing.length && !was.length) return { text: null, state: null };
   if (!failing.length) {
     const lasted = prev.since ? ` (استمرت ${ago(now - prev.since)})` : "";
-    return { text: `✅ يلا سكور رجع طبيعي${lasted}` + link, state: { failing: [], since: null, sent: now } };
+    return { text: `✅ الجون رجع طبيعي${lasted}` + link, state: { failing: [], since: null, sent: now } };
   }
   if (!was.length) {
-    return { text: "🔴 يلا سكور: مشكلة\n" + lines.join("\n") + link,
+    return { text: "🔴 الجون: مشكلة\n" + lines.join("\n") + link,
              state: { failing, since: now, sent: now } };
   }
   if (!same) {
-    return { text: "🟠 يلا سكور: تغيّرت المشكلة\n" + lines.join("\n") + link,
+    return { text: "🟠 الجون: تغيّرت المشكلة\n" + lines.join("\n") + link,
              state: { failing, since: prev.since || now, sent: now } };
   }
   if (now - (prev.sent || 0) >= LIMITS.remindEvery) {
-    return { text: `⏰ يلا سكور: المشكلة مستمرة منذ ${ago(now - (prev.since || now))}\n` + lines.join("\n") + link,
+    return { text: `⏰ الجون: المشكلة مستمرة منذ ${ago(now - (prev.since || now))}\n` + lines.join("\n") + link,
              state: { ...prev, sent: now } };
   }
   return { text: null, state: null };
@@ -276,7 +276,7 @@ export async function watchdog(env, now = Date.now()) {
   return { verdict, sent };
 }
 
-const STATE_KEY = "https://yallascore.site/__watchdog_state";
+const STATE_KEY = "https://elgoon.com/__watchdog_state";
 async function cacheState(state) {
   try {
     const cache = caches.default, key = new Request(STATE_KEY);

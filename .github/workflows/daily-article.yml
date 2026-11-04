@@ -92,7 +92,7 @@ jobs:
           git config user.name "yalla-score-bot"
           git config user.email "actions@users.noreply.github.com"
             git add data/articles.json drafts
-            git commit -m "Yalla Score: publish the draft D1 refused on an earlier slot"
+            git commit -m "Elgoon: publish the draft D1 refused on an earlier slot"
             git pull --rebase origin main
             git push origin HEAD:main
             echo "### 📤 نُشرت مسودة من تشغيل سابق" >> "$GITHUB_STEP_SUMMARY"
@@ -188,7 +188,7 @@ jobs:
           git config user.name "yalla-score-bot"
           git config user.email "actions@users.noreply.github.com"
           git add drafts media team-photos data/team_photos.json
-          git commit -m "Yalla Score: park the article D1 refused (published next slot)"
+          git commit -m "Elgoon: park the article D1 refused (published next slot)"
           git pull --rebase origin main
           git push origin HEAD:main
           echo "::warning::D1 refused the insert - the finished article is parked in drafts/ and the next slot publishes it."

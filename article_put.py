@@ -68,7 +68,9 @@ REQUIRED = ("title", "summary", "body", "author", "pub_date")
 ALLOWED = set(store.ARTICLE_FIELDS) - {"article_id"}
 
 
-OUR_HOSTS = {"yallascore.site", "old-credit-e926.workers.dev"}
+# the old names stay "ours": links inside older articles still carry them
+# (the Worker 301s them) - rebrand 2026-11-04, yallascore.site -> elgoon.com
+OUR_HOSTS = {"elgoon.com", "yallascore.site", "old-credit-e926.workers.dev"}
 
 
 def source_keys(rec):
@@ -351,7 +353,7 @@ def club_image_fallback(rec, clubs, registry_path=TEAM_PHOTOS_JSON):
         e = pool[h % len(pool)]
         out = dict(rec)
         out["image_url"] = f"{b.SITE_BASE}/media/{e['file']}"
-        out["image_credit"] = e.get("credit") or "الصورة: تصميم يلا سكور"
+        out["image_credit"] = e.get("credit") or "الصورة: تصميم الجون"
         print(f"image: placeholder replaced by the {slug} folder's {e['file']} (the club's story never ships blank)")
         return out
     return rec

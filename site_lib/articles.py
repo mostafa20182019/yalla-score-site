@@ -345,7 +345,7 @@ def ensure_match_image(m, art, status, media_dir=None):
     full = f"{SITE_BASE}/media/{fname}"
     art["image_url"] = full
     if not art.get("image_credit"):
-        art["image_credit"] = "الصورة: تصميم يلا سكور"
+        art["image_credit"] = "الصورة: تصميم الجون"
     return full
 
 

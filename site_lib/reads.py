@@ -240,7 +240,7 @@ def pre_match_read(m, h_ar, a_ar, comp_label_txt, st=None, form_map=None,
         pick = max((("H", pred["ph"]), ("D", pred["pd"]), ("A", pred["pa"])),
                    key=lambda x: x[1])
         pick_ar = {"H": f"فوز {h_ar}", "D": "التعادل", "A": f"فوز {a_ar}"}[pick[0]]
-        faq.append((f"ما توقع يلا سكور لمباراة {h_ar} و{a_ar}؟",
+        faq.append((f"ما توقع الجون لمباراة {h_ar} و{a_ar}؟",
                     f"يرجّح النموذج {pick_ar} باحتمال {_pct(pick[1])}، والأهداف "
                     f"المتوقعة {pred['lh']:.1f} مقابل {pred['la']:.1f}. "
                     "هذه احتمالات إحصائية وليست نصيحة للمراهنة."))

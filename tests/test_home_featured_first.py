@@ -29,19 +29,19 @@ def P(i, title, kind="preview"):
     return {"article_id": str(i), "title": title, "summary": "", "kind": kind, "match_id": str(1000 + i)}
 
 # newest first, as the build hands them over
-arts = [P(9, "توقع يلا سكور: ليخ بوزنان يواجه باير ليفركوزن في الدوري الأوروبي"),
-        P(8, "توقع يلا سكور: الجيش الرواندي يواجه الزمالك في دوري أبطال أفريقيا"),
-        P(7, "توقع يلا سكور: المريخ بنتو × بيراميدز في دوري أبطال أفريقيا"),
+arts = [P(9, "توقع الجون: ليخ بوزنان يواجه باير ليفركوزن في الدوري الأوروبي"),
+        P(8, "توقع الجون: الجيش الرواندي يواجه الزمالك في دوري أبطال أفريقيا"),
+        P(7, "توقع الجون: المريخ بنتو × بيراميدز في دوري أبطال أفريقيا"),
         P(6, "تقرير: أستون فيلا يسحق فنربخشة 6-0 في دوري أبطال أوروبا", "report"),
-        P(5, "توقع يلا سكور: ليفربول يواجه برينتفورد في الدوري الإنجليزي"),
+        P(5, "توقع الجون: ليفربول يواجه برينتفورد في الدوري الإنجليزي"),
         P(4, "تقرير: بودو جليمت يصدم بوروسيا دورتموند 1-0", "report")]
 
 ck("1a tiers: Egyptian curated 0, other curated 1, rest 2",
    [curated_tier(a) for a in arts] == [2, 0, 0, 2, 1, 2])
 ck("1b the Saudi «الأهلي» is not the Egyptian club",
-   curated_tier(P(3, "توقع يلا سكور: الفتح × الأهلي في دوري روشن السعودي")) == 1 or
-   curated_tier(P(3, "توقع يلا سكور: الفتح × الأهلي السعودي في دوري روشن")) == 2)
-ck("1c the national team counts as Egyptian", curated_tier(P(2, "توقع يلا سكور: منتخب مصر يواجه غانا في تصفيات كأس الأمم")) == 0)
+   curated_tier(P(3, "توقع الجون: الفتح × الأهلي في دوري روشن السعودي")) == 1 or
+   curated_tier(P(3, "توقع الجون: الفتح × الأهلي السعودي في دوري روشن")) == 2)
+ck("1c the national team counts as Egyptian", curated_tier(P(2, "توقع الجون: منتخب مصر يواجه غانا في تصفيات كأس الأمم")) == 0)
 
 lead, rest = C.home_insights(arts, pinned=False, kinds=ALL_KINDS)
 ids = [a["article_id"] for a in rest]
@@ -81,9 +81,9 @@ ck("5b a preview is stale the moment its match is over", "9" in st2)
 st3 = stale_analyses(arts, [MM(9, "2026-10-15", "14:00")] + ms[1:], now=now)
 ck("5c ...or 3 h past kick-off when the feed never said FINISHED", "9" in st3)
 old = [dict(P(21, "تقرير: الزمالك يسحق إيه إس بورت 4-0", "report"), pub_ts="2026-09-26T23:10:00+03:00"),
-       dict(P(22, "توقع يلا سكور: الزمالك يواجه إيه إس بورت"), pub_ts="2026-10-15T09:00:00+03:00"),
+       dict(P(22, "توقع الجون: الزمالك يواجه إيه إس بورت"), pub_ts="2026-10-15T09:00:00+03:00"),
        {"article_id": "23", "title": "الجولة 5 من الدوري المصري بالأرقام", "summary": "", "pub_date": "2026-10-01",
-        "sources": [{"name": "x", "url": "https://yallascore.site/", "note": "round:egypt:5"}]}]
+        "sources": [{"name": "x", "url": "https://elgoon.com/", "note": "round:egypt:5"}]}]
 st4 = stale_analyses(old, [], now=now)
 ck("5d no match to read: the piece's own age decides (48 h) - old report + old round piece stale, this morning's preview fresh",
    st4 == {"21", "23"}, str(st4))

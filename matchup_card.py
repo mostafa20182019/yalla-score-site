@@ -10,7 +10,7 @@ centre circle, each club as its CREST inside a white ring (user decision
 2026-10-08 evening, «شعارات في كل البطاقات»: the same crests the site shows
 beside every score, from the crest cache) - or, when the fixture carries
 no badge our cache can rasterise, a DISC IN ITS COLOURS - the two names, the competition and round in the middle, date / time / venue
-underneath, «يلا سكور» + the URL on the same bottom row. The middle shows «×»
+underneath, «الجون» + the URL on the same bottom row. The middle shows «×»
 before kick-off and the score once the match is over (a report).
 
 EVERYTHING sits inside SAFE = (x 215-1385, y 140-540) (2026-10-08, user:
@@ -264,9 +264,9 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
     img.paste(ball, (x1 - bs, 480), ball)
     fb = FC.font("ExtraBold", 34)
-    s = FC.ar("يلا سكور")
+    s = FC.ar("الجون")
     d.text((x1 - bs - 12 - d.textlength(s, font=fb), 484), s, font=fb, fill=WHITE)
-    d.text((x0, 492), "yallascore.site", font=FC.font("Bold", 28), fill=SOFT)
+    d.text((x0, 492), "elgoon.com", font=FC.font("Bold", 28), fill=SOFT)
     if out.lower().endswith((".jpg", ".jpeg")):
         img.save(out, quality=90, optimize=True)
     else:
@@ -341,9 +341,9 @@ def render_club(name, out, badge=None, comp=None, label=""):
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
     img.paste(ball, (x1 - bs, 480), ball)
     fb = FC.font("ExtraBold", 34)
-    sname = FC.ar("يلا سكور")
+    sname = FC.ar("الجون")
     d.text((x1 - bs - 12 - d.textlength(sname, font=fb), 484), sname, font=fb, fill=WHITE)
-    d.text((x0, 492), "yallascore.site", font=FC.font("Bold", 28), fill=SOFT)
+    d.text((x0, 492), "elgoon.com", font=FC.font("Bold", 28), fill=SOFT)
     if out.lower().endswith((".jpg", ".jpeg")):
         img.save(out, quality=90, optimize=True)
     else:

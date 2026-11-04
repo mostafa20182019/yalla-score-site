@@ -147,7 +147,7 @@ try:
        p1.count('class="al-row"') == 40 and p2.count('class="al-row"') == 40 and p3.count('class="al-row"') == 5
        and not os.path.exists(os.path.join(dist, "news", "p4.html")))
     ok("3b the first page keeps its title; later pages say which page they are",
-       "<title>كل الأخبار — يلا سكور</title>" in p1 and "صفحة 2" in p2 and 'rel="canonical" href="https://yallascore.site/news/p2"' in p2)
+       "<title>كل الأخبار — الجون</title>" in p1 and "صفحة 2" in p2 and 'rel="canonical" href="https://elgoon.com/news/p2"' in p2)
     ok("3c «الأحدث» / «الأقدم» walk the archive: p1 has only الأقدم, p3 only الأحدث",
        'href="/news/p2">الأقدم' in p1 and "الأحدث" not in p1.split('class="pager"')[1]
        and 'href="/news/p2">الأحدث' in p3 and "الأقدم" not in p3.split('class="pager"')[1]

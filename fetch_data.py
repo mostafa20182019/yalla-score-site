@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Fetch Yalla Score content DIRECTLY from the sources (no Oracle), so the site can
+Fetch Elgoon content DIRECTLY from the sources (no Oracle), so the site can
 be rebuilt anywhere (e.g. GitHub Actions) 24/7 without the local PC.
 
 Writes data/headlines.json and data/matches.json in the SAME
@@ -21,7 +21,7 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "data")
 FD_TOKEN = os.environ.get("FD_TOKEN", "").strip()
 CAIRO = ZoneInfo("Africa/Cairo")
-UA = "Mozilla/5.0 (YallaScore static-site builder)"
+UA = "Mozilla/5.0 (Elgoon static-site builder)"
 FD_COMPS = ["CL", "PL", "PD", "SA", "BL1", "FL1"]  # UCL, PL, La Liga, Serie A, Bundesliga, Ligue 1 (WC removed 2026-08-12: tournament over)
 
 def http_get(url, headers=None, timeout=40, retries=2):
@@ -382,7 +382,7 @@ def _norm_status(s):
     return "UPCOMING"
 
 
-LIVE_JSON_URL = "https://yallascore.site/live.json"
+LIVE_JSON_URL = "https://elgoon.com/live.json"
 
 def _live_norm(s):
     """Same normalization LIVE_JS / build_site._gnorm use to pair names."""

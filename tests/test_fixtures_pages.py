@@ -92,12 +92,12 @@ for f in pages:
     got = len(re.findall(r'class="round"', t))
     ok = ("rounds-panel" in t and "rn-next" in t
           and got == want and want >= 2
-          and f'<link rel="canonical" href="https://yallascore.site/fixtures/{slug}"' in t
+          and f'<link rel="canonical" href="https://elgoon.com/fixtures/{slug}"' in t
           and "BreadcrumbList" in t and "<h1" in t)
     ck(f"9 {name}: all rounds + navigator + canonical + breadcrumbs", ok,
        f"{got} rounds on the page, {want} in the data")
     ck(f"10 {name} is in the sitemap and indexable",
-       f"<loc>https://yallascore.site/fixtures/{slug}</loc>" in sm
+       f"<loc>https://elgoon.com/fixtures/{slug}</loc>" in sm
        and 'content="noindex"' not in t)
 
 # the title has to answer the query, not describe the site

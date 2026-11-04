@@ -700,7 +700,7 @@ html.lt-lock{overflow:hidden}
 .fmb-flip .fmb-feat{grid-column:2;grid-row:1}
 @media(max-width:860px){.fmb{grid-template-columns:1fr;gap:12px;padding:12px}.fmb-fb h2{font-size:1.05rem}.fmb-th{width:76px;height:52px}
   .fmb-flip .fmb-feat,.fmb-flip .fmb-list{grid-column:auto;grid-row:auto}}
-/* «توقع يلا سكور» — the button on an upcoming match row, and its popup.
+/* «توقع الجون» — the button on an upcoming match row, and its popup.
    z-index:2 puts the button above .mstretch (z-index:1), which otherwise
    covers the whole row and would swallow the click. */
 .pbtn-row,.mgo-row{grid-column:1/-1;display:flex;justify-content:center;

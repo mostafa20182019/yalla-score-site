@@ -14,10 +14,14 @@ import os
 
 
 # ---------------------------------------------------------------- config
-SITE_BASE = "https://yallascore.site"  # custom domain on the Cloudflare Worker (since 2026-08-03)
-SITE_NAME = "يلا سكور"
+SITE_BASE = "https://elgoon.com"  # custom domain on the Cloudflare Worker (elgoon.com since 2026-11-04, yallascore.site 2026-08-03 -> 11-04)
+# our former hosts: an absolute link to one of them inside stored content
+# (article bodies, image URLs) is rewritten to SITE_BASE at the output choke
+# point (shell.write), so no page sends a reader through the 301
+OLD_SITE_BASES = ("https://yallascore.site", "https://old-credit-e926.mustafa-abdelsalam95.workers.dev")
+SITE_NAME = "الجون"
 SITE_TAGLINE = "أخبار ونتائج كرة القدم"
-SITE_DESC = "يلا سكور — أخبار كرة القدم ونتائج المباريات ومواعيد البطولات بالعربية."
+SITE_DESC = "الجون — أخبار كرة القدم ونتائج المباريات ومواعيد البطولات بالعربية."
 LOCALE = "ar_AR"
 BUILD_DATE = os.environ.get("BUILD_DATE", "")  # pass a date; else today isn't used in content
 # --- Google AdSense (fill these AFTER AdSense approves your site, then rebuild) ---
@@ -31,7 +35,7 @@ ADSENSE_SLOT = ""
 ADSENSE_SLOT_TOP = ""   # mobile top-banner unit id (leave empty for placeholder)
 # Optional contact email shown on the Privacy Policy page (leave "" to omit).
 CONTACT_EMAIL = "yallascore.eg@gmail.com"
-# Facebook page «يلا سكور» — numeric id URL always resolves; swap for the
+# Facebook page «الجون» — numeric id URL always resolves; swap for the
 # vanity URL (facebook.com/<username>) once the page has one.
 FB_PAGE_URL = "https://www.facebook.com/104238901487012"
 # the owned Telegram channel (created by the user 2026-09-22; tg_post.py
@@ -56,7 +60,8 @@ EDITOR_EMAIL = CONTACT_EMAIL
 # التحرير» never gives, and it was one of the two decisions left open after the
 # content rejection. Rendering-level on purpose — the 466 stored rows are not
 # rewritten, so this is one constant away from being undone.
-GENERIC_BYLINES = (SITE_NAME, "فريق التحرير", "فريق يلا سكور", "")
+# the old name too: articles signed before the rebrand (2026-11-04) say it
+GENERIC_BYLINES = (SITE_NAME, "فريق التحرير", "فريق الجون", "يلا سكور", "فريق يلا سكور", "")
 # 2026-10-07, user decision (reverses the 2026-09-15 one above): EVERY article
 # is signed «فريق التحرير» - the generic bylines AND the editor's own name,
 # which the AI prompts store in `author`. Still rendering-level: no row is

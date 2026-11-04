@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Yalla Score - the facts pack for a «الجولة بالأرقام» article (2026-09-27).
+Elgoon - the facts pack for a «الجولة بالأرقام» article (2026-09-27).
 
 WHY: Search Console (2026-09-27) showed Google crawling our rewritten news and
 declining to index it - 17 of 18 «Crawled - currently not indexed» were
@@ -42,7 +42,7 @@ RECENT_DAYS = 4          # a round review older than this is history, not news
 LEAGUES = ["Egyptian Premier League", "Premier League", "Primera Division", "Serie A",
            "Bundesliga", "Ligue 1", "Saudi Pro League", "Turkish Super Lig"]
 EUROPE = ("Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1")
-DATA_SOURCE_NAME = "بيانات يلا سكور"
+DATA_SOURCE_NAME = "بيانات الجون"
 
 
 def round_key(comp, rnd):
@@ -179,7 +179,7 @@ def build_brief(comp, rnd):
                       "exact_score": bool(e.get("score_hit")),
                       "actual": f'{r["home_score"]}-{r["away_score"]}'})
     pred = None
-    if preds and PREDICTIONS_ON:       # the predictions switch: no «كيف أدّت توقعات يلا سكور؟»
+    if preds and PREDICTIONS_ON:       # the predictions switch: no «كيف أدّت توقعات الجون؟»
         def p_of_outcome(p):
             hs, as_ = map(int, p["actual"].split("-"))
             return p["p_home"] if hs > as_ else p["p_draw"] if hs == as_ else p["p_away"]

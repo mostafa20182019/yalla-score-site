@@ -1,4 +1,4 @@
-// Yalla Score edge worker.
+// Elgoon edge worker.
 // - fetch: serve the static site (dist/) exactly as before via the ASSETS binding.
 // - scheduled: Cloudflare cron (exact, reliable) triggers the GitHub Action
 //   `publish.yml` through the workflow_dispatch API, so data refreshes every
@@ -723,7 +723,7 @@ async function liveFromStore(env, ctx) {
  * ======================================================================== */
 
 const ADMIN_ORIGINS = ["http://localhost:8123", "http://127.0.0.1:8123",
-                       "https://yallascore.site"];
+                       "https://elgoon.com", "https://yallascore.site"];
 
 function corsHeaders(request) {
   const origin = request.headers.get("Origin") || "";
@@ -1024,7 +1024,7 @@ const MATCH_CRONS = new Set(["0 7,8,9,10,12,13,14,16,17 * * *", "30 19,20 * * *"
 async function dataBundle(env, ctx) {
   if (!env.DATA) return new Response("no data store bound", { status: 404 });
   const cache = caches.default;
-  const key = new Request("https://yallascore.site/data/bundle");
+  const key = new Request("https://elgoon.com/data/bundle");
   const hit = await cache.match(key);
   if (hit) return hit;
   const blob = await env.DATA.get("bundle-v1", "arrayBuffer");
@@ -1067,8 +1067,8 @@ export default {
     // One canonical URL keeps old links working and avoids duplicate
     // content in Google after the 2026-08-03 domain move.
     const url = new URL(request.url);
-    const canonical = "yallascore.site";
-    // 2026-10-18: the SCHEME is part of the canonical too. http://yallascore.site/
+    const canonical = "elgoon.com";
+    // 2026-10-18: the SCHEME is part of the canonical too. http://elgoon.com/
     // answered 200 (Cloudflare's "Always Use HTTPS" was never switched on for
     // the Worker's custom domain), so Bing kept the previous owner's http root
     // as a second, excluded copy of the site. http or www -> one 301 to https
@@ -1092,7 +1092,7 @@ export default {
     }
     if (url.pathname === "/live.json") {
       const cache = caches.default;
-      const key = new Request("https://yallascore.site/live.json");
+      const key = new Request("https://elgoon.com/live.json");
       const hit = await cache.match(key);
       if (hit) return hit;
       // the D1-backed store when the binding exists; the direct upstream

@@ -74,7 +74,7 @@ jobs:
         if: always()
         run: |
           git config user.name "yalla-score-bot"
-          git config user.email "bot@yallascore.site"
+          git config user.email "bot@elgoon.com"
           git add data/season_prev
           [ -f data/elo_seeds.json ] && git add data/elo_seeds.json
           if git diff --cached --quiet; then

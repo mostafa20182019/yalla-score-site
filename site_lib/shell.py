@@ -12,7 +12,7 @@ imports these back under the same names."""
 import io
 import os
 import re
-from site_lib.config import ADSENSE_CLIENT, ADSENSE_SLOT, ADSENSE_SLOT_TOP, CF_ANALYTICS_TOKEN, DIST, FB_PAGE_URL, HERE, LOCALE, SHOW_HEADLINES, SHOW_REELS, SHOW_STATS_PAGE, SHOW_VIDEOS, PREDICTIONS_ON, SITE_BASE, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL, VAPID_PUBLIC_KEY, _src
+from site_lib.config import ADSENSE_CLIENT, ADSENSE_SLOT, ADSENSE_SLOT_TOP, CF_ANALYTICS_TOKEN, DIST, FB_PAGE_URL, HERE, LOCALE, OLD_SITE_BASES, SHOW_HEADLINES, SHOW_REELS, SHOW_STATS_PAGE, SHOW_VIDEOS, PREDICTIONS_ON, SITE_BASE, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL, VAPID_PUBLIC_KEY, _src
 from site_lib.text import esc, seo_desc, strip_tags
 
 
@@ -99,7 +99,7 @@ def _og_dims(url):
 
 
 def seo_title(title, limit=62):
-    """<title>: drop the « — يلا سكور» brand suffix when the whole thing would
+    """<title>: drop the « — الجون» brand suffix when the whole thing would
     exceed ~60 chars — Google truncates longer titles and the article headline
     (the part that carries the query words) matters more than the brand,
     which is already in og:site_name and the publisher schema."""
@@ -325,6 +325,11 @@ _HTML_URL = re.compile(
     r'(?P<pre>' + re.escape(SITE_BASE) + r'|["\'>=(\s])'
     r'(?P<path>/[A-Za-z0-9_\-/]+)\.html')
 def _clean_urls(text):
+    # the rebrand (2026-11-04): links into our former hosts become links into
+    # this one BEFORE the .html rule, so they get the same extensionless form
+    for old in OLD_SITE_BASES:
+        if old in text:
+            text = text.replace(old + "/", SITE_BASE + "/").replace(old + '"', SITE_BASE + '"')
     return _HTML_URL.sub(lambda m: m.group("pre") + m.group("path"), text)
 
 

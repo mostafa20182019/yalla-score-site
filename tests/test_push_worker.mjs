@@ -42,10 +42,10 @@ const P256 = "B" + "A".repeat(86);         // 87 chars, like a real p256dh
 const AUTH = "a".repeat(22);
 const SUB = { endpoint: "https://fcm.googleapis.com/fcm/send/abc:xyz", keys: { p256dh: P256, auth: AUTH } };
 
-function req(path, body, { method = "POST", origin = "https://yallascore.site", raw } = {}) {
+function req(path, body, { method = "POST", origin = "https://elgoon.com", raw } = {}) {
   const headers = { "content-type": "application/json" };
   if (origin) headers.Origin = origin;
-  return new Request("https://yallascore.site" + path, {
+  return new Request("https://elgoon.com" + path, {
     method, headers, body: method === "GET" ? undefined : (raw ?? JSON.stringify(body)),
   });
 }
@@ -108,7 +108,7 @@ ck("15 a D1 failure (quota) answers 503 JSON, never a bare 500", r.status === 50
 r = await call(req("/push/subscribe", SUB), undefined);
 ck("16 no D1 binding: 503", r.status === 503);
 
-const res = await worker.fetch(new Request("https://yallascore.site/sw.js"), env(fakeDB()), { waitUntil() {} });
+const res = await worker.fetch(new Request("https://elgoon.com/sw.js"), env(fakeDB()), { waitUntil() {} });
 ck("17 every other path still goes to the static assets (sw.js included)", (await res.text()) === "asset");
 
 console.log(fails.length ? `\nFAILED: ${fails.join(", ")}` : "\nall push worker checks passed");

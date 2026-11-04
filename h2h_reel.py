@@ -33,7 +33,7 @@ SAFE_BOTTOM = 340          # Facebook lays the caption + buttons over the bottom
 
 def footer(d):
     C.draw_center(d, W / 2, H - SAFE_BOTTOM - 60, C.ar("التحليل الكامل بالأرقام"), C.font("Bold", 34), SOFT)
-    C.draw_center(d, W / 2, H - SAFE_BOTTOM - 10, "yallascore.site", C.font("ExtraBold", 40), C.WHITE)
+    C.draw_center(d, W / 2, H - SAFE_BOTTOM - 10, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
 
 
 def _count(d, cx, y, n, t, size, col):
@@ -169,7 +169,7 @@ def scene_cta(t, ctx):
     if k > 0.02:
         C.draw_center(d, W / 2, H * 0.60, C.ar("التوقع والتحليل الكامل على"),
                       C.font("Bold", max(1, int(44 * k))), SOFT)
-        C.draw_center(d, W / 2, H * 0.60 + 76, "yallascore.site",
+        C.draw_center(d, W / 2, H * 0.60 + 76, "elgoon.com",
                       C.font("ExtraBold", max(1, int(72 * k))), C.WHITE)
         if ctx["when"]:
             C.draw_center(d, W / 2, H * 0.60 + 190, C.ar(ctx["when"]), C.font("Bold", 36), GOLD)
@@ -218,7 +218,7 @@ def caption(ctx):
     if ctx.get("finals"):
         lines.append(f"🏟️ {ctx['finals']}")
     lines += [
-             f"التوقع والتحليل الكامل: https://yallascore.site/m/{ctx['m'].get('match_id')}",
+             f"التوقع والتحليل الكامل: https://elgoon.com/m/{ctx['m'].get('match_id')}",
              f"#يلا_سكور #{h.replace(' ', '_')} #{a.replace(' ', '_')}"]
     return "\n".join(lines)
 

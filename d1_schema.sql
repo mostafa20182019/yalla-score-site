@@ -1,4 +1,4 @@
--- Yalla Score state store (Cloudflare D1 / SQLite dialect).
+-- Elgoon state store (Cloudflare D1 / SQLite dialect).
 --
 -- Replaces data/fb_posted.json + data/predictions.json as the SOURCE OF TRUTH.
 -- Those files keep being written as an export, but only as a git-tracked audit

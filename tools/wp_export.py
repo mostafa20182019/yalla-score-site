@@ -14,7 +14,7 @@ WordPress, "Download and import file attachments" ticked) consumes:
 - one `post` per article, body HTML as the site renders it, the FAQ and the
   sources appended as two sections so nothing the page showed is lost;
 - `post_name` = the article id, so with the permalink structure `/a/%postname%`
-  every indexed URL (https://yallascore.site/a/892) keeps working unchanged;
+  every indexed URL (https://elgoon.com/a/892) keeps working unchanged;
 - the picture as an `attachment` item the importer downloads from the live
   site, set as the featured image, its credit as the caption;
 - categories from `kind` (report / preview / analysis, else news), the clubs
@@ -36,8 +36,8 @@ from xml.sax.saxutils import escape
 HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, HERE)
 
-SITE = "https://yallascore.site"
-SITE_TITLE = "يلا سكور"
+SITE = "https://elgoon.com"
+SITE_TITLE = "الجون"
 SITE_DESC = "أخبار الكرة ونتائج المباريات لحظة بلحظة"
 CATEGORIES = {None: ("أخبار", "news"), "report": ("تقارير المباريات", "reports"),
               "preview": ("قبل المباراة", "previews"), "analysis": ("تحليلات", "analysis")}
@@ -245,7 +245,7 @@ def write_pages(out, dist=None):
 
 def header(arts):
     authors = "".join(f"""
-\t<wp:author><wp:author_id>{i + 1}</wp:author_id><wp:author_login>{cdata(login)}</wp:author_login><wp:author_email>{cdata(login + "@yallascore.site")}</wp:author_email><wp:author_display_name>{cdata(name)}</wp:author_display_name><wp:author_first_name>{cdata(name)}</wp:author_first_name><wp:author_last_name></wp:author_last_name></wp:author>"""
+\t<wp:author><wp:author_id>{i + 1}</wp:author_id><wp:author_login>{cdata(login)}</wp:author_login><wp:author_email>{cdata(login + "@elgoon.com")}</wp:author_email><wp:author_display_name>{cdata(name)}</wp:author_display_name><wp:author_first_name>{cdata(name)}</wp:author_first_name><wp:author_last_name></wp:author_last_name></wp:author>"""
                       for i, (name, login) in enumerate(AUTHORS.items()))
     cats = "".join(f"""
 \t<wp:category><wp:term_id>{i + 1}</wp:term_id><wp:category_nicename>{cdata(slug)}</wp:category_nicename><wp:category_parent></wp:category_parent><wp:cat_name>{cdata(name)}</wp:cat_name></wp:category>"""

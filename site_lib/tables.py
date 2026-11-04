@@ -486,7 +486,7 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
     # 2026-10-24: «بدل ما فيه لينك اسمه توقع يلا سكور يكون لينك بطاقة
     # المباراة») - the same label the day cards and the article strip wear,
     # pointing at the one page that holds everything about the match,
-    # the prediction included. It replaced the «توقع يلا سكور» popup
+    # the prediction included. It replaced the «توقع الجون» popup
     # button (pred_btn / done_btn, kept in widgets.py), so a row no longer
     # carries any prediction data.
     pbtn = (f'<div class="mgo-row"><a class="mgo" href="{esc(link)}">بطاقة المباراة ←</a></div>'

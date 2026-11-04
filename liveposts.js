@@ -45,7 +45,7 @@
  */
 
 const FB_GRAPH = "https://graph.facebook.com/v23.0";
-const SITE = "https://yallascore.site";
+const SITE = "https://elgoon.com";
 export const XI_MIN_MS = 45 * 60 * 1000;    // post the XI when kick-off is
 export const XI_MAX_MS = 80 * 60 * 1000;    // 45..80 minutes away
 export const XI_FALLBACK_MS = 12 * 60 * 1000;   // a dispatched card not posted by then -> the text

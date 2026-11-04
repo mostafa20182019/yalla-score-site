@@ -12,7 +12,7 @@ IndexNow is a push protocol: no account, no quota, no waiting to be discovered.
 Google does NOT participate — this buys nothing there, and pretending otherwise
 would be the kind of thing this project does not do.
 
-How it works: a key file at https://yallascore.site/<key>.txt containing the
+How it works: a key file at https://elgoon.com/<key>.txt containing the
 key proves we own the host; a POST lists the URLs. The key file ships from
 root-extras/ like ads.txt.
 
@@ -40,7 +40,7 @@ import urllib.error
 import urllib.request
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-HOST = "yallascore.site"
+HOST = "elgoon.com"
 # 2026-10-12: Bing Webmaster Tools only reports IndexNow traffic for a key it
 # generated itself (the «Get Started» wizard offers no "use my key"), so the
 # site now signs with Bing's key; the old key file stays served (harmless).

@@ -92,7 +92,7 @@ const env = { DB: db };
 const tick = async () => { db.writes.length = 0; await worker.scheduled({ cron: "* * * * *" }, env, {}); return db.writes; };
 const serve = async () => {
   // the canonical host: the worker 301s anything else before routing
-  const res = await worker.fetch(new Request("https://yallascore.site/live.json"),
+  const res = await worker.fetch(new Request("https://elgoon.com/live.json"),
                                  env, { waitUntil: () => {} });
   return res.json();
 };

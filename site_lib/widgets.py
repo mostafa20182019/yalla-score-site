@@ -50,7 +50,7 @@ def video_facade(v):
 
 
 def pred_btn(p):
-    """«توقع يلا سكور» — the whole prediction on a match row, in ~110 bytes.
+    """«توقع الجون» — the whole prediction on a match row, in ~110 bytes.
 
     The site's one differentiator was reachable only from /m/<id> or
     /analysis, and the numbers said nobody went: over 24 hours the home page
@@ -72,7 +72,7 @@ def pred_btn(p):
     return ('<button type="button" class="pbtn" data-pp="'
             f'{round(p["ph"] * 100)},{round(p["pd"] * 100)},{round(p["pa"] * 100)}"'
             f' data-ps="{top[0]}-{top[1]}" data-pc="{esc(p["conf"])}">'
-            'توقع يلا سكور</button>')
+            'توقع الجون</button>')
 
 
 def done_btn(e):
@@ -289,7 +289,7 @@ def _calls_html(ex):
 
 
 def model_explainer():
-    return ('<section class="minfo explain" id="model"><h2>كيف يعمل نموذج يلا سكور؟</h2>'
+    return ('<section class="minfo explain" id="model"><h2>كيف يعمل نموذج الجون؟</h2>'
             '<p>القسم لا يعتمد على آراء أو توقعات شخصية، بل على أرقام المباريات الفعلية التي يجمعها الموقع '
             'كل ربع ساعة. لكل بطولة يبني النموذج ثلاث طبقات:</p><ol>'
             '<li><b>تقييم القوة (Elo):</b> يبدأ كل نادٍ برصيد 1500 نقطة، ويربح أو يخسر نقاطًا بعد كل مباراة '

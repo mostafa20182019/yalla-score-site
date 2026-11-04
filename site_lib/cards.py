@@ -103,7 +103,7 @@ def clubs_strip(standings, matches, fixtures):
                      f'{ico}<span>{esc(tp["name"])}</span></a>')
     if not items:
         return ""
-    return ('<section class="clubs" aria-label="أندية يلا سكور">'
+    return ('<section class="clubs" aria-label="أندية الجون">'
             '<button class="cs-btn cs-l" type="button" aria-label="السابق">‹</button>'
             f'<div class="cs-track" id="clubsStrip">{"".join(items)}</div>'
             '<button class="cs-btn cs-r" type="button" aria-label="التالي">›</button>'
@@ -355,7 +355,7 @@ def fmb_block(feat_a, list_items, list_head, more_url, banner="", flip=False, nf
 
 
 def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
-    """«توقعات يلا سكور» on the home page (user ask 2026-09-12): the next few
+    """«توقعات الجون» on the home page (user ask 2026-09-12): the next few
     predicted fixtures, in the same card language as the FotMob blocks, with
     المزيد opening /analysis.html. Picks matches within 7 days that HAVE a
     prediction, curated clubs first, then the Egyptian league, then kickoff.
@@ -382,7 +382,7 @@ def pred_home_block(upcoming, preds, today, n=4, acc=None, cal=None):
     # us. Silent until something has actually been scored.
     rec = pred_record_line(acc, cal)
     return ('<section class="fmb fmb-pred" data-nf="pred">'
-            '<div class="fmb-lh fmb-predh"><span>توقعات يلا سكور</span>'
+            '<div class="fmb-lh fmb-predh"><span>توقعات الجون</span>'
             '<small>احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
             + rec +
             '<div class="plist">' + "".join(pred_row(m, p) for m, p in rows) + '</div>'
@@ -459,7 +459,7 @@ def match_focus_block(upcoming, preds, today, focus=None, n=4):
         return ""
     # the «see all» link sits UNDER the cards (user, 2026-10-23: «اللينك ... يكون تحت مش فوق»)
     return ('<section class="mf"><div class="mf-head">'
-            '<small>توقعات يلا سكور: احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
+            '<small>توقعات الجون: احتمالات إحصائية من نتائج الموسم · ليست نصيحة للمراهنة</small></div>'
             '<div class="mf-row">' + "".join(_mf_card(m, p) for m, p in rows) + '</div>'
             '<div class="blk-more"><a class="see-all" href="/analysis.html">كل التوقعات ←</a></div></section>')
 
@@ -473,7 +473,7 @@ def home_record_strip(acc, cal):
 # the home analyses block shows what HAPPENED (user, 2026-10-24: «مش عايز في
 # جزء التحليلات يكون فيه توقعات، عايز تقارير بس»): match reports and the round
 # pieces (a round read after it was played). Previews and pre-match analyses -
-# the «توقع يلا سكور» pieces - stay on /insights and on their match pages.
+# the «توقع الجون» pieces - stay on /insights and on their match pages.
 HOME_INSIGHT_KINDS = ("report", "round")
 
 

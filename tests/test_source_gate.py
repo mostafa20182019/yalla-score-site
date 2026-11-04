@@ -36,7 +36,7 @@ ok("2 two links to the SAME outlet are one",
 ok("3 www. does not make a second domain",
    AP.source_keys(news([{"name": "x", "url": "https://www.filgoal.com/a"}])) == {"filgoal.com"})
 ok("4 citing ourselves counts for nothing",
-   AP.source_keys(news([{"name": "يلا سكور", "url": "https://yallascore.site/m/1"}])) == set())
+   AP.source_keys(news([{"name": "الجون", "url": "https://elgoon.com/m/1"}])) == set())
 ok("5 a source with no url is counted by its name",
    AP.source_keys(news([{"name": "بيان النادي"}])) == {"بيان النادي".casefold()})
 

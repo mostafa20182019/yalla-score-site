@@ -23,8 +23,8 @@ NS = {"wp": "http://wordpress.org/export/1.2/", "content": "http://purl.org/rss/
 arts = [
     {"article_id": "892", "title": "تقرير: النصر يتغلب على نيوم 1-0", "summary": "ملخص", "body": "<p>نص</p><h2>كيف سارت</h2><p>x & y</p>",
      "author": "مصطفى عبدالسلام", "pub_date": "2026-10-21", "pub_ts": "2026-10-21T13:02:22+03:00", "match_id": "4789450", "kind": "report",
-     "image_url": "https://yallascore.site/media/matchup-4789450-result.jpg", "image_credit": "الصورة: تصميم يلا سكور",
-     "sources": [{"name": "365scores", "url": "https://yallascore.site/m/4789450", "note": "الإحصاءات"}],
+     "image_url": "https://elgoon.com/media/matchup-4789450-result.jpg", "image_credit": "الصورة: تصميم الجون",
+     "sources": [{"name": "365scores", "url": "https://elgoon.com/m/4789450", "note": "الإحصاءات"}],
      "faq": [{"q": "متى؟", "a": "الثلاثاء."}], "fb_post": "سطر"},
     {"article_id": "61", "title": "خبر قديم", "summary": "", "body": "<p>قديم</p>", "author": "فريق التحرير", "pub_date": "2026-08-03",
      "image_url": "", "image_credit": ""},
@@ -41,13 +41,13 @@ ck("1 WXR 1.2 with the two authors and the four categories", ch.find("wp:wxr_ver
    and len(ch.findall("wp:author", NS)) == 2 and len(ch.findall("wp:category", NS)) == 4)
 ck("2 one post per article, one attachment per article with a picture", len(posts) == 2 and len(atts) == 1)
 p = next(i for i in posts if i.find("wp:post_id", NS).text == "892")
-ck("3 the old URL survives: post_name = the id, link = /a/<id>", p.find("wp:post_name", NS).text == "892" and p.find("link").text == "https://yallascore.site/a/892")
+ck("3 the old URL survives: post_name = the id, link = /a/<id>", p.find("wp:post_name", NS).text == "892" and p.find("link").text == "https://elgoon.com/a/892")
 ck("4 dates: Cairo local and GMT from pub_ts", p.find("wp:post_date", NS).text == "2026-10-21 13:02:22" and p.find("wp:post_date_gmt", NS).text == "2026-10-21 10:02:22")
 old = next(i for i in posts if i.find("wp:post_id", NS).text == "61")
 ck("5 a date-only row lands at noon Cairo", old.find("wp:post_date", NS).text == "2026-08-03 12:00:00" and old.find("wp:post_date_gmt", NS).text == "2026-08-03 09:00:00")
 body = p.find("content:encoded", NS).text
 ck("6 the body keeps its HTML and carries the FAQ and the sources", body.startswith("<p>نص</p><h2>") and "x & y" in body
-   and "<h2>أسئلة شائعة</h2><h3>متى؟</h3><p>الثلاثاء.</p>" in body and 'href="https://yallascore.site/m/4789450"' in body and "— الإحصاءات" in body)
+   and "<h2>أسئلة شائعة</h2><h3>متى؟</h3><p>الثلاثاء.</p>" in body and 'href="https://elgoon.com/m/4789450"' in body and "— الإحصاءات" in body)
 ck("7 the excerpt is the summary, the author is the mapped login", p.find("excerpt:encoded", NS).text == "ملخص" and p.find("dc:creator", NS).text == "mustafa")
 cats = {c.get("domain"): c.text for c in p.findall("category")}
 ck("8 kind -> category (report), no kind -> news", cats.get("category") == "تقارير المباريات"
@@ -55,11 +55,11 @@ ck("8 kind -> category (report), no kind -> news", cats.get("category") == "تق
 metas = {m.find("wp:meta_key", NS).text: m.find("wp:meta_value", NS).text for m in p.findall("wp:postmeta", NS)}
 ck("9 the featured image points at the attachment (100000 + id), the credit and ids ride as meta",
    metas.get("_thumbnail_id") == "100892" and metas.get("ys_article_id") == "892" and metas.get("ys_match_id") == "4789450"
-   and metas.get("ys_image_credit") == "الصورة: تصميم يلا سكور" and metas.get("ys_kind") == "report", str(metas))
+   and metas.get("ys_image_credit") == "الصورة: تصميم الجون" and metas.get("ys_kind") == "report", str(metas))
 att = atts[0]
 ck("10 the attachment downloads from the live site, belongs to its post, caption = the credit",
-   att.find("wp:attachment_url", NS).text == "https://yallascore.site/media/matchup-4789450-result.jpg"
-   and att.find("wp:post_parent", NS).text == "892" and att.find("excerpt:encoded", NS).text == "الصورة: تصميم يلا سكور"
+   att.find("wp:attachment_url", NS).text == "https://elgoon.com/media/matchup-4789450-result.jpg"
+   and att.find("wp:post_parent", NS).text == "892" and att.find("excerpt:encoded", NS).text == "الصورة: تصميم الجون"
    and att.find("wp:post_id", NS).text == "100892")
 ck("11 a post without a picture has no thumbnail meta", "_thumbnail_id" not in {m.find("wp:meta_key", NS).text for m in old.findall("wp:postmeta", NS)})
 ck("12 every post is published, comments open, type post", all(i.find("wp:status", NS).text == "publish" and i.find("wp:comment_status", NS).text == "open" for i in posts))
