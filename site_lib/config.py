@@ -14,7 +14,11 @@ import os
 
 
 # ---------------------------------------------------------------- config
-SITE_BASE = "https://elgoon.com"  # custom domain on the Cloudflare Worker (since 2026-08-03)
+SITE_BASE = "https://elgoon.com"  # custom domain on the Cloudflare Worker (elgoon.com since 2026-11-04, yallascore.site 2026-08-03 -> 11-04)
+# our former hosts: an absolute link to one of them inside stored content
+# (article bodies, image URLs) is rewritten to SITE_BASE at the output choke
+# point (shell.write), so no page sends a reader through the 301
+OLD_SITE_BASES = ("https://yallascore.site", "https://old-credit-e926.mustafa-abdelsalam95.workers.dev")
 SITE_NAME = "الجون"
 SITE_TAGLINE = "أخبار ونتائج كرة القدم"
 SITE_DESC = "الجون — أخبار كرة القدم ونتائج المباريات ومواعيد البطولات بالعربية."

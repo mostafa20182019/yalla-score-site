@@ -57,6 +57,12 @@ ok("5e an article without the old strings yields nothing", D.rebrand_fields({"ar
 wf = io.open(".github/workflows/d1-admin.yml", encoding="utf-8").read()
 ok("6 the D1 Admin workflow offers the task and commits its export",
    '"rebrand"' in wf and "env.TASK == 'rebrand'" in wf and '"--rebrand"' in io.open("d1_admin.py", encoding="utf-8").read())
+import site_lib.shell as SH                                # noqa: E402
+_c = SH._clean_urls('<a href="https://yallascore.site/m/5.html">x</a> <img src="https://yallascore.site/media/a.jpg"> '
+                    '<a href="https://old-credit-e926.mustafa-abdelsalam95.workers.dev/a/1.html">y</a> https://example.com/old.html')
+ok("8 a page never emits a link into a former host: rewritten to the site, extensionless, externals untouched",
+   _c == '<a href="https://elgoon.com/m/5">x</a> <img src="https://elgoon.com/media/a.jpg"> '
+         '<a href="https://elgoon.com/a/1">y</a> https://example.com/old.html', _c)
 man = io.open("root-extras/manifest.webmanifest", encoding="utf-8").read()
 ok("7 the web manifest and the service worker name the new site",
    '"name": "الجون"' in man and "الجون" in io.open("root-extras/sw.js", encoding="utf-8").read())
