@@ -75,6 +75,10 @@ wf = io.open(".github/workflows/archive-db.yml", encoding="utf-8").read()
 ok("2h the nightly archive job exports it and pushes ONLY that file",
    "python archive_db.py --export data/details_archive.json" in wf
    and "python data_store.py push --only details_archive.json" in wf)
+_exp = wf.split("Export the season's details for the build", 1)[1]
+ok("2h2 the push step carries the KV token (CLOUDFLARE_API_TOKEN, as publish.yml) and pipefail - "
+   "the first run's 401 hid behind `| tee` (2026-11-04)",
+   "CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}" in _exp and "set -o pipefail" in _exp)
 
 # push --only: the other files come from the store as it is NOW, never from
 # this job's hour-old pull
