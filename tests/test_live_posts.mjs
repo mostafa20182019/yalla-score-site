@@ -166,7 +166,7 @@ ck("2 scope: the Saudi الأهلي and the Port Said المصري are OUT; Arse
 const gm = goalMessage({ id: 901, c: 552, h: "الزمالك", a: "الإسماعيلي", hs: 2, as: 0 }, { s: "h", p: "زيزو", m: "63", t: "ج" });
 ck("3 goal text: spaced score, scorer, minute, penalty, match link, hashtags",
    gm.startsWith("⚽ هدف! الزمالك 2 - 0 الإسماعيلي") && gm.includes("🥅 زيزو · الدقيقة 63 · ركلة جزاء")
-   && gm.includes("https://yallascore.site/m/901") && gm.endsWith("#يلا_سكور #الزمالك #الإسماعيلي"), gm);
+   && gm.includes("https://elgoon.com/m/901") && gm.endsWith("#يلا_سكور #الزمالك #الإسماعيلي"), gm);
 ck("4 goal text never carries a betting word", !gm.includes("مراهنة"));
 // 2026-10-24 (Pyramids 3-0 El Merrikh Bentiu): a score-only goal first seen
 // during the break carried the Worker's break label as its minute and the
@@ -207,7 +207,7 @@ LIST.games[1] = live(902, 7, "إيفرتون", "توتنهام", 2, 1);     // E
 LIST.games[2] = live(903, 649, "الأهلي", "النصر", 2, 0);      // Saudi Al-Ahli scores: out of scope
 await tick();
 ck("8 exactly ONE post: the Zamalek goal, as a PHOTO with our card",
-   posts().length === 1 && posts()[0].path === "me/photos" && posts()[0].url === "https://yallascore.site/media/matchup-901-preview.jpg",
+   posts().length === 1 && posts()[0].path === "me/photos" && posts()[0].url === "https://elgoon.com/media/matchup-901-preview.jpg",
    JSON.stringify(posts()));
 ck("9 the caption is the goal text", (posts()[0].caption || "").startsWith("⚽ هدف! الزمالك 2 - 0 الإسماعيلي") && posts()[0].caption.includes("عمر جابر"));
 ck("10 the lock row records the post id", db.fb.get("goal|901:2") && db.fb.get("goal|901:2").post_id === "P1");
@@ -331,7 +331,7 @@ await tick();
 ck("24 the final whistle posts ONCE for the curated game, with both scorers",
    posts().length === n1 + 3 && posts()[n1 + 2].caption.startsWith("🏁 انتهت المباراة: ليفربول 2 - 0 برينتفورد")
    && posts()[n1 + 2].caption.includes("زيزو 30'") && posts()[n1 + 2].caption.includes("عمر جابر 78'")
-   && posts()[n1 + 2].caption.includes("https://yallascore.site/m/970"), JSON.stringify(posts().slice(-1)));
+   && posts()[n1 + 2].caption.includes("https://elgoon.com/m/970"), JSON.stringify(posts().slice(-1)));
 await tick();
 ck("25 an ended game stays ended: no second full-time post", posts().length === n1 + 3 && db.fb.has("ft|970") && !db.fb.has("ft|971"));
 // the store bug the full-time post exposed: a fresh read with no goal list
@@ -402,7 +402,7 @@ LIST = { games: [live(985, 7, "ليفربول", "فياريال", 0, 0, { status
 await tick();
 ck("20d the first sight of a curated game in its opening minute posts «انطلقت المباراة» once, nothing for the others",
    posts().length === nKo + 1 && posts()[nKo].caption.startsWith("🔔 انطلقت المباراة: ليفربول × فياريال")
-   && posts()[nKo].caption.includes("https://yallascore.site/m/985") && db.fb.has("ko|985") && !db.fb.has("ko|986") && !db.fb.has("ko|987"),
+   && posts()[nKo].caption.includes("https://elgoon.com/m/985") && db.fb.has("ko|985") && !db.fb.has("ko|986") && !db.fb.has("ko|987"),
    JSON.stringify(posts().slice(-1)));
 LIST.games[0] = live(985, 7, "ليفربول", "فياريال", 0, 0, { gameTime: 2, gameTimeDisplay: "2'" });
 detailFor[985] = withStatus(DETAIL(0, 0, [], undefined), { statusText: "الشوط الأول", shortStatusText: "1", gameTime: 2, gameTimeDisplay: "2'" });

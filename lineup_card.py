@@ -348,7 +348,7 @@ def render(data, out, photos_on=True):
         ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
         img.paste(b, (bx - size // 2, by - size // 2), b)
     fb = FC.font("ExtraBold", 40)
-    bn = FC.ar("يلا سكور")
+    bn = FC.ar("الجون")
     bw = d.textlength(bn, font=fb)
     bx0 = W / 2 - (bw + 64) / 2
     ball(52, int(bx0 + bw + 64 - 26), 52)
@@ -427,7 +427,7 @@ def render(data, out, photos_on=True):
             img.paste(ov, (int(x - tw / 2) - 10, y + R + 2), ov)
             d.text((x - tw / 2, y + R + 3), name, font=f, fill=WHITE)
 
-    text_l(40, H - 52, "yallascore.site", FC.font("Bold", 22), SOFT)
+    text_l(40, H - 52, "elgoon.com", FC.font("Bold", 22), SOFT)
     note = ("ترتيب اللاعبين تقريبي حسب الخطة المعلنة" if data["home"].get("derived") or data["away"].get("derived")
             else "التشكيل كما أعلنه الناديان قبل المباراة")
     text_r(W - 40, H - 52, note, FC.font("Regular", 22), DIM)

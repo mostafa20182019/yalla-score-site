@@ -15,7 +15,9 @@ from site_lib.today_strip import match_centre
 from site_lib.urls import match_url
 
 
-BRAND_ALIASES = ["Yalla Score", "yallascore", "yallascore.site", "يلا سكور"]
+# the old name stays an alias through the move (rebrand 2026-11-04): the
+# Facebook page, the Telegram channel and every old link still say it
+BRAND_ALIASES = ["Elgoon", "elgoon", "elgoon.com", "الجون", "يلا سكور", "Yalla Score", "yallascore"]
 
 
 def home_page(articles, fixtures, ge_idx, matches, standings):

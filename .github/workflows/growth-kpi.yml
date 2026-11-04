@@ -56,7 +56,7 @@ jobs:
       - name: Commit the row
         run: |
           git config user.name "yalla-score-bot"
-          git config user.email "bot@yallascore.site"
+          git config user.email "bot@elgoon.com"
           git add data/growth_kpi.json
           if git diff --cached --quiet; then
             echo "nothing new"

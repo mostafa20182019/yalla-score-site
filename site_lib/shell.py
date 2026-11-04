@@ -99,7 +99,7 @@ def _og_dims(url):
 
 
 def seo_title(title, limit=62):
-    """<title>: drop the « — يلا سكور» brand suffix when the whole thing would
+    """<title>: drop the « — الجون» brand suffix when the whole thing would
     exceed ~60 chars — Google truncates longer titles and the article headline
     (the part that carries the query words) matters more than the brand,
     which is already in og:site_name and the publisher schema."""

@@ -107,7 +107,7 @@ def render(ev, out=None):
 
     # the brand, centred at the top (ball + name)
     fb = FC.font("ExtraBold", 44)
-    bn = FC.ar("يلا سكور")
+    bn = FC.ar("الجون")
     bw = d.textlength(bn, font=fb)
     bx = W / 2 - (bw + 70) / 2
     ball(58, int(bx + bw + 70 - 29), 62)
@@ -183,7 +183,7 @@ def render(ev, out=None):
     fs = FC.font("ExtraBold", 92)
     d.text((W / 2 - d.textlength(score, font=fs) / 2, sy - 58), score, font=fs, fill=WHITE)
 
-    text_l(40, H - 44, "yallascore.site", FC.font("Bold", 22), SOFT)
+    text_l(40, H - 44, "elgoon.com", FC.font("Bold", 22), SOFT)
     text_r(W - 40, H - 44, COMP_AR.get(int(ev.get("comp") or 0), ""), FC.font("Bold", 22), SOFT)
     if out:
         img.save(out, quality=90, optimize=True)
@@ -229,7 +229,7 @@ def render_whistle(ev, out=None):
         img.paste(b, (cx - size // 2, cy - size // 2), b)
 
     fb = FC.font("ExtraBold", 44)
-    bn = FC.ar("يلا سكور")
+    bn = FC.ar("الجون")
     bw = d.textlength(bn, font=fb)
     bx = W / 2 - (bw + 70) / 2
     ball(58, int(bx + bw + 70 - 29), 62)
@@ -294,7 +294,7 @@ def render_whistle(ev, out=None):
     elif not any(g.get("p") for g in goals):
         text_c(W // 2, 760, "بلا أهداف" if (ev.get("hs") or 0) + (ev.get("as") or 0) == 0 else "", FC.font("Bold", 30), SOFT)
 
-    text_l(40, H - 44, "yallascore.site", FC.font("Bold", 22), SOFT)
+    text_l(40, H - 44, "elgoon.com", FC.font("Bold", 22), SOFT)
     text_r(W - 40, H - 44, COMP_AR.get(int(ev.get("comp") or 0), ""), FC.font("Bold", 22), SOFT)
     if out:
         img.save(out, quality=90, optimize=True)

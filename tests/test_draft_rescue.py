@@ -43,7 +43,7 @@ def draft(title="الأهلي يحسم صفقة جديدة في الميركات
          "author": "مصطفى عبدالسلام",
          "pub_date": now.date().isoformat(),
          "pub_ts": now.isoformat(timespec="seconds"),
-         "image_url": "https://yallascore.site/media/ph-pitch.svg",
+         "image_url": "https://elgoon.com/media/ph-pitch.svg",
          "image_credit": "",
          "sources": [{"name": "في الجول", "url": "https://filgoal.com/a"},
                      {"name": "مصراوي", "url": "https://masrawy.com/b"}],

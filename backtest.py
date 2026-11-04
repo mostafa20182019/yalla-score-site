@@ -1,4 +1,4 @@
-"""Walk-forward backtest for the Yalla Score prediction model (تحليلات).
+"""Walk-forward backtest for the Elgoon prediction model (تحليلات).
 
 Answers one question with numbers instead of opinion: **does a proposed change
 actually predict better than what is live?**

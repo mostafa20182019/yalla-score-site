@@ -10,7 +10,7 @@ white ring, the name, an optional tagline above - and the brand row inside
 the same SAFE band as every card. The user chose this over a blue-canvas
 variant for the Al Ahly image; the colour is the club's own, the layout is
 the card's. Save it under team-photos/<slug>/ with credit
-«الصورة: تصميم يلا سكور» and team_photos.py registers it.
+«الصورة: تصميم الجون» and team_photos.py registers it.
 """
 import argparse
 import os
@@ -134,9 +134,9 @@ def render(name, out, tagline="", colour=None, badge=None, bare=False):
     ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
     img.paste(ball, (x1 - bs, 480), ball)
     fb = FC.font("ExtraBold", 34)
-    s = FC.ar("يلا سكور")
+    s = FC.ar("الجون")
     d.text((x1 - bs - 12 - d.textlength(s, font=fb), 484), s, font=fb, fill=WHITE_)
-    d.text((x0, 492), "yallascore.site", font=FC.font("Bold", 28), fill=SOFT_)
+    d.text((x0, 492), "elgoon.com", font=FC.font("Bold", 28), fill=SOFT_)
     img.save(out, quality=90, optimize=True)
     return out
 

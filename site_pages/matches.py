@@ -295,7 +295,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             # «أرقام المباراة»: xG + shots (match_stats.py), above the lineups
             details = match_stats_html((mstats or {}).get(str(mid)), h_ar, a_ar) + details
         absence = absence_block(_squad, m.get("competition"), m, h_ar, a_ar)
-        # «توقع يلا سكور»: model probabilities for an upcoming match; for a
+        # «توقع الجون»: model probabilities for an upcoming match; for a
         # finished one, what the model said before kick-off vs the result
         _pb = pred_block(m, _preds.get(str(mid)) if st == "UPCOMING" else None,
                          _plog.get(str(mid)), _tstats.get(m.get("competition"), {}),

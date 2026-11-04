@@ -170,7 +170,7 @@ ck("failing: HTTP 503, so an outside uptime monitor can watch one URL", res.stat
 console.log("5. worker.js");
 const worker = (await import(new URL("../worker.js", import.meta.url).href)).default;
 store.clear();
-const hres = await worker.fetch(new Request("https://yallascore.site/health"), fakeEnv(), ctx);
+const hres = await worker.fetch(new Request("https://elgoon.com/health"), fakeEnv(), ctx);
 ck("GET /health is routed to health.js", hres.status === 200 && (await hres.json()).checks.deploy);
 const cronWaits = [];
 sent.length = 0;

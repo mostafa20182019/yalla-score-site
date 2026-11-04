@@ -51,7 +51,7 @@ def cai(h, m=0, day=27):
 
 def art(aid, title, pub, **kw):
     a = {"article_id": str(aid), "title": title, "summary": kw.pop("summary", "ملخص الخبر"),
-         "pub_ts": pub.isoformat(), "image_url": "https://yallascore.site/media/x.jpg"}
+         "pub_ts": pub.isoformat(), "image_url": "https://elgoon.com/media/x.jpg"}
     a.update(kw)
     return a
 
@@ -76,7 +76,7 @@ OTHER = "إنتر ميامي يتعاقد مع مدافع جديد"
 ck("1 an upgraded archive piece is never news",
    P.excluded(art(1, EGY, cai(10), upgraded_ts="2026-09-27T10:00:00+03:00")) is not None)
 ck("2 «الجولة بالأرقام» (a round: source note) is excluded",
-   P.excluded(art(2, EGY, cai(10), sources=[{"name": "بيانات يلا سكور", "note": "round:egypt:5"}]))
+   P.excluded(art(2, EGY, cai(10), sources=[{"name": "بيانات الجون", "note": "round:egypt:5"}]))
    is not None)
 ck("3 an ordinary new article is eligible", P.excluded(art(3, EGY, cai(10))) is None)
 ck("4 priority: Egypt 2 > curated club 1 > anything else 0",
@@ -132,12 +132,12 @@ ck("17 an article already notified is never notified again", a is None)
 long_sum = "كلمة " * 400
 pl = json.loads(P.payload(art(22, EGY, cai(10), summary=long_sum)))
 ck("18 payload: title, a short body, the canonical link, a per-article tag",
-   pl["title"] == EGY and len(pl["body"]) <= 150 and pl["url"] == "https://yallascore.site/a/22"
+   pl["title"] == EGY and len(pl["body"]) <= 150 and pl["url"] == "https://elgoon.com/a/22"
    and pl["tag"] == "a-22", pl["body"][-20:])
 ck("19 payload fits the push record", len(P.payload(art(22, EGY * 10, cai(10), summary=long_sum))
                                           .encode("utf-8")) <= P.PAYLOAD_MAX)
 rep = json.loads(P.payload(art(23, EGY, cai(10), kind="report", match_id="560586")))
-ck("20 a match report opens the match page", rep["url"] == "https://yallascore.site/m/560586")
+ck("20 a match report opens the match page", rep["url"] == "https://elgoon.com/m/560586")
 ck("21 no SVG placeholder as the big image",
    "image" not in json.loads(P.payload(art(24, EGY, cai(10), image_url="/media/ph-ball.svg"))))
 
@@ -341,12 +341,12 @@ ck("50 the manifest is RTL Arabic with 192 + 512 icons that exist",
 # ------------------------------------------------------------- 6. the pages
 from site_lib import shell as S                    # noqa: E402
 S.VAPID_PUBLIC_KEY = ""
-dark = S.head("t", "d", "https://yallascore.site/") + S.foot() + S.push_cta()
+dark = S.head("t", "d", "https://elgoon.com/") + S.foot() + S.push_cta()
 ck("51 with no key the pages carry NO push markup",
    "push-btn" not in dark and "manifest" not in dark and "__VAPID" not in dark
    and "serviceWorker" not in dark)
 S.VAPID_PUBLIC_KEY = PUB
-on = S.head("t", "d", "https://yallascore.site/") + S.foot()
+on = S.head("t", "d", "https://elgoon.com/") + S.foot()
 ck("52 with the key: manifest, theme colour, a HIDDEN bell, the script with the key",
    'rel="manifest"' in on and 'name="theme-color"' in on
    and 'class="push-btn head-bell" hidden' in on and f"var KEY='{PUB}'" in on

@@ -11,7 +11,7 @@ const ck = (name, cond, extra = "") => { console.log((cond ? "  ok   " : "  FAIL
 const store = new Map();
 globalThis.caches = { default: { match: async (k) => store.get(k.url)?.clone(), put: async (k, r) => { store.set(k.url, r); } } };
 const waits = []; const ctx = { waitUntil: (p) => waits.push(p) };
-const req = () => new Request("https://yallascore.site/data/bundle");
+const req = () => new Request("https://elgoon.com/data/bundle");
 
 let r = await worker.fetch(req(), {}, ctx);
 ck("1 no DATA binding: 404, not a crash", r.status === 404);

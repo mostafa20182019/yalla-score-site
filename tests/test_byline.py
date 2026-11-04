@@ -29,7 +29,7 @@ ck("1 the generic team byline stays the team",
 ck("1b the editor's own name, as the AI prompts store it, is signed as the team too",
    B.byline({"author": NAME}) == TEAM)
 ck("2 so does the site name and the older variant",
-   B.byline({"author": B.SITE_NAME}) == TEAM and B.byline({"author": "فريق يلا سكور"}) == TEAM)
+   B.byline({"author": B.SITE_NAME}) == TEAM and B.byline({"author": "فريق الجون"}) == TEAM)
 ck("3 and a missing or empty author",
    B.byline({}) == TEAM and B.byline({"author": ""}) == TEAM)
 ck("4 a real person's name is NOT overwritten",
@@ -96,7 +96,7 @@ ck("17 the disclosure repeats where the person is introduced (/editors)",
 ck("18 and on /about, next to the claim that we write our own copy",
    "بمساعدة أدوات ذكاء اصطناعي في الصياغة وتحت مراجعته" in flat)
 ck("19 no leftover claim that a faceless team writes the articles",
-   "فريق تحرير يلا سكور" not in flat)
+   "فريق تحرير الجون" not in flat)
 
 print()
 print(f"{len(fails)} FAILED: {', '.join(fails)}" if fails else "ALL BYLINE TESTS PASSED")

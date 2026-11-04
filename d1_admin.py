@@ -208,6 +208,53 @@ def apply_text_fix(cur, fix):
     return upd or None
 
 
+# The rebrand (2026-11-04): «يلا سكور» / yallascore.site -> «الجون» / elgoon.com.
+# The OLD name is still what the user's own words quote, so only these
+# rendered fields change; a link to the old host keeps working anyway (the
+# Worker 301s it) but the canonical copy should name the site we are.
+REBRAND = [("https://yallascore.site", "https://elgoon.com"),
+           ("yallascore.site", "elgoon.com"),
+           ("يلا سكور", "الجون"),
+           ("Yalla Score", "Elgoon")]
+REBRAND_FIELDS = ("title", "summary", "body", "fb_post", "image_url", "image_credit")
+
+
+def rebrand_fields(rec, subs=REBRAND, fields=REBRAND_FIELDS):
+    """{field: new value} for the fields of one article the rebrand changes,
+    or None. Pure: the task below and its test share it."""
+    upd = {}
+    for k in fields:
+        v = rec.get(k)
+        if not isinstance(v, str) or not v:
+            continue
+        nv = v
+        for a, b in subs:
+            nv = nv.replace(a, b)
+        if nv != v:
+            upd[k] = nv
+    return upd or None
+
+
+def _rebrand():
+    """Rewrite the brand and the domain inside every published article in D1
+    (924 carried the old domain, 357 the old name on 2026-11-04). Idempotent:
+    a second run finds nothing to change. Exports afterwards so
+    data/articles.json (the build's offline fallback) matches."""
+    applied = 0
+    rows = store.article_all(with_body=True)
+    for a in rows:
+        upd = rebrand_fields(a)
+        if not upd:
+            continue
+        store.article_update(str(a["article_id"]), upd)
+        applied += 1
+    print(f"rebrand: {applied} of {len(rows)} articles rewritten "
+          f"({', '.join(f'{a!r} -> {b!r}' for a, b in REBRAND)})")
+    if applied:
+        n = store.article_export()
+        print(f"exported D1 -> data/articles.json ({n} articles)")
+
+
 def _fix_text():
     """Correct the TEXT of already-published articles from data/text_fixes.json
     (2026-10-15: article 767 named a retired player where its own sources
@@ -282,7 +329,7 @@ def main():
     be = store.backend()
     print(f"backend: {be}")
     WRITERS = ("--init", "--migrate", "--export", "--verify", "--warehouse",
-               "--sample", "--fix-images", "--fix-text", "--delete-article", "--delete-thin")
+               "--sample", "--fix-images", "--fix-text", "--rebrand", "--delete-article", "--delete-thin")
     if "--delete-thin" in args and "dry" in args:
         WRITERS = tuple(w for w in WRITERS if w != "--delete-thin")   # the listing needs no D1
     if be == "json" and any(a in args for a in WRITERS):
@@ -338,6 +385,9 @@ def main():
 
     if "--fix-text" in args:
         _fix_text()
+
+    if "--rebrand" in args:
+        _rebrand()
 
     if "--delete-article" in args:
         # ids come as the next argument, comma-separated: --delete-article 565,566

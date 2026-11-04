@@ -42,7 +42,7 @@ ck("1 a placeholder gives way to the matchup card (result card for a finished ma
    url == f"{SITE_BASE}/media/{fname}" and fname.endswith("-result.jpg"), str(url))
 ck("2 the card file was drawn into media/", os.path.exists(os.path.join(tmp, fname)) and os.path.getsize(os.path.join(tmp, fname)) > 10000)
 ck("3 the article dict now carries the card + our credit",
-   art["image_url"] == url and art["image_credit"] == "الصورة: تصميم يلا سكور")
+   art["image_url"] == url and art["image_credit"] == "الصورة: تصميم الجون")
 
 # 2 no image at all, upcoming match -> the preview card
 art2 = {"article_id": "841", "kind": "preview", "match_id": "T560611"}

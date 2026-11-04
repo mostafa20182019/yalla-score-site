@@ -106,7 +106,7 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
     bm = Image.new("L", (52, 52), 0)
     ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
     img.paste(ball, (W - 52 - 40, 36), ball)
-    text_r(W - 40 - 52 - 12, 40, "يلا سكور", FC.font("ExtraBold", 34))
+    text_r(W - 40 - 52 - 12, 40, "الجون", FC.font("ExtraBold", 34))
     when = MC.when_ar(date, None)
     text_l(40, 46, when, FC.font("Bold", 26), SOFT)
     every = comp == "all"
@@ -211,7 +211,7 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
     if tv:
         rrect([40, fy, W - 40, fy + 60], 18, (246, 192, 60, 26), (246, 192, 60, 120), 2)
         text_c(W // 2, fy + 10, f"القنوات الناقلة: {tv}", FC.font("Bold", 30), WHITE)
-    text_l(40, H - 46, "yallascore.site", FC.font("Bold", 24), SOFT)
+    text_l(40, H - 46, "elgoon.com", FC.font("Bold", 24), SOFT)
     live_n = sum(1 for x in sts if x == "LIVE")
     still = {1: "ومباراة واحدة مستمرة", 2: "ومباراتان مستمرتان"}.get(live_n, f"و{live_n} مباريات مستمرة")
     foot = ("النتائج النهائية" if all_done else

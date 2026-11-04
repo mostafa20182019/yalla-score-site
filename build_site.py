@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Yalla Score - static-site generator.
+Elgoon - static-site generator.
 Reads data/*.json (exported from the APEX DB via SQLcl `set sqlformat json`)
 and writes a fully SEO-optimized static site into dist/.
 

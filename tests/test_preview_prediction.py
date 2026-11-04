@@ -2,7 +2,7 @@ r"""Previews carry OUR prediction (2026-10-07) - and only our numbers.
 
     python tests/test_preview_prediction.py   (from the repo root)
 
-match_brief.prediction_block() builds the «توقع يلا سكور» part of a preview
+match_brief.prediction_block() builds the «توقع الجون» part of a preview
 brief from the same code the match page uses (site_lib.model.model_core ->
 AN.predict / AN.explain, formatted with the page's _pct), and article_put.py
 refuses a preview whose percentages are not in that brief, or that drops the
@@ -73,7 +73,7 @@ ck("no model data for the competition -> no block",
 brief = {"kind": "preview", "match": {"match_id": 4789470}, "prediction": pr}
 good_body = (f"<p>يرجّح النموذج فوز الضيف بنسبة {pr['away_win']}، والتعادل {pr['draw']}.</p>"
              f"<p>{pr['disclaimer']}</p>" + "<p>" + "كلمة " * 320 + "</p>")
-rec = {"title": "توقع يلا سكور: الفتح × الأهلي", "summary": "s", "body": good_body, "author": "x",
+rec = {"title": "توقع الجون: الفتح × الأهلي", "summary": "s", "body": good_body, "author": "x",
        "pub_date": "2026-10-08", "match_id": 4789470, "kind": "preview"}
 ck("the brief's own percentages pass", MB.unknown_percents(rec, brief) == [])
 bad = dict(rec, body=good_body + "<p>واحتمال فوز الأهلي 70%</p>")

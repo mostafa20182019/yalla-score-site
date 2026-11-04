@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Yalla Score - match-analysis brief builder for the curated clubs.
+Elgoon - match-analysis brief builder for the curated clubs.
 
 Feeds the AI match articles (.github/prompts/match-article.md) with REAL
 numbers only, gathered from data we already carry plus 365scores' head-to-head
@@ -133,7 +133,7 @@ _AR_DIGITS = str.maketrans("٠١٢٣٤٥٦٧٨٩", "0123456789")
 
 
 def prediction_block(d, m):
-    """«توقع يلا سكور» for a preview (2026-10-07, user ask: «ننزل أخبار قبل
+    """«توقع الجون» for a preview (2026-10-07, user ask: «ننزل أخبار قبل
     المباراة عن توقعاتنا وعن تحليلنا»).
 
     Built from the SAME code path as the match page - site_lib.model.model_core
@@ -575,8 +575,8 @@ def build_brief(d, m, kind):
                          venue=(brief.get("s365") or {}).get("venue") or "",
                          feed=(brief.get("s365") or {}).get("colors"))
             brief["image"] = {"file": f"media/{fname}",
-                              "url": f"https://yallascore.site/media/{fname}",
-                              "credit": "الصورة: تصميم يلا سكور"}
+                              "url": f"https://elgoon.com/media/{fname}",
+                              "credit": "الصورة: تصميم الجون"}
         except Exception as ex:                             # noqa: BLE001
             brief["image_error"] = str(ex)[:160]
     if kind == "preview" and b.PREDICTIONS_ON:     # the predictions switch (site_lib/config.py)
@@ -666,7 +666,7 @@ def to_markdown(br):
             L.append(f"  - {x['date']} {x['home']} {x['score']} {x['away']} ({x['competition']})")
     pr = br.get("prediction")
     if pr:
-        L.append(f"\n## توقع يلا سكور (أرقام النموذج حتى {pr['as_of_cairo']} — انقلها كما هي)")
+        L.append(f"\n## توقع الجون (أرقام النموذج حتى {pr['as_of_cairo']} — انقلها كما هي)")
         L.append(f"فوز {m['home']} {pr['home_win']} | تعادل {pr['draw']} | فوز {m['away']} {pr['away_win']} — الأرجح: {pr['favourite']} ({pr['favourite_prob']})")
         L.append("الأهداف المتوقعة من النموذج: " + "، ".join(f"{k} {v}" for k, v in pr["expected_goals_model"].items()))
         L.append("النتائج الأكثر احتمالًا (أرض-ضيف): " + "، ".join(f"{s['score_home_away']} ({s['prob']})" for s in pr["likely_scores"]))
@@ -686,7 +686,7 @@ def to_markdown(br):
         L.append(f"تنبيه إلزامي: {pr['disclaimer']}")
     pc = br.get("prediction_check")
     if pc:
-        L.append(f"\n## هل أصاب توقع يلا سكور؟ (من السجل المجمّد قبل المباراة — انقله كما هو)")
+        L.append(f"\n## هل أصاب توقع الجون؟ (من السجل المجمّد قبل المباراة — انقله كما هو)")
         L.append(f"قال النموذج: فوز {m['home']} {pc['home_win']} | تعادل {pc['draw']} | فوز {m['away']} {pc['away_win']} — "
                  f"رجّح {pc['model_pick']} ({pc['model_pick_prob']}) ونتيجة {pc['model_likely_score_home_away']} ({pc['confidence_ar']})")
         L.append(f"النتيجة: {pc['final_score_home_away']} = {pc['result']} → {pc['verdict_ar']}"

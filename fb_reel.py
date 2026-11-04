@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""Yalla Score — vertical match reel (1080x1920) from OUR data and design.
+"""Elgoon — vertical match reel (1080x1920) from OUR data and design.
 
     python fb_reel.py --match 560586              # preview: the card as a PNG
     python fb_reel.py --match 560586 --mp4        # the MP4: the card + music
@@ -78,7 +78,7 @@ def background():
 
 def header(d, comp, rnd):
     f = C.font("ExtraBold", 44)
-    C.draw_center(d, W / 2, 70, C.ar("يلا سكور"), f, C.WHITE)
+    C.draw_center(d, W / 2, 70, C.ar("الجون"), f, C.WHITE)
     sub = comp + (f" · الجولة {rnd}" if rnd else "")
     C.draw_center(d, W / 2, 140, C.ar(sub), C.font("Bold", 34), (222, 238, 248))
 
@@ -86,7 +86,7 @@ def header(d, comp, rnd):
 def footer(d, alpha=255):
     C.draw_center(d, W / 2, H - 120, C.ar("التحليل الكامل بالأرقام"),
                   C.font("Bold", 34), (222, 238, 248))
-    C.draw_center(d, W / 2, H - 70, "yallascore.site", C.font("ExtraBold", 40), C.WHITE)
+    C.draw_center(d, W / 2, H - 70, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
 
 
 def crest_at(im, url, name, size, cx, cy, alpha=255):

@@ -1,9 +1,9 @@
-"""Yalla Score data-analysis layer (تحليلات): team strength model, match
+"""Elgoon data-analysis layer (تحليلات): team strength model, match
 outcome probabilities, prediction log + accuracy, player insights.
 
 Pure computation on the JSON files fetch_data.py already produces — no network,
 no invented numbers. build_site.py imports this and renders /analysis pages and
-the «توقع يلا سكور» block on match pages.
+the «توقع الجون» block on match pages.
 
 Model (documented on the site's «كيف يعمل النموذج» section):
   * strength   — Elo per competition over this season's finished matches

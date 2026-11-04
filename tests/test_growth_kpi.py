@@ -53,14 +53,14 @@ reply = {"data": {"viewer": {"accounts": [{
               {"count": 120, "sum": {"visits": 90}, "dimensions": {"date": "2026-10-17"}}],
     "byRef": [{"count": 90, "sum": {"visits": 80}, "dimensions": {"refererHost": "m.facebook.com"}},
               {"count": 50, "sum": {"visits": 40}, "dimensions": {"refererHost": "www.google.com"}},
-              {"count": 30, "sum": {"visits": 25}, "dimensions": {"refererHost": "yallascore.site"}},
+              {"count": 30, "sum": {"visits": 25}, "dimensions": {"refererHost": "elgoon.com"}},
               {"count": 5, "sum": {"visits": 5}, "dimensions": {"refererHost": ""}}]}]}}}
 st = K.parse_rum(reply, "2026-10-11")
 ck("8 the 7-day window sums the days on or after its first date, the rest is the previous week",
    st["visits_7d"] == 160 and st["pageviews_7d"] == 220 and st["visits_prev7"] == 30 and st["pageviews_prev7"] == 40, str(st))
 ck("9 referrers: our own host dropped, the empty host is (direct), facebook first",
    st["top_referrers_14d"][0] == ["m.facebook.com", 80] and ["(direct)", 5] in st["top_referrers_14d"]
-   and not any(h.endswith("yallascore.site") for h, _ in st["top_referrers_14d"]), str(st["top_referrers_14d"]))
+   and not any(h.endswith("elgoon.com") for h, _ in st["top_referrers_14d"]), str(st["top_referrers_14d"]))
 _pj = K._post_json
 K._post_json = lambda url, body, headers, timeout=40: reply
 try:

@@ -1,6 +1,6 @@
 <dialog id="ppop" class="ppop" aria-labelledby="ppop-ttl">
 <div class="ppop-in">
-  <div class="ppop-hd"><h3 id="ppop-ttl">توقع يلا سكور</h3>
+  <div class="ppop-hd"><h3 id="ppop-ttl">توقع الجون</h3>
     <form method="dialog"><button class="ppop-x" aria-label="إغلاق">×</button></form></div>
   <p class="ppop-t"><bdi class="ppop-nh"></bdi> <span>×</span> <bdi class="ppop-na"></bdi></p>
   <p class="ppop-m"><span class="ppop-fav"></span><span class="ppop-cf"></span></p>
@@ -8,7 +8,7 @@
   <p class="ppop-probs pr-probs"></p>
   <p class="ppop-res" hidden>النتيجة <b class="ppop-rv sc-in"></b></p>
   <p class="ppop-s"><span class="ppop-slab">النتيجة الأكثر احتمالًا</span> <b class="ppop-val sc-in"></b></p>
-  <p class="ppop-d">احتمالات إحصائية من نموذج يلا سكور مبنية على نتائج الموسم الحالي، وليست نصيحة للمراهنة.</p>
+  <p class="ppop-d">احتمالات إحصائية من نموذج الجون مبنية على نتائج الموسم الحالي، وليست نصيحة للمراهنة.</p>
   <a class="ppop-go" href="#">لماذا رجّح النموذج هذا التوقع؟ ←</a>
   <a class="ppop-rec" href="/predictions.html" hidden>السجل الكامل، إصابةً وخطأ ←</a>
 </div>
@@ -42,7 +42,7 @@ document.addEventListener("click",function(e){
   // A finished row carries the real result; that attribute IS the switch
   // between "here is what we think" and "here is what we said, check us".
   var res=b.getAttribute("data-pr"),fin=!!res,cf=q(".ppop-cf");
-  q("#ppop-ttl").textContent=fin?"توقعنا قبل المباراة":"توقع يلا سكور";
+  q("#ppop-ttl").textContent=fin?"توقعنا قبل المباراة":"توقع الجون";
   // The verdict is on the OUTCOME, never on the scoreline. 42% on the home
   // win that then happened is a hit even though the 1-1 we called closest
   // ended 3-2 - and a green tick beside "توقعنا 1-1 · 3-2" reads like a

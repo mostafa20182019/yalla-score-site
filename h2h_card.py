@@ -174,7 +174,7 @@ def render(m, games, out, when="", official=False):
     bm = Image.new("L", (52, 52), 0)
     ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
     img.paste(ball, (W - 52 - 40, 36), ball)
-    text_r(W - 40 - 52 - 12, 40, "يلا سكور", FC.font("ExtraBold", 34))
+    text_r(W - 40 - 52 - 12, 40, "الجون", FC.font("ExtraBold", 34))
     sub = " · ".join(x for x in (comp_label(m.get("competition")), when) if x)
     if sub:
         text_l(40, 46, sub, FC.font("Bold", 26), SOFT)
@@ -289,7 +289,7 @@ def render(m, games, out, when="", official=False):
     while d.textlength(FC.ar(fact), font=ff) > W - 120 and ff.size > 18:
         ff = FC.font("Bold", ff.size - 2)
     text_c(W // 2, fy + 10 + (30 - ff.size) // 2, fact, ff, WHITE)
-    text_l(40, H - 46, "yallascore.site", FC.font("Bold", 24), SOFT)
+    text_l(40, H - 46, "elgoon.com", FC.font("Bold", 24), SOFT)
     src = "البيانات: 365Scores · " + (notes.get("source") or "النتائج الرسمية")
     if official:
         # the editor left the friendlies out - the card says so

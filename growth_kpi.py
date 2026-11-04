@@ -102,7 +102,7 @@ def parse_rum(j, since7):
     refs = {}
     for g in acc.get("byRef") or []:
         h = (g.get("dimensions") or {}).get("refererHost") or "(direct)"
-        if h.endswith("yallascore.site"):
+        if h.endswith(("elgoon.com", "yallascore.site")):
             continue                                   # our own pages are not a source
         refs[h] = refs.get(h, 0) + int((g.get("sum") or {}).get("visits") or 0)
     # the referrer groups cover 14 days; the 7-day split is not available per host

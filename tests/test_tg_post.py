@@ -24,12 +24,12 @@ def ck(name, cond, extra=""):
 ART = {
     "article_id": "557",
     "title": "لودوجوريتس يغلق ملف عودة عبد المجيد",
-    "image_url": "https://yallascore.site/media/x.jpg",
+    "image_url": "https://elgoon.com/media/x.jpg",
     "fb_post": ("لودوجوريتس يغلق ملف عودة عبد المجيد\n"
                 "أكد المدير الفني أن اللاعب حسم قراره بمواصلة مسيرته في أوروبا.\n"
                 "⚽ خاض 4 مباريات فقط بواقع 276 دقيقة.\n"
                 "التفاصيل الكاملة على الموقع 👇\n"
-                "https://yallascore.site/a/557.html\n"
+                "https://elgoon.com/a/557.html\n"
                 "#يلا_سكور #الزمالك #حسام_عبد_المجيد"),
 }
 msg = T.message(ART)
@@ -38,9 +38,9 @@ msg = T.message(ART)
 ck("1 the title is bold, once", msg.count(ART["title"]) == 1 and msg.startswith("<b>"))
 ck("2 the prose survives", "حسم قراره بمواصلة مسيرته" in msg)
 ck("3 the bare URL inside the Facebook text is dropped",
-   "https://yallascore.site/a/557.html" not in msg)
+   "https://elgoon.com/a/557.html" not in msg)
 ck("4 exactly ONE link, and it is the canonical extensionless form",
-   msg.count("yallascore.site") == 1 and 'href="https://yallascore.site/a/557"' in msg)
+   msg.count("elgoon.com") == 1 and 'href="https://elgoon.com/a/557"' in msg)
 ck("5 the «… على الموقع 👇» call to action is dropped", "👇" not in msg)
 ck("6 the writer's own hashtags are kept (richer than anything computed here)",
    "#يلا_سكور #الزمالك #حسام_عبد_المجيد" in msg)
@@ -50,12 +50,12 @@ long_art = dict(ART, fb_post=ART["title"] + "\n" + ("كلمة " * 400))
 lm = T.message(long_art)
 ck("8 an over-long piece is trimmed, not truncated mid-link",
    len(lm) <= T.CAPTION_MAX and lm.rstrip().endswith("#يلا_سكور") is False
-   and 'href="https://yallascore.site/a/557"' in lm, len(lm))
+   and 'href="https://elgoon.com/a/557"' in lm, len(lm))
 
 # a match report posts the MATCH url, like Facebook (the article lives there)
 rep = dict(ART, kind="report", match_id="560586", fb_post="عنوان\nنص")
 ck("9 a match report links to /m/<id>, not /a/<id>",
-   'href="https://yallascore.site/m/560586"' in T.message(rep))
+   'href="https://elgoon.com/m/560586"' in T.message(rep))
 
 # ------------------------------------------------------------- the guards
 src = open("tg_post.py", encoding="utf-8").read()

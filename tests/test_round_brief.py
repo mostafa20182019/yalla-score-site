@@ -27,7 +27,7 @@ def ck(name, cond, extra=""):
 
 BRIEF = {"first_day": "2026-09-14", "last_day": "2026-09-17", "as_of": "2026-09-27",
          "round_key": "round:egypt:5",
-         "data_source": {"name": "بيانات يلا سكور", "url": "https://yallascore.site/fixtures/egypt",
+         "data_source": {"name": "بيانات الجون", "url": "https://elgoon.com/fixtures/egypt",
                          "note": "round:egypt:5"},
          "allowed_numbers": sorted(RB.numbers_in("0 1 15 13 7 10 72 16 2.1 21 6 1577 5"))}
 SRC = [dict(BRIEF["data_source"])]
@@ -66,7 +66,7 @@ ck("8 a clean data article validates with ONE source (ours)", bad == [], bad)
 bad, _ = AP.validate(draft(body))
 ck("9 the same draft WITHOUT --data-brief is refused by the two-source rule",
    any("independent source" in x for x in bad), bad)
-bad, _ = AP.validate(draft(body, sources=[{"name": "بيانات يلا سكور", "url": "https://yallascore.site/x",
+bad, _ = AP.validate(draft(body, sources=[{"name": "بيانات الجون", "url": "https://elgoon.com/x",
                                             "note": "round:egypt:4"}]), brief=BRIEF)
 ck("10 the wrong round key is refused (the dedup would not see this round)",
    any("facts pack's source" in x for x in bad), bad)

@@ -38,7 +38,7 @@ def privacy_page(urls):
     write("privacy.html", render(
         "privacy.html",
         page_head=Markup(head("سياسة الخصوصية — " + SITE_NAME,
-                              "سياسة الخصوصية وملفات تعريف الارتباط والإعلانات في موقع يلا سكور.",
+                              "سياسة الخصوصية وملفات تعريف الارتباط والإعلانات في موقع الجون.",
                               SITE_BASE + "/privacy.html")),
         ref_today=REF_TODAY,
         contact=contact,
@@ -54,7 +54,7 @@ def about_page(urls):
     write("about.html", render(
         "about.html",
         page_head=Markup(head("من نحن — " + SITE_NAME,
-                              "تعرّف على يلا سكور: موقع عربي لأخبار كرة القدم ونتائج المباريات وجداول الترتيب.",
+                              "تعرّف على الجون: موقع عربي لأخبار كرة القدم ونتائج المباريات وجداول الترتيب.",
                               SITE_BASE + "/about.html")),
         page_foot=Markup(foot()), **common))
     urls.append("/about.html")
@@ -84,7 +84,7 @@ def contact_page(urls):
     write("contact.html", render(
         "contact.html",
         page_head=Markup(head("اتصل بنا — " + SITE_NAME,
-                              "تواصل مع فريق يلا سكور للاستفسارات والتصحيحات والإعلانات.",
+                              "تواصل مع فريق الجون للاستفسارات والتصحيحات والإعلانات.",
                               SITE_BASE + "/contact.html")),
         contact_email=CONTACT_EMAIL, fb_url=FB_PAGE_URL, tg_url=TG_CHANNEL_URL,
         page_foot=Markup(foot())))
@@ -96,7 +96,7 @@ def terms_page(urls):
     write("terms.html", render(
         "terms.html",
         page_head=Markup(head("شروط الاستخدام — " + SITE_NAME,
-                              "شروط استخدام موقع يلا سكور: حدود المسؤولية وقواعد استخدام المحتوى.",
+                              "شروط استخدام موقع الجون: حدود المسؤولية وقواعد استخدام المحتوى.",
                               SITE_BASE + "/terms.html")),
         site_name=SITE_NAME, page_foot=Markup(foot())))
     urls.append("/terms.html")
@@ -108,7 +108,7 @@ def editorial_page(urls):
     write("editorial.html", render(
         "editorial.html",
         page_head=Markup(head("السياسة التحريرية — " + SITE_NAME,
-                              "منهج يلا سكور التحريري: التحقق من مصادر متعددة، صياغة أصلية، صور مرخصة، وتصحيح علني للأخطاء.",
+                              "منهج الجون التحريري: التحقق من مصادر متعددة، صياغة أصلية، صور مرخصة، وتصحيح علني للأخطاء.",
                               SITE_BASE + "/editorial.html")),
         editor_name=EDITOR_NAME, pred_on=PREDICTIONS_ON, page_foot=Markup(foot())))
     urls.append("/editorial.html")
@@ -132,7 +132,7 @@ def videos_page(videos, urls):
     """/videos, grouped by competition (item.cat: "wc" | "epl" | "laliga" | absent
     -> "misc"); empty groups are skipped. Template: site_src/templates/videos.html."""
     page_head = Markup(head(f"فيديوهات كرة القدم — {SITE_NAME}",
-                            "فيديوهات كأس العالم 2026 والدوري الإنجليزي والدوري الإسباني على يلا سكور.",
+                            "فيديوهات كأس العالم 2026 والدوري الإنجليزي والدوري الإسباني على الجون.",
                             SITE_BASE + "/videos.html", active="videos"))
     groups = []
     if videos:

@@ -67,7 +67,7 @@ const req = (path, { method = "GET", token = TOKEN, body, origin } = {}) => {
   const h = { "Origin": origin || "http://localhost:8123" };
   if (token !== null) h["x-admin-token"] = token;
   if (body) h["content-type"] = "application/json";
-  return new Request("https://yallascore.site" + path,
+  return new Request("https://elgoon.com" + path,
     { method, headers: h, body: body ? JSON.stringify(body) : undefined });
 };
 const ART = {
@@ -192,14 +192,14 @@ ck("24 an unknown route is a 404", r.status === 404, String(r.status));
 
 /* the public site must not be affected: a normal path still hits ASSETS */
 let served = false;
-r = await worker.fetch(new Request("https://yallascore.site/a/458"),
+r = await worker.fetch(new Request("https://elgoon.com/a/458"),
   { ADMIN_TOKEN: TOKEN, DB: fakeDB(),
     ASSETS: { fetch: async () => { served = true; return new Response("page"); } } }, {});
 ck("25 a normal page still comes from the static assets, not from D1", served);
 
 /* and D1 being down cannot take the public site with it */
 served = false;
-r = await worker.fetch(new Request("https://yallascore.site/"),
+r = await worker.fetch(new Request("https://elgoon.com/"),
   { ADMIN_TOKEN: TOKEN, DB: null,
     ASSETS: { fetch: async () => { served = true; return new Response("home"); } } }, {});
 ck("26 the site still serves with no D1 binding at all", served && r.status === 200);

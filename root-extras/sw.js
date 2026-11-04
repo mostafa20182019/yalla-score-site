@@ -1,4 +1,4 @@
-/* Yalla Score service worker - WEB PUSH ONLY (2026-09-27).
+/* Elgoon service worker - WEB PUSH ONLY (2026-09-27).
  *
  * It shows a notification when push_send.py sends one, and opens the article
  * when it is tapped. That is all it does, on purpose:
@@ -28,7 +28,7 @@ self.addEventListener("push", (e) => {
     data: { url: d.url || "/" },
   };
   if (d.image) opts.image = d.image;
-  e.waitUntil(self.registration.showNotification(d.title || "يلا سكور", opts));
+  e.waitUntil(self.registration.showNotification(d.title || "الجون", opts));
 });
 
 self.addEventListener("notificationclick", (e) => {

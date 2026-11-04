@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Yalla Score - Facebook result-card generator.
+Elgoon - Facebook result-card generator.
 
 Renders one 1200x630 PNG per FINISHED match of the curated clubs (TICKER_TEAMS)
 from OUR data (data/matches.json + data/goal_events.json): club crests, final
@@ -271,12 +271,12 @@ def render_card(m, ge_idx):
 
     # footer brand
     f_b = font("ExtraBold", 40)
-    brand = ar("يلا سكور")
+    brand = ar("الجون")
     bw = text_w(d, brand, f_b)
     bx = W - 60 - bw
     d.text((bx, H - 74), brand, font=f_b, fill=WHITE)
     d.ellipse((bx - 56, H - 70, bx - 16, H - 30), fill=WHITE)      # brand disc (favicon v3)
-    d.text((60, H - 66), "yallascore.site", font=font("Bold", 30), fill=(225, 238, 247))
+    d.text((60, H - 66), "elgoon.com", font=font("Bold", 30), fill=(225, 238, 247))
     return im
 
 def whistle_event(m, ge_idx):
@@ -333,7 +333,7 @@ def post_text(m, ge_idx=None):
 GRAPH_PHOTOS = "https://graph.facebook.com/v23.0/me/photos"
 STATE_KEEP_DAYS = 7
 MAX_ATTEMPTS = 3
-LIVE_JSON_URL = "https://yallascore.site/live.json"
+LIVE_JSON_URL = "https://elgoon.com/live.json"
 STABLE_MIN = 25          # a score /live.json cannot confirm must sit unchanged this long before posting
 
 def fetch_live():
@@ -501,7 +501,7 @@ def post_cards(picked, ge_idx, out_dir):
 
 # ---------------------------------------------------------------- main
 def main():
-    ap = argparse.ArgumentParser(description="Facebook result cards from Yalla Score data")
+    ap = argparse.ArgumentParser(description="Facebook result cards from Elgoon data")
     ap.add_argument("--hours", type=float, default=36, help="finished within the last N hours (default 36)")
     ap.add_argument("--match", type=int, help="render this match_id only (any club/status)")
     ap.add_argument("--all-finished", action="store_true", help="ignore the time window")

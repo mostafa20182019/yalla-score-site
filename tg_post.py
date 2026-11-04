@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Post new articles to the Yalla Score Telegram channel.
+"""Post new articles to the Elgoon Telegram channel.
 
     python tg_post.py --auto        # what publish.yml runs, after Deploy
     python tg_post.py --dry         # show what would be sent, send nothing
@@ -122,7 +122,7 @@ def message(art):
     body, tags = strip_tail(strip_title(clean(text), title))
     link = FB.article_link(art)
     head = f"<b>{title}</b>"
-    tail = f'\n\n<a href="{html.escape(link)}">اقرأ التفاصيل على يلا سكور</a>'
+    tail = f'\n\n<a href="{html.escape(link)}">اقرأ التفاصيل على الجون</a>'
     if tags:
         tail += f"\n{tags}"
     room = CAPTION_MAX - len(head) - len(tail) - 4

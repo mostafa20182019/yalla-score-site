@@ -68,7 +68,7 @@ top = max(int(a["article_id"]) for a in orig)
 draft = {"title": "عنوان اختبار", "summary": "ملخص اختبار",
          "body": "<p>" + ("كلمة " * 400) + "</p>", "author": "فريق التحرير",
          "pub_date": "2026-09-10", "pub_ts": "2026-09-10T09:00:00+03:00",
-         "image_url": "https://yallascore.site/media/ph-pitch.svg",
+         "image_url": "https://elgoon.com/media/ph-pitch.svg",
          "image_credit": "",
          # TWO independent outlets, on different domains: since the source
          # gate shipped (2026-09-17) a one-source news draft is refused, and
@@ -151,7 +151,7 @@ bad, _ = AP.validate(draft)
 ck("22 a good draft passes", not bad, str(bad))
 
 # the placeholder is the one image allowed with no credit
-bad, _ = AP.validate(dict(draft, image_url="https://yallascore.site/media/ph-ball.svg"))
+bad, _ = AP.validate(dict(draft, image_url="https://elgoon.com/media/ph-ball.svg"))
 ck("23 our own placeholder needs no credit", not bad, str(bad))
 
 # ------------------------------------------------------- the export + fallback
@@ -231,10 +231,10 @@ ck("34 the article page renders one click-to-load card per embed, no platform sc
 
 # ---------------------------------------------------------------- missing media (2026-09-13, article 497)
 _md = tempfile.mkdtemp(); open(os.path.join(_md, "ok.jpg"), "wb").write(b"x")
-_arts = [{"article_id": "1", "image_url": "https://yallascore.site/media/ok.jpg", "image_credit": "c1"},
-         {"article_id": "2", "image_url": "https://yallascore.site/media/not-yet.jpg", "image_credit": "c2"},
+_arts = [{"article_id": "1", "image_url": "https://elgoon.com/media/ok.jpg", "image_credit": "c1"},
+         {"article_id": "2", "image_url": "https://elgoon.com/media/not-yet.jpg", "image_credit": "c2"},
          {"article_id": "3", "image_url": "https://upload.wikimedia.org/x.jpg", "image_credit": "c3"}]
-_miss = BS.resolve_missing_media(_arts, media_dir=_md, base="https://yallascore.site")
+_miss = BS.resolve_missing_media(_arts, media_dir=_md, base="https://elgoon.com")
 ck("35 an article whose media file is not in the checkout yet renders a placeholder (no credit) for this build only",
    _miss == ["not-yet.jpg"] and "/media/ph-" in _arts[1]["image_url"] and _arts[1]["image_credit"] == ""
    and _arts[0]["image_url"].endswith("ok.jpg") and _arts[0]["image_credit"] == "c1"
@@ -243,15 +243,15 @@ ck("35 an article whose media file is not in the checkout yet renders a placehol
 
 # ---- a curated club's story never ships with the placeholder (2026-10-18)
 _bd = {"title": "رسميًا.. برشلونة يعلن غياب كوندي وإريك جارسيا عن باريس سان جيرمان", "summary": "s", "body": "<p>x</p>",
-       "image_url": "https://yallascore.site/media/ph-pitch.svg", "image_credit": ""}
+       "image_url": "https://elgoon.com/media/ph-pitch.svg", "image_credit": ""}
 _r = AP.club_image_fallback(_bd, ["barcelona"])
 ck("F1 a Barcelona story with the placeholder takes one of the folder's «شعار» images, with its credit",
-   _r["image_url"].startswith("https://yallascore.site/media/barcelona-") and _r["image_credit"], _r.get("image_url"))
+   _r["image_url"].startswith("https://elgoon.com/media/barcelona-") and _r["image_credit"], _r.get("image_url"))
 ck("F2 the pick is stable for the same title", AP.club_image_fallback(_bd, ["barcelona"])["image_url"] == _r["image_url"])
 _r2 = AP.club_image_fallback(dict(_bd, title="برشلونة يضم حارسًا جديدًا"), ["barcelona"])
 ck("F3 another title may take another of the club's images (variety by hash), still from the folder",
-   _r2["image_url"].startswith("https://yallascore.site/media/barcelona-"))
-ck("F4 a real photo is left alone", AP.club_image_fallback(dict(_bd, image_url="https://yallascore.site/media/raphinha-barcelona-2025.jpg", image_credit="c"), ["barcelona"])["image_url"].endswith("raphinha-barcelona-2025.jpg"))
+   _r2["image_url"].startswith("https://elgoon.com/media/barcelona-"))
+ck("F4 a real photo is left alone", AP.club_image_fallback(dict(_bd, image_url="https://elgoon.com/media/raphinha-barcelona-2025.jpg", image_credit="c"), ["barcelona"])["image_url"].endswith("raphinha-barcelona-2025.jpg"))
 ck("F5 a match piece and a story with no curated club are left alone",
    AP.club_image_fallback(dict(_bd, match_id="1"), ["barcelona"])["image_url"].endswith("ph-pitch.svg")
    and AP.club_image_fallback(_bd, [])["image_url"].endswith("ph-pitch.svg"))

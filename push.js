@@ -21,7 +21,7 @@
  * endpoint), so a reader who taps the bell twice does not grow the table.
  */
 
-const ORIGIN = "https://yallascore.site";
+const ORIGIN = "https://elgoon.com";
 const MAX_BODY = 4096;
 
 // the push services the browsers actually use (Chrome/Edge-Android/Samsung =

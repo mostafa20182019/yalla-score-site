@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>إدارة فيديوهات يلا سكور</title>
+<title>إدارة فيديوهات الجون</title>
 <style>
 :root{--green:#1a7f37;--green-d:#0f5e28;--ink:#0f172a;--muted:#64748b;--line:#e6ebf1;--bg:#eef2f6;--red:#e11d48}
 *{box-sizing:border-box}
@@ -50,7 +50,7 @@ details summary{cursor:pointer;font-weight:800;color:var(--green-d);font-size:.8
 </head>
 <body>
 <header class="head">
-  <h1 id="pageTitle">⚽ إدارة فيديوهات يلا سكور</h1>
+  <h1 id="pageTitle">⚽ إدارة فيديوهات الجون</h1>
   <span class="tag">صفحة محلية — لا تُنشر على الموقع</span>
   <span style="flex:1"></span>
   <button class="btn-sm" id="mVid" onclick="setMode('videos')" style="border-radius:999px">🎬 فيديوهات</button>
@@ -137,7 +137,7 @@ var OWNER="mostafa20182019", REPO="yalla-score-site", BRANCH="main";
 var MODE = localStorage.getItem("ys_admin_mode")==="reels" ? "reels" : "videos";
 var PATH = MODE==="reels" ? "data/reels.json" : "data/videos.json";
 var API="https://api.github.com/repos/"+OWNER+"/"+REPO+"/contents/"+PATH;
-var SITE="https://yallascore.site";
+var SITE="https://elgoon.com";
 var items=[], fileSha=null, dirty=false, checked=null;
 
 function setMode(m){
@@ -148,8 +148,8 @@ function setMode(m){
 }
 function applyModeUI(){
   var reel = MODE==="reels";
-  document.getElementById("pageTitle").textContent = reel ? "⚡ إدارة ريلز يلا سكور" : "⚽ إدارة فيديوهات يلا سكور";
-  document.title = reel ? "إدارة ريلز يلا سكور" : "إدارة فيديوهات يلا سكور";
+  document.getElementById("pageTitle").textContent = reel ? "⚡ إدارة ريلز الجون" : "⚽ إدارة فيديوهات الجون";
+  document.title = reel ? "إدارة ريلز الجون" : "إدارة فيديوهات الجون";
   document.getElementById("mVid").className  = "btn-sm "+(reel?"btn-o":"btn-g");
   document.getElementById("mReel").className = "btn-sm "+(reel?"btn-g":"btn-o");
   if(reel){

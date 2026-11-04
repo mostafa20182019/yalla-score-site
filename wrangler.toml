@@ -1,4 +1,4 @@
-# Cloudflare deploy config for the Yalla Score static site.
+# Cloudflare deploy config for the Elgoon static site.
 # `wrangler deploy` (run from this folder) uploads ./dist to the existing
 # Cloudflare Workers project so the public URL stays the same.
 #

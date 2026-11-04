@@ -1,6 +1,6 @@
-# Yalla Score (يلا سكور)
+# Elgoon (الجون)
 
-**Live: https://yallascore.site** — an Arabic football site: scores and fixtures
+**Live: https://elgoon.com** — an Arabic football site: scores and fixtures
 for the Egyptian league, the CAF Champions League and the big European leagues,
 an analysis per match, a prediction model with a public record of every call
 it made (hits and misses alike), and original news. Everything on it is
@@ -30,7 +30,7 @@ python tests/run_all.py            # the whole suite (Python + Node)
 
 Secrets live in GitHub Actions and on the Worker; none are in the repo. The
 site's editorial policy, data sources and the model's record are explained on
-the site itself: https://yallascore.site/editorial and https://yallascore.site/predictions.
+the site itself: https://elgoon.com/editorial and https://elgoon.com/predictions.
 
 ## Status
 

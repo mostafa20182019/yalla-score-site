@@ -59,7 +59,7 @@ css = io.open("site_src/style.css", encoding="utf-8").read()
 ck("the article hero centres a matchup card", '.a-img[src*="/matchup-"]{object-position:50% 50%}' in css)
 src = io.open("match_brief.py", encoding="utf-8").read()
 ck("the brief draws a card for EVERY match piece, in the feed's colours",
-   "if featured_sides(m) == 2:" not in src and '"credit": "الصورة: تصميم يلا سكور"' in src
+   "if featured_sides(m) == 2:" not in src and '"credit": "الصورة: تصميم الجون"' in src
    and 'feed=(brief.get("s365") or {}).get("colors")' in src and '"colors": {side:' in src)
 # the feed's colours fill the gap the KITS table leaves - never an invented one
 ck("a club missing from KITS wears the feed's colours",

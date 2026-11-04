@@ -29,7 +29,7 @@ pr = {"home_win": "41%", "draw": "31%", "away_win": "28%",
       "disclaimer": "التوقعات احتمالات إحصائية ... وليست نصيحة للمراهنة."}
 t = fp.prediction_text(m, pr, tv="أون سبورت")
 print(t)
-ck("1 title line names both clubs", t.startswith("توقع يلا سكور قبل المباراة: الزمالك × الأهلي"))
+ck("1 title line names both clubs", t.startswith("توقع الجون قبل المباراة: الزمالك × الأهلي"))
 ck("2 the three probabilities are in the post", all(x in t for x in ("41%", "31%", "28%")))
 ck("3 the likely score and over-2.5 are in the post", "1-0 (16%)" in t and "2.5 هدف 30%" in t)
 ck("4 the record is stated", "190 من 384" in t)
@@ -42,7 +42,7 @@ ck("9 a question invites comments", "👇" in t and "توقعك" in t)
 # the dry run against the real data: draws the card, posts nothing
 import matchup_card as MC
 out = os.path.join(tempfile.gettempdir(), "pred-test.jpg")
-MC.for_match(m, out, top_label="توقع يلا سكور")
+MC.for_match(m, out, top_label="توقع الجون")
 ck("10 the card is drawn for the match", os.path.exists(out) and os.path.getsize(out) > 20000)
 
 ck("11 a finished match is refused", fp.prediction_post("", "0", dry=True) == 1)
@@ -52,9 +52,9 @@ ck("11 a finished match is refused", fp.prediction_post("", "0", dry=True) == 1)
 import datetime as _dt
 ck("15 FB_PREDICTIONS defaults to OFF", fp.FB_PREDICTIONS is False)
 news = {"article_id": "901", "kind": None, "title": "الزمالك يجدد لفتوح", "fb_post": "خبر"}
-prev = {"article_id": "902", "kind": "preview", "match_id": "1", "title": "توقع يلا سكور: الأهلي × الزمالك", "fb_post": "x"}
+prev = {"article_id": "902", "kind": "preview", "match_id": "1", "title": "توقع الجون: الأهلي × الزمالك", "fb_post": "x"}
 ana = {"article_id": "903", "kind": "analysis", "match_id": "2", "title": "ديربي القاهرة بالأرقام", "fb_post": "x"}
-rep = {"article_id": "904", "kind": "report", "match_id": "3", "title": "تقرير: الأهلي يفوز 2-1", "fb_post": "🤖 نموذج يلا سكور أصاب"}
+rep = {"article_id": "904", "kind": "report", "match_id": "3", "title": "تقرير: الأهلي يفوز 2-1", "fb_post": "🤖 نموذج الجون أصاب"}
 plain_prev = {"article_id": "905", "kind": "preview", "match_id": "4", "title": "قبل المباراة: ليدز × يونايتد", "fb_post": "الترتيب والغيابات"}
 ck("16 a prediction-titled preview and an analysis are prediction posts",
    fp.is_prediction_post(prev) and fp.is_prediction_post(ana))
@@ -78,7 +78,7 @@ ck("20 --prediction refuses while the switch is off (dry runs still draw)", fp.p
 kg = {"id": 985, "c": 7, "h": "ليفربول", "a": "فياريال", "hs": 0, "as": 0}
 kc = fp.whistle_caption("ko", kg, [{"s": "h", "p": "x", "m": "1"}])
 ck("21 the kick-off caption opens with the bell and the two names, no score", kc.startswith("🔔 انطلقت المباراة: ليفربول × فياريال") and "0 - 0" not in kc)
-ck("22 ...carries the live link and the hashtags, and ignores any goal list", "https://yallascore.site/m/985" in kc and "#يلا_سكور" in kc and "x 1'" not in kc)
+ck("22 ...carries the live link and the hashtags, and ignores any goal list", "https://elgoon.com/m/985" in kc and "#يلا_سكور" in kc and "x 1'" not in kc)
 
 # ---- the line-up caption (2026-10-20): with the card, no names in the text
 xd = {"gid": "4804707", "comp": "الدوري المصري",
@@ -87,7 +87,7 @@ xd = {"gid": "4804707", "comp": "الدوري المصري",
 xc = fp.xi_caption(xd, names=False)
 ck("23 the card's caption is the title line, the competition, the link and the tags - no names",
    xc.splitlines()[0] == "📋 التشكيل الرسمي لمباراة بترول أسيوط × الزمالك" and "أمجد" not in xc and "عمر جابر" not in xc
-   and "https://yallascore.site/m/4804707" in xc and "#بترول_أسيوط" in xc and "الدوري المصري" in xc, xc)
+   and "https://elgoon.com/m/4804707" in xc and "#بترول_أسيوط" in xc and "الدوري المصري" in xc, xc)
 ck("24 the text-only fallback still lists the eleven", "أمجد يوسف" in fp.xi_caption(xd) and "(4-3-3)" in fp.xi_caption(xd))
 
 # ---- --xi --redo (2026-10-20): the text post is deleted and the card posted
@@ -129,7 +129,7 @@ ck("29 the card takes the day's FINISHED matches of the nine leagues only, curat
 cap = fp.daycard_caption(got, "2026-10-22")
 ck("30 the caption: the title line, one line per result with the league, the matches link, the tags",
    cap.splitlines()[0].startswith("📊 نتائج أبرز مباريات اليوم") and "الزمالك 1 - 0 سموحة · الدوري المصري" in cap and "ليفربول 2 - 0 إيفرتون" in cap
-   and "https://yallascore.site/matches" in cap and "#يلا_سكور" in cap, cap)
+   and "https://elgoon.com/matches" in cap and "#يلا_سكور" in cap, cap)
 wf2 = io.open(".github/workflows/fb-post.yml", encoding="utf-8").read()
 ck("31 the workflow takes daycard=results", "daycard:" in wf2 and 'python fb_post.py --daycard "$DAYCARD"' in wf2)
 

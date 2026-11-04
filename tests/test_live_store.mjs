@@ -145,7 +145,7 @@ const env = { DB: db };
 const waits = [];
 const ctx = { waitUntil(p) { waits.push(p); } };
 const call = async () => {
-  const res = await worker.fetch(new Request("https://yallascore.site/live.json"), env, ctx);
+  const res = await worker.fetch(new Request("https://elgoon.com/live.json"), env, ctx);
   return { j: await res.json(), cc: res.headers.get("cache-control") };
 };
 const drain = async () => { await Promise.all(waits.splice(0)); };
@@ -313,7 +313,7 @@ await worker.scheduled({ cron: "1,16,31,46 * * * *" }, { DB: db }, ctx);
 ck("17 the other crons still stop at the missing GitHub token (no upstream, no dispatch)", upstreamCalls === disp);
 
 /* ------------------------------------------------------------- 9 no D1 */
-const res0 = await worker.fetch(new Request("https://yallascore.site/live.json"), {}, ctx);
+const res0 = await worker.fetch(new Request("https://elgoon.com/live.json"), {}, ctx);
 ck("18 without a D1 binding the old direct path still answers", /^(multi|split)/.test((await res0.json()).src));
 
 /* ------------------------------------------- 8 the database itself is down */
@@ -328,12 +328,12 @@ const dead = {
   },
 };
 scenario(2, 1, 70, [goalEv(11, 1, 12)]);
-let deadRes = await worker.fetch(new Request("https://yallascore.site/live.json"), dead, ctx);
+let deadRes = await worker.fetch(new Request("https://elgoon.com/live.json"), dead, ctx);
 let deadJson = await deadRes.json();
 ck("19 a D1 that throws does not become a 500 - the upstream read answers",
    deadRes.status === 200 && Array.isArray(deadJson.games), deadRes.status);
 upstreamDown = true;
-deadRes = await worker.fetch(new Request("https://yallascore.site/live.json"), dead, ctx);
+deadRes = await worker.fetch(new Request("https://elgoon.com/live.json"), dead, ctx);
 deadJson = await deadRes.json();
 ck("20 and with upstream down too it serves nothing, uncacheable",
    deadRes.status === 200 && deadJson.games.length === 0
