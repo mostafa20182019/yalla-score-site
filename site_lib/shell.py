@@ -222,7 +222,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <header class="site-head">
   <div class="head-crowd" aria-hidden="true"></div>
   <div class="wrap head-in">
-    <a class="brand" href="/"><img class="ball" src="/assets/favicon.png" alt="" width="30" height="30"> {esc(SITE_NAME)}</a>
+    <a class="brand" href="/"><img class="logo" src="/assets/brand-tiger.png" alt="" width="46" height="46"> {esc(SITE_NAME)}</a>
     <nav class="site-nav"><div class="nav-in">
     <a href="/" class="navtab nt-match{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
     <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>

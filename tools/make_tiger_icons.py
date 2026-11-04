@@ -16,6 +16,7 @@ One geometry, drawn here as SVG, every file below rendered from it:
   assets-src/badge-96.png       status-bar badge: Android draws only the ALPHA,
                                 so it is a white glyph with the stripes as holes
   assets-src/app-icon-1024.png  the brand corner on the Facebook cards
+  assets-src/brand-tiger.png 128  the header logo: the head alone, transparent
   assets-src/fb-profile-1024.png  facing RIGHT - for the Facebook page photo,
                                 uploaded by hand
 
@@ -81,8 +82,8 @@ def svg(left=True, bg=True, bw=False, scale=0.94):
     return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">{defs}{back}'
             f'<g{tr}>{art(bw)}</g></svg>')
 
-def render(svg_text, size=1024):
-    """SVG -> RGBA PIL image via headless Edge."""
+def render(svg_text, size=1024, transparent=False):
+    """SVG -> RGBA PIL image via headless Edge (transparent=True keeps the alpha)."""
     with tempfile.TemporaryDirectory() as tmp:
         sp = os.path.join(tmp, "t.svg")
         hp = os.path.join(tmp, "t.html")
@@ -90,9 +91,10 @@ def render(svg_text, size=1024):
         with open(sp, "w", encoding="utf-8") as f:
             f.write(svg_text)
         with open(hp, "w", encoding="utf-8") as f:
-            f.write(f'<html><body style="margin:0;background:#000">'
+            f.write(f'<html><body style="margin:0;background:{"transparent" if transparent else "#000"}">'
                     f'<img src="t.svg" width="{size}" height="{size}" style="display:block"></body></html>')
         subprocess.run([EDGE, "--headless=new", "--disable-gpu", "--hide-scrollbars",
+                        *(["--default-background-color=00000000"] if transparent else []),
                         f"--window-size={size},{size}", f"--screenshot={pp}",
                         "file:///" + hp.replace("\\", "/")], check=True,
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
@@ -127,6 +129,14 @@ def main():
     badge = Image.new("RGBA", (96, 96), (255, 255, 255, 0))
     badge.putalpha(glyph.resize((96, 96), Image.LANCZOS))
     out["badge-96.png"] = badge
+    # the header logo (2026-11-04: «كبر اللوجو»): the head alone, no tile,
+    # trimmed to its outline so 46 px of header shows 46 px of tiger
+    head = render(svg(left=True, bg=False, scale=1.0), transparent=True)
+    head = head.crop(head.getbbox())
+    side = max(head.size)
+    sq = Image.new("RGBA", (side, side), (0, 0, 0, 0))
+    sq.alpha_composite(head, ((side - head.size[0]) // 2, (side - head.size[1]) // 2))
+    out["brand-tiger.png"] = sq.resize((128, 128), Image.LANCZOS)
     for name, im in out.items():
         im.save(os.path.join(OUT, name))
     left.resize((256, 256), Image.LANCZOS).save(
