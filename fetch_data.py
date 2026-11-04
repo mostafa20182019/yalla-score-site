@@ -1264,6 +1264,51 @@ def _frozen_match_ids():
     except Exception:                                       # noqa: BLE001
         return set()
 
+# football-data competitions the live layer reads from 365scores. LIVE_JS,
+# the scorer lines and the cards find a game by its Arabic NAME PAIR, so an
+# AR_TEAM spelling one letter off 365scores leaves that club on «- - -» all
+# match (2026-11-04: Shakhtar, Feyenoord, Slovan, Galatasaray, Porto, AEK,
+# Slavia, Sporting - user screenshot of the Champions League night).
+FD_S365 = {"Premier League": 7, "Primera Division": 11, "Serie A": 17,
+           "Bundesliga": 25, "Ligue 1": 35, "UEFA Champions League": 572}
+
+
+def _name_key(s):
+    """The same normalisation as norm() in LIVE_JS (live_js.html)."""
+    s = re.sub("[أإآ]", "ا", s or "").replace("ة", "ه").replace("ى", "ي")
+    return re.sub(r"[.'’\s]", "", s)
+
+
+def check_name_alignment(matches):
+    """[(competition, football-data name, our Arabic name)] for every club in
+    the day window whose Arabic name 365scores does not use - a WARNING on the
+    run, never a failure. One fixtures+results call per competition that has
+    a match in the window."""
+    from site_lib.names import ar_team
+    want = {}
+    for m in matches or []:
+        comp = m.get("competition")
+        if comp in FD_S365:
+            for k in ("home", "away"):
+                if m.get(k):
+                    want.setdefault(comp, set()).add(m[k])
+    bad = []
+    for comp, teams in sorted(want.items()):
+        q = (f"appTypeId=5&langId=27&timezoneName=Africa/Cairo"
+             f"&competitions={FD_S365[comp]}&showOdds=false")
+        names = set()
+        for path in (f"games/fixtures/?{q}", f"games/results/?{q}"):
+            time.sleep(1)
+            for g in (_s365(path).get("games") or []):
+                for side in ("homeCompetitor", "awayCompetitor"):
+                    names.add(_name_key((g.get(side) or {}).get("name")))
+        if not names:          # nothing to compare against - say nothing
+            continue
+        bad += [(comp, t, ar_team(t)) for t in sorted(teams)
+                if _name_key(ar_team(t)) not in names]
+    return bad
+
+
 def fetch_goal_events():
     """[{home, away, date, goals:[{side,player,minute,tag}]}] + a debug dict."""
     today = datetime.now(CAIRO).date()
@@ -1754,6 +1799,16 @@ if __name__ == "__main__":
         # end off the day view even after the fetch-side cap was removed)
         write_items("matches.json", matches)
         print(f"matches: {len(matches)}")
+        try:
+            _bad = check_name_alignment(matches)
+            _DBG["name_alignment"] = ("ok" if not _bad else "WARN: " + "; ".join(
+                f"{c}: {t} -> {a}" for c, t, a in _bad))
+            for c, t, a in _bad:
+                print(f"::warning::live layer cannot find {t} ({c}): AR_TEAM says "
+                      f"«{a}», 365scores spells it differently - fix site_lib/clubs.py")
+        except Exception as e:
+            print(f"  ! name alignment check failed ({e})")
+            _DBG["name_alignment"] = f"skipped: {e!r}"
         try:
             n_arch = update_matches_archive(matches)
             _DBG["matches_archive"] = f"ok ({n_arch})"

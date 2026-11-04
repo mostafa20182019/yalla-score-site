@@ -90,6 +90,14 @@ TEAM_SPELLINGS = {"غلطة سراي": "جلطة سراي", "جالطة سراي
 # Arabic display names for football-data's Latin team names (365scores
 # leagues arrive Arabic-native). Unmapped names fall through unchanged.
 AR_TEAM = {
+    # 2026-11-04: Champions League clubs the live layer could not find - it
+    # matches 365scores' Arabic spelling exactly, so these are copied from
+    # its feed (Galatasaray, Slavia and Sporting were realigned the same day;
+    # the other five fell through in Latin). fetch_data.check_name_alignment
+    # reports the next one.
+    "FC Porto": "بورتو", "FK Shakhtar Donetsk": "شاختار دونيتسك",
+    "Feyenoord Rotterdam": "فاينورد", "PAE AEK": "أيك أثينا",
+    "ŠK Slovan Bratislava": "سلوفان براتيسلافا",
     "1. FC Köln": "كولن", "1. FC Union Berlin": "يونيون برلين",
     "1. FSV Mainz 05": "ماينز 05", "AC Milan": "ميلان", "AC Monza": "مونزا",
     "ACF Fiorentina": "فيورنتينا", "AFC Ajax": "أياكس",
@@ -114,7 +122,7 @@ AR_TEAM = {
     "FK Bodø/Glimt": "بودو جليمت", "FK Kairat": "كايرات",
     "Fenerbahçe SK": "فنربخشة",   # user 2026-10-07; the 365scores spelling the Turkish league uses
     "Frosinone Calcio": "فروزينوني", "Fulham FC": "فولهام",
-    "Galatasaray SK": "جالطة سراي", "Genoa CFC": "جنوى",
+    "Galatasaray SK": "جلطة سراي", "Genoa CFC": "جنوى",
     "Getafe CF": "خيتافي", "Hamburger SV": "هامبورج",
     "Hull City AFC": "هال سيتي", "Ipswich Town FC": "إبسويتش تاون",
     "Juventus FC": "يوفنتوس", "Le Havre AC": "لو آفر",
@@ -142,11 +150,11 @@ AR_TEAM = {
     "Real Sociedad de Fútbol": "ريال سوسيداد",
     "Royale Union Saint-Gilloise": "يونيون سان جيلواز",
     "SC Freiburg": "فرايبورج", "SC Paderborn 07": "بادربورن",
-    "SK Slavia Praha": "سلافيا براج", "SS Lazio": "لاتسيو",
+    "SK Slavia Praha": "سلافيا براغ", "SS Lazio": "لاتسيو",
     "SSC Napoli": "نابولي", "SV 07 Elversberg": "إلفيرسبيرغ",
     "SV Werder Bremen": "فيردر بريمن", "Sevilla FC": "إشبيلية",
     "Sport Lisboa e Benfica": "بنفيكا",
-    "Sporting Clube de Portugal": "سبورتينج لشبونة",
+    "Sporting Clube de Portugal": "سبورتنج لشبونة",
     "Stade Brestois 29": "بريست", "Stade Rennais FC 1901": "ستاد رين",
     "Sunderland AFC": "سندرلاند", "TSG 1899 Hoffenheim": "هوفنهايم",
     "Torino FC": "تورينو", "Tottenham Hotspur FC": "توتنهام هوتسبر",

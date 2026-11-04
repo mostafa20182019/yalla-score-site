@@ -42,8 +42,10 @@ for comp, raw in (("Primera Division", ("Real Madrid CF", "FC Barcelona", "Club 
        SP.HUB_FOCUS.get(comp))
 ck("Saudi: the big four (Al-Ahli = Jeddah, scoped to this league)",
    SP.HUB_FOCUS.get("Saudi Pro League") == ("الهلال", "النصر", "الاتحاد", "الأهلي"))
+# 2026-11-04: the feed writes Galatasaray «جلطة سراي» since mid-October -
+# both spellings stay so older archive rows still count
 ck("Turkey: the big four in the feed's spellings",
-   SP.HUB_FOCUS.get("Turkish Super Lig") == ("غلطة سراي", "بشكتاش", "طرابزون سبور", "فنربخشة"))
+   SP.HUB_FOCUS.get("Turkish Super Lig") == ("غلطة سراي", "جلطة سراي", "بشكتاش", "طرابزون سبور", "فنربخشة"))
 ck("Ligue 1: Paris FC is not PSG", ar_team("Paris FC") not in SP.HUB_FOCUS["Ligue 1"])
 # league pages list the current/next round (2026-10-07)
 def mm(mid, rnd, day, t="18:00", comp="Egyptian Premier League"):
