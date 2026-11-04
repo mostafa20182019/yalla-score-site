@@ -46,12 +46,16 @@ rec = {"article_id": "1", "title": "توقع يلا سكور للقمة", "summa
        "fb_post": "التفاصيل: https://yallascore.site/a/1", "image_url": "https://yallascore.site/media/x.jpg",
        "image_credit": "الصورة: تصميم يلا سكور", "author": "يلا سكور", "sources": [{"name": "يلا سكور", "url": "https://yallascore.site/"}]}
 upd = D.rebrand_fields(rec)
-ok("5a the rendered fields are rewritten: title, body, fb_post, image_url, image_credit",
-   upd and set(upd) == {"title", "body", "fb_post", "image_url", "image_credit"})
+ok("5a the rendered fields are rewritten: title, body, fb_post, image_url, image_credit - and the sources",
+   upd and set(upd) == {"title", "body", "fb_post", "image_url", "image_credit", "sources"})
 ok("5b the domain and the name both change, links keep their paths",
    upd["body"] == '<p>اقرأ على <a href="https://elgoon.com/m/5">الجون</a></p>'
    and upd["image_url"] == "https://elgoon.com/media/x.jpg" and upd["title"] == "توقع الجون للقمة")
-ok("5c author and sources are not touched (not rendered fields of the rebrand)", "author" not in upd and "sources" not in upd)
+ok("5c author is not touched; a source named after us is renamed and its url moved, the whole list returned",
+   "author" not in upd and upd["sources"] == [{"name": "الجون", "url": "https://elgoon.com/"}])
+_f = D.rebrand_fields({"article_id": "3", "title": "x", "faq": [{"q": "ماذا توقع يلا سكور؟", "a": "رجّح نموذج يلا سكور الفوز"}, {"q": "كم انتهت؟", "a": "2-0"}]})
+ok("5f FAQ questions and answers are rewritten too (69 articles said the old name there, 2026-11-05)",
+   _f == {"faq": [{"q": "ماذا توقع الجون؟", "a": "رجّح نموذج الجون الفوز"}, {"q": "كم انتهت؟", "a": "2-0"}]}, _f)
 ok("5d idempotent: an article already rebranded yields nothing", D.rebrand_fields({**rec, **upd}) is None)
 ok("5e an article without the old strings yields nothing", D.rebrand_fields({"article_id": "2", "title": "خبر", "body": "<p>x</p>"}) is None)
 wf = io.open(".github/workflows/d1-admin.yml", encoding="utf-8").read()

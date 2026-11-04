@@ -217,21 +217,48 @@ REBRAND = [("https://yallascore.site", "https://elgoon.com"),
            ("يلا سكور", "الجون"),
            ("Yalla Score", "Elgoon")]
 REBRAND_FIELDS = ("title", "summary", "body", "fb_post", "image_url", "image_credit")
+# the children too (found live after the first run, 2026-11-05: 42 articles
+# cite «يلا سكور» as a source by name, 69 FAQ answers say it)
+REBRAND_LISTS = {"sources": ("name", "url", "note"), "faq": ("q", "a")}
 
 
-def rebrand_fields(rec, subs=REBRAND, fields=REBRAND_FIELDS):
+def _rebrand_text(v, subs):
+    nv = v
+    for a, b in subs:
+        nv = nv.replace(a, b)
+    return nv
+
+
+def rebrand_fields(rec, subs=REBRAND, fields=REBRAND_FIELDS, lists=REBRAND_LISTS):
     """{field: new value} for the fields of one article the rebrand changes,
-    or None. Pure: the task below and its test share it."""
+    or None. A list field (sources, faq) is returned WHOLE when any of its
+    entries changed - article_update replaces children as a set. Pure: the
+    task below and its test share it."""
     upd = {}
     for k in fields:
         v = rec.get(k)
         if not isinstance(v, str) or not v:
             continue
-        nv = v
-        for a, b in subs:
-            nv = nv.replace(a, b)
+        nv = _rebrand_text(v, subs)
         if nv != v:
             upd[k] = nv
+    for k, keys in lists.items():
+        items = rec.get(k)
+        if not isinstance(items, list) or not items:
+            continue
+        changed, out = False, []
+        for it in items:
+            if isinstance(it, dict):
+                nit = dict(it)
+                for kk in keys:
+                    if isinstance(nit.get(kk), str):
+                        nit[kk] = _rebrand_text(nit[kk], subs)
+                        changed = changed or nit[kk] != it[kk]
+                out.append(nit)
+            else:
+                out.append(it)
+        if changed:
+            upd[k] = out
     return upd or None
 
 
