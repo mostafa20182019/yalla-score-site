@@ -8,7 +8,10 @@
    empty pill, and the daynav needed an inline-style workaround for the same
    reason). One rule closes the whole class of bug. */
 [hidden]{display:none!important}
-html,body{overflow-x:hidden;max-width:100%}
+/* overflow-x:HIDDEN on body made body a scroll container, so position:sticky on
+   .site-head and .daynav resolved against it and never stuck (site-check
+   2026-11-05). `clip` cuts the overflow without creating a scroll container. */
+html,body{overflow-x:clip;max-width:100%}
 /* Almarai = FilGoal's Arabic UI font (Google Fonts, display=swap so text
    never blocks); Segoe/Tahoma stay as the pre-load + no-JS fallback.
    Almarai's heaviest weight is 800 — the CSS's font-weight:900 rules
@@ -306,7 +309,10 @@ html.lt-lock{overflow:hidden}
 .fm{display:inline-block;width:10px;height:10px;border-radius:50%;margin-inline-start:3px;vertical-align:middle}
 .fm-w{background:#16a34a}.fm-d{background:#94a3b8}.fm-l{background:#e11d48}
 .fm-none{color:#cbd5e1}
-@media(max-width:560px){.lt-form{display:none}}
+/* phones: the table was 414-440px wide in a 375px viewport, so «نقاط» sat
+   off-screen behind .lt-scroll with no affordance (site-check 2026-11-05).
+   Drop له/عليه (+/- keeps the story), tighten the cells, let the name shrink. */
+@media(max-width:560px){.lt-form,.lt .lt-gf,.lt .lt-ga{display:none}.lt th,.lt td{padding:8px 4px}.lt .lt-team{min-width:0}}
 .lt tbody tr{border-bottom:1px solid #f1f5f9}
 .lt tbody tr:hover{background:#f8fafc}
 .lt .lt-pos{width:26px;color:var(--muted);font-weight:800}

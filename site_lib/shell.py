@@ -16,6 +16,18 @@ from site_lib.config import ADSENSE_CLIENT, ADSENSE_SLOT, ADSENSE_SLOT_TOP, CF_A
 from site_lib.text import esc, seo_desc, strip_tags
 
 
+def _our_host(u):
+    """A URL on one of our FORMER hosts, rewritten onto SITE_BASE. The stored
+    article image_urls still say yallascore.site after the 2026-11-04 rebrand
+    (_clean_urls fixes the HTML at output, but the helpers below compared the
+    raw value against SITE_BASE and so saw every photo as "not ours": no
+    640px thumbs, no og:image dims - site-check 2026-11-05)."""
+    for old in OLD_SITE_BASES:
+        if u.startswith(old + "/"):
+            return SITE_BASE + u[len(old):]
+    return u
+
+
 def thumb_url(url):
     """The 640px card copy of one of OUR photos, when it exists on disk.
 
@@ -28,7 +40,7 @@ def thumb_url(url):
     checkout yet (same race as resolve_missing_media - the next run heals it;
     in publish.yml shrink_media runs BEFORE the build, so it never happens
     there)."""
-    u = str(url or "")
+    u = _our_host(str(url or ""))
     path = u[len(SITE_BASE):] if u.startswith(SITE_BASE) else u
     if not path.startswith("/media/") or path.lower().endswith(".svg") \
             or path.startswith("/media/thumbs/"):
@@ -77,7 +89,8 @@ _OG_DIMS = {}
 def _og_dims(url):
     """(width, height) of one of OUR images (media/ or assets/ under SITE_BASE),
     (None, None) for anything remote or unreadable. Cached per build."""
-    if not url or not url.startswith(SITE_BASE + "/"):
+    url = _our_host(url or "")
+    if not url.startswith(SITE_BASE + "/"):
         return (None, None)
     if url in _OG_DIMS:
         return _OG_DIMS[url]

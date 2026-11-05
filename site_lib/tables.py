@@ -79,7 +79,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'{fmtd}'
             f'{num("played", "p")}{num("won", "w")}'
             f'{num("draw", "d")}{num("lost", "l")}'
-            f'<td>{cell(r.get("gf"))}</td><td>{cell(r.get("ga"))}</td>'
+            f'<td class="lt-gf">{cell(r.get("gf"))}</td><td class="lt-ga">{cell(r.get("ga"))}</td>'
             f'<td>{cell(r.get("gd"))}</td><td class="lt-pts">{cell(r.get("pts"))}</td></tr>')
     # every match once; the buttons' rows list ids and the script clones these
     store = ""
@@ -107,7 +107,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
             + (f'<th class="lt-form" title="آخر 5 مباريات">آخر 5</th>' if form_map is not None else "") +
             f'<th title="لعب">لعب</th><th title="فاز">ف</th><th title="تعادل">ت</th>'
-            f'<th title="خسر">خ</th><th title="له">له</th><th title="عليه">عليه</th>'
+            f'<th title="خسر">خ</th><th class="lt-gf" title="له">له</th><th class="lt-ga" title="عليه">عليه</th>'
             f'<th title="الفارق">+/-</th><th class="lt-pts">نقاط</th></tr></thead>'
             f'<tbody>{"".join(body)}</tbody></table></div>{store}</div>')
 
