@@ -588,11 +588,27 @@ async function storeApply(env, fresh, now) {
   // The snapshot IS the answer /live.json serves: one row, written once per
   // refresh, read once per request (see storeRead). `ids` stays for the
   // report queue and for anything that only needs to know what was listed.
-  const payload = fresh.games.filter(g => g.id).map(g => ({
-    id: g.id, h: g.h, a: g.a, hs: g.hs, as: g.as, live: !!g.live,
-    min: g.min || "", gt: g.gt || 0, hf: g.hf || 0, c: g.c || 0,
-    ...(g.goals && g.goals.length ? { goals: g.goals } : {}),
-  }));
+  // A game whose detail was not fetched THIS refresh (the DETAIL_CAP covers
+  // the live games first; a just-ended one drops out a minute later on a busy
+  // evening) keeps the scorer list the store already holds, as long as the
+  // score it was read against is still the score: a list that added up to
+  // 2-1 is still the 2-1 list. A moved score gets no stale list - half the
+  // picture is worse than none (2026-11-05: the user refreshed the page and
+  // the Conference League scorers had vanished until the next build).
+  const keptGoals = (g) => {
+    const p = prev[g.id];
+    if (!p || !p.goals || p.hs !== g.hs || p.as_ !== g.as) return null;
+    try { const l = JSON.parse(p.goals); return Array.isArray(l) && l.length ? l : null; }
+    catch (e) { return null; }
+  };
+  const payload = fresh.games.filter(g => g.id).map(g => {
+    const goals = (g.goals && g.goals.length) ? g.goals : (g.goals == null ? keptGoals(g) : null);
+    return {
+      id: g.id, h: g.h, a: g.a, hs: g.hs, as: g.as, live: !!g.live,
+      min: g.min || "", gt: g.gt || 0, hf: g.hf || 0, c: g.c || 0,
+      ...(goals ? { goals } : {}),
+    };
+  });
   stmts.push(env.DB.prepare(META_SET).bind("snapshot", JSON.stringify({
     ts: now, src: fresh.src, dt: fresh.dt,
     ids: payload.map(g => g.id), games: payload,

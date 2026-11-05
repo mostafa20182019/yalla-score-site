@@ -342,5 +342,32 @@ upstreamDown = false;
 ck("21 the one-minute cron survives a dead store without throwing",
    await worker.scheduled({ cron: "* * * * *" }, dead, {}).then(() => true, () => false));
 
+/* ------------------------------------------------------------- 22 served list survives the cap */
+// 2026-11-05: /live.json carried a scorer list only for the games whose
+// detail was fetched in THAT refresh (DETAIL_CAP, live games first). On a busy
+// evening a just-ended game dropped out of the twelve a minute after the
+// whistle, LIVE_JS repainted its row with the score and no scorers, and a
+// refreshed page lost them until the next build. The snapshot now keeps the
+// stored list while the score it was read against still holds.
+upstreamDown = false;
+age(20000);
+scenario(2, 1, 88, [goalEv(11, 1, 12), goalEv(12, 1, 41), goalEv(21, 2, 60)]);
+await call(); await drain();
+let s22 = snap().games.find(g => g.id === 900);
+ck("22a a detailed refresh serves the three named goals", s22 && s22.goals && s22.goals.length === 3, JSON.stringify(s22 && s22.goals));
+age(20000);
+delete DETAIL[900];                                   // the cap left this game out this minute
+await call(); await drain();
+s22 = snap().games.find(g => g.id === 900);
+ck("22b a refresh WITHOUT the detail still serves that list while the score is unchanged",
+   s22 && s22.goals && s22.goals.length === 3 && s22.hs === 2 && s22.as === 1, JSON.stringify(s22));
+age(20000);
+scenario(3, 1, 90, [goalEv(11, 1, 12), goalEv(12, 1, 41), goalEv(21, 2, 60)]);
+delete DETAIL[900];                                   // the score moved, the detail still out of the cap
+await call(); await drain();
+s22 = snap().games.find(g => g.id === 900);
+ck("22c but a MOVED score with no fresh detail serves no list at all (never half the picture)",
+   s22 && s22.hs === 3 && !s22.goals, JSON.stringify(s22));
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE STORE TESTS PASSED");
 process.exit(fails.length ? 1 : 0);
