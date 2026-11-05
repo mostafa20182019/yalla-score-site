@@ -60,17 +60,19 @@ ck("11 it is held long enough for Reels (>3s) and short enough to watch",
 ck("12 no animation is left (the five scenes are gone)",
    not hasattr(R, "frames") and not hasattr(R, "SCENES") and "def scene_" not in src)
 _card = src[src.index("def card"):src.index("def goal_columns")]
-ck("13 home on the RIGHT: its crest, name and scorers at x=0.74, the away club at 0.26",
-   '(W * 0.74, "home"' in _card and '(W * 0.26, "away"' in _card
-   and '(W * 0.74, "h")' in _card and '(W * 0.26, "a")' in _card)
+# 0.72 / 0.28 since 2026-11-05: inside the Reels safe zone (the right ~9% is
+# the like/comment/share column)
+ck("13 home on the RIGHT: its crest, name and scorers at x=0.72, the away club at 0.28",
+   '(W * 0.72, "home"' in _card and '(W * 0.28, "away"' in _card
+   and '(W * 0.72, "h")' in _card and '(W * 0.28, "a")' in _card)
 ck("14 and the home goals on the right of the score box",
    '(ctx["hs"], W / 2 + box' in _card and '(ctx["as"], W / 2 - box' in _card)
 # the crest really lands on the right: Brighton's blue at 0.74, Arsenal's red at 0.26
 from PIL import ImageStat                                # noqa: E402
 _px = lambda x: [round(v) for v in ImageStat.Stat(im.crop(
-    (int(R.W * x) - 90, int(R.H * 0.36) - 90, int(R.W * x) + 90, int(R.H * 0.36) + 90))).mean]
+    (int(R.W * x) - 90, int(R.H * 0.345) - 90, int(R.W * x) + 90, int(R.H * 0.345) + 90))).mean]
 ck("15 the rendered card agrees: the blue crest (home) right, the red one (away) left",
-   _px(0.74)[2] > _px(0.74)[0] and _px(0.26)[0] > _px(0.26)[2], (_px(0.74), _px(0.26)))
+   _px(0.72)[2] > _px(0.72)[0] and _px(0.28)[0] > _px(0.28)[2], (_px(0.72), _px(0.28)))
 
 # the tiger above the names (user, 2026-11-05: «فوق اسماء الفرق صورة للنمر»):
 # drawn from the brand file, centred in the band under the header, and it is

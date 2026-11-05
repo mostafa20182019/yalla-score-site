@@ -26,6 +26,7 @@ import argparse
 import datetime
 import json
 import os
+import re
 import shutil
 import subprocess
 import sys
@@ -56,6 +57,16 @@ W, H = 1080, 1920
 # One still card held REEL_SECS under music (user, 2026-11-01). It was a
 # five-scene animation (intro, score, scorers, rating, table) at 12 fps.
 REEL_SECS = 10.0
+# The Reels player covers the bottom ~20% (caption, audio line, progress),
+# the right ~9% (like / comment / share) and the top ~10% (2026-11-05): what
+# matters sits in the band 12%-75% of the height, the columns at 0.72 / 0.28
+# and the club names no wider than 0.40 W. The footer sentence is gone (the
+# post text carries it); elgoon.com closes the band.
+SAFE_BOTTOM = int(H * 0.75)
+# a slow push-in over the whole reel (1.00 -> 1.07): a still that does not
+# move at all is the one format the Reels ranking punishes, and broadcast
+# footage is never an option here
+ZOOM = 0.07
 
 
 # ---------------------------------------------------------------- canvas
@@ -78,19 +89,18 @@ def background():
 
 def header(d, comp, rnd):
     f = C.font("ExtraBold", 44)
-    C.draw_center(d, W / 2, 70, C.ar("الجون"), f, C.WHITE)
+    C.draw_center(d, W / 2, 215, C.ar("الجون"), f, C.WHITE)
     sub = comp + (f" · الجولة {rnd}" if rnd else "")
-    C.draw_center(d, W / 2, 140, C.ar(sub), C.font("Bold", 34), (222, 238, 248))
+    C.draw_center(d, W / 2, 280, C.ar(sub), C.font("Bold", 34), (222, 238, 248))
 
 
 def footer(d, alpha=255):
-    C.draw_center(d, W / 2, H - 120, C.ar("التحليل الكامل بالأرقام"),
-                  C.font("Bold", 34), (222, 238, 248))
-    C.draw_center(d, W / 2, H - 70, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
+    # the last line of the safe band - the old H-70 sat under the caption
+    C.draw_center(d, W / 2, SAFE_BOTTOM - 8, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
 
 
 TIGER = os.path.join(HERE, "assets-src", "tiger-head-512.png")
-TIGER_PX, TIGER_Y = 280, 350     # centred in the band between the header and the crests
+TIGER_PX, TIGER_Y = 190, 430     # centred in the band between the header and the crests (smaller since 2026-11-05: the band had to fit the safe zone)
 _tiger = {}
 
 
@@ -104,8 +114,34 @@ def tiger_at(im, cx, cy, size=TIGER_PX):
     im.paste(t, (int(cx - size / 2), int(cy - size / 2)), t)
 
 
+def big_badge(url):
+    """The 365scores image cache serves the size the URL asks for; the feed's
+    URLs ask for w_68,h_68, which drew as a 70px dot next to a 200px
+    football-data crest (2026-11-05). Ask for 300px; other hosts unchanged."""
+    if url and "imagecache.365scores.com" in url:
+        return re.sub(r"w_\d+,h_\d+", "w_300,h_300", url)
+    return url
+
+
+def fill_box(cr, size, frac=0.92):
+    """A crest smaller than its box (crest_image never upscales) is scaled up
+    to fill it, so the two clubs read at the same size."""
+    bb = cr.getchannel("A").getbbox()
+    if not bb:
+        return cr
+    w, h = bb[2] - bb[0], bb[3] - bb[1]
+    if max(w, h) >= size * frac:
+        return cr
+    k = size * frac / max(w, h)
+    inner = cr.crop(bb).resize((max(1, int(w * k)), max(1, int(h * k))), Image.LANCZOS)
+    out = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    out.paste(inner, ((size - inner.width) // 2, (size - inner.height) // 2), inner)
+    return out
+
+
 def crest_at(im, url, name, size, cx, cy, alpha=255):
-    cr = C.crest_image(url, size) or C.crest_placeholder(name, size)
+    cr = C.crest_image(big_badge(url), size) or C.crest_image(url, size)
+    cr = fill_box(cr, size) if cr else C.crest_placeholder(name, size)
     if alpha < 255:
         cr = cr.copy()
         a = cr.getchannel("A").point(lambda v: v * alpha // 255)
@@ -114,47 +150,68 @@ def crest_at(im, url, name, size, cx, cy, alpha=255):
 
 
 # ---------------------------------------------------------------- the card
-def card(ctx):
+def card(ctx, layers=False):
     """The whole reel: ONE still (user, 2026-11-01: «يكون عبارة عن صورة فقط
     فيها الفريقين والنتيجة»). Home on the RIGHT - Arabic reads right to left,
     so the first-named club sits where the eye starts - and its goals on the
     right of the score box too («صاحب الارض يكون على اليمين»). The animated
-    five-scene reel (intro, score, scorers, rating, table) is gone."""
+    five-scene reel (intro, score, scorers, rating, table) is gone.
+
+    layers=True (2026-11-05) returns (base, [score_layer, scorers_layer]): the
+    same picture with the score digits and the scorer lines on their own
+    transparent layers, which encode() fades in over the base so the reel
+    reveals itself instead of standing still. card(ctx) alone is the full
+    still, unchanged."""
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
+    if layers:
+        l_score = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        l_goals = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+        ds, dg = ImageDraw.Draw(l_score), ImageDraw.Draw(l_goals)
+    else:
+        ds = dg = d
     header(d, ctx["comp"], ctx["round"])
     tiger_at(im, W / 2, TIGER_Y)
-    size, y = 300, H * 0.36
-    for x, key, name in ((W * 0.74, "home", ctx["home"]), (W * 0.26, "away", ctx["away"])):
+    size, y = 260, H * 0.345
+    for x, key, name in ((W * 0.72, "home", ctx["home"]), (W * 0.28, "away", ctx["away"])):
         crest_at(im, ctx["m"].get(f"{key}_badge"), name, size, x, y)
         C.draw_center(d, x, y + size * 0.62, C.ar(name),
-                      C.fit(d, C.ar(name), "ExtraBold", 54, W * 0.44), C.WHITE)
-    sy, box, fs = H * 0.60, 280, 170
+                      C.fit(d, C.ar(name), "ExtraBold", 54, W * 0.40), C.WHITE)
+    sy, box, fs = H * 0.53, 280, 170
     d.rounded_rectangle((W / 2 - box, sy - 130, W / 2 + box, sy + 150), 40, fill=C.WHITE)
     for val, x in ((ctx["hs"], W / 2 + box * 0.5), (ctx["as"], W / 2 - box * 0.5)):
-        C.draw_center(d, x, sy - fs * 0.42, str(val), C.font("ExtraBold", fs), C.INK)
-    C.draw_center(d, W / 2, sy - 40, "-", C.font("ExtraBold", 100), (190, 205, 215))
+        C.draw_center(ds, x, sy - fs * 0.42, str(val), C.font("ExtraBold", fs), C.INK)
+    C.draw_center(ds, W / 2, sy - 40, "-", C.font("ExtraBold", 100), (150, 170, 185))
     C.draw_center(d, W / 2, sy + 190, C.ar(f"انتهت · {ctx['when']}"), C.font("Bold", 38),
                   (226, 240, 250))
     # the scorers (user, same day: «ضيف كمان مسجلى الاهداف»): each club's under
     # its own side, home right, one row per player with all his minutes
     cols = goal_columns(ctx["scorers"])
-    gy = sy + 270
-    for x, key in ((W * 0.74, "h"), (W * 0.26, "a")):
+    gy = sy + 250
+    step = 46
+    for x, key in ((W * 0.72, "h"), (W * 0.28, "a")):
         rows = cols.get(key) or []
         shown = rows[:MAX_GOAL_ROWS] if len(rows) <= MAX_GOAL_ROWS else rows[:MAX_GOAL_ROWS - 1]
         for i, (name, mins) in enumerate(shown):
             line = C.ar(f"{name} {mins}".strip())
-            C.draw_center(d, x, gy + i * 58, line, C.fit(d, line, "Bold", 38, W * 0.44, 26),
+            C.draw_center(dg, x, gy + i * step, line, C.fit(d, line, "Bold", 36, W * 0.40, 26),
                           C.WHITE)
         if len(rows) > len(shown):
-            C.draw_center(d, x, gy + len(shown) * 58, C.ar(f"+{len(rows) - len(shown)}"),
+            C.draw_center(dg, x, gy + len(shown) * step, C.ar(f"+{len(rows) - len(shown)}"),
                           C.font("Bold", 34), (222, 238, 248))
     footer(d)
+    if layers:
+        return im, [l_score, l_goals]
     return im
 
 
-MAX_GOAL_ROWS = 5                 # per club; a sixth scorer becomes «+n»
+def staged(ctx):
+    """The still as a base plus its two overlays with their fade-in times: the
+    score lands at 0.9 s, the scorers at 2 s - what encode() animates."""
+    base, (score, goals) = card(ctx, layers=True)
+    return base, [(score, 0.9, 0.5), (goals, 2.0, 0.6)]
+
+MAX_GOAL_ROWS = 3                 # per club; a fourth scorer becomes «+n» (three lines fit the safe band)
 
 
 def goal_columns(scorers):
@@ -316,11 +373,14 @@ def ffmpeg():
         return None
 
 
-def encode(im, path, seed="", secs=REEL_SECS):
+def encode(im, path, seed="", secs=REEL_SECS, layers=None):
     """Write an MP4 the Reels API accepts. Returns True when it is uploadable.
 
     The card held `secs` seconds under the music: H.264 / yuv420p / 30 fps,
-    faststart, AAC stereo. Reels refuses a file with no audio stream, and the
+    faststart, AAC stereo. Since 2026-11-05 the picture moves: a slow push-in
+    (ZOOM, computed from a 2x upscale so it stays sharp) and, with `layers`
+    = [(rgba image, start s, fade s), ...] from staged(), the score and the
+    scorers fade in over the base - a still with a reveal, not a slideshow. Reels refuses a file with no audio stream, and the
     music IS that stream now (it was a silent track before 2026-11-01). A
     short user track loops (-stream_loop) instead of cutting the video;
     the sound fades in and out.
@@ -338,10 +398,25 @@ def encode(im, path, seed="", secs=REEL_SECS):
         audio = music_track(seed, tmp, secs)
         a_in = (["-stream_loop", "-1", "-i", audio] if audio
                 else ["-f", "lavfi", "-i", f"anullsrc=r={SR}:cl=stereo"])
+        # the overlays are inputs 2.. (the audio stays input 1); each fades in
+        # at its time, then the composite gets the push-in
+        n = int(round(secs * OUT_FPS))
+        lay_in, chain, src = [], [], "[0:v]"
+        for i, (layer, start, dur) in enumerate(layers or []):
+            lp = os.path.join(tmp, f"layer{i}.png")
+            layer.save(lp)
+            lay_in += ["-loop", "1", "-framerate", str(OUT_FPS), "-i", lp]
+            chain.append(f"[{i + 2}:v]format=rgba,fade=t=in:st={start}:d={dur}:alpha=1[l{i}]")
+            chain.append(f"{src}[l{i}]overlay=0:0[o{i}]")
+            src = f"[o{i}]"
+        chain.append(f"{src}scale={W * 2}:{H * 2}:flags=lanczos,"
+                     f"zoompan=z='1+{ZOOM}*on/{n}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
+                     f":d=1:s={W}x{H}:fps={OUT_FPS},format=yuv420p[v]")
         cmd = [exe, "-y", "-loglevel", "error",
-               "-loop", "1", "-framerate", str(OUT_FPS), "-i", png, *a_in,
-               "-map", "0:v", "-map", "1:a", "-t", f"{secs:.2f}",
-               "-c:v", "libx264", "-preset", "medium", "-tune", "stillimage", "-crf", "20",
+               "-loop", "1", "-framerate", str(OUT_FPS), "-i", png, *a_in, *lay_in,
+               "-filter_complex", ";".join(chain),
+               "-map", "[v]", "-map", "1:a", "-t", f"{secs:.2f}",
+               "-c:v", "libx264", "-preset", "medium", "-crf", "20",
                "-pix_fmt", "yuv420p", "-r", str(OUT_FPS), "-profile:v", "high",
                "-af", f"afade=t=in:d=0.3,afade=t=out:st={secs - 1.5:.2f}:d=1.5",
                "-c:a", "aac", "-b:a", "128k", "-ar", str(SR), "-ac", "2",
@@ -476,7 +551,8 @@ def auto(dry=False, out_dir=None):
             continue
         path = os.path.join(out_dir, f"{mid}.mp4")
         try:
-            if not encode(card(ctx), path, seed=mid):
+            base, lay = staged(ctx)
+            if not encode(base, path, seed=mid, layers=lay):
                 print(f"reel {mid}: no usable encoder, deferring")
                 store.release(KIND, mid)
                 continue
@@ -554,7 +630,8 @@ def main():
         print(f"png → {png}")
     if args.mp4:
         mp4 = os.path.join(args.out, f"{args.match}.mp4")
-        if encode(im, mp4, seed=args.match):
+        base, lay = staged(ctx)
+        if encode(base, mp4, seed=args.match, layers=lay):
             print(f"mp4 → {mp4}  ({os.path.getsize(mp4) / 1024:.0f} KB)")
     return 0
 
