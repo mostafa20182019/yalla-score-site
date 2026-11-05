@@ -1,9 +1,27 @@
 <script>
 (function(){
   var wrap=document.getElementById('days'); if(!wrap) return;
-  var sections=Array.prototype.slice.call(wrap.querySelectorAll('.day'));
-  if(!sections.length) return;
-  var days=sections.map(function(s){return s.getAttribute('data-day');});
+  /* 2026-11-05: only the days around today are in the HTML; data-days lists
+     every day the feed holds and the others are fetched from data-src + date
+     (a <section class="day"> fragment, same markup) the first time the reader
+     steps to them. A page that lists no data-days works as before: every
+     inlined day, nothing fetched. */
+  var secs={};
+  function register(s){
+    var h=s.querySelector('.day-h'); if(h) h.style.display='none';
+    [].slice.call(s.querySelectorAll('.comp')).forEach(function(c){
+      var cn=c.getAttribute('data-comp')||'', cl=c.getAttribute('data-label')||'', list=c.querySelector('.mlist');
+      [].slice.call(c.querySelectorAll('.mrow')).forEach(function(r){ r.__cname=cn; r.__clabel=cl; r.__home=list; r.__idx=rowIdx++; });
+    });
+    secs[s.getAttribute('data-day')]=s;
+  }
+  /* remember each row's league + original list/position: "by time" moves
+     rows out of their .comp blocks and must put them back in order */
+  var rowIdx=0;
+  [].slice.call(wrap.querySelectorAll('.day')).forEach(register);
+  var days=(wrap.getAttribute('data-days')||'').split(',').filter(Boolean);
+  if(!days.length) days=Object.keys(secs).sort();
+  if(!days.length) return;
   var today=wrap.getAttribute('data-today')||days[0];
   var idx=days.indexOf(today);
   if(idx<0){ for(var i=0;i<days.length;i++){ if(days[i]>=today){idx=i;break;} } }
@@ -11,19 +29,40 @@
   var nav=document.getElementById('daynav'); nav.hidden=false;
   var label=document.getElementById('dayLabel');
   var prev=document.getElementById('prevDay'), next=document.getElementById('nextDay');
-  sections.forEach(function(s){ var h=s.querySelector('.day-h'); if(h) h.style.display='none'; });
+  function cur(){ return secs[days[idx]]; }
+  /* ---- fragments ---- */
+  var src=wrap.getAttribute('data-src')||'/matches/d/';
+  /* the live site serves the extensionless path (a .html request is a 307
+     to it); a plain file server knows only the .html - try both */
+  function get(u){
+    return fetch(u,{credentials:'same-origin'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); })
+      .catch(function(){ return fetch(u+'.html',{credentials:'same-origin'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); }); });
+  }
+  function insertSec(sec){           /* keep the sections in date order */
+    var d=sec.getAttribute('data-day');
+    var ex=[].slice.call(wrap.querySelectorAll('.day'));
+    for(var i=0;i<ex.length;i++){ if(ex[i].getAttribute('data-day')>d){ wrap.insertBefore(sec,ex[i]); return; } }
+    wrap.appendChild(sec);
+  }
+  var loading={};
+  function load(day){
+    if(secs[day]) return Promise.resolve(secs[day]);
+    if(loading[day]) return loading[day];
+    loading[day]=get(src+day).then(function(html){
+      var t=document.createElement('div'); t.innerHTML=html;
+      var sec=t.querySelector('.day'); if(!sec) throw new Error('no section');
+      sec.style.display='none'; insertSec(sec); register(sec);
+      if(window.__lvAdd) window.__lvAdd(sec);      /* the live layer paints the new rows */
+      return sec;
+    }).catch(function(e){ delete loading[day]; throw e; });
+    return loading[day];
+  }
+  function prefetch(i){ if(i>=0 && i<days.length && !secs[days[i]]) load(days[i]).catch(function(){}); }
   var filter='';   /* competition name; '' = all */
   /* ---- FotMob-style filters: live / on TV / by time / text ---- */
   var mf=document.getElementById('mfilters'); if(mf) mf.hidden=false;
   var fLive=false, fTime=false, q='';   /* the on-TV chip was removed by the user 2026-09-02 */
   function norm(t){ return (t||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').toLowerCase().replace(/ +/g,' ').trim(); }
-  /* remember each row's league + original list/position: "by time" moves
-     rows out of their .comp blocks and must put them back in order */
-  var rowIdx=0;
-  [].slice.call(wrap.querySelectorAll('.comp')).forEach(function(c){
-    var cn=c.getAttribute('data-comp')||'', cl=c.getAttribute('data-label')||'', list=c.querySelector('.mlist');
-    [].slice.call(c.querySelectorAll('.mrow')).forEach(function(r){ r.__cname=cn; r.__clabel=cl; r.__home=list; r.__idx=rowIdx++; });
-  });
   function rowOk(r){
     if(fLive && !r.classList.contains('mrow-live')) return false;
     if(filter && r.__cname!==filter) return false;
@@ -36,6 +75,7 @@
     return bt;
   }
   function applyFilter(sec){
+    if(!sec) return;
     var rows=[].slice.call(sec.querySelectorAll('.mrow')), comps=[].slice.call(sec.querySelectorAll('.comp'));
     var bt=byTimeList(sec), any=false;
     if(fTime){
@@ -69,21 +109,31 @@
         var f=b.getAttribute('data-f'), on=!b.classList.contains('is-on');
         b.classList.toggle('is-on',on); b.setAttribute('aria-pressed',on?'true':'false');
         if(f==='live') fLive=on; else if(f==='time') fTime=on;
-        applyFilter(sections[idx]);
+        applyFilter(cur());
       });
     });
     var qi=document.getElementById('mfQ');
-    if(qi) qi.addEventListener('input',function(){ q=norm(qi.value); applyFilter(sections[idx]); });
+    if(qi) qi.addEventListener('input',function(){ q=norm(qi.value); applyFilter(cur()); });
+  }
+  var seq=0;
+  function paint(sec){
+    [].slice.call(wrap.querySelectorAll('.day')).forEach(function(s){ s.style.display=(s===sec)?'block':'none'; });
+    label.textContent=sec.querySelector('.day-h').textContent;
+    applyFilter(sec);
+    prefetch(idx+1); prefetch(idx-1);       /* the arrows then feel instant */
   }
   function show(i){
-    idx=i;
-    sections.forEach(function(s,j){ s.style.display=(j===idx)?'block':'none'; });
-    label.textContent=sections[idx].querySelector('.day-h').textContent;
-    prev.disabled=(idx<=0); next.disabled=(idx>=sections.length-1);
-    applyFilter(sections[idx]);
+    idx=i; var my=++seq;
+    prev.disabled=(idx<=0); next.disabled=(idx>=days.length-1);
+    var sec=cur();
+    if(sec){ paint(sec); return; }
+    label.textContent='جارٍ التحميل…';
+    load(days[idx]).then(function(s){ if(my===seq) paint(s); },
+                         function(){ if(my===seq) label.textContent='تعذّر تحميل هذا اليوم — حاول مرة أخرى'; });
   }
   prev.addEventListener('click',function(){ if(idx>0) show(idx-1); });
-  next.addEventListener('click',function(){ if(idx<sections.length-1) show(idx+1); });
+  next.addEventListener('click',function(){ if(idx<days.length-1) show(idx+1); });
+  /* ---- the league views: empty shells filled from data-src on first use ---- */
   var lviews=[].slice.call(document.querySelectorAll('.lview'));
   /* buttons only: the home page's leagues column (same .lg-item look) is
      plain links to the standings pages, not a filter (2026-10-26) */
@@ -94,9 +144,25 @@
     var panes=[].slice.call(view.querySelectorAll('.lpane'));
     var has=tabs.some(function(t){return t.getAttribute('data-pane')===key;});
     if(!has) key=tabs.length?tabs[0].getAttribute('data-pane'):'';
-    tabs.forEach(function(t){ t.classList.toggle('is-on',t.getAttribute('data-pane')===key); });
+    tabs.forEach(function(t){ var on=t.getAttribute('data-pane')===key; t.classList.toggle('is-on',on); t.setAttribute('aria-selected',on?'true':'false'); });
     panes.forEach(function(x){ x.hidden = x.getAttribute('data-pane')!==key; });
     return key;
+  }
+  function loadView(view){
+    var s=view.getAttribute('data-src');
+    if(!s || view.__loaded) return Promise.resolve(view);
+    if(view.__p) return view.__p;
+    view.__p=get(s).then(function(html){
+      view.innerHTML=html; view.__loaded=true;
+      if(window.__roundsInit) window.__roundsInit(view);   /* the «الجولات» navigator */
+      if(window.__lvAdd) window.__lvAdd(view);
+      return view;
+    }).catch(function(e){
+      view.__p=null;
+      view.innerHTML='<p class="lv-wait">تعذّر التحميل — اضغط البطولة مرة أخرى.</p>';
+      throw e;
+    });
+    return view.__p;
   }
   lviews.forEach(function(view){
     view.addEventListener('click',function(e){
@@ -123,14 +189,17 @@
     if(mpDefault) mpDefault.hidden=false;
     if(mpage) mpage.classList.remove('league-view');
     matchesShown(true);
-    applyFilter(sections[idx]);
+    applyFilter(cur());
   }
   function selectLeague(b){
     filter=b.getAttribute('data-comp')||'';
     lgItems.forEach(function(x){ x.classList.toggle('is-active', x===b); });
     var view=lviews.filter(function(v){return v.getAttribute('data-comp')===filter;})[0];
     lviews.forEach(function(v){ v.hidden = v!==view; });
-    if(view) pane=showPane(view,pane);                /* keep the reader on the same tab */
+    if(view){
+      var want=filter;
+      loadView(view).then(function(){ if(filter===want) pane=showPane(view,pane); }, function(){});   /* keep the reader on the same tab */
+    }
     matchesShown(false);                              /* never show fixtures in the centre */
     if(noTable) noTable.hidden = !!view;              /* nothing for this league -> placeholder */
     /* left rail: this league's fixtures instead of news */

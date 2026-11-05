@@ -130,7 +130,7 @@ def match_centre(standings, matches, articles, ge_idx, fixtures=None):
     (daylist.day_sections), same filters and day arrows (MATCHES_JS): the
     phone home «تجيب كل المباريات زى ما كانت صفحة المباريات بتجيب بالظبط».
     Phones show only that column (style.css)."""
-    from site_lib.daylist import comp_hrefs, day_sections
+    from site_lib.daylist import comp_hrefs, day_sections, inline_days
     from site_lib.render import Markup, render
     from site_lib.snippets import FILTERS_HTML, MATCHES_JS
     from site_lib.competitions import COMP_SLUG, LEAGUE_BAR
@@ -164,7 +164,11 @@ def match_centre(standings, matches, articles, ge_idx, fixtures=None):
     with_rounds = {f.get("competition") for f in (fixtures or [])
                    if isinstance(f, dict) and f.get("rounds")}
     days, _ = day_sections(matches, ge_idx, comp_hrefs(with_table, with_rounds))
-    days_html = render("_days.html", filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days)
+    # today +-INLINE_SPAN inline; the other days are the /matches/d fragments
+    # matches_page writes (same rows: same builder, same hrefs)
+    near, all_days = inline_days(days, REF_TODAY)
+    days_html = render("_days.html", filters=Markup(FILTERS_HTML), today=REF_TODAY,
+                       days=near, all_days=all_days)
     return ('<div class="mpage home-mc">'
             # the IMPORTANT leagues here; every competition is on /leagues, the
             # «البطولات» tab (user, 2026-10-27: «اعمل تاب للبطولات على جهاز

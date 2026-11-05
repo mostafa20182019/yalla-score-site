@@ -21,18 +21,11 @@
     {# ad strip at the top of the CENTER column - matches-list width only #}
     <div class="home-topad">{{ ad }}</div>
     {# one tabbed view per league (الترتيب · الهدافون · الأرقام · التطور · الجولات):
-       everything is in the DOM so it stays indexable; JS only switches panes #}
+       an EMPTY shell here - MATCHES_JS fetches /matches/l/<slug> (_lview.html)
+       into it on the first click (2026-11-05); the tables stay indexable on
+       /standings and /fixtures, which the day headings link to #}
     {% for v in views %}
-    <div class="lview" data-comp="{{ v.comp }}" hidden>
-      <div class="ltabs" role="tablist">
-        {% for key, label in v.tabs %}
-        <button type="button" class="ltab{% if loop.first %} is-on{% endif %}" role="tab" data-pane="{{ key }}">{{ label }}</button>
-        {% endfor %}
-      </div>
-      {% for key, pane in v.panes %}
-      <div class="lpane" data-pane="{{ key }}"{% if not loop.first %} hidden{% endif %}>{{ pane }}</div>
-      {% endfor %}
-    </div>
+    <div class="lview" data-comp="{{ v.comp }}" data-src="{{ v.src }}" hidden><p class="lv-wait">جارٍ التحميل…</p></div>
     {% endfor %}
     <div id="noTable" class="no-table" hidden></div>
     {# the day navigator + filters + the days: shared with the home page

@@ -1,6 +1,10 @@
 <script>
 (function(){
-  [].slice.call(document.querySelectorAll('.rounds-panel')).forEach(function(panel){
+  /* re-runnable: /matches fetches a league's view (with its rounds panel)
+     after load and calls __roundsInit(view) on it (2026-11-05) */
+  window.__roundsInit=function(root){
+  [].slice.call(root.querySelectorAll('.rounds-panel')).forEach(function(panel){
+    if(panel.__rounds) return; panel.__rounds=true;
     var rounds=[].slice.call(panel.querySelectorAll('.round'));
     if(!rounds.length) return;
     var label=panel.querySelector('.rn-label');
@@ -23,5 +27,7 @@
     next.addEventListener('click',function(){ show(idx+1); });
     show(idx);
   });
+  };
+  window.__roundsInit(document);
 })();
 </script>

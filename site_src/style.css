@@ -321,6 +321,7 @@ html.lt-lock{overflow:hidden}
 .lt .lt-pts{font-weight:900;color:var(--green-d)}
 .lt-past{margin-inline-start:auto;background:#fef3c7;color:#92400e;font-size:.68rem;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap}
 .no-table{min-height:240px}
+.lv-wait{padding:40px 16px;text-align:center;color:var(--muted);font-weight:800}   /* a league view while its fragment loads (2026-11-05) */
 /* league fixtures side panel (FotMob-style) */
 .fx-head{display:flex;align-items:center;gap:8px;font-weight:900;color:var(--green-d);font-size:.92rem;margin:0 0 8px}
 .fx-day{font-size:.72rem;font-weight:800;color:var(--muted);background:#f1f5f9;border-radius:7px;padding:5px 9px;margin:10px 0 6px}

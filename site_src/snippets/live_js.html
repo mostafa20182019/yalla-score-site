@@ -8,11 +8,18 @@
      is at home (FD: PSG x Rennes vs 365scores: Rennes x PSG) — a reversed
      hit paints with home/away swapped so the numbers stay correct. */
   var map={};
-  els.forEach(function(e){
+  function reg(e){
     var h=norm(e.getAttribute('data-h')),a=norm(e.getAttribute('data-a'));
     (map[h+'|'+a]=map[h+'|'+a]||[]).push({e:e,sw:false});
     (map[a+'|'+h]=map[a+'|'+h]||[]).push({e:e,sw:true});
-  });
+  }
+  els.forEach(reg);
+  /* rows that arrive AFTER load (a fetched day or league view on /matches,
+     2026-11-05) register here and get the last reply painted at once */
+  window.__lvAdd=function(root){
+    [].slice.call(root.querySelectorAll('[data-lv]')).forEach(reg);
+    if(last) render();
+  };
   function swap(g){
     var gl=(g.goals||[]).map(function(x){
       return {s:x.s==='h'?'a':'h',p:x.p,m:x.m,t:x.t};});

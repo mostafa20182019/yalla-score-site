@@ -1,0 +1,14 @@
+{# ONE league's tabbed view on /matches (الترتيب · الهدافون · الأرقام ·
+   التطور · الجولات) - the body of /matches/l/<slug>, which MATCHES_JS fetches
+   into the league's empty .lview shell the first time the reader picks that
+   league (2026-11-05: the 21 views inline were 472 KB of the page's 855).
+   The tables stay indexable on their own pages (/standings, /fixtures).
+   Same line-join rule as every template. #}
+<div class="ltabs" role="tablist">
+  {% for key, label in v.tabs %}
+  <button type="button" class="ltab{% if loop.first %} is-on{% endif %}" role="tab" aria-selected="{{ 'true' if loop.first else 'false' }}" data-pane="{{ key }}">{{ label }}</button>
+  {% endfor %}
+</div>
+{% for key, pane in v.panes %}
+<div class="lpane" role="tabpanel" data-pane="{{ key }}"{% if not loop.first %} hidden{% endif %}>{{ pane }}</div>
+{% endfor %}

@@ -3,7 +3,11 @@
    «تجيب كل المباريات زى ما كانت صفحة المباريات بتجيب بالظبط» with the same
    filters). Data: site_lib/daylist.day_sections; behaviour: MATCHES_JS. The
    ids are unique per page - include it ONCE. Same line-join rule as every
-   template: break between tags, never inside a sentence. #}
+   template: break between tags, never inside a sentence.
+   2026-11-05: only the days around today are inlined (`days`); `all_days`
+   lists every day the feed holds, and MATCHES_JS fetches the others from
+   /matches/d/<date> on demand (daylist.inline_days / write_day_fragments).
+   A caller that passes no all_days gets every day inline, as before. #}
 <div id="daynav" class="daynav" hidden>
   <button type="button" id="prevDay" class="dn-arrow" aria-label="اليوم السابق">‹</button>
   <span id="dayLabel" class="dn-label"></span>
@@ -11,27 +15,8 @@
 </div>
 {# FotMob-style match filters (user ask 2026-09-02) #}
 {{ filters }}
-<div id="days" data-today="{{ today }}">
+<div id="days" data-today="{{ today }}" data-src="/matches/d/" data-days="{{ (all_days if all_days is defined else []) | join(',') }}">
   {% for d in days %}
-  <section class="day" data-day="{{ d.day }}">
-    <h2 class="day-h">{{ d.heading }}</h2>
-    {% for c in d.comps %}
-    <div class="comp" data-comp="{{ c.comp }}" data-label="{{ c.label }}">
-      {% if c.comp %}
-      {% if c.href %}
-      <div class="comp-h"><a class="comp-a" href="{{ c.href }}">{{ c.icon }} {{ c.label }}</a></div>
-      {% else %}
-      <div class="comp-h">{{ c.icon }} {{ c.label }}</div>
-      {% endif %}
-      {% endif %}
-      <div class="mlist">
-        {% for row in c.rows %}
-        {{ row }}
-        {% endfor %}
-      </div>
-    </div>
-    {% endfor %}
-    <p class="no-comp" hidden>لا مباريات لهذه البطولة في هذا اليوم — جرّب يومًا آخر.</p>
-  </section>
+  {% include "_day.html" %}
   {% endfor %}
 </div>

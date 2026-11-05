@@ -53,8 +53,11 @@ ck("2 the hidden season is gone: a handful of fixture rows, not thousands",
    len(re.findall(r'class="fx"', m)) < 300, f'{len(re.findall(r"class=\"fx\"", m))} rows (budget 300)')
 ck("3 and the crest tags went with it",
    m.count("<img") < 2100, f'{m.count("<img")} img tags (was 4,959; budget 2,100)')
+# 2026-11-05: the league views are fragments at dist/matches/l/<slug>.html
+# (fetched on the first click), so the rounds panels are read from there
+l_html = "".join(rd(p) for p in sorted(glob.glob(f"{DIST}/matches/l/*.html")))
 panels = re.findall(r'<div class="lg-fix rounds-panel.*?(?=<div class="lg-fix rounds-panel|\Z)',
-                    m_html, re.S)
+                    l_html, re.S)
 ck("4 every league ships ONE round inline",
    panels and all(len(re.findall(r'class="round"', p)) <= 1 for p in panels),
    f"{len(panels)} panels, rounds: {[len(re.findall(chr(34)+'round'+chr(34), p)) for p in panels][:4]}")

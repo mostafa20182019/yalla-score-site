@@ -1,5 +1,9 @@
 /*
   Cache-Control: public, max-age=0, must-revalidate
+/matches/d/*
+  X-Robots-Tag: noindex
+/matches/l/*
+  X-Robots-Tag: noindex
 /assets/*
   Cache-Control: public, max-age=86400
 /assets/crests/*

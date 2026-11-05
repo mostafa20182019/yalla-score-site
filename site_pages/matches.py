@@ -11,7 +11,7 @@ from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
 from site_lib.crests import comp_icon, local_crest
 from site_lib.dates import fmt_day
-from site_lib.daylist import comp_hrefs, day_sections
+from site_lib.daylist import comp_hrefs, day_sections, inline_days, write_day_fragments
 from site_lib.league_desc import matches_desc
 from site_lib.matchdata import absence_block, match_details_for, match_goals, prematch_for
 from site_lib.media import highlight_links
@@ -73,6 +73,11 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
     LEAGUE_TABS = [("table", "الترتيب"), ("scorers", "الهدافون"),
                    ("numbers", "الأرقام"), ("trend", "التطور"),
                    ("rounds", "الجولات")]
+    # 2026-11-05: a league's view is a FRAGMENT at /matches/l/<slug> that the
+    # page fetches on the first click (the 21 views inline were 472 KB of the
+    # page); the template gets only the shell. The slug is COMP_SLUG's, like
+    # the standings page; a competition without one is named by its index.
+    os.makedirs(os.path.join(DIST, "matches", "l"), exist_ok=True)
     views = []
     for c in comp_order:
         st = st_by_comp.get(c)
@@ -97,11 +102,17 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
         for i, (k, lbl) in enumerate(live):
             view_panes.append((k, Markup(panes[k])))
             pieces.append(panes[k])
-        views.append({"comp": c, "tabs": tabs, "panes": view_panes})
+        _vslug = COMP_SLUG.get(c) or f"c{len(views)}"
+        write(f"matches/l/{_vslug}.html",
+              render("_lview.html", v={"tabs": tabs, "panes": view_panes}))
+        views.append({"comp": c, "src": f"/matches/l/{_vslug}"})
     # the days (shared with the home page since 2026-10-26: site_lib/daylist)
     days, _rows = day_sections(matches, ge_idx, comp_hrefs(
         {c for c, st in st_by_comp.items() if (st or {}).get("table")}, set(fx_by_comp)))
     pieces.extend(_rows)
+    # every day as a fragment, today +-INLINE_SPAN also inline (2026-11-05)
+    write_day_fragments(days)
+    near_days, all_days = inline_days(days, REF_TODAY)
     # left rail: per-league fixtures BY DAY for leagues without round data
     comp_fix = {}
     for d in sorted_days:
@@ -135,7 +146,8 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
     popup = pred_pop(pieces)
     write("matches.html", render(
         "matches.html", page_head=Markup(page_head), leagues=leagues, ad=Markup(ad),
-        views=views, filters=Markup(FILTERS_HTML), today=REF_TODAY, days=days, rail=rail,
+        views=views, filters=Markup(FILTERS_HTML), today=REF_TODAY, days=near_days,
+        all_days=all_days, rail=rail,
         feat=feat, news=news, matches_js=Markup(MATCHES_JS), rounds_js=Markup(ROUNDS_JS),
         popup=Markup(popup), page_foot=Markup(foot())))
     return comp_order
