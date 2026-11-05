@@ -2,7 +2,7 @@
    Templated 2026-09-26. Lines are joined with NO separator by
    site_lib.render: break between tags, never inside a sentence. #}
 {{ page_head }}
-<nav class="crumbs"><a href="/">أخبار</a> › <a href="/matches.html">المباريات</a> › {{ comp }}</nav>
+<nav class="crumbs" aria-label="مسار الصفحة"><a href="/">أخبار</a> › <a href="/matches.html">المباريات</a> › {{ comp }}</nav>
 {# the H1 is the query the <title> answers («نتيجة مباراة X وY 2-1»،
    «موعد مباراة X وY والقنوات الناقلة») - not a bare «مباراة X وY» that
    names nothing the reader asked (SEO pass, 2026-11-04). #}
@@ -30,7 +30,7 @@
   </dl>
 </section>
 {% if clubs %}
-<nav class="club-chips">
+<nav class="club-chips" aria-label="صفحات الأندية">
   <span>صفحات الأندية:</span>
   {% for c in clubs %}
   <a href="/team/{{ c.slug }}.html">أخبار {{ c.name }}</a>

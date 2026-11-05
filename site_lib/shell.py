@@ -172,10 +172,10 @@ def head(title, desc, url, image=None, og_type="website", active="",
     aa = " is-active" if active == "analysis" else ""
     sa = " is-active" if active == "stats" else ""
     # the predictions switch (site_lib/config.py): no tab while it is off
-    pred_tab = (f'    <a href="/analysis.html" class="navtab{aa}"><span class="ico">📈</span> التوقعات<span class="nav-en"> | Predictions</span></a>' + "\n"
+    pred_tab = (f'    <a href="/analysis.html" class="navtab{aa}"><span class="ico" aria-hidden="true">📈</span> التوقعات<span class="nav-en"> | Predictions</span></a>' + "\n"
                 if PREDICTIONS_ON else "")
     stats_tab = ('    <a href="/stats.html" class="navtab' + sa + '">'
-                 '<span class="ico">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>'
+                 '<span class="ico" aria-hidden="true">📊</span> إحصائيات<span class="nav-en"> | Stats</span></a>'
                  if SHOW_STATS_PAGE else "")
     va = " is-active" if active == "videos" else ""
     # «أهداف» tab → /goals («أهداف المباريات», 2026-11-02). Removed the same
@@ -183,9 +183,9 @@ def head(title, desc, url, image=None, og_type="website", active="",
     # (user: «عايزك ترجعلى برضه تاب الأهداف») - the row buttons stay too
     ga = " is-active" if active == "goals" else ""
     ra = " is-active" if active == "reels" else ""
-    vids_tab = (f'\n    <a href="/videos.html" class="navtab{va}"><span class="ico">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>'
+    vids_tab = (f'\n    <a href="/videos.html" class="navtab{va}"><span class="ico" aria-hidden="true">🎬</span> فيديوهات<span class="nav-en"> | Videos</span></a>'
                 if SHOW_VIDEOS else "")
-    reels_tab = (f'\n    <a href="/reels.html" class="navtab{ra}"><span class="ico">⚡</span> ريلز<span class="nav-en"> | Reels</span></a>'
+    reels_tab = (f'\n    <a href="/reels.html" class="navtab{ra}"><span class="ico" aria-hidden="true">⚡</span> ريلز<span class="nav-en"> | Reels</span></a>'
                  if SHOW_REELS else "")
     # web push (2026-09-27): manifest + theme colour + the header bell, all
     # only when the VAPID public key is configured (site_lib/config.py)
@@ -235,11 +235,11 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <header class="site-head">
   <div class="wrap head-in">
     <a class="brand" href="/"><img class="logo" src="/assets/brand-tiger.png" alt="" width="46" height="46"> {esc(SITE_NAME)}</a>
-    <nav class="site-nav"><div class="nav-in">
-    <a href="/" class="navtab nt-match{ma}"><span class="ico">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
-    <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>
-    <a href="/news.html" class="navtab nt-news{na}"><span class="ico">📰</span> أخبار<span class="nav-en"> | News</span></a>
-    <a href="/goals.html" class="navtab nt-goals{ga}"><span class="ico">🎥</span> أهداف<span class="nav-en"> | Goals</span></a>
+    <nav class="site-nav" aria-label="الأقسام"><div class="nav-in">
+    <a href="/" class="navtab nt-match{ma}"><span class="ico" aria-hidden="true">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico" aria-hidden="true">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>
+    <a href="/news.html" class="navtab nt-news{na}"><span class="ico" aria-hidden="true">📰</span> أخبار<span class="nav-en"> | News</span></a>
+    <a href="/goals.html" class="navtab nt-goals{ga}"><span class="ico" aria-hidden="true">🎥</span> أهداف<span class="nav-en"> | Goals</span></a>
 {pred_tab}{stats_tab}{vids_tab}{reels_tab}
     </div></nav><span class="head-social">{social}</span>{push_bell}
   </div>

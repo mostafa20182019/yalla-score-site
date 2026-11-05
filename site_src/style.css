@@ -3,6 +3,9 @@
   --ink:#0f172a; --muted:#64748b; --card:#fff; --bg:#eef2f6; --line:#e2e8f0;
 }
 *{box-sizing:border-box}
+/* one keyboard focus ring for everything focusable (site-check 2026-11-05);
+   a component may still refine it after this line (.ltab, .lt-n) */
+:is(a,button,input,select,textarea,[tabindex]):focus-visible{outline:2px solid var(--green-d);outline-offset:2px}
 /* a class-level `display` beats the UA's [hidden]{display:none}, so an element
    hidden via the attribute keeps rendering (the fav-live card showed as an
    empty pill, and the daynav needed an inline-style workaround for the same
@@ -1216,6 +1219,7 @@ html.lt-lock{overflow:hidden}
 .ts .tk-t{font-weight:800;color:var(--green-d);font-variant-numeric:tabular-nums}
 .ts .tk-dot{width:7px;height:7px;border-radius:50%;background:#c8102e;display:inline-block;animation:tsblink 1.2s infinite}
 @keyframes tsblink{50%{opacity:.25}}
+@media(prefers-reduced-motion:reduce){.tk-dot,.tc .tk-dot,.ts .tk-dot,.fv-dot{animation:none}}
 .ts-live{border-color:#f3c4cc !important}
 
 /* ---- the FotMob look (user, 2026-10-26), in three asks the same day:

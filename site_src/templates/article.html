@@ -6,7 +6,7 @@
 {{ page_head }}
 {{ article_ld }}
 {{ crumbs_ld }}
-<nav class="crumbs">{% for href, name in crumbs %}{% if not loop.first %} › {% endif %}<a href="{{ href }}">{{ name }}</a>{% endfor %}</nav>
+<nav class="crumbs" aria-label="مسار الصفحة">{% for href, name in crumbs %}{% if not loop.first %} › {% endif %}<a href="{{ href }}">{{ name }}</a>{% endfor %}</nav>
 <article class="article">
   <h1>{{ title }}</h1>
   <p class="a-meta"><a class="a-by" href="/editors.html">{{ byline }}</a></p>
@@ -48,7 +48,7 @@
   {% endif %}
   {{ embeds }}
   {% if clubs %}
-  <nav class="club-chips">
+  <nav class="club-chips" aria-label="صفحات الأندية">
     <span>المزيد عن:</span>
     {% for c in clubs %}
     <a href="/team/{{ c.slug }}.html">{{ c.name }}</a>
