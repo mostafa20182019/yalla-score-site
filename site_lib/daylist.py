@@ -67,7 +67,7 @@ def day_sections(matches, ge_idx, hrefs=None):
             for m in ms:
                 row = match_row(m, show_time=True, show_comp=False,
                                 goals=match_goals(ge_idx, m),
-                                link=match_url(m),
+                                link=match_url(m), card_link=False,
                                 highlight=hls.get(str(m.get("match_id"))))
                 # filter hooks: "على التلفزيون" = a known broadcaster (per-match
                 # channel or the verified COMP_TV map); "حسب الوقت" sorts by data-ko

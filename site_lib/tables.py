@@ -431,13 +431,16 @@ def match_details_html(e, flipped, h_ar, a_ar):
 
 
 def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
-              show_date=False, highlight=None):
+              show_date=False, highlight=None, card_link=True):
     """show_date (2026-10-08, user: «حط هنا برضه تواريخ المباريات» on the club
     page): the match's day on the competition line - for lists that are NOT
     grouped under a day heading (club pages, the standings page's next matches).
     highlight = (youtube url, channel) of the match's goals video
     (media.highlight_links): a «الأهداف» button in the row's spare column,
-    opening the video on YouTube (user, 2026-11-02)."""
+    opening the video on YouTube (user, 2026-11-02).
+    card_link=False (2026-11-05): no «بطاقة المباراة» link - the day lists
+    (.mlist) hid it with CSS and the stretched link already covers the row,
+    so it was one hidden duplicate link per match on every page."""
     st = (m.get("status") or "").upper()
     badge = {"LIVE": ("مباشر", "live"), "FINISHED": ("انتهت", "fin"),
              "UPCOMING": ("قادمة", "up"), "POSTPONED": ("", "pp")}.get(st, ("", "up"))
@@ -490,7 +493,7 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
     # button (pred_btn / done_btn, kept in widgets.py), so a row no longer
     # carries any prediction data.
     pbtn = (f'<div class="mgo-row"><a class="mgo" href="{esc(link)}">بطاقة المباراة ←</a></div>'
-            if link else "")
+            if link and card_link else "")
     stretch = (f'<a class="mstretch" href="{esc(link)}" '
                f'aria-label="تفاصيل مباراة {esc(ar_team(m.get("home")))} و{esc(ar_team(m.get("away")))}"></a>'
                if link else "")

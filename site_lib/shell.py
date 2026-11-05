@@ -233,7 +233,6 @@ def head(title, desc, url, image=None, og_type="website", active="",
 </head>
 <body>
 <header class="site-head">
-  <div class="head-crowd" aria-hidden="true"></div>
   <div class="wrap head-in">
     <a class="brand" href="/"><img class="logo" src="/assets/brand-tiger.png" alt="" width="46" height="46"> {esc(SITE_NAME)}</a>
     <nav class="site-nav"><div class="nav-in">
@@ -244,7 +243,6 @@ def head(title, desc, url, image=None, og_type="website", active="",
 {pred_tab}{stats_tab}{vids_tab}{reels_tab}
     </div></nav><span class="head-social">{social}</span>{push_bell}
   </div>
-  {TICKER_HTML}
 </header>
 <main class="wrap">
 {adsense_top_banner()}
@@ -276,7 +274,7 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-{cf_beacon()}{push_js()}</body></html>{KO_SCRIPT}{REL_JS}{LIVE_JS}{SWIPE_JS}"""
+{cf_beacon()}{push_js()}{KO_SCRIPT}{REL_JS}{LIVE_JS}{SWIPE_JS}</body></html>"""
 
 
 # ---- web push (2026-09-27) ----
@@ -307,8 +305,9 @@ def push_cta():
     return PUSH_CTA if VAPID_PUBLIC_KEY else ""
 
 
-# Live-scores ticker in the header. Built once per build from matches.json
-# (site rebuilds every 30 min, so it stays fresh). Set by build().
+# Live-scores ticker: still built by build() (its contract feeds the live
+# card) but no longer EMITTED - it had been display:none since the one-row
+# header, 10 KB of hidden markup on every page (site-check 2026-11-05).
 TICKER_HTML = ""
 CSS_VER = "1"   # cache-buster for /assets/style.css, set from CSS content hash in build()
 # window.__koTs = epoch-ms of nearby kickoffs (set by build(), injected in

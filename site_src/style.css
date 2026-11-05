@@ -23,16 +23,6 @@ a{color:inherit}
    #1676ad 4.97:1 (WCAG AA for the tabs, site-check 2026-11-05) */
 .site-head{background:linear-gradient(90deg,var(--green-d),#1676ad);box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
 .head-in{display:flex;align-items:center;height:60px;gap:26px;position:relative;z-index:1}
-/* Egyptian fans facing the camera (CC BY-SA, WC 2018) across the header,
-   dissolving into the green gradient before the brand */
-.head-crowd{position:absolute;left:0;top:0;height:78px;width:calc(100% - 300px);
-  background:url("/media/fans-header.jpg") left center/auto 78px repeat-x;
-  /* fans-header.jpg = one wide 3473x156 band composed from four DIFFERENT
-     regions of the CC BY-SA WC-2018 crowd photo (blended seams, faces fill
-     the height) - renders 1737px @78px, no visible repeat on normal screens */
-  -webkit-mask-image:linear-gradient(to right,rgba(0,0,0,.95) 55%,transparent 97%);
-  mask-image:linear-gradient(to right,rgba(0,0,0,.95) 55%,transparent 97%);
-  pointer-events:none}
 .brand{color:#fff;font-weight:900;font-size:1.3rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 /* the tiger (2026-11-04): the head alone, no tile - «كبر اللوجو» */
 .brand .logo{width:46px;height:46px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
@@ -1241,7 +1231,6 @@ html.lt-lock{overflow:hidden}
    He picked the recommended option every time, our blue kept throughout. */
 
 /* header: one row - brand, the tabs, the bell (the <nav> sits inside .head-in) */
-.head-crowd,.site-head .ticker{display:none!important}
 .head-in .nav-in{height:100%}
 .head-in .brand{flex:none;white-space:nowrap}
 .head-in .site-nav{align-self:stretch;background:transparent;border-top:0;flex:0 1 auto;min-width:0}       /* tabs scroll before the bell is pushed out */
@@ -1275,7 +1264,6 @@ html.lt-lock{overflow:hidden}
 .mlist>.mrow .mid{min-width:64px}
 .mlist>.mrow .score{font-size:1.05rem}
 .mlist>.mrow .ko{font-size:.9rem;color:var(--ink)}
-.mlist>.mrow .mgo-row{display:none}
 /* «الأهداف» - the match's goals video on YouTube, in the row's spare column
    (2026-11-02); z-index 2 lifts it over .mstretch like the old row buttons */
 .mlist>.mrow .mhl{grid-area:hl;justify-self:center;position:relative;z-index:2;display:flex;flex-direction:column;

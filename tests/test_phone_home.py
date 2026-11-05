@@ -87,8 +87,12 @@ ck("10c /standings, /scorers and /fixtures light it; build() writes /leagues",
 css = open("site_src/style.css", encoding="utf-8").read()
 m = css.find("@media(max-width:760px){\n  body{padding-bottom")
 glob, block = css[:m], css[m:]
-ck("11 everywhere: no crowd photo, no ticker; one-line rows without the «بطاقة المباراة» pill",
-   ".head-crowd,.site-head .ticker{display:none!important}" in glob and ".mlist>.mrow .mgo-row{display:none}" in glob)
+# 2026-11-05: not hidden by CSS any more - simply not emitted (10 KB of
+# display:none markup per page, plus one hidden duplicate link per row)
+_hd = shell.head("t", "d", "https://x/")
+ck("11 everywhere: no crowd photo, no ticker markup; one-line rows without the «بطاقة المباراة» pill",
+   "head-crowd" not in _hd and "class=\"ticker\"" not in _hd and all("mgo-row" not in r for r in rows)
+   and "</html>" in shell.foot() and shell.foot().rstrip().endswith("</body></html>"))
 ck("12 no phone/desktop tab split left in the stylesheet", "nt-ph" not in css and "nt-desk" not in css and "ph-on" not in css)
 ck("12b «البطولات» is a tab on desktop too again (user 2026-10-27: «اعمل تاب للبطولات على جهاز الكمبيوتر»)",
    "nt-leagues{display:none}" not in css)
