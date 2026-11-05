@@ -100,17 +100,16 @@ def render(ev, out=None):
 
     icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
     def ball(size, cx, cy):
+        """The brand tiger head, whole (no circle mask - 2026-11-05)."""
         b = icon.resize((size, size), Image.LANCZOS)
-        m = Image.new("L", (size, size), 0)
-        ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
         img.paste(b, (cx - size // 2, cy - size // 2), b)
 
     # the brand, centred at the top (ball + name)
     fb = FC.font("ExtraBold", 44)
     bn = FC.ar("الجون")
     bw = d.textlength(bn, font=fb)
-    bx = W / 2 - (bw + 70) / 2
-    ball(58, int(bx + bw + 70 - 29), 62)
+    bx = W / 2 - (bw + 78) / 2
+    ball(68, int(bx + bw + 78 - 34), 62)
     d.text((bx, 38), bn, font=fb, fill=WHITE)
 
     # the word, with a faint echo behind it
@@ -120,12 +119,6 @@ def render(ev, out=None):
     wx = W / 2 - d.textlength(wv, font=fw) / 2
     d.text((wx + 6, 118 + 10), wv, font=fw, fill=(4, 16, 36))
     d.text((wx, 118), wv, font=fw, fill=WHITE)
-    echo = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ed = ImageDraw.Draw(echo)
-    fe = FC.font("ExtraBold", 110)
-    for yy in (360, 480, 600):
-        ed.text((W / 2 - ed.textlength(wv, font=fe) / 2, yy), wv, font=fe, fill=(255, 255, 255, 14))
-    img.paste(echo, (0, 0), echo)
 
     # the scoring club's crest in a glass circle
     side = ev.get("side") or "h"
@@ -149,15 +142,18 @@ def render(ev, out=None):
     tag = {"ج": "ركلة جزاء", "عكسية": "هدف عكسي"}.get(ev.get("tag") or "", "")
     fn = fit(name, "ExtraBold", 54, 600, 30)
     nw = d.textlength(FC.ar(name), font=fn)
-    chip_w = 104 if minute else 0
+    fm = FC.font("ExtraBold", 38)
+    mark = f"{minute}'" if minute else ""     # «67'» / «45+2'»: the minute mark, like the site's rows
+    chip_w = max(104, int(d.textlength(mark, font=fm)) + 36) if minute else 0
     total = nw + (chip_w + 22 if minute else 0)
     x_right = W / 2 + total / 2
-    if minute:
-        d.rounded_rectangle([x_right - chip_w, y - 2, x_right, y + 60], 12, fill=ORANGE)
-        fm = FC.font("ExtraBold", 38)
-        d.text((x_right - chip_w / 2 - d.textlength(minute, font=fm) / 2, y + 3), minute, font=fm, fill=WHITE)
-        x_right -= chip_w + 22
+    # the name first (on the right), the minute after it (on its left) - the
+    # Arabic reading order; until 2026-11-05 the chip came first («67 محمد صلاح»)
     text_r(x_right, y - 6, name, fn)
+    if minute:
+        xl = x_right - nw - 22 - chip_w
+        d.rounded_rectangle([xl, y - 2, xl + chip_w, y + 60], 12, fill=ORANGE)
+        d.text((xl + chip_w / 2 - d.textlength(mark, font=fm) / 2, y + 3), mark, font=fm, fill=WHITE)
     if tag:
         text_c(W // 2, y + 68, tag, FC.font("Bold", 26), GOLD)
 
@@ -223,16 +219,15 @@ def render_whistle(ev, out=None):
         return f
     icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
     def ball(size, cx, cy):
+        """The brand tiger head, whole (no circle mask - 2026-11-05)."""
         b = icon.resize((size, size), Image.LANCZOS)
-        m = Image.new("L", (size, size), 0)
-        ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
         img.paste(b, (cx - size // 2, cy - size // 2), b)
 
     fb = FC.font("ExtraBold", 44)
     bn = FC.ar("الجون")
     bw = d.textlength(bn, font=fb)
-    bx = W / 2 - (bw + 70) / 2
-    ball(58, int(bx + bw + 70 - 29), 62)
+    bx = W / 2 - (bw + 78) / 2
+    ball(68, int(bx + bw + 78 - 34), 62)
     d.text((bx, 38), bn, font=fb, fill=WHITE)
 
     kind = ev.get("kind") or "ft"

@@ -33,8 +33,9 @@ ck("2b the file is a JPEG", open(tmp, "rb").read(3) == b"\xff\xd8\xff")
 # the big word sits in the upper band: lots of white there, none mid-left
 band = im.crop((200, 130, 880, 300)); white = sum(1 for p in band.getdata() if min(p) > 230)
 ck("2c «جووووول» is drawn large in the upper band", white > 8000, str(white))
-# the orange minute chip exists to the right of centre at the scorer row
-chip = im.crop((540, 724, 760, 784)); orange = sum(1 for p in chip.getdata() if p[0] > 200 and p[1] < 140 and p[2] < 60)
+# the orange minute chip sits LEFT of centre at the scorer row (after the name
+# in reading order, 2026-11-05; it used to come before it)
+chip = im.crop((320, 724, 540, 784)); orange = sum(1 for p in chip.getdata() if p[0] > 200 and p[1] < 140 and p[2] < 60)
 ck("2d the minute chip is orange", orange > 1500, str(orange))
 # the score strip's two white discs
 for x in (172, 908):
