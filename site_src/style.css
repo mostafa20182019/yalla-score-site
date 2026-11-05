@@ -19,7 +19,9 @@ html,body{overflow-x:clip;max-width:100%}
 body{margin:0;font-family:'Almarai','Segoe UI',Tahoma,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6}
 .wrap{max-width:1600px;margin:0 auto;padding:0 20px}
 a{color:inherit}
-.site-head{background:linear-gradient(90deg,var(--green-d),var(--green));box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
+/* ends at #1676ad, not var(--green): white text on #1f94d3 is 3.37:1, on
+   #1676ad 4.97:1 (WCAG AA for the tabs, site-check 2026-11-05) */
+.site-head{background:linear-gradient(90deg,var(--green-d),#1676ad);box-shadow:0 2px 10px rgba(15,23,42,.18);position:sticky;top:0;z-index:9}
 .head-in{display:flex;align-items:center;height:78px;position:relative;z-index:1}
 /* Egyptian fans facing the camera (CC BY-SA, WC 2018) across the header,
    dissolving into the green gradient before the brand */
@@ -34,12 +36,12 @@ a{color:inherit}
 .brand{color:#fff;font-weight:900;font-size:1.3rem;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
 /* the tiger (2026-11-04): the head alone, no tile - «كبر اللوجو» */
 .brand .logo{width:46px;height:46px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
-.beta{font-size:.62rem;font-weight:800;color:#ffe08a;border:1px solid rgba(255,224,138,.55);background:rgba(0,0,0,.18);padding:2px 9px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
+.beta{font-size:.68rem;font-weight:800;color:#ffe08a;border:1px solid rgba(255,224,138,.55);background:rgba(0,0,0,.18);padding:2px 9px;border-radius:999px;letter-spacing:.02em;white-space:nowrap}
 /* second row: navigation tabs (like the app) */
 .site-nav{position:relative;z-index:1;background:rgba(0,0,0,.16);border-top:1px solid rgba(255,255,255,.12)}
 .nav-in{display:flex;align-items:stretch;height:46px;overflow-x:auto;scrollbar-width:none}
 .nav-in::-webkit-scrollbar{display:none}
-.navtab{display:inline-flex;align-items:center;gap:7px;padding:0 18px;color:rgba(255,255,255,.85);text-decoration:none;font-weight:800;font-size:.95rem;border-bottom:3px solid transparent;transition:background .12s,color .12s;white-space:nowrap}
+.navtab{display:inline-flex;align-items:center;gap:7px;padding:0 18px;color:#fff;text-decoration:none;font-weight:800;font-size:.95rem;border-bottom:3px solid transparent;transition:background .12s,color .12s;white-space:nowrap}
 .navtab:hover{background:rgba(255,255,255,.10);color:#fff}
 .navtab.is-active{color:#fff;border-bottom-color:#fff;background:rgba(255,255,255,.08)}
 .navtab .ico{font-size:1.1rem;display:inline-block;transition:transform .18s}
@@ -82,7 +84,7 @@ a{color:inherit}
 .a-fig{margin:14px 0}
 .a-img{width:100%;max-height:400px;object-fit:cover;object-position:50% 18%;border-radius:14px;display:block}
 .a-img[src*="/matchup-"]{object-position:50% 50%}
-.a-credit{color:var(--muted);font-size:.72rem;font-weight:600;margin-top:6px;text-align:center}
+.a-credit{color:var(--muted);font-size:.75rem;font-weight:600;margin-top:6px;text-align:center}
 .lead{font-size:1.1rem;font-weight:700;color:#334155}
 .a-body{font-size:1.06rem;line-height:1.95}.a-body p{margin:0 0 14px}
 .a-body h2{font-size:1.25rem;font-weight:900;color:var(--green-d);margin:22px 0 8px}
@@ -109,7 +111,7 @@ a{color:inherit}
 .mn-th.noimg{background:linear-gradient(135deg,var(--green),#0d3e59)}
 .mn-b{display:flex;flex-direction:column;min-width:0}
 .mn-t{font-size:.8rem;font-weight:800;color:var(--ink);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.mn-d{font-size:.7rem;color:var(--muted);font-weight:700;margin-top:2px}
+.mn-d{font-size:.75rem;color:var(--muted);font-weight:700;margin-top:2px}
 .mp-ad .ad-placeholder,.mp-ad .ad-unit{position:static;min-height:250px}
 /* league standings table */
 .ltable{background:#fff;border:1px solid #e6ebf1;border-radius:14px;overflow:hidden;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
@@ -117,7 +119,7 @@ a{color:inherit}
 .lt-scroll{overflow-x:auto}
 .lt{width:100%;border-collapse:collapse;font-size:.82rem;font-variant-numeric:tabular-nums}
 .lt th,.lt td{padding:9px 6px;text-align:center;white-space:nowrap}
-.lt thead th{color:var(--muted);font-weight:800;font-size:.72rem;border-bottom:1px solid #eef2f6}
+.lt thead th{color:var(--muted);font-weight:800;font-size:.75rem;border-bottom:1px solid #eef2f6}
 /* 404 page */
 .nf{text-align:center;padding:46px 16px 30px;max-width:520px;margin:0 auto}
 .nf-emoji{font-size:3rem;margin-bottom:6px}
@@ -156,15 +158,15 @@ a{color:inherit}
 .stat-tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
 .tile{background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;padding:12px;text-align:center}
 .tile b{display:block;font-size:1.05rem;color:#15658f}
-.tile span{font-size:.72rem;color:var(--muted);font-weight:700}
+.tile span{font-size:.75rem;color:var(--muted);font-weight:700}
 .tile-res{grid-column:span 2}
 .tile-ms{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:7px}
 .tile-ms .tm{display:inline-flex;align-items:center;gap:4px;min-width:0;font-size:.78rem;font-weight:700}
 .tile-ms .tm bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tile-ms img{width:18px;height:18px;object-fit:contain;flex:0 0 auto}
 .tile-ms .ph{font-size:.8rem;flex:0 0 auto}
-.tile-ms i{font-style:normal;color:var(--muted);font-size:.72rem;flex:0 0 auto}
-.tile-when{margin-top:4px;font-size:.68rem;color:var(--muted);font-weight:700}
+.tile-ms i{font-style:normal;color:var(--muted);font-size:.75rem;flex:0 0 auto}
+.tile-when{margin-top:4px;font-size:.72rem;color:var(--muted);font-weight:700}
 .tile-sc .tile-ms{gap:5px}
 /* one narrow column, so let a long Arabic name wrap instead of truncating */
 .tile-sc .tile-ms .tm{max-width:100%}
@@ -180,11 +182,11 @@ a{color:inherit}
 @media(max-width:560px){.pct-grid{grid-template-columns:repeat(2,1fr);gap:8px}
   .pct{padding:9px 10px}}
 .pct{background:#f8fafc;border:1px solid #eef2f6;border-radius:11px;padding:10px 12px}
-.pct-l{display:block;font-size:.72rem;color:var(--muted);font-weight:700}
+.pct-l{display:block;font-size:.75rem;color:var(--muted);font-weight:700}
 .pct b{display:block;font-size:1.05rem;color:#15658f;margin:2px 0 5px}
 .pct-bar{display:block;height:5px;border-radius:3px;background:#e6edf3;overflow:hidden}
 .pct-bar i{display:block;height:100%;background:var(--green);border-radius:3px}
-.pct-s{display:block;margin-top:5px;font-size:.66rem;color:var(--muted);font-weight:700}
+.pct-s{display:block;margin-top:5px;font-size:.7rem;color:var(--muted);font-weight:700}
 /* curated clubs panel */
 .cl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}
 .cl-card{display:flex;flex-direction:column;gap:6px;text-decoration:none;background:#f8fafc;
@@ -193,15 +195,15 @@ a{color:inherit}
 .cl-top{display:flex;align-items:center;gap:8px;min-width:0}
 .cl-top img{width:28px;height:28px;object-fit:contain;flex:0 0 auto}
 .cl-n{font-weight:800;font-size:.9rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cl-lg{font-size:.68rem;color:var(--muted);font-weight:700}
+.cl-lg{font-size:.72rem;color:var(--muted);font-weight:700}
 .cl-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.cl-pos{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 7px;font-size:.74rem;font-weight:800}
+.cl-pos{background:var(--green-d);color:#fff;border-radius:6px;padding:1px 7px;font-size:.75rem;font-weight:800}
 .cl-pts{font-size:.76rem;font-weight:700;color:var(--ink)}
-.cl-soon{font-size:.72rem;color:var(--muted);font-weight:700}
+.cl-soon{font-size:.75rem;color:var(--muted);font-weight:700}
 .cl-form{display:inline-flex;gap:3px;margin-inline-start:auto}
 /* the next-fixture line carries a rival name + date + time: let it wrap
    instead of clipping the kickoff time mid-digit in a ~205px card */
-.cl-sc{font-size:.72rem;color:var(--muted);font-weight:700;line-height:1.45}
+.cl-sc{font-size:.75rem;color:var(--muted);font-weight:700;line-height:1.45}
 .cl-sc b{color:var(--ink)}
 @media(max-width:760px){
   /* 10 stacked cards would bury the league stats - same swipe strip the
@@ -234,7 +236,7 @@ a{color:inherit}
 a.lgm:hover{background:#f6fafc}
 .lgm.r-w{border-inline-start-color:#16a34a}
 .lgm.r-l{border-inline-start-color:#e11d48}
-.lgm-d{display:block;font-size:.7rem;font-weight:700;color:var(--muted)}
+.lgm-d{display:block;font-size:.75rem;font-weight:700;color:var(--muted)}
 .lgm .fx{border-bottom:0}
 html.lt-lock{overflow:hidden}
 /* /goals - «أهداف المباريات» (2026-11-02) */
@@ -251,7 +253,7 @@ html.lt-lock{overflow:hidden}
   background:rgba(225,29,72,.92);color:#fff;display:flex;align-items:center;justify-content:center;
   font-size:1.2rem;padding-inline-start:4px;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .15s}
 .gl-thumb:hover .gl-play{transform:scale(1.1)}
-.gl-ch{position:absolute;top:8px;inset-inline-start:8px;font-size:.7rem;font-weight:900;color:#fff;
+.gl-ch{position:absolute;top:8px;inset-inline-start:8px;font-size:.75rem;font-weight:900;color:#fff;
   padding:3px 8px;border-radius:6px;background:rgba(15,23,42,.75)}
 .gl-ch-bein{background:#5b2d82}
 .gl-ch-on{background:#d4141c}
@@ -259,7 +261,7 @@ html.lt-lock{overflow:hidden}
 .gl-ch-mbc{background:#1a1a1a}
 .gl-ch-thm{background:#0f766e}
 .gl-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:7px}
-.gl-comp{font-size:.72rem;font-weight:800;color:var(--muted)}
+.gl-comp{font-size:.75rem;font-weight:800;color:var(--muted)}
 .gl-line{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;color:var(--ink);
   text-decoration:none;font-weight:800;font-size:.86rem}
 .gl-line .gl-t{display:flex;align-items:center;gap:6px;min-width:0}
@@ -268,13 +270,13 @@ html.lt-lock{overflow:hidden}
 .gl-line bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gl-line img{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
 .gl-sc{font-weight:900;white-space:nowrap;background:#f1f5f9;border-radius:7px;padding:3px 8px}
-.gl-foot{display:flex;justify-content:space-between;align-items:center;font-size:.72rem;color:var(--muted);font-weight:700}
+.gl-foot{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:var(--muted);font-weight:700}
 .gl-mp{color:var(--green-d);text-decoration:none;font-weight:800}
 .gl-mp:hover{text-decoration:underline}
 .sc-list{border:1px solid #eef2f6;border-radius:11px;overflow:hidden}
 .sc-hd,.sc-row{display:grid;grid-template-columns:30px 1fr 62px 48px;align-items:center;gap:6px;padding:7px 10px}
 .sc-nom .sc-hd,.sc-nom .sc-row{grid-template-columns:30px 1fr 48px}
-.sc-hd{background:#f8fafc;font-size:.7rem;color:var(--muted);font-weight:800}
+.sc-hd{background:#f8fafc;font-size:.75rem;color:var(--muted);font-weight:800}
 .sc-hd span:nth-child(3),.sc-hd span:nth-child(4){text-align:center}
 .sc-row{border-top:1px solid #f1f5f9;font-size:.84rem}
 .sc-row:nth-child(2){background:#f3f9fd}
@@ -283,7 +285,7 @@ html.lt-lock{overflow:hidden}
 .sc-p img{width:26px;height:26px;object-fit:cover;flex:0 0 auto}
 .sc-nm{display:flex;flex-direction:column;min-width:0;line-height:1.3}
 .sc-nm bdi{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.sc-club{font-size:.7rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sc-club{font-size:.75rem;color:var(--muted);font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sc-m{text-align:center;color:var(--muted);font-weight:700;font-size:.78rem}
 .sc-g{text-align:center;color:var(--green-d);font-size:.95rem}
 @media(max-width:560px){
@@ -297,9 +299,9 @@ html.lt-lock{overflow:hidden}
   .stat-tiles{grid-template-columns:repeat(3,1fr);gap:8px}
   .tile{padding:10px 6px}
   .tile b{font-size:.98rem}
-  .tile span{font-size:.64rem}
+  .tile span{font-size:.7rem}
   .tile-res,.tile-sc{grid-column:1/-1}
-  .tile-ms .tm{font-size:.74rem}
+  .tile-ms .tm{font-size:.75rem}
 }
 .chart-wrap{overflow-x:auto}
 .chart{width:100%;max-width:680px;height:auto;display:block}
@@ -319,12 +321,12 @@ html.lt-lock{overflow:hidden}
 .lt .lt-team{text-align:start;display:flex;align-items:center;gap:8px;font-weight:800;min-width:150px}
 .lt .lt-team img{width:22px;height:22px;object-fit:contain;flex:0 0 auto}
 .lt .lt-pts{font-weight:900;color:var(--green-d)}
-.lt-past{margin-inline-start:auto;background:#fef3c7;color:#92400e;font-size:.68rem;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.lt-past{margin-inline-start:auto;background:#fef3c7;color:#92400e;font-size:.72rem;font-weight:800;padding:3px 10px;border-radius:999px;white-space:nowrap}
 .no-table{min-height:240px}
 .lv-wait{padding:40px 16px;text-align:center;color:var(--muted);font-weight:800}   /* a league view while its fragment loads (2026-11-05) */
 /* league fixtures side panel (FotMob-style) */
 .fx-head{display:flex;align-items:center;gap:8px;font-weight:900;color:var(--green-d);font-size:.92rem;margin:0 0 8px}
-.fx-day{font-size:.72rem;font-weight:800;color:var(--muted);background:#f1f5f9;border-radius:7px;padding:5px 9px;margin:10px 0 6px}
+.fx-day{font-size:.75rem;font-weight:800;color:var(--muted);background:#f1f5f9;border-radius:7px;padding:5px 9px;margin:10px 0 6px}
 .fx{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px;padding:7px 2px;border-bottom:1px solid #f1f5f9;font-size:.78rem;font-weight:700}
 .fx-home{display:flex;align-items:center;justify-content:flex-end;gap:6px;text-align:end;min-width:0}
 .fx-away{display:flex;align-items:center;gap:6px;min-width:0}
@@ -355,7 +357,7 @@ html.lt-lock{overflow:hidden}
 .al-t{font-size:1rem;font-weight:900;color:var(--ink);line-height:1.55}
 .al-s{font-size:.82rem;color:var(--muted);font-weight:600;line-height:1.6;
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.al-m{font-size:.72rem;color:#94a3b8;font-weight:700}
+.al-m{font-size:.75rem;color:#64748b;font-weight:700}
 /* home «من أخبارنا أيضًا» — compact 2-col variant of the calm list */
 .alist-2col{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;max-width:none}
 .alist-2col .al-th{width:110px;height:72px}
@@ -381,7 +383,7 @@ html.lt-lock{overflow:hidden}
   /* all leagues visible at once (3 per row) - no hidden horizontal scroll */
   .lg-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
   .lg-item{justify-content:center;gap:5px;padding:8px 4px;border:1px solid #e6ebf1;border-radius:10px;
-    font-size:.74rem;line-height:1.25;text-align:center;min-width:0}
+    font-size:.75rem;line-height:1.25;text-align:center;min-width:0}
   .lg-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
   .lg-logo,.lg-ico{width:18px;height:18px;font-size:.95rem}
 }
@@ -401,7 +403,7 @@ html.lt-lock{overflow:hidden}
 .an-comp a{color:var(--ink);text-decoration:none}
 .an-comp .an-round{color:var(--muted);font-weight:700;font-size:.92em}
 /* /insights («التحليلات», 2026-10-07): the kind label above each title */
-.ins-k{align-self:flex-start;font-size:.7rem;font-weight:800;border-radius:999px;padding:2px 9px;background:#eef6fc;color:#0d5c8a}
+.ins-k{align-self:flex-start;font-size:.75rem;font-weight:800;border-radius:999px;padding:2px 9px;background:#eef6fc;color:#0d5c8a}
 .ins-k.ins-preview{background:#ecfdf5;color:#166534}.ins-k.ins-report{background:#f1f5f9;color:#334155}.ins-k.ins-round{background:#fef3c7;color:#92400e}
 .ins-filters{max-width:none;margin:0 0 12px}
 .ins-selects{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:0 0 14px}.ins-sel{display:inline-flex;align-items:center;gap:6px;font-weight:800;font-size:.85rem;color:var(--muted)}.ins-sel select{font:inherit;font-weight:700;color:var(--ink);border:1px solid #e2e8f0;border-radius:10px;padding:6px 10px;background:#fff;max-width:220px}.ins-sel select:disabled{opacity:.55}.ins-count{font-size:.8rem;font-weight:800;color:var(--muted)}
@@ -419,7 +421,7 @@ html.lt-lock{overflow:hidden}
 .pr-teams>.pr-t:last-child bdi{color:#334155}
 .pr-vs{color:var(--muted);font-weight:600}
 .prow .pr-bw{grid-area:bar;display:flex;flex-direction:column;gap:5px;min-width:0}
-.prow .pr-probs{display:flex;flex-wrap:wrap;gap:0 10px;font-size:.72rem;line-height:1.6}
+.prow .pr-probs{display:flex;flex-wrap:wrap;gap:0 10px;font-size:.75rem;line-height:1.6}
 .prow .pr-probs .prb+.prb{margin-inline-start:0}
 .pr-meta{grid-area:meta;display:flex;flex-wrap:wrap;gap:6px 14px;font-size:.78rem;color:var(--muted);font-weight:700}
 /* RTL, like everything else on the page: the HOME segment sits on the
@@ -429,7 +431,7 @@ html.lt-lock{overflow:hidden}
    2026-09-16 and the override was left behind, quietly putting the home
    side on the wrong end of its own bar (user, 2026-09-18). */
 .pbar{display:flex;height:22px;border-radius:6px;overflow:hidden;background:#e2e8f0;direction:rtl}
-.pb-seg{display:flex;align-items:center;justify-content:center;font-size:.72rem;color:#fff;min-width:0}
+.pb-seg{display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#fff;min-width:0}
 .pb-h{background:var(--green)}.pb-d{background:#94a3b8}.pb-a{background:#334155}
 .pred-rec{display:block;margin:0 0 8px;padding:9px 12px;border-radius:10px;
   /* #475569, not var(--muted): the muted grey reads 4.34 against this pill's
@@ -448,11 +450,11 @@ html.lt-lock{overflow:hidden}
    to, in the popup where the label is a CLUB NAME and on /analysis and /m/
    where it is الأرض/تعادل/الضيف. A browser without :has() just gets the old
    ink colour, which is why the swatch stays. The percentage inherits it. */
-.prb:has(.prb-h){color:var(--green)}
-.prb:has(.prb-d){color:#94a3b8}
+.prb:has(.prb-h){color:var(--green-d)}
+.prb:has(.prb-d){color:#64748b}
 .prb:has(.prb-a){color:#334155}
 .pd-probs{color:var(--muted);font-weight:700;font-size:.88rem}
-.conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.72rem;font-weight:800}
+.conf{display:inline-block;border-radius:999px;padding:1px 8px;font-size:.75rem;font-weight:800}
 .conf-low{background:#fef3c7;color:#92400e}.conf-mid{background:#e0f2fe;color:#075985}.conf-high{background:#dcfce7;color:#166534}
 .predict .pd-heads{display:flex;justify-content:space-between;font-weight:800;font-size:.9rem;margin-bottom:6px}
 .predict .pd-heads b{color:var(--green-d)}
@@ -487,7 +489,7 @@ html.lt-lock{overflow:hidden}
 .tile{background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px;text-align:center}
 .tile b{display:block;font-size:1.4rem;color:var(--green-d)}
 .tile b.sc-in{display:inline-flex}   /* a score tile keeps the pill's ordering */
-.tile span{font-size:.74rem;color:var(--muted);font-weight:700}
+.tile span{font-size:.75rem;color:var(--muted);font-weight:700}
 .acc-list{margin:0;padding-inline-start:18px;line-height:1.9;font-size:.9rem}
 .timing .tb{display:grid;grid-template-columns:64px 1fr 84px;align-items:center;gap:8px;margin:4px 0;font-size:.85rem}
 .tb-bar{height:14px;background:#e2e8f0;border-radius:4px;overflow:hidden}
@@ -564,7 +566,7 @@ html.lt-lock{overflow:hidden}
 .club-chips a:hover{border-color:var(--green);color:var(--green-d)}
 @media(max-width:560px){.club-crest{width:48px;height:48px}.club-hero{gap:12px;padding:12px}}
 .mrow-live{border-inline-start-color:var(--live)}.mrow-fin{border-inline-start-color:var(--fin)}
-.pill{grid-area:pill;color:#fff;background:var(--up);border-radius:999px;padding:2px 12px;font-size:.68rem;font-weight:900}
+.pill{grid-area:pill;color:#fff;background:var(--up);border-radius:999px;padding:2px 12px;font-size:.72rem;font-weight:900}
 .pill-live{background:var(--live)}.pill-fin{background:var(--fin)}
 .team{display:flex;align-items:center;gap:8px;font-weight:800;min-width:0}
 /* explicit th/ta classes: :first/last-of-type broke whenever .mcomp/.mgoals (also divs) followed the away team - it lost its area and auto-placed into the empty pill cell (team pages, 2026-09-02) */
@@ -600,7 +602,7 @@ html.lt-lock{overflow:hidden}
 .mfilters[hidden]{display:none}
 .mf-chip{flex:0 0 auto;display:inline-flex;align-items:center;gap:7px;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:7px 14px;font:inherit;font-weight:800;font-size:.85rem;color:var(--ink);cursor:pointer;white-space:nowrap;transition:background .12s,color .12s,border-color .12s}
 .mf-chip:hover{border-color:var(--green)}
-.mf-chip.is-on{background:var(--green);border-color:var(--green);color:#fff}
+.mf-chip.is-on{background:var(--green-d);border-color:var(--green-d);color:#fff}
 .mf-dot{width:9px;height:9px;border-radius:50%;background:#cbd5e1}
 .mf-chip.is-on .mf-dot{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.35)}
 .mf-search{flex:1 1 170px;min-width:130px;display:flex;align-items:center;gap:7px;border:1px solid #e2e8f0;background:#fff;border-radius:999px;padding:6px 12px;color:var(--muted)}
@@ -661,10 +663,10 @@ html.lt-lock{overflow:hidden}
 .fmb-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eef2f6;text-decoration:none;color:var(--ink);min-width:0;flex:1}
 .fmb-row:last-of-type{border-bottom:0}
 .fmb-row:hover b{color:var(--green-d)}
-.fmb-num{width:20px;height:20px;border-radius:50%;background:var(--green);color:#fff;font-size:.68rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
+.fmb-num{width:20px;height:20px;border-radius:50%;background:var(--green-d);color:#fff;font-size:.72rem;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
 .fmb-rt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
 .fmb-rt b{font-size:.85rem;line-height:1.5;font-weight:800;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.fmb-rt small{color:var(--muted);font-size:.72rem;font-weight:700}
+.fmb-rt small{color:var(--muted);font-size:.75rem;font-weight:700}
 .fmb-th{width:88px;height:58px;object-fit:cover;border-radius:8px;flex:none;background:#eef2f6}
 .fmb-more{margin-top:auto;padding-top:10px;font-size:.82rem;font-weight:800;color:var(--green-d);text-decoration:none}
 .fmb-more:hover{text-decoration:underline}
@@ -681,13 +683,13 @@ html.lt-lock{overflow:hidden}
 .mf-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
 .mf-card{display:flex;flex-direction:column;gap:8px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:12px 14px;text-decoration:none;color:var(--ink);transition:border-color .12s,transform .12s}
 .mf-card:hover{border-color:var(--green);transform:translateY(-2px)}
-.mf-top{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;font-weight:800;color:var(--muted)}
+.mf-top{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;font-weight:800;color:var(--muted)}
 .mf-when{color:var(--green-d);white-space:nowrap}
 .mf-t{display:flex;align-items:center;gap:8px;font-weight:900;font-size:.98rem;min-width:0}
 .mf-t bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mf-t img,.mf-t .ph{width:24px;height:24px;object-fit:contain;flex:none}
 .mf-card .pbar{height:10px;margin-top:2px}
-.mf-probs{display:flex;flex-direction:column;gap:1px;font-size:.74rem;line-height:1.6}
+.mf-probs{display:flex;flex-direction:column;gap:1px;font-size:.75rem;line-height:1.6}
 .mf-probs .prb{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mf-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto;padding-top:4px}
 .mf-go{font-size:.75rem;font-weight:800;color:var(--green-d)}
@@ -715,11 +717,11 @@ html.lt-lock{overflow:hidden}
 /* «بطاقة المباراة ←» on every match row (2026-10-24) - same pill as the old
    prediction button, same z-index reason; .mstretch already goes to the same
    page, the link is the visible label for it */
-.mgo{position:relative;z-index:2;font-size:.74rem;font-weight:800;
+.mgo{position:relative;z-index:2;font-size:.75rem;font-weight:800;
   color:var(--green-d);background:#f1f7fb;border:1px solid #d7e7f2;
   border-radius:999px;padding:3px 14px;text-decoration:none}
 .mgo:hover{background:var(--green);border-color:var(--green);color:#fff}
-.pbtn{position:relative;z-index:2;font:inherit;font-size:.74rem;font-weight:800;
+.pbtn{position:relative;z-index:2;font:inherit;font-size:.75rem;font-weight:800;
   color:var(--green-d);background:#f1f7fb;border:1px solid #d7e7f2;
   border-radius:999px;padding:3px 14px;cursor:pointer}
 .pbtn:hover{background:var(--green);border-color:var(--green);color:#fff}
@@ -740,7 +742,7 @@ html.lt-lock{overflow:hidden}
 /* the two names in the head take their own segment colours as well, so the
    header line and the legend under the bar agree at a glance instead of
    saying the same thing in two different colours (user, 2026-09-18) */
-.ppop-nh{color:var(--green)}
+.ppop-nh{color:var(--green-d)}
 .ppop-na{color:#334155}
 .ppop-t span{color:var(--muted);font-weight:600;margin:0 4px}
 .ppop .pbar{height:18px}
@@ -755,7 +757,7 @@ html.lt-lock{overflow:hidden}
 .ppop-res b{font-size:1.05rem}
 .ppop-s{margin:6px 0 0;font-size:.85rem;color:var(--muted);font-weight:700}
 .ppop-s b{color:var(--ink);font-size:.95rem}
-.ppop-d{margin:10px 0 0;font-size:.7rem;line-height:1.7;color:var(--muted)}
+.ppop-d{margin:10px 0 0;font-size:.75rem;line-height:1.7;color:var(--muted)}
 .ppop-go,.ppop-rec{display:inline-block;margin-top:10px;font-size:.82rem;
   font-weight:800;color:var(--green-d);text-decoration:none}
 .ppop-rec{margin-inline-start:14px;color:var(--muted)}
@@ -765,11 +767,11 @@ html.lt-lock{overflow:hidden}
   margin-top:7px;padding-top:6px;border-top:1px dashed #e8eef4}
 .mg-side{display:flex;flex-direction:column;gap:2px;min-width:0;text-align:center}
 /* names WRAP, never ellipsis: on phones «مروان عثمان أوتاك…» lost the name end AND the minute (user, 2026-11-03) */
-.mg{font-size:.7rem;color:var(--muted);font-weight:700;line-height:1.35;overflow-wrap:anywhere}
+.mg{font-size:.75rem;color:var(--muted);font-weight:700;line-height:1.35;overflow-wrap:anywhere}
 .mg bdi{color:var(--ink)}
 .mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#15658f;white-space:nowrap}
-.mg small{font-size:.62rem}
-@media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.66rem}}
+.mg small{font-size:.68rem}
+@media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.7rem}}
 /* match details: events timeline + starting lineups (/m/<id>.html).
    NOT «.tl» - that collided with the .tl text-start cells in every
    .ptable (standings, scorers, ratings, the prediction record) and
@@ -795,7 +797,7 @@ html.lt-lock{overflow:hidden}
 .lu-l li{display:flex;align-items:center;gap:8px;padding:4px 0;font-size:.85rem;font-weight:600;border-bottom:1px solid #f1f5f9;min-width:0}
 .lu-l li:last-child{border-bottom:0}
 .lu-l li bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
-.lu-n{flex:0 0 26px;text-align:center;background:#eef2f6;border-radius:6px;font-size:.72rem;font-weight:900;color:var(--green-d);padding:2px 0}
+.lu-n{flex:0 0 26px;text-align:center;background:#eef2f6;border-radius:6px;font-size:.75rem;font-weight:900;color:var(--green-d);padding:2px 0}
 .lu-p{color:var(--muted);font-size:.7em;font-weight:600;margin-inline-start:auto;white-space:nowrap}
 .lu-none{color:var(--muted);font-size:.85rem}
 /* sofascore-style pitch lineup — vertical on mobile, horizontal on desktop
@@ -809,7 +811,7 @@ html.lt-lock{overflow:hidden}
 .pt-box{position:absolute;left:50%;width:46%;height:11%;transform:translateX(-50%);
   border:2px solid rgba(255,255,255,.45)}
 .pt-box-t{top:-2px;border-top:0}.pt-box-b{bottom:-2px;border-bottom:0}
-.pt-lab{position:absolute;display:flex;align-items:center;gap:6px;font-weight:900;font-size:.72rem;
+.pt-lab{position:absolute;display:flex;align-items:center;gap:6px;font-weight:900;font-size:.75rem;
   color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.8);z-index:2;max-width:46%}
 .pt-lab bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pt-lab .lu-f{background:rgba(10,61,28,.75);color:#fff}
@@ -831,7 +833,7 @@ html.lt-lock{overflow:hidden}
 .pp-ava img{width:36px;height:36px;border-radius:50%;object-fit:cover;object-position:top}
 .pp-fb{display:none;width:36px;height:36px;border-radius:50%;background:#eef2f6;
   align-items:center;justify-content:center;font-weight:900;font-size:.8rem;color:var(--green-d)}
-.pp-nm{max-width:76px;font-size:.62rem;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);
+.pp-nm{max-width:76px;font-size:.68rem;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.7);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 .pp-rt{position:absolute;top:-6px;right:-10px;font-size:.6rem;font-weight:900;color:#fff;
   border-radius:6px;padding:1px 4px;direction:ltr}
@@ -845,10 +847,10 @@ html.lt-lock{overflow:hidden}
   gap:.5rem;margin:.7rem 0}
 .mread .mr-c{display:flex;align-items:center;gap:.45rem;background:#f6f8fa;
   border:1px solid #e2e8f0;border-radius:10px;padding:.5rem .6rem;position:relative}
-.mread .mr-l{position:absolute;top:-.55rem;inset-inline-start:.6rem;font-size:.62rem;
+.mread .mr-l{position:absolute;top:-.55rem;inset-inline-start:.6rem;font-size:.68rem;
   background:var(--card);padding:0 .3rem;color:var(--muted)}
 .mread .mr-c b{font-size:.85rem;line-height:1.2}
-.mread .mr-c small{color:var(--muted);font-size:.7rem;margin-inline-start:auto;
+.mread .mr-c small{color:var(--muted);font-size:.75rem;margin-inline-start:auto;
   padding-inline-end:.3rem}
 .rt-b{font-size:.78rem;font-weight:900;color:#fff;border-radius:6px;padding:.12rem .34rem;
   min-width:2.1rem;text-align:center;direction:ltr}
@@ -890,7 +892,7 @@ html.lt-lock{overflow:hidden}
 .rec-s b{color:var(--ink);font-weight:800}
 .rec-s i{font-style:normal}
 .rec-s .sc-s{font-size:.76rem;font-weight:800;color:var(--ink);margin-inline:2px}
-.rec-c{flex:0 0 auto;color:var(--muted);font-size:.74rem;font-weight:700}
+.rec-c{flex:0 0 auto;color:var(--muted);font-size:.75rem;font-weight:700}
 .rec-lg{display:none}
 .rec-none{color:var(--muted);font-size:.85rem;text-align:center;padding:.8rem 0}
 @media(max-width:620px){
@@ -917,24 +919,24 @@ html.lt-lock{overflow:hidden}
 .pp-card{position:absolute;top:-5px;left:-6px;width:9px;height:13px;border-radius:2px;box-shadow:0 1px 2px rgba(0,0,0,.4)}
 .pp-card.y{background:#fbbf24}.pp-card.r{background:#dc2626}
 .pp-sub{position:absolute;bottom:-4px;left:-8px;width:15px;height:15px;border-radius:50%;
-  background:#fff;color:#b91c1c;font-size:.62rem;font-weight:900;display:flex;align-items:center;justify-content:center;
+  background:#fff;color:#b91c1c;font-size:.68rem;font-weight:900;display:flex;align-items:center;justify-content:center;
   box-shadow:0 1px 2px rgba(0,0,0,.4)}
 .pp-cap{position:absolute;bottom:-4px;right:-6px;width:14px;height:14px;border-radius:50%;
   background:#0f172a;color:#fff;font-size:.56rem;font-weight:900;display:flex;align-items:center;justify-content:center}
 @media(max-width:560px){
   .lu{gap:8px}
-  .lu-l li{font-size:.72rem;gap:5px}
-  .lu-n{flex-basis:20px;font-size:.62rem}
+  .lu-l li{font-size:.75rem;gap:5px}
+  .lu-n{flex-basis:20px;font-size:.68rem}
   .lu-p{display:none}
-  .tl-r{font-size:.72rem;grid-template-columns:1fr 38px 1fr}
+  .tl-r{font-size:.75rem;grid-template-columns:1fr 38px 1fr}
   .pp{width:60px}
   .pp-ava{width:33px;height:33px}
   .pp-ava img,.pp-fb{width:29px;height:29px}
-  .pp-nm{max-width:60px;font-size:.56rem}
+  .pp-nm{max-width:60px;font-size:.62rem}
 }
 .ko-pp{color:#b45309;background:#fdf3e3;border-radius:8px;padding:2px 10px;font-weight:800}
 /* live minute chip (painted by LIVE_JS next to a live score) */
-.lv-min{display:inline-block;font-size:.68rem;font-weight:800;color:#e11d48;
+.lv-min{display:inline-block;font-size:.72rem;font-weight:800;color:#e11d48;
   margin-inline-start:8px;direction:ltr;unicode-bidi:embed;vertical-align:middle}
 /* mobile-only slim top banner */
 .ad-top{display:none}
@@ -973,8 +975,8 @@ html.lt-lock{overflow:hidden}
 .hcard .himg img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s}
 .hcard:hover .himg img{transform:scale(1.04)}
 .hcard h3{margin:0 0 10px;font-size:.95rem;font-weight:800;line-height:1.55;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.hcard .meta{margin:auto 0 0;display:flex;align-items:center;gap:8px;font-size:.75rem;color:#94a3b8;flex-wrap:wrap}
-.hsrc{background:#eaf3fa;color:var(--green-d);font-weight:800;font-size:.72rem;padding:3px 9px;border-radius:999px;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
+.hcard .meta{margin:auto 0 0;display:flex;align-items:center;gap:8px;font-size:.75rem;color:#64748b;flex-wrap:wrap}
+.hsrc{background:#eaf3fa;color:var(--green-d);font-weight:800;font-size:.75rem;padding:3px 9px;border-radius:999px;white-space:nowrap;max-width:60%;overflow:hidden;text-overflow:ellipsis}
 .hcard .reltime-wrap{white-space:nowrap}
 .hcard .go{position:absolute;top:12px;inset-inline-end:12px;font-size:.9rem;color:var(--green);opacity:0;transform:translateY(-3px);transition:opacity .14s,transform .14s}
 .hcard:hover .go{opacity:1;transform:translateY(0)}
@@ -1029,7 +1031,7 @@ html.lt-lock{overflow:hidden}
    section headings below must not shift with live state. */
 .fav-wrap:not([hidden]) + .nf-bar{margin-top:9px}
 .fv-live{display:inline-flex;align-items:center;gap:6px;background:var(--live);
-  color:#fff;border-radius:999px;padding:3px 12px;font-size:.68rem;font-weight:900;
+  color:#fff;border-radius:999px;padding:3px 12px;font-size:.72rem;font-weight:900;
   letter-spacing:.02em;flex:0 0 auto;white-space:nowrap}
 .fv-dot{width:7px;height:7px;border-radius:50%;background:#fff;flex:0 0 auto;
   animation:fvpulse 1.4s ease-in-out infinite}
@@ -1046,8 +1048,8 @@ html.lt-lock{overflow:hidden}
 .sc-in{font-weight:900;margin-inline:2px}
 .fv-s{background:var(--green-d);color:#fff;border-radius:8px;padding:2px 12px;
   font-size:.95rem;box-shadow:inset 0 -2px 0 rgba(0,0,0,.18)}
-.fv-min{background:#ffe4e9;color:var(--live);border-radius:999px;padding:3px 10px;
-  font-size:.72rem;font-weight:900;direction:ltr;unicode-bidi:embed;
+.fv-min{background:#ffe4e9;color:#be123c;border-radius:999px;padding:3px 10px;
+  font-size:.75rem;font-weight:900;direction:ltr;unicode-bidi:embed;
   flex:0 0 auto;white-space:nowrap}
 @media(max-width:560px){
   /* a phone row is narrow: let the bar wrap its own contents rather than
@@ -1187,7 +1189,7 @@ html.lt-lock{overflow:hidden}
 .mt-tab{flex:0 0 auto;padding:6px 12px;border-radius:999px 999px 0 0;font-weight:800;font-size:.8rem;color:var(--muted);cursor:pointer;white-space:nowrap}
 .mt-p{display:none;padding:8px 12px 10px}
 .mt-p table{width:100%;border-collapse:collapse;font-size:.85rem}
-.mt-p th{color:var(--muted);font-weight:700;font-size:.72rem;text-align:start;padding:4px 6px}
+.mt-p th{color:var(--muted);font-weight:700;font-size:.75rem;text-align:start;padding:4px 6px}
 .mt-p td{padding:5px 6px;border-top:1px solid #f1f5f9;white-space:nowrap}
 .mt-p td:first-child,.mt-p td:nth-child(3),.mt-p td:nth-child(4){text-align:center;width:44px}
 .mt-t{display:flex;align-items:center;gap:7px;min-width:0}
@@ -1215,7 +1217,7 @@ html.lt-lock{overflow:hidden}
 .tc-row{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:10px}
 .tc .tc-card{display:flex;flex-direction:column;gap:6px;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:10px 12px;text-decoration:none;color:var(--ink);transition:border-color .12s,transform .12s;min-width:0}
 .tc .tc-card:hover{border-color:var(--green);transform:translateY(-2px)}
-.tc-top{display:flex;justify-content:space-between;gap:8px;font-size:.72rem;font-weight:800;color:var(--muted)}
+.tc-top{display:flex;justify-content:space-between;gap:8px;font-size:.75rem;font-weight:800;color:var(--muted)}
 .tc-when{color:var(--green-d);white-space:nowrap}
 .tc-live .tc-when{color:#c8102e}
 .tc-t{display:flex;align-items:center;gap:7px;font-weight:900;font-size:.9rem;min-width:0}
@@ -1226,7 +1228,7 @@ html.lt-lock{overflow:hidden}
 .tc .tk-live{background:#c8102e}
 .tc .tk-t{font-weight:900;font-size:1.05rem;color:var(--green-d);background:#eef6fc;padding:2px 14px;border-radius:8px;font-variant-numeric:tabular-nums}
 .tc .tk-dot{width:8px;height:8px;border-radius:50%;background:#c8102e;display:inline-block;animation:tsblink 1.2s infinite}
-.tc-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;padding-top:4px;font-size:.72rem}
+.tc-foot{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-top:auto;padding-top:4px;font-size:.75rem}
 /* the channel is the only thing allowed to give way: a flex item will not
    shrink below its text without min-width:0, so «STARZPLAY وقنوات أبوظبي
    الرياضية» pushed «بطاقة المباراة» onto a second line (user, 2026-10-24:
@@ -1244,7 +1246,7 @@ html.lt-lock{overflow:hidden}
 .ts-row::-webkit-scrollbar{display:none}
 .ts .ts-item{flex:0 0 auto;display:flex;flex-direction:column;gap:4px;padding:8px 12px;border-radius:10px;background:#fff;border:1px solid #e5e9ef;color:var(--ink);text-decoration:none;white-space:nowrap;scroll-snap-align:start;min-width:0}
 .ts .ts-item:hover{border-color:var(--green);background:#f3f9fd}
-.ts-comp{font-size:.72rem;opacity:.65}
+.ts-comp{font-size:.75rem;opacity:.65}
 .ts-teams{display:flex;align-items:center;gap:6px;font-size:.92rem;font-weight:700}
 .ts .tk-b{width:22px;height:22px;object-fit:contain}
 .ts .tk-mid{display:inline-flex;align-items:center;gap:4px;min-width:46px;justify-content:center}
@@ -1297,8 +1299,8 @@ html.lt-lock{overflow:hidden}
 .mlist>.mrow:has(.pill){padding-top:12px}
 .mlist>.mrow:has(.mstretch):hover{background:#f8fafc;border-color:#eef2f6;box-shadow:none}
 .mlist>.mrow .mstretch{border-radius:0}
-.mlist>.mrow .pill{position:static;grid-area:pill;justify-self:center;padding:2px 8px;font-size:.66rem;
-  background:#eef2f6;color:var(--muted)}
+.mlist>.mrow .pill{position:static;grid-area:pill;justify-self:center;padding:2px 8px;font-size:.7rem;
+  background:#eef2f6;color:#475569}
 .mlist>.mrow .pill-live{background:var(--live);color:#fff}
 .mlist>.mrow .team{flex-direction:row;gap:8px;font-size:.92rem;line-height:1.3;text-align:start}
 .mlist>.mrow .team.th{grid-area:home;flex-direction:row-reverse;justify-content:flex-start;text-align:start}
@@ -1315,12 +1317,12 @@ html.lt-lock{overflow:hidden}
 /* «الأهداف» - the match's goals video on YouTube, in the row's spare column
    (2026-11-02); z-index 2 lifts it over .mstretch like the old row buttons */
 .mlist>.mrow .mhl{grid-area:hl;justify-self:center;position:relative;z-index:2;display:flex;flex-direction:column;
-  align-items:center;gap:2px;text-decoration:none;color:#e11d48;font-size:.62rem;font-weight:800}
+  align-items:center;gap:2px;text-decoration:none;color:#e11d48;font-size:.68rem;font-weight:800}
 .mhl-i{width:26px;height:26px;border-radius:50%;background:#e11d48;color:#fff;display:flex;align-items:center;
-  justify-content:center;font-size:.7rem;padding-inline-start:2px;box-shadow:0 2px 6px rgba(225,29,72,.35);transition:transform .15s}
+  justify-content:center;font-size:.75rem;padding-inline-start:2px;box-shadow:0 2px 6px rgba(225,29,72,.35);transition:transform .15s}
 .mlist>.mrow .mhl:hover .mhl-i{transform:scale(1.12)}
 .mrow:not(.mlist>.mrow) .mhl{display:none}
-.mlist>.mrow .mcomp{border-top:0;padding-top:0;font-size:.74rem}
+.mlist>.mrow .mcomp{border-top:0;padding-top:0;font-size:.75rem}
 /* scorers under their own team, between the status and spacer columns */
 .mlist>.mrow .mgoals{grid-column:2/5;grid-template-columns:1fr 64px 1fr}
 
@@ -1346,8 +1348,8 @@ html.lt-lock{overflow:hidden}
 .lgx-row .lg-logo,.lgx-row .lg-ico{width:28px;height:28px;font-size:1.3rem;flex:none}
 .lgx-b{display:flex;flex-direction:column;min-width:0}
 .lgx-t{font-weight:800;font-size:.95rem}
-.lgx-s{font-size:.74rem;color:var(--muted);font-weight:700}
-.lgx-go{margin-inline-start:auto;color:#94a3b8;font-size:1.3rem;font-weight:800}
+.lgx-s{font-size:.75rem;color:var(--muted);font-weight:700}
+.lgx-go{margin-inline-start:auto;color:#64748b;font-size:1.3rem;font-weight:800}
 @media(max-width:760px){
   body{padding-bottom:calc(62px + env(safe-area-inset-bottom,0px))}
   .wrap{padding:0 12px}
@@ -1366,7 +1368,7 @@ html.lt-lock{overflow:hidden}
     box-shadow:0 -2px 12px rgba(15,23,42,.08);padding-bottom:env(safe-area-inset-bottom,0px)}
   .head-in .nav-in{height:60px;justify-content:space-around}
   .navtab{flex:1 1 0;flex-direction:column;justify-content:center;gap:3px;padding:0 4px;min-width:0;
-    color:#64748b;font-size:.72rem;border-bottom:0;background:transparent}
+    color:#64748b;font-size:.75rem;border-bottom:0;background:transparent}
   .navtab:hover{background:transparent;color:var(--ink)}
   .navtab.is-active{color:var(--green-d);background:transparent}
   .navtab .ico{font-size:1.3rem;line-height:1;filter:grayscale(1);opacity:.6;transform:none!important}
@@ -1378,16 +1380,16 @@ html.lt-lock{overflow:hidden}
      column, no heading */
   .home-mc .mp-leagues,.home-mc .mp-extra{display:none}
   .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;gap:4px 8px;padding:12px 6px}
-  .mlist>.mrow .pill{padding:2px 6px;font-size:.62rem}
-  .mlist>.mrow .team{gap:7px;font-size:.84rem}
+  .mlist>.mrow .pill{padding:2px 6px;font-size:.68rem}
+  .mlist>.mrow .team{gap:7px;font-size:.9rem}
   .mlist>.mrow .team img{width:22px;height:22px}
   .mlist>.mrow .team .ph{font-size:1rem}
   .mlist>.mrow .mid{min-width:46px}
   .mlist>.mrow .score{font-size:1rem}
   .mlist>.mrow .ko{font-size:.86rem}
-  .mlist>.mrow .mcomp{font-size:.7rem}
+  .mlist>.mrow .mcomp{font-size:.75rem}
   .mlist>.mrow .mgoals{grid-column:1/-1;grid-template-columns:1fr 12px 1fr}   /* full row width: scorer + minute on ONE line (user, 2026-11-03; 281/281 fit at 360px) */
-  .mlist>.mrow .mg{font-size:.64rem}
-  .mlist>.mrow .mhl-t{font-size:.56rem;white-space:nowrap}   /* the word shows on phones too (user, 2026-11-02) */
+  .mlist>.mrow .mg{font-size:.7rem}
+  .mlist>.mrow .mhl-t{font-size:.66rem;white-space:nowrap}   /* the word shows on phones too (user, 2026-11-02) */
   .mhl-i{width:24px;height:24px}
 }
