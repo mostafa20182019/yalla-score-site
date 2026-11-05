@@ -1,0 +1,26 @@
+{
+  "id": "salah-congo-2017",
+  "title": "ليلة برج العرب — صلاح وضربة جزاء 28 سنة",
+  "facts": "Egypt 2-1 Congo, 8 Oct 2017, Borg El Arab (Alexandria), 2018 World Cup qualifier. Salah 63', Bouka Moutou 87/88' (sources differ, so the reel says «قبل النهاية بدقائق»), Salah pen 90+5' (ESPN, Sporting Life). First World Cup since 1990.",
+  "home": {"name": "مصر", "url": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v4/Competitors/5100"},
+  "away": {"name": "الكونغو", "url": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v2/Competitors/5110"},
+  "photo": {
+    "file": "assets-src/moments/salah-2018-venediktov.png",
+    "credit": "Photo: Kirill Venediktov / soccer.ru · CC BY-SA 3.0 · Wikimedia Commons",
+    "credit_ar": "📷 الصورة: Kirill Venediktov / soccer.ru — رخصة CC BY-SA 3.0 عبر ويكيميديا كومنز",
+    "source": "https://commons.wikimedia.org/wiki/File:Mo_Salah_2018.png"
+  },
+  "scenes": [
+    {"kind": "hook",   "secs": 2.0, "big": "28 سنة", "lines": ["بعيد عن كأس العالم", "من 1990"]},
+    {"kind": "date",   "secs": 2.0, "lines": ["8 أكتوبر 2017", "ستاد برج العرب — الإسكندرية"]},
+    {"kind": "teams",  "secs": 2.0, "lines": ["مصر × الكونغو", "تصفيات كأس العالم 2018"]},
+    {"kind": "goal",   "secs": 2.0, "lines": ["الدقيقة 63", "صلاح يسجّل الهدف الأول"], "score": [1, 0], "photo": true},
+    {"kind": "goal",   "secs": 2.0, "lines": ["قبل النهاية بدقائق", "الكونغو تعادل — بوكا موتو"], "score": [1, 1], "crest": "away", "dim": true},
+    {"kind": "climax", "secs": 2.5, "lines": ["الدقيقة 90+5", "ضربة جزاء", "صلاح يسجّل"], "score": [2, 1], "photo": true, "shake": true},
+    {"kind": "finale", "secs": 2.5, "big": "28 سنة", "lines": ["مصر في كأس العالم", "لأول مرة منذ 1990"]},
+    {"kind": "cta",    "secs": 1.5, "lines": ["كنت فين اللحظة دي؟", "تابع الجون"]}
+  ],
+  "music_dip": [8.0, 10.0],
+  "caption": "28 سنة انتظار... وصلاح أنهاها في الثواني الأخيرة ⚽🇪🇬\nبرج العرب، 8 أكتوبر 2017، مصر 2-1 الكونغو.\nكنت فين لحظة ضربة الجزاء؟ 👇\nhttps://elgoon.com\n#الجون #محمد_صلاح #منتخب_مصر #مصر_الكونغو #كأس_العالم",
+  "best_time_cairo": "21:00–22:00"
+}

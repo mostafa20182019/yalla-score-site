@@ -56,6 +56,10 @@ on:
         description: "Prediction post for ONE upcoming match (match_id from /m/<id>): our card + the model's numbers + a question. Empty = normal run."
         required: false
         default: ""
+      moment:
+        description: "Publish a MOMENT reel (moments/<id>.json, e.g. salah-congo-2017): a historic moment as a 16 s typography reel. Needs ffmpeg (installed here)."
+        required: false
+        default: ""
 
 permissions:
   contents: read           # the state lives in D1; nothing is pushed
@@ -114,10 +118,14 @@ jobs:
           WHISTLE: ${{ inputs.whistle }}
           PREDICTION: ${{ inputs.prediction }}
           H2H: ${{ inputs.h2h }}
+          MOMENT: ${{ inputs.moment }}
           # prediction posts are off until this repo variable is "on" (2026-10-18)
           FB_PREDICTIONS: ${{ vars.FB_PREDICTIONS }}
         run: |
-          if [ -n "$WHISTLE" ]; then
+          if [ -n "$MOMENT" ]; then
+            command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+            python moment_reel.py --script "moments/$MOMENT.json" --publish | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+          elif [ -n "$WHISTLE" ]; then
             python fb_post.py --whistle "$WHISTLE" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$GOAL" ]; then
             python fb_post.py --goal "$GOAL" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
