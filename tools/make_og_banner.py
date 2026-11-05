@@ -5,7 +5,7 @@
     "C:\\Program Files\\Python312\\python.exe" tools/make_og_banner.py
 
 Writes assets-src/og-banner.png (1200x630: every page's default og:image,
-served from /assets/og-banner.png) and assets-src/fb-cover-1640x624.png (the
+served from /assets/og-banner.png) and assets-src/fb-cover-1640x924.png (the
 Facebook page cover - the user uploads it himself). The old files showed the
 retired ball and «يلا سكور» / yallascore.site; this one shows the tiger head,
 «الجون», the tagline and elgoon.com, in the site's blues (style.css --blue
@@ -77,6 +77,29 @@ def banner(w, h, out, tiger_px, name_px, tag_px, dom_px):
     print(f"{os.path.relpath(out, HERE)}: {w}x{h}, {os.path.getsize(out) // 1024} KB")
 
 
+def cover(out):
+    """The Facebook cover, 1640x924 (= 820x462 at 2x). Facebook shows the
+    desktop header as the middle 1640x624 band and the phone header as the
+    middle 1280x720 (2026-11-05, the user: «ال cover على الموبايل مش ظاهر
+    كويس» - the 1640x624 file lost the tiger and the name to the phone's side
+    crops). Everything therefore sits inside the 1280x624 box both crops keep,
+    and the bottom middle stays empty because the phone draws the profile
+    circle over it."""
+    w, h = 1640, 924
+    sx, sy, sw, sh = 180, 150, 1280, 624        # the safe box
+    im = _bg(w, h)
+    tiger_px = 380
+    t = _tiger(tiger_px)
+    im.paste(t, (sx + 20, sy + (sh - tiger_px) // 2 - 20), t)
+    d = ImageDraw.Draw(im)
+    rx = sx + sw - 40
+    d.text((rx, sy + 170), ar("الجون"), font=font("ExtraBold", 150), fill=WHITE, anchor="rm")
+    d.text((rx, sy + 300), ar(TAGLINE), font=font("Bold", 38), fill=SOFT, anchor="rm")
+    _pill(d, rx - 150, sy + 460, "elgoon.com", font("Bold", 38))
+    im.save(out, "PNG", optimize=True)
+    print(f"{os.path.relpath(out, HERE)}: {w}x{h}, {os.path.getsize(out) // 1024} KB")
+
+
 if __name__ == "__main__":
     banner(1200, 630, os.path.join(SRC, "og-banner.png"), tiger_px=400, name_px=150, tag_px=40, dom_px=38)
-    banner(1640, 624, os.path.join(SRC, "fb-cover-1640x624.png"), tiger_px=420, name_px=160, tag_px=42, dom_px=40)
+    cover(os.path.join(SRC, "fb-cover-1640x924.png"))
