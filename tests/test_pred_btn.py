@@ -193,7 +193,9 @@ print("== each label wears its segment's colour ==")
 # فى البار» — the word takes the colour of its slice, so the eye pairs them
 # without hunting for the swatch. One CSS rule per segment covers all three
 # places the legend appears (the popup, /analysis, /m/).
-for _k, _c in (("h", "var(--green)"), ("d", "#94a3b8"), ("a", "#334155")):
+# 2026-11-05 (contrast pass): the home segment is the dark blue and the draw
+# segment #64748b - the brand blue and #94a3b8 fail WCAG AA as text on white
+for _k, _c in (("h", "var(--green-d)"), ("d", "#64748b"), ("a", "#334155")):
     ok(f"41 the {_k} label is painted like the {_k} segment",
        f".prb:has(.prb-{_k})" in css
        and re.search(r"\.prb:has\(\.prb-" + _k + r"\)\{color:" + re.escape(_c) + r"\}", css)
@@ -206,7 +208,7 @@ ok("42 the swatch stays — it is the fallback and the accessible cue",
 # and the two names in the popup head, so the header line and the legend
 # under the bar do not say the same thing in two different colours
 ok("43 the home name in the head is painted like the home segment",
-   ".ppop-nh{color:var(--green)}" in css)
+   ".ppop-nh{color:var(--green-d)}" in css)
 ok("44 and the away name like the away segment",
    ".ppop-na{color:#334155}" in css)
 # The bar is RTL like the rest of the page, so the HOME segment sits under
@@ -225,7 +227,7 @@ ok("46 and the home segment really is the first child",
 # the club name was the one neutral thing left in a row where the slice and
 # the label under it were already coloured
 ok("47 a prediction row's home club is painted like the home segment",
-   ".pr-teams>.pr-t:first-child bdi{color:var(--green)}" in css)
+   ".pr-teams>.pr-t:first-child bdi{color:var(--green-d)}" in css)
 ok("48 and its away club like the away segment",
    ".pr-teams>.pr-t:last-child bdi{color:#334155}" in css)
 ok("49 and the row still puts home first, which is what those selectors rely on",
