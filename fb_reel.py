@@ -89,6 +89,21 @@ def footer(d, alpha=255):
     C.draw_center(d, W / 2, H - 70, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
 
 
+TIGER = os.path.join(HERE, "assets-src", "tiger-head-512.png")
+TIGER_PX, TIGER_Y = 280, 350     # centred in the band between the header and the crests
+_tiger = {}
+
+
+def tiger_at(im, cx, cy, size=TIGER_PX):
+    """The brand tiger (the site's, facing LEFT), centred on (cx, cy). User,
+    2026-11-05: «يكون فوق اسماء الفرق صورة للنمر كويسة» - the band between
+    the header and the crests was empty."""
+    if size not in _tiger:
+        _tiger[size] = Image.open(TIGER).convert("RGBA").resize((size, size), Image.LANCZOS)
+    t = _tiger[size]
+    im.paste(t, (int(cx - size / 2), int(cy - size / 2)), t)
+
+
 def crest_at(im, url, name, size, cx, cy, alpha=255):
     cr = C.crest_image(url, size) or C.crest_placeholder(name, size)
     if alpha < 255:
@@ -108,6 +123,7 @@ def card(ctx):
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
     header(d, ctx["comp"], ctx["round"])
+    tiger_at(im, W / 2, TIGER_Y)
     size, y = 300, H * 0.36
     for x, key, name in ((W * 0.74, "home", ctx["home"]), (W * 0.26, "away", ctx["away"])):
         crest_at(im, ctx["m"].get(f"{key}_badge"), name, size, x, y)

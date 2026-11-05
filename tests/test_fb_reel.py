@@ -72,6 +72,15 @@ _px = lambda x: [round(v) for v in ImageStat.Stat(im.crop(
 ck("15 the rendered card agrees: the blue crest (home) right, the red one (away) left",
    _px(0.74)[2] > _px(0.74)[0] and _px(0.26)[0] > _px(0.26)[2], (_px(0.74), _px(0.26)))
 
+# the tiger above the names (user, 2026-11-05: «فوق اسماء الفرق صورة للنمر»):
+# drawn from the brand file, centred in the band under the header, and it is
+# really there - the middle of that band is tiger orange, not sky blue
+_t = [round(v) for v in ImageStat.Stat(im.crop((R.W // 2 - 40, R.TIGER_Y - 40, R.W // 2 + 40, R.TIGER_Y + 40))).mean]
+ck("17 the brand tiger sits above the club names, between the header and the crests",
+   "tiger_at(im, W / 2, TIGER_Y)" in _card and os.path.isfile(R.TIGER)
+   and 165 < R.TIGER_Y - R.TIGER_PX / 2 and R.TIGER_Y + R.TIGER_PX / 2 < R.H * 0.36 - 150
+   and _t[0] > _t[2] + 60, _t)
+
 cols = R.goal_columns([("h", "A", "12"), ("a", "B", "30"), ("h", "A", "45+2"),
                        ("h", "C", ""), ("x", "Z", "9")])
 ck("16 each club's scorers in their own column", set(cols) == {"h", "a"}
