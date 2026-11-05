@@ -43,8 +43,10 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 HOST = "elgoon.com"
 # 2026-10-12: Bing Webmaster Tools only reports IndexNow traffic for a key it
 # generated itself (the «Get Started» wizard offers no "use my key"), so the
-# site now signs with Bing's key; the old key file stays served (harmless).
-KEY = "0529d0814bd94b3dab7787bf0afd773f"
+# site signs with Bing's key. 2026-11-05: elgoon.com was added to Bing as a
+# NEW site (the user: «نشتغل من جديد مع bing») and its wizard generated this
+# key; the two older key files stay served (harmless).
+KEY = "c734471d2c4b45ae8026c45b940aab55"
 KEY_URL = f"https://{HOST}/{KEY}.txt"
 ENDPOINT = "https://api.indexnow.org/indexnow"
 CAP = 100          # well under the protocol's 10,000; a focused list is the point
