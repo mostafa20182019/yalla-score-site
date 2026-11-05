@@ -88,7 +88,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
         img = (crest if crest.startswith("http")
                else SITE_BASE + crest) if crest else None
         page_head = head(title, desc, SITE_BASE + t_url, image=img)
-        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                    ("المباريات", SITE_BASE + "/matches.html"),
                                    (name, SITE_BASE + t_url)])
         _img = (f'<img class="club-crest" src="{esc(crest)}" alt="{esc(name)}" '

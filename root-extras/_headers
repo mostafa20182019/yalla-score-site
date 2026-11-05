@@ -1,3 +1,6 @@
+# Workers static assets: EVERY matching rule applies and same-name headers are
+# concatenated, so a narrower rule must detach ("! Header") before it sets.
+# Live on 2026-11-05 the crests carried three Cache-Control values at once.
 /*
   Cache-Control: public, max-age=0, must-revalidate
 /matches/d/*
@@ -5,8 +8,14 @@
 /matches/l/*
   X-Robots-Tag: noindex
 /assets/*
+  ! Cache-Control
   Cache-Control: public, max-age=86400
+/assets/style.css
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
 /assets/crests/*
+  ! Cache-Control
   Cache-Control: public, max-age=2592000, immutable
 /media/*
+  ! Cache-Control
   Cache-Control: public, max-age=604800

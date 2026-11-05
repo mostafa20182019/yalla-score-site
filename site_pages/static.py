@@ -7,7 +7,7 @@ imports these back under the same names."""
 from site_lib.config import CONTACT_EMAIL, EDITOR_EMAIL, EDITOR_NAME, EDITOR_ROLE, FB_PAGE_URL, PREDICTIONS_ON, REF_TODAY, SHOW_REELS, SHOW_VIDEOS, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, VAPID_PUBLIC_KEY, _src
 from site_lib.media import VIDEO_CATS
 from site_lib.render import Markup, render
-from site_lib.shell import foot, head, write
+from site_lib.shell import foot, head, noindex, write
 from site_lib.snippets import REELS_FEED_JS, VIDEO_JS
 from site_lib.text import esc, jsonld
 from site_lib.widgets import reel_slide, video_facade
@@ -25,9 +25,10 @@ def not_found_page():
     page_head = Markup(head(f"الصفحة غير موجودة — {SITE_NAME}",
                             "الصفحة التي تبحث عنها غير موجودة.",
                             SITE_BASE + "/404.html"))
-    write("404.html", render("404.html", page_head=page_head,
-                             retry_js=Markup(_src("snippets/nf_retry_js.html")),
-                             page_foot=Markup(foot())))
+    # noindex (2026-11-05): it was indexable with a canonical of its own
+    write("404.html", noindex(render("404.html", page_head=page_head,
+                                     retry_js=Markup(_src("snippets/nf_retry_js.html")),
+                                     page_foot=Markup(foot()))))
 
 
 def privacy_page(urls):

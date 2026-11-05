@@ -129,7 +129,7 @@ def prediction_history_page(plog, acc):
                      "mainEntity": [{"@type": "Question", "name": q,
                                      "acceptedAnswer": {"@type": "Answer", "text": v}}
                                     for q, v in faq]})
-    crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+    crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                ("التوقعات", SITE_BASE + "/analysis.html"),
                                ("سجل التوقعات", SITE_BASE + url)])
     write("predictions.html", render(
@@ -166,7 +166,7 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
                      "توقعات مباريات الأسبوع باحتمالات مبنية على بيانات الموسم، تقييم قوة الأندية، تحليل اللاعبين، "
                      "وسجل شفاف لدقة التوقعات في الدوري المصري وأبرز الدوريات.",
                      SITE_BASE + "/analysis.html", active="analysis")
-    crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("التوقعات", SITE_BASE + "/analysis.html")])
+    crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"), ("التوقعات", SITE_BASE + "/analysis.html")])
     nav = [(COMP_SLUG[c], Markup(comp_icon(c)), comp_label(c)) for c in comps if c in COMP_SLUG]
     week = []
     for c in comps:
@@ -223,7 +223,7 @@ def analysis_pages(matches, upcoming, preds, plog, acc, tstats, lparams, pins, s
                          f"توقعات مباريات {label} القادمة باحتمالات مبنية على نتائج الموسم، ترتيب قوة الأندية (Elo) "
                          f"ومؤشرات الهجوم والدفاع، توقيت الأهداف، وأعلى اللاعبين تقييمًا.",
                          SITE_BASE + f"/analysis/{slug}.html", active="analysis")
-        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"), ("التوقعات", SITE_BASE + "/analysis.html"),
+        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"), ("التوقعات", SITE_BASE + "/analysis.html"),
                                    (label, SITE_BASE + f"/analysis/{slug}.html")])
         # all upcoming of this comp within 14 days
         wk2 = (today + datetime.timedelta(days=14)).isoformat()

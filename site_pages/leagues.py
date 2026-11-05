@@ -12,7 +12,7 @@ from site_lib.matchdata import match_goals
 from site_lib.names import ar_team, comp_label
 from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
-from site_lib.shell import _LASTMOD, foot, head, page_head_ad, write
+from site_lib.shell import _LASTMOD, foot, head, noindex, page_head_ad, write
 from site_lib.snippets import LT_GAMES_JS, ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import scorers_read, standings_analysis
 from site_lib.tables import (clubs_panel, league_rounds_panel, match_row, round_on_show,
@@ -65,7 +65,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             page_head = Markup(head(f"ترتيب {label} اليوم — جدول الترتيب الكامل {season} | {SITE_NAME}",
                                     standings_desc(label, season, st["table"], st.get("zeroed")),
                                     SITE_BASE + st_url, active="leagues"))
-            crumbs_ld = Markup(breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+            crumbs_ld = Markup(breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                               ("البطولات", SITE_BASE + "/leagues.html"),
                                               (f"ترتيب {label}", SITE_BASE + st_url)]))
             table = standings_table(comp, st["table"], past=st.get("past"),
@@ -140,7 +140,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             # thin content the AdSense rejection named.
             _rich_sc = bool(sc) and _sw >= 3
             if not _rich_sc:
-                _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+                _html = noindex(_html)
             write(f"scorers/{slug}.html", _html)
             if _rich_sc:
                 urls.append(sc_url)
@@ -218,7 +218,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
         if PREDICTIONS_ON and comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
             _links.append(f'<a href="/analysis/{slug}.html">توقعات {esc(label)} ←</a>')
-        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                    ("البطولات", SITE_BASE + "/leagues.html"),
                                    (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")])
         write(f"fixtures/{slug}.html", render(
@@ -252,7 +252,7 @@ def stats_page(comp_order, fixtures, forms, league_stats_sec, matches, sc_by_com
     html_out = render("stats.html", page_head=Markup(page_head), page_title=Markup(page_title),
                       clubs=Markup(clubs), sections=sections, page_foot=Markup(foot()))
     if not SHOW_STATS_PAGE:
-        html_out = html_out.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+        html_out = noindex(html_out)
     write("stats.html", html_out)
     if SHOW_STATS_PAGE:
         urls.append("/stats.html")

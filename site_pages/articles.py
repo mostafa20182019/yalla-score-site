@@ -11,7 +11,7 @@ from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_RELTIME, DIST, FB_PAGE_URL
 from site_lib.dates import art_date, art_reltime, rel_ar
 from site_lib.names import _egy_article, _eur_article
 from site_lib.render import Markup, render
-from site_lib.shell import _LASTMOD, _og_dims, foot, head, push_cta, thumb_url, write
+from site_lib.shell import _LASTMOD, _og_dims, foot, head, noindex, push_cta, thumb_url, write
 from site_lib.snippets import FBCOPY_JS
 from site_lib.text import esc, jsonld, strip_src, strip_tags
 from site_lib.urls import article_href, breadcrumb_ld, is_match_piece
@@ -84,7 +84,7 @@ def article_pages(articles, articles_all, matches, urls):
         _desc = a.get("summary") or strip_tags(a.get("body") or "")[:220]
         page_head = Markup(head(f"{a['title']} — {SITE_NAME}", _desc, url, image=img, og_type="article"))
         article_ld = Markup(jsonld(ld))
-        _crumbs = [("أخبار", SITE_BASE + "/"), ("كل الأخبار", SITE_BASE + "/news.html")]
+        _crumbs = [("الرئيسية", SITE_BASE + "/"), ("كل الأخبار", SITE_BASE + "/news.html")]
         if _clubs:
             _crumbs.append((_clubs[0]["name"], f'{SITE_BASE}/team/{_clubs[0]["slug"]}.html'))
         crumbs_ld = Markup(breadcrumb_ld(_crumbs + [(a["title"], url)]))
@@ -127,7 +127,7 @@ def article_pages(articles, articles_all, matches, urls):
             # legacy short pieces: keep the URL alive (still linked from lists
             # and related blocks) but out of the index AND out of the sitemap -
             # a noindexed URL in the sitemap is a contradictory signal.
-            _ahtml = _ahtml.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+            _ahtml = noindex(_ahtml)
             n_thin += 1
         write(f"a/{a['article_id']}.html", _ahtml)
         if _words >= ARTICLE_MIN_WORDS:
@@ -242,8 +242,7 @@ def fb_helper_page(articles):
                    '<button type="button" class="fbp-c">📋 نسخ</button></div>')
     fbp.append(FBCOPY_JS)
     fbp.append(foot())
-    write("fb.html", "".join(fbp).replace(
-        "<head>", '<head><meta name="robots" content="noindex">', 1))
+    write("fb.html", noindex("".join(fbp)))
 
 
 def headlines_page(headlines, urls):

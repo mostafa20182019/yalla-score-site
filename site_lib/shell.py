@@ -125,6 +125,17 @@ def seo_title(title, limit=62):
     return t
 
 
+_ROBOTS_INDEX = ('<meta name="robots" content="index, follow, max-image-preview:large, '
+                 'max-snippet:-1, max-video-preview:-1">')
+
+
+def noindex(html):
+    """The page's ONE robots meta says noindex (thin match/article pages, the
+    404). Until 2026-11-05 callers prepended a second meta and the page
+    carried both index and noindex."""
+    return html.replace(_ROBOTS_INDEX, '<meta name="robots" content="noindex">', 1)
+
+
 def head(title, desc, url, image=None, og_type="website", active="",
          preload_img=None):
     # preload_img: the page's LCP image (the home hero is a CSS background,
@@ -210,7 +221,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
 <link rel="canonical" href="{esc(url)}">{preload}
-<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+{_ROBOTS_INDEX}
 <meta name="google-site-verification" content="mMvVRBkeRXu37K-dU3QCrngUUJs9a2FfwpJNX3CHcpk">
 <meta property="og:type" content="{og_type}">
 <meta property="og:site_name" content="{esc(SITE_NAME)}">
@@ -270,7 +281,7 @@ def foot():
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">أخبار</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/goals.html">أهداف المباريات</a>{pred_foot_a} · <a href="/insights.html">التحليلات</a>{pred_foot_b} · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a> · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/goals.html">أهداف المباريات</a>{pred_foot_a} · <a href="/insights.html">التحليلات</a>{pred_foot_b} · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a> · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a></p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>

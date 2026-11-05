@@ -19,7 +19,7 @@ from site_lib.names import _team_match, ar_team, ar_team_in, comp_label
 from site_lib.predictions import pred_block, pred_pop
 from site_lib.reads import post_match_read, pre_match_read
 from site_lib.render import Markup, render
-from site_lib.shell import _LASTMOD, adsense_slot, foot, head, thumb_url, write
+from site_lib.shell import _LASTMOD, adsense_slot, foot, head, noindex, thumb_url, write
 from site_lib.snippets import FILTERS_HTML, MATCHES_JS, ROUNDS_JS
 from site_lib.stats import _finished_by_comp
 from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, standings_table
@@ -354,7 +354,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         if articles:
             for a in articles[:4]:
                 news.append({"href": Markup(article_href(a)), "title": a["title"]})
-        crumbs_ld = breadcrumb_ld([("أخبار", SITE_BASE + "/"),
+        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                    ("المباريات", SITE_BASE + "/matches.html"),
                                    (comp, SITE_BASE + murl)])
         _html = render(
@@ -386,7 +386,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         # ratings or the table after), i.e. what no scoreboard site repeats.
         _rich = bool(_art) or (st == "FINISHED" and bool(post_read)) or _pre_weight >= 4
         if not _rich:
-            _html = _html.replace("<head>", '<head><meta name="robots" content="noindex">', 1)
+            _html = noindex(_html)
         write(f"m/{mid}.html", _html)
         n_mp += 1
         if _rich:

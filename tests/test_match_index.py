@@ -26,7 +26,7 @@ ck("3 an original article and a four-fact pre-match reading still count", "bool(
 ck("4 a bare score or lineup sheet no longer counts", "bool(_goals)" not in line and "bool(_det)" not in line, line)
 ck("5 the reading is computed before the rule and only for finished matches with details",
    src.index('if st == "FINISHED" and _det and hs is not None') < src.index("_rich = ") and src.index("post_read = _read") < src.index("_rich = "))
-ck("6 noindex still follows the rule", "if not _rich:" in src and 'content="noindex"' in src)
+ck("6 noindex still follows the rule", "if not _rich:" in src and "noindex(_html)" in src)
 
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
