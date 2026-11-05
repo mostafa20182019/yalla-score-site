@@ -63,7 +63,7 @@ def nav(active):
 n = nav("home")
 # ONE tab set for phones and desktop (2026-10-26, «دى هتكون الرئيسية ...
 # والاخبار ... تظهر فى تاب اسمها اخبار»)
-tabs = re.findall(r'<a href="([^"]+)" class="navtab[^"]*"><span class="ico">[^<]*</span> ([^<]+)', n)
+tabs = re.findall(r'<a href="([^"]+)" class="navtab[^"]*"><span class="ico"[^>]*>[^<]*</span> ([^<]+)', n)   # aria-hidden on the icon since 2026-11-05
 # + أهداف (/goals): added 2026-11-02, removed the same day when the goals went
 # onto the match rows, then back («عايزك ترجعلى برضه تاب الأهداف») - row buttons stay
 ck("7 the tabs, in order: المباريات (the home) · البطولات · أخبار (/news) · أهداف (/goals) - no التحليلات tab since 2026-10-26",
