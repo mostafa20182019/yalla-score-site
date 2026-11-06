@@ -9,6 +9,15 @@ or continue after a pause — that ends the run with nothing, and the next slot
 starts from scratch (2026-09-18: a run ended with «I'll wait for the scheduled
 wakeup before retrying the fetch» and published nothing).
 
+## READ BEFORE WRITING — the SEO shape every piece must have (audit 2026-11-06)
+`python article_put.py --check` runs `seo_gate.py` and REFUSES a draft that breaks any line below, so write to them from the first word instead of repairing afterwards:
+- **Title** 45-65 chars (gate: 30-72), both clubs joined with «و», never «×». PREVIEW: «موعد مباراة {home} و{away} في {competition} والقناة الناقلة» («اليوم» after «مباراة» when it is today). REPORT: «نتيجة مباراة {home} و{away} {hs}-{as}: {one-line story}» or «{winner} يفوز على {loser} {hs}-{as}.. أهداف وملخص المباراة». No «تقرير:» / «قبل المباراة:» / «تحليل:» / «توقع الجون:».
+- **Summary** ONE sentence, 110-155 chars (gate: 60-160): both clubs + the answer (kick-off day/time + channel for a preview; score + scorers for a report).
+- **Lead** ≠ the summary. Preview: day + date + Cairo time + channel + competition/round first. Report: «انتهت مباراة X وY بنتيجة h-a» + scorers with minutes first.
+- **H2s** ≥ 3, at least one naming a club («شكل الفريقين: الأهلي وبيراميدز», «ترتيب الدوري المصري بعد المباراة», «تشكيل X وY» only with a lineup in the brief).
+- **Internal links** ≥ 2 in the body: `/team/<slug>` of every curated club (brief.curated_clubs), `/standings/<comp slug>` named «ترتيب {competition}», one article from brief.related_articles. NEVER the match page itself (the article is rendered inside it) — the gate refuses the self-link.
+- **FAQ** ≥ 2 pairs. Preview first: «متى موعد مباراة X وY وما القناة الناقلة؟». Report first: «ما نتيجة مباراة X وY؟», then «من سجل أهداف مباراة X وY؟», «ما ترتيب X بعد مباراة Y؟». Never «متى لعبت المباراة؟».
+
 You are writing ONE original Arabic **match-analysis article** for "Elgoon" (الجون) about a match of one of the site's **featured clubs** (since 2026-10-07: the eleven curated clubs plus the big clubs the user chose per league - the brief lists them in `featured_clubs`; `curated_clubs` are the ones that have a club page to link). The kind is either a **preview** (before kick-off) or a **report** (after full-time). The match id, the kind and the path of a JSON brief are in the environment variables `MATCH_ID`, `KIND`, `BRIEF_JSON`; a readable digest of the same brief is in `BRIEF_MD`.
 
 Python deps (requirements.txt + pillow) are already installed by the workflow.

@@ -2,6 +2,14 @@ This is an automated run on a GitHub Actions runner. The user is not present —
 
 **This is a ONE-SHOT run: when you stop, the process is killed.** There is no wakeup to wait for and no later retry inside this run. If a command fails, retry it immediately (up to 3 times); if it still fails, finish with an explicit report naming what failed. NEVER end your turn saying you will wait or continue later.
 
+## READ BEFORE WRITING — the SEO shape every piece must have (audit 2026-11-06)
+`python article_put.py --check` runs `seo_gate.py` and REFUSES a draft that breaks any line below, so write to them from the first word instead of repairing afterwards:
+- **Title** 45-65 chars: «ترتيب {competition_ar} بعد الجولة {round}: {headline fact}» — or «نتائج الجولة {round} من {competition_ar}: …» when `table` is null. Nothing else passes the gate.
+- **Summary** ONE sentence, 110-155 chars (gate: 60-160): competition + round + the leader or the headline result.
+- **H2s** carry the competition and the round («نتائج الجولة 8 من الدوري المصري», «ترتيب الدوري المصري بعد الجولة 8», «هدافو الدوري المصري بعد الجولة 8»).
+- **Internal links** ≥ 3 to existing pages: the pack's `links` (standings, fixtures) and the match pages of the results (`/m/<match_id>` from the pack).
+- **FAQ** ≥ 2 pairs: «من يتصدر {competition_ar} بعد الجولة {round}؟» first, «ما نتائج الجولة {round} من {competition_ar}؟» second.
+
 You are writing ONE original Arabic **«الجولة بالأرقام»** article for "Elgoon" (الجون): a review of a completed league round built ENTIRELY from our own data. The facts pack is at `$BRIEF_JSON` (made by `round_brief.py`); competition and round are in `$COMP` and `$ROUND`.
 
 **Why this article type exists (read it — it decides what a good article is):** Google indexes the pages that carry what only we have — our standings readings, our predictions, our analysis — and declines rewritten news that a hundred outlets already published. This article is valuable exactly as far as it says things no other site can: how OUR model's frozen predictions did, who moved in OUR strength rating (Elo), and what the round's numbers show together. Lean on those. A paragraph that any news site could have written adds nothing.

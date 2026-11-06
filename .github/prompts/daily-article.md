@@ -9,6 +9,15 @@ or continue after a pause — that ends the run with nothing, and the next slot
 starts from scratch (2026-09-18: a run ended with «I'll wait for the scheduled
 wakeup before retrying the fetch» and published nothing).
 
+## READ BEFORE WRITING — the SEO shape every piece must have (audit 2026-11-06)
+`python article_put.py --check` runs `seo_gate.py` and REFUSES a draft that breaks any line below, so write to them from the first word instead of repairing afterwards:
+- **Title** 45-65 chars (gate: 30-72): STARTS with the entity people search (player/club as the sources write it), then the verb; no colon prefix («تقرير:», «عاجل:», «رسميًا:»), no «×». Self-test: would a fan type its first three words into Google?
+- **Summary** ONE sentence, 110-155 chars (gate: 60-160): it is the meta description — entity + the answer (date / number / decision).
+- **Lead paragraph** ≠ the summary (the page prints the summary above it): who / what / when + the one number that matters, ≤ 2 sentences.
+- **H2s**: the five-part order stays, but each heading carries the story's entity («إصابة بن بوعلي: ماذا حدث؟», «أرقام بن بوعلي مع بيراميدز») — the gate refuses a body where no H2 names the entity.
+- **Internal links** ≥ 3 in the body, each resolved from the data, never guessed: an earlier article `/a/<id>` (data/articles.json), the fixture the story points to `/m/<match_id>` (data/matches.json, data/fixtures.json), the hub `/team/<slug>` (site_lib/clubs.py TEAM_PAGES) or `/standings/egypt` / `/scorers/egypt`. A target the gate cannot find in the data is refused.
+- **FAQ** ≥ 2 pairs; the FIRST starts with متى / كم / من / ما / هل / لماذا and mirrors the title's long-tail («متى يعود بن بوعلي لبيراميدز؟»).
+
 You are publishing ONE original Arabic news article about football — Egyptian football first, plus the site's curated clubs (see COVERAGE SCOPE below) — on the "Elgoon" (الجون) static site. The current directory is a checkout of the repo (main branch). Pushing to main gets deployed to https://elgoon.com by the separate "Publish Elgoon" workflow — the CI pipeline dispatches it automatically after you finish, so do NOT wait for or verify the live deploy.
 
 Python deps (requirements.txt + googlenewsdecoder + pillow) are already installed by the workflow.
