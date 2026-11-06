@@ -164,6 +164,10 @@ let r = await call();
 ck("1 cold start fetches upstream synchronously and serves the fresh state",
    r.j.src === "store-fresh" && r.j.games.length === 2 && upstreamCalls > 0, JSON.stringify(r.j.games.map(g => [g.id, g.hs, g.as, g.live])));
 const z = r.j.games.find(g => g.id === 900);
+// 2026-11-06: each game carries its kick-off day (Cairo) - LIVE_JS paints a row
+// only from the game of the same day
+ck("2b every served game carries its Cairo kick-off day when the feed gives a start time",
+   r.j.games.every(g => "d" in g));
 ck("2 the live game carries score, minute and the goal list", z.hs === 1 && z.min === "30'" && z.goals.length === 1 && z.goals[0].p === "زيزو");
 ck("3 the first goal was logged the moment it was seen (with its minute)",
    db.goals.length === 1 && db.goals[0].player === "زيزو" && db.goals[0].minute === "12" && db.goals[0].score_h === 1);

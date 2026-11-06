@@ -212,6 +212,10 @@ async function liveScoresData() {
           // 365scores competition id — LIVE_JS disambiguates same-name clubs
           // across leagues with it (الأهلي = Al Ahly Egypt AND Al-Ahli Saudi)
           c,
+          // the kick-off day in Cairo: LIVE_JS paints a row only when its
+          // data-d is this day - two clubs meeting twice in a week (league +
+          // cup) must not have one result painted over the other fixture
+          d: g.startTime ? cairoDate(Date.parse(g.startTime)) : "",
         });
         // detail call: EVERY live game (fresher score/minute than the list)
         // plus just-ended games with a goal the static build hasn't caught yet
@@ -605,7 +609,7 @@ async function storeApply(env, fresh, now) {
     const goals = (g.goals && g.goals.length) ? g.goals : (g.goals == null ? keptGoals(g) : null);
     return {
       id: g.id, h: g.h, a: g.a, hs: g.hs, as: g.as, live: !!g.live,
-      min: g.min || "", gt: g.gt || 0, hf: g.hf || 0, c: g.c || 0,
+      min: g.min || "", gt: g.gt || 0, hf: g.hf || 0, c: g.c || 0, d: g.d || "",
       ...(goals ? { goals } : {}),
     };
   });

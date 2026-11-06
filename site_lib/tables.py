@@ -502,7 +502,10 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
         hl = (f'<a class="mhl" href="{esc(highlight[0])}" target="_blank" rel="noopener" '
               f'title="أهداف المباراة على {esc(highlight[1])}" aria-label="أهداف المباراة على يوتيوب">'
               f'<span class="mhl-i" aria-hidden="true">▶</span><span class="mhl-t">الأهداف</span></a>')
-    return f"""<div class="mrow mrow-{badge[1]}" data-lv data-h="{esc(ar_team(m.get('home')))}" data-a="{esc(ar_team(m.get('away')))}">
+    # data-d = the kick-off day (Cairo): LIVE_JS paints a row only from the feed
+    # game of the SAME day (2026-11-06: the Capital Cup's Abu Qir 0-2 Ceramica of
+    # 11-03 was painted «انتهت 2-0» over their Egypt Cup tie of 11-07)
+    return f"""<div class="mrow mrow-{badge[1]}" data-lv data-h="{esc(ar_team(m.get('home')))}" data-a="{esc(ar_team(m.get('away')))}" data-d="{esc(m.get('kickoff') or '')}">
   {stretch}{pill}{hl}
   <div class="team th">{crest(m.get('home_badge'))}<span><bdi>{esc(ar_team(m.get('home')))}</bdi></span></div>
   <div class="mid">{mid}</div>

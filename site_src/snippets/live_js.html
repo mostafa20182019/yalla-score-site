@@ -10,9 +10,15 @@
   var map={};
   function reg(e){
     var h=norm(e.getAttribute('data-h')),a=norm(e.getAttribute('data-a'));
-    (map[h+'|'+a]=map[h+'|'+a]||[]).push({e:e,sw:false});
-    (map[a+'|'+h]=map[a+'|'+h]||[]).push({e:e,sw:true});
+    var d=e.getAttribute('data-d')||'';
+    (map[h+'|'+a]=map[h+'|'+a]||[]).push({e:e,sw:false,d:d});
+    (map[a+'|'+h]=map[a+'|'+h]||[]).push({e:e,sw:true,d:d});
   }
+  /* same pair, same DAY (2026-11-06): the feed keeps recent results for days,
+     and two clubs meeting twice in a week (league + cup) had the older result
+     painted over the next fixture. Either side without a day (an older reply
+     during a deploy, the day strip's cards) keeps the old name-only match. */
+  function sameDay(x,g){return !x.d||!g.d||x.d===g.d;}
   els.forEach(reg);
   /* rows that arrive AFTER load (a fetched day or league view on /matches,
      2026-11-05) register here and get the last reply painted at once */
@@ -189,7 +195,7 @@
     favRender(last.gs);
     last.gs.forEach(function(g){
       var arr=map[norm(g.h)+'|'+norm(g.a)];
-      if(arr){arr.forEach(function(x){paint(x.e,x.sw?swap(g):g);});}
+      if(arr){arr.forEach(function(x){if(sameDay(x,g))paint(x.e,x.sw?swap(g):g);});}
       if(g.live)any=true;
     });
     return any;
