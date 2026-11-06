@@ -43,8 +43,12 @@ n_a = sum(1 for u in locs if kind(u) == "article")
 # grows every round by design - ~350 by May, plus the rolling 7-day window.
 # 450 still catches a real leak (e.g. every indexable match page, 714 today);
 # checks 2 and 3 below are the ones that guard the balance.
+# 2026-11-06: 450 -> 700. It had tripped since 11-05 at 502 - again by
+# design: every match that carries an article (257 pieces) or a curated
+# club stays in the sitemap for the season. 700 still catches the leak
+# (1,232 indexable match pages today); re-base, never hide rows.
 ck("1 the sitemap is a selection: match pages capped, articles free to grow",
-   n_m <= 450, f"{len(locs)} URLs, {n_m} match pages (was 670 total)")
+   n_m <= 700, f"{len(locs)} URLs, {n_m} match pages (was 670 total)")
 ck("2 articles outnumber match pages in what we advertise",
    n_a > n_m, f"{n_a} articles vs {n_m} match pages")
 ck("3 the templated share is well under half",
