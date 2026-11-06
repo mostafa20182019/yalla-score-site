@@ -123,9 +123,11 @@ ok("18 and NOTHING gates the Claude step on its output",
    "story_scan" not in WF[_claude_at:] and "has_story" not in WF, )
 # the 12 was set on an estimate of 5-7 minutes; the runs that published took
 # 8.4, 9.8 and 10.6, leaving 1.4 minutes of headroom over a normal success
-ok("19 the Claude step's cap is 15 minutes, not the too-tight 12",
-   "timeout-minutes: 15" in WF and "timeout-minutes: 12" not in WF)
-ok("20 and the job timeout still stands behind it", "timeout-minutes: 30" in WF)
+# 25 since 2026-11-07: the SEO gate + photo search + cutout (11-06) made the
+# runs longer and run 850 was killed at 15:00 with no article
+ok("19 the Claude step's cap is 25 minutes, not the too-tight 15 or 12",
+   "timeout-minutes: 25" in WF and "timeout-minutes: 15" not in WF and "timeout-minutes: 12" not in WF)
+ok("20 and the job timeout still stands behind it, above the step's", "timeout-minutes: 35" in WF)
 
 print()
 print("FAILED: " + ", ".join(fails) if fails else "ALL STORY-SCAN TESTS PASSED")

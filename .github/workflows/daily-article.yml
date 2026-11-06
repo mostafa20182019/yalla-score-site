@@ -35,7 +35,9 @@ concurrency:
 jobs:
   write-article:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # 35 since 2026-11-07: the Claude step below may now take 25, and the
+    # hero-image wheels (rembg + onnxruntime) lengthened the install step
+    timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
         with:
@@ -154,7 +156,16 @@ jobs:
         # cancelled it by hand) while the shortlist step above is what should
         # actually shorten the runs. A timeout here fails the step, and
         # continue-on-error above keeps the run green: the next slot retries.
-        timeout-minutes: 15
+        #
+        # 25 since 2026-11-07. The 11-06 changes made every run longer - the
+        # SEO gate refuses a draft until it is repaired, a photo of a person is
+        # searched (find_photo.py) and composed (hero_card.py, rembg, the 176 MB
+        # model downloaded on a cold cache) - and the token was broken while
+        # they landed, so they first ran in CI on 11-07: run 850 was killed at
+        # 15:00 with no article. The last runs that published before them took
+        # 7.5 and 11.7 minutes for the whole job. 25 matches the match- and
+        # round-article jobs and still bounds a fruitless search.
+        timeout-minutes: 25
         env:
           # the run's editorial lane (2026-10-22) - see the step above
           LANE: ${{ steps.lane.outputs.lane }}
