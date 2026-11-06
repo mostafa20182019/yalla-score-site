@@ -1152,6 +1152,21 @@ def _ev_minute(ev):
         pass
     return ""
 
+# The player card on the lineup pitch (2026-11-06): the stats 365scores leads
+# with, by its stat type id. Only these are kept - the feed carries ~40 per
+# player and match_details.json holds 45 days of matches.
+PLAYER_STATS = (30, 27, 26, 76, 3, 4, 46, 19, 45, 54, 39, 41, 86, 55, 56, 23, 35)
+
+
+def _player_stats(mm):
+    """{type id (str): value} of PLAYER_STATS for one lineup member, or None."""
+    out = {}
+    for s in (mm.get("stats") or []):
+        if isinstance(s, dict) and s.get("type") in PLAYER_STATS and s.get("value") not in (None, ""):
+            out[str(s["type"])] = str(s["value"])
+    return out or None
+
+
 def _detail_rows(game, fallback_home_id):
     """game detail -> {cards, subs, lineups} for the /m/ match pages.
     Field shapes confirmed via fetch_debug sample_details (2026-08-25):
@@ -1221,6 +1236,9 @@ def _detail_rows(game, fallback_home_id):
                  "rt": mm.get("ranking")}
             if mm.get("isCaptain"):
                 p["cap"] = 1
+            st = _player_stats(mm)
+            if st:
+                p["st"] = st
             xi.append(p)
         if len(xi) == 11:                      # anything else = broken feed
             f = lu.get("formation")

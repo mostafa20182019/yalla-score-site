@@ -83,5 +83,43 @@ ck("9 the scorer with a named assister carries «صناعة: X» inside his line
    items and '<span class="mg-as">صناعة: <bdi>صانع أ</bdi></span>' in items[0], items[:1])
 ck("10 a goal with no assister carries no assist line", len(items) == 2 and "mg-as" not in items[1], items[1:])
 
+# ---------------------------------------------------------------- the player card
+# «لما اضغط على لاعب هنا يجبلى تفاصيل عنه زى 365 scores» (same day): the fetch
+# keeps PLAYER_STATS per starter, the pitch makes those starters buttons and
+# ships their card data as JSON + snippets/pitch_js.html
+import json                                                   # noqa: E402
+mm = {"stats": [{"type": 30, "value": "86'"}, {"type": 27, "value": "1"}, {"type": 3, "value": "2"},
+                {"type": 4, "value": "1"}, {"type": 999, "value": "x"}, {"type": 19, "value": "19/21 (90%)"}]}
+st = F._player_stats(mm)
+ck("11 the fetch keeps only the chosen stats, as strings", st == {"30": "86'", "27": "1", "3": "2", "4": "1",
+                                                                  "19": "19/21 (90%)"}, st)
+ck("12 a member without stats keeps no st", F._player_stats({}) is None)
+
+e2 = json.loads(json.dumps(e))
+for pl in e2["lineups"]["h"]["xi"]:
+    if pl["name"] in ("مهاجم أ", "حارس أ"):
+        pl["st"] = dict(st, **({"23": "4", "35": "1"} if pl["name"] == "حارس أ" else {}))
+        pl["rt"] = 8.1
+html2 = match_details_html(e2, False, "الفريق أ", "الفريق ب")
+ck("13 only starters with stats are buttons", html2.count('data-i="') == 2 and html2.count('role="button"') == 2,
+   html2.count('data-i="'))
+blob = re.search(r'<script type="application/json" id="ppData">(.*?)</script>', html2, re.S)
+data = json.loads(blob.group(1)) if blob else []
+striker = next((x for x in data if x["n"] == "مهاجم أ"), {})
+ck("14 the card carries name, club, rating and the Arabic stat rows",
+   striker.get("team") == "الفريق أ" and striker.get("rt") == "8.1"
+   and ["الدقائق", "86′"] in striker.get("st", []) and ["التسديدات (على المرمى)", "2 (1)"] in striker.get("st", []),
+   striker)
+ck("15 his events in the match: three goals by minute",
+   [x[0] for x in striker.get("ev", [])] == ["g", "g", "g"] and striker["ev"][0][1] == "12", striker.get("ev"))
+gk = next((x for x in data if x["n"] == "حارس أ"), {})
+ck("16 the goalkeeper's saves and goals conceded are on his card",
+   ["التصديات", "4"] in gk.get("st", []) and ["أهداف استقبلها", "1"] in gk.get("st", []), gk.get("st"))
+ck("17 the card script ships once, and the JSON cannot close its script tag early",
+   html2.count("getElementById('ppData')") == 1 and "</" not in blob.group(1))
+pre = json.loads(json.dumps(e2)); pre["pre"] = True
+ck("18 a pre-match XI (no match played) has no player cards", 'data-i="' not in match_details_html(pre, False, "أ", "ب"))
+ck("19 a pitch with no stats at all ships no card script", "ppData" not in html)
+
 print(f"\n{len(fails)} FAILED" if fails else "\nALL OK")
 sys.exit(1 if fails else 0)

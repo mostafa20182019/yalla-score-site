@@ -1,0 +1,63 @@
+<script>
+(function(){
+  /* the lineup pitch: a tap on a player opens his card (user, 2026-11-06:
+     «لما اضغط على لاعب هنا يجبلى تفاصيل عنه زى 365 scores»). The data is
+     #ppData, built by tables.match_details_html: name, number, position,
+     club, rating, his events in this match and his stats. Escape, the ×
+     and the backdrop close it; focus goes back to the player. */
+  var src=document.getElementById('ppData'); if(!src) return;
+  var P; try{ P=JSON.parse(src.textContent); }catch(e){ return; }
+  var BOOT='<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#0f172a" d="M2.2 3.2h3.6l1 3.1 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="#0f172a" d="M3 12.3h1.6v1.6H3zm4.2 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>';
+  var EV={g:['⚽','هدف'],og:['⚽','هدف عكسي'],a:[BOOT,'صناعة هدف'],y:['<span class="pp-card y"></span>','بطاقة صفراء'],
+          r:['<span class="pp-card r"></span>','بطاقة حمراء'],off:['<span class="pc-off">⇄</span>','خرج']};
+  var pop=document.createElement('div');
+  pop.className='lt-pop pc-pop'; pop.hidden=true;
+  pop.innerHTML='<div class="lt-pop-box" role="dialog" aria-modal="true">'
+    +'<div class="lt-pop-h"><b>تفاصيل اللاعب</b><button type="button" class="lt-pop-x" aria-label="إغلاق">×</button></div>'
+    +'<div class="pc-b"></div></div>';
+  document.body.appendChild(pop);
+  var body=pop.querySelector('.pc-b'), last=null;
+  function el(tag,cls,txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+  function open(i,from){
+    var p=P[i]; if(!p) return;
+    body.innerHTML='';
+    var top=el('div','pc-top');
+    var ava=el('span','pc-ava');
+    if(p.img){ var im=document.createElement('img'); im.src=p.img; im.alt=''; ava.appendChild(im); }
+    else ava.textContent=p.num||'';
+    top.appendChild(ava);
+    var who=el('div','pc-who');
+    who.appendChild(el('b','pc-n',p.n));
+    who.appendChild(el('span','pc-m',[p.num?('#'+p.num):'',p.pos||'',p.team||''].filter(Boolean).join(' · ')));
+    top.appendChild(who);
+    if(p.rt){ top.appendChild(el('span','pc-rt pp-rt '+(p.rc||''),p.rt)); }
+    body.appendChild(top);
+    if(p.ev&&p.ev.length){
+      var evs=el('div','pc-evs');
+      p.ev.forEach(function(x){
+        var d=EV[x[0]]; if(!d) return;
+        var c=el('span','pc-ev'+(x[0]==='og'?' og':''));
+        c.innerHTML=d[0]; c.appendChild(el('span',null,' '+d[1]+(x[1]?' '+x[1]+'′':'')));
+        evs.appendChild(c);
+      });
+      body.appendChild(evs);
+    }
+    var dl=el('dl','pc-st');
+    (p.st||[]).forEach(function(r){ dl.appendChild(el('dt',null,r[0])); var dd=el('dd',null,r[1]); dd.dir='ltr'; dl.appendChild(dd); });
+    body.appendChild(dl);
+    last=from||null; pop.hidden=false; document.documentElement.classList.add('lt-lock');
+    pop.querySelector('.lt-pop-x').focus();
+  }
+  function close(){ pop.hidden=true; document.documentElement.classList.remove('lt-lock'); if(last) last.focus(); }
+  pop.addEventListener('click',function(e){ if(e.target===pop||e.target.closest('.lt-pop-x')) close(); });
+  document.addEventListener('keydown',function(e){
+    if(e.key==='Escape'&&!pop.hidden){ close(); return; }
+    var t=e.target.closest&&e.target.closest('.pitch [data-i]');
+    if(t&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); open(+t.getAttribute('data-i'),t); }
+  });
+  document.addEventListener('click',function(e){
+    var t=e.target.closest&&e.target.closest('.pitch [data-i]'); if(!t) return;
+    open(+t.getAttribute('data-i'),t);
+  });
+})();
+</script>

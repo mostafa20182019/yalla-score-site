@@ -397,6 +397,42 @@ def match_details_html(e, flipped, h_ar, a_ar):
                 ' 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="#0f172a" d="M3 12.3h1.6v1.6H3zm4.2'
                 ' 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>')
 
+        # the player card (2026-11-06, «لما اضغط على لاعب ... زى 365
+        # scores»): every starter the feed gave stats for is a button; the
+        # card data rides one JSON block and snippets/pitch_js.html opens it
+        CARD_ROWS = (("30", "الدقائق"), ("27", "الأهداف"), ("26", "صناعة الأهداف"),
+                     ("76", "الأهداف المتوقعة (xG)"), ("shots", "التسديدات (على المرمى)"),
+                     ("46", "صناعة الفرص"), ("19", "التمريرات الصحيحة"), ("45", "لمس الكرة"),
+                     ("54", "المراوغات الناجحة"), ("39", "التدخلات الناجحة"), ("41", "الاعتراضات"),
+                     ("86", "استعادة الكرة"), ("55", "الالتحامات الأرضية"),
+                     ("56", "الالتحامات الهوائية"), ("23", "التصديات"), ("35", "أهداف استقبلها"))
+        cards_data = []
+
+        def player_events(name):
+            out = []
+            for g in e.get("goals") or []:
+                if g.get("player") == name:
+                    out.append(("og" if g.get("tag") == "عكسية" else "g", g.get("minute") or ""))
+                if g.get("assist") == name:
+                    out.append(("a", g.get("minute") or ""))
+            for c in e.get("cards") or []:
+                if c.get("player") == name:
+                    out.append(("r" if c.get("color") == "r" else "y", c.get("minute") or ""))
+            for s in e.get("subs") or []:
+                if s.get("out") == name:
+                    out.append(("off", s.get("minute") or ""))
+            return sorted(out, key=lambda x: _min_key(x[1]))
+
+        def card_rows(st):
+            rows = []
+            for key, label in CARD_ROWS:
+                if key == "shots":
+                    if "3" in st:
+                        rows.append((label, st["3"] + (f' ({st["4"]})' if "4" in st else "")))
+                elif key in st:
+                    rows.append((label, st[key].replace("'", "′")))
+            return rows
+
         def ev_badges(name):
             out = ""
             for n, cls, ic, lbl in ((scored.get(name), "", "⚽", "هدف"),
@@ -436,11 +472,27 @@ def match_details_html(e, flipped, h_ar, a_ar):
                       if rc else "")
                 cap = '<span class="pp-cap">C</span>' if p.get("cap") else ""
                 nm = f'{num + " " if num else ""}{esc(_pshort(p.get("name")))}'
+                tap = ""
+                if p.get("st") and not e.get("pre"):
+                    tap = (f' data-i="{len(cards_data)}" role="button" tabindex="0" '
+                           f'aria-label="تفاصيل {esc(p.get("name"))}"')
+                    cards_data.append({
+                        "n": p.get("name"), "num": p.get("num"), "pos": p.get("pos"),
+                        "team": h_ar if side_key == "h" else a_ar, "img": src or "",
+                        "rt": f'{float(p["rt"]):.1f}' if rc else "", "rc": rc or "",
+                        "ev": player_events(p.get("name")), "st": card_rows(p["st"])})
                 parts.append(
-                    f'<div class="pp" style="--xv:{x:.1f}%;--yv:{y:.1f}%">'
+                    f'<div class="pp" style="--xv:{x:.1f}%;--yv:{y:.1f}%"{tap}>'
                     f'<span class="pp-ava">{ava}{rt}{bd}{cap}</span>'
                     f'<span class="pp-nm"><bdi>{nm}</bdi></span></div>')
-        parts.append('</div></section>')
+        parts.append('</div>')
+        if cards_data:
+            import json as _json
+            from site_lib.snippets import PITCH_JS
+            blob = _json.dumps(cards_data, ensure_ascii=False).replace("</", "<\\/")
+            parts.append('<p class="pc-hint">اضغط على أي لاعب لعرض أرقامه في المباراة.</p>'
+                         f'<script type="application/json" id="ppData">{blob}</script>{PITCH_JS}')
+        parts.append('</section>')
         return "".join(parts)
     if lh or la:
         parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2><div class="lu">')
