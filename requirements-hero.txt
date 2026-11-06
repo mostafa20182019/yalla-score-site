@@ -1,0 +1,5 @@
+# hero_card.py - the person cut out of his licensed photo (2026-11-06).
+# Separate from requirements.txt on purpose: ~200 MB of wheels that only the
+# article jobs need; publish.yml and the tests never import them.
+rembg>=2.0.60
+onnxruntime>=1.17
