@@ -377,6 +377,37 @@ def match_details_html(e, flipped, h_ar, a_ar):
                      '<div class="pt-box pt-box-t"></div><div class="pt-box pt-box-b"></div>'
                      f'<span class="pt-lab pt-lab-h"><bdi>{esc(h_ar)}</bdi>{fh}</span>'
                      f'<span class="pt-lab pt-lab-a"><bdi>{esc(a_ar)}</bdi>{fa}</span>')
+        # who scored / who assisted, by name (user, 2026-11-06: «جنب اللعيب
+        # اللى سجل هدف كورة وجنب اللاعب اللى عمل اسيست حذاء»). Names come from
+        # the same 365scores members as the XI, so they match exactly. An own
+        # goal is marked on the player who put it in, in red.
+        scored, owngoals, assisted = {}, {}, {}
+        for g in e.get("goals") or []:
+            who = g.get("player")
+            if who:
+                bucket = owngoals if g.get("tag") == "عكسية" else scored
+                bucket[who] = bucket.get(who, 0) + 1
+            if g.get("assist"):
+                assisted[g["assist"]] = assisted.get(g["assist"], 0) + 1
+
+        # our own boot (the 👟 emoji was a pale grey sneaker on the white disc on
+        # Windows and a different shoe on every phone): a dark football boot
+        # with three studs, the same on every screen
+        boot = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#0f172a" d="M2.2 3.2h3.6l1 3.1'
+                ' 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="#0f172a" d="M3 12.3h1.6v1.6H3zm4.2'
+                ' 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>')
+
+        def ev_badges(name):
+            out = ""
+            for n, cls, ic, lbl in ((scored.get(name), "", "⚽", "هدف"),
+                                    (owngoals.get(name), " og", "⚽", "هدف عكسي"),
+                                    (assisted.get(name), " as", boot, "صناعة هدف")):
+                if n:
+                    cnt = f'<b>{n}</b>' if n > 1 else ""
+                    out += (f'<span class="pp-ev{cls}" title="{lbl}" aria-label="{lbl}">'
+                            f'{ic}{cnt}</span>')
+            return f'<span class="pp-evs">{out}</span>' if out else ""
+
         for chips, side_key in ((ph, "h"), (pa, "a")):
             cards, off = badges(side_key)
             for x, y, p in chips:
@@ -394,6 +425,7 @@ def match_details_html(e, flipped, h_ar, a_ar):
                     bd += f'<span class="pp-card {c}"></span>'
                 if p.get("name") in off:
                     bd += '<span class="pp-sub">⇄</span>'
+                bd += ev_badges(p.get("name"))
                 # a rating badge on this pitch means "how he played in THIS
                 # match" — on a pre-match XI the feed's number is a carried-over
                 # average, and printing it next to an unplayed match reads as a

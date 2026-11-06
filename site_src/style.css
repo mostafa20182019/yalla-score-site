@@ -906,6 +906,17 @@ html.lt-lock{overflow:hidden}
 .pp-sub{position:absolute;bottom:-4px;left:-8px;width:15px;height:15px;border-radius:50%;
   background:#fff;color:#b91c1c;font-size:.68rem;font-weight:900;display:flex;align-items:center;justify-content:center;
   box-shadow:0 1px 2px rgba(0,0,0,.4)}
+/* goals and assists on the pitch (2026-11-06): stacked on the free middle of
+   the right side - the rating holds the top-right, the card the top-left,
+   the sub arrow the bottom-left and the captain the bottom-right */
+.pp-evs{position:absolute;top:12px;right:-21px;display:flex;flex-direction:column;gap:2px}
+.pp-ev{position:relative;width:16px;height:16px;border-radius:50%;background:#fff;font-size:.62rem;line-height:1;
+  display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,.4)}
+.pp-ev.og{box-shadow:0 0 0 2px #dc2626}
+.pp-ev svg{width:11px;height:11px;display:block}
+.pp-ev b{position:absolute;top:-5px;right:-5px;min-width:11px;height:11px;border-radius:6px;background:#0f172a;color:#fff;
+  font-size:.5rem;font-weight:900;display:flex;align-items:center;justify-content:center;padding:0 2px}
+@media(max-width:560px){.pp-evs{top:9px;right:-19px}.pp-ev{width:15px;height:15px}}
 .pp-cap{position:absolute;bottom:-4px;right:-6px;width:14px;height:14px;border-radius:50%;
   background:#0f172a;color:#fff;font-size:.56rem;font-weight:900;display:flex;align-items:center;justify-content:center}
 @media(max-width:560px){

@@ -1114,7 +1114,14 @@ def _goal_rows(game, fallback_home_id):
             tag = "عكسية"
         elif "جزاء" in sub:
             tag = "ج"
-        goals.append({"side": side, "player": player, "minute": minute, "tag": tag})
+        # the assister (2026-11-06, for the boot on the lineup pitch): 365scores
+        # names him in extraPlayers when it knows one; an own goal has none
+        assist = ""
+        xp = ev.get("extraPlayers")
+        if tag != "عكسية" and isinstance(xp, list) and xp:
+            assist = members.get(xp[0]) or ""
+        goals.append({"side": side, "player": player, "minute": minute, "tag": tag,
+                      **({"assist": assist} if assist else {})})
     # sanity: per-side counts must match the scoreboard. A mismatch that own
     # goals explain means 365scores credited them to the scorer's own team —
     # flip those to the benefiting side. Still wrong after that -> drop the
