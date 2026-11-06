@@ -101,7 +101,8 @@ for pl in e2["lineups"]["h"]["xi"]:
         pl["st"] = dict(st, **({"23": "4", "35": "1"} if pl["name"] == "حارس أ" else {}))
         pl["rt"] = 8.1
 html2 = match_details_html(e2, False, "الفريق أ", "الفريق ب")
-ck("13 only starters with stats are buttons", html2.count('data-i="') == 2 and html2.count('role="button"') == 2,
+# count the chips' own attribute run - the card script's selector also spells role="button"
+ck("13 only starters with stats are buttons", html2.count('data-i="') == 2 and html2.count('role="button" tabindex="0"') == 2,
    html2.count('data-i="'))
 blob = re.search(r'<script type="application/json" id="ppData">(.*?)</script>', html2, re.S)
 data = json.loads(blob.group(1)) if blob else []
