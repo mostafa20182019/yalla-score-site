@@ -16,11 +16,19 @@
 {# the match's own article (layer 3), then «قراءة المباراة» (layer 2) - the
    summary ABOVE the evidence - then the timeline/XI, who is missing, and
    «توقع الجون» #}
+{# «قراءة المباراة» left the page too (user, 2026-11-06: «تحذفلى الجزئين
+   دول»). It is still COMPUTED in match_pages: its presence is what makes a
+   finished page indexable, and its FAQ still renders below - the same
+   arrangement as the pre-match reading since 2026-10-31. #}
 {{ article_block }}
-{{ post_read }}
 {{ details }}
 {{ absence }}
 {{ prediction }}
+{# «معلومات المباراة»: off a FINISHED page (user, same day - the score,
+   the timeline and the crumbs already say all of it). An upcoming, live or
+   postponed page keeps it: there it is the only place with the date, the
+   kick-off time, the channels the title promises, and the live «الحالة». #}
+{% if show_info %}
 <section class="minfo">
   <h2>معلومات المباراة</h2>
   <dl class="minfo-l">
@@ -29,6 +37,7 @@
     {% endfor %}
   </dl>
 </section>
+{% endif %}
 {% if clubs %}
 <nav class="club-chips" aria-label="صفحات الأندية">
   <span>صفحات الأندية:</span>

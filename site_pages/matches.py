@@ -379,7 +379,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             comp_tv=COMP_TV.get(m.get("competition")) or "",
             article_block=Markup(article_block), pre_read=Markup(pre_read),
             post_read=Markup(post_read), details=Markup(details), absence=Markup(absence),
-            prediction=Markup(_pb or ""), info=info_rows,
+            prediction=Markup(_pb or ""), info=info_rows, show_info=st != "FINISHED",
             clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
             has_table=bool(stc and stc.get("table")), table_heading=Markup(table_heading),
             table=Markup(table), faq=Markup(_faq_html or ""), news=news,
