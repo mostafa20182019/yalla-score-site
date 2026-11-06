@@ -28,7 +28,7 @@
   };
   function swap(g){
     var gl=(g.goals||[]).map(function(x){
-      return {s:x.s==='h'?'a':'h',p:x.p,m:x.m,t:x.t};});
+      return {s:x.s==='h'?'a':'h',p:x.p,m:x.m,t:x.t,a:x.a};});
     return {h:g.a,a:g.h,hs:g.as,as:g.hs,live:g.live,min:g.min,c:g.c,
             goals:g.goals?gl:undefined};
   }
@@ -50,7 +50,8 @@
     g.goals.forEach(function(x){
       var it='<span class="mg">⚽ <bdi>'+escH(x.p)+'</bdi>'
         +(x.m?' <i class="mg-m">'+escH(x.m)+'′</i>':'')
-        +(x.t?' <small>('+escH(x.t)+')</small>':'')+'</span>';
+        +(x.t?' <small>('+escH(x.t)+')</small>':'')
+        +(x.a?'<span class="mg-as">صناعة: <bdi>'+escH(x.a)+'</bdi></span>':'')+'</span>';
       if(x.s==='h')gh+=it;else ga+=it;
     });
     var inner='<div class="mg-side">'+gh+'</div><div class="mg-gap"></div>'

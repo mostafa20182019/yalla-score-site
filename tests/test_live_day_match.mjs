@@ -93,5 +93,12 @@ const r5 = row("ابو قير للاسمدة", "سيراميكا كليوبات�
 await run([r5], [capital]);
 ck("5 a row without data-d falls back to the old name-only match", painted(r5));
 
+// the assister survives the live repaint, even through swap() (2026-11-06)
+const withA = { ...capital, goals: [{ s: "a", p: "هداف", m: "30", t: "", a: "صانع" }, { s: "a", p: "هداف", m: "70", t: "" }] };
+const r6 = row("سيراميكا كليوباترا", "ابو قير للاسمدة", "2026-11-03");
+await run([r6], [withA]);
+ck("6 the live repaint writes «صناعة: X» under the scorer, through the reversed-name swap",
+   r6.extra.includes('<span class="mg-as">صناعة: <bdi>صانع</bdi></span>') && (r6.extra.match(/mg-as/g) || []).length === 1, r6.extra);
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE DAY-MATCH TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

@@ -124,7 +124,12 @@ async function gameDetail(gid) {
       }
       const sub = `${nm} ${ev.subTypeName || ""}`;
       const tag = sub.includes("عكس") ? "عكسية" : (sub.includes("جزاء") ? "ج" : "");
-      goals.push({ s: cid === home.id ? "h" : "a", p: player, m: minute, t: tag });
+      // the assister (2026-11-06), same rule as fetch_data._goal_rows: the
+      // first of extraPlayers, never on an own goal. goalKey ignores it, so
+      // adding it re-logs nothing.
+      const xp = Array.isArray(ev.extraPlayers) ? ev.extraPlayers : [];
+      const ast = tag !== "عكسية" && xp.length ? (members[xp[0]] || "") : "";
+      goals.push({ s: cid === home.id ? "h" : "a", p: player, m: minute, t: tag, ...(ast ? { a: ast } : {}) });
     }
     const cnt = () => [goals.filter(g => g.s === "h").length,
                        goals.filter(g => g.s === "a").length];

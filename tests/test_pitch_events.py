@@ -70,5 +70,18 @@ ck("7 a player who neither scored nor assisted carries no event badge", "pp-evs"
 ck("8 the badges carry an Arabic label for screen readers",
    'aria-label="هدف"' in html and 'aria-label="صناعة هدف"' in html and 'aria-label="هدف عكسي"' in html)
 
+# ---------------------------------------------------------------- the match row
+# «تحت اللاعب اللى مسجل الهدف اللاعب صاحب الاسيست» (same day): «صناعة: X» on
+# its own line under the scorer, only when the feed named one
+from site_lib.tables import match_row                       # noqa: E402
+row = match_row({"status": "FINISHED", "home": "أ", "away": "ب", "home_score": 2, "away_score": 0,
+                 "kickoff": "2026-11-06"}, goals=[
+    {"side": "h", "player": "مهاجم أ", "minute": "12", "tag": "", "assist": "صانع أ"},
+    {"side": "h", "player": "مهاجم أ", "minute": "70", "tag": ""}])
+items = re.findall(r'<span class="mg">(.*?)</span>(?=<span class="mg">|</div>)', row, re.S)
+ck("9 the scorer with a named assister carries «صناعة: X» inside his line",
+   items and '<span class="mg-as">صناعة: <bdi>صانع أ</bdi></span>' in items[0], items[:1])
+ck("10 a goal with no assister carries no assist line", len(items) == 2 and "mg-as" not in items[1], items[1:])
+
 print(f"\n{len(fails)} FAILED" if fails else "\nALL OK")
 sys.exit(1 if fails else 0)

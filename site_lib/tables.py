@@ -515,7 +515,12 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
                 mn = (f' <i class="mg-m">{esc(g["minute"])}′</i>'
                       if g.get("minute") else "")
                 tg = f' <small>({esc(g["tag"])})</small>' if g.get("tag") else ""
-                its.append(f'<span class="mg">⚽ <bdi>{esc(g.get("player"))}</bdi>{mn}{tg}</span>')
+                # the assister on his own line under the scorer (user, 2026-11-06:
+                # «تحت اللاعب اللى مسجل الهدف اللاعب صاحب الاسيست»); LIVE_JS
+                # paintGoals writes the same markup from /live.json's `a`
+                ast = (f'<span class="mg-as">صناعة: <bdi>{esc(g["assist"])}</bdi></span>'
+                       if g.get("assist") else "")
+                its.append(f'<span class="mg">⚽ <bdi>{esc(g.get("player"))}</bdi>{mn}{tg}{ast}</span>')
             return "".join(its)
         gblock = (f'<div class="mgoals"><div class="mg-side">{side_list("h")}</div>'
                   f'<div class="mg-gap"></div>'

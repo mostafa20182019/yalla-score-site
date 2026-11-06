@@ -373,5 +373,21 @@ s22 = snap().games.find(g => g.id === 900);
 ck("22c but a MOVED score with no fresh detail serves no list at all (never half the picture)",
    s22 && s22.hs === 3 && !s22.goals, JSON.stringify(s22));
 
+/* ------------------------------------------------------------- 23 the assister */
+// 2026-11-06: a goal event's extraPlayers names the assister; the served goal
+// carries it as `a` (LIVE_JS prints «صناعة: X» under the scorer). goalKey
+// ignores it, so the goals already logged are not logged again.
+age(20000);
+const nLogged = db.goals.filter(g => g.game_id === 900 && !g.cancelled).length;
+scenario(3, 1, 90, [goalEv(11, 1, 12), { ...goalEv(12, 1, 41), extraPlayers: [11] }, goalEv(21, 2, 60), goalEv(11, 1, 85)]);
+await call(); await drain();
+const s23 = snap().games.find(g => g.id === 900);
+const g41 = s23 && (s23.goals || []).find(g => g.m === "41");
+ck("23a the served goal names its assister", g41 && g41.a === "زيزو", JSON.stringify(s23 && s23.goals));
+ck("23b a goal without extraPlayers has no `a`", s23 && (s23.goals || []).some(g => g.m === "12" && !g.a));
+const nAfter = db.goals.filter(g => g.game_id === 900 && !g.cancelled).length;
+ck("23c adding the assister re-logs none of the goals already on the board (only the new 85' one at most)",
+   nAfter <= nLogged + 1, `${nLogged} -> ${nAfter}`);
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE STORE TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

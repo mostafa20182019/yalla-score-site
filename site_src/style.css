@@ -757,6 +757,8 @@ html.lt-lock{overflow:hidden}
 .mg bdi{color:var(--ink)}
 .mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#15658f;white-space:nowrap}
 .mg small{font-size:.68rem}
+/* the assister under his scorer (2026-11-06): same size, lighter, own line */
+.mg-as{display:block;font-weight:600;color:#64748b}
 @media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.7rem}}
 /* match details: events timeline + starting lineups (/m/<id>.html).
    NOT «.tl» - that collided with the .tl text-start cells in every
