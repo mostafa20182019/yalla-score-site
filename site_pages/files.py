@@ -31,8 +31,12 @@ def robots_sitemap_ads(articles, urls):
     ns = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" '
           'xmlns:news="http://www.google.com/schemas/sitemap-news/0.9">']
+    # one entry per URL: a match's preview and report share /m/<id>, and the
+    # newest (the report) is first (SEO audit 2026-11-06: 2 duplicated URLs)
+    _seen = set()
     for a in articles:
-        if (a.get("pub_date") or "") >= news_cut:
+        if (a.get("pub_date") or "") >= news_cut and article_url(a) not in _seen:
+            _seen.add(article_url(a))
             ns.append(f"  <url><loc>{esc(article_url(a))}</loc><news:news>"
                       f"<news:publication><news:name>{esc(SITE_NAME)}</news:name>"
                       "<news:language>ar</news:language></news:publication>"

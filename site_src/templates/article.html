@@ -12,7 +12,7 @@
   <p class="a-meta"><a class="a-by" href="/editors.html">{{ byline }}</a></p>
   {% if img %}
   <figure class="a-fig">
-    <img class="a-img" src="{{ img }}" alt="{{ title }}" loading="eager" fetchpriority="high">
+    <img class="a-img" src="{{ img }}" alt="{{ img_alt }}" loading="eager" fetchpriority="high">
     {% if credit %}
     <figcaption class="a-credit">{{ credit }}</figcaption>
     {% endif %}
@@ -25,6 +25,19 @@
   {# «مباريات اليوم» (2026-10-18): 1.18 pages per visit said the reader leaves
      after one story - today's matches, live first, each a link to its page #}
   {{ today_strip }}
+  {# «للمتابعة» (SEO audit 2026-11-06): the lead club's next match, last
+     result, table, scorers and club page - resolved from the data, so every
+     story links the pages that answer «موعد / نتيجة / ترتيب» #}
+  {% if follow %}
+  <nav class="a-sources club-next" aria-label="للمتابعة">
+    <h2>للمتابعة</h2>
+    <ul>
+      {% for f in follow %}
+      <li><a href="{{ f.href }}">{{ f.text }}</a></li>
+      {% endfor %}
+    </ul>
+  </nav>
+  {% endif %}
   {# named sources (transparency - «المصادر») and a short FAQ, written by the
      article tasks since 2026-09-06; older articles have neither #}
   {% if sources %}

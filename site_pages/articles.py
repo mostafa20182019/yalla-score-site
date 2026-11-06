@@ -8,8 +8,11 @@ import hashlib
 import os
 from site_lib.articles import _MOVED_LINKS, article_clubs, author_ld, article_moved_stub, article_url, byline, embeds_block, fix_moved_links, insight_kind, match_data_sources, related_articles
 from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_RELTIME, DIST, FB_PAGE_URL, PLACEHOLDER_IMGS, SHOW_HEADLINES, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, load
-from site_lib.dates import art_date, art_reltime, rel_ar
-from site_lib.names import _egy_article, _eur_article
+from site_lib.clubs import TEAM_PAGES
+from site_lib.competitions import COMP_SLUG
+from site_lib.config import REF_TODAY
+from site_lib.dates import art_date, art_reltime, fmt_day, rel_ar
+from site_lib.names import _egy_article, _eur_article, _team_match, ar_team, comp_label
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, _og_dims, foot, head, noindex, push_cta, thumb_url, write
 from site_lib.snippets import FBCOPY_JS
@@ -42,6 +45,16 @@ def article_pages(articles, articles_all, matches, urls):
     # «مباريات اليوم» under every article body (2026-10-18): one strip, built once
     from site_lib.today_strip import today_strip
     _today_strip = today_strip(matches)
+    # «للمتابعة» (SEO audit 2026-11-06): the links the writer kept forgetting
+    # (2.2 per article, 12 with none, none to /standings), resolved from the
+    # data instead - the lead club's next match and last result (/m/), its
+    # league's table and scorers, its club page. Same pool as match_pages' m_all.
+    _pool = {}
+    for m in load("matches_archive.json") + matches:
+        if m.get("match_id") and m.get("home") and m.get("kickoff"):
+            _pool[m["match_id"]] = m
+    _pool = sorted(_pool.values(), key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    _follow_cache = {}
     p = []
     for a in articles_all:
         if is_match_piece(a):
@@ -69,10 +82,23 @@ def article_pages(articles, articles_all, matches, urls):
                             "name": SITE_NAME, "url": SITE_BASE + "/",
                             "sameAs": [FB_PAGE_URL, TG_CHANNEL_URL],
                             "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"}}}
+        # the club the TITLE names comes first (SEO audit 2026-11-06: article
+        # 1080 about Pyramids got the «الأهلي» crumb, 1076 about Marmoush at
+        # Tottenham got «مانشستر سيتي» - TEAM_PAGES order, not the story's);
+        # when no listed club is in the title, no club crumb - better than a
+        # wrong entity. keywords also carry the title itself (the names of the
+        # people in it are its search phrase).
+        _ttl = a.get("title") or ""
+        _in_title = lambda tp: any(t in _ttl for t in tp["news_tokens"])
+        # the club named FIRST in the title leads («عودة بن بوعلي إلى بيراميدز
+        # قبل مواجهة الأهلي» is Pyramids' story, not Al Ahly's)
+        _tpos = lambda tp: min((_ttl.find(t) for t in tp["news_tokens"] if t in _ttl), default=10**6)
+        _lead = sorted(_clubs, key=lambda tp: (_tpos(tp), TEAM_PAGES.index(tp)))
+        _lead_tp = _lead[0] if (_lead and _in_title(_lead[0])) else None
         if _clubs:
-            ld["keywords"] = ", ".join(tp["name"] for tp in _clubs)
+            ld["keywords"] = ", ".join([tp["name"] for tp in _lead] + [a["title"]])
             ld["about"] = [{"@type": "SportsTeam", "name": tp["name"],
-                            "url": f'{SITE_BASE}/team/{tp["slug"]}.html'} for tp in _clubs]
+                            "url": f'{SITE_BASE}/team/{tp["slug"]}.html'} for tp in _lead]
         if img:
             _iw, _ih = _og_dims(img)
             ld["image"] = ([{"@type": "ImageObject", "url": img, "width": _iw, "height": _ih}]
@@ -82,11 +108,50 @@ def article_pages(articles, articles_all, matches, urls):
         # search snippet then falls to whatever Google scrapes. The body's
         # opening is the article's own lead; seo_desc trims it to size.
         _desc = a.get("summary") or strip_tags(a.get("body") or "")[:220]
+        # a summary over the ~155 chars Google shows (236 of 431 since October,
+        # SEO audit 2026-11-06) ends at its first sentence break after char 90
+        # instead of mid-word with «…» - the first sentence carries the answer
+        if len(_desc) > 155:
+            _cut = min((i for i in (_desc.find(". ", 90), _desc.find("، ", 90), _desc.find("؛ ", 90))
+                        if 0 < i <= 154), default=-1)
+            if _cut > 0:
+                _desc = _desc[:_cut + 1]
         page_head = Markup(head(f"{a['title']} — {SITE_NAME}", _desc, url, image=img, og_type="article"))
         article_ld = Markup(jsonld(ld))
         _crumbs = [("الرئيسية", SITE_BASE + "/"), ("كل الأخبار", SITE_BASE + "/news.html")]
-        if _clubs:
-            _crumbs.append((_clubs[0]["name"], f'{SITE_BASE}/team/{_clubs[0]["slug"]}.html'))
+        if _lead_tp:
+            _crumbs.append((_lead_tp["name"], f'{SITE_BASE}/team/{_lead_tp["slug"]}.html'))
+        # alt describes the picture, not the headline: the credit's own words
+        # for a photo; «بطاقة <club>» for our designed card
+        _credit = (a.get("image_credit") or "").strip()
+        if "تصميم الجون" in _credit:
+            img_alt = f"بطاقة {_lead_tp['name']} — تصميم الجون" if _lead_tp else a["title"]
+        else:
+            img_alt = (_credit.replace("الصورة:", "").replace("صورة:", "").split(" — ")[0].strip()
+                       or a["title"])
+        follow = []
+        if _lead_tp:
+            if _lead_tp["slug"] not in _follow_cache:
+                _f = []
+                _cm = [m for m in _pool if _team_match(_lead_tp, m)]
+                _nx = next((m for m in _cm if (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
+                            and m["kickoff"] >= REF_TODAY), None)
+                _ls = next((m for m in reversed(_cm) if (m.get("status") or "").upper() == "FINISHED"
+                            and m.get("home_score") is not None), None)
+                if _nx:
+                    _f.append((f'/m/{_nx["match_id"]}.html',
+                               f'موعد مباراة {ar_team(_nx["home"])} و{ar_team(_nx["away"])} يوم {fmt_day(_nx["kickoff"])}'))
+                if _ls:
+                    _f.append((f'/m/{_ls["match_id"]}.html',
+                               f'نتيجة مباراة {ar_team(_ls["home"])} و{ar_team(_ls["away"])} '
+                               f'{_ls["home_score"]}-{_ls["away_score"]}'))
+                _lg = COMP_SLUG.get(_lead_tp["league"])
+                if _lg:
+                    _f.append((f'/standings/{_lg}.html', f'ترتيب {comp_label(_lead_tp["league"])}'))
+                    _f.append((f'/scorers/{_lg}.html', f'هدافو {comp_label(_lead_tp["league"])}'))
+                _f.append((f'/team/{_lead_tp["slug"]}.html', f'أخبار {_lead_tp["name"]} اليوم'))
+                _follow_cache[_lead_tp["slug"]] = _f
+            follow = [{"href": Markup(h), "text": t} for h, t in _follow_cache[_lead_tp["slug"]]]
         crumbs_ld = Markup(breadcrumb_ld(_crumbs + [(a["title"], url)]))
         crumbs = [(u.replace(SITE_BASE, "") or "/", n) for n, u in _crumbs]
         _t = art_reltime(a)
@@ -117,7 +182,8 @@ def article_pages(articles, articles_all, matches, urls):
             page_head=page_head, article_ld=article_ld, crumbs_ld=crumbs_ld, crumbs=crumbs,
             title=a["title"], byline=byline(a), pub_date=a.get("pub_date"),
             rel_time=Markup(" · " + _t) if (_t and BYLINE_RELTIME) else "", updated=Markup(_upd),
-            img=img, credit=a.get("image_credit"), summary=a.get("summary"), body=body,
+            img=img, img_alt=img_alt, credit=a.get("image_credit"), summary=a.get("summary"), body=body,
+            follow=follow,
             sources=sources, faq=[{"q": f["q"], "a": f["a"]} for f in _faq], faq_ld=faq_ld,
             embeds=embeds, clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
             related=related, push_cta=Markup(push_cta()), tg_url=TG_CHANNEL_URL,

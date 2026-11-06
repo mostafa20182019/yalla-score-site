@@ -238,7 +238,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             img = _lc if _lc.startswith("http") else SITE_BASE + _lc
         murl = f"/m/{mid}.html"
         _goals = match_goals(ge_idx, m)
-        page_head = head(title, desc, SITE_BASE + murl, image=img, active="matches")
+        # og:type=article when the page carries its story (SEO audit 2026-11-06)
+        page_head = head(title, desc, SITE_BASE + murl, image=img, active="matches",
+                         og_type="article" if _art else "website")
         hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals,
                              highlight=_hl)
         kickoff_info = st not in ("FINISHED", "POSTPONED")
@@ -267,7 +269,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                    else f"{m['stage']} من " if m.get("stage") else "")   # a cup's stage (2026-11-03)
         # the story sits above the computed reading, which is what backs it
         # with numbers (_art picked above, with its image settled)
-        article_block = match_article_block(_art, m.get("competition") or "") if _art else ""
+        article_block = (match_article_block(_art, m.get("competition") or "",
+                                             page_title=title.split(" — ")[0], status=st)
+                         if _art else "")
         # «قراءة قبل المباراة» (layer 1): how the two clubs arrive. No longer
         # SHOWN (user, 2026-10-31 - match.html); still computed because its
         # weight keeps the upcoming page indexed (user: keep them indexed, new
@@ -354,11 +358,21 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         if articles:
             for a in articles[:4]:
                 news.append({"href": Markup(article_href(a)), "title": a["title"]})
+        # the competition crumb links its hub (SEO audit 2026-11-06: it pointed
+        # at the page itself on ~1,190 indexed match pages - the standings and
+        # fixtures pages had no link from them); the last crumb is the page
+        _cslug = COMP_SLUG.get(m.get("competition"))
+        comp_href = ""
+        if _cslug:
+            comp_href = (f"/standings/{_cslug}.html" if (stc and stc.get("table"))
+                         else f"/fixtures/{_cslug}.html")
         crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
-                                   ("المباريات", SITE_BASE + "/matches.html"),
-                                   (comp, SITE_BASE + murl)])
+                                   ("المباريات", SITE_BASE + "/matches.html")]
+                                  + ([(comp, SITE_BASE + comp_href)] if comp_href else [])
+                                  + [(title.split(" — ")[0], SITE_BASE + murl)])
         _html = render(
-            "match.html", page_head=Markup(page_head), comp=comp, h_ar=h_ar, a_ar=a_ar,
+            "match.html", page_head=Markup(page_head), comp=comp, comp_href=Markup(comp_href),
+            h_ar=h_ar, a_ar=a_ar,
             h1=title.split(" — ")[0],
             hero_row=Markup(hero_row), kickoff_info=kickoff_info, round_txt=Markup(_rd),
             when_txt=Markup(_tw), channel=str(m["channel"]) if m.get("channel") else "",

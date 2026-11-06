@@ -349,8 +349,16 @@ def ensure_match_image(m, art, status, media_dir=None):
     return full
 
 
-def match_article_block(a, comp):
+def match_article_block(a, comp, page_title=None, status=None):
     """The AI preview/report, rendered inside its match page (layer 3).
+
+    page_title / status (SEO audit 2026-11-06): the NewsArticle headline is the
+    page's own <title> («نتيجة مباراة X وY 2-0 — …»), not the writer's title
+    («تقرير: …») - the two disagreed on all 176 finished pages, a split
+    Top-Stories signal. A PREVIEW shown on a FINISHED page (14 pages where no
+    report was written) is labelled as the pre-match reading and emits no
+    NewsArticle at all, so «الموعد والقناة» is never offered as news about a
+    result.
 
     Two pages about one match - prose with no numbers at /a/, numbers with no
     prose at /m/ - is the thin, templated pattern that got the site rejected
@@ -365,8 +373,9 @@ def match_article_block(a, comp):
     if not src:
         src = match_data_sources(a, comp)
     img = a.get("image_url")
+    _stale = a.get("kind") == "preview" and (status or "").upper() == "FINISHED"
     out = ['<section class="minfo marticle">']
-    out.append(f'<h2>{esc(a["title"])}</h2>')
+    out.append(f'<h2>{esc(("قراءة ما قبل المباراة: " + a["title"]) if _stale else a["title"])}</h2>')
     # «بمعلومات وقت النشر»: a report written the night Al Ahly topped the
     # table sits on the same page as a reading computed from TODAY's table
     # (3rd, level with Zamalek) - both are right, and without the label they
@@ -397,14 +406,21 @@ def match_article_block(a, comp):
                + '</ul></div>')
     out.append(embeds_block(a.get("embeds")))
     out.append('</section>')
-    out.append(jsonld({"@context": "https://schema.org", "@type": "NewsArticle",
-                       "headline": a["title"], "description": strip_tags(a.get("summary")),
-                       "datePublished": a.get("pub_ts") or a.get("pub_date"),
-                       "dateModified": a.get("updated_ts") or a.get("pub_ts") or a.get("pub_date"),
-                       "mainEntityOfPage": SITE_BASE + article_href(a),
-                       "author": author_ld(a),
-                       "publisher": {"@type": "Organization", "name": SITE_NAME,
-                                     "url": SITE_BASE}}))
+    if _stale:
+        return "".join(out)
+    ld = {"@context": "https://schema.org", "@type": "NewsArticle",
+          "headline": page_title or a["title"], "description": strip_tags(a.get("summary")),
+          "datePublished": a.get("pub_ts") or a.get("pub_date"),
+          "dateModified": a.get("updated_ts") or a.get("pub_ts") or a.get("pub_date"),
+          "inLanguage": "ar", "isAccessibleForFree": True, "articleSection": "كرة القدم",
+          "mainEntityOfPage": SITE_BASE + article_href(a),
+          "author": author_ld(a),
+          "publisher": {"@type": "Organization", "@id": SITE_BASE + "/#org",
+                        "name": SITE_NAME, "url": SITE_BASE + "/",
+                        "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"}}}
+    if img:
+        ld["image"] = [img]
+    out.append(jsonld(ld))
     return "".join(out)
 
 
