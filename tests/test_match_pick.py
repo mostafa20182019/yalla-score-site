@@ -70,20 +70,21 @@ def kinds(d, now=NOW):
     return [(c["kind"], c["match_id"]) for c in MB.candidates(d, now)]
 
 
-# 1) the window: a match that ended last night is still reportable
+# 1) the window: a match that ended this evening is reportable, last night's
+#    is NOT (user rule 2026-11-06, the day the quota ran out: «اللى عديت خلاص
+#    مينزلش - ينزل الجديد بس» - a report is news the same evening only)
 ks = kinds(data())
 assert ("report", "1") in ks, ks
-assert ("report", "2") in ks, "a match that ended ~21 h ago must still be reportable"
+assert ("report", "2") not in ks, "a match that ended ~21 h ago is left alone"
 assert ("report", "5") not in ks, "a non-curated match is never a candidate"
-assert MB.REPORT_MAX_H >= 24, MB.REPORT_MAX_H
-print("1 OK: the report window covers last night's late game, curated clubs only")
+assert 3 <= MB.REPORT_MAX_H <= 6, MB.REPORT_MAX_H   # the 23:30 slot still covers a 20:00 game
+print("1 OK: the report window is the same evening, curated clubs only")
 
-# 2) reports come before previews, and the freshest report first
+# 2) reports come before previews
 assert ks[0] == ("report", "1"), ks
 ordered = [k for k, _ in ks]
 assert ordered == ["report"] * ordered.count("report") + ["preview"] * ordered.count("preview"), ks
-assert ks[1] == ("report", "2"), ks          # then the older one
-print("2 OK: reports before previews, freshest first")
+print("2 OK: reports before previews")
 
 # 3) four previews today do NOT block a report (the bug this fixes)
 full_previews = [art("preview", str(100 + i)) for i in range(MB.PREVIEW_DAILY_CAP)]

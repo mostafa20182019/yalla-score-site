@@ -45,9 +45,13 @@ PREVIEW_MIN_H, PREVIEW_MAX_H = 2.0, 30.0
 # one-minute live cron sees the match end and dispatches match-article.yml
 # (2026-09-13). The four fixed Cairo slots (13:00 / 17:00 / 20:00 / 23:30)
 # stay as the safety net for a match the live store never saw go from live to
-# ended - which is why the window is a day-and-a-bit and not a few hours: the
-# backstop has to still be allowed to write yesterday's late game.
-REPORT_MAX_H = 30.0
+# ended. The window WAS a day-and-a-bit so the backstop could still write
+# yesterday's late game; since 2026-11-06 it is four hours after the final
+# whistle (user rule, the day the Claude quota ran out: «اللى عديت خلاص
+# مينزلش - ينزل الجديد بس»): a report is news the same evening, and a match
+# that passed without one, for whatever reason, is left alone. The same-day
+# safety slots still cover a 20:00 game at 23:30.
+REPORT_MAX_H = 4.0
 # Separate caps per kind. They used to be ONE cap of 4 shared by both kinds,
 # and with one article per slot that is what starved the reports: half of the
 # curated matches of 2026-09-08..13 got a preview and never got a report
