@@ -359,8 +359,10 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         table = table_heading = ""
         if stc and stc.get("table"):
             _slug = COMP_SLUG.get(m.get("competition"))
-            _h = (f'<a href="/standings/{_slug}.html">ترتيب {esc(comp)} ←</a>'
-                  if _slug else f'ترتيب {esc(comp)}')
+            # the league's name alone (user, 2026-11-07: «خليها الدورى الانجليزى»):
+            # the section holds الترتيب · الهدافون · صناعة الأهداف since the tabs
+            _h = (f'<a href="/standings/{_slug}.html">{esc(comp)} ←</a>'
+                  if _slug else esc(comp))
             table_heading = _h
             table = standings_table(m.get("competition"), stc["table"],
                                     past=stc.get("past"),
