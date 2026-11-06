@@ -338,7 +338,10 @@ def match_details_html(e, flipped, h_ar, a_ar):
                f'<span class="sub-out">▼ <bdi>{esc(s["out"])}</bdi></span>')
         evs.append((_min_key(s.get("minute")), side(s.get("side")),
                     s.get("minute"), "🔁", txt))
-    evs.sort(key=lambda x: x[0])
+    # newest first (user, 2026-11-06: «الدقايق تبدأ من تحت» - the last minute at
+    # the top, kick-off at the bottom, like a live feed). reverse=True keeps
+    # same-minute events in their insertion order (goal, then card, then sub).
+    evs.sort(key=lambda x: x[0], reverse=True)
     if evs:
         parts.append('<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl">')
         for _, sd, mn, ic, txt in evs:
