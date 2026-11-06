@@ -228,6 +228,38 @@ a.lgm:hover{background:#f6fafc}
 .lgm-d{display:block;font-size:.75rem;font-weight:700;color:var(--muted)}
 .lgm .fx{border-bottom:0}
 html.lt-lock{overflow:hidden}
+/* the top-rated starter under the score (2026-11-06, tables.motm_html) */
+.motm{display:flex;align-items:center;gap:14px;background:#fff;border:1px solid #e6ebf1;border-radius:14px;
+  padding:12px 14px;margin:0 0 14px;box-shadow:0 1px 3px rgba(15,23,42,.05)}
+.motm[role=button]{cursor:pointer}
+.motm[role=button]:hover{border-color:#cfe0ee}
+.motm-ph{position:relative;flex:none;width:64px;height:64px;border-radius:50%;background:#eef2f6}
+.motm-ph img{width:100%;height:100%;border-radius:50%;object-fit:cover;object-position:top}
+.motm-ph .pp-rt{top:-4px;right:-8px;font-size:.8rem;padding:2px 6px}
+.motm-b{display:flex;flex-direction:column;gap:3px;min-width:0}
+.motm-k{font-size:.75rem;font-weight:800;color:var(--green-d)}
+.motm-n{font-size:1.05rem;font-weight:900;color:var(--ink)}
+.motm-t{display:inline-flex;align-items:center;gap:5px;font-size:.8rem;color:var(--muted);font-weight:700}
+.motm-t img{width:18px;height:18px;object-fit:contain}
+.motm-f{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.motm-f span{display:inline-flex;align-items:center;gap:4px;background:#f1f5f9;border-radius:999px;
+  padding:3px 10px;font-size:.78rem;font-weight:800;color:var(--ink)}
+.motm-f svg{width:13px;height:13px}
+/* «أرقام المباراة» as comparison bars (2026-11-06, tables.match_stats_html):
+   home on the right; each half fills from the centre outward */
+.sbars{display:flex;flex-direction:column;gap:14px;max-width:620px;margin:0 auto}
+.sb-teams{display:flex;justify-content:space-between;font-weight:900;color:var(--ink);font-size:.9rem}
+.sb-l{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:5px}
+.sb-l span{color:var(--muted);font-weight:700;font-size:.85rem;text-align:center}
+.sb-v{font-weight:900;font-size:.95rem;color:var(--ink);font-variant-numeric:tabular-nums;direction:ltr;min-width:3ch}
+.sb-v.on{color:var(--green-d)}
+.sb-t{display:flex;gap:4px;height:8px}
+.sb-h,.sb-a{flex:1;display:flex;background:#eef2f6;border-radius:999px;overflow:hidden}
+.sb-h{justify-content:flex-end}
+.sb-a{justify-content:flex-start}
+.sb-t i{display:block;height:100%;background:#94a3b8;border-radius:999px}
+.sb-t i.on{background:var(--green-d)}
+.mstats .hintline{margin-top:16px}   /* .hintline's -6px suited the old table; under the bars it overlapped the last one */
 /* the player card (2026-11-06): a tap on a starter on the pitch. Shell =
    the .lt-pop popup above; these are its insides */
 .pitch .pp[data-i]{pointer-events:auto;cursor:pointer}

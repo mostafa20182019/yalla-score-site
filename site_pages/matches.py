@@ -22,7 +22,7 @@ from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, adsense_slot, foot, head, noindex, thumb_url, write
 from site_lib.snippets import FILTERS_HTML, MATCHES_JS, ROUNDS_JS
 from site_lib.stats import _finished_by_comp
-from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, standings_table
+from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, motm_html, standings_table
 from site_lib.text import esc
 from site_lib.urls import article_href, breadcrumb_ld, pick_match_article
 
@@ -380,6 +380,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             article_block=Markup(article_block), pre_read=Markup(pre_read),
             post_read=Markup(post_read), details=Markup(details), absence=Markup(absence),
             prediction=Markup(_pb or ""), info=info_rows, show_info=st != "FINISHED",
+            # the top-rated starter under the score (2026-11-06), finished only
+            motm=Markup(motm_html(_det[0], _det[1], h_ar, a_ar, m.get("home_badge"), m.get("away_badge"))
+                        if st == "FINISHED" and _det else ""),
             clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
             has_table=bool(stc and stc.get("table")), table_heading=Markup(table_heading),
             table=Markup(table), faq=Markup(_faq_html or ""), news=news,

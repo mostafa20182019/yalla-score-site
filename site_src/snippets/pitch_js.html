@@ -50,14 +50,23 @@
   }
   function close(){ pop.hidden=true; document.documentElement.classList.remove('lt-lock'); if(last) last.focus(); }
   pop.addEventListener('click',function(e){ if(e.target===pop||e.target.closest('.lt-pop-x')) close(); });
+  /* a pitch chip carries its index; the top-rated card under the score
+     (.motm, 2026-11-06) carries the player's name */
+  function idx(t){
+    if(t.hasAttribute('data-i')) return +t.getAttribute('data-i');
+    var n=t.getAttribute('data-pn');
+    for(var i=0;i<P.length;i++){ if(P[i].n===n) return i; }
+    return -1;
+  }
+  var SEL='.pitch [data-i], .motm[role="button"]';
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape'&&!pop.hidden){ close(); return; }
-    var t=e.target.closest&&e.target.closest('.pitch [data-i]');
-    if(t&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); open(+t.getAttribute('data-i'),t); }
+    var t=e.target.closest&&e.target.closest(SEL);
+    if(t&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); var i=idx(t); if(i>=0) open(i,t); }
   });
   document.addEventListener('click',function(e){
-    var t=e.target.closest&&e.target.closest('.pitch [data-i]'); if(!t) return;
-    open(+t.getAttribute('data-i'),t);
+    var t=e.target.closest&&e.target.closest(SEL); if(!t) return;
+    var i=idx(t); if(i>=0) open(i,t);
   });
 })();
 </script>

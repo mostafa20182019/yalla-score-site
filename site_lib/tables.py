@@ -298,24 +298,116 @@ MSTAT_ROWS = (("الأهداف المتوقعة (xG)", "xg", "{:.2f}"), ("xG ع�
 def match_stats_html(row, h_ar, a_ar):
     """«أرقام المباراة» on a finished match page (2026-10-07): xG, shots and
     possession from data/match_stats.json, home on the right like the score.
-    Nothing when the match has no stats row with xG."""
+    Nothing when the match has no stats row with xG.
+
+    Bars since 2026-11-06 (user: «اليوزر مبيحبش القراءة بيحب يشوف المعلومات
+    من الصور»): each stat is the two values with a label between them and,
+    under it, two half-tracks that fill from the centre outward by each
+    side's share - the side ahead in our dark blue, the other in grey, like
+    FotMob's match stats."""
     if not row or row.get("status") != "ok":
         return ""
     h, a = row.get("h") or {}, row.get("a") or {}
-    lines = []
+    bars = []
     for label, key, fmt in MSTAT_ROWS:
         if h.get(key) is None or a.get(key) is None:
             continue
         hv, av = h[key], a[key]
-        lines.append(f'<tr><td class="{"good" if hv > av else ""}">{fmt.format(hv)}</td>'
-                     f'<th>{esc(label)}</th><td class="{"good" if av > hv else ""}">{fmt.format(av)}</td></tr>')
-    if not lines:
+        tot = (hv or 0) + (av or 0)
+        hp = round(100 * hv / tot) if tot else 0
+        ap = (100 - hp) if tot else 0
+        lead = "h" if hv > av else ("a" if av > hv else "")
+        on = lambda s: " on" if lead == s else ""
+        bars.append(
+            f'<div class="sb"><div class="sb-l"><b class="sb-v{on("h")}">{fmt.format(hv)}</b>'
+            f'<span>{esc(label)}</span><b class="sb-v{on("a")}">{fmt.format(av)}</b></div>'
+            f'<div class="sb-t" aria-hidden="true"><span class="sb-h"><i class="{on("h").strip()}" style="width:{hp}%"></i></span>'
+            f'<span class="sb-a"><i class="{on("a").strip()}" style="width:{ap}%"></i></span></div></div>')
+    if not bars:
         return ""
     return (f'<section class="minfo mstats"><h2>أرقام مباراة {esc(h_ar)} و{esc(a_ar)}</h2>'
-            f'<div class="tbl-wrap"><table class="ptable"><thead><tr><th><bdi>{esc(h_ar)}</bdi></th><th></th>'
-            f'<th><bdi>{esc(a_ar)}</bdi></th></tr></thead><tbody>' + "".join(lines) + '</tbody></table></div>'
+            f'<div class="sbars"><div class="sb-teams"><bdi>{esc(h_ar)}</bdi><bdi>{esc(a_ar)}</bdi></div>'
+            + "".join(bars) + '</div>'
             '<p class="hintline">الأهداف المتوقعة (xG) تقيس جودة الفرص: كم هدفًا كان يُنتظر من التسديدات نفسها. '
             'المصدر: 365scores.</p></section>')
+
+
+BOOT_SVG = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#0f172a" d="M2.2 3.2h3.6l1 3.1'
+            ' 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="#0f172a" d="M3 12.3h1.6v1.6H3zm4.2'
+            ' 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>')
+
+
+def _lead_int(v):
+    """'19/21 (90%)' -> 19, '4' -> 4, "86'" -> 86; None when not a number."""
+    import re as _re
+    m = _re.match(r"\s*(\d+)", str(v or ""))
+    return int(m.group(1)) if m else None
+
+
+def motm_html(e, flipped, h_ar, a_ar, home_badge=None, away_badge=None):
+    """The top-rated starter, as a card right under the score (2026-11-06,
+    the visual replacement of the reading's «الأفضل في اللقاء» line). It says
+    «الأعلى تقييمًا في المباراة», not «رجل المباراة»: the rating is
+    365scores', and an official man-of-the-match award can go to someone
+    else - never a possibly-wrong label. Up to three facts: his goals, his
+    assists, then his first non-zero stats. Nothing when fewer than 18
+    starters carry a rating (a partial feed must not crown anybody). A tap
+    opens his pitch card when he has one (snippets/pitch_js.html, data-pn)."""
+    lus = e.get("lineups") or {}
+    eh, ea = ("a", "h") if flipped else ("h", "a")
+    best, rated = None, 0
+    for feed_side, team, badge in ((eh, h_ar, home_badge), (ea, a_ar, away_badge)):
+        for p in ((lus.get(feed_side) or {}).get("xi") or []):
+            try:
+                r = float(p.get("rt"))
+            except (TypeError, ValueError):
+                continue
+            rated += 1
+            if best is None or r > best[0]:
+                best = (r, p, team, badge)
+    if best is None or rated < 18:
+        return ""
+    r, p, team, badge = best
+    name = p.get("name") or ""
+    goals = sum(1 for g in e.get("goals") or [] if g.get("player") == name and g.get("tag") != "عكسية")
+    asts = sum(1 for g in e.get("goals") or [] if g.get("assist") == name)
+    facts = []
+    if goals:
+        facts.append(("⚽", "هدف" if goals == 1 else ("هدفان" if goals == 2 else f"{goals} أهداف")))
+    if asts:
+        facts.append((BOOT_SVG, "صناعة هدف" if asts == 1 else ("صناعة هدفين" if asts == 2 else f"صناعة {asts} أهداف")))
+    st = p.get("st") or {}
+    for key, label in (("23", "تصديات"), ("46", "صناعة فرص"), ("3", "تسديدات"), ("19", "دقة التمرير"),
+                       ("39", "تدخلات ناجحة"), ("86", "استعادة الكرة"), ("41", "اعتراضات")):
+        if len(facts) >= 3:
+            break
+        v = st.get(key)
+        if v is None or not _lead_int(v):
+            continue
+        if key == "19":
+            import re as _re
+            pc = _re.search(r"\((\d+)%\)", v)
+            if not pc:
+                continue
+            facts.append(("", f"{label}: {pc.group(1)}%"))
+        else:
+            facts.append(("", f"{label}: {_lead_int(v)}"))
+    rc = _rt_class(r) or ""
+    img = _athlete_img(p)
+    src = local_crest(img) if img else None
+    ph = (f'<img src="{esc(src)}" alt="" loading="lazy" onerror="this.remove()">' if src else "")
+    crest = local_crest(badge) if badge else None
+    cr = f'<img src="{esc(crest)}" alt="" loading="lazy">' if crest else ""
+    chips = "".join(f'<span>{ic}{" " if ic else ""}{esc(t)}</span>' for ic, t in facts[:3])
+    tap = (f' role="button" tabindex="0" aria-label="الأعلى تقييمًا في المباراة: {esc(name)} - تفاصيل اللاعب"'
+           if st else "")
+    return (f'<section class="motm" data-pn="{esc(name)}"{tap}>'
+            f'<span class="motm-ph">{ph}<span class="pp-rt {rc}">{r:.1f}</span></span>'
+            f'<span class="motm-b"><span class="motm-k">الأعلى تقييمًا في المباراة</span>'
+            f'<b class="motm-n"><bdi>{esc(name)}</bdi></b>'
+            f'<span class="motm-t">{cr}<bdi>{esc(team)}</bdi></span>'
+            + (f'<span class="motm-f">{chips}</span>' if chips else "")
+            + '</span></section>')
 
 
 def match_details_html(e, flipped, h_ar, a_ar):

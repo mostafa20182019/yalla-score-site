@@ -71,7 +71,9 @@ ck("no data -> nothing", xg_table_html("x", None) == "")
 
 row = {"status": "ok", "h": {"xg": 2.35, "shots": 18, "sot": 7, "poss": 61}, "a": {"xg": 0.3, "shots": 4, "sot": 1, "poss": 39}}
 mh = match_stats_html(row, "أتلتيكو مدريد", "ريال مدريد")
-ck("match block: xG both sides, home first", re.search(r"<td class=\"good\">2\.35</td><th>الأهداف المتوقعة \(xG\)</th><td class=\"\">0\.30</td>", mh), mh[:400])
+# bars since 2026-11-06: home value, label, away value; the side ahead in .on
+ck("match block: xG both sides, home first", re.search(r'<b class="sb-v on">2\.35</b><span>الأهداف المتوقعة \(xG\)</span><b class="sb-v">0\.30</b>', mh), mh[:400])
+ck("match block: each half fills by its share (2.35 of 2.65 = 89%)", 'style="width:89%"' in mh and 'style="width:11%"' in mh)
 ck("match block: possession with %", "61%" in mh and "39%" in mh)
 ck("match block: a stat missing on one side is skipped", "xG على المرمى" not in mh)
 ck("match block: no xG row -> nothing", match_stats_html({"status": "none", "h": {}, "a": {}}, "a", "b") == ""
