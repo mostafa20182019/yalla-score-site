@@ -9,7 +9,8 @@ refuses a preview whose percentages are not in that brief, or that drops the
 disclaimer, or that was published without --match-brief at all.
 Pure: the model and the store are monkeypatched, nothing is read or written.
 """
-import os
+import os
+os.environ["SEO_GATE"] = "0"   # skeleton drafts: the SEO gate has its own test (test_seo_gate.py)
 import sys
 
 sys.stdout.reconfigure(encoding="utf-8")

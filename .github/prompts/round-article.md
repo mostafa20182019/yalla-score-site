@@ -48,6 +48,7 @@ Tone: a clear sports analyst, not a press release. Every paragraph adds informat
 
 ## Publish
 1. `python article_put.py --check --data-brief "$BRIEF_JSON" /tmp/draft.json` — must print `ok:`. Fix and re-check until it does.
+   `--check` also runs the SEO gate (`seo_gate.py`, audit 2026-11-06): the title must start with «ترتيب …» or «نتائج الجولة …», the summary stays within 60-160 chars, at least three <h2> with the competition named, at least three internal links to existing pages (the pack's `links`), two FAQ pairs in the searcher's words. Repair and re-check.
 2. `python article_put.py --new --data-brief "$BRIEF_JSON" /tmp/draft.json` — prints the new article id. **If it exits 2 (D1 refused), the draft is parked under drafts/: commit it and report — that is a success.**
 3. Put the real id in the post: write `/tmp/fb.json` = `{"fb_post": "<the post with ID replaced>"}` and run `python article_put.py --update <id> /tmp/fb.json`.
 4. `python build_site.py` and check that dist/a/<id>.html exists and contains the title.

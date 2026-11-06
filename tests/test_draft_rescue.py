@@ -16,7 +16,8 @@ next run. The distinction this file mostly guards is which failures earn that
 rescue: an infrastructure failure does, a bad draft and a duplicate do NOT —
 parking those would put a stuck file in front of every future run.
 """
-import os, re, sys, io, json, glob, shutil, datetime
+import os, re, sys, io, json, glob, shutil, datetime
+os.environ["SEO_GATE"] = "0"   # skeleton drafts: the SEO gate has its own test (test_seo_gate.py)
 sys.stdout.reconfigure(encoding="utf-8")
 sys.stderr.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.getcwd())

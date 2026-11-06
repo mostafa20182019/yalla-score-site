@@ -10,6 +10,7 @@ prediction and the verdict, a miss as plainly as a hit. Pure: no network.
 import datetime
 import io
 import os
+os.environ["SEO_GATE"] = "0"   # skeleton drafts: the SEO gate has its own test (test_seo_gate.py)
 import sys
 
 sys.stdout.reconfigure(encoding="utf-8")

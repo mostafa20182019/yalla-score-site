@@ -8,7 +8,8 @@ from the facts pack (round_brief.py computes them; the model only phrases),
 and the article carries the pack's source so the dedup can see the round is
 covered. These checks use synthetic packs - no live data - so they gate.
 """
-import os
+import os
+os.environ["SEO_GATE"] = "0"   # skeleton drafts: the SEO gate has its own test (test_seo_gate.py)
 import sys
 
 sys.path.insert(0, os.getcwd())

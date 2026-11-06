@@ -287,12 +287,11 @@ def validate(rec, updating=False, brief=None):
         bad.append(f"a {rec.get('kind')} is published with its brief: "
                    "python article_put.py --new --match-brief \"$BRIEF_JSON\" draft.json "
                    "(the percentage guard needs it)")
-    _sm = (rec.get("summary") or "").strip()
-    if not updating and len(_sm) > 160:
-        # the summary IS the meta description; Google shows ~155 chars and 236
-        # of 431 were cut mid-sentence with «…» (SEO audit 2026-11-06)
-        bad.append(f"summary is {len(_sm)} characters - it is the page's meta description, "
-                   "keep it to ONE sentence of 110-155 characters that carries the answer")
+    if not updating:
+        # the SEO gate (seo_gate.py, audit 2026-11-06): title form, summary
+        # length, entity-bearing H2s, real internal links, searcher-form FAQ
+        import seo_gate
+        bad += seo_gate.seo_problems(rec, brief)
     words = len(b.strip_tags(rec.get("body") or "").split())
     if not updating and words < 300:
         bad.append(f"body is {words} words - under the {b.ARTICLE_MIN_WORDS}-word bar, "

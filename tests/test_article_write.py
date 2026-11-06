@@ -8,7 +8,8 @@ the two race tests depend on.
     python tests/test_article_write.py
 """
 import json
-import os
+import os
+os.environ["SEO_GATE"] = "0"   # skeleton drafts: the SEO gate has its own test (test_seo_gate.py)
 import sys
 import tempfile
 
