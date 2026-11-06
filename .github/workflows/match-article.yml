@@ -141,6 +141,7 @@ jobs:
           # the raw events at /tmp/claude.jsonl, and the final report at
           # /tmp/claude.txt exactly as the summary block below expects.
           claude -p "$(cat .github/prompts/match-article.md)" \
+            --agent sports-writer \
             --model claude-sonnet-5 \
             --dangerously-skip-permissions \
             --output-format stream-json --verbose \

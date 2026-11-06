@@ -120,6 +120,7 @@ jobs:
         run: |
           set -o pipefail
           claude -p "$(cat .github/prompts/round-article.md)" \
+            --agent sports-writer \
             --model claude-sonnet-5 \
             --dangerously-skip-permissions \
             --output-format stream-json --verbose \
