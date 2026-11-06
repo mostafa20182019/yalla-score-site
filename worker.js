@@ -1133,6 +1133,18 @@ export default {
       }
       return res;
     }
+    // Search Console's HTML-file verification fetches /google<token>.html by
+    // that exact name, and the assets' html_handling answers it with a 307 to
+    // the extensionless path (2026-11-06: Publisher Center refused the domain
+    // verification, and the file token it wanted was redirected). Serve the
+    // file's body at its own name, 200.
+    if (/^\/google[0-9a-f]{16}\.html$/.test(url.pathname)) {
+      const bare = new Request(url.origin + url.pathname.replace(/\.html$/, ""), request);
+      const res = await env.ASSETS.fetch(bare);
+      if (res.status === 200) {
+        return new Response(res.body, { status: 200, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" } });
+      }
+    }
     return assetResponse(await env.ASSETS.fetch(request), url);
   },
 
