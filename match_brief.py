@@ -41,6 +41,11 @@ import build_site as b
 
 CAIRO = ZoneInfo("Africa/Cairo")
 PREVIEW_MIN_H, PREVIEW_MAX_H = 2.0, 30.0
+# «موعد مباراة الأهلي» peaks two days before kick-off, and a page must be
+# indexed BEFORE the peak, not after it (SEO audit 2026-11-06, action 8): an
+# Egyptian curated club's preview may be written up to 48 h ahead. prio()
+# still puts the soonest first, so a far one only fills an otherwise idle slot.
+PREVIEW_MAX_H_EGY = 48.0
 # A report is normally written ~30 min after the final whistle: the Worker's
 # one-minute live cron sees the match end and dispatches match-article.yml
 # (2026-09-13). The four fixed Cairo slots (13:00 / 17:00 / 20:00 / 23:30)
@@ -354,7 +359,9 @@ def candidates(d, now=None):
         st = m.get("status")
         if st == "UPCOMING":
             h = (ko - now).total_seconds() / 3600
-            if PREVIEW_MIN_H <= h <= PREVIEW_MAX_H and (mid, "preview") not in done:
+            _egy = any(t in (m.get("home", "") + m.get("away", "")) for t in EGY_FIRST)
+            _max_h = PREVIEW_MAX_H_EGY if _egy else PREVIEW_MAX_H
+            if PREVIEW_MIN_H <= h <= _max_h and (mid, "preview") not in done:
                 out.append({"match_id": mid, "kind": "preview", "hours": round(h, 1), "m": m})
         elif st == "FINISHED" and m.get("home_score") is not None:
             h = (now - ko).total_seconds() / 3600 - 1.75      # ~end of the match
