@@ -81,7 +81,7 @@ ck("match block: no xG row -> nothing", match_stats_html({"status": "none", "h":
 
 src = io.open("build_site.py", encoding="utf-8").read()
 ck("build() passes the stats to the match pages and the xG to the analysis pages",
-   "md_idx, st_by_comp, urls, _mstats)" in src and "forms, matches, urls, _xg)" in src)
+   "md_idx, st_by_comp, urls, _mstats" in src and "forms, matches, urls, _xg)" in src)
 tpl = io.open("site_src/templates/analysis_league.html", encoding="utf-8").read()
 ck("the league template prints the xG section", "{{ xg }}" in tpl)
 

@@ -231,7 +231,8 @@ def build():
     comp_order = matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
                               league["league_stats_parts"], matches, st_by_comp, standings)
     m_all = match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
-                        articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, _mstats)
+                        articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, _mstats,
+                        charts=(sc_by_comp, sc_ok, as_by_comp, as_ok))
     _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
                                              sc_by_comp, sc_ok, st_by_comp, urls,
                                              fx_by_comp, m_all, ge_idx)

@@ -20,9 +20,9 @@ from site_lib.predictions import pred_block, pred_pop
 from site_lib.reads import post_match_read, pre_match_read
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, adsense_slot, foot, head, noindex, thumb_url, write
-from site_lib.snippets import FILTERS_HTML, MATCHES_JS, ROUNDS_JS
+from site_lib.snippets import FILTERS_HTML, MATCHES_JS, ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import _finished_by_comp
-from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, motm_html, standings_table
+from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, motm_html, scorers_list, standings_table
 from site_lib.text import esc
 from site_lib.urls import article_href, breadcrumb_ld, pick_match_article
 
@@ -154,7 +154,8 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
 
 
 def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats, articles,
-                fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, mstats=None):
+                fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, mstats=None,
+                charts=None):
     """/m/<id> - one landing page per match (archive + current window): the
     long-tail queries a single /matches can never rank for («نتيجة مباراة X»،
     «موعد مباراة Y والقناة الناقلة»). Old pages persist through
@@ -169,6 +170,19 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
     build() reads afterwards (m_all, and the loop's last _h, _html, _slug, a,
     comp, desc, img, m, st, title, v, when) end exactly where they used to."""
     os.makedirs(os.path.join(DIST, "m"), exist_ok=True)
+    # الهدافون · صناعة الأهداف beside the table (2026-11-06): the same lists the
+    # standings page shows, rendered once per competition. charts =
+    # (sc_by_comp, sc_ok, as_by_comp, as_ok) from build(); absent = table only.
+    sc_by_comp, sc_ok, as_by_comp, as_ok = charts or ({}, {}, {}, {})
+    _chart_html = {}
+
+    def comp_charts(comp):
+        if comp not in _chart_html:
+            sc = sc_by_comp.get(comp) if sc_ok.get(comp) else None
+            asst = as_by_comp.get(comp) if as_ok.get(comp) else None
+            _chart_html[comp] = (scorers_list(sc, "أهداف") if sc else "",
+                                 scorers_list(asst, "صناعة") if asst else "")
+        return _chart_html[comp]
     # finished matches per competition (season pool + fixtures) - table_after()
     # uses it to prove the official table is describing THIS match and not a
     # later round
@@ -354,6 +368,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                                     zeroed=stc.get("zeroed"),
                                     form_map=forms.get(m.get("competition"), {}),
                                     embedded=True)
+        _sc_h, _as_h = comp_charts(m.get("competition")) if table else ("", "")
         news = []
         if articles:
             for a in articles[:4]:
@@ -386,6 +401,8 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
             has_table=bool(stc and stc.get("table")), table_heading=Markup(table_heading),
             table=Markup(table), faq=Markup(_faq_html or ""), news=news,
+            label=comp, has_sc=bool(_sc_h), scorers=Markup(_sc_h),
+            has_asst=bool(_as_h), assists=Markup(_as_h), tabs_js=Markup(ST_TABS_JS),
             crumbs_ld=Markup(crumbs_ld), page_foot=Markup(foot()))
         # lastmod: a page whose match is recent/upcoming changes every run;
         # an old finished match settled around its kickoff day.

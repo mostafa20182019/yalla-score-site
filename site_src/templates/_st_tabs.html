@@ -1,0 +1,36 @@
+{# The table, the scorers and the assists as tabs - shared by /standings/<slug>
+   (user, 2026-10-31: «عايز الهدافين وصانعى الاهداف فى تابات جنب الترتيب») and,
+   since 2026-11-06, the table section of every match page («عايزك تحط جنب
+   الترتيب تاب للهدافين وتاب لأعلى اسيستات»). All panes are in the HTML
+   (indexable, readable without JS); ST_TABS_JS, right after the block, shows
+   the tab bar and one pane at a time. Needs: table, has_sc, scorers,
+   has_asst, assists, label, tabs_js. #}
+{% if has_sc or has_asst %}
+<div class="st-tabs">
+  <div class="ltabs" role="tablist" hidden>
+    <button type="button" class="ltab is-on" role="tab" data-pane="table">الترتيب</button>
+    {% if has_sc %}
+    <button type="button" class="ltab" role="tab" data-pane="scorers">الهدافون</button>
+    {% endif %}
+    {% if has_asst %}
+    <button type="button" class="ltab" role="tab" data-pane="assists">صناعة الأهداف</button>
+    {% endif %}
+  </div>
+  <div class="lpane" data-pane="table">{{ table }}</div>
+  {% if has_sc %}
+  <section class="minfo lpane" data-pane="scorers">
+    <h2>هدافو {{ label }}</h2>
+    {{ scorers }}
+  </section>
+  {% endif %}
+  {% if has_asst %}
+  <section class="minfo lpane" data-pane="assists">
+    <h2>الأكثر صناعة للأهداف في {{ label }}</h2>
+    {{ assists }}
+  </section>
+  {% endif %}
+</div>
+{{ tabs_js }}
+{% else %}
+{{ table }}
+{% endif %}

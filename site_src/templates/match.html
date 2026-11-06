@@ -52,7 +52,8 @@
 {% if has_table %}
 <section class="minfo">
   <h2>{{ table_heading }}</h2>
-  {{ table }}
+  {# + الهدافون · صناعة الأهداف tabs, the standings page's own block (2026-11-06) #}
+  {% include "_st_tabs.html" %}
 </section>
 {% endif %}
 {{ faq }}

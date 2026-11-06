@@ -362,6 +362,10 @@ html.lt-lock{overflow:hidden}
 /* phones: the table was 414-440px wide in a 375px viewport, so «نقاط» sat
    off-screen behind .lt-scroll with no affordance (site-check 2026-11-05).
    Drop له/عليه (+/- keeps the story), tighten the cells, let the name shrink. */
+/* a table inside a match page's .minfo card had 311px for 330 on a 375px phone
+   (the card's 18px padding each side) and lost «نقاط» off the edge - bleed the
+   block to the card's edges there (2026-11-06) */
+@media(max-width:560px){.minfo>.st-tabs,.minfo>.ltable{margin-inline:-14px}}
 @media(max-width:560px){.lt-form,.lt .lt-gf,.lt .lt-ga{display:none}.lt th,.lt td{padding:8px 4px}.lt .lt-team{min-width:0}}
 .lt tbody tr{border-bottom:1px solid #f1f5f9}
 .lt tbody tr:hover{background:#f8fafc}
