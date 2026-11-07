@@ -169,7 +169,7 @@ def render(m, games, out, when="", official=False):
         d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=WHITE, width=6)
 
     # brand + title
-    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
     ball = icon.resize((52, 52), Image.LANCZOS)
     bm = Image.new("L", (52, 52), 0)
     ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)

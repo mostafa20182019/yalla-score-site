@@ -74,14 +74,14 @@ _px = lambda x: [round(v) for v in ImageStat.Stat(im.crop(
 ck("15 the rendered card agrees: the blue crest (home) right, the red one (away) left",
    _px(0.72)[2] > _px(0.72)[0] and _px(0.28)[0] > _px(0.28)[2], (_px(0.72), _px(0.28)))
 
-# the tiger above the names (user, 2026-11-05: «فوق اسماء الفرق صورة للنمر»):
-# drawn from the brand file, centred in the band under the header, and it is
-# really there - the middle of that band is tiger orange, not sky blue
-_t = [round(v) for v in ImageStat.Stat(im.crop((R.W // 2 - 40, R.TIGER_Y - 40, R.W // 2 + 40, R.TIGER_Y + 40))).mean]
-ck("17 the brand tiger sits above the club names, between the header and the crests",
-   "tiger_at(im, W / 2, TIGER_Y)" in _card and os.path.isfile(R.TIGER)
-   and 165 < R.TIGER_Y - R.TIGER_PX / 2 and R.TIGER_Y + R.TIGER_PX / 2 < R.H * 0.36 - 150
-   and _t[0] > _t[2] + 60, _t)
+# the brand mark above the names (user, 2026-11-05: the band between the header
+# and the crests was empty; 2026-11-07: the sticker mark replaced the tiger):
+# drawn from the brand file, centred in that band, and really there - the middle of the band is red/white, not sky blue (r well above g)
+_t = [round(v) for v in ImageStat.Stat(im.crop((R.W // 2 - 40, R.MARK_Y - 40, R.W // 2 + 40, R.MARK_Y + 40))).mean]
+ck("17 the brand mark sits above the club names, between the header and the crests",
+   "mark_at(im, W / 2, MARK_Y)" in _card and os.path.isfile(R.MARK)
+   and 165 < R.MARK_Y - R.MARK_PX / 2 and R.MARK_Y + R.MARK_PX / 2 < R.H * 0.36 - 150
+   and _t[0] > _t[1] + 50, _t)
 
 cols = R.goal_columns([("h", "A", "12"), ("a", "B", "30"), ("h", "A", "45+2"),
                        ("h", "C", ""), ("x", "Z", "9")])

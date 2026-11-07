@@ -101,7 +101,7 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
             d.text((cx - d.textlength(s, font=f) / 2, cy - r * 0.6), s, font=f, fill=(16, 62, 108))
 
     # brand + title
-    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
     ball = icon.resize((52, 52), Image.LANCZOS)
     bm = Image.new("L", (52, 52), 0)
     ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)

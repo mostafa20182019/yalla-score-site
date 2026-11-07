@@ -245,7 +245,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <body>
 <header class="site-head">
   <div class="wrap head-in">
-    <a class="brand" href="/"><img class="logo" src="/assets/brand-tiger.png" alt="" width="46" height="46"> {esc(SITE_NAME)}</a>
+    <a class="brand" href="/"><img class="logo" src="/assets/brand-logo.png" alt="{esc(SITE_NAME)}" width="113" height="46"></a>
     <nav class="site-nav" aria-label="الأقسام"><div class="nav-in">
     <a href="/" class="navtab nt-match{ma}"><span class="ico" aria-hidden="true">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
     <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico" aria-hidden="true">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>

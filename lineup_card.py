@@ -341,7 +341,7 @@ def render(data, out, photos_on=True):
     # the header in the goal card's style (user, 2026-10-17: «نفس الصورة لبوست
     # التشكيلة»): the brand centred at the top, the big shadowed headline,
     # the rule with the ball logo, then the two clubs (crest, name, formation)
-    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
     def ball(size, bx, by):
         b = icon.resize((size, size), Image.LANCZOS)
         m = Image.new("L", (size, size), 0)

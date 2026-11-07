@@ -99,18 +99,18 @@ def footer(d, alpha=255):
     C.draw_center(d, W / 2, SAFE_BOTTOM - 8, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
 
 
-TIGER = os.path.join(HERE, "assets-src", "tiger-head-512.png")
-TIGER_PX, TIGER_Y = 190, 430     # centred in the band between the header and the crests (smaller since 2026-11-05: the band had to fit the safe zone)
-_tiger = {}
+MARK = os.path.join(HERE, "assets-src", "mark-512.png")
+MARK_PX, MARK_Y = 190, 430     # centred in the band between the header and the crests (smaller since 2026-11-05: the band had to fit the safe zone)
+_mark = {}
 
 
-def tiger_at(im, cx, cy, size=TIGER_PX):
-    """The brand tiger (the site's, facing LEFT), centred on (cx, cy). User,
+def mark_at(im, cx, cy, size=MARK_PX):
+    """The brand mark (the sticker board + dart), centred on (cx, cy). User,
     2026-11-05: «يكون فوق اسماء الفرق صورة للنمر كويسة» - the band between
     the header and the crests was empty."""
-    if size not in _tiger:
-        _tiger[size] = Image.open(TIGER).convert("RGBA").resize((size, size), Image.LANCZOS)
-    t = _tiger[size]
+    if size not in _mark:
+        _mark[size] = Image.open(MARK).convert("RGBA").resize((size, size), Image.LANCZOS)
+    t = _mark[size]
     im.paste(t, (int(cx - size / 2), int(cy - size / 2)), t)
 
 
@@ -171,7 +171,7 @@ def card(ctx, layers=False):
     else:
         ds = dg = d
     header(d, ctx["comp"], ctx["round"])
-    tiger_at(im, W / 2, TIGER_Y)
+    mark_at(im, W / 2, MARK_Y)
     size, y = 260, H * 0.345
     for x, key, name in ((W * 0.72, "home", ctx["home"]), (W * 0.28, "away", ctx["away"])):
         crest_at(im, ctx["m"].get(f"{key}_badge"), name, size, x, y)

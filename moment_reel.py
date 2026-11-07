@@ -13,7 +13,7 @@ moment everyone remembers travels further than tonight's score.
 What a moment reel is made of — and only of: short Arabic lines landing one
 after another, a big number or score, the two crests from the site's cache,
 ONE licensed photo (Wikimedia Commons, CC, credited on the frame AND in the
-caption), the brand tiger and our own music loop. **No broadcast footage,
+caption), the brand mark and our own music loop. **No broadcast footage,
 ever, and no press photos**: match video and agency pictures belong to the
 rights holders.
 
@@ -221,7 +221,7 @@ def scene(sc, t, ctx):
         lines_block(im, t, lines, (400, 490), weight="ExtraBold", size=64, t0=0.1)
         big_at(im, t, sc["big"], 640, 280, t0=0.1 + len(lines) * STAGGER)
     elif kind == "cta":
-        R.tiger_at(im, W / 2, 560, 280)
+        R.mark_at(im, W / 2, 560, 280)
         lines_block(im, t, lines[:1], (770,), weight="ExtraBold", size=64, t0=0.05)
         lines_block(im, t, lines[1:], (870,), size=50, fill=SOFT, t0=0.35)
         e = ease(t, 0.5, FADE)

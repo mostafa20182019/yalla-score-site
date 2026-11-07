@@ -98,9 +98,9 @@ def render(ev, out=None):
             size -= 2; f = FC.font(weight, size)
         return f
 
-    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
     def ball(size, cx, cy):
-        """The brand tiger head, whole (no circle mask - 2026-11-05)."""
+        """The brand mark (the sticker board + dart), whole."""
         b = icon.resize((size, size), Image.LANCZOS)
         img.paste(b, (cx - size // 2, cy - size // 2), b)
 
@@ -217,9 +217,9 @@ def render_whistle(ev, out=None):
         while d.textlength(FC.ar(s_), font=f) > max_w and size > min_size:
             size -= 2; f = FC.font(weight, size)
         return f
-    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
     def ball(size, cx, cy):
-        """The brand tiger head, whole (no circle mask - 2026-11-05)."""
+        """The brand mark (the sticker board + dart), whole."""
         b = icon.resize((size, size), Image.LANCZOS)
         img.paste(b, (cx - size // 2, cy - size // 2), b)
 

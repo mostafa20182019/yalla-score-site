@@ -257,7 +257,7 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
     if bottom:
         _text_c(d, FC, W // 2, 486, bottom, FC.font("Regular", 34), (235, 244, 251),
                 max_w=640, size=34, weight="Regular")
-    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
     bs = 52
     ball = icon.resize((bs, bs), Image.LANCZOS)
     m = Image.new("L", (bs, bs), 0)
@@ -334,7 +334,7 @@ def render_club(name, out, badge=None, comp=None, label=""):
     if label:
         _text_c(d, FC, W // 2, 92, label, FC.font("Bold", 36), SOFT, max_w=700, size=36, weight="Bold")
     x0, _, x1, _ = SAFE
-    icon = Image.open(os.path.join(HERE, "assets-src", "tiger-head-512.png")).convert("RGBA")
+    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
     bs = 52
     ball = icon.resize((bs, bs), Image.LANCZOS)
     m = Image.new("L", (bs, bs), 0)
