@@ -60,6 +60,17 @@
     if(gb)gb.innerHTML=inner;
     else e.insertAdjacentHTML('beforeend','<div class="mgoals">'+inner+'</div>');
   }
+  /* a list already on the row (built, or painted by an earlier reply) that
+     no longer adds up to the score just painted goes (2026-11-07): the reply
+     carried no list this time, and «3 - 2» over two home scorers misleads.
+     The home side is always the first .mg-side, here and in match_row(). */
+  function staleGoals(e,g){
+    if(g.goals&&g.goals.length)return;
+    var gb=e.querySelector('.mgoals'); if(!gb)return;
+    var sides=gb.querySelectorAll('.mg-side'); if(sides.length<2)return;
+    if(sides[0].querySelectorAll('.mg').length!==+g.hs||sides[1].querySelectorAll('.mg').length!==+g.as)
+      gb.parentNode.removeChild(gb);
+  }
   /* replay the CSS animation on an element that may already carry the class:
      removing it is not enough, the browser needs a reflow in between. */
   function flash(el){
@@ -101,6 +112,7 @@
       if(pill){pill.className='pill pill-'+cls;pill.textContent=txt;}
       else e.insertAdjacentHTML('afterbegin','<span class="pill pill-'+cls+'">'+txt+'</span>');
       paintGoals(e,g);
+      staleGoals(e,g);
       if(popped)flash(mid.querySelector('.score'));
       /* the match page's info card: «الحالة» follows the row (2026-09-13) */
       if(e.closest&&e.closest('.mp-hero')){

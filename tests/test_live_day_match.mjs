@@ -34,7 +34,8 @@ function el(attrs, cls) {
       contains: (c) => classes.has(c), toggle: (c, on) => (on ? classes.add(c) : classes.delete(c)),
     },
     classes,
-    querySelector: (s) => (s === ".mid" ? mid : s === ".pill" ? node.pill : null),
+    querySelector: (s) => (s === ".mid" ? mid : s === ".pill" ? node.pill : s === ".mgoals" ? node.mg : null),
+    mg: null,
     insertAdjacentHTML: (_, html) => { node.extra += html; },
     closest: () => null,
   };
@@ -99,6 +100,23 @@ const r6 = row("سيراميكا كليوباترا", "ابو قير للاسم�
 await run([r6], [withA]);
 ck("6 the live repaint writes «صناعة: X» under the scorer, through the reversed-name swap",
    r6.extra.includes('<span class="mg-as">صناعة: <bdi>صانع</bdi></span>') && (r6.extra.match(/mg-as/g) || []).length === 1, r6.extra);
+
+// a built list that no longer adds up to the painted score is removed (2026-11-07)
+const listed = (nh, na) => {
+  const r = row("سيراميكا كليوباترا", "ابو قير للاسمدة", "2026-11-07");
+  const side = (n) => ({ querySelectorAll: (s) => (s === ".mg" ? Array(n).fill({}) : []) });
+  r.mg = { removed: false, querySelectorAll: (s) => (s === ".mg-side" ? [side(nh), side(na)] : []),
+           parentNode: { removeChild: () => { r.mg.removed = true; } } };
+  return r;
+};
+const cer = { id: 4885271, h: "سيراميكا كليوباترا", a: "ابو قير للاسمدة", hs: 3, as: 2, live: false,
+              min: "", gt: 0, hf: 0, c: 553, d: "2026-11-07" };
+const r7 = listed(2, 2);
+await run([r7], [cer]);
+ck("7 «3 - 2» over a 2-2 list, and the reply has no list: the old list goes", r7.mg.removed === true);
+const r8 = listed(3, 2);
+await run([r8], [cer]);
+ck("8 a list that adds up to the score stays", r8.mg.removed === false);
 
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE DAY-MATCH TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

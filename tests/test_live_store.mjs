@@ -389,5 +389,27 @@ const nAfter = db.goals.filter(g => g.game_id === 900 && !g.cancelled).length;
 ck("23c adding the assister re-logs none of the goals already on the board (only the new 85' one at most)",
    nAfter <= nLogged + 1, `${nLogged} -> ${nAfter}`);
 
+/* ------------------------------------------------------------- 24 a list must add up */
+// 2026-11-07, Ceramica 3-2 Abu Qir: four named goals at 2-2, then a 90+4' goal
+// the source named nobody for. The fresh list no longer counts to 3-2 and is
+// dropped; the state row kept the 2-2 list under the new 3-2 score, and the
+// next refresh served it. A served list must count to the served score.
+age(20000);
+scenario(2, 2, 80, [goalEv(11, 1, 32), goalEv(21, 2, 53), goalEv(21, 2, 61), goalEv(12, 1, 65)]);
+await call(); await drain();
+let s24 = snap().games.find(g => g.id === 900);
+ck("24a at 2-2 the four named goals are served", s24 && (s24.goals || []).length === 4, JSON.stringify(s24 && s24.goals));
+age(20000);
+scenario(3, 2, 94, [goalEv(11, 1, 32), goalEv(21, 2, 53), goalEv(21, 2, 61), goalEv(12, 1, 65), goalEv(999, 1, 94)]);
+await call(); await drain();
+s24 = snap().games.find(g => g.id === 900);
+ck("24b 3-2 with an unnamed goal: no list at all, not the 2-2 one", s24 && s24.hs === 3 && !s24.goals, JSON.stringify(s24));
+age(20000);
+delete DETAIL[900];
+await call(); await drain();
+s24 = snap().games.find(g => g.id === 900);
+ck("24c and a later refresh without the detail still serves none (the stored row's score now matches, its list does not)",
+   s24 && s24.hs === 3 && !s24.goals, JSON.stringify(s24));
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE STORE TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

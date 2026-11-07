@@ -604,10 +604,19 @@ async function storeApply(env, fresh, now) {
   // 2-1 is still the 2-1 list. A moved score gets no stale list - half the
   // picture is worse than none (2026-11-05: the user refreshed the page and
   // the Conference League scorers had vanished until the next build).
+  //
+  // The list must ADD UP to the score it is served with, side by side - not
+  // merely sit in a row whose score matches (2026-11-07): when the score moves
+  // and the fresh detail has no usable list (a goal with no scorer yet), the
+  // state row keeps the OLD list for the goal log's diffing while taking the
+  // NEW score. Ceramica 3-2 Abu Qir was served with its 2-2 list - two home
+  // scorers under a 3. A list that does not count to the score is not shown.
+  const addsUp = (l, g) => l.filter(x => x.s === "h").length === g.hs
+                        && l.filter(x => x.s === "a").length === g.as;
   const keptGoals = (g) => {
     const p = prev[g.id];
-    if (!p || !p.goals || p.hs !== g.hs || p.as_ !== g.as) return null;
-    try { const l = JSON.parse(p.goals); return Array.isArray(l) && l.length ? l : null; }
+    if (!p || !p.goals) return null;
+    try { const l = JSON.parse(p.goals); return Array.isArray(l) && l.length && addsUp(l, g) ? l : null; }
     catch (e) { return null; }
   };
   const payload = fresh.games.filter(g => g.id).map(g => {
