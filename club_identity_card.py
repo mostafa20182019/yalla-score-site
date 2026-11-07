@@ -127,15 +127,7 @@ def render(name, out, tagline="", colour=None, badge=None, bare=False):
         MC._text_c(d, FC, cx, 90, tagline, FC.font("Bold", 38), soft, max_w=800, size=38, weight="Bold")
     WHITE_, SOFT_ = text, soft                         # the brand row follows the ink
     x0, _, x1, _ = SAFE
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    bs = 52
-    ball = icon.resize((bs, bs), Image.LANCZOS)
-    m = Image.new("L", (bs, bs), 0)
-    ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
-    img.paste(ball, (x1 - bs, 480), ball)
-    fb = FC.font("ExtraBold", 34)
-    s = FC.ar("الجون")
-    d.text((x1 - bs - 12 - d.textlength(s, font=fb), 484), s, font=fb, fill=WHITE_)
+    FC.wordmark_at(img, x1, 508, 58, anchor="rm")        # the brand corner: the wordmark
     d.text((x0, 492), "elgoon.com", font=FC.font("Bold", 28), fill=SOFT_)
     img.save(out, quality=90, optimize=True)
     return out

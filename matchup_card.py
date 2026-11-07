@@ -257,15 +257,7 @@ def render(home, away, out, comp=None, comp_label="", round_label="", when="", v
     if bottom:
         _text_c(d, FC, W // 2, 486, bottom, FC.font("Regular", 34), (235, 244, 251),
                 max_w=640, size=34, weight="Regular")
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    bs = 52
-    ball = icon.resize((bs, bs), Image.LANCZOS)
-    m = Image.new("L", (bs, bs), 0)
-    ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
-    img.paste(ball, (x1 - bs, 480), ball)
-    fb = FC.font("ExtraBold", 34)
-    s = FC.ar("الجون")
-    d.text((x1 - bs - 12 - d.textlength(s, font=fb), 484), s, font=fb, fill=WHITE)
+    FC.wordmark_at(img, x1, 508, 58, anchor="rm")        # the brand corner: the wordmark
     d.text((x0, 492), "elgoon.com", font=FC.font("Bold", 28), fill=SOFT)
     if out.lower().endswith((".jpg", ".jpeg")):
         img.save(out, quality=90, optimize=True)
@@ -334,15 +326,7 @@ def render_club(name, out, badge=None, comp=None, label=""):
     if label:
         _text_c(d, FC, W // 2, 92, label, FC.font("Bold", 36), SOFT, max_w=700, size=36, weight="Bold")
     x0, _, x1, _ = SAFE
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    bs = 52
-    ball = icon.resize((bs, bs), Image.LANCZOS)
-    m = Image.new("L", (bs, bs), 0)
-    ImageDraw.Draw(m).ellipse([0, 0, bs - 1, bs - 1], fill=255)
-    img.paste(ball, (x1 - bs, 480), ball)
-    fb = FC.font("ExtraBold", 34)
-    sname = FC.ar("الجون")
-    d.text((x1 - bs - 12 - d.textlength(sname, font=fb), 484), sname, font=fb, fill=WHITE)
+    FC.wordmark_at(img, x1, 508, 58, anchor="rm")
     d.text((x0, 492), "elgoon.com", font=FC.font("Bold", 28), fill=SOFT)
     if out.lower().endswith((".jpg", ".jpeg")):
         img.save(out, quality=90, optimize=True)

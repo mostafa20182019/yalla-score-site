@@ -340,19 +340,8 @@ def render(data, out, photos_on=True):
 
     # the header in the goal card's style (user, 2026-10-17: «نفس الصورة لبوست
     # التشكيلة»): the brand centred at the top, the big shadowed headline,
-    # the rule with the ball logo, then the two clubs (crest, name, formation)
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    def ball(size, bx, by):
-        b = icon.resize((size, size), Image.LANCZOS)
-        m = Image.new("L", (size, size), 0)
-        ImageDraw.Draw(m).ellipse([0, 0, size - 1, size - 1], fill=255)
-        img.paste(b, (bx - size // 2, by - size // 2), b)
-    fb = FC.font("ExtraBold", 40)
-    bn = FC.ar("الجون")
-    bw = d.textlength(bn, font=fb)
-    bx0 = W / 2 - (bw + 64) / 2
-    ball(52, int(bx0 + bw + 64 - 26), 52)
-    d.text((bx0, 30), bn, font=fb, fill=WHITE)
+    # the rule, then the two clubs (crest, name, formation)
+    FC.wordmark_at(img, W / 2, 46, 64)
     tv = FC.ar("التشكيل الرسمي")
     fh = FC.font("ExtraBold", 80)
     tx = W / 2 - d.textlength(tv, font=fh) / 2
@@ -369,9 +358,7 @@ def render(data, out, photos_on=True):
     sub_ = " · ".join(x for x in (data["comp"] or "", when) if x)
     text_c(W // 2, 176, sub_, FC.font("Bold", 26), GOLD)
     ry = 222
-    d.line([(90, ry), (W / 2 - 40, ry)], fill=WHITE, width=2)
-    d.line([(W / 2 + 40, ry), (W - 90, ry)], fill=WHITE, width=2)
-    ball(48, W // 2, ry)
+    d.line([(90, ry), (W - 90, ry)], fill=WHITE, width=2)
 
     # the two club bars: home right (RTL), away left
     hy = 226

@@ -71,6 +71,23 @@ def font(weight, size):
     return ImageFont.truetype(os.path.join(FONTS, f"Almarai-{weight}.ttf"), size,
                               layout_engine=ImageFont.Layout.BASIC)
 
+_WORDMARK = {}
+
+
+def wordmark_at(img, x, y, h, anchor="mm"):
+    """The «الجون» wordmark (assets-src/wordmark-1024.png: the sticker with the
+    dart board in the و), h px high. anchor "mm" centres it on (x, y); "rm"
+    puts its RIGHT edge on x, centred on y (the cards' brand corner). User,
+    2026-11-07: the wordmark replaces the plain-text name + a separate dart."""
+    if h not in _WORDMARK:
+        src = Image.open(os.path.join(HERE, "assets-src", "wordmark-1024.png")).convert("RGBA")
+        _WORDMARK[h] = src.resize((round(src.width * h / src.height), h), Image.LANCZOS)
+    t = _WORDMARK[h]
+    x0 = x - t.width if anchor == "rm" else x - t.width / 2
+    img.paste(t, (int(round(x0)), int(round(y - h / 2))), t)
+    return t.width
+
+
 def ar(text):
     """Shape + reorder Arabic for PIL (which draws logical order verbatim).
     Latin/digit-only strings pass through unchanged."""

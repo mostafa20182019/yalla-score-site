@@ -42,7 +42,11 @@ for x in (172, 908):
     px = im.getpixel((x, 968 - 56))                   # inside the white disc, above the crest
     ck(f"2e a white crest disc at x={x}", min(px) > 200, str(px))
 rule = im.crop((100, 824, 480, 829)); rw = sum(1 for p in rule.getdata() if min(p) > 200)
-ck("2g the rule runs across the card with the ball in its middle", rw > 600 and min(im.getpixel((540, 826))) < 120, str(rw))   # a 2 px line over 380 px
+# 2026-11-07: the dart in the rule's middle went with the wordmark - one unbroken line
+ck("2g the rule runs across the card, unbroken through the middle", rw > 600 and min(im.getpixel((540, 826))) > 200, str(rw))   # a 2 px line over 380 px
+_top = im.crop((440, 30, 640, 95)).convert("RGB")
+ck("2h the brand at the top is the «الجون» wordmark: its black ink and white rim",
+   sum(1 for p in _top.getdata() if max(p) < 60) > 800 and sum(1 for p in _top.getdata() if min(p) > 235) > 800)
 b = GC.render_bytes(ev)
 ck("2f render_bytes gives a JPEG", b[:3] == b"\xff\xd8\xff" and len(b) > 40_000, str(len(b)))
 im2 = GC.render({**ev, "minute": "", "tag": "", "player": "هدف عكسي؟"})
@@ -55,7 +59,7 @@ wim = GC.render_whistle(wev)
 ck("4a the whistle card is square too", wim.size == (1080, 1080))
 band2 = wim.crop((100, 140, 980, 280)); white2 = sum(1 for p in band2.getdata() if min(p) > 230)
 ck("4b the headline «انتهت المباراة» is drawn large", white2 > 6000, str(white2))
-ck("4c the rule sits under the crests with the ball in its middle", min(wim.getpixel((540, 712))) < 120 and min(wim.getpixel((200, 712))) > 200)
+ck("4c the rule sits under the crests, unbroken through the middle", min(wim.getpixel((540, 712))) > 200 and min(wim.getpixel((200, 712))) > 200)
 wb = GC.render_whistle_bytes({**wev, "kind": "ht", "goals": []})
 ck("4d render_whistle_bytes gives a JPEG for a goalless half", wb[:3] == b"\xff\xd8\xff")
 # 5 the kick-off card (2026-10-18): the whistle layout with «انطلقت المباراة», a «×» instead of a score

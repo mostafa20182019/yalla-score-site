@@ -169,12 +169,7 @@ def render(m, games, out, when="", official=False):
         d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=WHITE, width=6)
 
     # brand + title
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    ball = icon.resize((52, 52), Image.LANCZOS)
-    bm = Image.new("L", (52, 52), 0)
-    ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
-    img.paste(ball, (W - 52 - 40, 36), ball)
-    text_r(W - 40 - 52 - 12, 40, "الجون", FC.font("ExtraBold", 34))
+    FC.wordmark_at(img, W - 40, 62, 60, anchor="rm")     # the brand: the wordmark
     sub = " · ".join(x for x in (comp_label(m.get("competition")), when) if x)
     if sub:
         text_l(40, 46, sub, FC.font("Bold", 26), SOFT)

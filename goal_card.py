@@ -73,7 +73,7 @@ def render(ev, out=None):
     home_badge, away_badge}. Returns the PIL image (and saves to `out`).
     Layout = the user's reference (2026-10-17, «اعمل زيها بالظبط»): the brand
     centred at the top, the word, the crest in a glass circle, scorer +
-    minute, a rule with the site's ball logo in its middle, then the score
+    minute, a rule, then the score
     strip (name tags above the crests, the score between)."""
     import fb_cards as FC
     img = Image.new("RGB", (W, H))
@@ -98,19 +98,8 @@ def render(ev, out=None):
             size -= 2; f = FC.font(weight, size)
         return f
 
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    def ball(size, cx, cy):
-        """The brand mark (the sticker board + dart), whole."""
-        b = icon.resize((size, size), Image.LANCZOS)
-        img.paste(b, (cx - size // 2, cy - size // 2), b)
-
-    # the brand, centred at the top (ball + name)
-    fb = FC.font("ExtraBold", 44)
-    bn = FC.ar("الجون")
-    bw = d.textlength(bn, font=fb)
-    bx = W / 2 - (bw + 78) / 2
-    ball(68, int(bx + bw + 78 - 34), 62)
-    d.text((bx, 38), bn, font=fb, fill=WHITE)
+    # the brand, centred at the top: the «الجون» wordmark
+    FC.wordmark_at(img, W / 2, 62, 76)
 
     # the word, with a faint echo behind it
     word = "جووووول"
@@ -157,11 +146,9 @@ def render(ev, out=None):
     if tag:
         text_c(W // 2, y + 68, tag, FC.font("Bold", 26), GOLD)
 
-    # the rule with the site's ball in its middle
+    # the rule (one line - the dart in its middle went with the wordmark, 2026-11-07)
     ry = 826
-    d.line([(90, ry), (W / 2 - 46, ry)], fill=WHITE, width=2)
-    d.line([(W / 2 + 46, ry), (W - 90, ry)], fill=WHITE, width=2)
-    ball(56, W // 2, ry)
+    d.line([(90, ry), (W - 90, ry)], fill=WHITE, width=2)
 
     # the score strip: name tags above the crests, the score between
     sy = 968
@@ -193,7 +180,7 @@ def render_whistle(ev, out=None):
     """The half-time / full-time card (user, 2026-10-17: «نفس الصورة لبوست
     نهاية الشوط الأول والمباراة»): the goal card's style with the whistle as
     the headline, both crests in glass circles with the score between, the
-    rule with the ball, and each side's scorers beneath. ev = {kind 'ht'|'ft',
+    rule, and each side's scorers beneath. ev = {kind 'ht'|'ft',
     home, away, hs, as, comp, home_badge, away_badge, goals: [{s, p, m, t}]}."""
     import fb_cards as FC
     img = Image.new("RGB", (W, H))
@@ -217,18 +204,7 @@ def render_whistle(ev, out=None):
         while d.textlength(FC.ar(s_), font=f) > max_w and size > min_size:
             size -= 2; f = FC.font(weight, size)
         return f
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    def ball(size, cx, cy):
-        """The brand mark (the sticker board + dart), whole."""
-        b = icon.resize((size, size), Image.LANCZOS)
-        img.paste(b, (cx - size // 2, cy - size // 2), b)
-
-    fb = FC.font("ExtraBold", 44)
-    bn = FC.ar("الجون")
-    bw = d.textlength(bn, font=fb)
-    bx = W / 2 - (bw + 78) / 2
-    ball(68, int(bx + bw + 78 - 34), 62)
-    d.text((bx, 38), bn, font=fb, fill=WHITE)
+    FC.wordmark_at(img, W / 2, 62, 76)
 
     kind = ev.get("kind") or "ft"
     title = WHISTLE_TITLE.get(kind, WHISTLE_TITLE["ft"])
@@ -258,11 +234,9 @@ def render_whistle(ev, out=None):
     fs = FC.font("ExtraBold", 136)
     d.text((W / 2 - d.textlength(score, font=fs) / 2, cy - 88), score, font=fs, fill=WHITE)
 
-    # the rule with the ball
+    # the rule (one line)
     ry = 712
-    d.line([(90, ry), (W / 2 - 46, ry)], fill=WHITE, width=2)
-    d.line([(W / 2 + 46, ry), (W - 90, ry)], fill=WHITE, width=2)
-    ball(56, W // 2, ry)
+    d.line([(90, ry), (W - 90, ry)], fill=WHITE, width=2)
 
     # the scorers, one column per side (home right)
     goals = ev.get("goals") or []

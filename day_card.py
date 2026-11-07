@@ -101,12 +101,7 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
             d.text((cx - d.textlength(s, font=f) / 2, cy - r * 0.6), s, font=f, fill=(16, 62, 108))
 
     # brand + title
-    icon = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
-    ball = icon.resize((52, 52), Image.LANCZOS)
-    bm = Image.new("L", (52, 52), 0)
-    ImageDraw.Draw(bm).ellipse([0, 0, 51, 51], fill=255)
-    img.paste(ball, (W - 52 - 40, 36), ball)
-    text_r(W - 40 - 52 - 12, 40, "الجون", FC.font("ExtraBold", 34))
+    FC.wordmark_at(img, W - 40, 62, 60, anchor="rm")     # the brand: the wordmark
     when = MC.when_ar(date, None)
     text_l(40, 46, when, FC.font("Bold", 26), SOFT)
     every = comp == "all"
