@@ -294,7 +294,7 @@ def fb_helper_page(articles):
         # teaser fallback (user rule 2026-08-31): no summary in the post —
         # the information lives on the site, the post only pulls the click
         return (f"⚽ {(a.get('title') or '').strip()}\n\n"
-                f"التفاصيل الكاملة على الموقع 👇\n{article_url(a)}\n\n#يلا_سكور")
+                f"التفاصيل الكاملة على الموقع 👇\n{article_url(a)}\n\n#الجون")
     fbp = [head(f"بوستات فيسبوك — {SITE_NAME}", "صفحة داخلية.",
                 SITE_BASE + "/fb.html")]
     fbp.append('<h1 class="page-h">بوستات فيسبوك جاهزة 📋</h1>'

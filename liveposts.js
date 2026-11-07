@@ -113,7 +113,7 @@ export function goalMessage(g, ev) {
   if (ev && ev.t === "عكسية") who.push("هدف عكسي");
   if (who.length) lines.push("🥅 " + who.join(" · "));
   lines.push(`${COMP_AR[g.c] || ""} · المباراة لحظة بلحظة: ${SITE}/m/${g.id}`.replace(/^ · /, ""));
-  lines.push(`#يلا_سكور ${tag(g.h)} ${tag(g.a)}`);
+  lines.push(`#الجون ${tag(g.h)} ${tag(g.a)}`);
   return lines.join("\n");
 }
 
@@ -136,19 +136,19 @@ export function scorerLines(g, goals) {
 export function htMessage(g, goals) {
   return [`⏸️ نهاية الشوط الأول: ${scoreLine(g)}`, ...scorerLines(g, goals),
           `${COMP_AR[g.c] || ""} · المباراة لحظة بلحظة: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
-          `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].join("\n");
+          `#الجون ${tag(g.h)} ${tag(g.a)}`].join("\n");
 }
 
 export function koMessage(g) {
   return [`🔔 انطلقت المباراة: ${g.h} × ${g.a}`,
           `${COMP_AR[g.c] || ""} · المباراة لحظة بلحظة: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
-          `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].join("\n");
+          `#الجون ${tag(g.h)} ${tag(g.a)}`].join("\n");
 }
 
 export function ftMessage(g, goals) {
   return [`🏁 انتهت المباراة: ${scoreLine(g)}`, ...scorerLines(g, goals),
           `${COMP_AR[g.c] || ""} · تفاصيل المباراة والهدافون: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
-          `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].join("\n");
+          `#الجون ${tag(g.h)} ${tag(g.a)}`].join("\n");
 }
 
 export function xiMessage(g, xi) {
@@ -156,7 +156,7 @@ export function xiMessage(g, xi) {
   return [`📋 التشكيل الرسمي: ${g.h} × ${g.a}`, COMP_AR[g.c] || "",
           ...side(g.h, xi.h), ...side(g.a, xi.a),
           `المباراة لحظة بلحظة: ${SITE}/m/${g.id}`,
-          `#يلا_سكور ${tag(g.h)} ${tag(g.a)}`].filter(Boolean).join("\n");
+          `#الجون ${tag(g.h)} ${tag(g.a)}`].filter(Boolean).join("\n");
 }
 
 /* ------------------------------------------------------------ the lock */

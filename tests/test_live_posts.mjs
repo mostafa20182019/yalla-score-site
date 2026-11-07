@@ -166,7 +166,7 @@ ck("2 scope: the Saudi الأهلي and the Port Said المصري are OUT; Arse
 const gm = goalMessage({ id: 901, c: 552, h: "الزمالك", a: "الإسماعيلي", hs: 2, as: 0 }, { s: "h", p: "زيزو", m: "63", t: "ج" });
 ck("3 goal text: spaced score, scorer, minute, penalty, match link, hashtags",
    gm.startsWith("⚽ هدف! الزمالك 2 - 0 الإسماعيلي") && gm.includes("🥅 زيزو · الدقيقة 63 · ركلة جزاء")
-   && gm.includes("https://elgoon.com/m/901") && gm.endsWith("#يلا_سكور #الزمالك #الإسماعيلي"), gm);
+   && gm.includes("https://elgoon.com/m/901") && gm.endsWith("#الجون #الزمالك #الإسماعيلي"), gm);
 ck("4 goal text never carries a betting word", !gm.includes("مراهنة"));
 // 2026-10-24 (Pyramids 3-0 El Merrikh Bentiu): a score-only goal first seen
 // during the break carried the Worker's break label as its minute and the
@@ -359,7 +359,7 @@ ck("27b a scorer row logged twice is named ONCE in the full-time post",
    posts().slice(-1)[0].caption.startsWith("🏁 انتهت المباراة: برشلونة 1 - 0 ريال بيتيس")
    && posts().slice(-1)[0].caption.split("زيزو 10'").length === 2, JSON.stringify(posts().slice(-1)));
 ck("26 the pure messages carry hashtags and no betting word",
-   htMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 0, as: 0, goals: [] }).endsWith("#يلا_سكور #الأهلي #الزمالك")
+   htMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 0, as: 0, goals: [] }).endsWith("#الجون #الأهلي #الزمالك")
    && !ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("مراهنة")
    && ftMessage({ id: 1, c: 552, h: "الأهلي", a: "الزمالك", hs: 1, as: 0, goals: [{ s: "h", p: "زيزو", m: "12", t: "ج" }] }).includes("الأهلي: زيزو 12' (ج)"));
 

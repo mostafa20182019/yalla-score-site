@@ -63,7 +63,7 @@ print(t)
 ck("8b the post says the goals are from played games and carries the finals line",
    "في 8 مباريات لُعبت داخل الملعب" in t and "4 نهائيات" in t)
 ck("8 post text: the numbers, the link, the hashtags", "الأهلي فاز 5" in t and "تعادل 3" in t and "الزمالك فاز 2" in t
-   and f"{fp.SITE}/m/4804684" in t and t.endswith("#يلا_سكور #الزمالك #الأهلي"))
+   and f"{fp.SITE}/m/4804684" in t and t.endswith("#الجون #الزمالك #الأهلي"))
 ck("9 never a betting word", "مراهنة" not in t)
 ck("10 fewer than MIN_GAMES meetings -> no card", HC.MIN_GAMES == 4)
 

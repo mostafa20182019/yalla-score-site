@@ -219,7 +219,7 @@ def caption(ctx):
         lines.append(f"🏟️ {ctx['finals']}")
     lines += [
              f"التوقع والتحليل الكامل: https://elgoon.com/m/{ctx['m'].get('match_id')}",
-             f"#يلا_سكور #{h.replace(' ', '_')} #{a.replace(' ', '_')}"]
+             f"#الجون #{h.replace(' ', '_')} #{a.replace(' ', '_')}"]
     return "\n".join(lines)
 
 

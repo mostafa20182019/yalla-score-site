@@ -60,7 +60,7 @@ assert store.posted_ids("card") == {str(picked[0]["match_id"]), str(picked[2]["m
 assert store.failed_count("card", picked[1]["match_id"]) == 1
 assert store.get_post("card", picked[1]["match_id"]) is None,     "a failed card must not keep its claim"
 assert all(c[1] > 20000 for c in calls), "png bytes look too small"
-assert fc.b.SITE_BASE in calls[0][2] and "#يلا_سكور" in calls[0][2]
+assert fc.b.SITE_BASE in calls[0][2] and "#الجون" in calls[0][2]
 print("first pass OK: 2 posted, 1 failed, captions carry link + hashtag")
 
 # second pass: only the failed one is retried

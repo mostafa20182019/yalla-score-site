@@ -341,7 +341,7 @@ def post_text(m, ge_idx=None):
         if by["h"]: lines.append(f"{home}: " + "، ".join(by["h"]))
         if by["a"]: lines.append(f"{away}: " + "، ".join(by["a"]))
     lines.append(f"{comp} · تفاصيل المباراة والهدافون: {b.SITE_BASE}{b.match_url(m)}")
-    tags = ["#يلا_سكور"] + ["#" + t.replace(" ", "_") for t in (home, away)] + ["#" + comp.replace(" ", "_")]
+    tags = ["#الجون"] + ["#" + t.replace(" ", "_") for t in (home, away)] + ["#" + comp.replace(" ", "_")]
     lines.append(" ".join(tags))
     return "\n".join(lines) + "\n"
 

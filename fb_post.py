@@ -536,7 +536,7 @@ def prediction_text(m, pr, tv=None):
         lines.append(f"📊 سجل النموذج هذا الموسم: أصاب {rec['hits']} من {rec['scored']} توقعًا")
     lines += ["توقعك إيه؟ اكتبه في التعليقات 👇",
               f"التوقع الكامل بالأرقام: {SITE}/m/{m.get('match_id')}",
-              " ".join(("#يلا_سكور", _tag(h), _tag(a)))]
+              " ".join(("#الجون", _tag(h), _tag(a)))]
     return "\n".join(lines)
 
 
@@ -617,7 +617,7 @@ def h2h_text(m, r, when=""):
             import h2h_card as HC
             lines.append(f"🗓️ آخر فوز لـ{name}: {HC.ar_date(r['last'][name])}")
     lines += [f"{comp_label(m.get('competition'))} · التوقع والتحليل: {SITE}/m/{m.get('match_id')}",
-              " ".join(("#يلا_سكور", _tag(h), _tag(a)))]
+              " ".join(("#الجون", _tag(h), _tag(a)))]
     return "\n".join(lines)
 
 
@@ -738,7 +738,7 @@ def xi_caption(data, names=True):
         lines = [f"📋 التشكيل الرسمي لمباراة {data['home']['name']} × {data['away']['name']}", comp]
     lines.append(f"المباراة لحظة بلحظة: https://elgoon.com/m/{data['gid']}")
     tag = lambda n: "#" + n.strip().replace(" ", "_")
-    lines.append(f"#يلا_سكور {tag(data['home']['name'])} {tag(data['away']['name'])}")
+    lines.append(f"#الجون {tag(data['home']['name'])} {tag(data['away']['name'])}")
     return "\n".join(x for x in lines if x)
 
 
@@ -830,7 +830,7 @@ def goal_caption(g, ev):
     if who: lines.append("🥅 " + " · ".join(who))
     comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
     lines.append((f"{comp} · " if comp else "") + f"المباراة لحظة بلحظة: https://elgoon.com/m/{g['id']}")
-    lines.append(f"#يلا_سكور {tag(g['h'])} {tag(g['a'])}")
+    lines.append(f"#الجون {tag(g['h'])} {tag(g['a'])}")
     return "\n".join(lines)
 
 
@@ -936,7 +936,7 @@ def whistle_caption(kind, g, goals):
     comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
     link = "المباراة لحظة بلحظة" if kind in ("ht", "ko") else "تفاصيل المباراة والهدافون"
     lines.append((f"{comp} · " if comp else "") + f"{link}: https://elgoon.com/m/{g['id']}")
-    lines.append(f"#يلا_سكور {tag(g['h'])} {tag(g['a'])}")
+    lines.append(f"#الجون {tag(g['h'])} {tag(g['a'])}")
     return "\n".join(lines)
 
 
@@ -1023,7 +1023,7 @@ def daycard_caption(ms, date):
     for m in ms:
         lines.append(f"{ar_team(m['home'])} {m['home_score']} - {m['away_score']} {ar_team(m['away'])} · {comp_label(m['competition'])}")
     lines.append(f"كل النتائج والجداول: {SITE}/matches")
-    lines.append("#يلا_سكور #نتائج_المباريات")
+    lines.append("#الجون #نتائج_المباريات")
     return "\n".join(lines)
 
 

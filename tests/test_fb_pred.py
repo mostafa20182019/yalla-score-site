@@ -36,7 +36,7 @@ ck("4 the record is stated", "190 من 384" in t)
 ck("5 the channel is named", "على أون سبورت" in t)
 ck("6 NEVER the betting disclaimer (user rule 2026-10-08)", "مراهنة" not in t)
 ck("7 the match page link, not an article link", f"{fp.SITE}/m/4804684" in t and "/a/" not in t)
-ck("8 hashtags: #يلا_سكور first, both clubs", "#يلا_سكور #الزمالك #الأهلي" in t)
+ck("8 hashtags: #الجون first, both clubs", "#الجون #الزمالك #الأهلي" in t)
 ck("9 a question invites comments", "👇" in t and "توقعك" in t)
 
 # the dry run against the real data: draws the card, posts nothing
@@ -78,7 +78,7 @@ ck("20 --prediction refuses while the switch is off (dry runs still draw)", fp.p
 kg = {"id": 985, "c": 7, "h": "ليفربول", "a": "فياريال", "hs": 0, "as": 0}
 kc = fp.whistle_caption("ko", kg, [{"s": "h", "p": "x", "m": "1"}])
 ck("21 the kick-off caption opens with the bell and the two names, no score", kc.startswith("🔔 انطلقت المباراة: ليفربول × فياريال") and "0 - 0" not in kc)
-ck("22 ...carries the live link and the hashtags, and ignores any goal list", "https://elgoon.com/m/985" in kc and "#يلا_سكور" in kc and "x 1'" not in kc)
+ck("22 ...carries the live link and the hashtags, and ignores any goal list", "https://elgoon.com/m/985" in kc and "#الجون" in kc and "x 1'" not in kc)
 
 # ---- the line-up caption (2026-10-20): with the card, no names in the text
 xd = {"gid": "4804707", "comp": "الدوري المصري",
@@ -129,7 +129,7 @@ ck("29 the card takes the day's FINISHED matches of the nine leagues only, curat
 cap = fp.daycard_caption(got, "2026-10-22")
 ck("30 the caption: the title line, one line per result with the league, the matches link, the tags",
    cap.splitlines()[0].startswith("📊 نتائج أبرز مباريات اليوم") and "الزمالك 1 - 0 سموحة · الدوري المصري" in cap and "ليفربول 2 - 0 إيفرتون" in cap
-   and "https://elgoon.com/matches" in cap and "#يلا_سكور" in cap, cap)
+   and "https://elgoon.com/matches" in cap and "#الجون" in cap, cap)
 wf2 = io.open(".github/workflows/fb-post.yml", encoding="utf-8").read()
 ck("31 the workflow takes daycard=results", "daycard:" in wf2 and 'python fb_post.py --daycard "$DAYCARD"' in wf2)
 

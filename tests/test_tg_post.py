@@ -30,7 +30,7 @@ ART = {
                 "⚽ خاض 4 مباريات فقط بواقع 276 دقيقة.\n"
                 "التفاصيل الكاملة على الموقع 👇\n"
                 "https://elgoon.com/a/557.html\n"
-                "#يلا_سكور #الزمالك #حسام_عبد_المجيد"),
+                "#الجون #الزمالك #حسام_عبد_المجيد"),
 }
 msg = T.message(ART)
 
@@ -43,13 +43,13 @@ ck("4 exactly ONE link, and it is the canonical extensionless form",
    msg.count("elgoon.com") == 1 and 'href="https://elgoon.com/a/557"' in msg)
 ck("5 the «… على الموقع 👇» call to action is dropped", "👇" not in msg)
 ck("6 the writer's own hashtags are kept (richer than anything computed here)",
-   "#يلا_سكور #الزمالك #حسام_عبد_المجيد" in msg)
+   "#الجون #الزمالك #حسام_عبد_المجيد" in msg)
 ck("7 it fits a photo caption", len(msg) <= T.CAPTION_MAX, f"{len(msg)} of {T.CAPTION_MAX}")
 
 long_art = dict(ART, fb_post=ART["title"] + "\n" + ("كلمة " * 400))
 lm = T.message(long_art)
 ck("8 an over-long piece is trimmed, not truncated mid-link",
-   len(lm) <= T.CAPTION_MAX and lm.rstrip().endswith("#يلا_سكور") is False
+   len(lm) <= T.CAPTION_MAX and lm.rstrip().endswith("#الجون") is False
    and 'href="https://elgoon.com/a/557"' in lm, len(lm))
 
 # a match report posts the MATCH url, like Facebook (the article lives there)
