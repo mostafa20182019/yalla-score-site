@@ -20,7 +20,7 @@ from site_lib.predictions import pred_block, pred_pop
 from site_lib.reads import post_match_read, pre_match_read
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, adsense_slot, foot, head, noindex, thumb_url, write
-from site_lib.snippets import FILTERS_HTML, MATCHES_JS, ROUNDS_JS, ST_TABS_JS
+from site_lib.snippets import FILTERS_HTML, LT_GAMES_JS, MATCHES_JS, ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import _finished_by_comp
 from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, motm_html, scorers_list, standings_table
 from site_lib.text import esc
@@ -175,6 +175,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
     # (sc_by_comp, sc_ok, as_by_comp, as_ok) from build(); absent = table only.
     sc_by_comp, sc_ok, as_by_comp, as_ok = charts or ({}, {}, {}, {})
     _chart_html = {}
+    _table_html = {}
 
     def comp_charts(comp):
         if comp not in _chart_html:
@@ -364,12 +365,18 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             _h = (f'<a href="/standings/{_slug}.html">{esc(comp)} ←</a>'
                   if _slug else esc(comp))
             table_heading = _h
-            table = standings_table(m.get("competition"), stc["table"],
-                                    past=stc.get("past"),
-                                    season_label=stc.get("season_label"),
-                                    zeroed=stc.get("zeroed"),
-                                    form_map=forms.get(m.get("competition"), {}),
-                                    embedded=True)
+            # the same table for every match of a competition: built once.
+            # «لعب / ف / ت / خ» open the team's matches here too (2026-11-07);
+            # the match rows come from /standings/<slug> on the first tap
+            _ck = m.get("competition")
+            if _ck not in _table_html:
+                _table_html[_ck] = standings_table(
+                    _ck, stc["table"], past=stc.get("past"),
+                    season_label=stc.get("season_label"), zeroed=stc.get("zeroed"),
+                    form_map=forms.get(_ck, {}), embedded=True,
+                    games=((_bycomp or {}).get(_ck) or []) if _slug else None,
+                    store_src=f"/standings/{_slug}" if _slug else None)
+            table = _table_html[_ck]
         _sc_h, _as_h = comp_charts(m.get("competition")) if table else ("", "")
         news = []
         if articles:
@@ -405,6 +412,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             table=Markup(table), faq=Markup(_faq_html or ""), news=news,
             label=comp, has_sc=bool(_sc_h), scorers=Markup(_sc_h),
             has_asst=bool(_as_h), assists=Markup(_as_h), tabs_js=Markup(ST_TABS_JS),
+            games_js=Markup(LT_GAMES_JS if 'class="lt-n"' in table else ""),
             crumbs_ld=Markup(crumbs_ld), page_foot=Markup(foot()))
         # lastmod: a page whose match is recent/upcoming changes every run;
         # an old finished match settled around its kickoff day.

@@ -33,7 +33,7 @@ def team_results(games):
 
 
 def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
-                    embedded=False, games=None, pages=None):
+                    embedded=False, games=None, pages=None, store_src=None):
     """League standings table (FotMob-style). Hidden until its league is picked.
     `zeroed` = the new season hasn't kicked off yet, so this is the new season's
     team list with everything at 0; it gets a "new season" badge.
@@ -46,7 +46,14 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
     numbers ALL equal what we hold - a «لعب 10» opening four matches would be
     worse than a plain number. `pages(m)` = the id of m's /m page or None
     (no link); the season pool and the pages can carry different ids for the
-    same 365scores match, so the caller also matches by clubs + day."""
+    same 365scores match, so the caller also matches by clubs + day.
+
+    `store_src` (2026-11-07, the match pages: «عايز لما اضغط على الرقم فاز
+    لفريق يجيب المباريات اللى فاز فيها»): the buttons and each row's ids as
+    above, but the store of match rows is NOT inlined - an empty .lt-games
+    with data-src points at the standings page that holds it, and
+    LT_GAMES_JS fetches it on the first tap. Inlining it would copy the
+    league's whole season into each of the ~1,450 match pages."""
     def cell(v):
         return "0" if v is None else esc(str(v))
     res = team_results(games) if games is not None else {}
@@ -83,7 +90,9 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'<td>{cell(r.get("gd"))}</td><td class="lt-pts">{cell(r.get("pts"))}</td></tr>')
     # every match once; the buttons' rows list ids and the script clones these
     store = ""
-    if used:
+    if used and store_src:
+        store = f'<div class="lt-games" data-src="{esc(store_src)}" hidden></div>'
+    elif used:
         items = []
         for mid, m in used.items():
             inner = f'<span class="lgm-d">{esc(fmt_day(m.get("kickoff")))}</span>{fixture_mini(m)}'

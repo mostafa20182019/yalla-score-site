@@ -50,7 +50,11 @@ ok("6 each match is stored once, linked when it has a page, plain when not",
    and '<div class="lgm" data-id="3"' in html and 'href="/m/4"' in html)
 ok("6b only the clickable teams' matches are stored (B-C is nobody's list)",
    'data-id="2"' not in html)
-ok("7 without games the table is unchanged (match page, club pages)",
+_ms = standings_table("X", rows, embedded=True, games=games, store_src="/standings/x")
+ok("7b with store_src (the match pages): buttons and ids, but the store is a pointer, not the matches",
+   'data-k="w"' in _ms and 'data-gm="' in _ms and '<div class="lt-games" data-src="/standings/x" hidden></div>' in _ms
+   and 'class="lgm"' not in _ms, _ms[-200:])
+ok("7 without games the table is unchanged (club pages)",
    "lt-n" not in standings_table("X", rows, embedded=True) and "lt-games" not in
    standings_table("X", rows, embedded=True))
 

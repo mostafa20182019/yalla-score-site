@@ -5,8 +5,26 @@
      order) and the matches sit once each in .lt-games; this clones them into
      one popup, newest first. Escape, the × and the backdrop close it. */
   var store=document.querySelector('.lt-games'); if(!store) return;
-  var byId={};
-  [].forEach.call(store.children,function(e){ byId[e.getAttribute('data-id')]=e; });
+  var byId={}, ready=null;
+  function index(){ [].forEach.call(store.children,function(e){ byId[e.getAttribute('data-id')]=e; }); }
+  index();
+  /* a match page ships the table without the store (2026-11-07): it is the
+     standings page's, and data-src says which - fetched on the first tap.
+     The live site serves the extensionless path; a plain file server only
+     the .html, so both are tried. */
+  function load(){
+    var src=store.getAttribute('data-src');
+    if(!src||store.children.length) return Promise.resolve();
+    if(ready) return ready;
+    function get(u){ return fetch(u,{credentials:'same-origin'}).then(function(r){ if(!r.ok) throw new Error(r.status); return r.text(); }); }
+    ready=get(src).catch(function(){ return get(src+'.html'); }).then(function(html){
+      var s=new DOMParser().parseFromString(html,'text/html').querySelector('.lt-games');
+      if(!s) throw new Error('no store');
+      while(s.firstChild) store.appendChild(s.firstChild);
+      index();
+    }).catch(function(e){ ready=null; throw e; });
+    return ready;
+  }
   var LBL={p:'كل المباريات',w:'الفوز',d:'التعادل',l:'الخسارة'};
   var pop=document.createElement('div');
   pop.className='lt-pop'; pop.hidden=true;
@@ -22,6 +40,14 @@
   document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!pop.hidden) close(); });
   document.addEventListener('click',function(e){
     var b=e.target.closest('.lt-n'); if(!b) return;
+    load().then(function(){ show(b); }, function(){
+      pop.querySelector('b').textContent='تعذّر تحميل المباريات - حاول مرة أخرى';
+      pop.querySelector('.lt-pop-l').innerHTML='';
+      last=b; pop.hidden=false; document.documentElement.classList.add('lt-lock');
+      pop.querySelector('.lt-pop-x').focus();
+    });
+  });
+  function show(b){
     var tr=b.closest('tr'), k=b.getAttribute('data-k');
     var items=(tr.getAttribute('data-gm')||'').split(',').filter(Boolean)
       .map(function(x){ return x.split(':'); })
@@ -34,6 +60,6 @@
     pop.querySelector('b').textContent=tr.getAttribute('data-tn')+' — '+LBL[k]+' ('+items.length+')';
     last=b; pop.hidden=false; document.documentElement.classList.add('lt-lock');
     pop.querySelector('.lt-pop-x').focus();
-  });
+  }
 })();
 </script>
