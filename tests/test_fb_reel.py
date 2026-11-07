@@ -74,14 +74,19 @@ _px = lambda x: [round(v) for v in ImageStat.Stat(im.crop(
 ck("15 the rendered card agrees: the blue crest (home) right, the red one (away) left",
    _px(0.72)[2] > _px(0.72)[0] and _px(0.28)[0] > _px(0.28)[2], (_px(0.72), _px(0.28)))
 
-# the brand mark above the names (user, 2026-11-05: the band between the header
-# and the crests was empty; 2026-11-07: the sticker mark replaced the tiger):
-# drawn from the brand file, centred in that band, and really there - the middle of the band is red/white, not sky blue (r well above g)
-_t = [round(v) for v in ImageStat.Stat(im.crop((R.W // 2 - 40, R.MARK_Y - 40, R.W // 2 + 40, R.MARK_Y + 40))).mean]
-ck("17 the brand mark sits above the club names, between the header and the crests",
-   "mark_at(im, W / 2, MARK_Y)" in _card and os.path.isfile(R.MARK)
-   and 165 < R.MARK_Y - R.MARK_PX / 2 and R.MARK_Y + R.MARK_PX / 2 < R.H * 0.36 - 150
-   and _t[0] > _t[1] + 50, _t)
+# the brand at the top (user, 2026-11-07: the plain «الجون» text and the
+# separate dart image were both replaced by the wordmark logo): drawn from the
+# brand file, under the top safe line and clear of the crests, and really there
+# - the band holds the sticker's white rim and black ink, not sky blue
+_band = im.crop((R.W // 2 - 200, R.LOGO_Y - R.LOGO_H // 2, R.W // 2 + 200, R.LOGO_Y + R.LOGO_H // 2)).convert("RGB")
+_ink = sum(1 for p in _band.getdata() if max(p) < 60)
+_rim = sum(1 for p in _band.getdata() if min(p) > 235)
+ck("17 the «الجون» wordmark is the reel's brand: at the top, no plain-text name, no separate dart",
+   "logo_at(im, W / 2, LOGO_Y)" in src and os.path.isfile(R.LOGO)
+   and 'C.ar("الجون")' not in src and "mark_at" not in src
+   and 165 < R.LOGO_Y - R.LOGO_H / 2 and R.LOGO_Y + R.LOGO_H / 2 < R.SUB_Y - 20
+   and R.SUB_Y + 30 < R.H * 0.345 - 130
+   and _ink > 2000 and _rim > 2000, (_ink, _rim))
 
 cols = R.goal_columns([("h", "A", "12"), ("a", "B", "30"), ("h", "A", "45+2"),
                        ("h", "C", ""), ("x", "Z", "9")])

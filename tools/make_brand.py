@@ -9,7 +9,10 @@ r"""Every brand file the site and the cards use, from the sticker logo
 The art comes from tools/make_logo.py (logo_mix / logo_ar / mark); this
 script only places it. Written into assets-src/:
 
-  mark-512.png          the brand corner on every Facebook card and the reel
+  mark-512.png          the brand corner on every Facebook card
+  wordmark-1024.png     «الجون» wordmark (logo-ar), 1024 wide, transparent -
+                        the reels' brand at the top (2026-11-07: the plain
+                        text + the separate dart were replaced by this)
   brand-logo.png        the header: «الجون» wordmark (logo-ar), 138 px high
                         (46 css px at 3x), width to match
   logo.png        600w  publisher logo (NewsArticle / RSS): the wordmark
@@ -21,8 +24,10 @@ script only places it. Written into assets-src/:
   badge-96.png          status-bar badge: Android draws ONLY the alpha as a
                         white glyph, so the rings are opaque and the whites
                         (and the sticker rim) are holes
-  fb-profile-1024.png   the Facebook page photo (uploaded by hand): the mark
-                        centred on blue, inside the circle crop
+  fb-profile-1024.png   the Facebook page photo (uploaded by hand): the
+                        «الجون» wordmark on blue, 80% wide - its corners stay
+                        inside the circle Facebook crops (user, 2026-11-07:
+                        «اعمل profile picture بيها»)
   fb-cover-1640x924.png the Facebook cover: logo-mix in the 1280x624 safe
                         box both the desktop and the phone crops keep
   og-banner.png   1200x630  every page's default og:image
@@ -84,13 +89,14 @@ def main():
     logo, word, mark = L.logo_mix(), L.logo_ar(), L.mark()
     files = {}
     files["mark-512.png"] = square(fit(mark, w=int(512 * 0.96)), 512)
+    files["wordmark-1024.png"] = fit(word, w=1024)
     files["brand-logo.png"] = fit(word, h=138)
     files["logo.png"] = fit(word, w=600)
     files["favicon.png"] = square(fit(mark, w=int(192 * 0.96)), 192)
     for n, side in (("icon-192.png", 192), ("icon-512.png", 512), ("app-icon-1024.png", 1024)):
         files[n] = tile((side, side), fit(mark, w=int(side * 0.62)))
     files["badge-96.png"] = badge(mark, 96)
-    files["fb-profile-1024.png"] = tile((1024, 1024), fit(mark, w=int(1024 * 0.62)))
+    files["fb-profile-1024.png"] = tile((1024, 1024), fit(word, w=int(1024 * 0.80)))
     sx, sy, sw, sh = SAFE
     files["fb-cover-1640x924.png"] = tile((1640, 924), fit(logo, w=int(sw * 0.60)), sx + sw / 2, sy + sh / 2)
     files["og-banner.png"] = tile((1200, 630), fit(logo, w=int(1200 * 0.55)))

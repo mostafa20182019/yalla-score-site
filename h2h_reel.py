@@ -47,7 +47,7 @@ def _count(d, cx, y, n, t, size, col):
 def scene_intro(t, ctx):
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
-    R.header(d, ctx["comp"], None)
+    R.header(im, ctx["comp"], None)
     p = R.ease(t / 1.2)
     size, y = 320, H * 0.40
     R.crest_at(im, ctx["m"].get("home_badge"), ctx["h"], size, R.lerp(-size, W * 0.72, p), y)   # home RIGHT
@@ -70,7 +70,7 @@ def scene_intro(t, ctx):
 def scene_tally(t, ctx):
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
-    R.header(d, ctx["comp"], None)
+    R.header(im, ctx["comp"], None)
     h, a, w, draws, gf = ctx["h"], ctx["a"], ctx["wins"], ctx["draws"], ctx["goals"]
     C.draw_center(d, W / 2, H * 0.19, C.ar(f"في آخر {ctx['n']} مواجهات"), C.font("Bold", 44), SOFT)
     y = H * 0.27
@@ -100,7 +100,7 @@ def scene_tally(t, ctx):
 def scene_meetings(t, ctx):
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
-    R.header(d, ctx["comp"], None)
+    R.header(im, ctx["comp"], None)
     games = ctx["games"]
     n = len(games)
     step = 4.8 / max(1, n)                      # all rows are in by 4.8s, then they hold
@@ -149,7 +149,7 @@ def scene_meetings(t, ctx):
 def scene_cta(t, ctx):
     im = ctx["bg"].copy()
     d = ImageDraw.Draw(im)
-    R.header(d, ctx["comp"], None)
+    R.header(im, ctx["comp"], None)
     y = H * 0.20
     f = C.font("Bold", 40)
     facts = ([ctx["finals"]] if ctx.get("finals") else []) + [

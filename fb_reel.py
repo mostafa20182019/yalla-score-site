@@ -87,11 +87,13 @@ def background():
     return im
 
 
-def header(d, comp, rnd):
-    f = C.font("ExtraBold", 44)
-    C.draw_center(d, W / 2, 215, C.ar("الجون"), f, C.WHITE)
+def header(im, comp, rnd):
+    """The «الجون» wordmark at the top, the competition line under it.
+    User, 2026-11-07: the plain-text name and the separate dart image were
+    both dropped for the wordmark logo."""
+    logo_at(im, W / 2, LOGO_Y)
     sub = comp + (f" · الجولة {rnd}" if rnd else "")
-    C.draw_center(d, W / 2, 280, C.ar(sub), C.font("Bold", 34), (222, 238, 248))
+    C.draw_center(ImageDraw.Draw(im), W / 2, SUB_Y, C.ar(sub), C.font("Bold", 34), (222, 238, 248))
 
 
 def footer(d, alpha=255):
@@ -99,19 +101,20 @@ def footer(d, alpha=255):
     C.draw_center(d, W / 2, SAFE_BOTTOM - 8, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
 
 
-MARK = os.path.join(HERE, "assets-src", "mark-512.png")
-MARK_PX, MARK_Y = 190, 430     # centred in the band between the header and the crests (smaller since 2026-11-05: the band had to fit the safe zone)
-_mark = {}
+LOGO = os.path.join(HERE, "assets-src", "wordmark-1024.png")
+LOGO_H, LOGO_Y = 190, 290      # the wordmark's height and centre: 195..385, under the top safe line
+SUB_Y = 445                    # the competition line, between the wordmark and the crests
+_logo = {}
 
 
-def mark_at(im, cx, cy, size=MARK_PX):
-    """The brand mark (the sticker board + dart), centred on (cx, cy). User,
-    2026-11-05: «يكون فوق اسماء الفرق صورة للنمر كويسة» - the band between
-    the header and the crests was empty."""
-    if size not in _mark:
-        _mark[size] = Image.open(MARK).convert("RGBA").resize((size, size), Image.LANCZOS)
-    t = _mark[size]
-    im.paste(t, (int(cx - size / 2), int(cy - size / 2)), t)
+def logo_at(im, cx, cy, h=LOGO_H):
+    """The «الجون» wordmark (the sticker, with the dart board in the و),
+    h px high, centred on (cx, cy)."""
+    if h not in _logo:
+        src = Image.open(LOGO).convert("RGBA")
+        _logo[h] = src.resize((round(src.width * h / src.height), h), Image.LANCZOS)
+    t = _logo[h]
+    im.paste(t, (int(cx - t.width / 2), int(cy - h / 2)), t)
 
 
 def big_badge(url):
@@ -170,8 +173,7 @@ def card(ctx, layers=False):
         ds, dg = ImageDraw.Draw(l_score), ImageDraw.Draw(l_goals)
     else:
         ds = dg = d
-    header(d, ctx["comp"], ctx["round"])
-    mark_at(im, W / 2, MARK_Y)
+    header(im, ctx["comp"], ctx["round"])
     size, y = 260, H * 0.345
     for x, key, name in ((W * 0.72, "home", ctx["home"]), (W * 0.28, "away", ctx["away"])):
         crest_at(im, ctx["m"].get(f"{key}_badge"), name, size, x, y)

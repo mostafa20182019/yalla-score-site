@@ -13,7 +13,7 @@ moment everyone remembers travels further than tonight's score.
 What a moment reel is made of — and only of: short Arabic lines landing one
 after another, a big number or score, the two crests from the site's cache,
 ONE licensed photo (Wikimedia Commons, CC, credited on the frame AND in the
-caption), the brand mark and our own music loop. **No broadcast footage,
+caption), the brand wordmark and our own music loop. **No broadcast footage,
 ever, and no press photos**: match video and agency pictures belong to the
 rights holders.
 
@@ -172,16 +172,17 @@ def crest(im, t, side, ctx, size, cx, cy, t0=0.0, alpha=1.0):
     put(im, lay, e * alpha, dy=SLIDE * (1 - e))
 
 
-def header(d):
-    C.draw_center(d, W / 2, 215, C.ar("الجون"), C.font("ExtraBold", 44), C.WHITE)
+def header(im):
+    R.logo_at(im, W / 2, R.LOGO_Y)
 
 
 # ---------------------------------------------------------------- the scenes
 def scene(sc, t, ctx):
     """One frame of a scene at local time t (seconds)."""
     im = ctx["bg"].copy()
-    header(ImageDraw.Draw(im))
     kind, lines = sc["kind"], sc.get("lines") or []
+    if kind != "cta":              # the closing scene IS the big wordmark - not twice
+        header(im)
     home, away = ctx["home"]["name"], ctx["away"]["name"]
     if kind == "hook":
         big_at(im, t, sc["big"], 560, 240)
@@ -221,7 +222,7 @@ def scene(sc, t, ctx):
         lines_block(im, t, lines, (400, 490), weight="ExtraBold", size=64, t0=0.1)
         big_at(im, t, sc["big"], 640, 280, t0=0.1 + len(lines) * STAGGER)
     elif kind == "cta":
-        R.mark_at(im, W / 2, 560, 280)
+        R.logo_at(im, W / 2, 560, 280)
         lines_block(im, t, lines[:1], (770,), weight="ExtraBold", size=64, t0=0.05)
         lines_block(im, t, lines[1:], (870,), size=50, fill=SOFT, t0=0.35)
         e = ease(t, 0.5, FADE)
