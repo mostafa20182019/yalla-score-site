@@ -77,10 +77,15 @@ from site_lib.tables import match_row                       # noqa: E402
 row = match_row({"status": "FINISHED", "home": "أ", "away": "ب", "home_score": 2, "away_score": 0,
                  "kickoff": "2026-11-06"}, goals=[
     {"side": "h", "player": "مهاجم أ", "minute": "12", "tag": "", "assist": "صانع أ"},
-    {"side": "h", "player": "مهاجم أ", "minute": "70", "tag": ""}])
+    {"side": "h", "player": "مهاجم أ", "minute": "70", "tag": ""}], show_assist=True)
+# the lists (day lists, club pages...) call match_row without show_assist
+_list = match_row({"status": "FINISHED", "home": "أ", "away": "ب", "home_score": 2, "away_score": 0,
+                   "kickoff": "2026-11-06"}, goals=[
+    {"side": "h", "player": "مهاجم أ", "minute": "12", "tag": "", "assist": "صانع أ"}])
+ck("9b a match LIST row shows no assister (match page only, 2026-11-07)", "mg-as" not in _list and "صانع أ" not in _list)
 items = re.findall(r'<span class="mg">(.*?)</span>(?=<span class="mg">|</div>)', row, re.S)
 ck("9 the scorer with a named assister carries «صناعة: X» inside his line",
-   items and '<span class="mg-as">صناعة: <bdi>صانع أ</bdi></span>' in items[0], items[:1])
+   items and '<span class="mg-as"><svg' in items[0] and '<span class="sr-only">صناعة: </span><bdi>صانع أ</bdi></span>' in items[0], items[:1])
 ck("10 a goal with no assister carries no assist line", len(items) == 2 and "mg-as" not in items[1], items[1:])
 
 # ---------------------------------------------------------------- the player card

@@ -821,7 +821,10 @@ html.lt-lock{overflow:hidden}
 .mg-m{font-style:normal;direction:ltr;unicode-bidi:embed;color:#15658f;white-space:nowrap}
 .mg small{font-size:.68rem}
 /* the assister under his scorer (2026-11-06): same size, lighter, own line */
-.mg-as{display:block;font-weight:600;color:#64748b}
+/* a boot instead of «صناعة:», the name lighter than the scorer (2026-11-07):
+   #8391a5 is 3.2:1 on white - secondary, still readable */
+.mg-as{display:block;font-weight:500;color:#8391a5}
+.mg-as svg{width:11px;height:11px;vertical-align:-1px;margin-inline-end:3px}
 @media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.7rem}}
 /* match details: events timeline + starting lineups (/m/<id>.html).
    NOT «.tl» - that collided with the .tl text-start cells in every

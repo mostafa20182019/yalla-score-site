@@ -256,7 +256,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         page_head = head(title, desc, SITE_BASE + murl, image=img, active="matches",
                          og_type="article" if _art else "website")
         hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals,
-                             highlight=_hl)
+                             highlight=_hl, show_assist=True)
         kickoff_info = st not in ("FINISHED", "POSTPONED")
         _tw = _rd = ""
         if kickoff_info:

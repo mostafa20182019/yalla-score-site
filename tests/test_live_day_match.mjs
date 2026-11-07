@@ -97,9 +97,14 @@ ck("5 a row without data-d falls back to the old name-only match", painted(r5));
 // the assister survives the live repaint, even through swap() (2026-11-06)
 const withA = { ...capital, goals: [{ s: "a", p: "هداف", m: "30", t: "", a: "صانع" }, { s: "a", p: "هداف", m: "70", t: "" }] };
 const r6 = row("سيراميكا كليوباترا", "ابو قير للاسمدة", "2026-11-03");
+r6.closest = (s) => (s === ".mp-hero" ? {} : null);      // the match page's own row
 await run([r6], [withA]);
+const r6b = row("سيراميكا كليوباترا", "ابو قير للاسمدة", "2026-11-03");   // a list row
+await run([r6b], [withA]);
+ck("6b a list row repainted live gets the scorers but no assister (match page only)",
+   r6b.extra.includes("هداف") && !r6b.extra.includes("mg-as"), r6b.extra);
 ck("6 the live repaint writes «صناعة: X» under the scorer, through the reversed-name swap",
-   r6.extra.includes('<span class="mg-as">صناعة: <bdi>صانع</bdi></span>') && (r6.extra.match(/mg-as/g) || []).length === 1, r6.extra);
+   r6.extra.includes('<span class="mg-as"><svg') && r6.extra.includes('<span class="sr-only">صناعة: </span><bdi>صانع</bdi></span>') && (r6.extra.match(/mg-as/g) || []).length === 1, r6.extra);
 
 // a built list that no longer adds up to the painted score is removed (2026-11-07)
 const listed = (nh, na) => {

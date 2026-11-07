@@ -335,6 +335,8 @@ def match_stats_html(row, h_ar, a_ar):
 BOOT_SVG = ('<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#0f172a" d="M2.2 3.2h3.6l1 3.1'
             ' 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="#0f172a" d="M3 12.3h1.6v1.6H3zm4.2'
             ' 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>')
+# the same boot on the scorer lines, in the line's own (light) colour
+BOOT_MG = BOOT_SVG.replace('fill="#0f172a"', 'fill="currentColor"')
 
 
 def _lead_int(v):
@@ -610,7 +612,7 @@ def match_details_html(e, flipped, h_ar, a_ar):
 
 
 def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
-              show_date=False, highlight=None, card_link=True):
+              show_date=False, highlight=None, card_link=True, show_assist=False):
     """show_date (2026-10-08, user: «حط هنا برضه تواريخ المباريات» on the club
     page): the match's day on the competition line - for lists that are NOT
     grouped under a day heading (club pages, the standings page's next matches).
@@ -662,8 +664,14 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
                 # the assister on his own line under the scorer (user, 2026-11-06:
                 # «تحت اللاعب اللى مسجل الهدف اللاعب صاحب الاسيست»); LIVE_JS
                 # paintGoals writes the same markup from /live.json's `a`
-                ast = (f'<span class="mg-as">صناعة: <bdi>{esc(g["assist"])}</bdi></span>'
-                       if g.get("assist") else "")
+                # the boot instead of «صناعة:» (user, 2026-11-07); the word
+                # stays for screen readers
+                # ... and only on the match's own page (show_assist, user,
+                # 2026-11-07: «يظهر بس لما اضغط على المباراة ... ميظهرش فى
+                # صفحة المباريات») - the lists keep one line per goal
+                ast = (f'<span class="mg-as">{BOOT_MG}<span class="sr-only">صناعة: </span>'
+                       f'<bdi>{esc(g["assist"])}</bdi></span>'
+                       if show_assist and g.get("assist") else "")
                 its.append(f'<span class="mg">⚽ <bdi>{esc(g.get("player"))}</bdi>{mn}{tg}{ast}</span>')
             return "".join(its)
         gblock = (f'<div class="mgoals"><div class="mg-side">{side_list("h")}</div>'

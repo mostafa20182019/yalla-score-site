@@ -38,6 +38,8 @@
   function sPill(cls,hs,as_){
     return '<b class="'+cls+'"><span>'+hs+'</span><i>-</i><span>'+as_+'</span></b>';
   }
+  /* the assist line's boot (2026-11-07) - match_row()'s BOOT_MG, same markup */
+  var BOOT='<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="currentColor" d="M2.2 3.2h3.6l1 3.1 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="currentColor" d="M3 12.3h1.6v1.6H3zm4.2 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>';
   function escH(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')
     .replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   /* live scorer lines - same markup as match_row()'s gblock so the static
@@ -46,12 +48,14 @@
      existing (static) list. */
   function paintGoals(e,g){
     if(!g.goals||!g.goals.length)return;
+    /* the assister only on the match page's own row (.mp-hero, 2026-11-07) */
+    var withA=!!(e.closest&&e.closest('.mp-hero'));
     var gh='',ga='';
     g.goals.forEach(function(x){
       var it='<span class="mg">⚽ <bdi>'+escH(x.p)+'</bdi>'
         +(x.m?' <i class="mg-m">'+escH(x.m)+'′</i>':'')
         +(x.t?' <small>('+escH(x.t)+')</small>':'')
-        +(x.a?'<span class="mg-as">صناعة: <bdi>'+escH(x.a)+'</bdi></span>':'')+'</span>';
+        +(withA&&x.a?'<span class="mg-as">'+BOOT+'<span class="sr-only">صناعة: </span><bdi>'+escH(x.a)+'</bdi></span>':'')+'</span>';
       if(x.s==='h')gh+=it;else ga+=it;
     });
     var inner='<div class="mg-side">'+gh+'</div><div class="mg-gap"></div>'
