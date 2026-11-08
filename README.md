@@ -28,6 +28,27 @@ python build_site.py               # -> dist/
 python tests/run_all.py            # the whole suite (Python + Node)
 ```
 
+**News from the data** (`story_events.py`, 2026-11-08): four detectors read
+the data files and turn what they find into Facebook posts - a cup round
+that ended (the next round's pairings from `fixtures.json`), the first half
+of a league (the table from `standings.json`, the top scorer from
+`scorers.json`), a coach who left the national team (one of our articles is
+the trigger, his record is the NT's matches in the archive), and «في مثل هذا
+اليوم» (a derby, a big score or a final of an earlier year in
+`results_archive.json`, or a `moments/*.json` that carries a `date`). Nothing
+is written from memory: a fact that is not in a data file is not written.
+`python story_events.py` dry-runs every detector on today's data and says
+why each one is quiet; `python fb_post.py --events --dry` prints the texts
+that would go out; `python fb_post.py --events` posts each once through the
+store (kind = the event kind, ref = its stable ref) - but only while the
+repo variable `FB_EVENTS` is `on`; until then the run prints the texts into
+the Actions summary and posts nothing, so the wording is read before it goes
+live. The nightly `daycard=results` dispatch runs it after the results card,
+and the `daycard` input accepts `events` to run it alone. `python story_events.py --moment
+<match_id> --id <name>` writes a `moment_reel.py` script from an archived
+match with its goals (`moments/<name>.json`); publish it with the `moment`
+input once the wording is approved.
+
 Secrets live in GitHub Actions and on the Worker; none are in the repo. The
 site's editorial policy, data sources and the model's record are explained on
 the site itself: https://elgoon.com/editorial and https://elgoon.com/predictions.

@@ -281,3 +281,111 @@ assert run([], argv=("--text", tpath)) == 0 and [b for u, b in calls if u == fp.
 assert run([], argv=("--text", os.path.join(tdir, "missing.txt"))) == 1
 assert run([], argv=("--text", tpath, "--dry")) == 0 and [b for u, b in calls if u == fp.GRAPH_FEED] == []
 print("19 OK: --text posts the file once, records kind text, refuses a missing file")
+
+# 20-23) --events: news FROM THE DATA (story_events.py, user 2026-11-08). Each
+# detector is fed fixture data; the post goes out once through the store under
+# (kind, ref), a second run is a no-op, --dry posts nothing.
+import story_events as SE
+reset_state()
+_D = lambda **kw: {"matches": [], "fixtures": [], "standings": [], "scorers": [], "archive": [],
+                   "articles": [], "moments": [], **kw}
+_M = lambda mid, h, a, st, hs=None, as_=None, kick="2026-11-07", t="17:00": {
+    "match_id": mid, "home": h, "away": a, "status": st, "home_score": hs, "away_score": as_,
+    "kickoff": kick, "koff_time": t, "competition": "Egypt Cup"}
+R32 = [_M(i, f"H{i}", f"A{i}", "FINISHED", 1, 0) for i in range(1, 17)]
+R16 = [_M(100 + i, "الأهلي" if i == 1 else f"H{i}", "الزمالك" if i == 1 else f"A{i}", "UPCOMING",
+          kick="2026-12-01", t="20:00") for i in range(1, 9)]
+CUP = [{"competition": "Egypt Cup", "current": 2, "rounds": [
+    {"round": 1, "label": "تصفيات", "matches": [_M(900, "P1", "P2", "FINISHED", 2, 0, kick="2026-10-17")]},
+    {"round": 2, "label": "دور الـ 32", "matches": R32},
+    {"round": 3, "label": "دور الـ 16", "matches": R16}]}]
+feeds = lambda: [urllib.parse.parse_qs(b)["message"][0] for u, b in calls if u == fp.GRAPH_FEED]
+
+# 20) cup round: complete + next round's pairings -> one post; incomplete / started / no pairings -> none
+SE.load_data = lambda: _D(fixtures=CUP)
+assert run([], argv=("--events", "--dry")) == 0 and feeds() == []
+# the switch: without the repo variable FB_EVENTS=on the run prints and posts nothing (he reads first)
+os.environ.pop("FB_EVENTS", None)
+assert run([], argv=("--events",)) == 0 and feeds() == [] and store.get_post(SE.KIND_CUP, "Egypt Cup:R32:2026-27") is None
+os.environ["FB_EVENTS"] = "on"
+assert run([], argv=("--events",)) == 0
+msgs = feeds(); assert len(msgs) == 1, msgs
+assert msgs[0].startswith("🏆 انتهى دور الـ32 من كأس مصر.\nهذه مواجهات دور الـ16:\n• الأهلي × الزمالك — الثلاثاء 1 ديسمبر 20:00"), msgs[0]
+assert "#الجون #كأس_مصر" in msgs[0] and "fixtures/egypt-cup.html" in msgs[0]
+rec = store.get_post(SE.KIND_CUP, "Egypt Cup:R32:2026-27"); assert rec and rec["post_id"], rec
+assert run([], argv=("--events",)) == 0 and feeds() == [], "posted twice"
+# a live match in the round, or the next round already started, or TBD pairings: nothing
+live = [dict(m) for m in R32]; live[5]["status"] = "LIVE"; live[5]["home_score"] = None
+assert SE.cup_round_done([], [{"competition": "Egypt Cup", "rounds": [dict(CUP[0]["rounds"][1], matches=live), CUP[0]["rounds"][2]]}]) == []
+started = [dict(m) for m in R16]; started[0].update({"status": "FINISHED", "home_score": 1, "away_score": 1})
+assert SE.cup_round_done([], [{"competition": "Egypt Cup", "rounds": [CUP[0]["rounds"][1], {"round": 3, "label": "دور الـ 16", "matches": started}]}]) == []
+assert SE.cup_round_done([], [{"competition": "Egypt Cup", "rounds": [CUP[0]["rounds"][1], {"round": 3, "label": "دور الـ 16", "matches": [_M(500, "", "", "UPCOMING")]}]}]) == []
+# matches.json is fresher than fixtures.json: a LIVE status there vetoes a FINISHED copy in fixtures
+assert SE.cup_round_done([dict(R32[0], status="LIVE", home_score=None)], CUP) == []
+print("20 OK: cup round done -> the next round's pairings posted once; live / started / TBD rounds post nothing")
+
+# 21) league half: every club at n-1 (one may be at n) -> top 5, bottom 3, the top scorer; 8 played -> nothing
+_T = lambda n, played: [{"pos": i, "team": f"Club {i}", "played": played, "pts": 3 * (n - i)} for i in range(1, n + 1)]
+tbl = _T(20, 19); tbl[3]["played"] = 20
+SC = [{"competition": "Egyptian Premier League", "scorers": [{"name": "محمود ممدوح", "team": "مودرن سبورت", "goals": 8}]}]
+SE.load_data = lambda: _D(standings=[{"competition": "Egyptian Premier League", "season_label": "2026/27", "table": tbl}], scorers=SC)
+assert run([], argv=("--events",)) == 0
+msgs = feeds(); assert len(msgs) == 1, msgs
+assert msgs[0].startswith("📊 انتهى الدور الأول من الدوري المصري.\nالخماسي الأول بعد 19 جولة:\n1. Club 1 — 57 نقطة"), msgs[0]
+assert "المراكز الأخيرة:\n18. Club 18 — 6 نقطة\n19. Club 19 — 3 نقطة\n20. Club 20 — 0 نقطة" in msgs[0], msgs[0]
+assert "⚽ الهداف: محمود ممدوح (مودرن سبورت) — 8 أهداف" in msgs[0] and "standings/egypt.html" in msgs[0] and "#الدوري_المصري" in msgs[0]
+assert store.get_post(SE.KIND_HALF, "Egyptian Premier League:2026-27")["post_id"]
+assert run([], argv=("--events",)) == 0 and feeds() == []
+assert SE.league_half_done([{"competition": "Premier League", "table": _T(20, 8)}], []) == []
+assert SE.league_half_done([{"competition": "Premier League", "table": _T(20, 22)}], []) == [], "the moment has passed - never late"
+assert SE.league_half_done([{"competition": "Premier League", "table": _T(20, 19), "zeroed": True}], []) == []
+print("21 OK: league first half -> top 5 / bottom 3 / top scorer posted once; 8 played, long past or zeroed -> nothing")
+
+# 22) on this day: a derby of an earlier year on today's date beats a big score; a dated moment is the fallback; a plain match is no hit
+derby = {"match_id": "4804684", "competition": "Egyptian Premier League", "kickoff": "2026-10-11", "home": "الزمالك", "away": "الأهلي",
+         "home_score": 0, "away_score": 2, "goals": [{"side": "a", "player": "محمد هاني", "minute": "39"}, {"side": "a", "player": "منصف بقرار", "minute": "80"}]}
+big = {"match_id": "1", "competition": "Premier League", "kickoff": "2025-10-11", "home": "Hull City AFC", "away": "Manchester United FC", "home_score": 4, "away_score": 3}
+plain = {"match_id": "2", "competition": "Premier League", "kickoff": "2024-10-11", "home": "Hull City AFC", "away": "Everton FC", "home_score": 1, "away_score": 0}
+mo = {"id": "salah-congo-2017", "title": "ليلة برج العرب", "date": "2017-10-11", "otd_lines": ["مصر 2 - 1 الكونغو."], "hashtags": ["#منتخب_مصر"]}
+SE.load_data = lambda: _D(archive=[plain, big, derby], moments=[mo])
+assert run([], argv=("--events", "2027-10-11")) == 0
+msgs = feeds(); assert len(msgs) == 1, msgs
+assert msgs[0] == ("📅 في مثل هذا اليوم قبل عام، 11 أكتوبر 2026:\nالزمالك 0 - 2 الأهلي في الدوري المصري.\nالمباراة هي قمة الكرة المصرية.\n"
+                   "أهداف الأهلي: محمد هاني 39'، منصف بقرار 80'.\nتفاصيل المباراة: https://elgoon.com/m/4804684\n#الجون #الدوري_المصري"), msgs[0]
+assert store.get_post(SE.KIND_OTD, "2027-10-11")["post_id"]
+assert run([], argv=("--events", "2027-10-11")) == 0 and feeds() == []
+ev = SE.on_this_day([plain, big], [mo], datetime.date(2027, 10, 11))
+assert len(ev) == 1 and "هال سيتي 4 - 3 مانشستر يونايتد" in ev[0]["text"] and "7 أهداف" in ev[0]["text"], ev
+ev = SE.on_this_day([plain], [mo], datetime.date(2027, 10, 11))
+assert len(ev) == 1 and ev[0]["moment"] == "salah-congo-2017" and "قبل 10 أعوام" in ev[0]["text"] and "#منتخب_مصر" in ev[0]["text"], ev
+assert SE.on_this_day([plain], [], datetime.date(2027, 10, 11)) == []
+assert SE.on_this_day([derby], [], datetime.date(2026, 10, 11)) == [], "the same year is not «on this day»"
+# the same match as a moment reel script: scenes from the goals, 6-8 scenes, 14-17.5 s, no photo
+import moment_reel as M
+script = SE.moment_script(derby, mid="derby-test")
+assert script and script["id"] == "derby-test" and script["date"] == "2026-10-11" and 14 <= M.validate(script) <= 17.5
+assert [s["kind"] for s in script["scenes"]] == ["hook", "date", "teams", "goal", "climax", "finale", "cta"]
+assert script["scenes"][4]["score"] == [0, 2] and script["scenes"][4]["crest"] == "away" and "#الجون" in script["caption"]
+assert SE.moment_script(big) is None, "no scorer data -> no reel"
+print("22 OK: on this day -> the derby wins, the dated moment is the fallback, posted once; the reel script validates")
+
+# 23) a coach leaves the NT (one of OUR articles is the trigger) -> his record from the NT's archived matches, once
+art = {"article_id": "1095", "title": "حسام حسن يرحل عن تدريب منتخب مصر وعلي ماهر خلفًا له رسميًا", "pub_date": "2026-11-07"}
+nt = [{"match_id": "a", "competition": "Africa Cup of Nations Qualification", "kickoff": "2026-09-25", "home": "مصر", "away": "أنجولا", "home_score": 0, "away_score": 0},
+      {"match_id": "b", "competition": "Africa Cup of Nations Qualification", "kickoff": "2026-09-29", "home": "جنوب السودان", "away": "مصر", "home_score": 0, "away_score": 5},
+      {"match_id": "c", "competition": "Africa Cup of Nations Qualification", "kickoff": "2026-11-13", "home": "مصر", "away": "مالاوي", "home_score": 2, "away_score": 0},
+      {"match_id": "d", "competition": "Egyptian Premier League", "kickoff": "2026-09-27", "home": "المصري", "away": "الأهلي", "home_score": 1, "away_score": 0}]
+SE.load_data = lambda: _D(articles=[art], archive=nt)
+assert run([], argv=("--events", "2026-11-08")) == 0
+msgs = feeds(); assert len(msgs) == 1, msgs
+assert msgs[0] == ("📊 حسام حسن يرحل عن تدريب منتخب مصر.\nأرقامه في المباريات التي تغطيها بيانات الجون (منذ 25 سبتمبر 2026):\n"
+                   "مباراتان: فوز 1، تعادل 1، خسارة 0.\nالأهداف: 5 له، 0 عليه.\nأكبر فوز: جنوب السودان 0 - 5 مصر (29 سبتمبر 2026).\n"
+                   "الخبر كاملًا: https://elgoon.com/a/1095\n#الجون #منتخب_مصر"), msgs[0]
+assert store.get_post(SE.KIND_COACH, "1095")["post_id"]
+assert run([], argv=("--events", "2026-11-08")) == 0 and feeds() == []
+assert SE.coach_left([art], nt, datetime.date(2026, 11, 12)) == [], "an article older than two days is not news"
+assert SE.coach_left([dict(art, title="حسام حسن يعلن قائمة مصر")], nt) == []
+assert SE.coach_left([art], [nt[3]], datetime.date(2026, 11, 8)) == [], "no NT match in the archive -> no numbers -> no post"
+ev = SE.coach_left([dict(art, title="رسميًا.. إقالة علي ماهر من تدريب منتخب مصر")], nt, datetime.date(2026, 11, 8))
+assert len(ev) == 1 and ev[0]["text"].startswith("📊 علي ماهر يرحل"), ev
+print("23 OK: a coach leaving the NT -> his record from the archive, with the window it covers, posted once")
