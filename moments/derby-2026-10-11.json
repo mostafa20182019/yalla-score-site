@@ -1,0 +1,97 @@
+{
+  "id": "derby-2026-10-11",
+  "title": "الزمالك 0-2 الأهلي — 11 أكتوبر 2026",
+  "date": "2026-10-11",
+  "facts": "From data/results_archive.json match 4804684: الزمالك 0-2 الأهلي, 2026-10-11, Egyptian Premier League; goals as recorded there.",
+  "home": {
+    "name": "الزمالك",
+    "url": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v5/Competitors/8201"
+  },
+  "away": {
+    "name": "الأهلي",
+    "url": "https://imagecache.365scores.com/image/upload/f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,d_Competitors:default1.png/v20/Competitors/8200"
+  },
+  "scenes": [
+    {
+      "kind": "hook",
+      "secs": 2.5,
+      "big": "0-2",
+      "lines": [
+        "الزمالك × الأهلي",
+        "قمة الكرة المصرية"
+      ]
+    },
+    {
+      "kind": "date",
+      "secs": 2.0,
+      "lines": [
+        "11 أكتوبر 2026",
+        "الدوري المصري"
+      ]
+    },
+    {
+      "kind": "teams",
+      "secs": 2.0,
+      "lines": [
+        "الزمالك × الأهلي",
+        "الدوري المصري"
+      ]
+    },
+    {
+      "kind": "goal",
+      "secs": 2.0,
+      "lines": [
+        "الدقيقة 39",
+        "محمد هاني يسجّل"
+      ],
+      "score": [
+        0,
+        1
+      ],
+      "crest": "away"
+    },
+    {
+      "kind": "climax",
+      "secs": 2.5,
+      "lines": [
+        "الدقيقة 80",
+        "منصف بقرار يسجّل"
+      ],
+      "score": [
+        0,
+        2
+      ],
+      "crest": "away",
+      "shake": true
+    },
+    {
+      "kind": "finale",
+      "secs": 3.0,
+      "big": "0-2",
+      "lines": [
+        "الزمالك × الأهلي",
+        "11 أكتوبر 2026"
+      ]
+    },
+    {
+      "kind": "cta",
+      "secs": 1.5,
+      "lines": [
+        "فاكر المباراة دي؟",
+        "تابع الجون"
+      ]
+    }
+  ],
+  "music_dip": [
+    8.5,
+    11.0
+  ],
+  "caption": "الزمالك 0-2 الأهلي — 11 أكتوبر 2026.\nقمة الكرة المصرية.\nالدوري المصري.\nتفاصيل المباراة: https://elgoon.com/m/4804684\n#الجون #الدوري_المصري #الزمالك #الأهلي",
+  "otd_lines": [
+    "الزمالك 0 - 2 الأهلي في الدوري المصري.",
+    "قمة الكرة المصرية."
+  ],
+  "hashtags": [
+    "#الدوري_المصري"
+  ]
+}
