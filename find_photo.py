@@ -186,13 +186,20 @@ def club_files(player, club, limit):
 
 
 # ---------------------------------------------------------------- Openverse
+OPENVERSE_PAGE_MAX = 20     # anonymous Openverse refuses a page_size above 20 with HTTP 401
+
+
 def openverse(query, limit):
+    # 2026-11-08: this asked for min(50, max(limit, 20)) = 24 by default, which
+    # an anonymous client may not ask for - every call came back 401 and the
+    # except below swallowed it, so Openverse had silently added NOTHING since
+    # 2026-11-06. One page of 20 is all an anonymous client gets.
     q = urllib.parse.urlencode({"q": query, "license": "by,by-sa,cc0,pdm", "mature": "false",
-                                "page_size": min(50, max(limit, 20)), "source": "flickr,wikimedia"})
+                                "page_size": OPENVERSE_PAGE_MAX, "source": "flickr,wikimedia"})
     try:
         j = get_json(f"{OPENVERSE}?{q}")
     except Exception as e:                                   # noqa: BLE001
-        print(f"  openverse unavailable: {str(e)[:80]}")
+        print(f"  WARNING openverse unavailable ({str(e)[:80]}) - the candidates below are Commons only")
         return []
     out = []
     for r in j.get("results", []):

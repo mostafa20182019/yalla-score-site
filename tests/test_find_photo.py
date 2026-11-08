@@ -51,6 +51,17 @@ cands, sub = F.find("q", None, 1200, 10)
 check([c["url"] for c in cands] == ["u/c", "u/a"], f"NC dropped, duplicate dropped, widest first: {[c['url'] for c in cands]}")
 check(cands[0]["wide"] and not cands[1]["wide"], "the width flag follows --min-width")
 
+# Openverse: an anonymous client may ask for at most 20 per page (more = HTTP 401,
+# which used to be swallowed - Openverse added nothing from 11-06 to 11-08)
+import importlib                                         # noqa: E402
+importlib.reload(F)            # the merge checks above replaced openverse() with a stub
+_urls = []
+_real_get = F.get_json
+F.get_json = lambda url, timeout=40: (_urls.append(url), {"results": []})[1]
+F.openverse("Omar Marmoush", 24)
+F.get_json = _real_get
+check(_urls and "page_size=20" in _urls[0], f"Openverse is asked for one page of 20, never more: {_urls[:1]}")
+
 # --club (2026-11-08: the player in the STORY'S club's shirt first)
 al = F.club_aliases("Paris Saint-Germain")
 check("psg" in al and "saint" not in al and "paris" not in al,
