@@ -147,10 +147,13 @@ ck("9e a second sync is quiet", run().get("removed") == [])
 
 # 7 the prompts send a curated club's NEW photo through its folder (user ask
 # 2026-10-18: the folders are where he sees what his clubs' stories used)
+# the image rules live in article-image.md since 2026-11-08 (graphic-designer owns the images)
+_ir = io.open(".github/prompts/article-image.md", encoding="utf-8").read()
 _pr = io.open(".github/prompts/daily-article.md", encoding="utf-8").read()
-ck("8a daily-article saves a curated club's photo into team-photos/<slug>/ and runs team_photos.py",
-   "team-photos/<slug>/" in _pr and "python team_photos.py" in _pr and "credits.txt" in _pr)
-ck("8b ...and commits the folder + registry with the article", "git add team-photos data/team_photos.json" in _pr)
+ck("8a the image rules save a curated club's photo into team-photos/<slug>/ and run team_photos.py",
+   "team-photos/<slug>/" in _ir and "python team_photos.py" in _ir and "credits.txt" in _ir)
+ck("8b ...and the daily commit carries the folder + registry the designer lists",
+   "every path graphic-designer listed in `files:`" in _pr and "team-photos data/team_photos.json media/thumbs" in _pr)
 _wf = io.open(".github/workflows/daily-article.yml", encoding="utf-8").read()
 ck("8c the parked-draft commit carries the folder and the registry too", "git add drafts media team-photos data/team_photos.json" in _wf)
 

@@ -77,8 +77,9 @@ ck("--teams finds the NEXT meeting, in either order",
 ck("--teams falls back to the latest played meeting",
    MC.find_fixture("الأهلي", "الزمالك", rows, "2026-10-12")["kickoff"] == "2026-05-01")
 ck("--teams: no fixture -> None (the card draws the names only)", MC.find_fixture("الأهلي", "بيراميدز", rows) is None)
-dp = io.open(".github/prompts/daily-article.md", encoding="utf-8").read()
-ck("the daily prompt sends matchup stories to the card", "MATCHUP STORIES USE OUR CARD" in dp
+# the image rules moved to article-image.md (2026-11-08: graphic-designer owns the images)
+dp = io.open(".github/prompts/article-image.md", encoding="utf-8").read()
+ck("the image rules send matchup stories to the card", "MATCHUP STORIES USE OUR CARD" in dp
    and "matchup_card.py --teams" in dp)
 pr = io.open(".github/prompts/match-article.md", encoding="utf-8").read()
 ck("the prompt makes the writer use brief.image and commit its file", "`brief.image` first" in pr and "git add` `image.file`" in pr)

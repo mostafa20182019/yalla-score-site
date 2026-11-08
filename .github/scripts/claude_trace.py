@@ -36,6 +36,7 @@ TOOL_ARG = {
     "Glob": ("pattern", 60),
     "Grep": ("pattern", 60),
     "Task": ("description", 80),
+    "Agent": ("description", 80),     # the hand-off to graphic-designer (2026-11-08)
 }
 
 
@@ -113,12 +114,14 @@ def main():
                 f" · {ev.get('error_status', '?')} {ev.get('error', '')}"
                 f" · waiting {round((ev.get('retry_delay_ms') or 0) / 1000, 1)}s")
         elif t == "assistant":
+            # a helper agent's own steps (graphic-designer) carry parent_tool_use_id
+            sub = "↳ " if ev.get("parent_tool_use_id") else ""
             for b in blocks(ev.get("message")):
                 if b.get("type") == "tool_use":
                     tools += 1
-                    say(f"{el}  → {b.get('name', '?'):<10} {tool_summary(b.get('name'), b.get('input'))}")
+                    say(f"{el}  {sub}→ {b.get('name', '?'):<10} {tool_summary(b.get('name'), b.get('input'))}")
                 elif b.get("type") == "text" and b.get("text", "").strip():
-                    say(f"{el}  · {one_line(b['text'], 160)}")
+                    say(f"{el}  {sub}· {one_line(b['text'], 160)}")
         elif t == "user":
             for b in blocks(ev.get("message")):
                 if b.get("type") == "tool_result" and b.get("is_error"):
