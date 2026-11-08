@@ -55,7 +55,8 @@ ok("10 the rules file carries every image rule that used to live in the prompts"
    all(k in r for k in ("MATCHUP STORIES USE OUR CARD", "CREDIT SELF-TEST", "THE LIVING-STORY TEST",
                         "THE EDITOR'S TEAM FOLDERS COME FIRST", "NO REUSE FROM media/", "IMAGE VARIETY",
                         "HERO CROP CHECK", "WHERE A NEW PHOTO LIVES", "COMPOSE THE NEWS IMAGE", "news_image.py", "find_photo.py",
-                        "UNIQUE media/ FILENAME", "THE FOLDER PATH IS NOT EXEMPT", "BEWARE NAME CLASHES")))
+                        "UNIQUE media/ FILENAME", "THE FOLDER PATH IS NOT EXEMPT", "BEWARE NAME CLASHES",
+                        "THE STORY'S CLUB SHIRT", "THE STORY'S MOOD", "--club", "--mood")))
 ok("11 ...and names the four lines the designer returns",
    all(k in r for k in ("`image_url:", "`image_credit:", "`files:", "`why:")))
 ok("12 the writer's agent file hands images over instead of composing them",

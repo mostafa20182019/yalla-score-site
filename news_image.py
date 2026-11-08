@@ -297,8 +297,9 @@ def diag_gradient(size, a, b):
 
 
 # ---------------------------------------------------------------- styles
-def style_a(photo, face, kicker):
+def style_a(photo, face, kicker, mood="neutral"):
     pic, _ = frame(photo, W, H, face, tx=0.5, ty=0.34, face_share=(0.12, 0.30))
+    pic = grade(pic, mood)
     im = pic.convert("RGBA")
     fade = Image.new("L", (1, H), 0)
     for y in range(H):
@@ -315,7 +316,7 @@ def style_a(photo, face, kicker):
     return im
 
 
-def style_b(photo, face, kicker):
+def style_b(photo, face, kicker, mood="neutral"):
     im = diag_gradient((W, H), NAVY, BLUE_D)
     stripes(im)
     x0, y0, x1, y1 = 300, 70, 1530, 830
@@ -323,6 +324,7 @@ def style_b(photo, face, kicker):
     im.alpha_composite(shadow((W, H), (x0 + 10, y0 + 22, x1 + 10, y1 + 22), r))
     ImageDraw.Draw(im).rounded_rectangle((x0 - bd, y0 - bd, x1 + bd, y1 + bd), radius=r + bd, fill=WHITE)
     pic, _ = frame(photo, x1 - x0, y1 - y0, face, tx=0.5, ty=0.36)
+    pic = grade(pic, mood)
     m = Image.new("L", pic.size, 0)
     ImageDraw.Draw(m).rounded_rectangle((0, 0, pic.width - 1, pic.height - 1), radius=r, fill=255)
     pic = pic.convert("RGBA")
@@ -336,18 +338,64 @@ def style_b(photo, face, kicker):
     return im
 
 
-def style_c(photo, face, kicker):
+# ---------------------------------------------------------------- the mood
+# User, 2026-11-08: «لو الخبر حزين تخلى الصورة حزينة ولو الخبر حلو تخلى
+# الصورة مفرحة». The EXPRESSION comes from choosing the right photo (a smile
+# for good news, a serious or dejected face for bad news) - this only grades
+# colour and light to match: never an edit of the person, the shirt or the
+# face. happy: warmer, brighter, a touch more colour, the bright brand edge.
+# sad: most of the colour drained, darker, cooler, a soft vignette, a slate
+# panel and a muted steel edge instead of the bright blue.
+MOODS = {
+    "neutral": {"sat": 1.00, "bright": 1.00, "contrast": 1.00, "tint": (0, 0, 0), "vignette": 0.0,
+                "panel": (NAVY, (14, 52, 86)), "edge": BLUE, "bar": BLUE},
+    "happy":   {"sat": 1.16, "bright": 1.05, "contrast": 1.04, "tint": (7, 3, -6), "vignette": 0.0,
+                "panel": (NAVY, (16, 64, 108)), "edge": BLUE, "bar": BLUE},
+    "sad":     {"sat": 0.42, "bright": 0.88, "contrast": 0.96, "tint": (-5, 0, 9), "vignette": 0.38,
+                "panel": ((8, 15, 24), (30, 40, 52)), "edge": (112, 128, 146), "bar": (140, 154, 170)},
+}
+
+
+def grade(pic, mood):
+    """Colour and light only."""
+    from PIL import ImageEnhance                                   # noqa: PLC0415
+    m = MOODS[mood]
+    if mood == "neutral":
+        return pic
+    out = ImageEnhance.Color(pic.convert("RGB")).enhance(m["sat"])
+    out = ImageEnhance.Brightness(out).enhance(m["bright"])
+    out = ImageEnhance.Contrast(out).enhance(m["contrast"])
+    if any(m["tint"]):
+        r, g, b = out.split()
+        r, g, b = (ch.point(lambda v, t=t: max(0, min(255, v + t))) for ch, t in zip((r, g, b), m["tint"]))
+        out = Image.merge("RGB", (r, g, b))
+    if m["vignette"]:
+        w, h = out.size
+        small = Image.new("L", (64, 36), 0)
+        px = small.load()
+        for x in range(64):
+            for y in range(36):
+                dx, dy = (x - 31.5) / 32, (y - 17.5) / 18
+                px[x, y] = int(255 * min(1.0, max(0.0, (dx * dx + dy * dy) ** 0.5 - 0.45)) * m["vignette"])
+        dark = Image.new("RGB", out.size, (0, 0, 0))
+        out = Image.composite(dark, out, small.resize((w, h), Image.BICUBIC))
+    return out
+
+
+def style_c(photo, face, kicker, mood="neutral"):
+    m_ = MOODS[mood]
     edge_top, edge_bot = 660, 540                 # the slanted edge of the panel
     pic, _ = frame(photo, W - edge_bot, H, face, tx=0.56, ty=0.36)
-    im = Image.new("RGBA", (W, H), NAVY + (255,))
+    pic = grade(pic, mood)
+    im = Image.new("RGBA", (W, H), m_["panel"][0] + (255,))
     im.alpha_composite(pic.convert("RGBA"), (edge_bot, 0))
-    panel = diag_gradient((W, H), NAVY, (14, 52, 86))
+    panel = diag_gradient((W, H), *m_["panel"])
     stripes(panel, alpha=10)
     m = Image.new("L", (W, H), 0)
     ImageDraw.Draw(m).polygon([(0, 0), (edge_top, 0), (edge_bot, H), (0, H)], fill=255)
     im.paste(panel, (0, 0), m)
     d = ImageDraw.Draw(im)
-    d.line([(edge_top, 0), (edge_bot, H)], fill=BLUE, width=16)
+    d.line([(edge_top, 0), (edge_bot, H)], fill=m_["edge"], width=16)
     # label then wordmark, both in rows ~25-55 %: the band a desktop page shows
     wm = wordmark(112)
     cx = 300
@@ -357,7 +405,7 @@ def style_c(photo, face, kicker):
         while f.getlength(s) > 470 and f.size > 40:
             f = C.font("ExtraBold", f.size - 4)
         d.text((cx, 270), s, font=f, fill=WHITE, anchor="mm")
-        d.rounded_rectangle((cx - 60, 330, cx + 60, 340), radius=5, fill=BLUE)
+        d.rounded_rectangle((cx - 60, 330, cx + 60, 340), radius=5, fill=m_["bar"])
         paste(im, wm, cx - wm.width / 2, 380)
     else:
         paste(im, wm, cx - wm.width / 2, H * 0.42 - wm.height / 2)
@@ -367,14 +415,14 @@ def style_c(photo, face, kicker):
 STYLES = {"a": style_a, "b": style_b, "c": style_c}
 
 
-def build(photo_src, out, kicker="", style="c", focus=None):
+def build(photo_src, out, kicker="", style="c", focus=None, mood="neutral"):
     photo = unpad(load_photo(photo_src))
     if focus:
         fx, fy = (float(v) for v in focus.split(","))
         face = (fx * photo.width, fy * photo.height, photo.height * 0.12)
     else:
         face = find_face(photo)
-    im = STYLES[style](photo, face, kicker).convert("RGB")
+    im = STYLES[style](photo, face, kicker, mood).convert("RGB")
     if out:
         os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
         im.save(out, "JPEG", quality=88, optimize=True, progressive=True)
@@ -386,11 +434,14 @@ def main():
     ap.add_argument("--photo", required=True, help="the licensed photo (file or URL)")
     ap.add_argument("--kicker", default="", help="1-3 Arabic words: the club, the competition or the story type")
     ap.add_argument("--style", default="c", choices=sorted(STYLES), help="c = the chosen house style (default)")
+    ap.add_argument("--mood", default="neutral", choices=sorted(MOODS),
+                    help="the story's mood: happy (a win, a goal, a renewal, a signing, an award, a comeback), "
+                         "sad (a loss, an injury, criticism, a sacking, an elimination, a death), neutral otherwise")
     ap.add_argument("--focus", help="x,y of the face as fractions of the photo, when detection misses it")
     ap.add_argument("--out", required=True)
     ap.add_argument("--debug", action="store_true", help="also write <out>-face.jpg: the photo with the face found marked")
     a = ap.parse_args()
-    im, face = build(a.photo, a.out, a.kicker, a.style, a.focus)
+    im, face = build(a.photo, a.out, a.kicker, a.style, a.focus, a.mood)
     if a.debug:
         from PIL import ImageDraw as D
         p = unpad(load_photo(a.photo))

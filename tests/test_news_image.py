@@ -82,6 +82,29 @@ ok("7 no club crest, kit colour or cutout in the code",
 im2, _ = N.build(p, tmp, "باريس سان جيرمان وأولمبيك مارسيليا", "c", "0.5,0.2")
 ok("8 a long label renders without overflowing the panel (no exception, size kept)", im2.size == (1600, 900))
 
+# 8b the mood grade (2026-11-08: «لو الخبر حزين تخلى الصورة حزينة ولو الخبر حلو تخلى الصورة مفرحة»)
+from PIL import ImageStat  # noqa: E402
+col = noise(900, 900, seed=5)
+p2 = os.path.join(TMP, "news_image_mood.png")
+col.save(p2)
+sat = {}
+for mood in ("happy", "neutral", "sad"):
+    im_m, _ = N.build(p2, None, "الأهلي", "c", "0.5,0.3", mood)
+    region = im_m.crop((900, 100, 1500, 800)).convert("HSV")
+    sat[mood] = ImageStat.Stat(region).mean[1]
+    if mood == "sad":
+        sad_edge = im_m.getpixel((600, 450))
+ok("8b the mood grades the photo: happy more colourful than neutral, sad far less",
+   sat["happy"] > sat["neutral"] + 3 and sat["sad"] < sat["neutral"] * 0.6, {k: round(v) for k, v in sat.items()})
+ok("8c a sad image trades the bright blue edge for a muted steel one", abs(sad_edge[2] - 146) < 30 and sad_edge[2] - sad_edge[0] < 60, sad_edge)
+ok("8d the mood is a command-line choice: happy / neutral / sad", '"--mood"' in src and set(N.MOODS) == {"happy", "neutral", "sad"})
+ok("8e the grade never touches the person: no cutout, no face or shirt edit in grade()",
+   "def grade(" in src and "remove(" not in src[src.index("def grade("):src.index("def style_c(")])
+try:
+    os.remove(p2)
+except Exception:
+    pass
+
 # 9 the real-photo face check, only where the person finder exists
 try:
     import rembg  # noqa: F401
