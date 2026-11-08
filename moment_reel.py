@@ -191,17 +191,17 @@ def scene(sc, t, ctx):
         crest(im, t, "home", ctx, 340, W / 2, 620)
         lines_block(im, t, lines, (900, 985), weight="ExtraBold", size=60, t0=0.3)
     elif kind == "teams":
-        lines_block(im, t, lines[:1], (330,), weight="ExtraBold", size=68, t0=0.1)
+        lines_block(im, t, lines[:1], (480,), weight="ExtraBold", size=68, t0=0.1)
         for side, x, t0 in (("home", W * 0.72, 0.35), ("away", W * 0.28, 0.55)):
-            crest(im, t, side, ctx, 300, x, 700, t0=t0)
+            crest(im, t, side, ctx, 300, x, 760, t0=t0)
             e = ease(t, t0 + 0.2, FADE)
             if e > 0:
                 lay = layer()
                 d = ImageDraw.Draw(lay)
                 nm = C.ar(ctx[side]["name"])
-                C.draw_center(d, x, 890, nm, C.fit(d, nm, "ExtraBold", 54, W * 0.40), C.WHITE)
+                C.draw_center(d, x, 950, nm, C.fit(d, nm, "ExtraBold", 54, W * 0.40), C.WHITE)
                 put(im, lay, e)
-        lines_block(im, t, lines[1:], (1110,), size=50, fill=SOFT, t0=0.9)
+        lines_block(im, t, lines[1:], (1150,), size=50, fill=SOFT, t0=0.9)
     elif kind in ("goal", "climax"):
         if sc.get("photo"):
             photo_panel(im, t, ctx["photo"], W / 2, 620, 560, 660, ctx["credit"])
@@ -219,8 +219,8 @@ def scene(sc, t, ctx):
             im = Image.blend(im, Image.new("RGB", (W, H), (0, 0, 0)), k)
     elif kind == "finale":
         crest(im, t, "home", ctx, 900, W / 2, 860, alpha=0.18)
-        lines_block(im, t, lines, (400, 490), weight="ExtraBold", size=64, t0=0.1)
-        big_at(im, t, sc["big"], 640, 280, t0=0.1 + len(lines) * STAGGER)
+        lines_block(im, t, lines, (480, 570), weight="ExtraBold", size=64, t0=0.1)
+        big_at(im, t, sc["big"], 740, 280, t0=0.1 + len(lines) * STAGGER)
     elif kind == "cta":
         R.logo_at(im, W / 2, 560, 280)
         lines_block(im, t, lines[:1], (770,), weight="ExtraBold", size=64, t0=0.05)
