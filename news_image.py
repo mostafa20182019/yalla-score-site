@@ -76,22 +76,28 @@ def load_photo(src):
 def unpad(photo):
     """Strip a pillarbox: many vetted photos were saved as a narrow photo on
     a blurred, enlarged copy of itself (1600x762). The blurred bands carry no
-    fine detail, so the real photo is the central run of columns whose
-    gradient energy is high. Returns the photo unchanged when there is no
-    such band."""
-    try:
-        import numpy as np
-    except Exception:
-        return photo
+    fine detail, so the real photo is the central run of columns with edge
+    energy. Pillow only (2026-11-08): the deploy-gate runner has no numpy,
+    and a numpy-only version silently did nothing there - one implementation
+    everywhere. Returns the photo unchanged when there is no such band."""
+    from PIL import ImageChops                                     # noqa: PLC0415
     k = min(1.0, 800 / photo.width)
-    g = np.asarray(photo.convert("L").resize((max(1, int(photo.width * k)), max(1, int(photo.height * k)))), dtype=np.float32)
-    e = np.abs(np.diff(g, axis=0)).mean(axis=0)[:-1] + np.abs(np.diff(g, axis=1)).mean(axis=0)
-    e = np.convolve(e, np.ones(9) / 9, mode="same")
-    n = len(e)
-    mid = float(np.median(e[int(n * 0.45):int(n * 0.55)]))
+    g = photo.convert("L").resize((max(1, int(photo.width * k)), max(1, int(photo.height * k))))
+    w, h = g.size
+    if w < 40 or h < 4:
+        return photo
+    # per column: mean |vertical step| + mean |horizontal step| (exact, not
+    # rounded to 8 bits), then a 9-wide zero-padded running mean
+    dv = list(ImageChops.difference(g.crop((0, 1, w, h)), g.crop((0, 0, w, h - 1))).getdata())
+    dh = list(ImageChops.difference(g.crop((1, 0, w, h)), g.crop((0, 0, w - 1, h))).getdata())
+    col = [sum(dv[x::w]) / (h - 1) + sum(dh[x::w - 1]) / h for x in range(w - 1)]
+    n = len(col)
+    e = [sum(col[max(0, x - 4):x + 5]) / 9 for x in range(n)]
+    mid_band = sorted(e[int(n * 0.45):int(n * 0.55)])
+    mid = mid_band[len(mid_band) // 2] if mid_band else 0
     if mid <= 0:
         return photo
-    sharp = e > mid * 0.30
+    sharp = [v > mid * 0.30 for v in e]
     c = n // 2
     if not sharp[c]:
         return photo
@@ -106,11 +112,15 @@ def unpad(photo):
     # side is a blurred background (bokeh), not padding - keep the photo.
     if min(left, right) < n * 0.08 or abs(left - right) > n * 0.06:
         return photo
-    side = max(e[:max(1, a - 5)].mean(), e[min(n - 1, b + 5):].mean())
+    lo = e[:max(1, a - 5)]
+    hi = e[min(n - 1, b + 5):]
+    side = max(sum(lo) / len(lo), sum(hi) / len(hi))
     if (b - a + 1) < n * 0.20 or side > mid * 0.30:
         return photo
     pad = 3                                        # stay clear of the soft seam
-    return photo.crop((int((a + pad) / k), 0, int((b + 1 - pad) / k), photo.height))
+    x0 = (a + pad) / k
+    x1 = (b + 1 - pad) / k
+    return photo.crop((int(x0), 0, int(x1), photo.height))
 
 
 def _person_box(photo):
