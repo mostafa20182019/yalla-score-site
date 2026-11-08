@@ -32,8 +32,8 @@ on:
         description: "Post the line-up CARD of a 365scores game id (dispatched by the Worker when both XIs are announced)."
         required: false
         default: ""
-      xi_redo:
-        description: "Replace a game's TEXT line-up post with the CARD: deletes the old post, posts the photo (365scores game id)."
+      text:
+        description: "Post drafts/fb/<name>.txt as a plain text post (give the name without .txt; the file must be on main). Posted once per name."
         required: false
         default: ""
       daycard:
@@ -112,7 +112,7 @@ jobs:
           REPOST: ${{ inputs.repost }}
           UPDATE: ${{ inputs.update }}
           XI: ${{ inputs.xi }}
-          XI_REDO: ${{ inputs.xi_redo }}
+          TEXT: ${{ inputs.text }}
           DAYCARD: ${{ inputs.daycard }}
           GOAL: ${{ inputs.goal }}
           WHISTLE: ${{ inputs.whistle }}
@@ -131,8 +131,8 @@ jobs:
             python fb_post.py --goal "$GOAL" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$XI" ]; then
             python fb_post.py --xi "$XI" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
-          elif [ -n "$XI_REDO" ]; then
-            python fb_post.py --xi "$XI_REDO" --redo | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+          elif [ -n "$TEXT" ]; then
+            python fb_post.py --text "drafts/fb/$TEXT.txt" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$DAYCARD" ]; then
             python fb_post.py --daycard "$DAYCARD" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$UPDATE" ]; then

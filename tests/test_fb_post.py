@@ -261,3 +261,23 @@ assert state()["687"]["post_id"] not in (None, "OLD_POST") and state()["687"]["o
 assert run(old, argv=("--repost", "999")) == 1
 urllib.request.urlopen = _base
 print("18 OK: --repost refuses while the old post exists, then reposts a 40h-old article once")
+
+# 19) --text: posts drafts/fb/<name>.txt as a plain post once, records it under
+# kind "text" / <name>, a second run is a no-op, a missing file is an error
+# (user, 2026-11-08: a one-off worded post that goes through the store like
+# everything else)
+reset_state()
+tdir = os.path.join(tmp, "fb"); os.makedirs(tdir, exist_ok=True)
+tpath = os.path.join(tdir, "mun-avl.txt")
+with open(tpath, "w", encoding="utf-8") as fh:
+    fh.write("🏁 يونايتد يخسر\nسطر ثانٍ\n#الجون\n")
+assert run([], argv=("--text", tpath)) == 0
+feeds = [b for u, b in calls if u == fp.GRAPH_FEED]
+assert len(feeds) == 1, calls
+assert urllib.parse.parse_qs(feeds[0])["message"][0] == "🏁 يونايتد يخسر\nسطر ثانٍ\n#الجون", feeds
+rec = store.get_post("text", "mun-avl")
+assert rec and rec["post_id"] and rec["title"] == "🏁 يونايتد يخسر", rec
+assert run([], argv=("--text", tpath)) == 0 and [b for u, b in calls if u == fp.GRAPH_FEED] == []
+assert run([], argv=("--text", os.path.join(tdir, "missing.txt"))) == 1
+assert run([], argv=("--text", tpath, "--dry")) == 0 and [b for u, b in calls if u == fp.GRAPH_FEED] == []
+print("19 OK: --text posts the file once, records kind text, refuses a missing file")

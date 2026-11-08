@@ -1063,6 +1063,44 @@ def daycard_post(token, what="results", dry=False):
     return 0
 
 
+# ---------------------------------------------------------------- a plain text post from a file
+# User, 2026-11-08 (a one-off post the editor words himself - «يونايتد يخسر
+# ويبقى في مراكز الهبوط»): the text lives in git under drafts/fb/<name>.txt,
+# the workflow input `text` names the file, and the store key "text" / <name>
+# makes a second run a no-op. A file in git rather than the text in the
+# workflow input: the Actions input box is one line, and the text is read in
+# the diff before anyone clicks Run.
+def text_post(token, path, dry=False):
+    """Post the UTF-8 text of one file as a plain post; 0 = done or already posted."""
+    name = os.path.splitext(os.path.basename(path or ""))[0]
+    try:
+        with open(path, encoding="utf-8") as fh:
+            message = fh.read().strip()
+    except OSError as e:
+        print(f"--text: cannot read {path!r} ({e})"); return 1
+    if not message:
+        print(f"--text: {path} is empty - nothing posted"); return 1
+    title = message.split("\n")[0][:80]
+    rec = store.get_post("text", name)
+    if rec and rec.get("post_id"):
+        print(f"text {name}: already posted ({rec['post_id']})"); return 0
+    if dry:
+        print(message); return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if not store.claim("text", name, title=title):
+        print(f"text {name}: claimed by another run - nothing posted"); return 0
+    try:
+        pid = post_text(token, message)
+        store.record_post("text", name, pid, title=title)
+        print(f"posted the text {name}: {pid}")
+    except Exception as e:  # noqa: BLE001
+        print(f"text {name}: post FAILED: {e}")
+        store.release("text", name)
+        return 1
+    return 0
+
+
 def delete_post(token, post_id):
     """Remove one of the page's posts. True when Graph confirms."""
     url = f"{GRAPH}/{post_id}?" + urllib.parse.urlencode({"access_token": token})
@@ -1084,7 +1122,7 @@ def post_text(token, message):
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle", "--daycard")):
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle", "--daycard", "--text")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -1118,6 +1156,9 @@ def main() -> int:
     if "--goal" in sys.argv[1:]:
         i = sys.argv.index("--goal")
         return goal_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
+    if "--text" in sys.argv[1:]:
+        i = sys.argv.index("--text")
+        return text_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
     if "--daycard" in sys.argv[1:]:
         i = sys.argv.index("--daycard")
         return daycard_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "results", dry="--dry" in sys.argv[1:])
