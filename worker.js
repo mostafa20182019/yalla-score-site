@@ -1226,7 +1226,9 @@ export default {
     // daily jobs ride on existing firings (2026-10-22, user: more spotlight on
     // the global clubs' results):
     //   22:16 UTC (00:16 / 01:16 Cairo) -> fb-post.yml daycard=results, the
-    //   night's results card; Monday 06:00 UTC -> round-article.yml for a
+    //   night's results card AND the news-from-the-data posts (story_events.py,
+    //   2026-11-08: a cup round done, a league's first half, «في مثل هذا
+    //   اليوم») - the workflow runs both; Monday 06:00 UTC -> round-article.yml for a
     //   European league's completed round (competition=auto-europe), beside
     //   the daily article that hour.
     const when = new Date(event.scheduledTime || Date.now());

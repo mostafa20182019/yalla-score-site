@@ -1101,6 +1101,55 @@ def text_post(token, path, dry=False):
     return 0
 
 
+# ---------------------------------------------------------------- news from the data (story_events.py)
+# User, 2026-11-08: «عايزك تطلع أخبار من الداتا» - a cup round that ended (the
+# next round's pairings), the first half of a league (the table), a coach
+# who left the national team (his record in our archive), «في مثل هذا
+# اليوم». story_events.detect() reads the data files and returns events with
+# a stable ref; each goes out ONCE through the store (kind = the event kind,
+# ref = its ref), so the nightly daycard dispatch runs this every night and a
+# quiet night posts nothing. --dry prints the texts: the user reads the
+# wording before anything goes live.
+def events_post(token, dry=False, today=None):
+    """Post every event story_events finds that is not yet on record;
+    0 = done or nothing to do, 1 = a post failed."""
+    import story_events as SE
+    try:
+        evs = SE.detect(today=today)
+    except Exception as e:  # noqa: BLE001 - a data file that will not parse must not fail the daycard run
+        print(f"events: detector failed ({e}) - nothing posted"); return 1
+    if not evs:
+        print("events: nothing new in the data"); return 0
+    # THE SWITCH (user rule: no post goes live before he has read its wording).
+    # Until the repo variable FB_EVENTS is "on" the nightly run only PRINTS
+    # the texts into the Actions summary - he reads them there, then flips
+    # the variable (Settings > Secrets and variables > Actions > Variables).
+    armed = (os.environ.get("FB_EVENTS", "") or "").strip().lower() == "on"
+    if not dry and not armed:
+        print("events: FB_EVENTS is not on - the texts are printed, nothing is posted")
+    rc = 0
+    for ev in evs:
+        kind, ref, title = ev["kind"], ev["ref"], (ev.get("title") or "")[:80]
+        rec = store.get_post(kind, ref)
+        if rec and rec.get("post_id"):
+            print(f"{kind} {ref}: already posted ({rec['post_id']})"); continue
+        if dry or not armed:
+            print(f"--- {kind} / {ref}\n{ev['text']}\n"); continue
+        if not token:
+            print(f"{kind} {ref}: FB_PAGE_TOKEN not set - skipping"); continue
+        if not store.claim(kind, ref, title=title):
+            print(f"{kind} {ref}: claimed by another run - nothing posted"); continue
+        try:
+            pid = post_text(token, ev["text"])
+            store.record_post(kind, ref, pid, title=title)
+            print(f"posted {kind} {ref}: {pid}")
+        except Exception as e:  # noqa: BLE001
+            print(f"{kind} {ref}: post FAILED: {e}")
+            store.release(kind, ref)
+            rc = 1
+    return rc
+
+
 def delete_post(token, post_id):
     """Remove one of the page's posts. True when Graph confirms."""
     url = f"{GRAPH}/{post_id}?" + urllib.parse.urlencode({"access_token": token})
@@ -1122,7 +1171,7 @@ def post_text(token, message):
 def main() -> int:
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     items = load_articles()
-    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle", "--daycard", "--text")):
+    if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle", "--daycard", "--text", "--events")):
         print("no articles - skipping")
         return 0
     if "--pending" in sys.argv[1:]:
@@ -1159,6 +1208,11 @@ def main() -> int:
     if "--text" in sys.argv[1:]:
         i = sys.argv.index("--text")
         return text_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "", dry="--dry" in sys.argv[1:])
+    if "--events" in sys.argv[1:]:
+        i = sys.argv.index("--events")
+        d = sys.argv[i + 1] if i + 1 < len(sys.argv) and not sys.argv[i + 1].startswith("--") else ""
+        return events_post(token, dry="--dry" in sys.argv[1:],
+                           today=datetime.date.fromisoformat(d) if d else None)
     if "--daycard" in sys.argv[1:]:
         i = sys.argv.index("--daycard")
         return daycard_post(token, sys.argv[i + 1] if i + 1 < len(sys.argv) else "results", dry="--dry" in sys.argv[1:])
