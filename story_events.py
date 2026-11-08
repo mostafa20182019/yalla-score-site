@@ -215,6 +215,37 @@ def derby_of(m):
     return None
 
 
+# ---------------------------------------------------------------- the event shape
+# One shape for every kind, so the same event can drive a Facebook post now
+# and a short site article / the daily-article prompt later (the user,
+# 2026-11-08: «أنا عايزك على طول تعمل أخبار بالشكل ده، يبقى إحنا بقى عندنا
+# أخبار خاصة بينا» - a permanent editorial line, not a one-off):
+#   kind, ref        the store key (posted exactly once)
+#   title            one line, Arabic
+#   competition      the raw competition name (COMP_LABEL has the Arabic)
+#   lines            the facts, one per line, in posting order
+#   link, link_label the page the post points at
+#   tags             hashtags after #الجون
+#   + the structured data the kind is made of: pairs / table / scorer / match /
+#     record / article / moment - what an article writer needs, untouched
+#   text             the finished post, render()ed from the above
+def event(kind, ref, title, lines, link, link_label, tags, competition=None, **data):
+    ev = {"kind": kind, "ref": ref, "title": title, "competition": competition,
+          "lines": list(lines), "link": link, "link_label": link_label,
+          "tags": [t for t in tags if t], **data}
+    ev["text"] = render(ev)
+    return ev
+
+
+def render(ev):
+    """The post: the fact lines, the link line, then «#الجون» + the tags."""
+    out = list(ev.get("lines") or [])
+    if ev.get("link"):
+        out.append(f"{ev.get('link_label') or 'التفاصيل'}: {ev['link']}")
+    out.append(" ".join(["#الجون"] + list(ev.get("tags") or [])).rstrip())
+    return "\n".join(out)
+
+
 # ---------------------------------------------------------------- (a) a cup round is complete
 def cup_round_done(matches, fixtures, cups=STAGED_CUPS):
     """One event per staged cup whose round «دور الـN» is fully FINISHED
@@ -244,20 +275,21 @@ def cup_round_done(matches, fixtures, cups=STAGED_CUPS):
             done_lbl, next_lbl = round_name(rd.get("label")), round_name(nxt.get("label"))
             season = season_of(min(m.get("kickoff") or "9999" for m in ms))
             ref = f"{comp}:R{_round_num(rd.get('label')) or rd.get('round')}:{season}"
-            events.append({
-                "kind": KIND_CUP, "ref": ref,
-                "title": f"انتهى {done_lbl} من {comp_label(comp)}",
-                "text": cup_round_text(comp, done_lbl, next_lbl, pairs),
-                "pairs": pairs,
-            })
+            pairs = sorted(pairs, key=lambda m: ((m.get("kickoff") or "9999"), m.get("koff_time") or ""))
+            events.append(event(
+                KIND_CUP, ref, f"انتهى {done_lbl} من {comp_label(comp)}، إليك مواجهات {next_lbl}",
+                cup_round_lines(comp, done_lbl, next_lbl, pairs),
+                comp_url(comp), "المواعيد كاملة", [comp_tag(comp)], competition=comp,
+                round_done=done_lbl, round_next=next_lbl, season=season,
+                pairs=[{"match_id": m.get("match_id"), "home": ar_team(m.get("home")), "away": ar_team(m.get("away")),
+                        "kickoff": m.get("kickoff"), "koff_time": m.get("koff_time")} for m in pairs]))
     return events
 
 
-def cup_round_text(comp, done_lbl, next_lbl, pairs):
-    label = comp_label(comp)
-    lines = [f"🏆 انتهى {done_lbl} من {label}.",
+def cup_round_lines(comp, done_lbl, next_lbl, pairs):
+    lines = [f"🏆 انتهى {done_lbl} من {comp_label(comp)}.",
              f"هذه مواجهات {next_lbl}:"]
-    for m in sorted(pairs, key=lambda m: ((m.get("kickoff") or "9999"), m.get("koff_time") or "")):
+    for m in pairs:
         h, a = _side_names(m)
         when = ""
         if m.get("kickoff"):
@@ -265,9 +297,7 @@ def cup_round_text(comp, done_lbl, next_lbl, pairs):
             if m.get("koff_time"):
                 when += f" {m['koff_time']}"
         lines.append(f"• {h} × {a}{when}")
-    lines.append(f"المواعيد كاملة: {comp_url(comp)}")
-    lines.append(f"#الجون {comp_tag(comp)}")
-    return "\n".join(lines)
+    return lines
 
 
 # ---------------------------------------------------------------- (b) the first half of a league
@@ -289,32 +319,33 @@ def league_half_done(standings, scorers, today=None):
         if min(played) < half or max(played) > half + 1:
             continue
         season = (st.get("season_label") or "").replace("/", "-") or season_of(today.isoformat())
-        events.append({
-            "kind": KIND_HALF, "ref": f"{comp}:{season}",
-            "title": f"انتهى الدور الأول من {comp_label(comp)}",
-            "text": league_half_text(comp, table, scorers_by.get(comp) or []),
-        })
+        rows = sorted(table, key=lambda r: int(r.get("pos") or 0))
+        top = (scorers_by.get(comp) or [None])[0]
+        scorer = ({"name": top["name"], "team": ar_team(top.get("team")), "goals": int(top.get("goals") or top.get("value"))}
+                  if top and top.get("name") and (top.get("goals") or top.get("value")) else None)
+        row = lambda r: {"pos": r.get("pos"), "team": ar_team(r.get("team")), "played": r.get("played"), "pts": r.get("pts"),
+                         "won": r.get("won"), "draw": r.get("draw"), "lost": r.get("lost"), "gf": r.get("gf"), "ga": r.get("ga")}
+        events.append(event(
+            KIND_HALF, f"{comp}:{season}", f"انتهى الدور الأول من {comp_label(comp)}",
+            league_half_lines(comp, rows, scorer), comp_url(comp, "standings"), "الجدول كاملًا",
+            [comp_tag(comp)], competition=comp, season=season, rounds=n - 1,
+            table={"top": [row(r) for r in rows[:TOP_N]], "bottom": [row(r) for r in rows[-BOTTOM_N:]]},
+            scorer=scorer))
     return events
 
 
-def league_half_text(comp, table, scorers):
-    label = comp_label(comp)
-    rows = sorted(table, key=lambda r: int(r.get("pos") or 0))
-    lines = [f"📊 انتهى الدور الأول من {label}.",
+def league_half_lines(comp, rows, scorer):
+    lines = [f"📊 انتهى الدور الأول من {comp_label(comp)}.",
              f"الخماسي الأول بعد {len(rows) - 1} جولة:"]
     for r in rows[:TOP_N]:
         lines.append(f"{r.get('pos')}. {ar_team(r.get('team'))} — {r.get('pts')} نقطة")
     lines.append("المراكز الأخيرة:")
     for r in rows[-BOTTOM_N:]:
         lines.append(f"{r.get('pos')}. {ar_team(r.get('team'))} — {r.get('pts')} نقطة")
-    top = scorers[0] if scorers else None
-    if top and top.get("name") and (top.get("goals") or top.get("value")):
-        g = top.get("goals") or top.get("value")
-        lines.append(f"⚽ الهداف: {top['name']} ({ar_team(top.get('team'))}) — {g} أهداف" if int(g) > 2
-                     else f"⚽ الهداف: {top['name']} ({ar_team(top.get('team'))}) — {g} هدف")
-    lines.append(f"الجدول كاملًا: {comp_url(comp, 'standings')}")
-    lines.append(f"#الجون {comp_tag(comp)}")
-    return "\n".join(lines)
+    if scorer:
+        g = scorer["goals"]
+        lines.append(f"⚽ الهداف: {scorer['name']} ({scorer['team']}) — {g} " + ("أهداف" if g > 2 else "هدف"))
+    return lines
 
 
 # ---------------------------------------------------------------- (c) on this day
@@ -357,14 +388,18 @@ def on_this_day(archive, moments, today=None):
     if best:
         _, m, why = best
         years = today.year - int(str(m["kickoff"])[:4])
-        return [{"kind": KIND_OTD, "ref": ref, "title": f"في مثل هذا اليوم: {ar_team(m['home'])} {m['home_score']}-{m['away_score']} {ar_team(m['away'])}",
-                 "text": otd_match_text(m, why, years), "match": m}]
+        return [event(KIND_OTD, ref, f"في مثل هذا اليوم: {ar_team(m['home'])} {m['home_score']}-{m['away_score']} {ar_team(m['away'])}",
+                      otd_match_lines(m, why, years), f"{SITE}/m/{m['match_id']}", "تفاصيل المباراة",
+                      [comp_tag(m.get("competition"))], competition=m.get("competition"),
+                      match=m, why=why[0], why_label=str(why[1]), years_ago=years)]
     for mo in moments or []:
         d = str(mo.get("date") or "")[:10]
         if len(d) == 10 and d[5:] == md and int(d[:4]) < today.year and mo.get("otd_lines"):
             years = today.year - int(d[:4])
-            return [{"kind": KIND_OTD, "ref": ref, "title": f"في مثل هذا اليوم: {mo.get('title') or mo['id']}",
-                     "text": otd_moment_text(mo, years), "moment": mo["id"]}]
+            return [event(KIND_OTD, ref, f"في مثل هذا اليوم: {mo.get('title') or mo['id']}",
+                          otd_moment_lines(mo, years), SITE, "الريل كامل على صفحتنا",
+                          [t for t in (mo.get("hashtags") or []) if t.startswith("#")],
+                          moment=mo["id"], years_ago=years)]
     return []
 
 
@@ -376,7 +411,7 @@ def _years_ago(n):
     return f"قبل {n} أعوام" if n <= 10 else f"قبل {n} عامًا"
 
 
-def otd_match_text(m, why, years):
+def otd_match_lines(m, why, years):
     h, a = _side_names(m)
     lines = [f"📅 في مثل هذا اليوم {_years_ago(years)}، {ar_date(m['kickoff'])}:",
              f"{h} {m['home_score']} - {m['away_score']} {a} في {comp_label(m.get('competition'))}."]
@@ -396,17 +431,13 @@ def otd_match_text(m, why, years):
             lines.append(f"أهداف {h}: " + "، ".join(by["h"]) + ".")
         if by["a"]:
             lines.append(f"أهداف {a}: " + "، ".join(by["a"]) + ".")
-    lines.append(f"تفاصيل المباراة: {SITE}/m/{m['match_id']}")
-    lines.append(f"#الجون {comp_tag(m.get('competition'))}")
-    return "\n".join(lines)
+    return lines
 
 
-def otd_moment_text(mo, years):
+def otd_moment_lines(mo, years):
     lines = [f"📅 في مثل هذا اليوم {_years_ago(years)}، {ar_date(mo['date'])}:"]
     lines += [ln.strip() for ln in mo.get("otd_lines") or [] if ln.strip()]
-    lines.append(f"الريل كامل على صفحتنا. {SITE}")
-    lines.append("#الجون " + " ".join(t for t in (mo.get("hashtags") or []) if t.startswith("#")))
-    return "\n".join(ln.rstrip() for ln in lines)
+    return lines
 
 
 # ---------------------------------------------------------------- (d) a coach leaves the national team
@@ -443,9 +474,13 @@ def coach_left(articles, archive, today=None):
                     key=lambda m: m.get("kickoff") or "")
         if not ms:
             continue
-        events.append({"kind": KIND_COACH, "ref": str(a.get("article_id")),
-                       "title": f"أرقام {name} مع {hit.group('team')}",
-                       "text": coach_record_text(name, hit.group("team"), ms, a), "matches": ms})
+        r = nt_record(ms)
+        events.append(event(KIND_COACH, str(a.get("article_id")), f"أرقام {name} مع {hit.group('team')}",
+                            coach_record_lines(name, hit.group("team"), ms, r), f"{SITE}/a/{a.get('article_id')}",
+                            "الخبر كاملًا", ["#منتخب_مصر"], competition=None, coach=name, team=hit.group("team"),
+                            article={"article_id": a.get("article_id"), "title": title, "pub_date": a.get("pub_date")},
+                            record={k: v for k, v in r.items() if k != "best"}, best=r["best"],
+                            since=ms[0]["kickoff"], matches=ms))
     return events
 
 
@@ -476,8 +511,7 @@ def _n(n, one, two, many):
     return f"{n} {many}" if 3 <= n <= 10 else f"{n} {one.split()[0]}"
 
 
-def coach_record_text(name, team, ms, art):
-    r = nt_record(ms)
+def coach_record_lines(name, team, ms, r):
     lines = [f"📊 {name} يرحل عن تدريب {team}.",
              f"أرقامه في المباريات التي تغطيها بيانات الجون (منذ {ar_date(ms[0]['kickoff'])}):",
              f"{_n(r['p'], 'مباراة واحدة', 'مباراتان', 'مباريات')}: فوز {r['w']}، تعادل {r['d']}، خسارة {r['l']}.",
@@ -485,9 +519,7 @@ def coach_record_text(name, team, ms, art):
     b = r["best"]
     if b:
         lines.append(f"أكبر فوز: {ar_team(b['home'])} {b['home_score']} - {b['away_score']} {ar_team(b['away'])} ({ar_date(b['kickoff'])}).")
-    lines.append(f"الخبر كاملًا: {SITE}/a/{art.get('article_id')}")
-    lines.append("#الجون #منتخب_مصر")
-    return "\n".join(lines)
+    return lines
 
 
 # ---------------------------------------------------------------- a MOMENT reel from an archived match
@@ -559,13 +591,25 @@ def moment_script(m, mid=None):
 
 
 # ---------------------------------------------------------------- all of it
+# THE REGISTRY: one entry per event kind, in posting order. A new kind is a
+# new pure function (data, today) -> [event(...)] and one line here, plus a
+# numbered case in tests/test_fb_post.py. Everything else - the store dedup,
+# the nightly run, the FB_EVENTS switch, --dry, --pending - is shared.
+DETECTORS = [
+    (KIND_CUP, lambda d, today: cup_round_done(d.get("matches"), d.get("fixtures"))),
+    (KIND_HALF, lambda d, today: league_half_done(d.get("standings"), d.get("scorers"), today)),
+    (KIND_COACH, lambda d, today: coach_left(d.get("articles"), d.get("archive"), today)),
+    (KIND_OTD, lambda d, today: on_this_day(d.get("archive"), d.get("moments"), today)),
+]
+
+
 def detect(data=None, today=None):
     """Every event on today's data, in posting order."""
     d = data or load_data()
-    return (cup_round_done(d.get("matches"), d.get("fixtures"))
-            + league_half_done(d.get("standings"), d.get("scorers"), today)
-            + coach_left(d.get("articles"), d.get("archive"), today)
-            + on_this_day(d.get("archive"), d.get("moments"), today))
+    out = []
+    for _, fn in DETECTORS:
+        out += fn(d, today)
+    return out
 
 
 def _find_match(mid, data):

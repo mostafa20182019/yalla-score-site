@@ -44,7 +44,14 @@ store (kind = the event kind, ref = its stable ref) - but only while the
 repo variable `FB_EVENTS` is `on`; until then the run prints the texts into
 the Actions summary and posts nothing, so the wording is read before it goes
 live. The nightly `daycard=results` dispatch runs it after the results card,
-and the `daycard` input accepts `events` to run it alone. `python story_events.py --moment
+the `daycard` input accepts `events` to run it alone, and publish.yml
+dispatches `daycard=events` on a refresh when `fb_post.py --events --pending`
+is not 0 (switch on), so an event that became true this evening posts within
+the refresh. This is a permanent editorial line («أخبار خاصة بينا»), so the
+kinds live in one registry (`story_events.DETECTORS`: one pure function per
+kind) and every event has one shape - title, competition, fact lines, link,
+tags, plus the structured data it was made of (pairings, table rows, the
+record, the match) - so the same detector can feed a site article later. `python story_events.py --moment
 <match_id> --id <name>` writes a `moment_reel.py` script from an archived
 match with its goals (`moments/<name>.json`); publish it with the `moment`
 input once the wording is approved.

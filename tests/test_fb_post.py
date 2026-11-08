@@ -389,3 +389,34 @@ assert SE.coach_left([art], [nt[3]], datetime.date(2026, 11, 8)) == [], "no NT m
 ev = SE.coach_left([dict(art, title="رسميًا.. إقالة علي ماهر من تدريب منتخب مصر")], nt, datetime.date(2026, 11, 8))
 assert len(ev) == 1 and ev[0]["text"].startswith("📊 علي ماهر يرحل"), ev
 print("23 OK: a coach leaving the NT -> his record from the archive, with the window it covers, posted once")
+
+# 24) the event SHAPE (a permanent editorial line, 2026-11-08): every kind is
+# registered once, every event carries the structured data an article could
+# be written from, and the post text is render()ed from that data - so a
+# detector added later gets the store, the switch, --dry and --pending for free
+assert [k for k, _ in SE.DETECTORS] == [SE.KIND_CUP, SE.KIND_HALF, SE.KIND_COACH, SE.KIND_OTD]
+SE.load_data = lambda: _D(fixtures=CUP, archive=[plain, big, derby] + nt, articles=[art], moments=[mo],
+                          standings=[{"competition": "Egyptian Premier League", "season_label": "2026/27", "table": tbl}], scorers=SC)
+evs = SE.detect(today=datetime.date(2026, 11, 8))
+assert [e["kind"] for e in evs] == [SE.KIND_CUP, SE.KIND_HALF, SE.KIND_COACH], [e["kind"] for e in evs]
+for e in evs + SE.detect(today=datetime.date(2027, 10, 11)):
+    for k in ("kind", "ref", "title", "competition", "lines", "link", "link_label", "tags", "text"):
+        assert k in e, (e["kind"], k)
+    assert e["text"] == SE.render(e) and e["text"].split("\n")[-1].startswith("#الجون") and all(ln.strip() for ln in e["lines"]), e["text"]
+cup, half, coach = evs
+assert cup["pairs"][0] == {"match_id": 101, "home": "الأهلي", "away": "الزمالك", "kickoff": "2026-12-01", "koff_time": "20:00"} and cup["round_next"] == "دور الـ16"
+assert half["table"]["top"][0]["team"] == "Club 1" and half["table"]["bottom"][-1]["pos"] == 20 and half["scorer"]["goals"] == 8 and half["rounds"] == 19
+assert coach["record"] == {"p": 2, "w": 1, "d": 1, "l": 0, "gf": 5, "ga": 0} and coach["best"]["match_id"] == "b" and coach["article"]["article_id"] == "1095"
+# --events --pending: the count publish.yml dispatches on (unposted events only)
+reset_state()
+buf = io.StringIO()
+with contextlib.redirect_stdout(buf):
+    run([], argv=("--events", "--pending"))
+assert buf.getvalue().strip() == "3", buf.getvalue()
+os.environ["FB_EVENTS"] = "on"
+assert run([], argv=("--events", "2026-11-08")) == 0 and len(feeds()) == 3
+buf = io.StringIO()
+with contextlib.redirect_stdout(buf):
+    run([], argv=("--events", "--pending"))
+assert buf.getvalue().strip() == "0", buf.getvalue()
+print("24 OK: one registry, one event shape with the structured data, text rendered from it; --events --pending counts the unposted")

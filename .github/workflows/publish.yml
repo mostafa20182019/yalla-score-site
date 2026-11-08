@@ -347,6 +347,30 @@ jobs:
             "https://api.github.com/repos/${{ github.repository }}/actions/workflows/fb-post.yml/dispatches" \
             -d '{"ref":"main"}' && echo "dispatched fb-post.yml"
 
+      # News from the data (story_events.py, 2026-11-08): a cup round that
+      # ended, a league's first half, «في مثل هذا اليوم»... The nightly
+      # daycard run posts them anyway; this makes one that became true this
+      # cycle post within the refresh instead of at midnight. One python read
+      # of the data files, a dispatch only when something is pending, and
+      # only once the user has switched FB_EVENTS on (before that the nightly
+      # run prints the texts for him to read).
+      - name: Dispatch the story events when one is pending
+        if: steps.deploy.outcome == 'success' && vars.FB_EVENTS == 'on'
+        continue-on-error: true
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
+          CF_D1_ID: ${{ secrets.CF_D1_ID }}
+        run: |
+          N=$(python fb_post.py --events --pending)
+          echo "story events pending a Facebook post: $N"
+          if [ "$N" = "0" ]; then exit 0; fi
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/fb-post.yml/dispatches" \
+            -d '{"ref":"main","inputs":{"daycard":"events"}}' && echo "dispatched fb-post.yml daycard=events"
+
       # Facebook result cards: one native image post per FINISHED curated-club
       # match (fb_cards.py renders it from data/matches.json + goal_events.json
       # fetched above). Runs every refresh, so a card lands within ~15 min of

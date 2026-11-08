@@ -1174,6 +1174,17 @@ def main() -> int:
     if not items and not any(f in sys.argv[1:] for f in ("--prediction", "--h2h", "--whoami", "--xi", "--goal", "--whistle", "--daycard", "--text", "--events")):
         print("no articles - skipping")
         return 0
+    if "--pending" in sys.argv[1:] and "--events" in sys.argv[1:]:
+        # how many story events are not yet on record - publish.yml dispatches
+        # fb-post.yml daycard=events when the answer is not 0, so a cup round
+        # that ended this evening posts on the next refresh, not at midnight
+        import story_events as SE
+        try:
+            evs = SE.detect()
+        except Exception as e:  # noqa: BLE001
+            print(f"events: detector failed ({e})", file=sys.stderr); print(0); return 0
+        n = sum(1 for ev in evs if not (store.get_post(ev["kind"], ev["ref"]) or {}).get("post_id"))
+        print(n); return 0
     if "--pending" in sys.argv[1:]:
         # how many articles WOULD be posted - lets publish.yml dispatch the
         # posting workflow only when there is something to do. The backend goes
