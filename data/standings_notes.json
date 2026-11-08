@@ -1,0 +1,27 @@
+{
+ "_why": "League tables whose points are NOT 3 x won + draw for a known, sourced reason (a forfeit without points, a points deduction). tests/test_warehouse.py check 38 accepts exactly these differences and still fails on any other, so a feed that changes shape is still caught. Keyed by competition (as standings.json names it) and the club's name in standings.json. `diff` = pts - (3*won + draw), constant for the rest of the season unless an appeal changes the ruling - when it does, update or delete the entry. Added 2026-11-08 (Tests red since 2026-11-07: the Botola ruling of 2026-11-06).",
+ "notes": [
+  {
+   "competition": "Moroccan Botola Pro",
+   "team": "الوداد الرياضي",
+   "diff": -3,
+   "since": "2026-11-06",
+   "why": "Round 1 derby (2026-09-26, 1-3 on the pitch): the LNFP disciplinary committee ruled Wydad Temara lost 3-0 for fielding the suspended Imad Babassa, but Wydad AC does NOT receive the three points. 365scores counts the forfeit in Wydad's won column (4) while its points stay 11 = 3 real wins + 2 draws. Wydad AC has announced an appeal.",
+   "sources": [
+    "https://www.lesiteinfo.com/sport/686444-botola-le-widad-de-temara-perd-sur-tapis-vert-le-wac-ne-recupere-pas-les-points.html",
+    "https://sport.le360.ma/football/botola/affaire-babass-prive-des-trois-points-le-wydad-de-casablanca-contre-attaque_RYNVAX6WTFGCHFAGHHL3NFPCKM/"
+   ]
+  },
+  {
+   "competition": "Moroccan Botola Pro",
+   "team": "الوداد الرياضي تمارة",
+   "diff": -1,
+   "since": "2026-11-06",
+   "why": "Same ruling: the derby is a 3-0 forfeit loss AND one more point is deducted (four points in all against the pitch result). 2 wins = 6, minus 1 = 5. Wydad Temara has announced an appeal.",
+   "sources": [
+    "https://www.20minutes.ma/sport/173434.html",
+    "https://www.elbotola.com/fr/article/2026-11-06-12-07-19.html"
+   ]
+  }
+ ]
+}

@@ -132,9 +132,22 @@ again = warehouse.refresh(verbose=False)
 ck("37 a second pass rewrites no table rows",
    again["standings_written"] == 0, str(again["standings_written"]))
 
-# the source's own arithmetic - if this ever breaks, the feed changed
+# the source's own arithmetic - if this ever breaks, the feed changed.
+# Points are the exception a LEAGUE can make: a forfeit without points, a
+# deduction (Botola, 2026-11-06). Those are listed with their sources in
+# data/standings_notes.json; any OTHER difference still fails.
+import json as _json                                             # noqa: E402
+_notes = {(n["competition"], n["team"]): n["diff"] for n in
+          _json.load(open("data/standings_notes.json", encoding="utf-8"))["notes"]}
+_off = store.sql("SELECT s.comp_id comp, t.name team, s.won, s.draw, s.pts FROM standings s "
+                 "JOIN teams t ON t.team_id = s.team_id WHERE s.pts <> s.won*3 + s.draw")
+_unexplained = [r for r in _off if _notes.get((r["comp"], r["team"])) != r["pts"] - (3 * r["won"] + r["draw"])]
+ck("38 the table is internally consistent (pts = 3*won + draw, or a sourced sanction in data/standings_notes.json)",
+   not _unexplained, f"{len(_unexplained)} unexplained: {[(r['comp'], r['team'], r['won'], r['draw'], r['pts']) for r in _unexplained][:5]}")
+ck("38b every sanction note still matches a real table row (a stale note is noise)",
+   all(any((r["comp"], r["team"]) == k for r in _off) for k in _notes),
+   [k for k in _notes if not any((r["comp"], r["team"]) == k for r in _off)])
 for label, q in (
-        ("pts = 3*won + draw", "SELECT COUNT(*) n FROM standings WHERE pts <> won*3 + draw"),
         ("gd = gf - ga", "SELECT COUNT(*) n FROM standings WHERE gd <> gf - ga"),
         ("played = won+draw+lost",
          "SELECT COUNT(*) n FROM standings WHERE played <> won+draw+lost")):
