@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-08T13:14:37+02:00",
+ "generated_at": "2026-11-08T19:06:20+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -409,6 +409,18 @@
    "source": "team-photos/al-ahly/akram-tawfik.jpg",
    "added": "2026-10-13",
    "width": 720
+  },
+  {
+   "file": "al-ahly-mohamed-abdallah-al-ahly-ismaily.jpg",
+   "credit": "صورة: محمد عبدالله لاعب الأهلي خلال مباراة الفريق أمام الإسماعيلي — Mokhtar JR، رخصة CC BY 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد عبدالله لاعب الأهلي",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": 2025,
+   "is_person": true,
+   "source": "team-photos/al-ahly/mohamed-abdallah-al-ahly-ismaily.jpg",
+   "added": "2026-11-08",
+   "width": 502
   },
   {
    "file": "al-ahly-red-castle-card.jpg",
