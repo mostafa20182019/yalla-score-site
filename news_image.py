@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """Elgoon — the article / news image, second design (2026-11-08).
 
-    python news_image.py --photo <file|url> --kicker "توتنهام" --out media/news-<slug>.jpg [--style a|b|c] [--focus 0.5,0.3]
+    python news_image.py --photo <file|url> --kicker "توتنهام" --out media/news-<slug>.jpg --debug [--focus 0.5,0.3]
 
 Why a second design (user, 2026-11-08, on two images that shipped): the hero
 of 2026-11-06 (hero_card.py) cut the player out of his photo and set him on
@@ -19,7 +19,8 @@ This design never cuts and never borrows a club's identity:
     wordmark, Almarai. A club appears only as words in the label;
   * one label (kicker) in Arabic: the club, the competition or the story type.
 
-Styles (to choose from - the user picks one):
+Styles - the user chose C on 2026-11-08 («Style C»); it is the default and
+the one every article run uses. a and b stay for comparison only:
   a  full-bleed: the photo fills the image, a soft navy fade at the foot, the
      wordmark bottom-left, the label bottom-right
   b  sticker frame: the photo in a rounded white-bordered frame on our blue,
@@ -138,11 +139,27 @@ def _person_box(photo):
         return None
     x, y, w, h = (stats[i, j] for j in (cv2.CC_STAT_LEFT, cv2.CC_STAT_TOP, cv2.CC_STAT_WIDTH, cv2.CC_STAT_HEIGHT))
     blob = lab == i
-    # the head: the blob's columns in its top band
-    band = blob[y:y + max(2, int(h * 0.10)), :]
+    # the head sits above the CHEST, not at the blob's highest point: a raised
+    # arm (a goal, a thumbs-up - Ronaldo, 2026-11-08) is higher than the head.
+    # So: the body's centre line from the chest band (30-55 % of the blob),
+    # then the highest blob pixels within a window around that line.
+    chest = blob[y + int(h * 0.30):y + max(int(h * 0.30) + 1, int(h * 0.55)), :]
+    ccols = np.where(chest.any(axis=0))[0]
+    if len(ccols):
+        wsum = chest.sum(axis=0).astype("float64")
+        cx = float((np.arange(len(wsum)) * wsum).sum() / max(1.0, wsum.sum()))
+    else:
+        cx = x + w / 2
+    half = max(6, int(w * 0.14))
+    win = blob[:, max(0, int(cx) - half):int(cx) + half + 1]
+    rows = np.where(win.any(axis=1))[0]
+    htop = int(rows.min()) if len(rows) else y
+    band = blob[htop:htop + max(2, int(h * 0.10)), max(0, int(cx) - half):int(cx) + half + 1]
     cols = np.where(band.any(axis=0))[0]
-    hx = (cols.min() + cols.max()) / 2 if len(cols) else x + w / 2
+    off = max(0, int(cx) - half)
+    hx = off + (cols.min() + cols.max()) / 2 if len(cols) else cx
     hw = (cols.max() - cols.min() + 1) if len(cols) else w * 0.3
+    y = htop                                       # the head's top, for the caller
     return (x / k, y / k, (x + w) / k, (y + h) / k), (hx / k, hw / k)
 
 
@@ -350,7 +367,7 @@ def style_c(photo, face, kicker):
 STYLES = {"a": style_a, "b": style_b, "c": style_c}
 
 
-def build(photo_src, out, kicker="", style="a", focus=None):
+def build(photo_src, out, kicker="", style="c", focus=None):
     photo = unpad(load_photo(photo_src))
     if focus:
         fx, fy = (float(v) for v in focus.split(","))
@@ -368,7 +385,7 @@ def main():
     ap = argparse.ArgumentParser(description="Elgoon article / news image (no cutout, no club marks)")
     ap.add_argument("--photo", required=True, help="the licensed photo (file or URL)")
     ap.add_argument("--kicker", default="", help="1-3 Arabic words: the club, the competition or the story type")
-    ap.add_argument("--style", default="a", choices=sorted(STYLES))
+    ap.add_argument("--style", default="c", choices=sorted(STYLES), help="c = the chosen house style (default)")
     ap.add_argument("--focus", help="x,y of the face as fractions of the photo, when detection misses it")
     ap.add_argument("--out", required=True)
     ap.add_argument("--debug", action="store_true", help="also write <out>-face.jpg: the photo with the face found marked")

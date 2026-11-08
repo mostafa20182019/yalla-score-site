@@ -54,7 +54,7 @@ r = io.open(IR, encoding="utf-8").read() if os.path.isfile(IR) else ""
 ok("10 the rules file carries every image rule that used to live in the prompts",
    all(k in r for k in ("MATCHUP STORIES USE OUR CARD", "CREDIT SELF-TEST", "THE LIVING-STORY TEST",
                         "THE EDITOR'S TEAM FOLDERS COME FIRST", "NO REUSE FROM media/", "IMAGE VARIETY",
-                        "HERO CROP CHECK", "WHERE A NEW PHOTO LIVES", "COMPOSE THE HERO", "find_photo.py",
+                        "HERO CROP CHECK", "WHERE A NEW PHOTO LIVES", "COMPOSE THE NEWS IMAGE", "news_image.py", "find_photo.py",
                         "UNIQUE media/ FILENAME", "THE FOLDER PATH IS NOT EXEMPT", "BEWARE NAME CLASHES")))
 ok("11 ...and names the four lines the designer returns",
    all(k in r for k in ("`image_url:", "`image_credit:", "`files:", "`why:")))
@@ -65,8 +65,10 @@ for n in ("daily-article", "match-article", "round-article"):
     ok(f"13 {n}.md hands the image to graphic-designer and no longer runs the photo tools itself",
        'subagent_type: \"graphic-designer\"' in pr or 'subagent_type: "graphic-designer"' in pr,
        "no hand-off")
-    ok(f"14 {n}.md does not run hero_card.py / find_photo.py itself",
-       "hero_card.py" not in pr and "find_photo.py" not in pr)
+    ok(f"14 {n}.md does not run hero_card.py / news_image.py / find_photo.py itself",
+       "hero_card.py" not in pr and "news_image.py" not in pr and "find_photo.py" not in pr)
+ok("15 the rules file makes news_image.py (style C) THE article image and never runs hero_card.py",
+   "--debug" in r and "**`hero_card.py` is never run**" in r and "python hero_card.py" not in r)
 
 print(f"\n{len(fails)} FAILED: {fails}" if fails else "\nALL SPORTS-WRITER AGENT TESTS PASSED")
 sys.exit(1 if fails else 0)

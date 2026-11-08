@@ -55,7 +55,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
         run: python data_store.py pull
 
-      # hero_card.py cuts the person out of his photo (rembg): the package is
+      # news_image.py finds the person in his photo (rembg human segmentation - to locate, never to cut): the package is
       # heavy and its model is 176 MB, so cache the model between runs
       - name: Cache the cutout model
         uses: actions/cache@v4
