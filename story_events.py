@@ -784,7 +784,7 @@ def form_lines(tp, s, nxt, rows):
             f"{comp_label(nxt.get('competition'))}: {h} × {a}، {when}."]
 
 
-def club_form_before_match(matches, fixtures, archive, today=None, n=FORM_N, hours=FORM_WINDOW_H):
+def club_form_before_match(matches, fixtures, archive, today=None, n=FORM_N, hours=FORM_WINDOW_H, clubs=None):
     """One event per curated club whose next match kicks off within `hours`
     (the fixture's own kick-off, Cairo) and that has FORM_MIN finished
     matches on record: its last `n` (FORM_MAX at most) as rows."""
@@ -792,7 +792,7 @@ def club_form_before_match(matches, fixtures, archive, today=None, n=FORM_N, hou
     now = _now(today)
     pool, up = results_pool(matches, archive), upcoming_pool(matches, fixtures)
     events = []
-    for tp in form_clubs():
+    for tp in (clubs if clubs is not None else form_clubs()):
         nxt = next_fixture(tp, up, now, hours)
         if not nxt:
             continue
@@ -849,7 +849,7 @@ def streak_lines(tp, kind, n, last, s):
             f"الأهداف: {s['gf']} له، {s['ga']} عليه."]
 
 
-def club_streak(matches, fixtures, archive, today=None, n=FORM_N):
+def club_streak(matches, fixtures, archive, today=None, n=FORM_N, clubs=None):
     """One event per curated club whose LAST match (at most STREAK_MAX_AGE_D
     days ago) completed a milestone, when no fixture of its own falls inside
     the form window - that post carries the run."""
@@ -858,7 +858,7 @@ def club_streak(matches, fixtures, archive, today=None, n=FORM_N):
     cut = (now.date() - datetime.timedelta(days=STREAK_MAX_AGE_D)).isoformat()
     pool, up = results_pool(matches, archive), upcoming_pool(matches, fixtures)
     events = []
-    for tp in form_clubs():
+    for tp in (clubs if clubs is not None else form_clubs()):
         res = club_results(tp, pool)
         if len(res) < FORM_MIN or str(res[-1].get("kickoff") or "")[:10] < cut:
             continue
