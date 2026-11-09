@@ -449,5 +449,44 @@
     "2026-11-01"
    ]
   }
+ },
+ {
+  "date": "2026-11-09",
+  "followers": 1421,
+  "fans": 1421,
+  "fb_insights": {
+   "reach_7d": null,
+   "engagements_7d": null,
+   "follows_7d": null
+  },
+  "ab_reach": {
+   "error": "Unsupported get request. Object with ID '104238901487012_1465999978972779' does not exist, cannot be loaded due to missing permissions, or does not support this operation. Please read the Graph API documentation at https://developers.facebook.com/docs/graph-api"
+  },
+  "telegram": 3,
+  "push_subs": 1,
+  "articles_7d": 60,
+  "posts_7d": {
+   "article": 60,
+   "article_photo": 30,
+   "article_link": 30,
+   "pred": 0,
+   "h2h": 1,
+   "goal": 62,
+   "xi": 14,
+   "card": 7,
+   "reel": 21
+  },
+  "site": {
+   "visits_7d": 0,
+   "pageviews_7d": 0,
+   "visits_prev7": 0,
+   "pageviews_prev7": 0,
+   "by_day": {},
+   "top_referrers_14d": [],
+   "window": [
+    "2026-11-02",
+    "2026-11-08"
+   ]
+  }
  }
 ]
