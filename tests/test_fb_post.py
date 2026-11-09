@@ -32,7 +32,7 @@ class FakeResp(io.BytesIO):
 
 def fake_urlopen(req, timeout=0):
     url = req.full_url
-    body = req.data.decode() if getattr(req, "data", None) else ""
+    body = req.data.decode("utf-8", "replace") if getattr(req, "data", None) else ""   # a photo post carries JPEG bytes
     calls.append((url, body))
     if url.startswith(fp.SITE + "/a/"):                       # our own site (page_is_live)
         link = url.split("?")[0]
@@ -394,7 +394,7 @@ print("23 OK: a coach leaving the NT -> his record from the archive, with the wi
 # registered once, every event carries the structured data an article could
 # be written from, and the post text is render()ed from that data - so a
 # detector added later gets the store, the switch, --dry and --pending for free
-assert [k for k, _ in SE.DETECTORS] == [SE.KIND_CUP, SE.KIND_HALF, SE.KIND_COACH, SE.KIND_OTD]
+assert [k for k, _ in SE.DETECTORS] == [SE.KIND_CUP, SE.KIND_HALF, SE.KIND_COACH, SE.KIND_OTD, SE.KIND_FORM, SE.KIND_STREAK]
 SE.load_data = lambda: _D(fixtures=CUP, archive=[plain, big, derby] + nt, articles=[art], moments=[mo],
                           standings=[{"competition": "Egyptian Premier League", "season_label": "2026/27", "table": tbl}], scorers=SC)
 evs = SE.detect(today=datetime.date(2026, 11, 8))
@@ -420,3 +420,109 @@ with contextlib.redirect_stdout(buf):
     run([], argv=("--events", "--pending"))
 assert buf.getvalue().strip() == "0", buf.getvalue()
 print("24 OK: one registry, one event shape with the structured data, text rendered from it; --events --pending counts the unposted")
+
+# 25-27) club FORM before a match + STREAK milestones (user example 2026-11-09:
+# a club's last results as marks with the next fixture). The event goes out as
+# the form CARD (a photo post) with the text as its caption, once per ref.
+import re as _re
+import form_card as FCard
+import form_reel as FReel
+import fb_reel as FReelBase
+# test 15 replaced fp.post_photo; this one records the card's size and caption (a real JPEG is > 20 kB)
+_cards = []
+fp.post_photo = lambda token, img, caption: (_cards.append((len(img), caption)), f"PHOTO_{len(_cards)}")[1]
+def photos():
+    out = [c for n, c in _cards if n > 20000]
+    assert len(out) == len(_cards), [n for n, _ in _cards]
+    _cards.clear()
+    return out
+_R = lambda mid, kick, h, a, hs, as_, comp="Primera Division": {
+    "match_id": mid, "competition": comp, "kickoff": kick, "koff_time": "22:00", "home": h, "away": a,
+    "home_score": hs, "away_score": as_, "home_badge": None, "away_badge": None}
+BAR = "FC Barcelona"
+# eight finished matches, oldest first: W W W L D W W W (the last three wins)
+FORM8 = [_R(1, "2026-10-01", BAR, "Getafe CF", 3, 0), _R(2, "2026-10-05", "Sevilla FC", BAR, 1, 4),
+         _R(3, "2026-10-13", "Galatasaray SK", BAR, 1, 4, "UEFA Champions League"), _R(4, "2026-10-25", BAR, "Real Madrid CF", 1, 2),
+         _R(5, "2026-10-28", "Valencia CF", BAR, 2, 2), _R(6, "2026-10-31", BAR, "Deportivo Alavés", 6, 1),
+         _R(7, "2026-11-03", BAR, "Aston Villa FC", 3, 0, "UEFA Champions League"), _R(8, "2026-11-08", "Club Atlético de Madrid", BAR, 1, 2)]
+NEXT = {"match_id": 564749, "competition": "Primera Division", "kickoff": "2026-11-22", "koff_time": "15:00",
+        "home": BAR, "away": "Villarreal CF", "status": "UPCOMING", "home_score": None, "away_score": None,
+        "home_badge": None, "away_badge": None}
+SE.load_data = lambda: _D(matches=[NEXT], archive=FORM8)
+reset_state(); os.environ["FB_EVENTS"] = "on"; os.environ.pop("FB_REELS", None)
+# 25) the fixture is within 24 h of the given day -> ONE photo post, the caption = headline + lines + link + tags; a second run is a no-op
+assert run([], argv=("--events", "2026-11-22")) == 0
+caps = photos(); assert len(caps) == 1 and feeds() == [], (caps, feeds())
+assert caps[0] == ("📊 برشلونة يدخل مواجهة فياريال بـ3 انتصارات متتالية.\nآخر 8 مباريات: فوز 6، تعادل 1، خسارة 1.\nالأهداف: 25 له، 8 عليه.\n"
+                   "الدوري الإسباني: برشلونة × فياريال، الأحد 22 نوفمبر الساعة 15:00 بتوقيت القاهرة.\n"
+                   "تفاصيل المباراة: https://elgoon.com/m/564749\n#الجون #برشلونة #فياريال"), caps[0]
+rec = store.get_post(SE.KIND_FORM, "form:barcelona:564749"); assert rec and rec["post_id"], rec
+assert run([], argv=("--events", "2026-11-22")) == 0 and photos() == [] and feeds() == [], "posted twice"
+# the day before: the fixture is 39 h away -> nothing; postponed -> nothing; too few results -> nothing
+assert SE.club_form_before_match([NEXT], [], FORM8, datetime.date(2026, 11, 21)) == []
+assert SE.club_form_before_match([dict(NEXT, status="POSTPONED")], [], FORM8, datetime.date(2026, 11, 22)) == []
+assert SE.club_form_before_match([NEXT], [], FORM8[-4:], datetime.date(2026, 11, 22)) == []
+# the fixture may come from fixtures.json alone; the rows are the LAST n (10 at most), newest last; the run counts every result held
+ev = SE.club_form_before_match([], [{"competition": "Primera Division", "rounds": [{"round": 13, "matches": [NEXT]}]}], FORM8, datetime.date(2026, 11, 22))
+assert len(ev) == 1 and [r["mark"] for r in ev[0]["rows"]] == ["W", "W", "W", "L", "D", "W", "W", "W"] and ev[0]["run"] == ["W", 3], ev[0]["rows"]
+assert ev[0]["rows"][-1] == {"match_id": 8, "date": "2026-11-08", "competition": "Primera Division", "comp_label": "الدوري الإسباني",
+                             "opponent": "أتلتيكو مدريد", "opponent_badge": None, "club_badge": None, "home": False, "gf": 2, "ga": 1, "mark": "W"}
+assert ev[0]["next"]["match_id"] == 564749 and ev[0]["next"]["club_home"] is True and ev[0]["record"]["p"] == 8
+ev10 = SE.club_form_before_match([NEXT], [], FORM8 + [_R(9, "2026-09-01", BAR, "X", 1, 0), _R(10, "2026-09-05", BAR, "Y", 1, 0), _R(11, "2026-09-09", BAR, "Z", 1, 0)],
+                                 datetime.date(2026, 11, 22), n=12)
+assert len(ev10[0]["rows"]) == SE.FORM_MAX == 10, len(ev10[0]["rows"])
+# a 1-win window reads «بانتصار واحد», a winless run reads «بلا فوز في آخر N مباريات»
+poor = [_R(i, f"2026-10-{10 + i:02d}", BAR, "X", 0, 1 if i < 8 else 0) for i in range(1, 9)]
+ev = SE.club_form_before_match([NEXT], [], poor, datetime.date(2026, 11, 22))
+assert ev[0]["title"] == "برشلونة يدخل مواجهة فياريال بلا فوز في آخر 8 مباريات", ev[0]["title"]
+one = poor[:-1] + [_R(8, "2026-10-18", BAR, "X", 1, 0)]
+ev = SE.club_form_before_match([NEXT], [], one, datetime.date(2026, 11, 22))
+assert ev[0]["title"] == "برشلونة يدخل مواجهة فياريال بانتصار واحد في آخر 8 مباريات", ev[0]["title"]
+print("25 OK: a fixture inside 24 h -> the form card posted once (headline names the real run); 39 h away / postponed / thin record -> nothing")
+
+# 26) a streak milestone the last match completed, when no fixture is inside the window; ref = the last match
+WINS5 = [_R(100 + i, f"2026-11-0{i}", BAR, f"Club {i}", 2, 0) for i in range(1, 6)]   # ids apart from FORM8 (the pool dedups by match_id)
+SE.load_data = lambda: _D(matches=[], archive=FORM8[:3] + WINS5)        # W W W then five more wins = 8 in a row
+reset_state()
+assert run([], argv=("--events", "2026-11-06")) == 0
+caps = photos(); assert len(caps) == 1 and feeds() == [], (caps, feeds())
+assert caps[0].startswith("📊 برشلونة يحقق 8 انتصارات متتالية.\nآخر مباراة: برشلونة 2 - 0 Club 5 في الدوري الإسباني (5 نوفمبر 2026).\n"
+                          "آخر 8 مباريات: فوز 8، تعادل 0، خسارة 0.\nالأهداف: 21 له، 2 عليه.\n"), caps[0]
+assert caps[0].endswith("تفاصيل المباراة: https://elgoon.com/m/105\n#الجون #برشلونة #Club_5"), caps[0]
+assert store.get_post(SE.KIND_STREAK, "streak:barcelona:105")["post_id"]
+assert run([], argv=("--events", "2026-11-06")) == 0 and photos() == [], "posted twice"
+# four wins in a row -> no milestone; a last match older than two days -> too late; a fixture inside 24 h -> the form post instead
+assert SE.club_streak([], [], FORM8[:3] + [_R(99, "2026-10-20", BAR, "L", 0, 1)] + WINS5[:4], datetime.date(2026, 11, 5)) == []
+assert SE.club_streak([], [], FORM8[:3] + WINS5, datetime.date(2026, 11, 9)) == [], "a streak is news the night it happens"
+assert SE.club_streak([dict(NEXT, kickoff="2026-11-06", koff_time="20:00")], [], FORM8[:3] + WINS5, datetime.date(2026, 11, 6)) == []
+# the first defeat after five wins; five without a win
+loss = _R(109, "2026-11-07", "Club 9", BAR, 1, 0)
+ev = SE.club_streak([], [], FORM8[:3] + WINS5 + [loss], datetime.date(2026, 11, 8))
+assert len(ev) == 1 and ev[0]["milestone"] == {"kind": "first-loss", "n": 8} and ev[0]["title"] == "برشلونة يخسر لأول مرة بعد 8 انتصارات متتالية", ev
+dry5 = [_R(200 + i, f"2026-11-0{i}", BAR, f"Club {i}", 1, 1 if i % 2 else 2) for i in range(1, 6)]
+ev = SE.club_streak([], [], FORM8[:3] + dry5, datetime.date(2026, 11, 6))
+assert len(ev) == 1 and ev[0]["milestone"] == {"kind": "winless", "n": 5} and ev[0]["title"] == "برشلونة بلا فوز في آخر 5 مباريات", ev
+assert ev[0]["rows"][-1]["mark"] == "D" and SE.MARKS["D"] == "➖"
+print("26 OK: 5 wins in a row / first defeat after them / 5 without a win -> posted once the night of the match; 4 wins, a stale run or a fixture inside 24 h -> nothing")
+
+# 27) the reel rides behind FB_REELS (fb_reel.enabled) through the store under kind "reel" / the event's ref;
+#     the card falls back to a text post when it cannot be drawn
+SE.load_data = lambda: _D(matches=[NEXT], archive=FORM8)
+reset_state(); os.environ.pop("FB_REELS", None)
+assert run([], argv=("--events", "2026-11-22")) == 0 and len(photos()) == 1
+assert store.get_post(FReelBase.KIND, "form:barcelona:564749") is None, "no reel while FB_REELS is off"
+reset_state(); os.environ["FB_REELS"] = "1"
+_rendered = []
+FReel.render = lambda ev, out=None, sheet=None: (_rendered.append(ev["ref"]) or ("x.mp4", True, 14.4))
+FReelBase.post_reel = lambda token, path, desc: "VID_1"
+assert run([], argv=("--events", "2026-11-22")) == 0 and len(photos()) == 1
+assert _rendered == ["form:barcelona:564749"] and store.get_post(FReelBase.KIND, "form:barcelona:564749")["post_id"] == "VID_1"
+assert run([], argv=("--events", "2026-11-22")) == 0 and _rendered == ["form:barcelona:564749"], "reel rendered twice"
+os.environ.pop("FB_REELS", None)
+reset_state()
+_ok = FCard.render_bytes
+FCard.render_bytes = lambda ev, **kw: (_ for _ in ()).throw(RuntimeError("no font"))
+assert run([], argv=("--events", "2026-11-22")) == 0 and photos() == [] and len(feeds()) == 1 and feeds()[0].startswith("📊 برشلونة يدخل")
+FCard.render_bytes = _ok
+assert run([], argv=("--events", "2026-11-22", "--dry")) == 0 and photos() == [] and feeds() == []
+print("27 OK: the form reel only behind FB_REELS, once per ref under kind reel; a card that fails falls back to the text; --dry posts nothing")

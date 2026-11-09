@@ -137,6 +137,8 @@ jobs:
           elif [ -n "$TEXT" ]; then
             python fb_post.py --text "drafts/fb/$TEXT.txt" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ "$DAYCARD" = "events" ]; then
+            # a club-form event also makes a reel (form_reel.py, behind FB_REELS)
+            command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
             python fb_post.py --events | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$DAYCARD" ]; then
             # the nightly hook: the results card, then whatever the data says

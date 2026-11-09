@@ -1110,6 +1110,36 @@ def text_post(token, path, dry=False):
 # ref = its ref), so the nightly daycard dispatch runs this every night and a
 # quiet night posts nothing. --dry prints the texts: the user reads the
 # wording before anything goes live.
+FORM_KINDS = ("club-form", "club-streak")      # story_events.KIND_FORM / KIND_STREAK: a CARD, not a text post
+
+
+def post_event(token, ev):
+    """A club-form / club-streak event goes out as the form CARD
+    (form_card.py) with the text as its caption, the text alone when the
+    card cannot be drawn; every other kind as a text post."""
+    if ev.get("kind") in FORM_KINDS:
+        try:
+            import form_card as FCard
+            return post_photo(token, FCard.render_bytes(ev), ev["text"])
+        except Exception as e:  # noqa: BLE001
+            import traceback
+            where = traceback.extract_tb(e.__traceback__)[-1]
+            print(f"{ev['kind']} {ev['ref']}: card failed ({e} at {os.path.basename(where.filename)}:{where.lineno}) - posting the text")
+    return post_text(token, ev["text"])
+
+
+def event_reel(ev, token):
+    """The form REEL after the card (form_reel.py): behind FB_REELS like
+    every reel, once per ref through the store, never fails the run."""
+    if ev.get("kind") != "club-form":
+        return
+    try:
+        import form_reel as FR
+        FR.publish(ev, token)
+    except Exception as e:  # noqa: BLE001
+        print(f"{ev['kind']} {ev['ref']}: reel skipped ({e})")
+
+
 def events_post(token, dry=False, today=None):
     """Post every event story_events finds that is not yet on record;
     0 = done or nothing to do, 1 = a post failed."""
@@ -1134,19 +1164,22 @@ def events_post(token, dry=False, today=None):
         if rec and rec.get("post_id"):
             print(f"{kind} {ref}: already posted ({rec['post_id']})"); continue
         if dry or not armed:
-            print(f"--- {kind} / {ref}\n{ev['text']}\n"); continue
+            how = " (the form card as a photo; the reel behind FB_REELS)" if kind in FORM_KINDS else ""
+            print(f"--- {kind} / {ref}{how}\n{ev['text']}\n"); continue
         if not token:
             print(f"{kind} {ref}: FB_PAGE_TOKEN not set - skipping"); continue
         if not store.claim(kind, ref, title=title):
             print(f"{kind} {ref}: claimed by another run - nothing posted"); continue
         try:
-            pid = post_text(token, ev["text"])
+            pid = post_event(token, ev)
             store.record_post(kind, ref, pid, title=title)
             print(f"posted {kind} {ref}: {pid}")
         except Exception as e:  # noqa: BLE001
             print(f"{kind} {ref}: post FAILED: {e}")
             store.release(kind, ref)
             rc = 1
+            continue
+        event_reel(ev, token)
     return rc
 
 

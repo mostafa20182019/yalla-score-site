@@ -56,6 +56,25 @@ record, the match) - so the same detector can feed a site article later. `python
 match with its goals (`moments/<name>.json`); publish it with the `moment`
 input once the wording is approved.
 
+**Club form** (2026-11-09, the user's third example: a club's last results as
+✅/❌ marks with the next fixture): two more kinds in the same registry.
+`club-form` fires for a curated club (`TEAM_PAGES`) whose next match kicks
+off within 24 hours - its last 8 finished matches across competitions (10 at
+most), the W/D/L marks, goals, the real run in the headline («برشلونة يدخل
+مواجهة فياريال بـ3 انتصارات متتالية»), ref `form:<slug>:<match_id>`, so it
+goes out once before that match. `club-streak` fires the night a club's last
+match completes a milestone (5 wins in a row, 5 without a win, the first
+defeat after 5 wins) when no fixture of its own is inside the window, ref
+`streak:<slug>:<last match_id>`. Both post as the form CARD (`form_card.py`,
+1080x1350: the club's own kit colour as the accent, a photo only from
+`team-photos/<slug>/` and never a player, else crest-only) with the text as
+the caption, through the same `--events` run and `FB_EVENTS` switch; a
+`club-form` event also makes a 14 s REEL (`form_reel.py`, the rows landing
+one by one, the fixture last) behind the `FB_REELS` switch like every other
+reel, under the store's `reel` kind and the same ref. Samples:
+`python form_card.py --club barcelona --out x.png` (the next fixture, any
+day), `python form_reel.py --club barcelona --out x.mp4 --sheet x.png`.
+
 Secrets live in GitHub Actions and on the Worker; none are in the repo. The
 site's editorial policy, data sources and the model's record are explained on
 the site itself: https://elgoon.com/editorial and https://elgoon.com/predictions.
