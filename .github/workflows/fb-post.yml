@@ -124,6 +124,8 @@ jobs:
           # the news-from-the-data posts (story_events.py) are printed, not
           # posted, until this one is "on" (2026-11-08: he reads the wording first)
           FB_EVENTS: ${{ vars.FB_EVENTS }}
+          # the club-form / club-streak cards + reels (2026-11-09) print until this one is "on" as well
+          FB_FORM: ${{ vars.FB_FORM }}
         run: |
           if [ -n "$MOMENT" ]; then
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }

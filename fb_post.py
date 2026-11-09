@@ -1155,15 +1155,22 @@ def events_post(token, dry=False, today=None):
     # the texts into the Actions summary - he reads them there, then flips
     # the variable (Settings > Secrets and variables > Actions > Variables).
     armed = (os.environ.get("FB_EVENTS", "") or "").strip().lower() == "on"
+    # the club-form / club-streak CARDS have their own switch (2026-11-09):
+    # FB_EVENTS was already on when they were built, and the user reads a
+    # new kind's captions and images before it goes live - so they print
+    # until the repo variable FB_FORM is "on" too.
+    armed_form = (os.environ.get("FB_FORM", "") or "").strip().lower() == "on"
     if not dry and not armed:
         print("events: FB_EVENTS is not on - the texts are printed, nothing is posted")
+    elif not dry and not armed_form and any(ev["kind"] in FORM_KINDS for ev in evs):
+        print("events: FB_FORM is not on - the club-form / club-streak captions are printed, not posted")
     rc = 0
     for ev in evs:
         kind, ref, title = ev["kind"], ev["ref"], (ev.get("title") or "")[:80]
         rec = store.get_post(kind, ref)
         if rec and rec.get("post_id"):
             print(f"{kind} {ref}: already posted ({rec['post_id']})"); continue
-        if dry or not armed:
+        if dry or not armed or (kind in FORM_KINDS and not armed_form):
             how = " (the form card as a photo; the reel behind FB_REELS)" if kind in FORM_KINDS else ""
             print(f"--- {kind} / {ref}{how}\n{ev['text']}\n"); continue
         if not token:

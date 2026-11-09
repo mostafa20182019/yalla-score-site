@@ -449,8 +449,11 @@ NEXT = {"match_id": 564749, "competition": "Primera Division", "kickoff": "2026-
         "home": BAR, "away": "Villarreal CF", "status": "UPCOMING", "home_score": None, "away_score": None,
         "home_badge": None, "away_badge": None}
 SE.load_data = lambda: _D(matches=[NEXT], archive=FORM8)
-reset_state(); os.environ["FB_EVENTS"] = "on"; os.environ.pop("FB_REELS", None)
+reset_state(); os.environ["FB_EVENTS"] = "on"; os.environ.pop("FB_REELS", None); os.environ.pop("FB_FORM", None)
 # 25) the fixture is within 24 h of the given day -> ONE photo post, the caption = headline + lines + link + tags; a second run is a no-op
+# ... but only once the repo variable FB_FORM is on as well (FB_EVENTS was already on when this kind was built)
+assert run([], argv=("--events", "2026-11-22")) == 0 and photos() == [] and feeds() == [] and store.get_post(SE.KIND_FORM, "form:barcelona:564749") is None
+os.environ["FB_FORM"] = "on"
 assert run([], argv=("--events", "2026-11-22")) == 0
 caps = photos(); assert len(caps) == 1 and feeds() == [], (caps, feeds())
 assert caps[0] == ("📊 برشلونة يدخل مواجهة فياريال بـ3 انتصارات متتالية.\nآخر 8 مباريات: فوز 6، تعادل 1، خسارة 1.\nالأهداف: 25 له، 8 عليه.\n"
@@ -478,7 +481,7 @@ assert ev[0]["title"] == "برشلونة يدخل مواجهة فياريال ب
 one = poor[:-1] + [_R(8, "2026-10-18", BAR, "X", 1, 0)]
 ev = SE.club_form_before_match([NEXT], [], one, datetime.date(2026, 11, 22))
 assert ev[0]["title"] == "برشلونة يدخل مواجهة فياريال بانتصار واحد في آخر 8 مباريات", ev[0]["title"]
-print("25 OK: a fixture inside 24 h -> the form card posted once (headline names the real run); 39 h away / postponed / thin record -> nothing")
+print("25 OK: a fixture inside 24 h -> the form card posted once, and only with FB_FORM on (headline names the real run); 39 h away / postponed / thin record -> nothing")
 
 # 26) a streak milestone the last match completed, when no fixture is inside the window; ref = the last match
 WINS5 = [_R(100 + i, f"2026-11-0{i}", BAR, f"Club {i}", 2, 0) for i in range(1, 6)]   # ids apart from FORM8 (the pool dedups by match_id)
