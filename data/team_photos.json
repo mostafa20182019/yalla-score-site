@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-08T19:06:20+00:00",
+ "generated_at": "2026-11-09T08:09:42+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2268,6 +2268,18 @@
    "is_person": false,
    "source": "team-photos/real-madrid/identity-card.jpg",
    "added": "2026-10-13",
+   "width": 1600
+  },
+  {
+   "file": "real-madrid-iker-casillas-champions-league-2007.jpg",
+   "credit": "صورة: إيكر كاسياس حارس مرمى ريال مدريد الأسبق عام 2007، تصوير Florian K، رخصة CC BY-SA 3.0 (ويكيميديا كومنز)",
+   "subject": "إيكر كاسياس حارس ريال مدريد الأسبق",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2007,
+   "is_person": true,
+   "source": "team-photos/real-madrid/iker-casillas-champions-league-2007.jpg",
+   "added": "2026-11-09",
    "width": 1600
   },
   {
