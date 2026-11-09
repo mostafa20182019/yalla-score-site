@@ -285,10 +285,11 @@ def contact_sheet(ims, path, cols=4):
     sheet.save(path)
 
 
-def encode(script, ctx, path, secs):
+def encode(script, ctx, path, secs, frame_iter=None):
     """Frames piped raw into ffmpeg: H.264 / yuv420p / 30 fps / faststart,
     the music loop as the AAC track (Reels refuses a silent-less file), a
-    volume dip where the script marks the low point, fades in and out."""
+    volume dip where the script marks the low point, fades in and out.
+    frame_iter: any other stream of WxH frames (day_reel.py, 2026-11-09)."""
     exe = R.ffmpeg()
     if not exe:
         print("  no ffmpeg: pip install imageio-ffmpeg (laptop) or apt ffmpeg (runner)")
@@ -314,7 +315,7 @@ def encode(script, ctx, path, secs):
                "-c:a", "aac", "-b:a", "128k", "-ar", str(R.SR), "-ac", "2",
                "-movflags", "+faststart", path]
         p = subprocess.Popen(cmd, stdin=subprocess.PIPE)
-        for im in frames(script, ctx):
+        for im in (frame_iter if frame_iter is not None else frames(script, ctx)):
             p.stdin.write(im.tobytes())
         p.stdin.close()
         if p.wait() != 0:
