@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-09T08:09:42+00:00",
+ "generated_at": "2026-11-09T11:08:47+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -901,6 +901,18 @@
    "source": "team-photos/egypt/identity-card.jpg",
    "added": "2026-10-13",
    "width": 1600
+  },
+  {
+   "file": "egypt-mohamed-abdelmonem-nice-2025.jpg",
+   "credit": "صورة: محمد عبد المنعم بقميص نادي نيس الفرنسي خلال مباراة في الدوري الفرنسي موسم 2024-2025 — تصوير Paté kroute، رخصة CC0 (ويكيميديا كومنز)",
+   "subject": "محمد عبد المنعم",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2025,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-abdelmonem-nice-2025.png",
+   "added": "2026-11-09",
+   "width": 697
   },
   {
    "file": "egypt-nt-lineup-anthem.jpg",
