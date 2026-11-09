@@ -40,3 +40,7 @@ data/odds/
 
 # WordPress import files (derived: python tools/wp_export.py)
 wp/*.xml
+
+# clip reels (clip_reel.py): the source videos are big and licensed per file -
+# they stay out of git; the JSON in clips/ names the file and its source URL
+clips/video/
