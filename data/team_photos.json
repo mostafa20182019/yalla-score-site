@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-10T08:08:06+00:00",
+ "generated_at": "2026-11-10T19:11:10+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2281,6 +2281,18 @@
    "source": "team-photos/real-madrid/eduardo-camavinga-real-madrid-2022.jpg",
    "added": "2026-10-28",
    "width": 1600
+  },
+  {
+   "file": "real-madrid-endrick-brazil-worldcup-2026.jpg",
+   "credit": "صورة: إندريك لاعب ريال مدريد بقميص منتخب البرازيل خلال كأس العالم 2026 (مباراة البرازيل والمغرب، 13 يونيو 2026) — تصوير YantsImages (WikiPortraits)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "إندريك لاعب ريال مدريد",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/real-madrid/endrick-brazil-worldcup-2026.jpg",
+   "added": "2026-11-10",
+   "width": 600
   },
   {
    "file": "real-madrid-identity-card.jpg",
