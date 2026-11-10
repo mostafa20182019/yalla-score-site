@@ -407,7 +407,13 @@ cup, half, coach = evs
 assert cup["pairs"][0] == {"match_id": 101, "home": "الأهلي", "away": "الزمالك", "kickoff": "2026-12-01", "koff_time": "20:00"} and cup["round_next"] == "دور الـ16"
 assert half["table"]["top"][0]["team"] == "Club 1" and half["table"]["bottom"][-1]["pos"] == 20 and half["scorer"]["goals"] == 8 and half["rounds"] == 19
 assert coach["record"] == {"p": 2, "w": 1, "d": 1, "l": 0, "gf": 5, "ga": 0} and coach["best"]["match_id"] == "b" and coach["article"]["article_id"] == "1095"
-# --events --pending: the count publish.yml dispatches on (unposted events only)
+# --events --pending: the count publish.yml dispatches on (unposted events only).
+# The CLI asks detect() for TODAY's events (right in production); the fixtures
+# here are 2026-11-08's, so pin the day - unpinned, the coach-left event (an
+# article from 11-08, "older than two days is not news") aged out at 00:00 UTC
+# on 11-10 and every publish run failed on this line (runs 12992-13041).
+_detect_live = SE.detect
+SE.detect = lambda data=None, today=None: _detect_live(data, today or datetime.date(2026, 11, 8))
 reset_state()
 buf = io.StringIO()
 with contextlib.redirect_stdout(buf):
@@ -419,6 +425,7 @@ buf = io.StringIO()
 with contextlib.redirect_stdout(buf):
     run([], argv=("--events", "--pending"))
 assert buf.getvalue().strip() == "0", buf.getvalue()
+SE.detect = _detect_live
 print("24 OK: one registry, one event shape with the structured data, text rendered from it; --events --pending counts the unposted")
 
 # 25-27) club FORM before a match + STREAK milestones (user example 2026-11-09:
