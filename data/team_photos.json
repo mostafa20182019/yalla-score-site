@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-09T11:08:47+00:00",
+ "generated_at": "2026-11-10T08:08:06+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -588,6 +588,18 @@
    "is_person": false,
    "source": "team-photos/barcelona/paint-split-wide.jpg",
    "added": "2026-10-18",
+   "width": 1600
+  },
+  {
+   "file": "barcelona-pau-cubarsi-spain-wc2026-final.jpg",
+   "credit": "صورة: باو كوبارسي بقميص منتخب إسبانيا احتفالًا بالفوز بنهائي كأس العالم 2026 — تصوير Bryan Berlin (WikiPortraits)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "باو كوبارسي",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/barcelona/pau-cubarsi-spain-wc2026-final.jpg",
+   "added": "2026-11-10",
    "width": 1600
   },
   {
