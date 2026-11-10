@@ -642,6 +642,11 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
         mid = '<b class="score">- - -</b>'
     elif st == "FINISHED":
         mid = f'<b class="score">{m.get("home_score") if m.get("home_score") is not None else ""} - {m.get("away_score") if m.get("away_score") is not None else ""}</b>'
+        # a shoot-out under the score, same «home - away» order (2026-11-10:
+        # «عايز ضربات الجزاء تظهر وتظهر لها نتيجة»)
+        if m.get("home_pens") is not None and m.get("away_pens") is not None:
+            mid += (f'<span class="mpen" title="ركلات الترجيح">ترجيح '
+                    f'<b>{m["home_pens"]} - {m["away_pens"]}</b></span>')
     else:
         when = (m.get("koff_time") if show_time and m.get("koff_time") else m.get("kickoff"))
         mid = f'<span class="ko">{esc(when)}</span>'

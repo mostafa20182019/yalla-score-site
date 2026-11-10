@@ -293,8 +293,11 @@ def post_match_read(m, e, flipped, h_ar, a_ar, hs, as_, comp_label_txt,
     # FAQ: the same facts as questions (the shape /standings pages already use)
     sd = _side_of(flipped)
     scorers = [g for g in (e.get("goals") or []) if g.get("player")]
+    _hp, _ap = m.get("home_pens"), m.get("away_pens")
+    _pen = (f" ثم حسمها {h_ar if _hp > _ap else a_ar} بركلات الترجيح {max(_hp, _ap)}-{min(_hp, _ap)}"
+            if _hp is not None and _ap is not None else "")
     faq = [(f"كم انتهت مباراة {h_ar} و{a_ar}؟",
-            f"انتهت {h_ar} {hs}-{as_} {a_ar} في {comp_label_txt}.")]
+            f"انتهت {h_ar} {hs}-{as_} {a_ar} في {comp_label_txt}{_pen}.")]
     if scorers:
         names = [f'{g["player"]} ({g["minute"]}\u2032)' if g.get("minute") else g["player"]
                  for g in scorers]

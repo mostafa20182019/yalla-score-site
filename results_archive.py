@@ -83,7 +83,8 @@ def _fin(m):
 def _row(m):
     """The matches.json fields the pool and the pages need, nothing else."""
     return {k: m.get(k) for k in ("match_id", "competition", "kickoff", "koff_time", "home", "away",
-                                  "home_badge", "away_badge", "home_score", "away_score", "round")}
+                                  "home_badge", "away_badge", "home_score", "away_score", "round",
+                                  "home_pens", "away_pens") if k in m or k not in ("home_pens", "away_pens")}
 
 
 def complete(goals, hs, as_):

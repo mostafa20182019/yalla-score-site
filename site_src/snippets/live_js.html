@@ -29,7 +29,7 @@
   function swap(g){
     var gl=(g.goals||[]).map(function(x){
       return {s:x.s==='h'?'a':'h',p:x.p,m:x.m,t:x.t,a:x.a};});
-    return {h:g.a,a:g.h,hs:g.as,as:g.hs,live:g.live,min:g.min,c:g.c,
+    return {h:g.a,a:g.h,hs:g.as,as:g.hs,live:g.live,min:g.min,c:g.c,ph:g.pa,pa:g.ph,
             goals:g.goals?gl:undefined};
   }
   /* home score on the home side - see score_pill() in build_site.py.
@@ -107,7 +107,9 @@
       }
     }else{
       var mid=e.querySelector('.mid'); if(!mid)return;
-      mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'');
+      mid.innerHTML='<b class="score">'+sc+'</b>'+(g.live&&g.min?'<span class="lv-min">'+g.min+'</span>':'')
+        /* a shoot-out under the score - match_row()'s markup (2026-11-10) */
+        +(g.ph!=null&&g.pa!=null?'<span class="mpen" title="ركلات الترجيح">ترجيح <b>'+g.ph+' - '+g.pa+'</b></span>':'');
       e.classList.remove('mrow-up','mrow-live','mrow-fin');
       e.classList.add(g.live?'mrow-live':'mrow-fin');
       var pill=e.querySelector('.pill');

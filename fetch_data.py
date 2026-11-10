@@ -371,6 +371,35 @@ def merge_window_matches(out, prev_items, cutoff, horizon):
     return rows, ("; ".join(notes) or None)
 
 
+def s365_pens(h, a, status):
+    """{home_pens, away_pens} of a 365scores game decided on penalties, else {}.
+    The competitors carry `penaltyScore` (Wadi Degla 2-3 Kahraba Ismailia,
+    Egypt Cup 2026-11-09, whose score is 0-0); a negative or missing value =
+    no shoot-out. Only on a finished game - a live one's comes from /live.json."""
+    hp, ap = (h or {}).get("penaltyScore"), (a or {}).get("penaltyScore")
+    if status != "FINISHED" or hp is None or ap is None or hp < 0 or ap < 0:
+        return {}
+    return {"home_pens": int(hp), "away_pens": int(ap)}
+
+
+def fd_score(score):
+    """(home, away, pens dict) from a football-data `score`. Its fullTime ADDS
+    the shoot-out to the goals on a PENALTY_SHOOTOUT match, so the score is
+    regularTime + extraTime there and the kicks go to their own fields."""
+    score = score or {}
+    ft = score.get("fullTime") or {}
+    pen = score.get("penalties") or {}
+    if score.get("duration") == "PENALTY_SHOOTOUT" and pen.get("home") is not None and pen.get("away") is not None:
+        rt, et = score.get("regularTime") or {}, score.get("extraTime") or {}
+        if rt.get("home") is not None and rt.get("away") is not None:
+            hs = rt["home"] + (et.get("home") or 0)
+            as_ = rt["away"] + (et.get("away") or 0)
+        else:
+            hs, as_ = ft.get("home") - pen["home"], ft.get("away") - pen["away"]
+        return hs, as_, {"home_pens": pen["home"], "away_pens": pen["away"]}
+    return ft.get("home"), ft.get("away"), {}
+
+
 def _norm_status(s):
     s = (s or "").upper()
     if s in ("IN_PLAY", "PAUSED"):
@@ -498,7 +527,7 @@ def fetch_matches():
         comp = m.get("competition") or {}
         ht = m.get("homeTeam") or {}
         at = m.get("awayTeam") or {}
-        ft = (m.get("score") or {}).get("fullTime") or {}
+        fhs, fas, pens = fd_score(m.get("score"))
         return {
             "match_id": m.get("id"),
             "competition": comp.get("name"),
@@ -507,9 +536,10 @@ def fetch_matches():
             "kickoff": dt.strftime("%Y-%m-%d"),
             "koff_time": dt.strftime("%H:%M"),
             "status": _norm_status(m.get("status")),
-            "home_score": ft.get("home"), "away_score": ft.get("away"),
+            "home_score": fhs, "away_score": fas,
             "round": m.get("matchday"),
             "channel": None,
+            **(pens if _norm_status(m.get("status")) == "FINISHED" else {}),
         }
 
     cutoff = today - timedelta(days=5)
@@ -836,6 +866,8 @@ def fetch_s365_league(matches_out, lid, comp_name):
             "away_score": int(aws) if scored else None,
             "round": int(rd) if rd else None,
             "channel": None,
+            # a shoot-out's kicks (2026-11-10)
+            **s365_pens(h, a, status),
             # a knock-out cup's stage («تصفيات», «دور الـ 32»): its rounds
             # panel is built from these (STAGE_ROUNDS, 2026-11-03)
             **({"stage": g.get("stageName") or "", "stage_num": g.get("stageNum")}

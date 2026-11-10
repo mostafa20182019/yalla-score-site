@@ -411,5 +411,17 @@ s24 = snap().games.find(g => g.id === 900);
 ck("24c and a later refresh without the detail still serves none (the stored row's score now matches, its list does not)",
    s24 && s24.hs === 3 && !s24.goals, JSON.stringify(s24));
 
+/* ------------------------------------------------------------- 25 a shoot-out */
+// 2026-11-10: the finished 902 decided on penalties - the list's competitors
+// carry penaltyScore; the served game carries ph / pa, LIVE_JS prints them
+age(20000);
+scenario(1, 0, 30, [goalEv(11, 1, 12)]);
+LIST.games[2].homeCompetitor.penaltyScore = 4; LIST.games[2].awayCompetitor.penaltyScore = 3;
+await call(); await drain();
+const s25 = snap().games.find(g => g.id === 902);
+ck("25a a game decided on penalties is served with its kicks", s25 && s25.ph === 4 && s25.pa === 3, JSON.stringify(s25));
+const s25b = snap().games.find(g => g.id === 900);
+ck("25b a game without them carries none", s25b && !("ph" in s25b), JSON.stringify(s25b));
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE STORE TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

@@ -1000,6 +1000,9 @@ html.lt-lock{overflow:hidden}
 }
 .ko-pp{color:#b45309;background:#fdf3e3;border-radius:8px;padding:2px 10px;font-weight:800}
 /* live minute chip (painted by LIVE_JS next to a live score) */
+/* a shoot-out under the score (2026-11-10) */
+.mpen{display:block;margin-top:2px;font-size:.72rem;font-weight:800;color:var(--muted);white-space:nowrap}
+.mpen b{color:var(--ink);font-weight:900}
 .lv-min{display:inline-block;font-size:.72rem;font-weight:800;color:#e11d48;
   margin-inline-start:8px;direction:ltr;unicode-bidi:embed;vertical-align:middle}
 /* mobile-only slim top banner */

@@ -123,5 +123,15 @@ const r8 = listed(3, 2);
 await run([r8], [cer]);
 ck("8 a list that adds up to the score stays", r8.mg.removed === false);
 
+// a shoot-out under the live-painted score, flipped with the score by swap() (2026-11-10)
+const shoot = { id: 1, h: "وادي دجلة", a: "كهرباء الاسماعيلية", hs: 0, as: 0, ph: 2, pa: 3, live: false,
+                min: "", gt: 0, hf: 0, c: 553, d: "2026-11-09" };
+const r9 = row("وادي دجلة", "كهرباء الاسماعيلية", "2026-11-09");
+await run([r9], [shoot]);
+ck("9 the live row shows «ترجيح 2 - 3» under the score", r9.mid.innerHTML.includes('<span class="mpen" title="ركلات الترجيح">ترجيح <b>2 - 3</b></span>'), r9.mid.innerHTML);
+const r10 = row("كهرباء الاسماعيلية", "وادي دجلة", "2026-11-09");
+await run([r10], [shoot]);
+ck("10 a reversed row gets the kicks reversed too («3 - 2»)", r10.mid.innerHTML.includes("ترجيح <b>3 - 2</b>"), r10.mid.innerHTML);
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE DAY-MATCH TESTS PASSED");
 process.exit(fails.length ? 1 : 0);
