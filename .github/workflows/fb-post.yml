@@ -57,7 +57,7 @@ on:
         required: false
         default: ""
       moment:
-        description: "Publish a MOMENT reel (moments/<id>.json, e.g. salah-congo-2017): a historic moment as a 16 s typography reel. Needs ffmpeg (installed here)."
+        description: "Publish a MOMENT reel (moments/<id>.json, e.g. salah-congo-2017): a historic moment as a 16 s typography reel. Or `file:<name>` = post drafts/reels/<name>.mp4 as it is, caption drafts/reels/<name>.txt, once per name."
         required: false
         default: ""
 
@@ -127,7 +127,11 @@ jobs:
           # the club-form / club-streak cards + reels (2026-11-09) print until this one is "on" as well
           FB_FORM: ${{ vars.FB_FORM }}
         run: |
-          if [ -n "$MOMENT" ]; then
+          if [ "${MOMENT#file:}" != "$MOMENT" ]; then
+            # a finished reel file (user 2026-11-11): uploaded as it is, no ffmpeg.
+            # Rides the `moment` input - GitHub allows 10 inputs and all 10 are taken
+            python fb_reel.py --post-file "${MOMENT#file:}" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+          elif [ -n "$MOMENT" ]; then
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
             python moment_reel.py --script "moments/$MOMENT.json" --publish | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$WHISTLE" ]; then

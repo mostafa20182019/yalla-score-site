@@ -595,8 +595,52 @@ def plan():
     return 0
 
 
+REEL_DRAFTS = os.path.join(HERE, "drafts", "reels")
+
+
+def file_post(token, name, dry=False):
+    """Post drafts/reels/<name>.mp4 as a reel, caption = drafts/reels/<name>.txt
+    (user, 2026-11-11: a hand-made reel - «أبرز مباريات الغد» - «جهّز النشر»).
+    The file he watched is the file that goes up: nothing is rendered here.
+    Once per name, through the store (kind reel, ref file:<name>).
+    0 = done, already posted or held; 1 = could not post."""
+    if not name or not all(ch.isalnum() or ch in "-_" for ch in name):
+        print(f"--post-file: bad name {name!r} (letters, digits, - and _ only)"); return 1
+    mp4, txt = (os.path.join(REEL_DRAFTS, f"{name}.{x}") for x in ("mp4", "txt"))
+    if not os.path.exists(mp4):
+        print(f"--post-file: {mp4} is not on main"); return 1
+    try:
+        caption = open(txt, encoding="utf-8").read().strip()
+    except OSError:
+        caption = ""
+    if not caption:
+        print(f"--post-file: {txt} is missing or empty - a reel never goes up without its caption"); return 1
+    ref = f"file:{name}"
+    rec = store.get_post(KIND, ref)
+    if rec and rec.get("post_id"):
+        print(f"reel {name}: already posted ({rec['post_id']})"); return 0
+    if dry:
+        print(f"reel {name}: {os.path.getsize(mp4) // 1024} KB")
+        print(caption); return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if not store.claim(KIND, ref, title=f"reel {name}"):
+        print(f"reel {name}: claimed by another run - nothing posted"); return 0
+    try:
+        vid = post_reel(token, mp4, caption)
+        store.record_post(KIND, ref, vid, title=f"reel {name}")
+        print(f"reel {name}: published as {vid}")
+        return 0
+    except Exception as e:                                   # noqa: BLE001
+        store.release(KIND, ref)
+        print(f"reel {name}: post FAILED: {e}")
+        return 1
+
+
 def main():
     ap = argparse.ArgumentParser()
+    ap.add_argument("--post-file", metavar="NAME",
+                    help="post drafts/reels/NAME.mp4 with drafts/reels/NAME.txt as its caption, once")
     ap.add_argument("--match", help="render this match only")
     ap.add_argument("--png", action="store_true", help="write the card as a PNG")
     ap.add_argument("--mp4", action="store_true", help="write the MP4 (card + music)")
@@ -606,6 +650,8 @@ def main():
     ap.add_argument("--plan", action="store_true", help="print yes/no for the workflow")
     ap.add_argument("--out", default=os.path.join(HERE, "media", "reels"))
     args = ap.parse_args()
+    if args.post_file:
+        return file_post(os.environ.get("FB_PAGE_TOKEN", "").strip(), args.post_file, dry=args.dry)
     if args.plan:
         return plan()
     if args.compose:
