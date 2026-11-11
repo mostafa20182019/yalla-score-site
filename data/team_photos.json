@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-10T19:11:10+00:00",
+ "generated_at": "2026-11-11T08:09:08+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1524,6 +1524,18 @@
    "is_person": false,
    "source": "team-photos/liverpool/identity-card.jpg",
    "added": "2026-10-13",
+   "width": 1600
+  },
+  {
+   "file": "liverpool-virgil-van-dijk-liverpool-training-jan2026.jpg",
+   "credit": "صورة: فيرجيل فان دايك قائد ليفربول خلال مواجهة فولهام بالدوري الإنجليزي، يناير 2026 — تصوير Timmy96، رخصة CC0 (ويكيميديا كومنز)",
+   "subject": "فيرجيل فان دايك",
+   "club": "ليفربول",
+   "slug": "liverpool",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/liverpool/virgil-van-dijk-liverpool-training-jan2026.jpg",
+   "added": "2026-11-11",
    "width": 1600
   },
   {
