@@ -109,5 +109,50 @@ first = cap.splitlines()[0]
 check("يتصدر" in first and "9 أهداف" in first and "بعد الجولة 10" in first, "caption hook: the leader and his goals")
 check("https://elgoon.com" in cap and "#الجون" in cap and "4. " not in cap, "caption: link, #الجون, ranks 1-3 only")
 check(S.goals_word(15) == "15 هدفًا" and S.goals_word(2) == "هدفين", "Arabic count agreement")
+
+# ---- automation (2026-11-10, «أتمتها»): one reel per league per finished round
+import datetime                                          # noqa: E402
+NOW = datetime.datetime(2026, 11, 10, 0, 16, tzinfo=C.CAIRO)
+
+
+def mk(mid, rnd, status, day, t="18:00", comp="Premier League"):
+    return {"match_id": 1000 + mid, "competition": comp, "round": rnd, "status": status,
+            "kickoff": day, "koff_time": t}
+
+
+done10 = [mk(i, 10, "FINISHED", "2026-11-08") for i in range(9)] + [mk(9, 10, "POSTPONED", "2026-11-09")]
+check(S.round_done(done10, NOW) == (10, datetime.datetime(2026, 11, 8, 18, 0, tzinfo=C.CAIRO)),
+      "a round with every match finished or postponed is done")
+half = done10[:-1] + [mk(9, 10, "IN_PLAY", "2026-11-09")]
+check(S.round_done(half, NOW) is None, "a match still playing: not done")
+started = done10 + [mk(20, 11, "FINISHED", "2026-11-09")] + [mk(21 + i, 11, "UPCOMING", "2026-11-12") for i in range(9)]
+check(S.round_done(started, NOW, 10) is None, "the next round has a finished match: R10 is old news, R11 not done")
+partial = [mk(40 + i, 9, "FINISHED", "2026-11-08", comp="Egyptian Premier League") for i in range(6)]
+check(S.round_done(partial, NOW, 10) is None, "six listed matches of a ten-match round are not a finished round")
+check(S.round_done(partial, NOW) is not None, "(without the size the same six would pass - the guard is what stops it)")
+late = done10 + [mk(30, 4, "FINISHED", "2026-11-09")]
+check(S.round_done(late, NOW)[0] == 10, "a postponed R4 match played late does not bring R4 back")
+stale = [mk(i, 8, "FINISHED", "2026-10-31") for i in range(10)]
+check(S.round_done(stale, NOW) is None, "a round that ended 9 days ago is not news")
+check(S.round_done([], NOW) is None, "no matches: nothing due")
+
+matches = (done10 + [mk(100 + i, 12, "FINISHED", "2026-11-08", "22:00", "Primera Division") for i in range(10)]
+           + [mk(200 + i, 8, "FINISHED", "2026-10-31", comp="Egyptian Premier League") for i in range(9)])
+_rf, _rs = S.round_for, S.round_size
+S.round_size = lambda comp, path=None: 10
+S.round_for = lambda comp, path=None: {"Premier League": 10, "Primera Division": 12, "Egyptian Premier League": 8}[comp]
+d = S.due(NOW, matches, posted=lambda ref: False)
+check([(c, r) for c, r, _ in d] == [("Premier League", 10), ("Primera Division", 12)],
+      f"due: the oldest round first, the stale Egyptian round out: {d}")
+check(d[0][2] == "scorers:Premier League:2026-27:R10", f"the store ref names league, season and round: {d[0][2]}")
+d2 = S.due(NOW, matches, posted=lambda ref: ref.endswith("Premier League:2026-27:R10"))
+check([c for c, _, _ in d2] == ["Primera Division"], "an already posted reel is not owed again")
+S.round_for = lambda comp, path=None: 11 if comp == "Primera Division" else 10
+d3 = S.due(NOW, matches, posted=lambda ref: False)
+check([c for c, _, _ in d3] == ["Premier League"], "the table behind the matches (scorers lag): wait a night")
+S.round_for, S.round_size = _rf, _rs
+check(S.round_size("Premier League") == 10, "a 20-club table means ten matches a round")
+check(S.MAX_PER_RUN == 1, "one scorers reel a night")
+
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

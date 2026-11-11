@@ -149,8 +149,13 @@ jobs:
             # the same results as a reel (day_reel.py, user 2026-11-09), once a day
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
             python day_reel.py --publish | tee -a /tmp/fb.txt; rc3=${PIPESTATUS[0]}
+            # the scorers race (scorers_reel.py, user 2026-11-10 «أتمتها»): the
+            # Premier League / Egyptian league / La Liga reel once a round ends,
+            # one league a night, each round once (store kind reel / scorers:...)
+            python scorers_reel.py --auto | tee -a /tmp/fb.txt; rc4=${PIPESTATUS[0]}
             python fb_post.py --events | tee -a /tmp/fb.txt; rc2=${PIPESTATUS[0]}
             [ "$rc" = 0 ] && rc=$rc3
+            [ "$rc" = 0 ] && rc=$rc4
             [ "$rc" = 0 ] && rc=$rc2
           elif [ -n "$UPDATE" ]; then
             python fb_update_posts.py ${UPDATE//,/ } | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}

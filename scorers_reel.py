@@ -21,6 +21,7 @@ table_reel / day_reel / moment_reel. 14 s - under the 15 s rule.
 
     python scorers_reel.py --comp "Premier League" --out s.mp4 --sheet s.png --caption s.txt
     python scorers_reel.py --comp "Primera Division" --png frames/       # stills, no ffmpeg
+    python scorers_reel.py --auto [--dry]     # nightly: the leagues whose round just ended
 """
 import argparse
 import json
@@ -349,6 +350,171 @@ def caption(scorers, comp, label, rnd=None):
     return "\n".join(lines) + "\n"
 
 
+
+# ---------------------------------------------------------------- automation
+# User, 2026-11-10: «أتمتها» - the race goes out on its own after every round
+# of these three leagues. fb-post.yml runs `--auto` in the nightly daycard job
+# (after the results card and the day reel), the same night the round's last
+# match is in the data, or the next night for a late kick-off.
+AUTO_COMPS = ("Premier League", "Egyptian Premier League", "Primera Division")
+DONE = {"FINISHED", "AWARDED"}
+SKIPPED = {"POSTPONED", "CANCELLED", "CANCELED", "SUSPENDED", "ABANDONED"}
+FRESH_H = 144                # a round older than this is not news any more; 6 days because
+                             # three leagues ending one weekend go out one a night and a
+                             # late kick-off waits for the next night's run (the first
+                             # run, 11-12, had La Liga R12 owed at 122 h). The next round
+                             # starting retires a round anyway (round_done).
+MAX_PER_RUN = 1              # three leagues ending one weekend = three nights, not one burst
+
+
+def _kickoff(m):
+    import datetime
+    try:
+        return datetime.datetime.fromisoformat(
+            f"{m['kickoff']}T{m.get('koff_time') or '00:00'}:00").replace(tzinfo=C.CAIRO)
+    except Exception:                                        # noqa: BLE001
+        return None
+
+
+def season_matches(comp, now, matches=None):
+    """This season's matches of `comp`, archive + current, one per match_id."""
+    import build_site as b
+    import story_events as SE
+    if matches is None:
+        matches = b.load("matches_archive.json") + b.load("matches.json")
+    season = SE.season_of(now.date().isoformat())
+    seen, out = set(), []
+    for m in matches:
+        mid = str(m.get("match_id") or "")
+        if not mid or mid in seen or m.get("competition") != comp:
+            continue
+        seen.add(mid)
+        if isinstance(m.get("round"), int) and SE.season_of(m.get("kickoff")) == season:
+            out.append(m)
+    return out
+
+
+def round_done(ms, now, need=None):
+    """(round, last kick-off) when the LATEST round with a finished match is
+    complete - every match finished or postponed - and ended inside FRESH_H;
+    else None. Only the latest round counts: a postponed match from an old
+    round, played weeks later, must not bring that round back. `need` = the
+    matches a full round has (clubs // 2): the feed lists a round's fixtures
+    only as they are scheduled, so six finished matches of an eleven-match
+    round are not a finished round."""
+    fin = [m for m in ms if (m.get("status") or "") in DONE]
+    if not fin:
+        return None
+    rnd = max(m["round"] for m in fin)
+    this = [m for m in ms if m["round"] == rnd]
+    if need and len(this) < need:
+        return None
+    if any((m.get("status") or "") not in DONE | SKIPPED for m in this):
+        return None
+    kos = [k for k in (_kickoff(m) for m in this if (m.get("status") or "") in DONE) if k]
+    if not kos:
+        return None
+    last = max(kos)
+    if last > now or (now - last).total_seconds() > FRESH_H * 3600:
+        return None
+    return rnd, last
+
+
+def round_size(comp, path=None):
+    """Matches in a full round: half the clubs in the table (None = unknown)."""
+    import table_reel as T
+    try:
+        return len(T.table_for(comp, path)) // 2 or None
+    except SystemExit:
+        return None
+
+
+def ref_for(comp, now, rnd):
+    import story_events as SE
+    return f"scorers:{comp}:{SE.season_of(now.date().isoformat())}:R{rnd}"
+
+
+def due(now=None, matches=None, posted=None):
+    """[(comp, round, ref)] whose reel is owed, oldest round first.
+    `posted(ref)` -> True when the store already has that reel."""
+    import datetime
+    now = now or datetime.datetime.now(C.CAIRO)
+    out = []
+    for comp in AUTO_COMPS:
+        rd = round_done(season_matches(comp, now, matches), now, round_size(comp))
+        if not rd:
+            continue
+        rnd, last = rd
+        tab = round_for(comp)
+        if tab and tab < rnd:
+            print(f"scorers reel {comp} R{rnd}: the table still says R{tab} - the data lags, next night")
+            continue
+        ref = ref_for(comp, now, rnd)
+        if posted and posted(ref):
+            continue
+        out.append((last, comp, rnd, ref))
+    return [(c, r, ref) for _, c, r, ref in sorted(out)]
+
+
+def _posted(ref):
+    import store
+    rec = store.get_post(R.KIND, ref)
+    return bool(rec and rec.get("post_id"))
+
+
+def auto(dry=False, out_dir=None):
+    """Claim-then-post, kind 'reel' / 'scorers:<comp>:<season>:R<n>' - one
+    reel per league per round, ever. Never raises; a social error must not
+    fail the nightly job."""
+    import store
+    from site_lib.names import comp_label
+    try:
+        todo = due(posted=_posted)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"scorers reel: the store cannot be read ({str(e)[:120]}) - next night")
+        return 0
+    if not todo:
+        print("scorers reel: no round finished since the last one")
+        return 0
+    token = os.environ.get("FB_PAGE_TOKEN", "").strip()
+    out_dir = out_dir or os.path.join(HERE, "media", "reels")
+    os.makedirs(out_dir, exist_ok=True)
+    for comp, rnd, ref in todo[:MAX_PER_RUN]:
+        label = comp_label(comp)
+        try:
+            scorers = scorers_for(comp)
+        except SystemExit:
+            scorers = []
+        if not scorers:
+            print(f"scorers reel {comp} R{rnd}: no scorers in the data")
+            continue
+        cap = caption(scorers, comp, label, rnd)
+        if dry or not token:
+            print(f"scorers reel {comp} R{rnd}: would be posted ({'dry run' if dry else 'FB_PAGE_TOKEN not set'})")
+            print(cap)
+            continue
+        if not store.claim(R.KIND, ref, title=f"scorers {label} R{rnd}"):
+            print(f"scorers reel {comp} R{rnd}: already published or held by another run")
+            continue
+        path = os.path.join(out_dir, f"scorers-{re.sub(r'[^a-z0-9]+', '-', comp.lower())}-R{rnd}.mp4")
+        try:
+            scenes = build(scorers, comp, label, rnd)
+            secs = sum(x[1] for x in scenes)
+            if not M.encode({"id": ref}, None, path, secs, frame_iter=D.frames(scenes)):
+                store.release(R.KIND, ref)
+                print(f"scorers reel {comp} R{rnd}: no usable encoder, next night")
+                continue
+            vid = R.post_reel(token, path, cap)
+            store.record_post(R.KIND, ref, vid, title=f"scorers {label} R{rnd}")
+            print(f"scorers reel {comp} R{rnd}: published as {vid}")
+        except Exception as e:                               # noqa: BLE001
+            store.release(R.KIND, ref)
+            print(f"scorers reel {comp} R{rnd} FAILED: {e}")
+    if len(todo) > MAX_PER_RUN:
+        print(f"scorers reel: {len(todo) - MAX_PER_RUN} more league(s) owed - one a night")
+    return 0
+
+
 # ---------------------------------------------------------------- main
 def main():
     from site_lib.names import comp_label
@@ -358,7 +524,11 @@ def main():
     ap.add_argument("--sheet", help="also write a contact sheet PNG")
     ap.add_argument("--caption", help="write the post text here (default <out>-caption.txt)")
     ap.add_argument("--png", help="write stills (intro, race mid/end, outro) into this folder, no MP4")
+    ap.add_argument("--auto", action="store_true", help="post the reel of every league whose round just ended (fb-post.yml, nightly)")
+    ap.add_argument("--dry", action="store_true", help="with --auto: say what would be posted")
     args = ap.parse_args()
+    if args.auto:
+        return auto(dry=args.dry)
     scorers = scorers_for(args.comp)
     label = comp_label(args.comp)
     rnd = round_for(args.comp)
