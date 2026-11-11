@@ -211,15 +211,19 @@ COMP_ORDER = ["Egyptian Premier League",
               "UEFA Conference League", # right after the UEL (user ask 2026-11-02)
               "CAF Champions League",   # after UCL (user pick 2026-09-02)
               "CAF Confederation Cup",  # right after the CAF CL (user ask 2026-10-17)
+              # the national teams before the Arab leagues (user, 2026-11-11:
+              # «عايز بطولة تصفيات افريقيا وبطولة دورى الامم الاوروبية تظهر
+              # فوق الدورى التونسى» - an international break's day showed
+              # Tunisia's postponed rows above the matches being played)
+              "Africa Cup of Nations Qualification",  # user ask 2026-09-20
+              "UEFA Nations League",                  # user ask 2026-09-21
+              "FIFA U-17 World Cup",                  # user ask 2026-11-11
               # the North African leagues (user ask 2026-11-02)
               "Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1",
               "Libyan Premier League",
               # a second division comes after every Arab FIRST division (user,
               # 2026-11-11: «نزل الدورى التونسى تحت» when it sat after the cups)
-              "Egyptian Second Division",
-              "FIFA U-17 World Cup",                  # user ask 2026-11-11
-              "Africa Cup of Nations Qualification",  # user ask 2026-09-20
-              "UEFA Nations League"]                  # user ask 2026-09-21
+              "Egyptian Second Division"]
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
 # must agree with LIVE_COMPS in worker.js
