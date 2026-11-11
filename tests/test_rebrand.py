@@ -80,6 +80,10 @@ for _ph in ("ph-pitch.svg", "ph-ball.svg"):
        "الجون" in _s and "data:image/png;base64," in _s and "Yalla" not in _s
        and "rocket" not in _s and len(_s) < 40_000, len(_s))
 _hd = io.open("root-extras/_headers", encoding="utf-8").read().replace("\r\n", "\n")
+_css = io.open("site_src/style.css", encoding="utf-8").read()
+_rule = 'img[src*="/media/ph-"]{object-fit:contain;object-position:50% 50%;background:#1f94d3}'
+ok("8b the placeholder is shown whole on its blue, by the LAST rule (a wide desktop hero sliced the logo)",
+   _rule in _css and _css.rstrip().endswith(_rule))
 ok("9 the placeholders are cached for an hour, so a redraw reaches returning readers",
    all(f"/media/{p}\n  ! Cache-Control\n  Cache-Control: public, max-age=3600" in _hd
        for p in ("ph-pitch.svg", "ph-ball.svg")))
