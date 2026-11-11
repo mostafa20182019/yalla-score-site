@@ -123,8 +123,10 @@ ck("11j the U-17 World Cup + «دوري المحترفين المصري»: same 
        and _ce(n) == f and _ce(l) == f and n not in _EGY and str(i) not in first
        for n, (i, s, f, l) in _N11.items()),
    {n: (ids.get(n), bs.S365_COMP_IDS.get(n), _ce(n)) for n in _N11})
-ck("11k ...the second division right after the Egyptian cups and under «الدوريات العربية»; the U-17 World Cup before the AFCON qualifiers",
-   bs.COMP_ORDER[1:4] == ["Egypt Cup", "Egyptian League Cup", "Egyptian Second Division"]
+ck("11k ...the second division after the Arab first divisions (right after Libya) and under «الدوريات العربية»; the U-17 World Cup before the AFCON qualifiers",
+   bs.COMP_ORDER[1:3] == ["Egypt Cup", "Egyptian League Cup"]
+   and bs.COMP_ORDER.index("Egyptian Second Division") == bs.COMP_ORDER.index("Libyan Premier League") + 1
+   and bs.COMP_ORDER.index("Egyptian Second Division") > bs.COMP_ORDER.index("Tunisian Ligue 1")
    and bs.COMP_ORDER.index("FIFA U-17 World Cup") + 1 == bs.COMP_ORDER.index("Africa Cup of Nations Qualification")
    and "egypt-second-division" in __import__("site_pages.leagues", fromlist=["ARAB_SLUGS"]).ARAB_SLUGS
    and not any(n in bs.COMP_TV for n in _N11))

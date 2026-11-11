@@ -204,7 +204,6 @@ LEAGUE_BAR = ("Egyptian Premier League", "Premier League", "Primera Division",
 # fixed sidebar order (user's pick 2026-08-13); anything unlisted goes last
 COMP_ORDER = ["Egyptian Premier League",
               "Egypt Cup", "Egyptian League Cup",   # right after the league (user ask 2026-11-03)
-              "Egyptian Second Division",            # after the Egyptian cups (user ask 2026-11-11)
               "Premier League", "Primera Division",
               "Turkish Super Lig", "Saudi Pro League", "Ligue 1",
               "Bundesliga", "Serie A", "UEFA Champions League",
@@ -215,6 +214,9 @@ COMP_ORDER = ["Egyptian Premier League",
               # the North African leagues (user ask 2026-11-02)
               "Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1",
               "Libyan Premier League",
+              # a second division comes after every Arab FIRST division (user,
+              # 2026-11-11: «نزل الدورى التونسى تحت» when it sat after the cups)
+              "Egyptian Second Division",
               "FIFA U-17 World Cup",                  # user ask 2026-11-11
               "Africa Cup of Nations Qualification",  # user ask 2026-09-20
               "UEFA Nations League"]                  # user ask 2026-09-21
