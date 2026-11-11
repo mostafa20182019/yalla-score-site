@@ -19,3 +19,9 @@
 /media/*
   ! Cache-Control
   Cache-Control: public, max-age=604800
+/media/ph-pitch.svg
+  ! Cache-Control
+  Cache-Control: public, max-age=3600
+/media/ph-ball.svg
+  ! Cache-Control
+  Cache-Control: public, max-age=3600

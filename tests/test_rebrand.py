@@ -71,5 +71,18 @@ man = io.open("root-extras/manifest.webmanifest", encoding="utf-8").read()
 ok("7 the web manifest and the service worker name the new site",
    '"name": "الجون"' in man and "الجون" in io.open("root-extras/sw.js", encoding="utf-8").read())
 
+# 2026-11-11: the Inzaghi story showed the OLD «يلا سكور» rocket badge - the
+# two article placeholders had never been redrawn. They are the «الجون» cover
+# now (tools/make_brand.py --ph), kept under the same names, on a short cache
+for _ph in ("ph-pitch.svg", "ph-ball.svg"):
+    _s = io.open(os.path.join("media", _ph), encoding="utf-8").read()
+    ok(f"8 media/{_ph} is the «الجون» cover (an embedded picture), not the old rocket badge",
+       "الجون" in _s and "data:image/png;base64," in _s and "Yalla" not in _s
+       and "rocket" not in _s and len(_s) < 40_000, len(_s))
+_hd = io.open("root-extras/_headers", encoding="utf-8").read().replace("\r\n", "\n")
+ok("9 the placeholders are cached for an hour, so a redraw reaches returning readers",
+   all(f"/media/{p}\n  ! Cache-Control\n  Cache-Control: public, max-age=3600" in _hd
+       for p in ("ph-pitch.svg", "ph-ball.svg")))
+
 print(f"\n{len(fails)} FAILED: {fails}" if fails else "\nALL REBRAND TESTS PASSED")
 sys.exit(1 if fails else 0)

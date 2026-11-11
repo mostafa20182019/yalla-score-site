@@ -32,8 +32,19 @@ script only places it. Written into assets-src/:
                         box both the desktop and the phone crops keep
   og-banner.png   1200x630  every page's default og:image
 
+And into media/ (2026-11-11 - the Inzaghi story shipped with the OLD «يلا
+سكور» rocket badge: «كان المفروض ال cover الجديد الجون»):
+
+  ph-pitch.svg / ph-ball.svg  the article placeholders, under the SAME names
+                        every stored article and prompt already points at:
+                        the cover (logo-mix on the site blue, 16:9) as a
+                        palette PNG inside the SVG - an <img> SVG cannot load
+                        an outside file, so the picture travels inside it.
+                        Only these two: `make_brand.py --ph`
+
 Flat site blue (style.css --green #1f94d3 = fb_cards.BLUE) under everything
 that has a tile; nothing else on them - the sticker is the whole design."""
+import io
 import os
 import sys
 
@@ -85,8 +96,32 @@ def badge(mark, size):
     return out
 
 
+def placeholders(logo):
+    """media/ph-pitch.svg + media/ph-ball.svg: the «الجون» cover, 16:9."""
+    import base64
+    w, h = 800, 450
+    im = tile((w, h), fit(logo, w=int(w * 0.55)))
+    buf = io.BytesIO()
+    im.quantize(colors=48, method=Image.Quantize.MEDIANCUT).save(buf, "PNG", optimize=True)
+    b64 = base64.b64encode(buf.getvalue()).decode("ascii")
+    svg = ('<svg xmlns="http://www.w3.org/2000/svg" '
+           'xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 400 225">'
+           '<title>الجون - elgoon.com</title>'
+           # xlink:href, not href: the one every browser's <img> SVG reads
+           f'<image width="400" height="225" xlink:href="data:image/png;base64,{b64}"/></svg>\n')
+    for n in ("ph-pitch.svg", "ph-ball.svg"):
+        p = os.path.join(HERE, "media", n)
+        with open(p, "w", encoding="utf-8", newline="\n") as f:
+            f.write(svg)
+        print(f"{p}: {os.path.getsize(p) // 1024} KB")
+
+
 def main():
-    logo, word, mark = L.logo_mix(), L.logo_ar(), L.mark()
+    logo = L.logo_mix()
+    placeholders(logo)
+    if "--ph" in sys.argv:
+        return 0
+    word, mark = L.logo_ar(), L.mark()
     files = {}
     files["mark-512.png"] = square(fit(mark, w=int(512 * 0.96)), 512)
     files["wordmark-1024.png"] = fit(word, w=1024)
