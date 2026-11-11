@@ -792,6 +792,16 @@ S365_LEAGUES = [
     # (multi-group -> no table, rounds panel yes).
     (553, "Egypt Cup"),
     (7808, "Egyptian League Cup"),
+    # user ask 2026-11-11: «بطولة كأس العالم للشباب تحت 17 سنة ... ودورى
+    # المحترفين المصرى ... والدورى السودانى لو فيه بيانات ليه». Ids from
+    # 365scores' own lists the same day: 6994 «دوري المحترفين المصري - ممتاز أ»
+    # (second-division, 20 clubs, one table, round 12 on 11-12); 5582
+    # u17-world-cup (48 teams, groups from 2026-11-19 - twelve groups in ONE
+    # standings entry, so the multi-group guard leaves it without a table:
+    # rounds, results and match pages). The Sudanese league (5481) has no
+    # fixture and no result after 2026-05-16 - nothing to show, not added.
+    (6994, "Egyptian Second Division"),
+    (5582, "FIFA U-17 World Cup"),
 ]
 EGY_ENABLED = True
 # knock-out cups whose page is built STAGE by stage (no round numbers in the
@@ -1087,7 +1097,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808,6994,5582"
 
 def _is_shootout(ev):
     """True for an event of the penalty shoot-out (365scores stage 11, status
@@ -1574,6 +1584,7 @@ S365_SCORER_COMPS = [
     (554, "Tunisian Ligue 1"), (559, "Libyan Premier League"),
     (7685, "UEFA Conference League"),
     (553, "Egypt Cup"), (7808, "Egyptian League Cup"),
+    (6994, "Egyptian Second Division"), (5582, "FIFA U-17 World Cup"),   # 2026-11-11
 ]
 
 # the response carries several athlete charts per competition; these are the

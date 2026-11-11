@@ -6,7 +6,7 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import datetime
 import os
-from site_lib.competitions import COMP_SLUG
+from site_lib.competitions import COMP_SLUG, comp_season
 from site_lib.config import DIST, PREDICTIONS_ON, REF_TODAY, SHOW_STATS_PAGE, SITE_BASE, SITE_NAME
 from site_lib.matchdata import match_goals
 from site_lib.names import ar_team, comp_label
@@ -50,7 +50,9 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
         if m.get("match_id") in m_all:
             return m["match_id"]
         return _by_fx.get((ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff")))
+    league_season = season
     for comp, slug in COMP_SLUG.items():
+        season = comp_season(comp, league_season)   # «2026» for a one-year tournament
         label = comp_label(comp)
         st = st_by_comp.get(comp)
         if st and st.get("table"):
@@ -146,7 +148,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                 urls.append(sc_url)
             n_lp += 1
     print(f"  + league pages: {n_lp}")
-    return _comps_with_table, season
+    return _comps_with_table, league_season
 
 
 def leagues_page(_comps_with_table, fx_by_comp, urls):
@@ -188,7 +190,7 @@ DOMESTIC_SLUGS = ("england", "spain", "italy", "germany", "france", "turkey")
 # «الدوريات العربية» - the North African leagues (2026-11-02), joined by the
 # Egyptian league and cups and the Saudi league (user, 2026-11-03: «انقل الدورى
 # المصرى وكأس مصر والدورى السعودى للدوريات العربية»)
-ARAB_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup", "saudi",
+ARAB_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup", "egypt-second-division", "saudi",
               "morocco", "algeria", "tunisia", "libya")
 
 
@@ -200,6 +202,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
     answer a real query - «جدول مباريات الدوري المصري». Markup: fixtures.html
     (templated 2026-09-26). Returns the loop's last comp/label/slug, as before."""
     os.makedirs(os.path.join(DIST, "fixtures"), exist_ok=True)
+    league_season = season
     n_fx = 0
     for comp, slug in COMP_SLUG.items():
         fx = fx_by_comp.get(comp)
@@ -207,6 +210,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         if not rounds:
             continue
         label = comp_label(comp)
+        season = comp_season(comp, league_season, rounds)   # «2026» for a one-year tournament
         n_m = sum(len(r.get("matches") or []) for r in rounds)
         _next = "والدور القادم" if any(r.get("label") for r in rounds) else "والجولة القادمة"   # a cup's stages
         page_head = Markup(head(f"جدول مباريات {label} اليوم {_next} {season} | {SITE_NAME}",
