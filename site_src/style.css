@@ -70,7 +70,11 @@ a{color:inherit}
 .a-meta{color:var(--muted);font-weight:700;font-size:.85rem;border-bottom:1px solid #e2e8f0;padding-bottom:12px}
 .a-tnote{font-weight:600;opacity:.85}
 .a-fig{margin:14px 0}
-.a-img{width:100%;max-height:400px;object-fit:cover;object-position:50% 18%;border-radius:14px;display:block}
+/* the article picture is shown WHOLE, never cropped (user, 2026-11-11: «عشان تظهر كلها
+   لما ادخل على الخبر» - a full-width box capped at 400px sliced every 16:9 hero on a
+   desktop). Its own proportions; on a wide screen at most 540px high, centred. A
+   phone is unchanged: full width, natural height. */
+.a-img{display:block;width:auto;max-width:100%;height:auto;max-height:540px;margin-inline:auto;object-fit:contain;border-radius:14px}
 .a-img[src*="/matchup-"]{object-position:50% 50%}
 .a-credit{color:var(--muted);font-size:.75rem;font-weight:600;margin-top:6px;text-align:center}
 .lead{font-size:1.1rem;font-weight:700;color:#334155}
