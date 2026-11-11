@@ -153,6 +153,9 @@ check([c for c, _, _ in d3] == ["Premier League"], "the table behind the matches
 S.round_for, S.round_size = _rf, _rs
 check(S.round_size("Premier League") == 10, "a 20-club table means ten matches a round")
 check(S.MAX_PER_RUN == 1, "one scorers reel a night")
+# a reel the user uploaded by hand counts as posted, without asking the store
+check(S._posted("scorers:Premier League:2026-27:R10") and S._posted("scorers:Primera Division:2026-27:R12"),
+      "the hand-posted rounds of 11-10 are never posted again")
 
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

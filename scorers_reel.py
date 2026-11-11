@@ -365,6 +365,14 @@ FRESH_H = 144                # a round older than this is not news any more; 6 d
                              # run, 11-12, had La Liga R12 owed at 122 h). The next round
                              # starting retires a round anyway (round_done).
 MAX_PER_RUN = 1              # three leagues ending one weekend = three nights, not one burst
+# Reels the user uploaded BY HAND, so the automation must not post them again.
+# The store only knows what this script posted; add a round's ref here when he
+# posts one himself. 2026-11-11: the 11-10 renders of these two («انا نزلتهم
+# الانجليزي والاسباني فمتنزلش انت المرة دي»).
+HAND_POSTED = {
+    "scorers:Premier League:2026-27:R10",
+    "scorers:Primera Division:2026-27:R12",
+}
 
 
 def _kickoff(m):
@@ -457,6 +465,8 @@ def due(now=None, matches=None, posted=None):
 
 
 def _posted(ref):
+    if ref in HAND_POSTED:
+        return True
     import store
     rec = store.get_post(R.KIND, ref)
     return bool(rec and rec.get("post_id"))
