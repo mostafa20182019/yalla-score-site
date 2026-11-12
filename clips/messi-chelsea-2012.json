@@ -1,0 +1,64 @@
+{
+  "id": "messi-chelsea-2012",
+  "title": "ميسي يضيع ركلة الجزاء أمام تشيلسي — كامب نو 2012",
+  "facts": "Commons file page: 'Messi misses a penalty that could have classified FC Barcelona into the final', date 2012-04-25 (the upload date - the reel shows the year only), category Matches of 2011-2012 UEFA Champions League, CC BY 3.0 YouTube import by Marc Cluet (YouTubeReview passed 2020-02-13). Venue Camp Nou from the shortlist. No score and no minute on the reel: neither is on the file page or in our data.",
+  "home": {
+    "name": "برشلونة"
+  },
+  "away": {
+    "name": "تشيلسي"
+  },
+  "info": "دوري أبطال أوروبا 2012 · كامب نو",
+  "credit": "Video: Marc Cluet · CC BY 3.0 · Wikimedia Commons",
+  "credit_ar": "🎥 الفيديو: Marc Cluet — رخصة CC BY 3.0 عبر ويكيميديا كومنز",
+  "clips": [
+    {
+      "file": "messi_penalty_chelsea_2012.ogv",
+      "source_url": "https://commons.wikimedia.org/wiki/File:FC_Barcelona_-_Chelsea_FC_-_Messi_misses_a_penalty.ogv",
+      "licence": "CC BY 3.0",
+      "credit": "Marc Cluet",
+      "in": 1.0,
+      "out": 8.0,
+      "crop": {
+        "x": 420,
+        "y": 270,
+        "h": 800
+      },
+      "overlay_lines": [
+        "ميسي قدام ركلة جزاء… هيسجل؟",
+        "برشلونة ضد تشيلسي · كامب نو · 2012"
+      ]
+    },
+    {
+      "file": "messi_penalty_chelsea_2012.ogv",
+      "source_url": "https://commons.wikimedia.org/wiki/File:FC_Barcelona_-_Chelsea_FC_-_Messi_misses_a_penalty.ogv",
+      "licence": "CC BY 3.0",
+      "credit": "Marc Cluet",
+      "in": 8.0,
+      "out": 9.8,
+      "crop": {
+        "x": 420,
+        "y": 270,
+        "h": 800
+      },
+      "overlay_lines": [
+        "ميسي يضيع ركلة الجزاء",
+        "ركلة كانت ممكن توصّل برشلونة للنهائي"
+      ]
+    }
+  ],
+  "outro": {
+    "secs": 3.0,
+    "lines": [
+      "ميسي يضيع ركلة الجزاء أمام تشيلسي",
+      "نصف نهائي دوري أبطال أوروبا 2012 · كامب نو"
+    ]
+  },
+  "music": {
+    "file": "music/yalla-loop.m4a",
+    "under": 0.14,
+    "outro": 0.6
+  },
+  "caption": "ميسي قدام ركلة جزاء في كامب نو… هيسجل؟ 😳\nدوري أبطال أوروبا 2012: برشلونة ضد تشيلسي.\nالركلة كانت ممكن توصّل برشلونة للنهائي.\nميسي أضاعها.\nفاكر الليلة دي؟ 👇\nhttps://elgoon.com\n#الجون #ميسي #برشلونة #تشيلسي #دوري_أبطال_أوروبا",
+  "best_time_cairo": "21:00–22:00"
+}

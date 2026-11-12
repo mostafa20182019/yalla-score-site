@@ -229,6 +229,19 @@ def find_face(photo):
     return None
 
 
+HAIR_ABOVE, HEAD_MARGIN = 1.0, 0.06
+
+
+def head_cut(photo, face):
+    """True when the SOURCE photo itself cuts the top of the head: the hair
+    would start above the photo's top edge. No crop can give that head room
+    back - pick another photo (graphic-designer review 2026-11-12)."""
+    if not face:
+        return False
+    _, fy, fh = face
+    return fy - fh * HAIR_ABOVE < fh * 0.10
+
+
 def frame(photo, bw, bh, face=None, tx=0.5, ty=0.36, face_share=(0.16, 0.42)):
     """The photo cropped to bw x bh: it covers the box, the face lands at
     (tx, ty) of it, and the face is between face_share[0] and [1] of the box
@@ -244,8 +257,12 @@ def frame(photo, bw, bh, face=None, tx=0.5, ty=0.36, face_share=(0.16, 0.42)):
     top = fy * s - ty * bh
     if face:
         # never slice the head: the crop starts above the hair with a margin,
-        # even if that puts the face lower than (tx, ty)
-        top = min(top, (fy - fh * 0.85) * s - bh * 0.04)
+        # even if that puts the face lower than (tx, ty). The hair reaches a
+        # full face-height above the face's centre, not 0.85 of it, and the
+        # margin is 6 % of the box (graphic-designer review 2026-11-12: the
+        # crowns of Salah 1146/1130, Carrick 1144 and Kompany's cap 1128
+        # touched the edge)
+        top = min(top, (fy - fh * HAIR_ABOVE) * s - bh * HEAD_MARGIN)
     top = max(0.0, min(top, photo.height * s - bh))
     box = (left / s, top / s, (left + bw) / s, (top + bh) / s)
     out = photo.resize((bw, bh), Image.LANCZOS, box=box)
@@ -461,6 +478,8 @@ def main():
         p.thumbnail((900, 900))
         p.save(os.path.splitext(a.out)[0] + "-face.jpg", quality=85)
     print(f"{a.out}: {W}x{H}, face {'found' if face else 'NOT found - framed on the upper centre; check it, or pass --focus'}")
+    if face and head_cut(unpad(load_photo(a.photo)), face):
+        print("HEAD CUT: the source photo itself cuts the top of the head - no crop can fix it; pick another photo")
     return 0
 
 

@@ -122,5 +122,11 @@ for f_ in (tmp, p):
         os.remove(f_)
     except Exception:
         pass
+# --- head room (graphic-designer review 2026-11-12) ---
+_p = noise(800, 1000, seed=7)
+ok("hr1 a face whose hair would start above the photo's top edge is flagged HEAD CUT", N.head_cut(_p, (400, 60, 120)) is True)
+ok("hr2 a face with room above it is not", N.head_cut(_p, (400, 400, 120)) is False and N.head_cut(_p, None) is False)
+ok("hr3 the crop keeps a full face-height of hair and a 6 % margin", N.HAIR_ABOVE >= 1.0 and N.HEAD_MARGIN >= 0.06)
+ok("hr4 the command prints the HEAD CUT warning", "HEAD CUT" in io.open("news_image.py", encoding="utf-8").read())
 print(f"\n{len(fails)} FAILED: {fails}" if fails else "\nALL NEWS IMAGE TESTS PASSED")
 sys.exit(1 if fails else 0)

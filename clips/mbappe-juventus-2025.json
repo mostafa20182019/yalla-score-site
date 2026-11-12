@@ -1,0 +1,72 @@
+{
+  "id": "mbappe-juventus-2025",
+  "title": "مبابي في البرنابيو قدام يوفنتوس — دوري أبطال أوروبا 2025",
+  "facts": "Commons file page: Kylian Mbappe at Real Madrid's UEFA Champions League game versus Juventus Turin, 22 Oct 2025, own work by SdHb (CC BY-SA 4.0); category: Matches of Real Madrid C.F. at Santiago Bernabéu Stadium. Shirt number 10 is visible on the frame. No score: the result is not on the file page or in our data.",
+  "home": {
+    "name": "ريال مدريد"
+  },
+  "away": {
+    "name": "يوفنتوس"
+  },
+  "info": "22 أكتوبر 2025 · ملعب سانتياجو برنابيو · دوري أبطال أوروبا",
+  "credit": "Video: SdHb · CC BY-SA 4.0 · Wikimedia Commons",
+  "credit_ar": "🎥 الفيديو: SdHb — رخصة CC BY-SA 4.0 عبر ويكيميديا كومنز",
+  "clips": [
+    {
+      "file": "mbappe_juventus_2025.webm",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Kylian_Mbappe_at_Real_Madrid%27s_UEFA_Champions_League_game_versus_Juventus_Turin_on_22_October_2025_(video).webm",
+      "licence": "CC BY-SA 4.0",
+      "credit": "SdHb",
+      "src": [
+        2160,
+        3840
+      ],
+      "in": 0.0,
+      "out": 3.0,
+      "crop": {
+        "x": 0,
+        "y": 1100,
+        "h": 1642
+      },
+      "overlay_lines": [
+        "مبابي زي ما شافه المدرج",
+        "ريال مدريد ضد يوفنتوس · دوري أبطال أوروبا"
+      ]
+    },
+    {
+      "file": "mbappe_juventus_2025.webm",
+      "source_url": "https://commons.wikimedia.org/wiki/File:Kylian_Mbappe_at_Real_Madrid%27s_UEFA_Champions_League_game_versus_Juventus_Turin_on_22_October_2025_(video).webm",
+      "licence": "CC BY-SA 4.0",
+      "credit": "SdHb",
+      "src": [
+        2160,
+        3840
+      ],
+      "in": 3.0,
+      "out": 6.6,
+      "crop": {
+        "x": 0,
+        "y": 1100,
+        "h": 1642
+      },
+      "overlay_lines": [
+        "رقم 10 في البرنابيو",
+        "22 أكتوبر 2025 · ملعب سانتياجو برنابيو"
+      ]
+    }
+  ],
+  "outro": {
+    "secs": 3.6,
+    "lines": [
+      "مبابي قدام يوفنتوس في البرنابيو",
+      "22 أكتوبر 2025 · دوري أبطال أوروبا"
+    ]
+  },
+  "music": {
+    "file": "music/yalla-loop.m4a",
+    "under": 0.14,
+    "outro": 0.6
+  },
+  "caption": "مبابي زي ما شافه المدرج 👀\nريال مدريد ضد يوفنتوس في دوري أبطال أوروبا.\nالتاريخ: 22 أكتوبر 2025.\nالملعب: سانتياجو برنابيو.\nاللقطة متصوّرة من المدرجات.\nتحب تشوف لاعبك المفضل كده؟ 👇\nhttps://elgoon.com\n#الجون #مبابي #ريال_مدريد #دوري_أبطال_أوروبا",
+  "best_time_cairo": "21:00–22:00"
+}
