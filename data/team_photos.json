@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-12T23:12:11+02:00",
+ "generated_at": "2026-11-12T22:57:47+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2929,6 +2929,18 @@
    "source": "team-photos/zamalek/zamalek-gate-jefali-fine.jpg",
    "added": "2026-10-13",
    "width": 1127
+  },
+  {
+   "file": "zamalek-hussein-labib-speaking.jpg",
+   "credit": "صورة: حسين لبيب رئيس مجلس إدارة نادي الزمالك يتحدث، من فيديو يوتيوب ZamalekOn، رخصة CC BY 3.0 (ويكيميديا كومنز)",
+   "subject": "حسين لبيب",
+   "club": "الزمالك",
+   "slug": "zamalek",
+   "year": 2022,
+   "is_person": true,
+   "source": "team-photos/zamalek/hussein-labib-speaking.jpg",
+   "added": "2026-11-12",
+   "width": 239
   },
   {
    "file": "zamalek-identity-card.jpg",
