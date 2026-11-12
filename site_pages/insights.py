@@ -50,7 +50,7 @@ def insights_page(articles, urls, m_all=None, fixtures=None):
             "k": k, "kl": label[k],
             "c": COMP_SLUG.get(comp, "") if comp else "", "r": rnd,
             "href": Markup(article_href(a)),
-            "th": Markup(f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
+            "th": Markup(f'<span class="al-th"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></span>'
                          if img else '<span class="al-th noimg">⚽</span>'),
             "title": a.get("title"),
             "summary": strip_tags(a.get("summary") or ""),

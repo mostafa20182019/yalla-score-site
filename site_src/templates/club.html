@@ -34,11 +34,18 @@
 <section class="minfo">
   <h2>آخر أخبار {{ name }}</h2>
   {% if news %}
-  <ul class="mp-newslist">
+  <div class="alist alist-2col">
     {% for n in news %}
-    <li><a href="{{ n.href }}">{{ n.title }}</a>{% if n.when %} <span class="club-when">({{ n.when }})</span>{% endif %}</li>
+    <a class="al-row" href="{{ n.href }}">{{ n.th }}
+      <span class="al-b">
+        <b class="al-t">{{ n.title }}</b>
+        {% if n.when %}
+        <span class="al-m">{{ n.when }}</span>
+        {% endif %}
+      </span>
+    </a>
     {% endfor %}
-  </ul>
+  </div>
   {% else %}
   <p class="hintline">تُنشر أخبار {{ name }} هنا فور ورودها.</p>
   {% endif %}

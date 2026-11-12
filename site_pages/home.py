@@ -20,6 +20,11 @@ from site_lib.urls import match_url
 BRAND_ALIASES = ["Elgoon", "elgoon", "elgoon.com", "الجون", "يلا سكور", "Yalla Score", "yallascore"]
 
 
+HOME_TITLE = f"{SITE_NAME}: نتائج مباريات اليوم ومواعيدها وأخبار الكرة المصرية"
+HOME_DESC = (f"{SITE_NAME}: نتائج مباريات اليوم لحظة بلحظة، مواعيد المباريات القادمة، ترتيب الدوريات "
+             "والهدافين، وآخر أخبار الأهلي والزمالك ومنتخب مصر والكرة العالمية.")
+
+
 def home_page(articles, fixtures, ge_idx, matches, standings):
     """/ - the match centre and nothing else (user, 2026-10-26: phones first,
     then the desktop «دى هتكون الرئيسية، والاخبار اللى تحت تظهر فى تاب اسمها
@@ -29,7 +34,10 @@ def home_page(articles, fixtures, ge_idx, matches, standings):
     (/news, /insights, /leagues). Markup: site_src/templates/home.html."""
     articles = pinned_first(articles)   # HOME_PIN (site_lib/config.py)
     feat = articles[0] if articles else None    # og:image source
-    page_head = head(f"{SITE_NAME} — {SITE_TAGLINE}", SITE_DESC, SITE_BASE + "/",
+    # query-form title + a full-length description (site-check 2026-11-12: the
+    # title was 30 characters and the description 67). Only this page: the
+    # footer, the feed and the schema keep SITE_TAGLINE / SITE_DESC.
+    page_head = head(HOME_TITLE, HOME_DESC, SITE_BASE + "/",
                      image=(feat and feat.get("image_url")) or None, active="home")
     org_ld = jsonld({
         "@context": "https://schema.org",

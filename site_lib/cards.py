@@ -51,7 +51,7 @@ def headline_card(h):
 def news_card(a):
     """One article card (used by the home shelf and the /news.html archive)."""
     img = thumb_url(a.get("image_url"))
-    thumb = (f'<div class="card-img" style="background-image:url(\'{esc(img)}\')"></div>'
+    thumb = (f'<div class="card-img"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></div>'
              if img else '<div class="card-img noimg">⚽</div>')
     t = art_reltime(a) if BYLINE_RELTIME else ""
     return (f'<a class="card" href="{article_href(a)}">{thumb}'

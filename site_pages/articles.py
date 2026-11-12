@@ -182,7 +182,7 @@ def article_pages(articles, articles_all, matches, urls):
             page_head=page_head, article_ld=article_ld, crumbs_ld=crumbs_ld, crumbs=crumbs,
             title=a["title"], byline=byline(a), pub_date=a.get("pub_date"),
             rel_time=Markup(" · " + _t) if (_t and BYLINE_RELTIME) else "", updated=Markup(_upd),
-            img=img, img_alt=img_alt, credit=a.get("image_credit"), summary=a.get("summary"), body=body,
+            img=img, img_w=_og_dims(img)[0], img_h=_og_dims(img)[1], img_alt=img_alt, credit=a.get("image_credit"), summary=a.get("summary"), body=body,
             follow=follow,
             sources=sources, faq=[{"q": f["q"], "a": f["a"]} for f in _faq], faq_ld=faq_ld,
             embeds=embeds, clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
@@ -251,7 +251,7 @@ def news_archive_pages(articles, urls):
             k = insight_kind(a)
             rows.append({
                 "href": Markup(article_href(a)),
-                "th": Markup(f'<span class="al-th" style="background-image:url(\'{esc(img)}\')"></span>'
+                "th": Markup(f'<span class="al-th"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></span>'
                              if img else '<span class="al-th noimg">⚽</span>'),
                 "title": a.get("title"),
                 "summary": strip_tags(a.get("summary") or ""),

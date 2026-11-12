@@ -139,7 +139,7 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
                 "title": fa.get("title")}
         for a in articles[1:4]:
             img = thumb_url(a.get("image_url"))
-            th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
+            th = (f'<span class="mn-th"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></span>'
                   if img else '<span class="mn-th noimg">⚽</span>')
             news.append({"href": Markup(article_href(a)), "th": Markup(th),
                          "title": a.get("title"), "date": a.get("pub_date") or ""})

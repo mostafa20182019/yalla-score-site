@@ -236,9 +236,8 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <meta name="twitter:image" content="{esc(img)}">
 <link rel="alternate" type="application/rss+xml" title="{esc(SITE_NAME)}" href="/feed.xml">
 <link rel="icon" type="image/png" sizes="192x192" href="/assets/favicon.png">{push_head}
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Almarai:wght@300;400;700;800&display=swap">
+<link rel="preload" href="/assets/fonts/almarai-regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/almarai-extrabold.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/style.css?v={CSS_VER}">
 {ads_head}
 </head>
@@ -247,10 +246,10 @@ def head(title, desc, url, image=None, og_type="website", active="",
   <div class="wrap head-in">
     <a class="brand" href="/"><img class="logo" src="/assets/brand-logo.png" alt="{esc(SITE_NAME)}" width="113" height="46"></a>
     <nav class="site-nav" aria-label="الأقسام"><div class="nav-in">
-    <a href="/" class="navtab nt-match{ma}"><span class="ico" aria-hidden="true">⚽</span> المباريات<span class="nav-en"> | Matches</span></a>
-    <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico" aria-hidden="true">🏆</span> البطولات<span class="nav-en"> | Leagues</span></a>
-    <a href="/news.html" class="navtab nt-news{na}"><span class="ico" aria-hidden="true">📰</span> أخبار<span class="nav-en"> | News</span></a>
-    <a href="/goals.html" class="navtab nt-goals{ga}"><span class="ico" aria-hidden="true">🎥</span> أهداف<span class="nav-en"> | Goals</span></a>
+    <a href="/" class="navtab nt-match{ma}"><span class="ico" aria-hidden="true"></span> المباريات<span class="nav-en"> | Matches</span></a>
+    <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico" aria-hidden="true"></span> البطولات<span class="nav-en"> | Leagues</span></a>
+    <a href="/news.html" class="navtab nt-news{na}"><span class="ico" aria-hidden="true"></span> أخبار<span class="nav-en"> | News</span></a>
+    <a href="/goals.html" class="navtab nt-goals{ga}"><span class="ico" aria-hidden="true"></span> أهداف<span class="nav-en"> | Goals</span></a>
 {pred_tab}{stats_tab}{vids_tab}{reels_tab}
     </div></nav><span class="head-social">{social}</span>{push_bell}
   </div>
@@ -282,10 +281,10 @@ def foot():
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
   <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/matches.html">المباريات</a> · <a href="/goals.html">أهداف المباريات</a>{pred_foot_a} · <a href="/insights.html">التحليلات</a>{pred_foot_b} · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a> · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a></p>
-  <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صورة جماهير الهيدر: Кирилл Венедиктов، CC BY-SA 3.0 (مُجمّعة ومقصوصة) · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
+  <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-{cf_beacon()}{push_js()}{KO_SCRIPT}{REL_JS}{LIVE_JS}{SWIPE_JS}</body></html>"""
+{cf_beacon()}{push_js()}{KO_SCRIPT}{app_js_tag()}</body></html>"""
 
 
 # ---- web push (2026-09-27) ----
@@ -372,3 +371,33 @@ def write(rel, content):
 
 # client-side relative time ("منذ X") - always accurate to the visitor's clock.
 REL_JS = _src("snippets/rel_js.html")
+
+
+# /assets/app.js (site-check 2026-11-12): REL_JS + LIVE_JS + SWIPE_JS were
+# 16 KB of inline script on EVERY page, downloaded again with each one. They
+# are the same bytes everywhere, so they ship once as a file the browser
+# caches (?v= is the content hash, set by write_assets). `defer` keeps the
+# old timing: they still run after the whole page is parsed, and after the
+# inline KO_SCRIPT that LIVE_JS reads. The push script stays inline - it
+# carries the VAPID key and is empty while push is dark.
+APP_JS_VER = "1"
+
+
+def _js_body(snippet):
+    s = snippet.strip()
+    if s.startswith("<script>"):
+        s = s[len("<script>"):]
+    if s.endswith("</script>"):
+        s = s[:-len("</script>")]
+    return s.strip()
+
+
+def app_js():
+    """The file's content: each snippet in its own try, so one that throws
+    cannot stop the next (they were separate <script> blocks before)."""
+    return "\n".join("try{" + _js_body(s) + "\n}catch(e){}"
+                     for s in (REL_JS, LIVE_JS, SWIPE_JS)) + "\n"
+
+
+def app_js_tag():
+    return f'<script defer src="/assets/app.js?v={APP_JS_VER}"></script>'

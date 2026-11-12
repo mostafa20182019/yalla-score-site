@@ -69,5 +69,5 @@ def local_crest(url):
 def comp_icon(name):
     url = COMP_LOGO.get(name)
     if url:
-        return f'<img class="lg-logo" src="{esc(local_crest(url))}" alt="" loading="lazy">'
+        return f'<img class="lg-logo" src="{esc(local_crest(url))}" alt="" width="22" height="22" loading="lazy">'
     return f'<span class="lg-ico">{comp_emoji(name)}</span>'

@@ -3,6 +3,10 @@
 # Live on 2026-11-05 the crests carried three Cache-Control values at once.
 /*
   Cache-Control: public, max-age=0, must-revalidate
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: strict-origin-when-cross-origin
+  Strict-Transport-Security: max-age=31536000
 /matches/d/*
   X-Robots-Tag: noindex
 /matches/l/*
@@ -10,6 +14,12 @@
 /assets/*
   ! Cache-Control
   Cache-Control: public, max-age=86400
+/assets/fonts/*
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
+/assets/app.js
+  ! Cache-Control
+  Cache-Control: public, max-age=31536000, immutable
 /assets/style.css
   ! Cache-Control
   Cache-Control: public, max-age=31536000, immutable

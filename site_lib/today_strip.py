@@ -155,7 +155,7 @@ def match_centre(standings, matches, articles, ge_idx, fixtures=None):
         if a is feat:
             continue
         img = thumb_url(a.get("image_url"))
-        th = (f'<span class="mn-th" style="background-image:url(\'{esc(img)}\')"></span>'
+        th = (f'<span class="mn-th"><img src="{esc(img)}" alt="" loading="lazy" decoding="async"></span>'
               if img else '<span class="mn-th noimg">⚽</span>')
         items.append(f'<a class="mn-item" href="{esc(article_href(a))}">{th}'
                      f'<span class="mn-b"><span class="mn-t">{esc(a.get("title"))}</span></span></a>')

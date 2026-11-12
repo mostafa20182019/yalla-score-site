@@ -386,8 +386,13 @@ def match_article_block(a, comp, page_title=None, status=None):
                f' · <time datetime="{esc(a.get("pub_date"))}">{esc(a.get("pub_date"))}</time>'
                f' · <span class="a-tnote">بمعلومات وقت النشر</span></p>')
     if img:
+        # width/height (site-check 2026-11-12): the browser reserves the
+        # picture's box before it loads, so the text under it does not jump
+        from site_lib.shell import _og_dims
+        _iw, _ih = _og_dims(img)
+        _wh = f' width="{_iw}" height="{_ih}"' if _iw and _ih else ""
         out.append(f'<figure class="a-fig"><img class="a-img" src="{esc(img)}" '
-                   f'alt="{esc(a["title"])}" loading="lazy">')
+                   f'alt="{esc(a["title"])}"{_wh} loading="lazy">')
         if a.get("image_credit"):
             out.append(f'<figcaption class="a-credit">{esc(a["image_credit"])}</figcaption>')
         out.append('</figure>')

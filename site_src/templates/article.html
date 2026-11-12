@@ -12,7 +12,7 @@
   <p class="a-meta"><a class="a-by" href="/editors.html">{{ byline }}</a></p>
   {% if img %}
   <figure class="a-fig">
-    <img class="a-img" src="{{ img }}" alt="{{ img_alt }}" loading="eager" fetchpriority="high">
+    <img class="a-img" src="{{ img }}" alt="{{ img_alt }}"{% if img_w %} width="{{ img_w }}" height="{{ img_h }}"{% endif %} loading="eager" fetchpriority="high">
     {% if credit %}
     <figcaption class="a-credit">{{ credit }}</figcaption>
     {% endif %}

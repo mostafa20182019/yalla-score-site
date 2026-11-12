@@ -653,7 +653,7 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
         when = (m.get("koff_time") if show_time and m.get("koff_time") else m.get("kickoff"))
         mid = f'<span class="ko">{esc(when)}</span>'
     def crest(u):
-        return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="ph">⚽</span>'
+        return f'<img src="{esc(local_crest(u))}" alt="" width="34" height="34" loading="lazy">' if u else '<span class="ph">⚽</span>'
     comp = ""
     meta = []
     if show_comp:

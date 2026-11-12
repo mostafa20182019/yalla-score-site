@@ -13,7 +13,7 @@ from site_lib.dates import art_reltime
 from site_lib.names import _team_match, _team_news, comp_label
 from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
-from site_lib.shell import foot, head, write
+from site_lib.shell import foot, head, thumb_url, write
 from site_lib.tables import match_row, standings_table
 from site_lib.text import esc, jsonld
 from site_lib.urls import article_href, breadcrumb_ld, match_url
@@ -115,7 +115,11 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
         news_items = []
         for a in news:
             _t = art_reltime(a)
+            _nimg = thumb_url(a.get("image_url"))
             news_items.append({"href": Markup(article_href(a)), "title": a["title"],
+                               # the /news row (site-check 2026-11-12): picture + title
+                               "th": Markup(f'<span class="al-th"><img src="{esc(_nimg)}" alt="" loading="lazy" decoding="async"></span>'
+                                            if _nimg else '<span class="al-th noimg">⚽</span>'),
                                "when": Markup(_t) if _t else ""})
         table = table_heading = ""
         if st and st.get("table"):

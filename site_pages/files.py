@@ -200,6 +200,11 @@ def write_assets():
     _shell.CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
         f.write(_css)
+    # the shared scripts as one cached file (shell.app_js says why)
+    _js = _shell.app_js()
+    _shell.APP_JS_VER = hashlib.md5(_js.encode("utf-8")).hexdigest()[:8]
+    with open(os.path.join(DIST, "assets", "app.js"), "w", encoding="utf-8", newline="\n") as f:
+        f.write(_js)
     # /favicon.ico at the site root — the legacy fallback path some crawlers
     # (and Google's favicon fetcher) request directly; was a 404 before
     _ico = os.path.join(HERE, "assets-src", "favicon.ico")
@@ -214,6 +219,12 @@ def write_assets():
         _pp = os.path.join(HERE, "assets-src", _pi)
         if os.path.exists(_pp):
             shutil.copy(_pp, os.path.join(DIST, "assets", _pi))
+    # the self-hosted Almarai (2026-11-12): the three woff2 the stylesheet names
+    _fdir = os.path.join(HERE, "assets-src", "fonts")
+    os.makedirs(os.path.join(DIST, "assets", "fonts"), exist_ok=True)
+    for _fn in sorted(os.listdir(_fdir)):
+        if _fn.endswith(".woff2"):
+            shutil.copy(os.path.join(_fdir, _fn), os.path.join(DIST, "assets", "fonts", _fn))
     _ogb = os.path.join(HERE, "assets-src", "og-banner.png")
     if os.path.exists(_ogb):
         shutil.copy(_ogb, os.path.join(DIST, "assets", "og-banner.png"))
