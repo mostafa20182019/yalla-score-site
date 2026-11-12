@@ -249,12 +249,13 @@ def context(script):
 
 
 def validate(script):
-    """What the social brief fixed: 6-8 scenes, 14-17 s, short lines, a
+    """What the social brief fixed: 6-8 scenes, 12-15 s (user rule
+    2026-11-10: every reel 15 s or less), short lines, a
     known kind each, the photo on disk and credited."""
     scs = script.get("scenes") or []
     assert 6 <= len(scs) <= 8, f"{len(scs)} scenes (6-8)"
     total = sum(float(s["secs"]) for s in scs)
-    assert 14 <= total <= 17.5, f"{total:.1f} s (14-17.5)"
+    assert 12 <= total <= 15, f"{total:.1f} s (12-15)"
     for s in scs:
         assert s["kind"] in KINDS, f"scene kind {s['kind']!r}"
         for ln in s.get("lines") or []:

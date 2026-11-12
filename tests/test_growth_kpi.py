@@ -138,5 +138,20 @@ try:
 finally:
     K.PAGE_METRICS.clear(); K.PAGE_METRICS.update(_pm)
 
+# ---- a metric that answers with NO value (2026-11-12: the row read null,
+# null, null with no error, and the A/B cell showed one deleted post's error)
+def empty_get(url, timeout=30):
+    if "/POST702/insights" in url:
+        raise urllib.error.HTTPError(url, 400, "Bad Request", {}, io.BytesIO(b'{"error":{"message":"(#100) Unsupported get request"}}'))
+    return {"data": []}
+K._get = empty_get
+ins5, ab5 = K.page_insights("tok"), K.ab_reach("tok", now)
+ck("19 empty page metrics -> {error: no data returned}, not three silent nulls",
+   "no data returned" in ins5.get("error", ""), str(ins5))
+ck("20 empty post reach -> the error counts the posts, not one deleted post's message",
+   ab5.get("refused") == 1 and ab5.get("posts") == ab5.get("refused") + ab5.get("empty") >= 3
+   and f"no data for {ab5.get('empty')} of {ab5.get('posts')}" in ab5["error"], str(ab5))
+K._get = fake_get
+
 print("\nALL GROWTH KPI TESTS PASSED" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

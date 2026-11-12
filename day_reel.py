@@ -38,6 +38,10 @@ import store                         # noqa: E402
 W, H, FPS = M.W, M.H, M.FPS
 PER_PAGE = 3
 INTRO, PAGE, OUTRO = 2.5, 4.0, 3.0
+# two pages at most: 2.5 + 2 x 4 + 3 = 13.5 s (user rule 2026-11-10: every reel is 15 s or less). A busier
+# day shows its first six results (the order the caller ranks them); the
+# caption still lists every one.
+MAX_PAGES = 2
 ROW_TOP, ROW_H = 690, 290            # row centres 690 / 980 / 1270: inside the safe band (R.SAFE_BOTTOM)
 HOME_X, AWAY_X = W * 0.76, W * 0.24  # clear of the Reels like/comment column on the right
 NAME_W = W * 0.27
@@ -81,6 +85,7 @@ def row(im, t, m, cy, t0):
 def build(ms, date, now=None):
     """The scenes as (draw(t) -> frame, seconds, push_in) - push_in False for
     the outro, which moment_reel.scene already pushes in."""
+    ms = list(ms)[:MAX_PAGES * PER_PAGE]
     bg = R.background()
     ctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
     title, when = rel_label(date, now), day_name(date)

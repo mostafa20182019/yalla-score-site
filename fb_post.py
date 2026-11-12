@@ -904,15 +904,27 @@ def goal_post(token, payload, dry=False):
             print(f"posted the goal card for {ref}: {pid}")
         except Exception as e:  # noqa: BLE001 - the picture failed: the text, now
             print(f"goal {ref}: card failed ({e}) - posting the text")
+            img = None
             pid = post_text(token, caption)
             print(f"posted the goal text for {ref}: {pid}")
         store.record_post("goal", ref, pid, title=caption.split("\n")[0])
+        _tg_card("goal", ref, img, caption)
     except Exception as e:  # noqa: BLE001
         print(f"goal {ref}: post FAILED: {e}")
         if not rec:
             store.release("goal", ref)
         return 1
     return 0
+
+
+def _tg_card(kind, ref, img, caption):
+    """The same card on the Telegram channel (tg_post.send_card; football-
+    social review 2026-11-12). Never raises."""
+    try:
+        import tg_post
+        tg_post.send_card(kind, ref, img, caption)
+    except Exception as e:  # noqa: BLE001
+        print(f"telegram {kind} {ref}: not mirrored ({e})")
 
 
 def whistle_caption(kind, g, goals):
@@ -973,9 +985,12 @@ def whistle_post(token, payload, dry=False):
             print(f"posted the {kind} card for {ref}: {pid}")
         except Exception as e:  # noqa: BLE001
             print(f"{kind} {ref}: card failed ({e}) - posting the text")
+            img = None
             pid = post_text(token, caption)
             print(f"posted the {kind} text for {ref}: {pid}")
         store.record_post(kind, ref, pid, title=caption.split("\n")[0])
+        if kind == "ft":                 # the result; kick-off / half-time stay on Facebook
+            _tg_card("ft", ref, img, caption)
     except Exception as e:  # noqa: BLE001
         print(f"{kind} {ref}: post FAILED: {e}")
         if not rec:

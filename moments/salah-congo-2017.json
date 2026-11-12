@@ -18,9 +18,9 @@
     "source": "https://commons.wikimedia.org/wiki/File:Mo_Salah_2018.png"
   },
   "scenes": [
-    {"kind": "hook",   "secs": 2.0, "big": "28 سنة", "lines": ["بعيد عن كأس العالم", "من 1990"]},
-    {"kind": "date",   "secs": 2.0, "lines": ["8 أكتوبر 2017", "ستاد برج العرب — الإسكندرية"]},
-    {"kind": "teams",  "secs": 2.0, "lines": ["مصر × الكونغو", "تصفيات كأس العالم 2018"]},
+    {"kind": "hook",   "secs": 1.5, "big": "28 سنة", "lines": ["بعيد عن كأس العالم", "من 1990"]},
+    {"kind": "date",   "secs": 1.5, "lines": ["8 أكتوبر 2017", "ستاد برج العرب — الإسكندرية"]},
+    {"kind": "teams",  "secs": 1.5, "lines": ["مصر × الكونغو", "تصفيات كأس العالم 2018"]},
     {"kind": "goal",   "secs": 2.0, "lines": ["الدقيقة 63", "صلاح يسجّل الهدف الأول"], "score": [1, 0], "photo": true},
     {"kind": "goal",   "secs": 2.0, "lines": ["قبل النهاية بدقائق", "الكونغو تعادل — بوكا موتو"], "score": [1, 1], "crest": "away", "dim": true},
     {"kind": "climax", "secs": 2.5, "lines": ["الدقيقة 90+5", "ضربة جزاء", "صلاح يسجّل"], "score": [2, 1], "photo": true, "shake": true},

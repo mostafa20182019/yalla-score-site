@@ -29,6 +29,9 @@ import moment_reel as M              # noqa: E402
 W, H = M.W, M.H
 PER_PAGE = 5
 INTRO, PAGE, OUTRO = 2.5, 3.5, 3.0
+# the top ten: 2.5 + 2 x 3.5 + 3 = 12.5 s (user rule 2026-11-10: every reel is 15 s or less); the full
+# table is one tap away (the caption's link)
+MAX_ROWS = 10
 ROW_TOP, ROW_H, ROW_HALF = 560, 172, 74     # centres 560..1248, last row ends 1322 < safe band
 X_POS, X_CREST, X_NAME_R, X_PTS = 930, 830, 755, 165
 UCL = (31, 148, 211)                        # the Champions League places
@@ -82,6 +85,7 @@ def build(table, comp, label):
     ctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
     played = max(int(r.get("played") or 0) for r in table)
     title, sub = f"ترتيب {label}", f"بعد الجولة {played}"
+    table = list(table)[:MAX_ROWS]
     n = len(table)
 
     def intro(t):

@@ -79,6 +79,42 @@ ck("15 it runs after a real deploy and can never fail the publish",
 ck("16 it gets the store credentials, or the claim would be a no-op json write",
    "CF_D1_ID" in step and "TG_BOT_TOKEN" in step and "TG_CHAT_ID" in step)
 
+# ------------------------------------------------------------- live cards (2026-11-12)
+# the goal / full-time card goes to the channel right after Facebook, once
+_mem = {}
+_st = (store.get_post, store.claim, store.record_post, store.release)
+store.get_post = lambda k, r: _mem.get((k, r))
+store.claim = lambda k, r, title=None, score=None: (k, r) not in _mem and not _mem.update({(k, r): {"post_id": None}})
+store.record_post = lambda k, r, pid, title=None, score=None, og_ok=False: _mem.update({(k, r): {"post_id": pid}})
+store.release = lambda k, r: _mem.pop((k, r), None)
+_sent = []
+_photo, _call = T._send_photo_bytes, T.call
+T._send_photo_bytes = lambda img, cap: (_sent.append(("photo", cap)) or {"ok": True, "result": {"message_id": 77}})
+T.call = lambda m, p: (_sent.append((m, p.get("text"))) or {"ok": True, "result": {"message_id": 78}})
+os.environ.pop("TG_BOT_TOKEN", None)
+ck("17 no token -> nothing sent, nothing claimed", T.send_card("goal", "1:1", b"png", "⚽ هدف") is None and not _sent and not _mem)
+os.environ["TG_BOT_TOKEN"], os.environ["TG_CHAT_ID"] = "t", "@c"
+try:
+    first = T.send_card("goal", "1:1", b"png", "⚽ هدف - سطر")
+    again = T.send_card("goal", "1:1", b"png", "⚽ هدف - سطر")
+    ck("18 the card goes out as a photo once, the second call is a no-op",
+       first == "77" and again is None and _sent == [("photo", "⚽ هدف - سطر")] and _mem[("tg-goal", "1:1")]["post_id"] == "77")
+    ck("19 no picture -> the text", T.send_card("ft", "9", None, "🏁 انتهت") == "78" and _sent[-1] == ("sendMessage", "🏁 انتهت"))
+    T._send_photo_bytes = lambda img, cap: (_ for _ in ()).throw(RuntimeError("down"))
+    ck("20 a Telegram error never raises and releases the claim",
+       T.send_card("goal", "2:1", b"png", "x") is None and ("tg-goal", "2:1") not in _mem)
+finally:
+    T._send_photo_bytes, T.call = _photo, _call
+    store.get_post, store.claim, store.record_post, store.release = _st
+    os.environ.pop("TG_BOT_TOKEN", None); os.environ.pop("TG_CHAT_ID", None)
+fbwf = open(".github/workflows/fb-post.yml", encoding="utf-8").read()
+fbstep = fbwf[fbwf.index("- name: Post new articles to Facebook"):][:900]
+ck("21 the Facebook step that posts goal / whistle cards carries the Telegram secrets",
+   "TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}" in fbstep and "TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}" in fbstep)
+fbsrc = open("fb_post.py", encoding="utf-8").read()
+ck("22 goal_post mirrors every goal, whistle_post only the full-time card",
+   '_tg_card("goal", ref, img, caption)' in fbsrc and 'if kind == "ft":' in fbsrc and '_tg_card("ft", ref, img, caption)' in fbsrc)
+
 print()
 print(f"{len(fails)} FAILED: {', '.join(fails)}" if fails else "ALL TELEGRAM TESTS PASSED")
 sys.exit(1 if fails else 0)

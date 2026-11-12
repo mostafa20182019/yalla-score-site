@@ -31,7 +31,8 @@ check(T.zone(4, 20, comp) == T.UCL and T.zone(5, 20, comp) is None, "La Liga: 4t
 check(T.zone(18, 20, comp) == T.DROP and T.zone(17, 20, comp) is None, "La Liga: 18th red, 17th plain")
 table = [{"pos": i + 1, "team": "FC Barcelona", "crest": None, "played": 12, "pts": 40 - i} for i in range(20)]
 scenes = T.build(table, comp, "الدوري الإسباني")
-check(len(scenes) == 2 + 4, f"20 clubs -> intro + 4 pages + outro ({len(scenes)})")
+check(len(scenes) == 2 + 2, f"20 clubs -> intro + the top ten on 2 pages + outro ({len(scenes)})")
+check(sum(s[1] for s in scenes) <= 15, "15 s or less (user rule 2026-11-10)")
 for draw, dur, _ in scenes:
     check(draw(dur - 0.05).size == (R.W, R.H), "frame 1080x1920")
 bottom = T.ROW_TOP + (T.PER_PAGE - 1) * T.ROW_H + T.ROW_HALF

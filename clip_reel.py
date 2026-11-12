@@ -61,7 +61,8 @@ PANEL_R = 36
 STRIP_Y, STRIP_H = 1240, 96                    # the score strip (white pill)
 INFO_Y = 1352                                  # the scorer / date line
 CREDIT_Y = 1408                                # the licence credit, Latin, small
-MIN_SECS, MAX_SECS = 28.0, 40.0
+# 10-15 s (user rule 2026-11-10: every reel is 15 s or less); was 28-40 when the clip reels began (2026-11-09)
+MIN_SECS, MAX_SECS = 10.0, 15.0
 MAX_CLIP_SECS = 15.0
 TEXT_FADE = 0.4
 OUTRO_ZOOM = 0.05
@@ -175,10 +176,14 @@ def panel_size():
     return PANEL[2] - PANEL[0], PANEL[3] - PANEL[1]
 
 
-def crop_box(clip, src_w=1920, src_h=1080):
+def crop_box(clip, src_w=None, src_h=None):
     """The source window (x, y, w, h) the panel shows: the panel's aspect,
-    `h` source pixels tall, placed at (x, y). Clamped inside the frame."""
+    `h` source pixels tall, placed at (x, y). Clamped inside the frame.
+    The source size is the clip's "src": [w, h] (a vertical phone clip, e.g.
+    the 2160x3840 Mbappé file, 2026-11-12), else 1920x1080."""
     pw, ph = panel_size()
+    sw, sh = clip.get("src") or (1920, 1080)
+    src_w, src_h = src_w or int(sw), src_h or int(sh)
     c = clip.get("crop") or {}
     h = int(c.get("h") or src_h)
     w = int(round(h * pw / ph))

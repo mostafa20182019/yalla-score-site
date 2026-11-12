@@ -4,7 +4,7 @@ r"""The MOMENT reel (2026-11-05): a historic moment as a typography reel.
     python tests/test_moment_reel.py      (from the repo root)
 
 What it guards: every script in moments/ passes the brief's limits (6-8
-scenes, 14-17.5 s, lines of six words or fewer, a credited photo on disk),
+scenes, 12-15 s, lines of six words or fewer, a credited photo on disk),
 every scene kind renders a frame of the right size with nothing but the
 header above the Reels safe band's top, the score block keeps the home side
 on the RIGHT, and the caption always carries the photo credit. No ffmpeg
@@ -38,7 +38,7 @@ for path in scripts:
     s = json.load(open(path, encoding="utf-8"))
     try:
         total = M.validate(s)
-        check(14 <= total <= 17.5, f"{path}: {total:.1f} s")
+        check(12 <= total <= 15, f"{path}: {total:.1f} s")
     except AssertionError as e:
         check(False, f"{path}: {e}")
         continue

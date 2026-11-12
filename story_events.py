@@ -540,7 +540,7 @@ def moment_script(m, mid=None):
     scenes say only what the row says (date, competition, sides, goals,
     final score). None when the match has no scorer data (a reel of a
     score alone says nothing). Passes moment_reel.validate: 6-8 scenes,
-    14-17.5 s, lines of six words or fewer, no photo."""
+    12-15 s, lines of six words or fewer, no photo."""
     goals = [g for g in (m.get("goals") or []) if g.get("player")]
     if not _finished(m) or not goals:
         return None
@@ -568,6 +568,13 @@ def moment_script(m, mid=None):
     scenes.append({"kind": "finale", "secs": 3.0, "big": f"{m['home_score']}-{m['away_score']}",
                    "lines": [f"{h} × {a}", ar_date(m["kickoff"])]})
     scenes.append({"kind": "cta", "secs": 1.5, "lines": ["فاكر المباراة دي؟", "تابع الجون"]})
+    # 15 s or less (user rule 2026-11-10): two or three goals ran 15.5-17.5 s.
+    # Shave the longest scene half a second at a time, never under 1.5 s.
+    while sum(float(x["secs"]) for x in scenes) > 15.0:
+        x = max(scenes, key=lambda x: float(x["secs"]))
+        if float(x["secs"]) <= 1.5:
+            break
+        x["secs"] = round(float(x["secs"]) - 0.5, 2)
     mid = mid or f"m{m['match_id']}-{str(m['kickoff'])[:10]}"
     why_line = {"derby": f"{why[1]}.", "final": f"{why[1]}.", "big": f"{why[1]} أهداف في مباراة واحدة."}.get(why[0]) if why else ""
     caption = "\n".join(x for x in [

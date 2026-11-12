@@ -360,7 +360,7 @@ ev = SE.on_this_day([plain], [mo], datetime.date(2027, 10, 11))
 assert len(ev) == 1 and ev[0]["moment"] == "salah-congo-2017" and "قبل 10 أعوام" in ev[0]["text"] and "#منتخب_مصر" in ev[0]["text"], ev
 assert SE.on_this_day([plain], [], datetime.date(2027, 10, 11)) == []
 assert SE.on_this_day([derby], [], datetime.date(2026, 10, 11)) == [], "the same year is not «on this day»"
-# the same match as a moment reel script: scenes from the goals, 6-8 scenes, 14-17.5 s, no photo
+# the same match as a moment reel script: scenes from the goals, 6-8 scenes, 12-15 s, no photo
 import moment_reel as M
 script = SE.moment_script(derby, mid="derby-test")
 assert script and script["id"] == "derby-test" and script["date"] == "2026-10-11" and 14 <= M.validate(script) <= 17.5

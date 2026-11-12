@@ -43,10 +43,10 @@ def match(i, hs, as_):
 
 ms = [match(i, 8, 1) for i in range(7)]   # 8 = lots of ink, 1 = little
 scenes = D.build(ms, "2026-11-08", now)
-check(len(scenes) == 2 + 3, f"7 matches -> intro + 3 pages + outro ({len(scenes)})")
+check(len(scenes) == 2 + 2, f"7 matches -> intro + 2 pages (the first six) + outro ({len(scenes)})")
 check(scenes[-1][2] is False, "the outro is not pushed in twice")
 secs = sum(s[1] for s in scenes)
-check(14 <= secs <= 20, f"length {secs:.1f} s")
+check(12 <= secs <= 15, f"length {secs:.1f} s (15 s or less, user rule 2026-11-10)")
 
 last_row_bottom = D.ROW_TOP + (D.PER_PAGE - 1) * D.ROW_H + 125
 check(last_row_bottom <= R.SAFE_BOTTOM, f"rows end at {last_row_bottom} <= safe band {R.SAFE_BOTTOM}")

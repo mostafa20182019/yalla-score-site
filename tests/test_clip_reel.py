@@ -5,7 +5,7 @@ r"""The CLIP reel (clip_reel.py, 2026-11-09): free-licensed footage retold.
 
 What it guards, with no network and no ffmpeg: every script in clips/
 passes validate() (a Commons source and a CC licence per clip, in < out,
-no clip over 15 s, the whole reel 28-40 s, a six-word headline), the
+no clip over 15 s, the whole reel 10-15 s, a six-word headline), the
 on-frame credit names CC BY and the caption carries the Arabic credit and
 #الجون, the panel's crop window never includes the uploader's top-left
 watermark, a composed frame is 1080x1920 with nothing below the Reels safe
@@ -53,8 +53,12 @@ for path in scripts:
     ctx = K.context(s)
     for i, clip in enumerate(s["clips"], 1):
         x, y, w, h = K.crop_box(clip)
-        check(x >= WATERMARK[2] or y >= WATERMARK[3], f"{path} clip {i}: crop window clear of the watermark corner")
-        check(x + w <= 1920 and y + h <= 1080, f"{path} clip {i}: crop window inside the source frame")
+        sw, sh = clip.get("src") or (1920, 1080)
+        if "Mehr News" in clip.get("credit", ""):
+            check(x >= WATERMARK[2] or y >= WATERMARK[3], f"{path} clip {i}: crop window clear of the watermark corner")
+        check(x + w <= sw and y + h <= sh, f"{path} clip {i}: crop window inside the {sw}x{sh} source frame")
+        pw, ph = K.panel_size()
+        check(abs(w / h - pw / ph) < 0.01, f"{path} clip {i}: crop window has the panel's aspect")
         im = K.overlay_frame(clip, ctx)
         check(im.size == (K.W, K.H), f"{path} clip {i}: frame is {K.W}x{K.H}")
         band = im.crop((0, K.BOTTOM + 8, K.W, K.H)).convert("L")
@@ -71,6 +75,12 @@ for path in scripts:
     band = out.crop((0, K.BOTTOM + 8, K.W, K.H)).convert("L")
     lo, hi = band.getextrema()
     check(hi - lo < 90, f"{path}: outro keeps the safe band (contrast {hi - lo})")
+
+# a vertical source (2026-11-12): the window uses the clip's own size, full
+# width at most, and a 1920x1080 clamp no longer applies to it
+x, y, w, h = K.crop_box({"src": [2160, 3840], "crop": {"x": 0, "y": 1120, "h": 3000}})
+check((x, w) == (0, 2160) and y == 1120 and y + h <= 3840, f"vertical source: full-width window {x},{y},{w}x{h}")
+check(K.crop_box({"crop": {"x": 400, "y": 0, "h": 1080}})[2:] == (1421, 1080), "no src: still a 1920x1080 source")
 
 # the score strip: home digits on the RIGHT of the dash (fb_cards rule 4)
 ctx = {"home": {"name": "ألمانيا", "flag": "de"}, "away": {"name": "اليابان", "flag": "jp"}}

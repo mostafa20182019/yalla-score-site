@@ -166,6 +166,58 @@ def send(art):
     return str((out.get("result") or {}).get("message_id") or "")
 
 
+# ---------------------------------------------------------------- live cards
+# football-social review 2026-11-12: the channel had 3 members and got the
+# articles only. The goal cards and the full-time card are the posts the
+# Facebook page lives on, so the channel now gets the SAME picture and text,
+# right after Facebook does. Its own dedup namespace (kind "tg-goal" /
+# "tg-ft", same ref as the Facebook post), claim-then-post like the rest.
+def _send_photo_bytes(img, caption):
+    body, ctype = FB._multipart({"chat_id": chat(), "caption": caption[:CAPTION_MAX]},
+                                {"photo": ("card.png", img, "image/png")})
+    req = urllib.request.Request(API.format(token=token(), method="sendPhoto"), data=body,
+                                 headers={"Content-Type": ctype, "User-Agent": "yalla-score-tg/1.0"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        return json.load(r)
+
+
+def send_card(kind, ref, img, caption):
+    """Mirror one live card to the channel: the picture when there is one,
+    else the text. Returns the message id or None. Never raises - a Telegram
+    error must not touch the Facebook post that already went out."""
+    if not (token() and chat()):
+        print(f"telegram: no TG_BOT_TOKEN / TG_CHAT_ID - {kind} {ref} not mirrored")
+        return None
+    k = "tg-" + kind
+    title = (caption or "").split("\n")[0][:120]
+    try:
+        if store.get_post(k, ref) or not store.claim(k, ref, title=title):
+            print(f"telegram {kind} {ref}: already on the channel")
+            return None
+    except Exception as e:                                   # noqa: BLE001
+        print(f"telegram {kind} {ref}: store unavailable ({e}) - not mirrored")
+        return None
+    mid = None
+    try:
+        out = (_send_photo_bytes(img, caption) if img
+               else call("sendMessage", {"chat_id": chat(), "text": caption[:TEXT_MAX]}))
+        if out.get("ok"):
+            mid = str((out.get("result") or {}).get("message_id") or "") or None
+        else:
+            print(f"  telegram said no: {str(out)[:200]}")
+    except Exception as e:                                   # noqa: BLE001
+        print(f"  telegram refused: {e}")
+    try:
+        if mid:
+            store.record_post(k, ref, mid, title=title)
+            print(f"telegram {kind} {ref}: {mid}")
+        else:
+            store.release(k, ref)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"telegram {kind} {ref}: store write failed ({e})")
+    return mid
+
+
 def pending(items):
     """Not yet on the channel, young enough, oldest first, capped."""
     posted = store.posted_ids(KIND)

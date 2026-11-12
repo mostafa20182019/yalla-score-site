@@ -20,7 +20,7 @@
       "licence": "CC BY 4.0",
       "credit": "Mehdi Mortazavian / Mehr News",
       "in": 56.0,
-      "out": 59.5,
+      "out": 58.5,
       "crop": {
         "x": 400,
         "y": 0,
@@ -41,7 +41,7 @@
       "licence": "CC BY 4.0",
       "credit": "Mehdi Mortazavian / Mehr News",
       "in": 2.0,
-      "out": 11.0,
+      "out": 4.5,
       "crop": {
         "x": 499,
         "y": 0,
@@ -62,7 +62,7 @@
       "licence": "CC BY 4.0",
       "credit": "Mehdi Mortazavian / Mehr News",
       "in": 3.0,
-      "out": 13.0,
+      "out": 6.0,
       "crop": {
         "x": 400,
         "y": 0,
@@ -83,7 +83,7 @@
       "licence": "CC BY 4.0",
       "credit": "Mehdi Mortazavian / Mehr News",
       "in": 60.0,
-      "out": 69.0,
+      "out": 63.5,
       "crop": {
         "x": 300,
         "y": 0,
@@ -100,7 +100,7 @@
     }
   ],
   "outro": {
-    "secs": 4.5,
+    "secs": 3.0,
     "lines": [
       "اليابان تقلب الطاولة على ألمانيا",
       "23 نوفمبر 2022 · استاد خليفة الدولي"

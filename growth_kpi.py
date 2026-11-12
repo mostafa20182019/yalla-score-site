@@ -193,6 +193,10 @@ def page_insights(token):
             if isinstance(v, dict):
                 v = sum(x for x in v.values() if isinstance(x, (int, float)))
             out[key] = v
+        # an answer with no value used to land as a silent null (the 11-12
+        # row: all three null, no error) - say so, so the row is readable
+        if out[key] is None and key not in errors:
+            errors[key] = f"{metric}: no data returned"
     if len(errors) == len(PAGE_METRICS):
         return {"error": next(iter(errors.values()))}
     if errors:
@@ -225,19 +229,29 @@ def ab_reach(token, now=None):
         rows = []
     reach = {"photo": [], "link": []}
     first_err = None
+    n_try = n_refused = n_empty = 0
     for r in rows:
         if r["posted_at"] < AB_START or not r.get("post_id") or str(r["post_id"]).startswith("seeded"):
             continue
+        n_try += 1
         try:
             v = post_reach(token, r["post_id"])
         except Exception as e:                        # noqa: BLE001
+            n_refused += 1
             if first_err is None:
                 first_err = _insight_error(e)
             continue
         if v is not None:
             reach[fp.variant({"article_id": r["ref_id"]})].append(v)
-    if first_err and not (reach["photo"] or reach["link"]):
-        return {"error": first_err}
+        else:
+            n_empty += 1
+    if not (reach["photo"] or reach["link"]) and n_try:
+        # 2026-11-12: the row carried ONE deleted post's error, which read as
+        # the cause while every other post had answered with no number. Say
+        # how many posts were asked, refused and empty.
+        msg = (first_err if n_refused == n_try
+               else f"{POST_REACH_METRIC}: no data for {n_empty} of {n_try} posts")
+        return {"error": msg, "posts": n_try, "refused": n_refused, "empty": n_empty}
 
     def agg(xs):
         if not xs:

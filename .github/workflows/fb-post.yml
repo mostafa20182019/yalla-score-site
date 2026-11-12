@@ -104,6 +104,9 @@ jobs:
       - name: Post new articles to Facebook
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          # the goal and full-time cards go to the Telegram channel too (2026-11-12)
+          TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
+          TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
           # the dedup state: with these the claim is an atomic INSERT in D1,
           # without them store.py falls back to the old json file
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
