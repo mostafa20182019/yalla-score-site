@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-12T11:10:09+00:00",
+ "generated_at": "2026-11-12T14:07:24+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1632,6 +1632,18 @@
    "is_person": true,
    "source": "team-photos/man-united/mauricio-pochettino-usmnt-mar2026.jpg",
    "added": "2026-11-11",
+   "width": 1600
+  },
+  {
+   "file": "man-united-michael-carrick-middlesbrough-apr2025.jpg",
+   "credit": "صورة: المدرب الإنجليزي مايكل كاريك، الذي أقاله مانشستر يونايتد من تدريبه في نوفمبر 2026، خلال مباراة بصفته مديرًا فنيًا لميدلزبره في أبريل 2025 (قبل انتقاله لتدريب يونايتد) — تصوير Timmy96، رخصة CC0 (ويكيميديا كومنز)",
+   "subject": "المدرب مايكل كاريك",
+   "club": "مانشستر يونايتد",
+   "slug": "man-united",
+   "year": 2025,
+   "is_person": true,
+   "source": "team-photos/man-united/michael-carrick-middlesbrough-apr2025.jpg",
+   "added": "2026-11-12",
    "width": 1600
   },
   {
