@@ -87,7 +87,10 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
             _parts.append(f"القادمة: {ar_team(_n.get('home'))} × {ar_team(_n.get('away'))} "
                           f"{day_month(_n.get('kickoff'), weekday=True)}"
                           + (f" {_n.get('koff_time')} بتوقيت القاهرة." if _n.get("koff_time") else "."))
-        _parts.append(f"أخبار {name} وترتيبه في {league_ar}.")
+        # «وترتيبه» only where the page shows a table (the national team's
+        # qualifier group is not in our standings data)
+        _parts.append(f"أخبار {name} وترتيبه في {league_ar}." if (st and st.get("table"))
+                      else f"آخر أخبار {name} ومواعيد مبارياته في {league_ar}.")
         desc = " ".join(_parts)
         img = (crest if crest.startswith("http")
                else SITE_BASE + crest) if crest else None

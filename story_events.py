@@ -620,7 +620,7 @@ CAIRO_TZ = "Africa/Cairo"
 
 def form_clubs():
     from site_lib.clubs import TEAM_PAGES
-    return TEAM_PAGES
+    return [tp for tp in TEAM_PAGES if tp["slug"] != "egypt"]
 
 
 def club_side(tp, m):

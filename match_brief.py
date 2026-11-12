@@ -359,7 +359,8 @@ def candidates(d, now=None):
         st = m.get("status")
         if st == "UPCOMING":
             h = (ko - now).total_seconds() / 3600
-            _egy = any(t in (m.get("home", "") + m.get("away", "")) for t in EGY_FIRST)
+            _egy = (any(t in (m.get("home", "") + m.get("away", "")) for t in EGY_FIRST)
+                    or "مصر" in (m.get("home"), m.get("away")))
             _max_h = PREVIEW_MAX_H_EGY if _egy else PREVIEW_MAX_H
             if PREVIEW_MIN_H <= h <= _max_h and (mid, "preview") not in done:
                 out.append({"match_id": mid, "kind": "preview", "hours": round(h, 1), "m": m})
@@ -372,7 +373,8 @@ def candidates(d, now=None):
     def prio(c):
         # reports first, then Egyptian clubs, then the big games (BOTH clubs
         # featured: الزمالك × الأهلي، ليفربول × مانشستر سيتي), then the soonest
-        egy = any(t in (c["m"].get("home", "") + c["m"].get("away", "")) for t in EGY_FIRST)
+        egy = (any(t in (c["m"].get("home", "") + c["m"].get("away", "")) for t in EGY_FIRST)
+               or "مصر" in (c["m"].get("home"), c["m"].get("away")))
         return (0 if c["kind"] == "report" else 1, 0 if egy else 1,
                 0 if featured_sides(c["m"]) == 2 else 1, c["hours"])
     out.sort(key=prio)

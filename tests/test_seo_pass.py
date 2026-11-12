@@ -146,8 +146,9 @@ try:
     ok("3a 85 articles = pages of 40: /news, /news/p2, /news/p3 (and no p4)",
        p1.count('class="al-row"') == 40 and p2.count('class="al-row"') == 40 and p3.count('class="al-row"') == 5
        and not os.path.exists(os.path.join(dist, "news", "p4.html")))
+    # the title is the query since 2026-11-12 (SEO review: «كل الأخبار — الجون» named nothing)
     ok("3b the first page keeps its title; later pages say which page they are",
-       "<title>كل الأخبار — الجون</title>" in p1 and "صفحة 2" in p2 and 'rel="canonical" href="https://elgoon.com/news/p2"' in p2)
+       "<title>آخر أخبار كرة القدم اليوم: الكرة المصرية والعالمية — الجون</title>" in p1 and "صفحة 2" in p2 and 'rel="canonical" href="https://elgoon.com/news/p2"' in p2)
     ok("3c «الأحدث» / «الأقدم» walk the archive: p1 has only الأقدم, p3 only الأحدث",
        'href="/news/p2">الأقدم' in p1 and "الأحدث" not in p1.split('class="pager"')[1]
        and 'href="/news/p2">الأحدث' in p3 and "الأقدم" not in p3.split('class="pager"')[1]

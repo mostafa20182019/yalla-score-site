@@ -1092,7 +1092,18 @@ export function matchSlotCairo(date) {
 // commit before the file was pushed, stayed a 404 at the edge after it arrived).
 // Any error answer leaves with no-store: the page's onerror placeholder covers
 // the moment, and the first request after the deploy sees the file.
-function assetResponse(res) {
+function assetResponse(res, url) {
+  // SEO review 2026-11-12: the assets' html_handling answers /a/1.html and
+  // /matches/ with a TEMPORARY 307 to the extensionless URL - every old
+  // .html link then reads to Google as "may come back". Same target, 301.
+  if (res.status === 307 || res.status === 308) {
+    const loc = res.headers.get("location") || "";
+    if (loc.startsWith("/") && !loc.startsWith("//")) {
+      const target = loc + (url && url.search && !loc.includes("?") ? url.search : "");
+      return new Response(null, { status: 301,
+        headers: { location: target, "cache-control": "public, max-age=3600" } });
+    }
+  }
   if (res.status < 400) return res;
   const out = new Response(res.body, res);
   out.headers.set("cache-control", "no-store");

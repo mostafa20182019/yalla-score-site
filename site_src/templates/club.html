@@ -7,7 +7,7 @@
 <header class="club-hero">{{ crest_img }}
   <div>
     <h1 class="page-h">{{ name }}: النتائج والمباريات القادمة والأخبار</h1>
-    <p class="hintline">كل جديد {{ name }}: الأخبار والمباريات والنتائج والترتيب في مكان واحد — تتحدّث تلقائيًا.</p>
+    <p class="hintline">كل جديد {{ name }}: الأخبار والمباريات والنتائج{% if has_table %} والترتيب{% endif %} في مكان واحد — تتحدّث تلقائيًا.</p>
     {{ position }}
   </div>
 </header>

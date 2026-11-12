@@ -59,6 +59,16 @@ TEAM_PAGES = [
     {"slug": "pyramids", "name": "بيراميدز", "league": "Egyptian Premier League",
      "match_tokens": [("بيراميدز", EGY_SCOPE)],
      "news_tokens": ["بيراميدز"]},
+    # The Egyptian national team (SEO review 2026-11-12: 11 of the week's 49
+    # stories were about it, /team/egypt answered 404, and its qualifier pages
+    # stayed noindex because no preview was ever written - match_brief only
+    # writes for TEAM_PAGES). Its own hub, its matches in the article pipeline,
+    # its stories under its own crumb. The league is the competition we fetch
+    # (NT_SCOPE); «مصر» stays scoped to it - it is a substring of «المصري».
+    {"slug": "egypt", "name": "منتخب مصر", "league": NT_SCOPE[0],
+     "match_tokens": [("مصر", NT_SCOPE)],
+     "news_tokens": ["منتخب مصر", "الفراعنة", "المنتخب المصري"],
+     "news_excl": ["منتخب مصر للشباب", "منتخب مصر الأولمبي", "منتخب مصر تحت"]},
     {"slug": "real-madrid", "name": "ريال مدريد", "league": "Primera Division",
      "match_tokens": [("Real Madrid", None)], "news_tokens": ["ريال مدريد"]},
     {"slug": "barcelona", "name": "برشلونة", "league": "Primera Division",
@@ -77,7 +87,12 @@ TEAM_PAGES = [
      "match_tokens": [("Chelsea FC", None)], "news_tokens": ["تشيلسي"]},
     {"slug": "trabzonspor", "name": "طرابزون سبور", "league": "Turkish Super Lig",
      "match_tokens": [("طرابزون سبور", "Turkish Super Lig")],
-     "news_tokens": ["طرابزون", "محمد صلاح"]},
+     "news_tokens": ["طرابزون", "محمد صلاح"],
+     # a PERSON standing in for the club: his stories list on the club page,
+     # but he never makes the club the story's entity when the title names
+     # another curated side (article 1146: Salah + «منتخب مصر» got the
+     # «طرابزون سبور» crumb and keywords - SEO review 2026-11-12)
+     "proxy_tokens": ["محمد صلاح"]},
 ]
 
 # One club, several spellings over a season: 365scores wrote «غلطة سراي» until

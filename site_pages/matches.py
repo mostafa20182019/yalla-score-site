@@ -23,7 +23,7 @@ from site_lib.shell import _LASTMOD, adsense_slot, foot, head, noindex, thumb_ur
 from site_lib.snippets import FILTERS_HTML, LT_GAMES_JS, MATCHES_JS, ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import _finished_by_comp
 from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, motm_html, scorers_list, standings_table
-from site_lib.text import esc
+from site_lib.text import esc, jsonld
 from site_lib.urls import article_href, breadcrumb_ld, pick_match_article
 
 
@@ -63,9 +63,16 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
     # 2026-10-12 (user: «اعمل نفس الحاجة لصفحة المباريات»): the title is the
     # query («مواعيد ونتائج مباريات اليوم») and the description opens with
     # today's count, the headline fixture and the latest score.
+    _mdesc = matches_desc(matches, REF_TODAY, TEAM_PAGES, comp_order)
     page_head = head(f"مواعيد ونتائج مباريات اليوم بتوقيت القاهرة | {SITE_NAME}",
-                     matches_desc(matches, REF_TODAY, TEAM_PAGES, comp_order),
-                     SITE_BASE + "/matches.html", active="matches")
+                     _mdesc, SITE_BASE + "/matches.html", active="matches")
+    # CollectionPage (SEO review 2026-11-12: /matches carried no schema)
+    page_head += jsonld({"@context": "https://schema.org", "@type": "CollectionPage",
+                         "name": "مواعيد ونتائج مباريات اليوم بتوقيت القاهرة",
+                         "description": _mdesc, "url": SITE_BASE + "/matches.html",
+                         "inLanguage": "ar",
+                         "isPartOf": {"@type": "WebSite", "@id": SITE_BASE + "/#website",
+                                      "name": SITE_NAME, "url": SITE_BASE + "/"}})
     leagues = []
     for c in comp_order:
         leagues.append({"comp": c, "icon": Markup(comp_icon(c)), "label": comp_label(c)})

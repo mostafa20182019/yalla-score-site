@@ -92,7 +92,10 @@ def article_pages(articles, articles_all, matches, urls):
         _in_title = lambda tp: any(t in _ttl for t in tp["news_tokens"])
         # the club named FIRST in the title leads («عودة بن بوعلي إلى بيراميدز
         # قبل مواجهة الأهلي» is Pyramids' story, not Al Ahly's)
-        _tpos = lambda tp: min((_ttl.find(t) for t in tp["news_tokens"] if t in _ttl), default=10**6)
+        # a proxy token (a player standing for his club) ranks after every
+        # real club/team name in the title (SEO review 2026-11-12)
+        _tpos = lambda tp: min(((_ttl.find(t) + (10**5 if t in tp.get("proxy_tokens", ()) else 0))
+                                for t in tp["news_tokens"] if t in _ttl), default=10**6)
         _lead = sorted(_clubs, key=lambda tp: (_tpos(tp), TEAM_PAGES.index(tp)))
         _lead_tp = _lead[0] if (_lead and _in_title(_lead[0])) else None
         if _clubs:
@@ -238,8 +241,18 @@ def news_archive_pages(articles, urls):
         if pager["k"] > 1:
             title = f"{title} — صفحة {pager['k']}"
             desc = f"{desc} (الصفحة {pager['k']} من {pager['n']})"
+        # CollectionPage + the list of stories on the page (SEO review
+        # 2026-11-12: the archives carried no schema at all)
+        _coll = jsonld({"@context": "https://schema.org", "@type": "CollectionPage",
+                        "name": title, "description": desc, "url": SITE_BASE + "/" + fname,
+                        "inLanguage": "ar",
+                        "isPartOf": {"@type": "WebSite", "@id": SITE_BASE + "/#website",
+                                     "name": SITE_NAME, "url": SITE_BASE + "/"},
+                        "mainEntity": {"@type": "ItemList", "itemListElement": [
+                            {"@type": "ListItem", "position": i, "url": SITE_BASE + article_href(x)}
+                            for i, x in enumerate(arts, 1)]}})
         page_head = Markup(head(f"{title} — {SITE_NAME}", desc,
-                                SITE_BASE + "/" + fname, active="news"))
+                                SITE_BASE + "/" + fname, active="news") + _coll)
         rows = []
         # the analyses live in the news lists since 2026-10-26 (user: «دخل
         # التحليلات جوه الاخبار وحذف التاب الخاصة بالتحليلات») - a piece that is
@@ -265,8 +278,11 @@ def news_archive_pages(articles, urls):
         urls.append("/" + fname)
 
     os.makedirs(os.path.join(DIST, "news"), exist_ok=True)   # /news/p2 ... live there too
-    news_archive("news.html", "كل الأخبار", "كل الأخبار",
-                 "أرشيف أخبار كرة القدم على الجون — كل المقالات والتقارير.",
+    # the title is the query, the H1 stays «كل الأخبار» (SEO review 2026-11-12:
+    # «كل الأخبار — الجون» was 18 characters and named nothing)
+    news_archive("news.html", "كل الأخبار", "آخر أخبار كرة القدم اليوم: الكرة المصرية والعالمية",
+                 "آخر أخبار كرة القدم اليوم على الجون: الأهلي والزمالك وبيراميدز ومنتخب مصر "
+                 "والدوريات الأوروبية — أخبار وتقارير المباريات تتحدّث على مدار اليوم.",
                  articles)
     news_archive("news/egypt.html", "أخبار الكرة المصرية",
                  "أخبار الكرة المصرية اليوم",

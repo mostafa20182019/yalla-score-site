@@ -109,12 +109,8 @@ def _team_news(tp, a):
     return any(t in txt for t in tp["news_tokens"])
 
 
-# The Egyptian national team as a pseudo club page for the tiering below
-# (clubs.TEAM_PAGES has no entry for it; NT_SCOPE keeps «مصر» off «المصري»)
-_NT_PAGE = {"slug": "egypt", "name": "منتخب مصر", "league": "Egypt NT",
-            "match_tokens": [("مصر", NT_SCOPE)],
-            "news_tokens": ["منتخب مصر", "الفراعنة", "المنتخب المصري", "المنتخب الوطني"],
-            "news_excl": ["منتخب مصر للشباب", "منتخب مصر الأولمبي", "منتخب مصر تحت"]}
+# The Egyptian national team - a TEAM_PAGES entry since 2026-11-12 (/team/egypt)
+_NT_PAGE = next(tp for tp in TEAM_PAGES if tp["slug"] == "egypt")
 
 
 def curated_tier(a):
@@ -122,9 +118,9 @@ def curated_tier(a):
     1 = another curated club, 2 = nobody we curate. User rule 2026-10-15
     («خلي دايمًا توقعات وتقارير الفرق المميزة في الأول»): the home analyses
     block leads with these, Egyptian first, newest within each tier."""
-    for tp in TEAM_PAGES + [_NT_PAGE]:
+    for tp in TEAM_PAGES:
         if _team_news(tp, a):
-            return 0 if tp.get("league") in ("Egyptian Premier League", "Egypt NT") else 1
+            return 0 if (tp.get("league") == "Egyptian Premier League" or tp is _NT_PAGE) else 1
     return 2
 
 

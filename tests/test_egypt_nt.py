@@ -76,6 +76,24 @@ ck("14 the club page matcher agrees (Tripoli out, Egypt in)",
    _team_match(ahly, {"home": "الأهلي", "away": "كيتارا", "competition": CC})
    and not _team_match(ahly, {"home": "الأهلي طرابلس", "away": "كيتارا", "competition": CC}))
 
+# --- the national team as a curated page (SEO review 2026-11-12) ---
+import match_brief as MB                                              # noqa: E402
+from site_lib.names import _team_news, curated_tier                  # noqa: E402
+import story_events as SE                                             # noqa: E402
+egy = next((tp for tp in TEAM_PAGES if tp["slug"] == "egypt"), None)
+ck("15 /team/egypt is a TEAM_PAGES entry, scoped to the national-team competitions",
+   egy is not None and egy["match_tokens"] == [("مصر", NT_SCOPE)] and egy["league"] in NT_SCOPE)
+ck("16 the club matcher takes Egypt's qualifier and never Al Masry's league game",
+   _team_match(egy, nt) and not _team_match(egy, masry) and not _team_match(egy, youth))
+ck("17 an Egypt qualifier is a match-article candidate (curated_club)",
+   MB.curated_club(nt) is egy and MB.curated_club(masry) is None)
+ck("18 Egypt's stories land on its page, the youth sides' do not",
+   _team_news(egy, {"title": "حسام حسن يعلن قائمة منتخب مصر لمواجهتي مالاوي", "summary": ""})
+   and not _team_news(egy, {"title": "منتخب مصر للشباب يفوز على تونس", "summary": ""}))
+ck("19 a national-team story still counts as Egyptian on the home page", curated_tier(
+   {"title": "توقع الجون: منتخب مصر يواجه مالاوي", "summary": ""}) == 0)
+ck("20 no «5 in a row» form story for a national team", all(tp["slug"] != "egypt" for tp in SE.form_clubs()))
+
 print()
 print("FAILED:" if fails else "all national-team checks passed", ", ".join(fails))
 sys.exit(1 if fails else 0)
