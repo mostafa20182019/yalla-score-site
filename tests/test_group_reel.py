@@ -66,7 +66,8 @@ check(got == want, f"the computed table is the group after two rounds ({got})")
 check(G.rounds_played(tab) == 2 and G.rounds_words(2) == "بعد جولتين", "two rounds -> «بعد جولتين»")
 check({r["team"] for r in tab} == set(BADGE), "the group = the four teams; Morocco/Tunisia and the friendly stay out")
 check(all(r["badge"] == BADGE[r["team"]] for r in tab), "every flag comes from the matches' own *_badge")
-check(G.hook_lines(tab, match) == ("مالاوي ورانا بنقطة…", "والليلة المواجهة"), f"hook {G.hook_lines(tab, match)}")
+check(G.hook_lines(tab, match) == ("مصر على القمة…", "والليلة نكمّل قدام مالاوي"), f"hook {G.hook_lines(tab, match)}")
+check(all("ورانا" not in x for x in G.hook_lines(tab, match)), "no «ورانا» (user 2026-11-12)")
 
 # a result after the kick-off does not count for this match's table
 late = MS + [mk(9100, "2026-11-14", "18:00", "أنجولا", "جنوب السودان", 4, 0, 3)]
@@ -74,7 +75,7 @@ check([r["pts"] for r in G.table(late, match)] == [4, 4, 3, 0], "a match after t
 # the return leg: R3 not played in this data -> still the table after two rounds
 ret = G.find(MS, 4716607)
 check([r["team"] for r in G.table(MS, ret)] == [r["team"] for r in tab], "the return leg reads the same group")
-check(G.hook_lines(G.table(MS, ret), ret)[1] == "والنهارده المواجهة", "a 15:00 kick-off is «النهارده», not «الليلة»")
+check(G.hook_lines(G.table(MS, ret), ret)[1].startswith("والنهارده "), "a 15:00 kick-off is «النهارده», not «الليلة»")
 
 # a full tie (points, difference, scored) keeps alphabetical order and shares the position
 tie = [mk(1, "2026-09-25", "18:00", "مصر", "أنجولا", 1, 1), mk(2, "2026-09-25", "18:00", "مالاوي", "جنوب السودان", 1, 1),
@@ -89,7 +90,7 @@ check(G.gd_text(5) == "+5" and G.gd_text(-6) == "-6" and G.gd_text(0) == "0", "g
 # the caption
 cap = G.caption(tab, match)
 lines = cap.splitlines()
-check(lines[0] == "مالاوي ورانا بنقطة واحدة… والليلة الحسم ⚽🇪🇬", f"caption hook: {lines[0]}")
+check(lines[0] == "مصر على القمة… والليلة نكمّل قدام مالاوي ⚽🇪🇬", f"caption hook: {lines[0]}")
 check(lines[1] == "مصر × مالاوي — تصفيات أمم أفريقيا 2027، الساعة 9 مساءً", f"caption match line: {lines[1]}")
 check("https://elgoon.com" in cap and lines[-1] == "#الجون #منتخب_مصر #مصر_مالاوي #تصفيات_أمم_أفريقيا", "caption link + tags")
 check("مالاوي × مصر" in G.caption(G.table(MS, ret), ret), "the return leg's caption names Malawi first")

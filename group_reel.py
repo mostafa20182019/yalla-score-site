@@ -4,7 +4,7 @@
 the AFCON 2027 qualifiers: «الطريق لأمم أفريقيا 2027»). The group's table,
 computed here from the results in the data, then the match itself.
 
-    hook   2.4 s  the two flags + «مالاوي ورانا بنقطة…» / «والليلة المواجهة»
+    hook   2.4 s  the two flags + «مصر على القمة…» / «والليلة نكمّل قدام مالاوي»
     table  5.5 s  «المجموعة بعد جولتين»: the rows drop in one after another
                   (position, flag, name, played, goal difference, points -
                   every number in its OWN slot, never through the bidi pass),
@@ -44,7 +44,7 @@ import moment_reel as M              # noqa: E402
 W, H = M.W, M.H
 HOOK, TABLE, MATCH, OUTRO = 2.4, 5.5, 3.9, 3.0
 DONE = {"FINISHED", "AWARDED"}
-FOCUS = "مصر"                        # the page's team: «ورانا» is said from its side
+FOCUS = "مصر"                        # the page's team: the hook is said from its side
 # The competition as the reel names it, per season (the year is the finals',
 # not in the feed), and how many teams of a group go through.
 EDITION = {("Africa Cup of Nations Qualification", "2026-27"): ("تصفيات أمم أفريقيا 2027", "أمم أفريقيا 2027")}
@@ -170,18 +170,29 @@ def focus_of(match):
 
 
 def hook_lines(tab, match):
-    """(«مالاوي ورانا بنقطة…», «والليلة المواجهة») from the two rows."""
+    """(«مصر على القمة…», «والليلة نكمّل قدام مالاوي») from the two rows."""
     me = focus_of(match)
     opp = match["away"] if me == match["home"] else match["home"]
     pts = {r["team"]: r["pts"] for r in tab}
     k = pts[me] - pts[opp]
     if me == FOCUS:
-        first = (f"{opp} ورانا {points_gap(k)}…" if k > 0 else
-                 f"{opp} قدامنا {points_gap(-k)}…" if k < 0 else f"{opp} معانا بنفس النقاط…")
-    else:
-        first = (f"{opp} ورا {me} {points_gap(k)}…" if k > 0 else
-                 f"{opp} قدام {me} {points_gap(-k)}…" if k < 0 else f"{opp} و{me} بنفس النقاط…")
+        # user 2026-11-12: not «مالاوي ورانا» - say where WE stand, not who chases us
+        first, second = focus_words(tab, me, opp, k, points_gap)
+        return first + "…", second(match)
+    first = (f"{opp} ورا {me} {points_gap(k)}…" if k > 0 else
+             f"{opp} قدام {me} {points_gap(-k)}…" if k < 0 else f"{opp} و{me} بنفس النقاط…")
     return first, f"{tonight(match.get('koff_time'))} المواجهة"
+
+
+def focus_words(tab, me, opp, k, gapw):
+    """The page's own team (FOCUS): «مصر على القمة» / «والليلة نكمّل قدام مالاوي»
+    when it leads the group, otherwise the plain gap from its side."""
+    top = bool(tab) and tab[0]["team"] == me
+    if top:
+        return f"{me} على القمة", lambda m: f"{tonight(m.get('koff_time'))} نكمّل قدام {opp}"
+    first = (f"{me} فوق {opp} {gapw(k)}" if k > 0 else
+             f"{opp} فوق {me} {gapw(-k)}" if k < 0 else f"{me} و{opp} بنفس النقاط")
+    return first, lambda m: f"{tonight(m.get('koff_time'))} المواجهة"
 
 
 def edition(match):
@@ -382,8 +393,10 @@ def caption(tab, match):
     pts = {r["team"]: r["pts"] for r in tab}
     k = pts[me] - pts[opp]
     gap = {1: "بنقطة واحدة"}.get(abs(k), points_gap(abs(k)))
+    second = f"{tonight(match.get('koff_time'))} الحسم"
     if me == FOCUS:
-        first = (f"{opp} ورانا {gap}" if k > 0 else f"{opp} قدامنا {gap}" if k < 0 else f"{opp} معانا بنفس النقاط")
+        first, nxt = focus_words(tab, me, opp, k, lambda n: {1: "بنقطة واحدة"}.get(n, points_gap(n)))
+        second = nxt(match)
     else:
         first = (f"{opp} ورا {me} {gap}" if k > 0 else f"{opp} قدام {me} {gap}" if k < 0 else f"{opp} و{me} بنفس النقاط")
     flag = "🇪🇬" if FOCUS in (match["home"], match["away"]) else ""
@@ -392,7 +405,7 @@ def caption(tab, match):
     h, a = ar_team(match["home"]), ar_team(match["away"])
     tags = ["#الجون"] + (["#منتخب_مصر"] if FOCUS in (match["home"], match["away"]) else []) + [
         f"#{h.replace(' ', '_')}_{a.replace(' ', '_')}", "#" + "_".join(comp_full.split()[:-1])]
-    lines = [f"{first}… {tonight(match.get('koff_time'))} الحسم ⚽{flag}",
+    lines = [f"{first}… {second} ⚽{flag}",
              f"{h} × {a} — {comp_full}، الساعة {hh} {part}",
              "توقعك كام؟ اكتبه في الكومنتات 👇",
              "https://elgoon.com",
