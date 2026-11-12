@@ -71,7 +71,11 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
         from site_lib.names import ar_team
         # ≤ 62 chars with the brand for the short names (seo_title drops the
         # brand, never the query words, when a long name pushes it over)
-        title = f"نتيجة {name} اليوم والمباراة القادمة والأخبار | {SITE_NAME}"
+        # 2026-11-12 (GSC export): the biggest non-brand query of the club
+        # pages is the bare name - «طرابزون سبور» 209 impressions at position
+        # 11, against 17 for «نتيجة طرابزون سبور اليوم». The title now STARTS
+        # with the name and keeps «نتيجة اليوم» and «المباريات القادمة».
+        title = f"{name}: نتيجة اليوم والمباريات القادمة والأخبار | {SITE_NAME}"
         _parts = []
         if last_res:
             _l = last_res[0]
@@ -95,9 +99,11 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
                 'width="64" height="64" loading="eager">' if crest else "")
         _pos = ""
         if srow:
+            # number agreement: «8 نقاط من 10 مباريات», «25 نقطة من 11 مباراة»
+            _p, _g = int(srow.get("pts") or 0), int(srow.get("played") or 0)
             _pos = (f'<p class="club-pos">المركز <b>{srow.get("pos")}</b> في '
-                    f'{esc(league_ar)} برصيد <b>{srow.get("pts")}</b> نقطة '
-                    f'من {srow.get("played")} مباراة</p>')
+                    f'{esc(league_ar)} برصيد <b>{_p}</b> {"نقاط" if 3 <= _p <= 10 else "نقطة"} '
+                    f'من {_g} {"مباريات" if 3 <= _g <= 10 else "مباراة"}</p>')
         up_rows = []
         for m in up_next:
             up_rows.append(match_row(m, show_time=True, show_comp=True, show_date=True,
@@ -122,6 +128,40 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
                                     zeroed=st.get("zeroed"),
                                     form_map=forms.get(tp["league"], {}),
                                     embedded=True)
+        # computed FAQ (2026-11-12): the club queries GSC shows are questions
+        # the page already answers in rows - «نتيجة طرابزون سبور اليوم»،
+        # «آخر مباراة لطرابزون»، «مباريات طرابزون سبور القادمة». Said once in
+        # words, from the same data, with its FAQPage schema. Never generated.
+        faq = []
+        if last_res:
+            _l = last_res[0]
+            faq.append((f"ما نتيجة آخر مباراة لعبها {name}؟",
+                        f"{ar_team(_l.get('home'))} {_l.get('home_score')} - {_l.get('away_score')} "
+                        f"{ar_team(_l.get('away'))} في {comp_label(_l.get('competition'))} "
+                        f"يوم {day_month(_l.get('kickoff'), weekday=True)}."))
+        if up_next:
+            _n = up_next[0]
+            faq.append((f"متى مباراة {name} القادمة؟",
+                        f"{ar_team(_n.get('home'))} ضد {ar_team(_n.get('away'))} "
+                        f"يوم {day_month(_n.get('kickoff'), weekday=True)}"
+                        + (f" الساعة {_n.get('koff_time')} بتوقيت القاهرة" if _n.get("koff_time") else "")
+                        + f" في {comp_label(_n.get('competition'))}."))
+        if srow and not (st or {}).get("zeroed"):
+            from site_lib.stats import _cnt
+            _pts = int(srow.get("pts") or 0)
+            faq.append((f"ما ترتيب {name} في {league_ar}؟",
+                        f"{name} في المركز {srow.get('pos')} برصيد "
+                        + (f"{_pts} نقطة" if _pts in (0, 1, 2) else _cnt(_pts, "نقطة واحدة", "نقطتين", "نقاط", "نقطة"))
+                        + " من " + _cnt(srow.get("played"), "مباراة واحدة", "مباراتين", "مباريات", "مباراة") + "."))
+        faq_html = ""
+        if faq:
+            faq_html = ('<section class="minfo faq"><h2>أسئلة شائعة عن ' + esc(name) + '</h2>'
+                        + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>'
+                                  for q, a in faq) + '</section>'
+                        + jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                                  "mainEntity": [{"@type": "Question", "name": q,
+                                                  "acceptedAnswer": {"@type": "Answer", "text": a}}
+                                                 for q, a in faq]}))
         others = [o for o in TEAM_PAGES if o["slug"] != slug]
         club_ld = jsonld({
             "@context": "https://schema.org", "@type": "SportsTeam",
@@ -139,6 +179,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
             news=news_items, has_table=bool(st and st.get("table")),
             table_heading=Markup(table_heading), table=Markup(table),
             others=[{"slug": Markup(o["slug"]), "name": o["name"]} for o in others],
-            club_ld=Markup(club_ld), popup=Markup(popup), page_foot=Markup(foot())))
+            club_ld=Markup(club_ld), faq=Markup(faq_html), popup=Markup(popup),
+            page_foot=Markup(foot())))
         urls.append(t_url)
     print(f"  + club pages: {len(TEAM_PAGES)}")

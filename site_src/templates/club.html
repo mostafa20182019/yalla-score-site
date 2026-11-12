@@ -6,7 +6,7 @@
 <nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/matches.html">المباريات</a> › {{ name }}</nav>
 <header class="club-hero">{{ crest_img }}
   <div>
-    <h1 class="page-h">أخبار {{ name }}</h1>
+    <h1 class="page-h">{{ name }}: النتائج والمباريات القادمة والأخبار</h1>
     <p class="hintline">كل جديد {{ name }}: الأخبار والمباريات والنتائج والترتيب في مكان واحد — تتحدّث تلقائيًا.</p>
     {{ position }}
   </div>
@@ -49,6 +49,7 @@
   {{ table }}
 </section>
 {% endif %}
+{{ faq }}
 <nav class="club-chips" aria-label="صفحات الأندية">
   <span>أندية أخرى:</span>
   {% for o in others %}

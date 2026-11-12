@@ -470,7 +470,9 @@ def match_details_html(e, flipped, h_ar, a_ar):
             off = {s.get("out") for s in e.get("subs") or []
                    if side(s.get("side")) == side_key}
             return cards, off
-        parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2>')
+        # «تشكيلات/ترتيبات فنربخشة – ليفربول» ranked 4 with no click (GSC
+        # 2026-11-12): the heading names the match, like the stats one does
+        parts.append(f'<section class="minfo"><h2>تشكيل {esc(h_ar)} و{esc(a_ar)}</h2>')
         fh = f' <span class="lu-f" dir="ltr">{esc(lh["formation"])}</span>' if lh.get("formation") else ""
         fa = f' <span class="lu-f" dir="ltr">{esc(la["formation"])}</span>' if la.get("formation") else ""
         # labels live INSIDE the pitch corners so the same markup reads
@@ -598,7 +600,7 @@ def match_details_html(e, flipped, h_ar, a_ar):
         parts.append('</section>')
         return "".join(parts)
     if lh or la:
-        parts.append('<section class="minfo"><h2>التشكيلة الأساسية</h2><div class="lu">')
+        parts.append(f'<section class="minfo"><h2>تشكيل {esc(h_ar)} و{esc(a_ar)}</h2><div class="lu">')
         for team_name, lu in ((h_ar, lh), (a_ar, la)):
             parts.append('<div class="lu-t">')
             if lu:

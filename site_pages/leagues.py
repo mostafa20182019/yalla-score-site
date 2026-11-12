@@ -212,8 +212,11 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         label = comp_label(comp)
         season = comp_season(comp, league_season, rounds)   # «2026» for a one-year tournament
         n_m = sum(len(r.get("matches") or []) for r in rounds)
-        _next = "والدور القادم" if any(r.get("label") for r in rounds) else "والجولة القادمة"   # a cup's stages
-        page_head = Markup(head(f"جدول مباريات {label} اليوم {_next} {season} | {SITE_NAME}",
+        # 2026-11-12 (GSC export): «مباريات الدوري التركي القادمه» 34,
+        # «جدول مباريات الدوري التركي» 28, «مواعيد مباريات الدوري التركي» -
+        # all at ~10. The title carries «مواعيد» and «المباريات القادمة».
+        _next = "الدور القادم" if any(r.get("label") for r in rounds) else "المباريات القادمة"   # a cup's stages
+        page_head = Markup(head(f"جدول مباريات {label} {season}: مواعيد {_next} والنتائج | {SITE_NAME}",
                                 fixtures_desc(label, season, rounds, n_m),
                                 SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True)
