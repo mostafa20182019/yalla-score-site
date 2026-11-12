@@ -161,8 +161,22 @@ def ar_time(koff):
     return (f"{h12}:{mi:02d}" if mi else str(h12)), part
 
 
-def tonight(koff):
-    return "والليلة" if int((koff or "00:00")[:2]) >= 18 else "والنهارده"
+TODAY = None            # the posting day (Cairo); None = today. Tests pin it.
+
+
+def tonight(match):
+    """«والليلة» / «والنهارده» on match day; «وغدًا» when the reel goes out the
+    day before (user 2026-11-12: Egypt v Malawi posted on Thursday);
+    «ويوم الجمعة» further ahead."""
+    from site_lib.arabic import _AR_DAYS
+    today = TODAY or datetime.datetime.now(C.CAIRO).date()
+    day = datetime.date.fromisoformat(match["kickoff"])
+    ahead = (day - today).days
+    if ahead == 1:
+        return "وغدًا"
+    if ahead >= 2:
+        return f"ويوم {_AR_DAYS[day.weekday()]}"
+    return "والليلة" if int((match.get("koff_time") or "00:00")[:2]) >= 18 else "والنهارده"
 
 
 def focus_of(match):
@@ -181,7 +195,7 @@ def hook_lines(tab, match):
         return first + "…", second(match)
     first = (f"{opp} ورا {me} {points_gap(k)}…" if k > 0 else
              f"{opp} قدام {me} {points_gap(-k)}…" if k < 0 else f"{opp} و{me} بنفس النقاط…")
-    return first, f"{tonight(match.get('koff_time'))} المواجهة"
+    return first, f"{tonight(match)} المواجهة"
 
 
 def focus_words(tab, me, opp, k, gapw):
@@ -189,10 +203,10 @@ def focus_words(tab, me, opp, k, gapw):
     when it leads the group, otherwise the plain gap from its side."""
     top = bool(tab) and tab[0]["team"] == me
     if top:
-        return f"{me} على القمة", lambda m: f"{tonight(m.get('koff_time'))} نكمّل قدام {opp}"
+        return f"{me} على القمة", lambda m: f"{tonight(m)} نكمّل قدام {opp}"
     first = (f"{me} فوق {opp} {gapw(k)}" if k > 0 else
              f"{opp} فوق {me} {gapw(-k)}" if k < 0 else f"{me} و{opp} بنفس النقاط")
-    return first, lambda m: f"{tonight(m.get('koff_time'))} المواجهة"
+    return first, lambda m: f"{tonight(m)} المواجهة"
 
 
 def edition(match):
@@ -393,7 +407,7 @@ def caption(tab, match):
     pts = {r["team"]: r["pts"] for r in tab}
     k = pts[me] - pts[opp]
     gap = {1: "بنقطة واحدة"}.get(abs(k), points_gap(abs(k)))
-    second = f"{tonight(match.get('koff_time'))} الحسم"
+    second = f"{tonight(match)} الحسم"
     if me == FOCUS:
         first, nxt = focus_words(tab, me, opp, k, lambda n: {1: "بنقطة واحدة"}.get(n, points_gap(n)))
         second = nxt(match)
@@ -405,8 +419,10 @@ def caption(tab, match):
     h, a = ar_team(match["home"]), ar_team(match["away"])
     tags = ["#الجون"] + (["#منتخب_مصر"] if FOCUS in (match["home"], match["away"]) else []) + [
         f"#{h.replace(' ', '_')}_{a.replace(' ', '_')}", "#" + "_".join(comp_full.split()[:-1])]
+    dname, dd, mname = day_words(match)
+    when = "" if tonight(match) in ("والليلة", "والنهارده") else f"{dname} {dd} {mname}، "
     lines = [f"{first}… {second} ⚽{flag}",
-             f"{h} × {a} — {comp_full}، الساعة {hh} {part}",
+             f"{h} × {a} — {comp_full}، {when}الساعة {hh} {part}",
              "توقعك كام؟ اكتبه في الكومنتات 👇",
              "https://elgoon.com",
              " ".join(tags)]

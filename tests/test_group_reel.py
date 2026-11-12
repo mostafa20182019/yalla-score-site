@@ -57,6 +57,8 @@ MS = [mk(4847456, "2026-09-25", "19:00", "مالاوي", "جنوب السودا�
       mk(9001, "2026-09-25", "18:00", "المغرب", "تونس", 1, 0),
       mk(9002, "2026-10-10", "20:00", "مصر", "تونس", 2, 0, comp="Friendly")]
 
+import datetime                                          # noqa: E402
+G.TODAY = datetime.date(2026, 11, 13)                    # posted on match day unless a check says otherwise
 match = G.find(MS, 4716606)
 tab = G.table(MS, match)
 got = [(r["pos"], r["team"], r["played"], r["won"], r["drawn"], r["lost"], r["gf"], r["ga"], r["pts"]) for r in tab]
@@ -75,7 +77,9 @@ check([r["pts"] for r in G.table(late, match)] == [4, 4, 3, 0], "a match after t
 # the return leg: R3 not played in this data -> still the table after two rounds
 ret = G.find(MS, 4716607)
 check([r["team"] for r in G.table(MS, ret)] == [r["team"] for r in tab], "the return leg reads the same group")
+G.TODAY = datetime.date(2026, 11, 17)
 check(G.hook_lines(G.table(MS, ret), ret)[1].startswith("والنهارده "), "a 15:00 kick-off is «النهارده», not «الليلة»")
+G.TODAY = datetime.date(2026, 11, 13)
 
 # a full tie (points, difference, scored) keeps alphabetical order and shares the position
 tie = [mk(1, "2026-09-25", "18:00", "مصر", "أنجولا", 1, 1), mk(2, "2026-09-25", "18:00", "مالاوي", "جنوب السودان", 1, 1),
@@ -94,6 +98,15 @@ check(lines[0] == "مصر على القمة… والليلة نكمّل قدا�
 check(lines[1] == "مصر × مالاوي — تصفيات أمم أفريقيا 2027، الساعة 9 مساءً", f"caption match line: {lines[1]}")
 check("https://elgoon.com" in cap and lines[-1] == "#الجون #منتخب_مصر #مصر_مالاوي #تصفيات_أمم_أفريقيا", "caption link + tags")
 check("مالاوي × مصر" in G.caption(G.table(MS, ret), ret), "the return leg's caption names Malawi first")
+# posted the day before (user 2026-11-12): «وغدًا», and the caption names the day
+G.TODAY = datetime.date(2026, 11, 12)
+check(G.hook_lines(tab, match)[1] == "وغدًا نكمّل قدام مالاوي", f"the day before -> «وغدًا» ({G.hook_lines(tab, match)[1]})")
+eve = G.caption(tab, match).splitlines()
+check(eve[0] == "مصر على القمة… وغدًا نكمّل قدام مالاوي ⚽🇪🇬", f"caption the day before: {eve[0]}")
+check(eve[1] == "مصر × مالاوي — تصفيات أمم أفريقيا 2027، الجمعة 13 نوفمبر، الساعة 9 مساءً", f"caption names the day: {eve[1]}")
+G.TODAY = datetime.date(2026, 11, 10)
+check(G.tonight(match) == "ويوم الجمعة", "three days ahead -> «ويوم الجمعة»")
+G.TODAY = datetime.date(2026, 11, 13)
 
 # home on the RIGHT, in both legs: record where each flag is drawn in the match scene
 for m in (match, ret):
