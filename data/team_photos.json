@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-12T14:07:24+00:00",
+ "generated_at": "2026-11-12T23:12:11+02:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -409,6 +409,18 @@
    "source": "team-photos/al-ahly/akram-tawfik.jpg",
    "added": "2026-10-13",
    "width": 720
+  },
+  {
+   "file": "al-ahly-afsha-ahly-monterrey-cwc2021.jpg",
+   "credit": "صورة: محمد مجدي \"أفشة\" لاعب الأهلي خلال مباراة الفريق أمام مونتيري المكسيكي في كأس العالم للأندية 2021 — تصوير محمد أمين أنصاري/وكالة فارس، رخصة CC BY 4.0 (ويكيميديا كومنز)، معدّلة بالاقتصاص",
+   "subject": "محمد مجدي \"أفشة\"",
+   "club": "الأهلي",
+   "slug": "al-ahly",
+   "year": 2021,
+   "is_person": true,
+   "source": "team-photos/al-ahly/afsha-ahly-monterrey-cwc2021.jpg",
+   "added": "2026-11-12",
+   "width": 835
   },
   {
    "file": "al-ahly-aliou-dieng-ahly-cwc2021.jpg",
@@ -937,6 +949,30 @@
    "source": "team-photos/egypt/mohamed-abdelmonem-nice-2025.png",
    "added": "2026-11-09",
    "width": 697
+  },
+  {
+   "file": "egypt-mohamed-salah-egypt-argentina-wc2026-152.jpg",
+   "credit": "صورة: محمد صلاح قائد منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-salah-egypt-argentina-wc2026-152.jpg",
+   "added": "2026-11-12",
+   "width": 1600
+  },
+  {
+   "file": "egypt-mohamed-salah-egypt-argentina-wc2026-161.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح",
+   "club": "منتخب مصر",
+   "slug": "egypt",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/egypt/mohamed-salah-egypt-argentina-wc2026-161.jpg",
+   "added": "2026-11-12",
+   "width": 1600
   },
   {
    "file": "egypt-nt-lineup-anthem.jpg",
@@ -1536,6 +1572,18 @@
    "is_person": false,
    "source": "team-photos/liverpool/identity-card.jpg",
    "added": "2026-10-13",
+   "width": 1600
+  },
+  {
+   "file": "liverpool-virgil-van-dijk-liverpool-arrival-apr2025.jpg",
+   "credit": "صورة: فيرجيل فان دايك قائد ليفربول لدى وصوله إلى ملعب كرافن كوتيدج قبل مواجهة فولهام بالدوري الإنجليزي، أبريل 2025 — تصوير Timmy96، رخصة CC0 (ويكيميديا كومنز)",
+   "subject": "فيرجيل فان دايك",
+   "club": "ليفربول",
+   "slug": "liverpool",
+   "year": 2025,
+   "is_person": true,
+   "source": "team-photos/liverpool/virgil-van-dijk-liverpool-arrival-apr2025.jpg",
+   "added": "2026-11-12",
    "width": 1600
   },
   {

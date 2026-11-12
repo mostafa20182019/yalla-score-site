@@ -110,6 +110,181 @@
    "image_url": "https://elgoon.com/media/news-ronaldo-portugal-retire-v2.jpg",
    "image_credit": "صورة: كريستيانو رونالدو يحتفل خلال مباراة البرتغال أمام أرمينيا بتصفيات كأس العالم 2026، سبتمبر 2025 — تصوير YantsImages، رخصة CC BY-SA 4.0 (ويكيميديا كومنز) — تركيب: الجون",
    "why": "2026-11-08, user on article 1104: the composed hero (hero_card.py) cut the player out and set him on his club's colours with the club's official crest behind him - it left a team-mate's head floating behind Marmoush, drew crests we may not use, and put a national-team shirt on a club's colours (Marmoush in Egypt red on Tottenham read as the wrong club). hero_card.py is retired; every composed hero is rebuilt in the chosen style C (news_image.py: our navy panel + label + wordmark, the photo framed around the face, no cutout, no club marks). Source: Commons «Cristiano Ronaldo 2277» (YantsImages, CC BY-SA 4.0, Portugal v Armenia 6 Sep 2025), kept as media/cristiano-ronaldo-portugal-armenia-sep2025.jpg; same credit. Raised arm: the face finder now reads the head from the chest line. 2026-11-08 later (user: «تخلى اللاعب لو بتتكلم على فريقه يكون لابس فانلة فريقه ... لو الخبر حزين تخلى الصورة حزينة ولو الخبر حلو تخلى الصورة مفرحة»): re-chosen for the club shirt and the story's mood (-v2). Mood NEUTRAL (a farewell, not a mourning); the story is about Portugal, so the Portugal shirt IS his team's shirt."
+  },
+  {
+   "article_id": "1071",
+   "image_url": "https://elgoon.com/media/news-gravenberch-heel-injury-1071.jpg",
+   "image_credit": "صورة: ريان جرافنبيرخ بسترة ليفربول عند وصوله إلى كرافن كوتيدج قبل مواجهة فولهام، يناير 2026 — تصوير Timmy96، رخصة CC0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Old file never committed (404). Gravenberch himself in Liverpool's club jacket (crest visible), arriving at Craven Cottage 4 Jan 2026 - Commons 'Ryan Gravenberch 04012026 (2).jpg', Timmy96, CC0, 2072px. Mood sad (heel injury): serious face, sad grade, Style C. Beat the Fulham-match shots in the same set (other players in frame, or him tiny by a corner flag). news_image printed HEAD CUT, but the source has ~200px above his hair: a false positive of the close-up heuristic, checked by eye.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1011",
+   "image_url": "https://elgoon.com/media/news-kompany-health-update-1011.jpg",
+   "image_credit": "صورة: فينسنت كومباني المدير الفني لبايرن ميونخ خلال مباراة ودية أمام ريد بول سالزبورج، يناير 2025 — تصوير Werner100359، رخصة CC BY-SA 4.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Old file never committed. Kompany in a Bayern beanie and jacket at the Salzburg friendly, 6 Jan 2025 - Commons 'FC Red Bull Salzburg gegen Bayern Muenchen (2025-01-06 Testspiel) 74.jpg' (category Vincent Kompany), Werner100359, CC BY-SA 4.0, 3037px - the same set the old credit named. Mood sad (health scare): pursed-lips serious face, sad grade, framed with --focus. Other Bayern-era Commons photos are 496px; the rest show him at Man City or Belgium.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "930",
+   "image_url": "https://elgoon.com/media/news-rooney-man-united-criticism-930.jpg",
+   "image_credit": "صورة: واين روني بقميص مانشستر يونايتد عام 2006 — تصوير Austin Osuide، رخصة CC BY 2.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Old file showed Rooney at DC United, a club outside the story. Rooney is the subject (criticising Man United), so the living-story test passes and the shirt must be United's: Commons 'Wayne Rooney 2.jpg', Austin Osuide, CC BY 2.0, United home kit, sharp serious face. Mood sad (criticism after a 1-4 loss). Beat 88 United-tagged candidates: the 2016-17 4896px sets are shot from the stands (tiny face); the close-ups are 800px or less.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "855",
+   "image_url": "https://elgoon.com/media/news-szoboszlai-injury-855.jpg",
+   "image_credit": "صورة: دومينيك سوبوسلاي بسترة ليفربول عند وصوله إلى كرافن كوتيدج، يناير 2026 — تصوير Timmy96، رخصة CC0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Old file never committed. Szoboszlai alone in Liverpool's club jacket (crest and sponsor visible), 4 Jan 2026 - Commons 'Dominik Szoboszlai 04012026 (1).jpg', Timmy96, CC0, 1796px. Mood sad (injury): serious face, sad grade, Style C. Beat the match shots (shared frame with Gravenberch, smaller face) and the 2025 arrival shot (green T-shirt, narrower).",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "779",
+   "image_url": "https://elgoon.com/media/etihad-stadium-bowl-2026.jpg",
+   "image_credit": "صورة: ملعب الاتحاد (استاد مانشستر سيتي) من الداخل — Arne Müseler، رخصة CC BY-SA 3.0 (ويكيميديا كومنز)",
+   "why": "Old file never committed. The headline names David Kogan (football regulator chair): no free photo of him exists on Commons and he has no folder; the story's club is Man City, so the club's folder: registry man-city entry etihad-stadium-bowl-2026.jpg (Arne Mueseler, CC BY-SA 3.0), credit verbatim - the same subject as the lost file (the Etihad). Stadium photos are not composed. Chosen over etihad-stadium-mancity-2026.jpg, which articles 626/645/657 used around the same days.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "740",
+   "image_url": "https://elgoon.com/media/real-madrid-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-12 graphic-designer review: the only free Real Madrid-kit photo of Vinícius in our registry (vinicius-junior-appeal-oct2026.jpg) carries a MadeinFOOT agency watermark under an anonymous CC0 upload - the licence cannot be trusted; and a Brazil-shirt photo breaks the current-club-kit rule on a Real Madrid story. Rule fallback: the club's identity image. (Article 740: the old file vinicius-junior-real-madrid-2024.jpg never reached media/ - the page showed the placeholder.)",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "730",
+   "image_url": "https://elgoon.com/media/news-laporta-barcelona-statement-730.jpg",
+   "image_credit": "صورة: خوان لابورتا رئيس نادي برشلونة، أبريل 2023 — Òmnium Cultural، رخصة CC BY-SA 2.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Old file never committed. Current-era Laporta in front of Barcelona's own backdrop - Commons 'Omnium-Barca comparteix el catala!.jpg' (21 Apr 2023), Omnium Cultural, CC BY-SA 2.0, 5031px; cropped to Laporta alone (Xavier Antich removed), then Style C. Mood neutral (a statement). Beat the 2008-10 photos (wrong era), the 2024 Generalitat shots (him small at a lectern) and the 2025 Baku photo (539px crop).",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "723",
+   "image_url": "https://elgoon.com/media/news-valverde-quick-return-723.jpg",
+   "image_credit": "صورة: فيديريكو فالفيردي لاعب ريال مدريد، تصوير: ريال مدريد، رخصة CC BY 3.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Registry first: real-madrid entry federico-valverde-real-madrid.jpg (Real Madrid TV still, CC BY 3.0), credit verbatim. Mood happy for Valverde (quick return from injury): smiling face, warm grade, Style C. Last used by 574/592, so it does not repeat a neighbour. news_image printed HEAD CUT; the hair is whole in the output (checked by eye), it is a tight close-up.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "716",
+   "image_url": "https://elgoon.com/media/news-palmer-chelsea-renewal-716.jpg",
+   "image_credit": "صورة: كول بالمر بزي تشيلسي الرسمي قبل مواجهة فولهام في إبريل 2025 — تصوير Timmy96، رخصة CC0 1.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Registry first: chelsea entry cole-palmer-chelsea-arrival-2025.jpg (Palmer in a Chelsea tracksuit, Timmy96, CC0), credit verbatim. Mood happy (renewal to 2034): no free smiling Chelsea photo of him is wider than 714px (the Leicester celebration), so a neutral face rather than a wrong one; warm grade. 1084px is the widest Chelsea-kit photo of Palmer on Commons.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "668",
+   "image_url": "https://elgoon.com/media/news-yasser-ibrahim-ahly-denial-668.jpg",
+   "image_credit": "صورة: ياسر إبراهيم بقميص الأهلي خلال كأس العالم للأندية 2021 — Mohammad Amin Ansari، رخصة CC BY 4.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Registry first, Al Ahly shirt for a club-contract story (rule 5b): al-ahly entry yasser-ibrahim-fair-play-renewal.jpg (Club World Cup 2021, CC BY 4.0), credit verbatim. Replaces the old Egypt-shirt file. Mood neutral (denial of an offer): serious face. The source looks soft/upscaled; the other Ahly entry (YouTube still) was used by 873.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "625",
+   "image_url": "https://elgoon.com/media/news-khaldoon-city-message-625.jpg",
+   "image_credit": "صورة: خلدون المبارك، رئيس مانشستر سيتي، في المنتدى الاقتصادي العالمي بدافوس 2025 — World Economic Forum، رخصة CC BY 3.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "Registry first: man-city entry khaldoon-almubarak-wef-davos-2025.jpg (World Economic Forum, CC BY 3.0), the same photo the old credit named; credit verbatim. Khaldoon is the subject and the speaker; mood neutral (defiant statement), Style C. news_image printed HEAD CUT; the head is whole in the output (checked by eye).",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "532",
+   "image_url": "https://elgoon.com/media/al-ahly-red-castle-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "The old image was Marwan Attia in an Egypt shirt on a story whose headline names Wael Gomaa (Al Ahly's director of football) - the wrong person. The only Commons photos of Gomaa are 227px crops from 2011 as a player. A club official speaking for the club takes the club's identity image (rules s.1): al-ahly-red-castle-card.jpg, credit verbatim.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "531",
+   "image_url": "https://elgoon.com/media/trabzonspor-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "The old image was Salah in an Egypt shirt; the headline is Trabzonspor appointing Thomas Reis. Every free photo of Reis shows him in Samsunspor gear (Jan 2026 press conference, 2025 jacket) - a former club and a Black Sea rival - or is a 900px full-length shot, so the club's identity image (rules s.1/s.4): trabzonspor-identity-card.jpg, credit verbatim.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "754",
+   "image_url": "https://elgoon.com/media/real-madrid-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-12 graphic-designer review: the only free Real Madrid-kit photo of Vinícius in our registry (vinicius-junior-appeal-oct2026.jpg) carries a MadeinFOOT agency watermark under an anonymous CC0 upload - the licence cannot be trusted; and a Brazil-shirt photo breaks the current-club-kit rule on a Real Madrid story. Rule fallback: the club's identity image.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "879",
+   "image_url": "https://elgoon.com/media/real-madrid-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-12 graphic-designer review: the only free Real Madrid-kit photo of Vinícius in our registry (vinicius-junior-appeal-oct2026.jpg) carries a MadeinFOOT agency watermark under an anonymous CC0 upload - the licence cannot be trusted; and a Brazil-shirt photo breaks the current-club-kit rule on a Real Madrid story. Rule fallback: the club's identity image.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1105",
+   "image_url": "https://elgoon.com/media/news-emam-ashour-egypt-squad-absence-v2.jpg",
+   "image_credit": "صورة: إمام عاشور بقميص منتخب مصر خلال مباراة أمام الأرجنتين في كأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "2026-11-12 image review: the hero was the retired hero_card.py output (red gradient, cut-out player). Rebuilt in Style C (news_image.py, --mood sad: an exclusion from the squad) from the Egypt folder photo emam-ashour-egypt-argentina-2026.jpg (Commons «Emam Ashour Argentina v Egypt 7 July 2026», Bryan Berlin/WikiPortraits, CC BY-SA 4.0) - the same photo and credit the article already carried, so identity does not change: Ashour himself, Egypt shirt on an Egypt squad story, a serious face that fits the news, head whole (no HEAD CUT). | أُعيد بناء الصورة بقالب C بدل قالب hero_card المُلغى، بنفس صورة إمام عاشور بقميص منتخب مصر ووجه جاد يناسب خبر الاستبعاد.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1144",
+   "image_url": "https://elgoon.com/media/man-united-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-12 image review: Carrick wore a Middlesbrough hoodie with its crest on a Man United sacking story (former club's gear; the credit even said so), and the source cut the top of his head. Commons has NO free photo of Carrick as United coach: «Michael Carrick by year» stops at 2019 (one wide stadium shot) and 2025 (Middlesbrough); every United photo is from his playing days 2006-2018 (the 2018 close-up is soft and slices his head, the rest are wide group shots) - another era for a coaching story. Per the rules (no free photo of him at the story's club -> the club's identity image), Man United's identity image from the registry. Mood sad; the card carries no face. | لا توجد صورة حرة لكاريك مدربًا ليونايتد؛ كل صوره بقميص يونايتد من أيامه لاعبًا (حقبة أخرى) أو بملابس ميدلزبره، فاستُخدمت صورة هوية مانشستر يونايتد.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1141",
+   "image_url": "https://elgoon.com/media/egypt-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-12 image review: the article carried the placeholder. Searched Commons for Hossam Hassan the coach (category «Hossam Hassan», «Hossam Hassan coach / Egypt 2026», the WikiPortraits Argentina v Egypt 7 July 2026 and Australia v Egypt albums): the only file of him is a 280x160 Al Ahly TV screenshot (2018); every other hit is a namesake (a lawyer «حسام حسن محمد», photographer Hossam el-Hamalawy's subjects) and must not be used. The story is about the former Egypt coach denying talks with Jordan/Iraq, so the Egypt identity image from the registry - the image the four previous Hossam Hassan stories (1082, 1087, 1091, 1095) used. Mood neutral (a denial). | لا توجد صورة حرة صالحة لحسام حسن المدرب (لقطة 280 بكسل فقط، وباقي النتائج تشابه أسماء)، فاستُخدمت صورة هوية منتخب مصر.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1140",
+   "image_url": "https://elgoon.com/media/chelsea-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-12 image review: Sánchez was laughing (Club World Cup trophy celebration) on a car-crash story. Walked the whole Commons category «Robert Sánchez»: every Chelsea photo of him is from the July 2025 trophy ceremony (all smiles/celebration, White House PD) or a far stadium shot (Fulham v Chelsea, 20 Apr 2025, a speck on the pitch); the only serious face is Brighton 2022 (former club, 626 px). No neutral or serious free photo exists, so per the mood rule (never a laughing face on bad news) and the fallback order (no valid photo -> the club's identity image), Chelsea's identity image - he is Chelsea's goalkeeper on loan to Como (not a curated club). Mood sad. | كل صور سانشيز الحرة مع تشيلسي ضاحكة في احتفال كأس العالم للأندية أو لقطات بعيدة، والوحيدة الجادة بقميص برايتون (نادٍ سابق)، فاستُخدمت صورة هوية تشيلسي.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1134",
+   "image_url": "https://elgoon.com/media/news-van-dijk-contract-liverpool-v2.jpg",
+   "image_credit": "صورة: فيرجيل فان دايك قائد ليفربول لدى وصوله إلى ملعب كرافن كوتيدج قبل مواجهة فولهام بالدوري الإنجليزي، أبريل 2025 — تصوير Timmy96، رخصة CC0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "2026-11-12 image review: the old photo was a small, blurry stands shot of Van Dijk looking down. All 2026 Liverpool photos on Commons are the same Fulham-stands set (Timmy96) and the 2026 Netherlands ones are team line-ups. Picked Commons «Virgil van Dijk 06042025 (2)» (Timmy96, CC0, https://commons.wikimedia.org/wiki/File:Virgil_van_Dijk_06042025_(2).jpg): sharp, him alone, face forward, Liverpool club tracksuit in front of the Liverpool team bus, head whole; added to team-photos/liverpool/ (registry file liverpool-virgil-van-dijk-liverpool-arrival-apr2025.jpg). Mood neutral (contract talk), serious face. | صورة أوضح لفان دايك بملابس ليفربول أمام حافلة الفريق، بوجه جاد.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1137",
+   "image_url": "https://elgoon.com/media/matchup-liverpool-arsenal-penalty-panel.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-12 image review: the article showed Isak (in a Sweden shirt) though the headline names no player. Headline test: «ليفربول يستحق ركلة جزاء ضائعة أمام أرسنال بإقرار لجنة الحكام» names the two clubs and an official panel's finding about that match, nobody quoted - a fixture story, so our matchup card (matchup_card.py --teams ليفربول أرسنال: Premier League round 9, Sunday 1 November, 0-1). | خبر عن المباراة نفسها لا عن لاعب، فاستُخدمت بطاقة المواجهة.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1132",
+   "image_url": "https://elgoon.com/media/news-afsha-appendix-v2.jpg",
+   "image_credit": "صورة: محمد مجدي \"أفشة\" لاعب الأهلي خلال مباراة الفريق أمام مونتيري المكسيكي في كأس العالم للأندية 2021 — تصوير محمد أمين أنصاري/وكالة فارس، رخصة CC BY 4.0 (ويكيميديا كومنز)، معدّلة بالاقتصاص — تركيب: الجون",
+   "why": "2026-11-12 image review: the Fars News watermark sat inside the photo. Every free Afsha photo was checked: Afsha19.jpg (2025, Ahly) is only 522 px (under the 800 px floor), Afsha.jpg 136 px, the folder's ahly-afsha-zed.jpg is flagged HEAD CUT. Kept the best one, Commons «Mohamed Magdy VS C.F. Monterrey in 2021 FIFA Club World Cup» (Mohammad Amin Ansari / Fars, CC BY 4.0), cropped at the source so the watermark is gone (the credit says «معدّلة بالاقتصاص»), added to team-photos/al-ahly/. Afsha alone in the Ahly shirt, head whole, a concentrated face; --mood sad (surgery, out before the Pyramids game). 835 px wide - under 1200 but the widest valid photo of him. | أُزيلت علامة وكالة فارس بالاقتصاص من المصدر، وهي أوضح صورة حرة لأفشة بقميص الأهلي.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1146",
+   "image_url": "https://elgoon.com/media/news-salah-uncle-hossam-hassan-accusation-v2.jpg",
+   "image_credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "2026-11-12 image review: the source photo (-163) sliced the top of Salah's head; three of the five Salah folder photos are flagged HEAD CUT by news_image.py. Picked Commons «Mohamed Salah Argentina v Egypt 7 July 2026-161» (Bryan Berlin/WikiPortraits, CC BY-SA 4.0), added to team-photos/egypt/: Salah facing the camera, a hard serious face that suits an accusation story, head whole, Egypt shirt on an Egypt NT story; --mood sad. No free photo of Hossam Hassan the coach or of the uncle exists. | صورة صلاح بوجه جاد ورأس كامل، تناسب خبر الاتهام.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1130",
+   "image_url": "https://elgoon.com/media/news-salah-egypt-camp-ali-maher-v2.jpg",
+   "image_credit": "صورة: محمد صلاح قائد منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "2026-11-12 image review: the source photo (-163) sliced the top of Salah's head. Picked Commons «Mohamed Salah Argentina v Egypt 7 July 2026-152» (Bryan Berlin/WikiPortraits, CC BY-SA 4.0), added to team-photos/egypt/: Salah alone with the captain's armband, calm face, head whole, Egypt shirt on an Egypt camp story; --mood neutral. Different from the -161 photo used for 1146 and from mohamed-salah-egypt-national-team-camp.jpg used by 1043 (variety). | صورة صلاح بشارة القيادة ورأس كامل لخبر انضمامه للمعسكر.",
+   "added": "2026-11-12"
+  },
+  {
+   "article_id": "1128",
+   "image_url": "https://elgoon.com/media/news-kompany-back-training-v2.jpg",
+   "image_credit": "صورة: فينسنت كومباني، المدير الفني لبايرن ميونخ، خلال مباراة ودية في يناير 2025 — تصوير Werner100359، رخصة CC BY-SA 4.0 (ويكيميديا كومنز) — تركيب: الجون",
+   "why": "2026-11-12 image review: the source (ManuluxWiki, Nov 2024, 496 px) sliced the top of Kompany's head. Picked Commons «FC Red Bull Salzburg gegen Bayern München (2025-01-06 Testspiel) 73» (Werner100359, CC BY-SA 4.0): Kompany smiling in a Bayern beanie and coat, sharp (3037 px), head whole (rendered with --focus 0.30,0.38 so the whole beanie sits in frame) - a smile for a happy story (back at training after meningitis, --mood happy). It beat the serious close-up (-74) on mood and the 2026 touchline shot on size. Saved as media/vincent-kompany-bayern-smile-jan2025.jpg (non-curated club). | كومباني مبتسمًا بملابس بايرن لخبر عودته للتدريبات.",
+   "added": "2026-11-12"
   }
  ]
 }

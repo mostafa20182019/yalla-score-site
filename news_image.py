@@ -239,7 +239,10 @@ def head_cut(photo, face):
     if not face:
         return False
     _, fy, fh = face
-    return fy - fh * HAIR_ABOVE < fh * 0.10
+    # the detector's box is the face, not the hair: three tight close-ups
+    # (1071, 723, 625) with whole heads were flagged at a full face-height.
+    # Flag only when the face box itself reaches the photo's top edge.
+    return fy - fh * 0.75 < 0
 
 
 def frame(photo, bw, bh, face=None, tx=0.5, ty=0.36, face_share=(0.16, 0.42)):
