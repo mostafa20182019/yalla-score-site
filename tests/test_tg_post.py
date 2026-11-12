@@ -13,6 +13,10 @@ import os, re, sys, types
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.getcwd())
 import tg_post as T
+# the channel is paused (user 2026-11-12); the behaviour tests below run with it
+# open, and the pause itself is checked at the end
+_PAUSED = T.CHANNEL_PAUSED
+T.CHANNEL_PAUSED = False
 import store
 
 fails = []
@@ -114,6 +118,20 @@ ck("21 the Facebook step that posts goal / whistle cards carries the Telegram se
 fbsrc = open("fb_post.py", encoding="utf-8").read()
 ck("22 goal_post mirrors every goal, whistle_post only the full-time card",
    '_tg_card("goal", ref, img, caption)' in fbsrc and 'if kind == "ft":' in fbsrc and '_tg_card("ft", ref, img, caption)' in fbsrc)
+
+# ------------------------------------------------------------- the pause (2026-11-12)
+T.CHANNEL_PAUSED = True
+os.environ['TG_BOT_TOKEN'], os.environ['TG_CHAT_ID'] = 't', '@c'
+_sent2 = []
+_c2 = T.call
+T.call = lambda m, p: (_sent2.append(m) or {'ok': True, 'result': {'message_id': 1}})
+try:
+    ck('23 paused: a live card sends nothing', T.send_card('goal', '5:1', None, 'x') is None and not _sent2)
+    ck('24 paused: the article run sends nothing and exits 0', T.auto() == 0 and not _sent2)
+finally:
+    T.call = _c2
+    os.environ.pop('TG_BOT_TOKEN', None); os.environ.pop('TG_CHAT_ID', None)
+ck('25 the channel ships PAUSED (user 2026-11-12)', _PAUSED is True)
 
 print()
 print(f"{len(fails)} FAILED: {', '.join(fails)}" if fails else "ALL TELEGRAM TESTS PASSED")

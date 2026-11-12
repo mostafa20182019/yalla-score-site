@@ -55,6 +55,13 @@ CAPTION_MAX = 1024            # Telegram's limit for a photo caption
 TEXT_MAX = 4096
 MAX_PER_RUN = 3
 MAX_AGE_H = 12                # a channel tolerates a slightly older piece than a feed
+# PAUSED (user, 2026-11-12: «عايزك توقف كل شغل قناة التليجرام مؤقتا مش عايزك
+# تنزل عليها اى حاجة»). Nothing goes to the channel - not the articles, not the
+# live cards - until this is False again. Nothing is claimed in the store while
+# paused, so switching it back on resumes cleanly (only articles younger than
+# MAX_AGE_H, so no backlog flood). The health pager (health.js) writes to the
+# user's private alert chat, not the channel, and is not affected.
+CHANNEL_PAUSED = True
 
 
 def token():
@@ -185,6 +192,9 @@ def send_card(kind, ref, img, caption):
     """Mirror one live card to the channel: the picture when there is one,
     else the text. Returns the message id or None. Never raises - a Telegram
     error must not touch the Facebook post that already went out."""
+    if CHANNEL_PAUSED:
+        print(f"telegram: the channel is PAUSED - {kind} {ref} not mirrored")
+        return None
     if not (token() and chat()):
         print(f"telegram: no TG_BOT_TOKEN / TG_CHAT_ID - {kind} {ref} not mirrored")
         return None
@@ -239,6 +249,9 @@ def pending(items):
 
 
 def auto(dry=False):
+    if CHANNEL_PAUSED:
+        print("telegram: the channel is PAUSED (tg_post.CHANNEL_PAUSED) - nothing posted")
+        return 0
     items = FB.load_articles()
     todo = pending(items)
     if not todo:
