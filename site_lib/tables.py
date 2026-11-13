@@ -146,6 +146,10 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
         if _tc:
             import json as _json
             tr_attr += f' data-tc="{esc(_json.dumps(_tc, ensure_ascii=False, separators=(",", ":")))}"'
+        # the live table's double-count guard (snippets/live_table_js.html):
+        # how many finished matches of this team our data holds
+        if games is not None:
+            tr_attr += f' data-pc="{len(mine)}"'
         if live:
             for m, _ in mine:
                 used[str(m["match_id"])] = m
@@ -184,7 +188,10 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
         badge = ""
     from site_lib.competitions import LIVE_COMP_ID
     return (f'<div class="ltable" data-comp="{esc(comp)}" data-cl="{esc(comp_label(comp))}" '
-            f'data-cid="{LIVE_COMP_ID.get(comp, "")}"{"" if embedded else " hidden"}>'
+            f'data-cid="{LIVE_COMP_ID.get(comp, "")}"'
+            # a pre-season or last-season table never goes live
+            + (' data-z' if (zeroed or past) else "")
+            + f'{"" if embedded else " hidden"}>'
             f'<div class="lt-head">{comp_icon(comp)} {esc(title) if title else "جدول ترتيب " + esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'

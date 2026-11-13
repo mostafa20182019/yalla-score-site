@@ -1,0 +1,104 @@
+<script>
+(function(){
+  /* the LIVE TABLE (2026-11-13, user: «خلى ارقام الجدول لحظية كمان»). While
+     a competition's matches are being played, its standings tables are
+     recalculated as if those matches ended now - played, W/D/L, goals,
+     difference, points, positions - from the reply LIVE_JS already polls
+     (window.__lvGames, 'lv:update'). Labelled «مباشر» on the table; the rows
+     of teams on the pitch are marked; the official table comes back by
+     itself when no match of the competition is live.
+     NEVER COUNT A MATCH TWICE: the build writes each row's count of finished
+     matches our data holds (data-pc). A live match is added only while the
+     official table's «لعب» equals that count; a match that just ended is
+     added only while the official table has not counted it yet (it refreshes
+     a few minutes after the whistle). When either side fails, the match is
+     left out. Tie order: points, difference, goals for, then the official
+     order - leagues break ties differently, which is why the label says
+     «لو انتهت المباريات الآن». */
+  function norm(s){return(s||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
+  function txt(e){return e?(e.textContent||'').trim():'';}
+  function num(e){var n=parseInt(txt(e).replace(/[^\d\-+]/g,''),10);return isNaN(n)?0:n;}
+  function tc(tr){try{return JSON.parse(tr.getAttribute('data-tc')||'{}');}catch(e){return {};}}
+  function base(tbl){
+    if(tbl.__lt) return tbl.__lt;
+    var tb=tbl.querySelector('tbody'); if(!tb) return null;
+    var rows=[].slice.call(tb.children).map(function(tr){
+      var td=tr.children,n=td.length; if(n<9) return null;
+      var cells=[td[0]].concat([].slice.call(td,n-8));
+      return {tr:tr,name:norm(txt(tr.querySelector('.lt-tb bdi')||tr.querySelector('.lt-team bdi'))),
+              pos:num(td[0]),v:cells.slice(1).map(num),cells:cells,
+              html:cells.map(function(c){return c.innerHTML;}),
+              pc:tr.hasAttribute('data-pc')?+tr.getAttribute('data-pc'):null,tc:tc(tr)};
+    });
+    if(rows.some(function(r){return !r;})) return null;
+    tbl.__lt={tb:tb,rows:rows,sig:''};
+    return tbl.__lt;
+  }
+  function restore(tbl,B){
+    B.rows.forEach(function(r){
+      r.cells.forEach(function(c,i){c.innerHTML=r.html[i];c.classList.remove('lt-chg');});
+      r.tr.classList.remove('lt-lvr');
+      r.cells[0].classList.remove('lt-up','lt-dn');
+      B.tb.appendChild(r.tr);
+    });
+    var b=tbl.querySelector('.lt-lvb'); if(b) b.parentNode.removeChild(b);
+    B.sig='';
+  }
+  function same(a,b){return norm(a.h)===norm(b.h)&&norm(a.a)===norm(b.a);}
+  function apply(tbl){
+    var cid=tbl.getAttribute('data-cid'); if(!cid||tbl.hasAttribute('data-z')) return;
+    var B=base(tbl); if(!B) return;
+    var by={}; B.rows.forEach(function(r){by[r.name]=r;});
+    var gs=(window.__lvGames||[]).filter(function(g){return String(g.c)===String(cid);});
+    var add={}, playing={}, used=[];
+    gs.forEach(function(g){
+      var H=by[norm(g.h)],A=by[norm(g.a)]; if(!H||!A) return;
+      if(g.hs==null||g.as==null) return;
+      var ok=[H,A].every(function(r){
+        if(g.live) return r.pc===null||r.v[0]===r.pc;
+        /* just ended: does the official table count it already? */
+        var inPool=!!(r.tc.ls&&same(r.tc.ls,g)&&r.tc.ls.s===(g.hs+' - '+g.as));
+        if(r.pc===null) return !inPool;
+        return inPool?r.v[0]<r.pc:r.v[0]===r.pc;
+      });
+      if(!ok) return;
+      [[H,+g.hs,+g.as],[A,+g.as,+g.hs]].forEach(function(x){
+        var d=add[x[0].name]=add[x[0].name]||[0,0,0,0,0,0,0,0];
+        var res=x[1]>x[2]?1:(x[1]===x[2]?2:3);
+        d[0]++;d[res]++;d[4]+=x[1];d[5]+=x[2];d[6]+=x[1]-x[2];d[7]+=res===1?3:(res===2?1:0);
+        if(g.live) playing[x[0].name]=1;
+      });
+      used.push(g.h+g.hs+g.a+g.as+(g.live?'L':'E'));
+    });
+    var sig=used.join('|');
+    if(!used.length){ if(B.sig) restore(tbl,B); return; }
+    if(sig===B.sig) return;
+    B.sig=sig;
+    var now=B.rows.map(function(r){
+      var d=add[r.name], v=r.v.slice();
+      if(d) for(var i=0;i<8;i++) v[i]+=d[i];
+      return {r:r,v:v,d:!!d};
+    });
+    now.sort(function(a,b){return b.v[7]-a.v[7]||b.v[6]-a.v[6]||b.v[4]-a.v[4]||a.r.pos-b.r.pos;});
+    now.forEach(function(x,i){
+      var r=x.r,pos=i+1;
+      r.cells[0].textContent=String(pos);
+      r.cells[0].classList.toggle('lt-up',pos<r.pos);
+      r.cells[0].classList.toggle('lt-dn',pos>r.pos);
+      for(var k=0;k<8;k++){
+        /* a changed row loses its match-list buttons: they list the official matches */
+        if(x.d) r.cells[k+1].textContent=String(x.v[k]);
+        else r.cells[k+1].innerHTML=r.html[k+1];
+        r.cells[k+1].classList.toggle('lt-chg',x.d);
+      }
+      r.tr.classList.toggle('lt-lvr',!!playing[r.name]);
+      B.tb.appendChild(r.tr);
+    });
+    var head=tbl.querySelector('.lt-head');
+    if(head&&!head.querySelector('.lt-lvb'))
+      head.insertAdjacentHTML('beforeend','<span class="lt-lvb" title="الترتيب لو انتهت المباريات الجارية الآن">مباشر</span>');
+  }
+  function run(){[].forEach.call(document.querySelectorAll('.ltable[data-cid]'),apply);}
+  document.addEventListener('lv:update',run);
+})();
+</script>
