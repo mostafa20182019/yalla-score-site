@@ -804,6 +804,51 @@ S365_LEAGUES = [
     (5582, "FIFA U-17 World Cup"),
 ]
 EGY_ENABLED = True
+# Group stages shown GROUP BY GROUP (user ask 2026-11-13: «عايز فى بطولة تصفيات
+# امم افريقيا وبطولة الامم الاوروبية يجيب المجموعات زى مبجيب الجولات»).
+# 365scores returns ONE standings entry holding every group's rows (each row
+# carries groupNum, the entry lists the groups' names) - the single-table
+# guard below rightly refuses it as «the table»; for these competitions it is
+# kept split, as {"groups": [{num, name, table}]}, and "table" stays absent so
+# nothing that reads a league table ever sees it.
+GROUP_TABLES = {588, 7016}
+
+
+def _group_name(name, num):
+    """365scores' group label in our words. The Nations League arrives as
+    «دوري ا - بيت 1» (League A, Group 1) -> «المستوى أ · المجموعة 1»."""
+    import re as _re
+    m = _re.match(r"\s*دوري\s*([اأبجد])\s*-\s*بيت\s*(\d+)", name or "")
+    if m:
+        return f"المستوى {'أ' if m.group(1) in 'اأ' else m.group(1)} · المجموعة {m.group(2)}"
+    return (name or "").strip() or f"المجموعة {num}"
+
+
+def s365_group_tables(st):
+    """[{num, name, table}] from ONE 365scores standings entry whose rows span
+    several groups; rows with no groupNum (a preliminary round's teams that
+    went out) are dropped. Each table is in the feed's order, numbered 1..n."""
+    n = lambda v: int(v or 0)
+    names = {g.get("num"): g.get("name") for g in (st or {}).get("groups") or []}
+    by = {}
+    for r in (st or {}).get("rows") or []:
+        g = r.get("groupNum")
+        if g is not None:
+            by.setdefault(g, []).append(r)
+    out = []
+    for g in sorted(by):
+        rows = sorted(by[g], key=lambda r: (n(r.get("position")) or 999))
+        out.append({"num": g, "name": _group_name(names.get(g), g),
+                    "table": [{"pos": i + 1,
+                               "team": (r.get("competitor") or {}).get("name"),
+                               "crest": _s365_badge(r.get("competitor") or {}),
+                               "played": n(r.get("gamePlayed")), "won": n(r.get("gamesWon")),
+                               "draw": n(r.get("gamesEven")), "lost": n(r.get("gamesLost")),
+                               "gf": n(r.get("for")), "ga": n(r.get("against")),
+                               "gd": n(r.get("for")) - n(r.get("against")),
+                               "pts": n(r.get("points"))}
+                              for i, r in enumerate(rows)]})
+    return out
 # knock-out cups whose page is built STAGE by stage (no round numbers in the
 # feed): كأس مصر (user ask 2026-11-03: «اعمل صفحة لكأس مصر مقسمة بالأدوار»)
 STAGE_ROUNDS = {553}                      # master switch for the 365scores leagues
@@ -980,6 +1025,10 @@ def fetch_s365_league(matches_out, lid, comp_name):
         # rows from more than one group are not a league table.
         if len({r.get("groupNum") for r in srows}) > 1:
             srows = []
+            if lid in GROUP_TABLES:
+                _groups = s365_group_tables(sts[0])
+                if _groups:
+                    entry = {"competition": comp_name, "groups": _groups}
     except Exception as e:
         print(f"  ! 365scores standings failed: {e}")
         srows = []
@@ -998,8 +1047,10 @@ def fetch_s365_league(matches_out, lid, comp_name):
                             "pts": n(r.get("points"))}
                            for i, r in enumerate(srows)]}
     print(f"  + {comp_name} (365scores): {len(day_rows)} matches, "
-          f"{len(rounds)} rounds, table: {'yes' if entry else 'no'}")
-    if entry and not entry.get("zeroed"):
+          f"{len(rounds)} rounds, table: "
+          + (f"{len(entry['groups'])} groups" if entry and entry.get("groups")
+             else "yes" if entry else "no"))
+    if entry and entry.get("table") and not entry.get("zeroed"):
         try:
             note = backfill_results(lid, comp_name, season_num, entry["table"], game_row)
             if note and "_DBG" in globals():
@@ -1849,8 +1900,9 @@ if __name__ == "__main__":
         for _lid, _lname in S365_LEAGUES:
             try:
                 _st = fetch_s365_league(matches, _lid, _lname)
-                _DBG[_lname] = (f"ok (table {len(_st['table'])} teams)"
-                                if _st else "ok (no table)")
+                _DBG[_lname] = (f"ok (table {len(_st['table'])} teams)" if _st and _st.get("table")
+                                else f"ok ({len(_st['groups'])} groups)" if _st and _st.get("groups")
+                                else "ok (no table)")
                 if _st:
                     s365_standings.append(_st)
             except Exception as e:

@@ -194,7 +194,7 @@ ARAB_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup", "egypt-second-division"
               "morocco", "algeria", "tunisia", "libya")
 
 
-def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
+def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None):
     """/fixtures/<slug> - a league's whole season. These used to be INSIDE
     /matches, hidden behind the league filter: 2,206 fixture rows and 4,955
     crest tags that every visitor downloaded to look at the 82 rows of one day.
@@ -220,6 +220,10 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
                                 fixtures_desc(label, season, rounds, n_m),
                                 SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True)
+        # a group stage's tables, group by group (user 2026-11-13)
+        from site_lib.clubs import TEAM_PAGES
+        from site_lib.tables import group_tables_panel
+        groups_panel = group_tables_panel(comp, (groups_by_comp or {}).get(comp), TEAM_PAGES)
         _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
@@ -231,6 +235,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls):
         write(f"fixtures/{slug}.html", render(
             "fixtures.html", page_head=page_head, label=label, season=season,
             n_rounds=len(rounds), n_matches=n_m, rounds_panel=Markup(rounds_panel),
+            groups_panel=Markup(groups_panel),
             staged=any(r.get("label") for r in rounds),
             links=[Markup(x) for x in _links], crumbs_ld=Markup(crumbs_ld),
             page_foot=Markup(foot()), rounds_js=Markup(ROUNDS_JS)))

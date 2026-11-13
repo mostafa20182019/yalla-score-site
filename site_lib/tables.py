@@ -33,7 +33,7 @@ def team_results(games):
 
 
 def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
-                    embedded=False, games=None, pages=None, store_src=None):
+                    embedded=False, games=None, pages=None, store_src=None, title=None):
     """League standings table (FotMob-style). Hidden until its league is picked.
     `zeroed` = the new season hasn't kicked off yet, so this is the new season's
     team list with everything at 0; it gets a "new season" badge.
@@ -111,7 +111,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
     else:
         badge = ""
     return (f'<div class="ltable" data-comp="{esc(comp)}"{"" if embedded else " hidden"}>'
-            f'<div class="lt-head">{comp_icon(comp)} جدول ترتيب {esc(comp_label(comp))}{badge}</div>'
+            f'<div class="lt-head">{comp_icon(comp)} {esc(title) if title else "جدول ترتيب " + esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
             + (f'<th class="lt-form" title="آخر 5 مباريات">آخر 5</th>' if form_map is not None else "") +
@@ -119,6 +119,35 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'<th title="خسر">خ</th><th class="lt-gf" title="له">له</th><th class="lt-ga" title="عليه">عليه</th>'
             f'<th title="الفارق">+/-</th><th class="lt-pts">نقاط</th></tr></thead>'
             f'<tbody>{"".join(body)}</tbody></table></div>{store}</div>')
+
+
+def group_tables_panel(comp, groups, focus_tps=()):
+    """A group stage, one group at a time behind the rounds navigator
+    (‹ المجموعة › - ROUNDS_JS drives it like the rounds; user 2026-11-13).
+    Opens on the first group holding a club/team we follow (focus_tps: the
+    TEAM_PAGES entries - منتخب مصر for the AFCON qualifiers), else group 1."""
+    from site_lib.names import _team_match
+    groups = [g for g in groups or [] if g.get("table")]
+    if not groups:
+        return ""
+    cur = groups[0]["num"]
+    for g in groups:
+        if any(_team_match(tp, {"home": r.get("team") or "", "away": "", "competition": comp})
+               for tp in focus_tps for r in g["table"]):
+            cur = g["num"]
+            break
+    parts = [f'<div class="lg-fix rounds-panel groups-panel" data-comp="{esc(comp)}" data-current="{cur}">',
+             f'<div class="fx-head">{comp_icon(comp)} مجموعات {esc(comp_label(comp))}</div>',
+             '<div class="rnav">'
+             '<button type="button" class="rn-prev" aria-label="المجموعة السابقة">‹</button>'
+             '<span class="rn-label"></span>'
+             '<button type="button" class="rn-next" aria-label="المجموعة التالية">›</button></div>',
+             '<div class="rounds">']
+    for g in groups:
+        parts.append(f'<div class="round" data-round="{g["num"]}" data-label="{esc(g["name"])}" hidden>'
+                     + standings_table(comp, g["table"], embedded=True, title=g["name"]) + '</div>')
+    parts.append('</div></div>')
+    return "".join(parts)
 
 
 def fixture_mini(m):

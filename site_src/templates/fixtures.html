@@ -11,6 +11,8 @@
   <p>كل جولات {{ label }} لموسم {{ season }} — <b>{{ n_rounds }}</b> جولة و<b>{{ n_matches }}</b> مباراة. المباريات المنتهية تظهر بنتيجتها والقادمة بموعدها بتوقيت القاهرة، ويتحدّث الجدول تلقائيًا بعد كل مباراة. استخدم ‹ و› للتنقل بين الجولات.</p>
   {% endif %}
 </section>
+{# a group stage: its tables, one group at a time (user 2026-11-13) #}
+{{ groups_panel }}
 {{ rounds_panel }}
 <p class="more-link">{% for link in links %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
 {{ crumbs_ld }}

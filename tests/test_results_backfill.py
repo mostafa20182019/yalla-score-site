@@ -126,7 +126,7 @@ ok("11 the store's shrink guard counts a purposeful purge back, and still refuse
 
 src = open("fetch_data.py", encoding="utf-8").read()
 ok("8 a failing backfill can never fail the fetch (caught, archive unchanged)",
-   "backfill failed" in src and 'if entry and not entry.get("zeroed")' in src)
+   "backfill failed" in src and 'if entry and entry.get("table") and not entry.get("zeroed")' in src)   # a groups-only entry (2026-11-13) has no table to backfill
 
 print("\nALL RESULTS-BACKFILL TESTS PASSED" if not fails else f"\n{len(fails)} FAILED")
 sys.exit(1 if fails else 0)
