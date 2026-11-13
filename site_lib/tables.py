@@ -468,26 +468,32 @@ def match_details_html(e, flipped, h_ar, a_ar):
         txt = f'<bdi>{esc(g["player"])}</bdi>' + (
             f' <span class="ev-tag">({esc(g["tag"])})</span>' if g.get("tag") else "")
         evs.append((_min_key(g.get("minute")), side(g.get("side")),
-                    g.get("minute"), "⚽", txt))
+                    g.get("minute"), "⚽", txt, True))
     for c in (e.get("cards") or []):
         ic = f'<span class="cardic {"r" if c.get("color") == "r" else "y"}"></span>'
         evs.append((_min_key(c.get("minute")), side(c.get("side")),
-                    c.get("minute"), ic, f'<bdi>{esc(c["player"])}</bdi>'))
+                    c.get("minute"), ic, f'<bdi>{esc(c["player"])}</bdi>', False))
     for s in (e.get("subs") or []):
         txt = (f'<span class="sub-in">▲ <bdi>{esc(s["in"])}</bdi></span> '
                f'<span class="sub-out">▼ <bdi>{esc(s["out"])}</bdi></span>')
         evs.append((_min_key(s.get("minute")), side(s.get("side")),
-                    s.get("minute"), "🔁", txt))
+                    s.get("minute"), "🔁", txt, False))
     # newest first (user, 2026-11-06: «الدقايق تبدأ من تحت» - the last minute at
     # the top, kick-off at the bottom, like a live feed). reverse=True keeps
     # same-minute events in their insertion order (goal, then card, then sub).
     evs.sort(key=lambda x: x[0], reverse=True)
     if evs:
         parts.append('<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl">')
-        for _, sd, mn, ic, txt in evs:
+        # data-m (the minute) on every row and data-g on a goal row: while the
+        # match is LIVE this list is up to a build old (15 min and more) but
+        # the score above it is painted every 30 s - the user saw 3-1 over a
+        # list with two of the three goals (2026-11-13). LIVE_JS paintTimeline
+        # swaps the goal rows for the live feed's and keeps the order by data-m.
+        for _, sd, mn, ic, txt, is_goal in evs:
             cell = f'{ic} {txt}'
             mn_t = f'<span dir="ltr">{esc(mn)}′</span>' if mn else ""
-            parts.append(f'<div class="tl-r"><div class="tl-h">{cell if sd == "h" else ""}</div>'
+            _at = f' data-m="{esc(mn or "")}"' + (' data-g="1"' if is_goal else "")
+            parts.append(f'<div class="tl-r"{_at}><div class="tl-h">{cell if sd == "h" else ""}</div>'
                          f'<div class="tl-m">{mn_t}</div>'
                          f'<div class="tl-a">{cell if sd != "h" else ""}</div></div>')
         parts.append('</div></section>')

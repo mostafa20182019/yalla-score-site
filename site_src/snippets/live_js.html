@@ -75,6 +75,51 @@
     if(sides[0].querySelectorAll('.mg').length!==+g.hs||sides[1].querySelectorAll('.mg').length!==+g.as)
       gb.parentNode.removeChild(gb);
   }
+  /* the match page's «أحداث المباراة» (2026-11-13). The list is baked at
+     build time - up to a build old while the match is live - and the row
+     above it is painted from the feed every 30 s: the user saw «3 - 1» over
+     a list holding two of the three goals. The GOAL rows now come from the
+     same reply as the score (same list paintGoals writes), merged into the
+     baked cards and substitutions by minute, newest first. An absent goals
+     field changes nothing; cards and substitutions still arrive with the
+     next build, and the note under the list says so while the match is on. */
+  function mKey(m){
+    var p=String(m||'').replace(/[^0-9+]/g,'').split('+');
+    return (parseInt(p[0],10)||0)+(parseInt(p[1],10)||0)/100;
+  }
+  function paintTimeline(e,g){
+    var hero=e.closest&&e.closest('.mp-hero'); if(!hero)return;
+    var tl=document.querySelector('.mtl');
+    var note=document.querySelector('.tl-note');
+    if(note&&!g.live){note.parentNode.removeChild(note);note=null;}
+    if(!g.goals||!g.goals.length)return;
+    if(!tl){
+      hero.insertAdjacentHTML('afterend','<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl"></div></section>');
+      tl=document.querySelector('.mtl');
+    }
+    if(g.live&&!note)tl.insertAdjacentHTML('afterend','<p class="hintline tl-note">الأهداف تتحدّث لحظيًا. البطاقات والتبديلات تتحدّث كل بضع دقائق.</p>');
+    var sig=g.goals.map(function(x){return x.s+'|'+x.p+'|'+x.m+'|'+(x.t||'');}).join(';');
+    if(tl.getAttribute('data-gs')===sig)return;
+    tl.setAttribute('data-gs',sig);
+    var all=[];
+    [].slice.call(tl.querySelectorAll('.tl-r')).forEach(function(r,i){
+      if(r.hasAttribute('data-g'))tl.removeChild(r);
+      else all.push({k:mKey(r.getAttribute('data-m')),o:1,i:i,el:r});
+    });
+    g.goals.forEach(function(x,i){
+      var mn=String(x.m||'').replace(/['′]/g,'');
+      var cell='⚽ <bdi>'+escH(x.p)+'</bdi>'+(x.t?' <span class="ev-tag">('+escH(x.t)+')</span>':'');
+      var d=document.createElement('div');
+      d.className='tl-r';d.setAttribute('data-g','1');d.setAttribute('data-m',mn);
+      d.innerHTML='<div class="tl-h">'+(x.s==='h'?cell:'')+'</div>'
+        +'<div class="tl-m">'+(mn?'<span dir="ltr">'+escH(mn)+'′</span>':'')+'</div>'
+        +'<div class="tl-a">'+(x.s==='h'?'':cell)+'</div>';
+      all.push({k:mKey(mn),o:0,i:i,el:d});
+    });
+    /* newest first; in one minute the goal, then the card, then the change */
+    all.sort(function(a,b){return b.k-a.k||a.o-b.o||a.i-b.i;});
+    all.forEach(function(x){tl.appendChild(x.el);});
+  }
   /* replay the CSS animation on an element that may already carry the class:
      removing it is not enough, the browser needs a reflow in between. */
   function flash(el){
@@ -124,6 +169,7 @@
       if(e.closest&&e.closest('.mp-hero')){
         var sd=document.querySelector('[data-lv-state]');
         if(sd){sd.textContent=g.live?('جارية الآن'+(g.min?' · '+g.min:'')):'انتهت';}
+        paintTimeline(e,g);
       }
     }
   }

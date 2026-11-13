@@ -1487,6 +1487,7 @@ html.lt-lock{overflow:hidden}
 .h2h-t thead th{border-top:0;color:var(--muted);font-size:.8rem;white-space:nowrap}
 .h2h-t th:first-child,.h2h-t td:first-child{text-align:start;font-weight:800}
 .h2h-cta{margin:14px 0;font-weight:800}
+.minfo .tl-note{margin:10px 0 0}
 .fx-all-h{font-size:1.05rem;margin:18px 0 8px;color:var(--ink)}
 .pg-k{min-width:34px;text-align:center;border:1px solid var(--line);border-radius:999px;padding:4px 10px;color:var(--green-d)}
 .pg-k.cur{background:var(--green-d);color:#fff;border-color:var(--green-d)}
