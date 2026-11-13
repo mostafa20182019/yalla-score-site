@@ -92,7 +92,10 @@ for f in pages:
     t = rd(f)
     name = f"/fixtures/{slug}"
     want = _fxrounds.get(_slug2comp.get(slug), 0)
-    got = len(re.findall(r'class="round"', t))
+    # the rounds panel only: a group stage's tables (groups-panel, 2026-11-13)
+    # reuse the same navigator and «round» markup, one per group
+    _rp = t.find('<div class="lg-fix rounds-panel" ')
+    got = len(re.findall(r'class="round"', t[_rp:] if _rp >= 0 else t))
     ok = ("rounds-panel" in t and "rn-next" in t
           and got == want and want >= 2
           and f'<link rel="canonical" href="https://elgoon.com/fixtures/{slug}"' in t

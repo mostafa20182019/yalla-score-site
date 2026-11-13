@@ -284,7 +284,10 @@ for r in q:
 # counters are recomputed) - test_article_write.py covers that direction.
 ca = warehouse.refresh_articles(verbose=False, source="json")
 ck("44 articles loaded", ca["articles_written"] > 350, str(ca["articles_written"]))
-ck("45 the curated clubs are a table", ca["clubs"] == 11, str(ca["clubs"]))
+# the club list grows (منتخب مصر 2026-11-12, الهلال السوداني 2026-11-13): the
+# table holds every curated club page, not a number frozen when it was 11
+from site_lib.clubs import TEAM_PAGES as _TP           # noqa: E402
+ck("45 the curated clubs are a table", ca["clubs"] == len(_TP), f'{ca["clubs"]} of {len(_TP)}')
 ck("46 sources and FAQ rows loaded",
    ca["sources_written"] > 100 and ca["faq_written"] > 100,
    f"{ca['sources_written']} sources, {ca['faq_written']} faq")
