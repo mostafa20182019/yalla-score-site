@@ -1147,7 +1147,8 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 # clubs whose scorer lines must survive the cap — checked as substrings of
 # the 365scores Arabic names, order-only (no display effect)
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
-                 "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور")
+                 "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور",
+                 "الهلال السوداني")
 S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808,6994,5582"
 
 def _is_shootout(ev):

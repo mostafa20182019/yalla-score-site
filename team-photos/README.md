@@ -20,6 +20,7 @@
 | `liverpool` | ليفربول |
 | `chelsea` | تشيلسي |
 | `trabzonspor` | طرابزون سبور |
+| `al-hilal-sudan` | الهلال السوداني |
 
 ## القواعد
 

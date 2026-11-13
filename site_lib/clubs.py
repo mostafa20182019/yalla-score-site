@@ -18,6 +18,17 @@ EGY_SCOPE = ("Egyptian Premier League", "CAF Champions League",
 # "مصر" is a SUBSTRING of "المصري" (Al Masry), and a club never plays in these.
 NT_SCOPE = ("Africa Cup of Nations Qualification",)
 
+# Al Hilal of Omdurman (user, 2026-11-13: «جمهوري اللي بيزيد على الفيس بيكون من
+# السودان، عايز اهتم بالكرة السودانية» → «ضيف الهلال»). 365scores names it
+# «الهلال السوداني» (competitor 12778), which no other club carries - the
+# Saudi club is the bare «الهلال», هلال الساحل / هلال الفاشر are other clubs -
+# and every matcher compares an Arabic token EXACTLY. The scope is the
+# competitions we fetch it in: the CAF Champions League group stage (with
+# بيراميدز, from 27 Nov 2026). Add the Sudanese league here the day
+# fetch_data.py fetches it (365scores 5481; its 2026-27 season had no
+# fixtures in the feed on 2026-11-13).
+SUDAN_SCOPE = ("CAF Champions League",)
+
 TICKER_TEAMS = [
     ("Real Madrid", None), ("FC Barcelona", None), ("Manchester United", None),
     ("Manchester City", None), ("Arsenal FC", None), ("Liverpool FC", None),
@@ -27,6 +38,7 @@ TICKER_TEAMS = [
     ("بيراميدز", EGY_SCOPE),
     ("مصر", NT_SCOPE),
     ("طرابزون سبور", "Turkish Super Lig"),
+    ("الهلال السوداني", SUDAN_SCOPE),
 ]
 
 # Evergreen club pages (/team/<slug>) — one per curated club, targeting
@@ -85,6 +97,11 @@ TEAM_PAGES = [
      "match_tokens": [("Liverpool FC", None)], "news_tokens": ["ليفربول"]},
     {"slug": "chelsea", "name": "تشيلسي", "league": "Premier League",
      "match_tokens": [("Chelsea FC", None)], "news_tokens": ["تشيلسي"]},
+    # news: only the full name or the Omdurman forms - the bare «الهلال» in a
+    # headline is the Saudi club far more often
+    {"slug": "al-hilal-sudan", "name": "الهلال السوداني", "league": "CAF Champions League",
+     "match_tokens": [("الهلال السوداني", SUDAN_SCOPE)],
+     "news_tokens": ["الهلال السوداني", "هلال أم درمان", "الهلال الأمدرماني", "هلال السودان"]},
     {"slug": "trabzonspor", "name": "طرابزون سبور", "league": "Turkish Super Lig",
      # the Conference League too (SEO review 2026-11-13: its 26 Nov match was
      # missing from the club page and the match page had no club chip)
@@ -221,10 +238,10 @@ LEGENDS = [
 # `slug` links the tile to the club page when the club is curated, else the
 # tile opens its next (or last) match page. The Saudi pair plays under its
 # 365scores Arabic name, scoped to its league.
-def _gc(name, token, league, slug=None, news=None, scope=None):
+def _gc(name, token, league, slug=None, news=None, scope=None, excl=None):
     return {"name": name, "slug": slug, "league": league,
             "match_tokens": [(token, scope)], "news_tokens": news or [name],
-            "news_excl": [], "news_ctx": [], "news_anchor": []}
+            "news_excl": excl or [], "news_ctx": [], "news_anchor": []}
 
 
 GLOBAL_CLUBS = [
@@ -245,7 +262,9 @@ GLOBAL_CLUBS = [
     _gc("ميلان", "AC Milan", "Serie A", news=["ميلان"]),
     _gc("نابولي", "SSC Napoli", "Serie A", news=["نابولي"]),
     _gc("النصر", "النصر", "Saudi Pro League", news=["النصر السعودي", "النصر"], scope="Saudi Pro League"),
-    _gc("الهلال", "الهلال", "Saudi Pro League", news=["الهلال السعودي", "الهلال"], scope="Saudi Pro League"),
+    _gc("الهلال", "الهلال", "Saudi Pro League", news=["الهلال السعودي", "الهلال"], scope="Saudi Pro League",
+        # the Sudanese club's stories never land on the Saudi tile (2026-11-13)
+        excl=["الهلال السوداني", "هلال أم درمان", "الهلال الأمدرماني", "هلال السودان"]),
 ]
 # the mini tables under the tiles, in this order (the big leagues + the UCL + the Saudi league)
 # the Egyptian league first (user, 2026-10-22: «زود هنا الدورى المصرى»)

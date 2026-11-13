@@ -160,7 +160,12 @@ ck("1 scope: الأهلي in the Egyptian league, مصر in the AFCON qualifiers
 ck("2 scope: the Saudi الأهلي and the Port Said المصري are OUT; Arsenal (every curated club, 2026-10-17) is IN",
    !postScope({ c: 649, h: "الأهلي", a: "النصر" }) && postScope({ c: 7, h: "أرسنال", a: "توتنهام" })
    && !postScope({ c: 552, h: "المصري", a: "إنبي" }) && postScope({ c: 573, h: "طرابزون سبور", a: "ليل" })
-   && !postScope({ c: 7, h: "إيفرتون", a: "توتنهام" }) && CURATED_LIVE.length === 12
+   && !postScope({ c: 7, h: "إيفرتون", a: "توتنهام" }) && CURATED_LIVE.length === 13
+   // Al Hilal Omdurman (2026-11-13): its full name in the CAF Champions League only -
+   // never the Saudi «الهلال», never «هلال الساحل», never another competition
+   && postScope({ c: 624, h: "الهلال السوداني", a: "حوريا" }) && postScope({ c: 624, h: "بيراميدز", a: "الهلال السوداني" })
+   && !postScope({ c: 649, h: "الهلال", a: "النصر" }) && !postScope({ c: 624, h: "هلال الساحل", a: "حوريا" })
+   && !postScope({ c: 649, h: "الهلال السوداني", a: "النصر" })
    && postScope({ c: 627, h: "كيتارا", a: "الأهلي" })                       // the Egyptian club in the Confederation Cup
    && !postScope({ c: 627, h: "جامعة ويلوالو أديجرات", a: "الأهلي طرابلس" }));   // the Libyan namesake (2026-10-17)
 const gm = goalMessage({ id: 901, c: 552, h: "الزمالك", a: "الإسماعيلي", hs: 2, as: 0 }, { s: "h", p: "زيزو", m: "63", t: "ج" });

@@ -78,6 +78,8 @@ export const CURATED_LIVE = [
   { t: "بيراميدز", comps: EGY_LIVE_COMPS, exact: true },
   { t: "مصر", comps: [588], exact: true },
   { t: "طرابزون سبور", comps: [78, 573] },
+  // Al Hilal Omdurman (user 2026-11-13): the feed's own full name, exact, in the CAF Champions League
+  { t: "الهلال السوداني", comps: [624], exact: true },
   { t: "ريال مدريد", comps: null },
   { t: "برشلونة", comps: null },
   { t: "مانشستر يونايتد", comps: null },

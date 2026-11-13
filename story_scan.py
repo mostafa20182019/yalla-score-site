@@ -45,7 +45,10 @@ EGY_QUERIES = ["الدوري المصري", "الأهلي", "الزمالك", "�
 GLOBAL_QUERIES = ["بايرن ميونخ", "باريس سان جيرمان", "يوفنتوس", "إنتر ميلان", "ميلان",
                   "أتلتيكو مدريد", "دورتموند", "توتنهام", "نابولي", "النصر السعودي", "الهلال السعودي"]
 CLUB_QUERIES = ["ريال مدريد", "برشلونة", "ليفربول", "مانشستر يونايتد",
-                "مانشستر سيتي", "أرسنال", "تشيلسي", "طرابزون سبور"]
+                "مانشستر سيتي", "أرسنال", "تشيلسي", "طرابزون سبور",
+                # Sudanese football (user 2026-11-13: the Facebook audience
+                # growing from Sudan) - the club by its full name, and the NT
+                "الهلال السوداني", "منتخب السودان"]
 
 MAX_AGE_H = 30      # "the last ~24h", with room for a slot that ran late
 MIN_OUTLETS = 3     # a shortlist bar, NOT the source gate: article_put.py

@@ -58,6 +58,7 @@ TEAMS = {
     "man-united": "مانشستر يونايتد", "man-city": "مانشستر سيتي",
     "arsenal": "أرسنال", "liverpool": "ليفربول", "chelsea": "تشيلسي",
     "trabzonspor": "طرابزون سبور",
+    "al-hilal-sudan": "الهلال السوداني",
 }
 
 # a subject that starts with one of these is a place or a thing, not a person
