@@ -106,10 +106,13 @@ for f in pages:
 # the title has to answer the query, not describe the site
 t0 = rd(pages[0])
 ck("11 the title is the query a reader types",
-   re.search(r"<title>جدول مباريات .+ اليوم والجولة القادمة", t0) is not None,
+   # 2026-11-12: «مواعيد المباريات القادمة» (GSC queries); 2026-11-13: the
+   # season moved to the end so those words survive truncation
+   re.search(r"<title>جدول مباريات .+: مواعيد (المباريات القادمة|الدور القادم) والنتائج", t0) is not None,
    re.search(r"<title>(.*?)</title>", t0).group(1)[:60])
 ck("12 the page says how many rounds and matches it holds, in words",
-   re.search(r"<b>\d+</b> جولة و<b>\d+</b> مباراة", t0) is not None)
+   # 2026-11-13: what the page HOLDS, with number agreement («3 أدوار», «11 جولة»)
+   re.search(r"المتاح حتى الآن: <b>[^<]+</b> و<b>[^<]+</b>", t0) is not None)
 
 # ------------------------------------------------------------ no dead links
 have = set()
