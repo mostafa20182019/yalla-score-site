@@ -40,7 +40,7 @@
   <ol class="h2h-list">
     {% for g in rows %}
     <li class="h2h-g">
-      <span class="h2h-d">{{ g.date }} · {{ g.comp }}</span>
+      <span class="h2h-d"><time datetime="{{ g.iso }}">{{ g.date }}</time> · {{ g.comp }}</span>
       <span class="h2h-r"><b class="h2h-n{% if g.home_w %} w{% endif %}">{{ g.home }}</b>{{ g.pill }}<b class="h2h-n{% if g.away_w %} w{% endif %}">{{ g.away }}</b></span>
       {% if g.note %}
       <span class="h2h-note">{{ g.note }}</span>

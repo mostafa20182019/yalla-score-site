@@ -22,6 +22,9 @@
 </section>
 {% endif %}
 {{ faq }}
+{% if more %}
+<p class="more-link">{% for link in more %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
+{% endif %}
 {{ popup }}
 {# «لعب / ف / ت / خ» → the team's matches (site_lib.tables.standings_table) #}
 {{ games_js }}

@@ -336,6 +336,9 @@ def post_article(token, art):
     # the article task writes a crafted fb_post (same text the user copies
     # from /fb.html) - prefer it; fall back to the plain generated format
     message = (art.get("fb_post") or "").strip() or f"⚽ {title}\n\n{summary}\n\n\U0001f449 {link}"
+    # the stored post text may carry the old «/a/<id>.html» form, which only
+    # redirects to the canonical link - share the canonical one (2026-11-13)
+    message = message.replace(link + ".html", link)
     if not _PRED_ON:
         # a report written while the model was on can still carry its line
         # («🤖 …», «هل أصاب توقع الجون») - those lines never go out now

@@ -18,8 +18,8 @@
 </section>
 {% endif %}
 {{ reading }}
-{% if has_table %}
-<p class="hintline">شاهد أيضًا: <a href="{{ st_url }}">جدول ترتيب {{ label }} كاملًا</a></p>
+{% if also %}
+<p class="hintline">شاهد أيضًا: {% for link in also %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
 {% endif %}
 {{ reading_faq }}
 {{ page_foot }}

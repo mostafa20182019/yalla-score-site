@@ -137,6 +137,31 @@ ck("33 the club page links to its head-to-head page", "h2h.href" in tpl)
 src = io.open("build_site.py", encoding="utf-8").read()
 ck("34 build() writes the pages after the club pages", src.index("club_pages(_plog") < src.index("h2h_pages(articles, m_all, urls)"))
 
+# the links INTO the page and the hub triangle (SEO review 2026-11-13)
+ck("35 a match between the two finds its pair, another match does not",
+   H.pair_of_match(B, A) is PAIR and H.pair_of_match(A, "بيراميدز") is None)
+ck("36 an article title naming both clubs finds the pair",
+   H.pair_in_text("لجنة الحكام توافق على سماع الزمالك تسجيلات قمة الأهلي") is PAIR
+   and H.pair_in_text("الأهلي يفوز على بيراميدز") is None)
+ck("37 the Egyptian league hubs carry the pair", H.pairs_for_league("Egyptian Premier League") == [PAIR]
+   and H.pairs_for_league("Premier League") == [])
+T = lambda n: io.open("site_src/templates/" + n, encoding="utf-8").read()   # noqa: E731
+ck("38 the match page links the pair's head-to-head page", "h2h.href" in T("match.html"))
+ck("39 the standings page ends with its fixtures / scorers row", "for link in more" in T("standings.html"))
+ck("40 the scorers page links the table and the fixtures", "for link in also" in T("scorers.html"))
+lsrc = io.open("site_pages/leagues.py", encoding="utf-8").read()
+ck("41 the fixtures page links the scorers page only when it was written",
+   'os.path.exists(os.path.join(DIST, "scorers", f"{slug}.html"))' in lsrc)
+asrc = io.open("site_pages/articles.py", encoding="utf-8").read()
+ck("42 «للمتابعة» links a table only for a competition that has one",
+   'in _with_table' in asrc and 'in _with_rounds' in asrc)
+from site_lib.clubs import TEAM_PAGES                      # noqa: E402
+from site_lib.names import _team_match                     # noqa: E402
+tz = next(tp for tp in TEAM_PAGES if tp["slug"] == "trabzonspor")
+ck("43 Trabzonspor's Conference League match is his match",
+   _team_match(tz, {"home": "سيسكا - صوفيا", "away": "طرابزون سبور", "competition": "UEFA Conference League"})
+   and not _team_match(tz, {"home": "x", "away": "طرابزون سبور", "competition": "Premier League"}))
+
 print()
 if fails:
     print(f"{len(fails)} FAILED: " + "; ".join(fails))

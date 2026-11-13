@@ -14,7 +14,7 @@ from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, foot, head, noindex, page_head_ad, write
 from site_lib.snippets import LT_GAMES_JS, ROUNDS_JS, ST_TABS_JS
-from site_lib.stats import scorers_read, standings_analysis
+from site_lib.stats import _cnt, scorers_read, standings_analysis
 from site_lib.tables import (clubs_panel, league_rounds_panel, match_row, round_on_show,
                              scorers_list, standings_table)
 from site_lib.text import esc
@@ -106,13 +106,25 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                                            link=match_url(m) if has_page else None))
             # the popup is added only when a row carries a prediction button
             popup = pred_pop([table, scorers, assists] + next_rows + [_faq])
+            # the hub triangle (SEO review 2026-11-13): the table links its
+            # fixtures and scorers pages - 13 fixtures pages and 12 scorers
+            # pages had no link from any page body. A bottom row, not a pane
+            # heading (those stay plain text, user 2026-10-31).
+            from site_lib import h2h as _H2H
+            _more = []
+            if ((fx_by_comp or {}).get(comp) or {}).get("rounds"):
+                _more.append(f'<a href="/fixtures/{slug}.html">جدول مباريات {esc(label)} ومواعيد المباريات القادمة ←</a>')
+            _more.append(f'<a href="{sc_url}">ترتيب هدافي {esc(label)} ←</a>')
+            _more += [f'<a href="/h2h/{p["slug"]}.html">{esc(_H2H.link_label(p))} ←</a>'
+                      for p in _H2H.pairs_for_league(comp)]
             write(f"standings/{slug}.html", render(
                 "standings.html", page_head=page_head, crumbs_ld=crumbs_ld, label=label,
                 season=season, table=Markup(table), has_sc=bool(sc),
                 sc_url=Markup(sc_url), scorers=Markup(scorers),
                 has_asst=bool(asst), assists=Markup(assists), tabs_js=Markup(ST_TABS_JS), games_js=Markup(LT_GAMES_JS),
                 next_rows=[Markup(r) for r in next_rows], next_title=next_title,
-                faq=Markup(_faq), popup=Markup(popup), page_foot=Markup(foot())))
+                faq=Markup(_faq), more=[Markup(x) for x in _more],
+                popup=Markup(popup), page_foot=Markup(foot())))
             urls.append(st_url)
             n_lp += 1
         if sc or (st and st.get("table")):
@@ -129,8 +141,14 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             # empty - see scorers_read)
             _sr, _sfaq, _sw = scorers_read(label, season, sc, asst,
                                            (st or {}).get("table"), _bycomp.get(comp))
+            _also = []
+            if st and st.get("table"):
+                _also.append(f'<a href="{st_url}">جدول ترتيب {esc(label)} كاملًا</a>')
+            if ((fx_by_comp or {}).get(comp) or {}).get("rounds"):
+                _also.append(f'<a href="/fixtures/{slug}.html">جدول مباريات {esc(label)}</a>')
             _html = render(
                 "scorers.html", page_head=page_head, label=label, season=season,
+                also=[Markup(x) for x in _also],
                 has_sc=bool(sc), scorers=Markup(scorers), has_asst=bool(asst),
                 assists=Markup(assists), reading=Markup(_sr or ""),
                 has_table=bool(st and st.get("table")), st_url=Markup(st_url),
@@ -194,7 +212,7 @@ ARAB_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup", "egypt-second-division"
               "morocco", "algeria", "tunisia", "libya")
 
 
-def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None):
+def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_all=None):
     """/fixtures/<slug> - a league's whole season. These used to be INSIDE
     /matches, hidden behind the league filter: 2,206 fixture rows and 4,955
     crest tags that every visitor downloaded to look at the 82 rows of one day.
@@ -216,10 +234,11 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None):
         # «جدول مباريات الدوري التركي» 28, «مواعيد مباريات الدوري التركي» -
         # all at ~10. The title carries «مواعيد» and «المباريات القادمة».
         _next = "الدور القادم" if any(r.get("label") for r in rounds) else "المباريات القادمة"   # a cup's stages
-        page_head = Markup(head(f"جدول مباريات {label} {season}: مواعيد {_next} والنتائج | {SITE_NAME}",
+        page_head = Markup(head(f"جدول مباريات {label}: مواعيد {_next} والنتائج {season} | {SITE_NAME}",
                                 fixtures_desc(label, season, rounds, n_m),
                                 SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
-        rounds_panel = league_rounds_panel(comp, fx, embedded=True)
+        rounds_panel = league_rounds_panel(comp, fx, embedded=True,
+                                           pages=m_all if m_all is not None else None)
         # a group stage's tables, group by group (user 2026-11-13)
         from site_lib.clubs import TEAM_PAGES
         from site_lib.tables import group_tables_panel
@@ -227,6 +246,12 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None):
         _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
+        # the scorers page is written by league_pages, before this function
+        if os.path.exists(os.path.join(DIST, "scorers", f"{slug}.html")):
+            _links.append(f'<a href="/scorers/{slug}.html">هدافو {esc(label)} ←</a>')
+        from site_lib import h2h as _H2H
+        _links += [f'<a href="/h2h/{p["slug"]}.html">{esc(_H2H.link_label(p))} ←</a>'
+                   for p in _H2H.pairs_for_league(comp)]
         if PREDICTIONS_ON and comp in COMP_SLUG and os.path.exists(os.path.join(DIST, "analysis", f"{slug}.html")):
             _links.append(f'<a href="/analysis/{slug}.html">توقعات {esc(label)} ←</a>')
         crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
@@ -234,7 +259,14 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None):
                                    (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")])
         write(f"fixtures/{slug}.html", render(
             "fixtures.html", page_head=page_head, label=label, season=season,
-            n_rounds=len(rounds), n_matches=n_m, rounds_panel=Markup(rounds_panel),
+            # what the page HOLDS, with number agreement - it used to say «كل
+            # جولات… 11 جولة» while the Turkish feed carries rounds 10-20 only
+            # (SEO review 2026-11-13: a wrong claim, and «2 جولة» / «3 دور»)
+            rounds_txt=(_cnt(len(rounds), "دور واحد", "دوران", "أدوار", "دورًا")
+                        if any(r.get("label") for r in rounds)
+                        else _cnt(len(rounds), "جولة واحدة", "جولتان", "جولات", "جولة")),
+            matches_txt=_cnt(n_m, "مباراة واحدة", "مباراتان", "مباريات", "مباراة"),
+            rounds_panel=Markup(rounds_panel),
             groups_panel=Markup(groups_panel),
             staged=any(r.get("label") for r in rounds),
             links=[Markup(x) for x in _links], crumbs_ld=Markup(crumbs_ld),

@@ -150,8 +150,11 @@ def group_tables_panel(comp, groups, focus_tps=()):
     return "".join(parts)
 
 
-def fixture_mini(m):
-    """Compact fixture row for the league side panel (FotMob-style)."""
+def fixture_mini(m, link=None):
+    """Compact fixture row for the league side panel (FotMob-style).
+    link (2026-11-13, SEO + site review): the row IS the link to the match
+    page - used on /fixtures/<slug> only, where 0 of 2,951 rows linked
+    anywhere and 284 indexable match pages had no inbound link at all."""
     st = (m.get("status") or "").upper()
     def cr(u):
         return f'<img src="{esc(local_crest(u))}" alt="" loading="lazy">' if u else '<span class="fx-ph">⚽</span>'
@@ -162,13 +165,15 @@ def fixture_mini(m):
         mid = score_pill(m.get("home_score"), m.get("away_score"), "fx-sc sc-in")
     else:
         mid = f'<span class="fx-time">{esc(m.get("koff_time") or "")}</span>'
-    return (f'<div class="fx">'
+    _open, _close = ((f'<a class="fx" href="{esc(link)}">', '</a>') if link
+                     else ('<div class="fx">', '</div>'))
+    return (f'{_open}'
             f'<span class="fx-home"><bdi>{esc(ar_team(m.get("home")))}</bdi>{cr(m.get("home_badge"))}</span>'
             f'{mid}'
-            f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(ar_team(m.get("away")))}</bdi></span></div>')
+            f'<span class="fx-away">{cr(m.get("away_badge"))}<bdi>{esc(ar_team(m.get("away")))}</bdi></span>{_close}')
 
 
-def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=None):
+def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=None, pages=None):
     """FotMob-style rounds panel: a ‹ round › navigator + every round of the
     season, each round's matches grouped by day. JS shows one round at a time."""
     from collections import OrderedDict
@@ -197,7 +202,10 @@ def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=N
         for d in sorted(days.keys()):
             parts.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
             for m in days[d]:
-                parts.append(fixture_mini(m))
+                # `pages` = the match ids that have a page (fixtures pages only)
+                parts.append(fixture_mini(
+                    m, link=(f'/m/{m["match_id"]}.html'
+                             if pages is not None and m.get("match_id") in pages else None)))
         parts.append('</div>')
     parts.append('</div>')
     if more_url:

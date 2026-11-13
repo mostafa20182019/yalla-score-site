@@ -238,7 +238,8 @@ def build():
                                              sc_by_comp, sc_ok, st_by_comp, urls,
                                              fx_by_comp, m_all, ge_idx)
     fixtures_pages(fx_by_comp, season, st_by_comp, urls,
-                   {s.get("competition"): s["groups"] for s in standings or [] if s.get("groups")})
+                   {s.get("competition"): s["groups"] for s in standings or [] if s.get("groups")},
+                   m_all=m_all)
     leagues_page(_comps_with_table, fx_by_comp, urls)   # «البطولات» tab (2026-10-26)
     if PREDICTIONS_ON:            # /analysis + /analysis/<league> + /predictions
         analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,

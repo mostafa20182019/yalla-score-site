@@ -55,6 +55,9 @@ def article_pages(articles, articles_all, matches, urls):
             _pool[m["match_id"]] = m
     _pool = sorted(_pool.values(), key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
     _follow_cache = {}
+    from site_lib import h2h as _H2H
+    _with_table = {s.get("competition") for s in (load("standings.json") or []) if s.get("table")}
+    _with_rounds = {f.get("competition") for f in (load("fixtures.json") or []) if f.get("rounds")}
     p = []
     for a in articles_all:
         if is_match_piece(a):
@@ -148,13 +151,23 @@ def article_pages(articles, articles_all, matches, urls):
                     _f.append((f'/m/{_ls["match_id"]}.html',
                                f'نتيجة مباراة {ar_team(_ls["home"])} و{ar_team(_ls["away"])} '
                                f'{_ls["home_score"]}-{_ls["away_score"]}'))
+                # only pages the build writes (SEO review 2026-11-13: 39 Egypt-NT
+                # articles linked /standings and /scorers of the AFCON
+                # qualifiers - neither exists, 78 dead links). A competition
+                # with a table has both pages; one without gets its fixtures.
                 _lg = COMP_SLUG.get(_lead_tp["league"])
-                if _lg:
+                if _lg and _lead_tp["league"] in _with_table:
                     _f.append((f'/standings/{_lg}.html', f'ترتيب {comp_label(_lead_tp["league"])}'))
                     _f.append((f'/scorers/{_lg}.html', f'هدافو {comp_label(_lead_tp["league"])}'))
+                elif _lg and _lead_tp["league"] in _with_rounds:
+                    _f.append((f'/fixtures/{_lg}.html', f'جدول مباريات {comp_label(_lead_tp["league"])}'))
                 _f.append((f'/team/{_lead_tp["slug"]}.html', f'أخبار {_lead_tp["name"]} اليوم'))
                 _follow_cache[_lead_tp["slug"]] = _f
             follow = [{"href": Markup(h), "text": t} for h, t in _follow_cache[_lead_tp["slug"]]]
+        # a story about both clubs of a head-to-head pair links their page first
+        _hp = _H2H.pair_in_text(a.get("title"))
+        if _hp:
+            follow.insert(0, {"href": Markup(f'/h2h/{_hp["slug"]}.html'), "text": _H2H.link_label(_hp)})
         crumbs_ld = Markup(breadcrumb_ld(_crumbs + [(a["title"], url)]))
         crumbs = [(u.replace(SITE_BASE, "") or "/", n) for n, u in _crumbs]
         _t = art_reltime(a)

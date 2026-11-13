@@ -49,6 +49,32 @@ def pair_for_club(slug):
     return None
 
 
+def pairs_for_league(comp):
+    """The pairs whose home competition is `comp` (links on its hub pages)."""
+    return [p for p in PAIRS if p["league"] == comp]
+
+
+def pair_of_match(home, away):
+    """The pair these two sides make, or None."""
+    for p in PAIRS:
+        if is_pair(p, home, away):
+            return p
+    return None
+
+
+def pair_in_text(text):
+    """The first pair whose two names both appear in `text` (an article
+    title), or None."""
+    for p in PAIRS:
+        if p["a"] in (text or "") and p["b"] in (text or ""):
+            return p
+    return None
+
+
+def link_label(pair):
+    return f"تاريخ مواجهات {pair['a']} و{pair['b']}"
+
+
 def _load(name):
     try:
         with open(os.path.join(DATA, name), encoding="utf-8") as f:

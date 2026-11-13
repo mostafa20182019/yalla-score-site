@@ -8,6 +8,7 @@ import os
 from site_lib.articles import ensure_match_image, match_article_block
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
+from site_lib import h2h as _H2H
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
 from site_lib.crests import comp_icon, local_crest
 from site_lib.dates import fmt_day
@@ -251,9 +252,12 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         else:
             title = (f"موعد مباراة {h_ar} و{a_ar} والقنوات الناقلة — "
                      f"{comp} | {SITE_NAME}")
-            desc = (f"موعد مباراة {h_ar} و{a_ar} في {comp}: {when}، "
-                    "والقنوات الناقلة للمباراة. النتيجة المباشرة ومسجلو "
-                    "الأهداف هنا فور انطلاق اللقاء.")
+            # the channel in the snippet (SEO review 2026-11-13: 0 of 220
+            # upcoming pages named it there, though the page shows it)
+            _ch = m.get("channel") or COMP_TV.get(m.get("competition"))
+            desc = (f"موعد مباراة {h_ar} و{a_ar} في {comp}: {when}."
+                    + (f" القناة الناقلة: {_ch}." if _ch else "")
+                    + " النتيجة المباشرة ومسجلو الأهداف هنا.")
         # the match's own article (layer 3, 2026-09-16) is picked here, before
         # the head: its picture (the matchup card, drawn now if the writer's
         # run left none) is the page's og:image. Without it the 95px crest
@@ -421,6 +425,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             motm=Markup(motm_html(_det[0], _det[1], h_ar, a_ar, m.get("home_badge"), m.get("away_badge"))
                         if st == "FINISHED" and _det else ""),
             clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
+            # the pair's head-to-head page, from every match between the two
+            h2h=(lambda _p: {"href": Markup(f'/h2h/{_p["slug"]}.html'), "label": _H2H.link_label(_p)}
+                 if _p else None)(_H2H.pair_of_match(m.get("home"), m.get("away"))),
             has_table=bool(stc and stc.get("table")), table_heading=Markup(table_heading),
             table=Markup(table), faq=Markup(_faq_html or ""), news=news,
             label=comp, has_sc=bool(_sc_h), scorers=Markup(_sc_h),

@@ -93,7 +93,7 @@ def h2h_pages(articles, m_all, urls):
         for g in games:
             nt = notes.get(g["date"]) or {}
             w = H.winner(g) or nt.get("winner")
-            rows.append({"date": H.ar_date(g["date"]), "comp": g["comp"],
+            rows.append({"date": H.ar_date(g["date"]), "iso": Markup(g["date"]), "comp": g["comp"],
                          "home": g["home"], "away": g["away"],
                          "home_w": w == g["home"], "away_w": w == g["away"],
                          "pill": Markup(score_pill(g["hg"], g["ag"], "h2h-sc")),

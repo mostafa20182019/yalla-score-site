@@ -7,7 +7,7 @@ imports these back under the same names."""
 import os
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_SLUG
-from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME
+from site_lib.config import DIST, HERE, REF_TODAY, SITE_BASE, SITE_NAME
 from site_lib.crests import local_crest
 from site_lib.dates import art_reltime
 from site_lib.names import _team_match, _team_news, comp_label
@@ -94,7 +94,14 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
         desc = " ".join(_parts)
         img = (crest if crest.startswith("http")
                else SITE_BASE + crest) if crest else None
-        page_head = head(title, desc, SITE_BASE + t_url, image=img)
+        # the link preview: the club's identity card (1600x680, our own art)
+        # when media/ holds one - the 136px crest fell back to the site banner
+        # on every club page (designer review 2026-11-13). `img` stays the
+        # crest for the SportsTeam logo below.
+        _card = f"{slug}-identity-card.jpg"
+        og_img = (f"{SITE_BASE}/media/{_card}"
+                  if os.path.exists(os.path.join(HERE, "media", _card)) else img)
+        page_head = head(title, desc, SITE_BASE + t_url, image=og_img)
         crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                    ("المباريات", SITE_BASE + "/matches.html"),
                                    (name, SITE_BASE + t_url)])

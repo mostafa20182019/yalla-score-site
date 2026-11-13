@@ -86,7 +86,9 @@ TEAM_PAGES = [
     {"slug": "chelsea", "name": "تشيلسي", "league": "Premier League",
      "match_tokens": [("Chelsea FC", None)], "news_tokens": ["تشيلسي"]},
     {"slug": "trabzonspor", "name": "طرابزون سبور", "league": "Turkish Super Lig",
-     "match_tokens": [("طرابزون سبور", "Turkish Super Lig")],
+     # the Conference League too (SEO review 2026-11-13: its 26 Nov match was
+     # missing from the club page and the match page had no club chip)
+     "match_tokens": [("طرابزون سبور", ("Turkish Super Lig", "UEFA Conference League"))],
      "news_tokens": ["طرابزون", "محمد صلاح"],
      # a PERSON standing in for the club: his stories list on the club page,
      # but he never makes the club the story's entity when the title names
