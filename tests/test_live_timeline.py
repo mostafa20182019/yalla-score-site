@@ -44,17 +44,28 @@ js = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
 fn = js.split("function paintTimeline(e,g){")[1].split("\n  }\n")[0]
 ck("4 the timeline is painted from the match page's own row only",
    "e.closest('.mp-hero')" in fn and "paintTimeline(e,g);" in js.split("data-lv-state")[1])
-ck("5 a reply without a goal list changes nothing", "if(!g.goals||!g.goals.length)return;" in fn)
-ck("6 only goal rows are replaced; cards and substitutions stay",
-   "if(r.hasAttribute('data-g'))tl.removeChild(r);" in fn)
-ck("7 newest first, and in one minute the goal comes first",
+ck("5 with no goal list and no events reply nothing is touched",
+   "if(!hasG&&!(ev&&(ev.cards.length+ev.subs.length)))return;" in fn)
+ck("6 goal rows go only when the reply names the goals; card and change rows only when the events reply is in use",
+   "if((isG&&hasG)||(!isG&&ev))tl.removeChild(r);" in fn)
+ck("7 newest first, and in one minute the goal, then the card, then the change",
    "all.sort(function(a,b){return b.k-a.k||a.o-b.o||a.i-b.i;});" in fn)
 ck("8 a page built before the first event gets the list from the feed",
    "hero.insertAdjacentHTML('afterend'" in fn and "أحداث المباراة" in fn)
-ck("9 player names are escaped", "escH(x.p)" in fn)
-ck("10 the note about cards and substitutions shows only while the match is live",
-   "if(note&&!g.live)" in fn and "if(g.live&&!note)" in fn)
-ck("11 the same goal list is not repainted every 20 seconds", "tl.getAttribute('data-gs')===sig" in fn)
+ck("9 every name is escaped", "escH(x.p)" in fn and "escH(x.i)" in fn and "escH(x.o)" in fn)
+ck("10 the «every few minutes» note shows only while live AND the events reply is not in use",
+   "if(note&&(!g.live||ev))" in fn and "if(g.live&&!ev&&!note)" in fn)
+ck("11 the same picture is not repainted every 20 seconds", "tl.getAttribute('data-gs')===sig" in fn)
+# cards and substitutions from /live/ev/<gameId>.json (same day, user: «أيوه اعملها»)
+ld = js.split("function loadEvents(g){")[1].split("\n  }\n")[0]
+ck("11a the events of a match are asked only while it is live, by its feed id, at most every 25 s",
+   "if(g.live)loadEvents(g);" in fn and "Date.now()-evAt<25000" in ld
+   and "'/live/ev/'+g.id+'.json?b='" in ld)
+ck("11b a failed or foreign reply is ignored", "d.ok===false||String(d.id)!==String(g.id)" in ld)
+ck("11c live data moves forward only: fewer cards + changes than the page was built with is not painted",
+   "(EV.cards.length+EV.subs.length)>=baked" in fn and "data-bk" in fn)
+ck("11d a row matched reversed flips the event sides too", "g.sw?(s==='h'?'a':'h'):s" in fn
+   and "id:g.id,sw:true" in js)
 ck("12 «45+2» sorts after «45» and before «46»",
    "(parseInt(p[0],10)||0)+(parseInt(p[1],10)||0)/100" in js)
 

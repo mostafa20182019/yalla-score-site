@@ -143,6 +143,61 @@ async function gameDetail(gid) {
   } catch (e) { return null; }
 }
 
+// /live/ev/<gameId>.json - the cards and substitutions of ONE game, for its
+// own match page (2026-11-13, user: «الاحداث مبتجيش بسرعة»). The page's events
+// list is baked at build time - a build old and more during a match - while
+// its score row is painted from /live.json. The goals of the list already
+// follow that reply (LIVE_JS paintTimeline); this gives the other two event
+// kinds the same age.
+// NOT in /live.json and NOT in the store: every page polls that reply, and a
+// card is no reason to write a D1 row. This is the same game/ detail URL the
+// live refresh already fetches every 12 s for a live game (shared upstream
+// cache), asked only by a visitor who has that match page open.
+// A JS port of fetch_data._detail_rows(): eventType id 2 = yellow, 3 = red
+// (or «بطاقة» / card in the name; «ثانية» = second yellow = red), substitution
+// = «تبديل» / "Substitution" with the player going off first in extraPlayers.
+// Only games of the competitions we cover; null on any failure.
+export async function gameEvents(gid) {
+  try {
+    const r = await fetch(
+      `https://webws.365scores.com/web/game/?appTypeId=5&langId=27&gameId=${gid}`,
+      { headers: S365_HEADERS, cf: { cacheTtl: 12, cacheEverything: true } });
+    if (!r.ok) return null;
+    const game = (await r.json()).game || {};
+    if (!game.id || !LIVE_COMPS.split(",").includes(String(game.competitionId))) return null;
+    const home = game.homeCompetitor || {};
+    const members = {};
+    for (const m of game.members || []) members[m.id] = (m.name || "").trim();
+    const side = (ev) => ev.competitorId == null
+      ? (ev.num === 1 ? "h" : "a") : (ev.competitorId === home.id ? "h" : "a");
+    const minute = (ev) => {
+      const gt = Math.trunc(Number(ev.gameTime));
+      if (!(gt > 0)) return "";
+      const add = Math.trunc(Number(ev.addedTime || 0));
+      return add > 0 ? `${gt}+${add}` : String(gt);
+    };
+    const cards = [], subs = [];
+    for (const ev of game.events || []) {
+      const et = ev.eventType || ev.type || {};
+      const nm = typeof et === "object" ? (et.name || "") : String(et);
+      const eid = typeof et === "object" ? et.id : null;
+      const low = nm.toLowerCase();
+      const player = members[ev.playerId];
+      if (eid === 2 || eid === 3 || nm.includes("بطاقة") || low.includes("card")) {
+        if (!player) continue;
+        const red = eid === 3 || nm.includes("حمراء") || low.includes("red") || nm.includes("ثانية");
+        cards.push({ s: side(ev), p: player, m: minute(ev), c: red ? "r" : "y" });
+      } else if (nm.includes("تبديل") || low.includes("substitution")) {
+        const xp = Array.isArray(ev.extraPlayers) ? ev.extraPlayers : [];
+        const other = xp.length ? members[xp[0]] : "";
+        if (!player || !other) continue;
+        subs.push({ s: side(ev), i: player, o: other, m: minute(ev) });
+      }
+    }
+    return { id: game.id, live: game.statusGroup === 3, cards, subs };
+  } catch (e) { return null; }
+}
+
 async function fetchGames(url) {
   const r = await fetch(url, {
     headers: S365_HEADERS,
@@ -1139,6 +1194,23 @@ export default {
     }
     if (url.pathname === "/data/bundle") {
       return dataBundle(env, ctx);
+    }
+    const evPath = url.pathname.match(/^\/live\/ev\/(\d{1,12})\.json$/);
+    if (evPath) {
+      // edge-cached 20 s per game on the bare path (the page adds a ?b=
+      // bucket against the browser cache, like /live.json); a failure is
+      // never cached, and the page keeps the list it already shows
+      const cache = caches.default;
+      const key = new Request(`https://elgoon.com/live/ev/${evPath[1]}.json`);
+      const hit = await cache.match(key);
+      if (hit) return hit;
+      const ev = await gameEvents(evPath[1]);
+      const res = new Response(JSON.stringify(ev ? { ok: true, ts: Date.now(), ...ev } : { ok: false }), {
+        headers: { "content-type": "application/json; charset=utf-8",
+                   "cache-control": ev ? "public, max-age=10, s-maxage=20" : "no-store",
+                   "x-robots-tag": "noindex" } });
+      if (ev) ctx.waitUntil(cache.put(key, res.clone()));
+      return res;
     }
     if (url.pathname === "/live.json") {
       const cache = caches.default;

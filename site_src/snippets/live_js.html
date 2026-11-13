@@ -30,7 +30,7 @@
     var gl=(g.goals||[]).map(function(x){
       return {s:x.s==='h'?'a':'h',p:x.p,m:x.m,t:x.t,a:x.a};});
     return {h:g.a,a:g.h,hs:g.as,as:g.hs,live:g.live,min:g.min,c:g.c,ph:g.pa,pa:g.ph,
-            goals:g.goals?gl:undefined};
+            id:g.id,sw:true,goals:g.goals?gl:undefined};
   }
   /* home score on the home side - see score_pill() in build_site.py.
      Named sPill: paint() declares `var pill` for the status badge, and var
@@ -87,35 +87,81 @@
     var p=String(m||'').replace(/[^0-9+]/g,'').split('+');
     return (parseInt(p[0],10)||0)+(parseInt(p[1],10)||0)/100;
   }
+  /* cards and substitutions of THIS match, from /live/ev/<gameId>.json (the
+     worker's port of the build's own parser) - asked only while the match is
+     live and its page is open, at most every 25 s. Until it answers, and
+     whenever it fails, the baked rows stay. Live data moves forward only: a
+     reply holding FEWER cards + changes than the page was built with is not
+     painted. */
+  var EV=null,evAt=0,evBusy=false;
+  function loadEvents(g){
+    if(!g.id||evBusy||Date.now()-evAt<25000)return;
+    evBusy=true;evAt=Date.now();
+    fetch('/live/ev/'+g.id+'.json?b='+Math.floor(Date.now()/2e4),{cache:'no-store'})
+      .then(function(r){return r.json();}).then(function(d){
+        evBusy=false;
+        if(!d||d.ok===false||String(d.id)!==String(g.id))return;
+        EV=d;render();
+      }).catch(function(){evBusy=false;});
+  }
   function paintTimeline(e,g){
     var hero=e.closest&&e.closest('.mp-hero'); if(!hero)return;
+    if(g.live)loadEvents(g);
     var tl=document.querySelector('.mtl');
     var note=document.querySelector('.tl-note');
-    if(note&&!g.live){note.parentNode.removeChild(note);note=null;}
-    if(!g.goals||!g.goals.length)return;
+    var hasG=!!(g.goals&&g.goals.length);
+    /* how many cards + changes the page was BUILT with (counted once) */
+    var baked=0;
+    if(tl){
+      if(!tl.hasAttribute('data-bk'))
+        tl.setAttribute('data-bk',tl.querySelectorAll('.tl-r:not([data-g])').length);
+      baked=+tl.getAttribute('data-bk');
+    }
+    var ev=(EV&&String(EV.id)===String(g.id)&&(EV.cards.length+EV.subs.length)>=baked)?EV:null;
+    if(note&&(!g.live||ev)){note.parentNode.removeChild(note);note=null;}
+    if(!hasG&&!(ev&&(ev.cards.length+ev.subs.length)))return;
     if(!tl){
-      hero.insertAdjacentHTML('afterend','<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl"></div></section>');
+      hero.insertAdjacentHTML('afterend','<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl" data-bk="0"></div></section>');
       tl=document.querySelector('.mtl');
     }
-    if(g.live&&!note)tl.insertAdjacentHTML('afterend','<p class="hintline tl-note">الأهداف تتحدّث لحظيًا. البطاقات والتبديلات تتحدّث كل بضع دقائق.</p>');
-    var sig=g.goals.map(function(x){return x.s+'|'+x.p+'|'+x.m+'|'+(x.t||'');}).join(';');
+    if(g.live&&!ev&&!note)tl.insertAdjacentHTML('afterend','<p class="hintline tl-note">الأهداف تتحدّث لحظيًا. البطاقات والتبديلات تتحدّث كل بضع دقائق.</p>');
+    var sig=(hasG?g.goals.map(function(x){return x.s+'|'+x.p+'|'+x.m+'|'+(x.t||'');}).join(';'):'-')
+      +'#'+(ev?ev.cards.length+'c'+ev.subs.length+'s'+(ev.ts||''):'-');
     if(tl.getAttribute('data-gs')===sig)return;
     tl.setAttribute('data-gs',sig);
     var all=[];
-    [].slice.call(tl.querySelectorAll('.tl-r')).forEach(function(r,i){
-      if(r.hasAttribute('data-g'))tl.removeChild(r);
-      else all.push({k:mKey(r.getAttribute('data-m')),o:1,i:i,el:r});
-    });
-    g.goals.forEach(function(x,i){
-      var mn=String(x.m||'').replace(/['′]/g,'');
-      var cell='⚽ <bdi>'+escH(x.p)+'</bdi>'+(x.t?' <span class="ev-tag">('+escH(x.t)+')</span>':'');
+    function row(k,o,i,mn,isGoal,sd,cell){
       var d=document.createElement('div');
-      d.className='tl-r';d.setAttribute('data-g','1');d.setAttribute('data-m',mn);
-      d.innerHTML='<div class="tl-h">'+(x.s==='h'?cell:'')+'</div>'
+      d.className='tl-r';d.setAttribute('data-m',mn);
+      if(isGoal)d.setAttribute('data-g','1');
+      d.innerHTML='<div class="tl-h">'+(sd==='h'?cell:'')+'</div>'
         +'<div class="tl-m">'+(mn?'<span dir="ltr">'+escH(mn)+'′</span>':'')+'</div>'
-        +'<div class="tl-a">'+(x.s==='h'?'':cell)+'</div>';
-      all.push({k:mKey(mn),o:0,i:i,el:d});
+        +'<div class="tl-a">'+(sd==='h'?'':cell)+'</div>';
+      all.push({k:k,o:o,i:i,el:d});
+    }
+    /* the page's home is the feed's away when the row matched reversed */
+    function sideOf(s){return g.sw?(s==='h'?'a':'h'):s;}
+    [].slice.call(tl.querySelectorAll('.tl-r')).forEach(function(r,i){
+      var isG=r.hasAttribute('data-g');
+      /* goal rows go when the reply names the goals; card and change rows go
+         when the events reply is in use; everything else stays as built */
+      if((isG&&hasG)||(!isG&&ev))tl.removeChild(r);
+      else all.push({k:mKey(r.getAttribute('data-m')),o:isG?0:(r.querySelector('.cardic')?1:2),i:i,el:r});
     });
+    if(hasG)g.goals.forEach(function(x,i){
+      var mn=String(x.m||'').replace(/['′]/g,'');
+      row(mKey(mn),0,i,mn,true,x.s,'⚽ <bdi>'+escH(x.p)+'</bdi>'+(x.t?' <span class="ev-tag">('+escH(x.t)+')</span>':''));
+    });
+    if(ev){
+      ev.cards.forEach(function(x,i){
+        row(mKey(x.m),1,i,String(x.m||''),false,sideOf(x.s),
+          '<span class="cardic '+(x.c==='r'?'r':'y')+'"></span> <bdi>'+escH(x.p)+'</bdi>');
+      });
+      ev.subs.forEach(function(x,i){
+        row(mKey(x.m),2,i,String(x.m||''),false,sideOf(x.s),
+          '🔁 <span class="sub-in">▲ <bdi>'+escH(x.i)+'</bdi></span> <span class="sub-out">▼ <bdi>'+escH(x.o)+'</bdi></span>');
+      });
+    }
     /* newest first; in one minute the goal, then the card, then the change */
     all.sort(function(a,b){return b.k-a.k||a.o-b.o||a.i-b.i;});
     all.forEach(function(x){tl.appendChild(x.el);});
