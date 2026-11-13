@@ -162,6 +162,10 @@ def ar_time(koff):
 
 
 TODAY = None            # the posting day (Cairo); None = today. Tests pin it.
+# Hand-written lines (2026-11-13, Sudan v Senegal: «السودان مازال لديه الفرصة
+# ... نتمنى تحقيق نتيجة ايجابية»): --hook "a|b", --outro "a|b" and --lead
+# replace the computed wording; the table and the match card stay computed.
+HOOK_LINES = OUTRO_LINES = LEAD = None
 
 
 def tonight(match):
@@ -185,6 +189,8 @@ def focus_of(match):
 
 def hook_lines(tab, match):
     """(«مصر على القمة…», «والليلة نكمّل قدام مالاوي») from the two rows."""
+    if HOOK_LINES:
+        return HOOK_LINES[0], HOOK_LINES[1]
     me = focus_of(match)
     opp = match["away"] if me == match["home"] else match["home"]
     pts = {r["team"]: r["pts"] for r in tab}
@@ -393,7 +399,7 @@ def build(tab, match):
         return im
 
     def outro(t):
-        sc = {"kind": "cta", "secs": OUTRO, "lines": ["توقعك كام؟", "اكتبه في الكومنتات"]}
+        sc = {"kind": "cta", "secs": OUTRO, "lines": list(OUTRO_LINES or ["توقعك كام؟", "اكتبه في الكومنتات"])}
         return M.scene(sc, t, ctx)
 
     return [(hook, HOOK, True), (table_scene, TABLE, True), (match_scene, MATCH, True), (outro, OUTRO, False)]
@@ -421,9 +427,9 @@ def caption(tab, match):
         f"#{h.replace(' ', '_')}_{a.replace(' ', '_')}", "#" + "_".join(comp_full.split()[:-1])]
     dname, dd, mname = day_words(match)
     when = "" if tonight(match) in ("والليلة", "والنهارده") else f"{dname} {dd} {mname}، "
-    lines = [f"{first}… {second} ⚽{flag}",
+    lines = [LEAD or f"{first}… {second} ⚽{flag}",
              f"{h} × {a} — {comp_full}، {when}الساعة {hh} {part}",
-             "توقعك كام؟ اكتبه في الكومنتات 👇",
+             ("تابع المباراة لحظة بلحظة على الجون 👇" if OUTRO_LINES else "توقعك كام؟ اكتبه في الكومنتات 👇"),
              "https://elgoon.com",
              " ".join(tags)]
     return "\n".join(lines) + "\n"
@@ -437,7 +443,20 @@ def main():
     ap.add_argument("--sheet", help="also write a contact sheet PNG")
     ap.add_argument("--caption", help="write the post text here (default <out>-caption.txt)")
     ap.add_argument("--png", help="write stills (one per scene) into this folder, no MP4")
+    ap.add_argument("--hook", help='the two hook lines, "first|second" (default: computed)')
+    ap.add_argument("--outro", help='the two closing lines, "first|second" (default: «توقعك كام؟»)')
+    ap.add_argument("--lead", help="the caption's first line (default: computed)")
+    ap.add_argument("--data", help="read the match files from this folder instead of data/")
     args = ap.parse_args()
+    global HOOK_LINES, OUTRO_LINES, LEAD
+    two = lambda v, flag: (lambda p: p if len(p) == 2 and all(p) else ap.error(f'{flag} needs "first|second"'))(
+        [x.strip() for x in v.split("|")])
+    HOOK_LINES = two(args.hook, "--hook") if args.hook else None
+    OUTRO_LINES = two(args.outro, "--outro") if args.outro else None
+    LEAD = args.lead.strip() if args.lead else None
+    if args.data:
+        import site_lib.config as _cfg
+        _cfg.DATA = os.path.abspath(args.data)
     matches = load_matches()
     match = find(matches, args.match)
     tab = table(matches, match)
