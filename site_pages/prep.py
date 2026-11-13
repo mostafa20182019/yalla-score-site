@@ -320,11 +320,27 @@ def prepare_league_data(_bycomp, assists, fixtures, scorers, standings):
                        f'<div class="tile-ms">{_scorer_face(lead)}'
                        f'<span class="tm"><bdi>{esc(lead.get("name"))}</bdi></span></div>'
                        f'<div class="tile-when">{esc(lead.get("team"))}</div></div>')
-        num = ['<div class="stat-tiles">'
-               f'<div class="tile"><b>{played}</b><span>مباراة لُعبت</span></div>'
-               f'<div class="tile"><b>{goals}</b><span>هدفًا</span></div>'
-               f'<div class="tile"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
-               f'<div class="tile tile-res" title="{esc(big_t)}">'
+        # the live numbers (2026-11-14, user: «خلى الاحصائيات فى صفحة الدورى
+        # لحظية»): the pane carries its competition's live id and the counts
+        # the tiles are made of; snippets/live_league_js.html adds the live
+        # matches as if they ended now. `fin` holds FINISHED matches only, so
+        # a match in progress is never in these numbers twice.
+        import json as _json
+        from site_lib.competitions import LIVE_COMP_ID
+        _base = {"n": played, "g": goals,
+                 "over": sum(1 for _, m in fin if m["home_score"] + m["away_score"] >= 3),
+                 "draws": sum(1 for _, m in fin if m["home_score"] == m["away_score"]),
+                 "homes": sum(1 for _, m in fin if m["home_score"] > m["away_score"]),
+                 "clean": sum(1 for _, m in fin if min(m["home_score"], m["away_score"]) == 0),
+                 "big": [big["home_score"] + big["away_score"], max(big["home_score"], big["away_score"])]}
+        _live_attr = (f' data-cid="{LIVE_COMP_ID[comp]}" data-b="{esc(_json.dumps(_base, separators=(",", ":")))}"'
+                      if comp in LIVE_COMP_ID else "")
+        num = [f'<div class="lg-num"{_live_attr}>'
+               '<div class="stat-tiles">'
+               f'<div class="tile" data-s="n"><b>{played}</b><span>مباراة لُعبت</span></div>'
+               f'<div class="tile" data-s="g"><b>{goals}</b><span>هدفًا</span></div>'
+               f'<div class="tile" data-s="avg"><b>{goals / played:.2f}</b><span>متوسط الأهداف/مباراة</span></div>'
+               f'<div class="tile tile-res" data-s="big" title="{esc(big_t)}">'
                f'{score_pill(big["home_score"], big["away_score"], "sc-in")}'
                f'<span>أكبر نتيجة</span>{big_ms}{big_when}</div>'
                f'{sc_tile}'
@@ -333,15 +349,16 @@ def prepare_league_data(_bycomp, assists, fixtures, scorers, standings):
         if pcts:
             num.append('<h3 class="stats-h3">📐 نِسَب البطولة</h3>')
             num.append(pcts)
+        num.append('</div>')
         panes["numbers"] = "".join(num)
         if sc or asst:
             chart = ['<div class="chart-cols">']
             if sc:
                 chart.append('<div><h3 class="stats-h3">⚽ ترتيب الهدافين</h3>'
-                             + scorers_list(sc, "أهداف") + '</div>')
+                             + scorers_list(sc, "أهداف", comp) + '</div>')
             if asst:
                 chart.append('<div><h3 class="stats-h3">🎯 صانعو الأهداف</h3>'
-                             + scorers_list(asst, "صناعة") + '</div>')
+                             + scorers_list(asst, "صناعة", comp) + '</div>')
             chart.append('</div>')
             panes["scorers"] = "".join(chart)
         trend = []

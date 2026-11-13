@@ -5,7 +5,7 @@
      scorers chart that can go live (2026-11-14: the scorers page has neither
      a [data-lv] row nor the home card, and stayed still) */
   if((!els.length&&!document.getElementById('favLive')
-      &&!document.querySelector('.ltable[data-cid],.sc-list[data-cid]'))||!window.fetch)return;
+      &&!document.querySelector('.ltable[data-cid],.sc-list[data-cid],.lg-num[data-cid]'))||!window.fetch)return;
   function norm(s){return(s||'').replace(/[أإآ]/g,'ا')
     .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
   /* rows register under BOTH name orders: the sources can disagree on who

@@ -1,0 +1,80 @@
+<script>
+(function(){
+  /* the league view's «الأرقام» tab follows live matches (2026-11-14, user:
+     «خلى الاحصائيات فى صفحة الدورى لحظية»). The tab (.lg-num) carries its
+     competition's live id and the counts its tiles are made of (data-b, from
+     FINISHED matches only - a match in progress is never in them). On every
+     live reply ('lv:update') the competition's live matches are added as if
+     they ended now: matches played, goals, the average, the four
+     percentages, and the biggest result when a live score beats it. A match
+     this page saw live keeps its last score after the whistle until the page
+     is reloaded (the page's numbers are older than the whistle). «مباشر»
+     marks the tab while anything is added; the built numbers come back when
+     nothing is. */
+  var SEEN={};   /* game id -> {c,hs,as,h,a,live} */
+  function q(el,s){return el.querySelector('[data-s="'+s+'"]');}
+  function setB(el,s,v){var t=q(el,s); if(t){var b=t.querySelector('b'); if(b) b.textContent=v;}}
+  function setPct(el,s,cnt,n){
+    var t=q(el,s); if(!t||!n) return;
+    var pc=Math.round(cnt*100/n);
+    var b=t.querySelector('b'); if(b) b.textContent=pc+'%';
+    var i=t.querySelector('.pct-bar i'); if(i) i.style.width=pc+'%';
+    var sm=t.querySelector('.pct-s'); if(sm) sm.textContent=cnt+' من '+n;
+    t.title=cnt+' من '+n+' مباراة';
+  }
+  function apply(el){
+    var cid=el.getAttribute('data-cid'); if(!cid) return;
+    var B; try{ B=JSON.parse(el.getAttribute('data-b')||'null'); }catch(e){ B=null; }
+    if(!B||!B.n) return;
+    if(!el.__html){ el.__html={}; ['n','g','avg','big','over','draws','homes','clean'].forEach(function(s){ var t=q(el,s); if(t) el.__html[s]=t.innerHTML; }); }
+    var gs=Object.keys(SEEN).map(function(k){return SEEN[k];}).filter(function(g){return g.c===cid;});
+    var sig=gs.map(function(g){return g.id+':'+g.hs+'-'+g.as;}).join('|');
+    if(sig===(el.__sig||'')) return;
+    el.__sig=sig;
+    if(!gs.length){
+      Object.keys(el.__html).forEach(function(s){ var t=q(el,s); if(t) t.innerHTML=el.__html[s]; });
+      var bd=el.querySelector('.lg-lvb'); if(bd) bd.parentNode.removeChild(bd);
+      return;
+    }
+    var n=B.n,g=B.g,over=B.over,draws=B.draws,homes=B.homes,clean=B.clean,big=null;
+    gs.forEach(function(x){
+      var h=+x.hs,a=+x.as; n++; g+=h+a;
+      if(h+a>=3) over++; if(h===a) draws++; if(h>a) homes++; if(Math.min(h,a)===0) clean++;
+      var key=[h+a,Math.max(h,a)];
+      if(key[0]>B.big[0]||(key[0]===B.big[0]&&key[1]>B.big[1])){ if(!big||key[0]>big.k[0]||(key[0]===big.k[0]&&key[1]>big.k[1])) big={k:key,x:x}; }
+    });
+    /* restore first, so a value a reply no longer changes is the built one */
+    Object.keys(el.__html).forEach(function(s){ var t=q(el,s); if(t) t.innerHTML=el.__html[s]; });
+    setB(el,'n',String(n)); setB(el,'g',String(g)); setB(el,'avg',(g/n).toFixed(2));
+    setPct(el,'over',over,n); setPct(el,'draws',draws,n); setPct(el,'homes',homes,n); setPct(el,'clean',clean,n);
+    if(big){
+      var t=q(el,'big');
+      if(t){
+        var esc=function(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');};
+        /* the crest from the standings table in the same view (the live reply
+           carries none), as the built tile shows it */
+        var scope=el.closest('.lview')||document;
+        var crest=function(n){
+          var bd=[].slice.call(scope.querySelectorAll('.ltable .lt-team bdi')).filter(function(b){return b.textContent.trim()===n;})[0];
+          var im=bd&&bd.parentNode.querySelector('img');
+          return im?'<img src="'+esc(im.getAttribute('src'))+'" alt="" loading="lazy">':'';
+        };
+        t.innerHTML='<b class="sc-in"><span>'+esc(big.x.hs)+'</span><i>-</i><span>'+esc(big.x.as)+'</span></b>'
+          +'<span>أكبر نتيجة</span><div class="tile-ms"><span class="tm">'+crest(big.x.h)+'<bdi>'+esc(big.x.h)+'</bdi></span><i>×</i>'
+          +'<span class="tm">'+crest(big.x.a)+'<bdi>'+esc(big.x.a)+'</bdi></span></div>'
+          +'<div class="tile-when">'+(big.x.live?'مباشر الآن':'انتهت للتو')+'</div>';
+      }
+    }
+    if(!el.querySelector('.lg-lvb'))
+      el.insertAdjacentHTML('afterbegin','<p class="lg-lvb"><span>مباشر</span> الأرقام تشمل المباريات الجارية كأنها انتهت الآن.</p>');
+  }
+  document.addEventListener('lv:update',function(){
+    (window.__lvGames||[]).forEach(function(g){
+      if(g.hs==null||g.as==null) return;
+      if(g.live) SEEN[g.id]={id:g.id,c:String(g.c),hs:g.hs,as:g.as,h:g.h,a:g.a,live:true};
+      else if(SEEN[g.id]){ SEEN[g.id].hs=g.hs; SEEN[g.id].as=g.as; SEEN[g.id].live=false; }
+    });
+    [].forEach.call(document.querySelectorAll('.lg-num[data-cid]'),apply);
+  });
+})();
+</script>

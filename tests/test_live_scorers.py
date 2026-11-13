@@ -54,7 +54,7 @@ lj = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
 ck("13 the live script also runs on a page whose only live parts are a table or a chart",
    ".ltable[data-cid],.sc-list[data-cid]" in lj and "window.__lvAt=last.at;" in lj)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()
-ck("14 it ships once, in app.js", "LIVE_SCORERS_JS)" in sh)
+ck("14 it ships once, in app.js", "LIVE_SCORERS_JS," in sh or "LIVE_SCORERS_JS)" in sh)
 lp = io.open("site_pages/leagues.py", encoding="utf-8").read()
 mp = io.open("site_pages/matches.py", encoding="utf-8").read()
 ck("15 the standings, scorers and match pages pass the competition",

@@ -424,9 +424,9 @@ def league_pcts(fin):
     cells = [("3 أهداف أو أكثر", over), ("تعادلات", draws),
              ("فوز أصحاب الأرض", homes), ("شباك نظيفة", clean)]
     out = ['<div class="pct-grid">']
-    for label, cnt in cells:
+    for (label, cnt), key in zip(cells, ("over", "draws", "homes", "clean")):
         pc = round(cnt * 100 / n)
-        out.append(f'<div class="pct" title="{cnt} من {n} مباراة">'
+        out.append(f'<div class="pct" data-s="{key}" title="{cnt} من {n} مباراة">'
                    f'<span class="pct-l">{label}</span><b>{pc}%</b>'
                    f'<span class="pct-bar"><i style="width:{pc}%"></i></span>'
                    f'<span class="pct-s">{cnt} من {n}</span></div>')
