@@ -1,0 +1,71 @@
+<script>
+(function(){
+  /* the team card (2026-11-13, user: «فى جداول الترتيب لما اضغط على نادى او
+     منتخب يجيب بيانات عنه»). The team's name in any standings table is a
+     button (.lt-tb). The card reads the row's own cells - position, played,
+     won, drawn, lost, goals for/against, difference, points (the phone layout
+     hides some of them) and its last-5 dots - and the row's data-tc, built
+     from our data: the last result, the next match, the club's top scorer in
+     this competition, its club page. Nothing is fetched; nothing is guessed.
+     Escape, the × and the backdrop close it; focus goes back to the name. */
+  if(!document.querySelector('.lt-tb')) return;
+  var pop=document.createElement('div');
+  pop.className='lt-pop tc-pop'; pop.hidden=true;
+  pop.innerHTML='<div class="lt-pop-box" role="dialog" aria-modal="true" aria-label="بطاقة الفريق">'
+    +'<div class="lt-pop-h"><b>بطاقة الفريق</b><button type="button" class="lt-pop-x" aria-label="إغلاق">×</button></div>'
+    +'<div class="tc-b"></div></div>';
+  document.body.appendChild(pop);
+  var body=pop.querySelector('.tc-b'), last=null;
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function txt(td){ return td?(td.textContent||'').trim():''; }
+  var RES={w:['فوز','tc-w'],d:['تعادل','tc-d'],l:['خسارة','tc-l']};
+  function open(btn){
+    var tr=btn.closest('tr'), table=btn.closest('.ltable'); if(!tr) return;
+    var td=tr.children, n=td.length;
+    /* the numbers from the END of the row: …, لعب, ف, ت, خ, له, عليه, +/-, نقاط */
+    var v={pts:txt(td[n-1]),gd:txt(td[n-2]),ga:txt(td[n-3]),gf:txt(td[n-4]),
+           l:txt(td[n-5]),d:txt(td[n-6]),w:txt(td[n-7]),p:txt(td[n-8]),pos:txt(td[0])};
+    var c={}; try{ c=JSON.parse(tr.getAttribute('data-tc')||'{}'); }catch(e){ c={}; }
+    var name=txt(btn.querySelector('bdi')), img=btn.querySelector('img');
+    var league=(table&&table.getAttribute('data-cl'))||'';
+    var h='<div class="tc-top">'+(img?'<img src="'+esc(img.getAttribute('src'))+'" alt="" width="52" height="52">':'')
+      +'<div class="tc-who"><b class="tc-n">'+esc(name)+'</b>'
+      +(v.pos?'<span class="tc-m">المركز '+esc(v.pos)+(league?' في '+esc(league):'')+'</span>':'')+'</div>'
+      +(v.pts!==''?'<span class="tc-pts"><b>'+esc(v.pts)+'</b>نقطة</span>':'')+'</div>';
+    h+='<div class="tc-grid">'
+      +[['لعب',v.p],['فوز',v.w],['تعادل',v.d],['خسارة',v.l],['له',v.gf],['عليه',v.ga],['الفارق',v.gd],
+        ['النقاط/مباراة',(+v.p>0?((+v.pts)/(+v.p)).toFixed(2):'—')]]
+        .map(function(x){return '<div><b dir="ltr">'+esc(x[1])+'</b><span>'+x[0]+'</span></div>';}).join('')
+      +'</div>';
+    var fm=tr.querySelector('.lt-form');
+    if(fm&&fm.querySelector('.fm'))h+='<div class="tc-row"><span class="tc-k">آخر 5 مباريات</span><span class="tc-form">'+fm.innerHTML+'</span></div>';
+    function line(k,body,url){
+      return '<div class="tc-row"><span class="tc-k">'+k+'</span>'
+        +(url?'<a class="tc-v" href="'+esc(url)+'">'+body+' ←</a>':'<span class="tc-v">'+body+'</span>')+'</div>';
+    }
+    if(c.ls){
+      var r=RES[c.ls.r]||['',''];
+      /* the score with spaces between two names: each number stays on its side */
+      h+=line('آخر نتيجة',(r[0]?'<i class="tc-r '+r[1]+'">'+r[0]+'</i> ':'')
+        +'<bdi>'+esc(c.ls.h)+'</bdi> '+esc(c.ls.s)+' <bdi>'+esc(c.ls.a)+'</bdi>'
+        +(c.ls.d?' <small>'+esc(c.ls.d)+'</small>':''),c.ls.u);
+    }
+    if(c.nx){
+      h+=line('المباراة القادمة','<bdi>'+esc(c.nx.h)+'</bdi> × <bdi>'+esc(c.nx.a)+'</bdi>'
+        +(c.nx.d?' <small>'+esc(c.nx.d)+(c.nx.t?' · '+esc(c.nx.t):'')+'</small>':''),c.nx.u);
+    }
+    if(c.sc)h+=line('الهداف',esc(c.sc.n)+' <small>('+esc(c.sc.g)+')</small>');
+    if(c.tp)h+='<a class="tc-more" href="'+esc(c.tp)+'">صفحة '+esc(name)+': الأخبار والمباريات ←</a>';
+    body.innerHTML=h;
+    last=btn; pop.hidden=false; document.documentElement.classList.add('lt-lock');
+    pop.querySelector('.lt-pop-x').focus();
+  }
+  function close(){ pop.hidden=true; document.documentElement.classList.remove('lt-lock'); if(last) last.focus(); }
+  pop.addEventListener('click',function(e){ if(e.target===pop||e.target.closest('.lt-pop-x')) close(); });
+  document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!pop.hidden) close(); });
+  document.addEventListener('click',function(e){
+    var b=e.target.closest&&e.target.closest('.lt-tb'); if(!b) return;
+    e.preventDefault(); open(b);
+  });
+})();
+</script>

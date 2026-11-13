@@ -32,6 +32,72 @@ def team_results(games):
     return out
 
 
+# The team card (2026-11-13, user: «فى جداول الترتيب لما اضغط على نادى او
+# منتخب يجيب بيانات عنه»). build() registers the season's fixtures, the
+# scorer charts and the ids that have a match page ONCE (set_team_info), so
+# every standings table - standings, match, club, fixtures pages - can tell
+# each row's last result, next match, top scorer and club page without new
+# arguments at its five call sites. Not registered (a test, a one-off call) =
+# no card context; the card still shows the row's own numbers.
+_TEAM_INFO = {"fx": {}, "sc": {}, "pages": set()}
+
+
+def set_team_info(fx_by_comp, sc_by_comp, sc_ok, page_ids):
+    _TEAM_INFO["fx"] = fx_by_comp or {}
+    _TEAM_INFO["sc"] = {c: v for c, v in (sc_by_comp or {}).items() if (sc_ok or {}).get(c)}
+    _TEAM_INFO["pages"] = {str(x) for x in (page_ids or ())}
+
+
+def _page_url(m):
+    mid = m.get("match_id")
+    return f"/m/{mid}" if mid is not None and str(mid) in _TEAM_INFO["pages"] else ""
+
+
+def team_card_data(comp, team, mine=None, today=None):
+    """{ls, nx, sc, tp} for one table row (see _TEAM_INFO). ls/nx scores and
+    names in Arabic as the page writes them; every field optional."""
+    import datetime as _dt
+    from site_lib.clubs import TEAM_PAGES
+    from site_lib.names import _team_match
+    today = today or _dt.date.today().isoformat()
+    key = team_key(team)
+    out = {}
+    pool = [m for r in ((_TEAM_INFO["fx"].get(comp) or {}).get("rounds") or [])
+            for m in (r.get("matches") or [])]
+    mine_fx = [m for m in pool if key in (team_key(m.get("home")), team_key(m.get("away")))]
+    # last result: the finished matches the table's buttons use, else the fixtures
+    done = ([m for m, _ in (mine or [])] or
+            sorted((m for m in mine_fx if (m.get("status") or "").upper() == "FINISHED"
+                    and m.get("home_score") is not None and m.get("away_score") is not None),
+                   key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or "")))
+    if done:
+        m = done[-1]
+        hs, as_ = m["home_score"], m["away_score"]
+        home = team_key(m.get("home")) == key
+        mine_g, their = (hs, as_) if home else (as_, hs)
+        out["ls"] = {"h": ar_team(m.get("home")), "a": ar_team(m.get("away")), "s": f"{hs} - {as_}",
+                     "r": "w" if mine_g > their else "d" if mine_g == their else "l",
+                     "d": fmt_day(m.get("kickoff")) if m.get("kickoff") else "", "u": _page_url(m)}
+    up = sorted((m for m in mine_fx if (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
+                 and (m.get("kickoff") or "") >= today),
+                key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+    if up:
+        m = up[0]
+        out["nx"] = {"h": ar_team(m.get("home")), "a": ar_team(m.get("away")),
+                     "d": fmt_day(m.get("kickoff")), "t": m.get("koff_time") or "", "u": _page_url(m)}
+    for s in _TEAM_INFO["sc"].get(comp) or []:
+        if ar_team(s.get("team")) == ar_team(team) and int(s.get("goals") or 0) > 0:
+            g = int(s["goals"])
+            out["sc"] = {"n": s.get("name"), "g": (f"{g} أهداف" if 3 <= g <= 10 else
+                                                  "هدف واحد" if g == 1 else "هدفان" if g == 2 else f"{g} هدفًا")}
+            break
+    for tp in TEAM_PAGES:
+        if tp.get("slug") and _team_match(tp, {"home": team, "away": "", "competition": comp}):
+            out["tp"] = f"/team/{tp['slug']}"
+            break
+    return out
+
+
 def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
                     embedded=False, games=None, pages=None, store_src=None, title=None):
     """League standings table (FotMob-style). Hidden until its league is picked.
@@ -75,14 +141,20 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
                 return f'<td>{v}</td>'
             return f'<td><button type="button" class="lt-n" data-k="{k}">{v}</button></td>'
         tr_attr = ""
+        # the team card's context (team_card_data): one compact attribute
+        _tc = team_card_data(comp, r.get("team"), mine) if not zeroed else {}
+        if _tc:
+            import json as _json
+            tr_attr += f' data-tc="{esc(_json.dumps(_tc, ensure_ascii=False, separators=(",", ":")))}"'
         if live:
             for m, _ in mine:
                 used[str(m["match_id"])] = m
-            tr_attr = (f' data-tn="{esc(ar_team(r.get("team")))}" data-gm="'
+            tr_attr += (f' data-tn="{esc(ar_team(r.get("team")))}" data-gm="'
                        + ",".join(f'{m["match_id"]}:{x}' for m, x in mine) + '"')
         body.append(
             f'<tr{tr_attr}><td class="lt-pos">{cell(r.get("pos"))}</td>'
-            f'<td class="lt-team">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></td>'
+            # the name opens the team card (snippets/team_card_js.html)
+            f'<td class="lt-team"><button type="button" class="lt-tb">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></button></td>'
             f'{fmtd}'
             f'{num("played", "p")}{num("won", "w")}'
             f'{num("draw", "d")}{num("lost", "l")}'
@@ -110,7 +182,7 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
                  f'{(" " + esc(season_label)) if season_label else ""}</span>')
     else:
         badge = ""
-    return (f'<div class="ltable" data-comp="{esc(comp)}"{"" if embedded else " hidden"}>'
+    return (f'<div class="ltable" data-comp="{esc(comp)}" data-cl="{esc(comp_label(comp))}"{"" if embedded else " hidden"}>'
             f'<div class="lt-head">{comp_icon(comp)} {esc(title) if title else "جدول ترتيب " + esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'

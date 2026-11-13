@@ -372,6 +372,8 @@ def write(rel, content):
 
 # client-side relative time ("منذ X") - always accurate to the visitor's clock.
 REL_JS = _src("snippets/rel_js.html")
+# the standings tables' team card (2026-11-13) - any page with a table
+TEAM_CARD_JS = _src("snippets/team_card_js.html")
 
 
 # /assets/app.js (site-check 2026-11-12): REL_JS + LIVE_JS + SWIPE_JS were
@@ -397,7 +399,7 @@ def app_js():
     """The file's content: each snippet in its own try, so one that throws
     cannot stop the next (they were separate <script> blocks before)."""
     return "\n".join("try{" + _js_body(s) + "\n}catch(e){}"
-                     for s in (REL_JS, LIVE_JS, SWIPE_JS)) + "\n"
+                     for s in (REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS)) + "\n"
 
 
 def app_js_tag():

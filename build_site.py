@@ -228,6 +228,13 @@ def build():
     st_by_comp, sc_by_comp, sc_ok = league["st_by_comp"], league["sc_by_comp"], league["sc_ok"]
     as_by_comp, as_ok, forms = league["as_by_comp"], league["as_ok"], league["forms"]
     fx_by_comp = league["fx_by_comp"]
+    # the standings tables' team card: last result, next match, top scorer,
+    # club page per row (site_lib.tables.set_team_info) - the ids with a match
+    # page are match_pages' own pool (the archive + today's file)
+    from site_lib.tables import set_team_info
+    set_team_info(fx_by_comp, sc_by_comp, sc_ok,
+                  [m.get("match_id") for m in (load("matches_archive.json") or []) + (matches or [])
+                   if m.get("match_id")])
 
     comp_order = matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
                               league["league_stats_parts"], matches, st_by_comp, standings)
