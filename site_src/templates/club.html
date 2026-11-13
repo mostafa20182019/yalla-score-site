@@ -57,6 +57,9 @@
 </section>
 {% endif %}
 {{ faq }}
+{% if h2h %}
+<p class="h2h-cta"><a href="{{ h2h.href }}">{{ h2h.label }} ←</a></p>
+{% endif %}
 <nav class="club-chips" aria-label="صفحات الأندية">
   <span>أندية أخرى:</span>
   {% for o in others %}

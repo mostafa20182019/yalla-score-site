@@ -110,6 +110,7 @@ from site_pages.insights import insights_page  # noqa: E402
 from site_pages.matches import matches_page, match_pages  # noqa: E402
 from site_pages.leagues import league_pages, fixtures_pages, leagues_page, stats_page  # noqa: E402
 from site_pages.clubs import club_pages  # noqa: E402
+from site_pages.h2h import h2h_pages  # noqa: E402
 from site_pages.predictions import (  # noqa: E402,F401
     prediction_history_page, analysis_pages, analysis_section)
 from site_pages.files import (  # noqa: E402
@@ -243,6 +244,7 @@ def build():
         analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
                          _upcoming, forms, matches, urls, _xg)
     club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
+    h2h_pages(articles, m_all, urls)   # «مواجهات الأهلي والزمالك» (2026-11-13)
     stats_page(comp_order, fixtures, forms, league["league_stats_sec"], matches, sc_by_comp,
                sc_ok, st_by_comp, urls)
 

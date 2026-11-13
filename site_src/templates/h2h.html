@@ -1,0 +1,102 @@
+{# /h2h/<slug> - the meetings between two clubs («مواجهات الأهلي والزمالك»), 2026-11-13.
+   Every number and sentence is computed in site_pages/h2h.py from the meetings list.
+   Lines are joined with NO separator by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/matches.html">المباريات</a> › مواجهات {{ a }} و{{ b }}</nav>
+<header class="club-hero h2h-hero">
+  <div>
+    <h1 class="page-h">تاريخ مواجهات {{ a }} و{{ b }}: نتائج آخر {{ n_txt }}</h1>
+    <p class="hintline">{{ lead }}</p>
+  </div>
+</header>
+<section class="minfo">
+  <h2>حصيلة {{ a }} و{{ b }} منذ {{ since }}</h2>
+  <div class="h2h-tally">
+    <div class="h2h-cell">{{ crest_a }}<b>{{ wins_a }}</b><span>فوز {{ a }}</span></div>
+    <div class="h2h-cell h2h-mid"><b>{{ draws }}</b><span>تعادل</span></div>
+    <div class="h2h-cell">{{ crest_b }}<b>{{ wins_b }}</b><span>فوز {{ b }}</span></div>
+  </div>
+  <p class="h2h-goals">{% for s in goals_txt %}<span>{{ s }}</span>{% endfor %}</p>
+</section>
+<section class="minfo">
+  <h2>مباراة {{ a }} و{{ b }} القادمة</h2>
+  {% if next_row %}
+  <div class="mlist">{{ next_row }}</div>
+  {% else %}
+  <p class="hintline h2h-none">{{ next_txt }}</p>
+  {% endif %}
+</section>
+<section class="minfo">
+  <h2>أبرز الأرقام</h2>
+  <ul class="h2h-facts">
+    {% for f in facts %}
+    <li>{{ f }}</li>
+    {% endfor %}
+  </ul>
+</section>
+<section class="minfo">
+  <h2>نتائج مباريات {{ a }} و{{ b }} من الأحدث إلى الأقدم</h2>
+  <ol class="h2h-list">
+    {% for g in rows %}
+    <li class="h2h-g">
+      <span class="h2h-d">{{ g.date }} · {{ g.comp }}</span>
+      <span class="h2h-r"><b class="h2h-n{% if g.home_w %} w{% endif %}">{{ g.home }}</b>{{ g.pill }}<b class="h2h-n{% if g.away_w %} w{% endif %}">{{ g.away }}</b></span>
+      {% if g.note %}
+      <span class="h2h-note">{{ g.note }}</span>
+      {% endif %}
+      {% if g.href %}
+      <a class="h2h-l" href="{{ g.href }}">صفحة المباراة ←</a>
+      {% endif %}
+    </li>
+    {% endfor %}
+  </ol>
+  <p class="hintline h2h-src">البيانات: 365Scores، النتائج الرسمية. تُضاف كل مباراة جديدة بعد نهايتها.</p>
+</section>
+<section class="minfo">
+  <h2>المواجهات حسب البطولة</h2>
+  <div class="h2h-tw">
+    <table class="h2h-t">
+      <thead><tr><th>البطولة</th><th>المباريات</th><th>فوز {{ a }}</th><th>تعادل</th><th>فوز {{ b }}</th></tr></thead>
+      <tbody>
+        {% for c in comps %}
+        <tr><td>{{ c.name }}</td><td>{{ c.n }}</td><td>{{ c.a }}</td><td>{{ c.d }}</td><td>{{ c.b }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% if news %}
+<section class="minfo">
+  <h2>أخبار {{ a }} و{{ b }}</h2>
+  <div class="alist alist-2col">
+    {% for x in news %}
+    <a class="al-row" href="{{ x.href }}">{{ x.th }}
+      <span class="al-b">
+        <b class="al-t">{{ x.title }}</b>
+        {% if x.when %}
+        <span class="al-m">{{ x.when }}</span>
+        {% endif %}
+      </span>
+    </a>
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+<section class="minfo faq">
+  <h2>أسئلة شائعة عن مواجهات {{ a }} و{{ b }}</h2>
+  {% for f in faq %}
+  <details><summary>{{ f.q }}</summary><p>{{ f.a }}</p></details>
+  {% endfor %}
+</section>
+{{ faq_ld }}
+<nav class="club-chips" aria-label="صفحات متصلة">
+  <span>للمتابعة:</span>
+  <a href="/team/{{ a_slug }}.html">{{ a }}</a>
+  <a href="/team/{{ b_slug }}.html">{{ b }}</a>
+  {% if league_slug %}
+  <a href="/standings/{{ league_slug }}.html">ترتيب {{ league_ar }}</a>
+  <a href="/fixtures/{{ league_slug }}.html">جدول {{ league_ar }}</a>
+  {% endif %}
+</nav>
+{{ page_foot }}

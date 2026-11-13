@@ -169,6 +169,11 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
                                   "mainEntity": [{"@type": "Question", "name": q,
                                                   "acceptedAnswer": {"@type": "Answer", "text": a}}
                                                  for q, a in faq]}))
+        # the pair's head-to-head page (/h2h/<slug>, 2026-11-13), from both clubs
+        from site_lib.h2h import pair_for_club
+        _pair = pair_for_club(slug)
+        h2h_link = ({"href": Markup(f"/h2h/{_pair['slug']}.html"),
+                     "label": f"تاريخ مواجهات {_pair['a']} و{_pair['b']}"} if _pair else None)
         others = [o for o in TEAM_PAGES if o["slug"] != slug]
         club_ld = jsonld({
             "@context": "https://schema.org", "@type": "SportsTeam",
@@ -187,6 +192,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
             table_heading=Markup(table_heading), table=Markup(table),
             others=[{"slug": Markup(o["slug"]), "name": o["name"]} for o in others],
             club_ld=Markup(club_ld), faq=Markup(faq_html), popup=Markup(popup),
+            h2h=h2h_link,
             page_foot=Markup(foot())))
         urls.append(t_url)
     print(f"  + club pages: {len(TEAM_PAGES)}")
