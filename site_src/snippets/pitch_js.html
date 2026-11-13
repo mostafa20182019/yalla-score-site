@@ -5,8 +5,14 @@
      #ppData, built by tables.match_details_html: name, number, position,
      club, rating, his events in this match and his stats. Escape, the ×
      and the backdrop close it; focus goes back to the player. */
-  var src=document.getElementById('ppData'); if(!src) return;
-  var P; try{ P=JSON.parse(src.textContent); }catch(e){ return; }
+  /* during the match LIVE_JS keeps window.__ppLive[name] = his rating, his
+     events and his numbers from the live feed (2026-11-13: «خلى ارقام
+     اللاعب لحظية»); a card opened then shows those, the built ones otherwise.
+     A page built before kick-off has no #ppData: its chips become tappable
+     (data-live) once the live numbers arrive. */
+  if(!document.querySelector('.pitch')) return;
+  var src=document.getElementById('ppData'), P=[];
+  if(src){ try{ P=JSON.parse(src.textContent)||[]; }catch(e){ P=[]; } }
   var BOOT='<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#0f172a" d="M2.2 3.2h3.6l1 3.1 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="#0f172a" d="M3 12.3h1.6v1.6H3zm4.2 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>';
   var EV={g:['⚽','هدف'],og:['⚽','هدف عكسي'],a:[BOOT,'صناعة هدف'],y:['<span class="pp-card y"></span>','بطاقة صفراء'],
           r:['<span class="pp-card r"></span>','بطاقة حمراء'],off:['<span class="pc-off">⇄</span>','خرج']};
@@ -19,7 +25,16 @@
   var body=pop.querySelector('.pc-b'), last=null;
   function el(tag,cls,txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
   function open(i,from){
-    var p=P[i]; if(!p) return;
+    var p=P[i];
+    if(!p&&from&&from.hasAttribute('data-n')){
+      var fi=from.querySelector('.pp-ava img');
+      p={n:from.getAttribute('data-n'),team:from.getAttribute('data-team')||'',
+         img:fi&&fi.style.display!=='none'?fi.getAttribute('src'):''};
+    }
+    if(!p) return;
+    var L=(window.__ppLive||{})[p.n];
+    if(L){ p=Object.assign({},p,{rt:L.rt||p.rt,rc:L.rc||p.rc,ev:L.ev,st:L.st&&L.st.length?L.st:p.st,
+                                 num:p.num||L.num,pos:p.pos||L.pos,team:p.team||L.team}); }
     body.innerHTML='';
     var top=el('div','pc-top');
     var ava=el('span','pc-ava');
@@ -54,19 +69,19 @@
      (.motm, 2026-11-06) carries the player's name */
   function idx(t){
     if(t.hasAttribute('data-i')) return +t.getAttribute('data-i');
-    var n=t.getAttribute('data-pn');
+    var n=t.getAttribute('data-pn')||t.getAttribute('data-n');
     for(var i=0;i<P.length;i++){ if(P[i].n===n) return i; }
-    return -1;
+    return t.hasAttribute('data-live')?-2:-1;
   }
-  var SEL='.pitch [data-i], .motm[role="button"]';
+  var SEL='.pitch [data-i], .pitch .pp[data-live], .motm[role="button"]';
   document.addEventListener('keydown',function(e){
     if(e.key==='Escape'&&!pop.hidden){ close(); return; }
     var t=e.target.closest&&e.target.closest(SEL);
-    if(t&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); var i=idx(t); if(i>=0) open(i,t); }
+    if(t&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); var i=idx(t); if(i!==-1) open(i,t); }
   });
   document.addEventListener('click',function(e){
     var t=e.target.closest&&e.target.closest(SEL); if(!t) return;
-    var i=idx(t); if(i>=0) open(i,t);
+    var i=idx(t); if(i!==-1) open(i,t);
   });
 })();
 </script>

@@ -125,7 +125,11 @@ ck("17 the card script ships once, and the JSON cannot close its script tag earl
    html2.count("getElementById('ppData')") == 1 and "</" not in blob.group(1))
 pre = json.loads(json.dumps(e2)); pre["pre"] = True
 ck("18 a pre-match XI (no match played) has no player cards", 'data-i="' not in match_details_html(pre, False, "أ", "ب"))
-ck("19 a pitch with no stats at all ships no card script", "ppData" not in html)
+# 2026-11-13: the script now ships with every pitch (the live numbers open a
+# card once the match is on, «خلى ارقام اللاعب لحظية»); with no stats there is
+# still no card DATA and no chip is tappable from the build
+ck("19 a pitch with no stats at all ships no card data (the script waits for live numbers)",
+   'id="ppData"' not in html and 'data-i="' not in html and "window.__ppLive" in html)
 
 print(f"\n{len(fails)} FAILED" if fails else "\nALL OK")
 sys.exit(1 if fails else 0)

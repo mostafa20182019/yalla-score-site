@@ -34,7 +34,9 @@ const DETAIL = {
 };
 // the starting XIs (game 900): 11 a side, the home one with ratings
 const xi = (base, cid) => Array.from({ length: 11 }, (_, i) => ({ id: base + i, status: 1, ranking: i === 0 ? 7.4 : 6.2,
-  position: { name: "وسط" } }));
+  position: { name: "وسط" },
+  // the player card's numbers: kept ids only, empty values dropped
+  stats: i === 0 ? [{ type: 30, value: "62'" }, { type: 19, value: "30/40 (75%)" }, { type: 999, value: "x" }, { type: 27, value: "" }] : [] }));
 DETAIL[900].game.members.push(...Array.from({ length: 11 }, (_, i) => ({ id: 100 + i, name: "لاعب نيجيريا " + i, jerseyNumber: i + 1 })),
                               ...Array.from({ length: 11 }, (_, i) => ({ id: 200 + i, name: "لاعب تنزانيا " + i })));
 DETAIL[900].game.homeCompetitor.lineups = { formation: { name: "4-2-2-2" }, members: [...xi(100), { id: 12, status: 2 }] };
@@ -87,7 +89,9 @@ assert.deepEqual(j.stats, { h: { xg: 1.84, poss: 61, shots: 13 }, a: { xg: 0.4, 
   "stats: the six known ids only, numbers parsed, sides by the home id");
 assert.equal(j.lineups.h.f, "4-2-2-2", "the formation's name");
 assert.equal(j.lineups.h.xi.length, 11);
-assert.deepEqual(j.lineups.h.xi[0], { n: "لاعب نيجيريا 0", num: 1, pos: "وسط", rt: 7.4 }, "name, number, position, rating");
+assert.deepEqual(j.lineups.h.xi[0], { n: "لاعب نيجيريا 0", num: 1, pos: "وسط", rt: 7.4,
+  st: { 30: "62'", 19: "30/40 (75%)" } }, "name, number, position, rating, his kept numbers");
+assert.ok(!("st" in j.lineups.h.xi[1]), "no numbers = no st field");
 assert.ok(!("a" in j.lineups), "a side with fewer than 11 starters is no lineup");
 
 // 1b) the change-orientation guard: the player coming ON is never a starter

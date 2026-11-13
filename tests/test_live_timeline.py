@@ -92,6 +92,22 @@ _xi = [{"name": f"لاعب {i}", "num": i, "ln": 1 + i // 3, "sd": i % 3, "rt": 
 _e = {"lineups": {"h": {"formation": "4-3-3", "xi": _xi}, "a": {"formation": "4-3-3", "xi": _xi}}}
 ck("21 every pitch chip carries its player's name for the live repaint",
    _mdh(_e, False, "أ", "ب").count('<div class="pp" data-n="لاعب ') == 22)
+# the player card (same day, user: «خلى ارقام اللاعب لحظية كمان»)
+ck("22 the pitch keeps a live overlay per player: rating, events, numbers",
+   "window.__ppLive=window.__ppLive||{}" in pp and "st:pst[n]?pRows(pst[n])" in pp)
+ck("23 the live card rows use the build's CARD_ROWS labels, shots with «(on target)»",
+   all(lbl in js for lbl in ("'الدقائق'", "'التسديدات (على المرمى)'", "'التصديات'", "'أهداف استقبلها'"))
+   and "st['3']+(st['4']!=null?' ('+st['4']+')':'')" in js)
+ck("24 a chip with no built card becomes tappable once live numbers arrive",
+   "c.setAttribute('data-live','1');c.setAttribute('role','button')" in pp)
+pj = io.open("site_src/snippets/pitch_js.html", encoding="utf-8").read()
+ck("25 the card merges the live overlay when it opens, the built numbers otherwise",
+   "var L=(window.__ppLive||{})[p.n];" in pj and "st:L.st&&L.st.length?L.st:p.st" in pj)
+ck("26 the card script runs on a pitch without #ppData and opens live-only chips",
+   "if(!document.querySelector('.pitch')) return;" in pj and ".pitch .pp[data-live]" in pj
+   and "if(i!==-1) open(i,t);" in pj)
+ck("27 every pitch ships the card script, also a pre-match XI with no cards",
+   "PITCH_JS" in _mdh(_e, False, "أ", "ب") or "__ppLive" in _mdh(_e, False, "أ", "ب"))
 ck("12 «45+2» sorts after «45» and before «46»",
    "(parseInt(p[0],10)||0)+(parseInt(p[1],10)||0)/100" in js)
 

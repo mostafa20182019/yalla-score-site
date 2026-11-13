@@ -161,6 +161,8 @@ async function gameDetail(gid) {
 // numbers the finished page shows, read by stable ids, sides by the game's
 // home id. null when the feed has none (the CAF competitions carry none).
 const STAT_KEYS = { 76: "xg", 79: "xgot", 3: "shots", 4: "sot", 24: "big", 10: "poss" };
+// fetch_data.PLAYER_STATS: the player card's numbers, by the feed's stat type id
+const PLAYER_STATS = new Set([30, 27, 26, 76, 3, 4, 46, 19, 45, 54, 39, 41, 86, 55, 56, 23, 35]);
 function statNum(v) {
   const s = String(v == null ? "" : v).replace("%", "").replace(",", ".").trim();
   if (s === "") return null;
@@ -244,6 +246,13 @@ export async function gameEvents(gid) {
         if (jersey[pid] != null) p.num = jersey[pid];
         if (mm.position && mm.position.name) p.pos = mm.position.name;
         if (Number(mm.ranking) > 0) p.rt = Number(mm.ranking);
+        // his numbers in this match (the player card), the ids
+        // fetch_data.PLAYER_STATS keeps - by type id, value as the feed writes it
+        const st = {};
+        for (const s of mm.stats || []) {
+          if (s && PLAYER_STATS.has(s.type) && s.value != null && s.value !== "") st[String(s.type)] = String(s.value);
+        }
+        if (Object.keys(st).length) p.st = st;
         xi.push(p);
       }
       if (xi.length === 11) {

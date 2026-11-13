@@ -636,12 +636,17 @@ def match_details_html(e, flipped, h_ar, a_ar):
                     f'<span class="pp-ava">{ava}{rt}{bd}{cap}</span>'
                     f'<span class="pp-nm"><bdi>{nm}</bdi></span></div>')
         parts.append('</div>')
+        from site_lib.snippets import PITCH_JS
         if cards_data:
             import json as _json
-            from site_lib.snippets import PITCH_JS
             blob = _json.dumps(cards_data, ensure_ascii=False).replace("</", "<\\/")
             parts.append('<p class="pc-hint">اضغط على أي لاعب لعرض أرقامه في المباراة.</p>'
                          f'<script type="application/json" id="ppData">{blob}</script>{PITCH_JS}')
+        else:
+            # a pre-match XI has no cards yet; the script still rides along so
+            # the live numbers (LIVE_JS, 2026-11-13) can open one once the
+            # match is on
+            parts.append(PITCH_JS)
         parts.append('</section>')
         return "".join(parts)
     if lh or la:

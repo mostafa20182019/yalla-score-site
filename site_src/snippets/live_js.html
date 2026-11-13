@@ -229,8 +229,17 @@
       anchor.insertAdjacentHTML('afterend','<section class="minfo lu-live"><h2>تشكيل '+escH(hn)+' و'+escH(an)+'</h2><div class="lu">'+html+'</div></section>');
       return;
     }
-    var rt={};
-    ['h','a'].forEach(function(k){(lus[k]&&lus[k].xi||[]).forEach(function(p){if(p.rt>0)rt[p.n]=p.rt;});});
+    var rt={},pst={},pinfo={};
+    var row0=hero.querySelector('[data-lv]')||hero;
+    ['h','a'].forEach(function(k){
+      /* the club of this side on THIS page (a row matched reversed swaps them) */
+      var team=row0.getAttribute((k==='h')!==!!g.sw?'data-h':'data-a')||'';
+      (lus[k]&&lus[k].xi||[]).forEach(function(p){
+        if(p.rt>0)rt[p.n]=p.rt;
+        if(p.st)pst[p.n]=p.st;
+        pinfo[p.n]={team:team,num:p.num,pos:p.pos};
+      });
+    });
     var card={},off={},sc={},og={},as={};
     if(useEv){
       ev.cards.forEach(function(c){card[c.p]=(c.c==='r'||card[c.p]==='r')?'r':'y';});
@@ -266,7 +275,47 @@
         });
         if(out)put('<span class="pp-evs">'+out+'</span>');
       }
+      /* the player card's live overlay (pitch_js reads it when a card opens) */
+      if(rt[n]||pst[n]){
+        var L=(window.__ppLive=window.__ppLive||{});
+        var evl=[];
+        if(hasG)g.goals.forEach(function(x){
+          if(x.p===n)evl.push([x.t==='عكسية'?'og':'g',String(x.m||'').replace(/['′]/g,'')]);
+          if(x.a===n)evl.push(['a',String(x.m||'').replace(/['′]/g,'')]);
+        });
+        if(useEv){
+          ev.cards.forEach(function(c){if(c.p===n)evl.push([c.c==='r'?'r':'y',c.m||'']);});
+          ev.subs.forEach(function(s){if(s.o===n)evl.push(['off',s.m||'']);});
+        }
+        evl.sort(function(a,b){return mKey(a[1])-mKey(b[1]);});
+        var prev=L[n]||{};
+        L[n]={rt:rt[n]?rt[n].toFixed(1):prev.rt,rc:rt[n]?rtCls(rt[n]):prev.rc,
+              st:pst[n]?pRows(pst[n]):(prev.st||[]),
+              ev:(hasG||useEv)?evl:(prev.ev||[]),
+              team:(pinfo[n]||{}).team,num:(pinfo[n]||{}).num,pos:(pinfo[n]||{}).pos};
+        if(!c.hasAttribute('data-i')&&!c.hasAttribute('data-live')){
+          c.setAttribute('data-live','1');c.setAttribute('role','button');c.setAttribute('tabindex','0');
+          c.setAttribute('aria-label','تفاصيل '+n);
+          if((pinfo[n]||{}).team)c.setAttribute('data-team',pinfo[n].team);
+        }
+      }
     });
+    var pitch=document.querySelector('.pitch');
+    if(pitch&&window.__ppLive&&!document.querySelector('.pc-hint'))
+      pitch.insertAdjacentHTML('afterend','<p class="pc-hint">اضغط على أي لاعب لعرض أرقامه في المباراة.</p>');
+  }
+  /* tables.match_details_html CARD_ROWS, same labels and order */
+  var PROWS=[['30','الدقائق'],['27','الأهداف'],['26','صناعة الأهداف'],['76','الأهداف المتوقعة (xG)'],
+             ['shots','التسديدات (على المرمى)'],['46','صناعة الفرص'],['19','التمريرات الصحيحة'],['45','لمس الكرة'],
+             ['54','المراوغات الناجحة'],['39','التدخلات الناجحة'],['41','الاعتراضات'],['86','استعادة الكرة'],
+             ['55','الالتحامات الأرضية'],['56','الالتحامات الهوائية'],['23','التصديات'],['35','أهداف استقبلها']];
+  function pRows(st){
+    var out=[];
+    PROWS.forEach(function(r){
+      if(r[0]==='shots'){if(st['3']!=null)out.push([r[1],st['3']+(st['4']!=null?' ('+st['4']+')':'')]);}
+      else if(st[r[0]]!=null)out.push([r[1],String(st[r[0]]).replace(/'/g,'′')]);
+    });
+    return out;
   }
   function paintExtras(e,g){
     var hero=e.closest&&e.closest('.mp-hero'); if(!hero)return;
