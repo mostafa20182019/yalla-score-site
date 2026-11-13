@@ -397,19 +397,32 @@ def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
             f'<div class="cl-grid">{"".join(cards)}</div></section>')
 
 
-def scorers_list(sc, unit="أهداف"):
+# the moment this build started: the live charts (snippets/live_scorers_js.html)
+# add only goals scored after it - the chart in the page is older than this
+import time as _time
+BUILD_MS = int(_time.time() * 1000)
+
+
+def scorers_list(sc, unit="أهداف", comp=None):
     """Chart table: rank, player (+club), value — plus a matches column only
-    when the feed actually carries appearances (365scores does not)."""
+    when the feed actually carries appearances (365scores does not).
+    comp (2026-11-14): the competition, so the chart can follow its live
+    matches (data-cid / data-k / data-at, each row data-n / data-t)."""
     has_m = any((x.get("played") or 0) for x in sc)
     m_hd = "<span>مباريات</span>" if has_m else ""
-    rows = [f'<div class="sc-list{"" if has_m else " sc-nom"}">'
+    from site_lib.competitions import LIVE_COMP_ID
+    _k = {"أهداف": "g", "صناعة": "a"}.get(unit)
+    _live = (f' data-cid="{LIVE_COMP_ID[comp]}" data-k="{_k}" data-at="{BUILD_MS}"'
+             if comp in LIVE_COMP_ID and _k else "")
+    rows = [f'<div class="sc-list{"" if has_m else " sc-nom"}"{_live}>'
             f'<div class="sc-hd"><span></span><span>اللاعب</span>'
             f'{m_hd}<span>{esc(unit)}</span></div>']
     for i, x in enumerate(sc, 1):
         club = (f'<span class="sc-club"><bdi>{esc(x.get("team"))}</bdi></span>'
                 if x.get("team") else "")
         m_cell = f'<span class="sc-m">{x.get("played")}</span>' if has_m else ""
-        rows.append(f'<div class="sc-row"><span class="sc-n">{i}</span>'
+        rows.append(f'<div class="sc-row" data-n="{esc(x.get("name") or "")}" data-t="{esc(x.get("team") or "")}">'
+                    f'<span class="sc-n">{i}</span>'
                     f'<span class="sc-p">{_scorer_face(x)}'
                     f'<span class="sc-nm"><bdi>{esc(x.get("name"))}</bdi>{club}</span></span>'
                     f'{m_cell}<b class="sc-g">{_pval(x)}</b></div>')

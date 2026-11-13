@@ -189,8 +189,8 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         if comp not in _chart_html:
             sc = sc_by_comp.get(comp) if sc_ok.get(comp) else None
             asst = as_by_comp.get(comp) if as_ok.get(comp) else None
-            _chart_html[comp] = (scorers_list(sc, "أهداف") if sc else "",
-                                 scorers_list(asst, "صناعة") if asst else "")
+            _chart_html[comp] = (scorers_list(sc, "أهداف", comp) if sc else "",
+                                 scorers_list(asst, "صناعة", comp) if asst else "")
         return _chart_html[comp]
     # finished matches per competition (season pool + fixtures) - table_after()
     # uses it to prove the official table is describing THIS match and not a

@@ -81,7 +81,7 @@ ck("14 every value written into the card is escaped",
 ck("15 Escape, × and the backdrop close it; focus goes back to the name",
    "e.key==='Escape'" in js and "if(last) last.focus();" in js)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()
-ck("16 the script ships once, in app.js", "(REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS)" in sh)
+ck("16 the script ships once, in app.js", "(REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS)" in sh)
 bs = io.open("build_site.py", encoding="utf-8").read()
 ck("17 build() registers the context before the first table is drawn",
    bs.index("set_team_info(") < bs.index("comp_order = matches_page("))

@@ -64,7 +64,7 @@ ck("13 a changed row drops the match-list buttons (they list the official matche
    "if(x.d) r.cells[k+1].textContent=String(x.v[k]);" in js)
 ck("14 the table says «مباشر» while it is live", "lt-lvb" in js and ">مباشر<" in js)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()
-ck("15 it ships once, in app.js", "(REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS)" in sh)
+ck("15 it ships once, in app.js", "(REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS)" in sh)
 lj = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
 ck("16 LIVE_JS announces every reply", "new CustomEvent('lv:update')" in lj)
 

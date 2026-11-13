@@ -376,6 +376,8 @@ REL_JS = _src("snippets/rel_js.html")
 TEAM_CARD_JS = _src("snippets/team_card_js.html")
 # the live table (2026-11-13): standings recalculated while matches are on
 LIVE_TABLE_JS = _src("snippets/live_table_js.html")
+# the live scorers / assists charts (2026-11-14)
+LIVE_SCORERS_JS = _src("snippets/live_scorers_js.html")
 
 
 # /assets/app.js (site-check 2026-11-12): REL_JS + LIVE_JS + SWIPE_JS were
@@ -401,7 +403,7 @@ def app_js():
     """The file's content: each snippet in its own try, so one that throws
     cannot stop the next (they were separate <script> blocks before)."""
     return "\n".join("try{" + _js_body(s) + "\n}catch(e){}"
-                     for s in (REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS)) + "\n"
+                     for s in (REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS)) + "\n"
 
 
 def app_js_tag():

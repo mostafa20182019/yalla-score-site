@@ -1,7 +1,11 @@
 <script>
 (function(){
   var els=[].slice.call(document.querySelectorAll('[data-lv]'));
-  if((!els.length&&!document.getElementById('favLive'))||!window.fetch)return;
+  /* a page with no live row still polls when it holds a standings table or a
+     scorers chart that can go live (2026-11-14: the scorers page has neither
+     a [data-lv] row nor the home card, and stayed still) */
+  if((!els.length&&!document.getElementById('favLive')
+      &&!document.querySelector('.ltable[data-cid],.sc-list[data-cid]'))||!window.fetch)return;
   function norm(s){return(s||'').replace(/[أإآ]/g,'ا')
     .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
   /* rows register under BOTH name orders: the sources can disagree on who
@@ -464,7 +468,7 @@
     var any=false;
     last.gs.forEach(function(g){calcMin(g,last.at);});
     /* the standings team card reads the same reply (2026-11-13) */
-    window.__lvGames=last.gs;
+    window.__lvGames=last.gs;window.__lvAt=last.at;
     try{document.dispatchEvent(new CustomEvent('lv:update'));}catch(e){}
     favRender(last.gs);
     last.gs.forEach(function(g){

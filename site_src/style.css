@@ -1524,6 +1524,9 @@ a.tc-v{color:var(--green-d)}
 .lt-lvb{font-size:.7rem;font-weight:900;background:#dc2626;color:#fff;border-radius:999px;padding:2px 9px;margin-inline-start:8px}
 .lt tr.lt-lvr{background:#fef2f2}
 .lt td.lt-chg{font-weight:800;color:var(--ink)}
+/* the live scorers chart (2026-11-14) */
+.sc-row.sc-lv{background:#fef2f2}
+.sc-lvp{font-style:normal;font-size:.68rem;font-weight:900;color:#fff;background:#dc2626;border-radius:999px;padding:0 6px;margin-inline-start:4px;vertical-align:2px}
 .lt tr.lt-lvr .lt-pts{color:#dc2626}
 .lt .lt-pos.lt-up::after,.lt .lt-pos.lt-dn::after{font-size:.6rem;margin-inline-start:2px}
 .lt .lt-pos.lt-up::after{content:"▲";color:#16a34a}

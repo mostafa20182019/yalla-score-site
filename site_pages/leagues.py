@@ -98,8 +98,8 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                                            forms.get(comp, {}), sc or [], up_next,
                                            zeroed=st.get("zeroed"))
             _an = ""
-            scorers = scorers_list(sc, "أهداف") if sc else ""
-            assists = scorers_list(asst, "صناعة") if asst else ""
+            scorers = scorers_list(sc, "أهداف", comp) if sc else ""
+            assists = scorers_list(asst, "صناعة", comp) if asst else ""
             # the whole round on show, played + live + to come (user, 2026-10-31:
             # «عايز فى دى يجيب مباريات الجولة كلها»); the freshest copy of each
             # match comes from m_all, and only a match with a page gets a link.
@@ -159,8 +159,8 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                                     scorers_desc(label, season, sc),
                                     SITE_BASE + sc_url, active="leagues",
                                     image=f"{SITE_BASE}/og/scorers/{slug}.jpg" if _og else None))
-            scorers = scorers_list(sc, "أهداف") if sc else ""
-            assists = scorers_list(asst, "صناعة") if asst else ""
+            scorers = scorers_list(sc, "أهداف", comp) if sc else ""
+            assists = scorers_list(asst, "صناعة", comp) if asst else ""
             # a list of ten names is not a page; the reading is what makes it
             # one (2026-09-16, after an outside audit found /scorers/egypt
             # empty - see scorers_read)
