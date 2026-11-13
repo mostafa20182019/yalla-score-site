@@ -228,6 +228,7 @@ COMP_ORDER = ["Egyptian Premier League",
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
 # must agree with LIVE_COMPS in worker.js
 # (552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808,6994,5582).
+# (LIVE_COMP_ID below adds the football-data leagues' 365scores ids)
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
     "Turkish Super Lig": 78,
@@ -247,3 +248,14 @@ S365_COMP_IDS = {
     "Egyptian Second Division": 6994,   # 2026-11-11
     "FIFA U-17 World Cup": 5582,        # 2026-11-11
 }
+
+
+# Every competition's id in the LIVE feed - /live.json games carry it as `c`.
+# The football-data leagues are fetched by name from football-data, but the
+# live layer reads them from 365scores (worker.js LIVE_COMPS: PL 7, PD 11,
+# SA 17, BL1 25, FL1 35, UCL 572). The team card (2026-11-13) finds a
+# team's live match only inside its table's own competition, so the Saudi
+# «الأهلي» never lands on the Egyptian club's card.
+LIVE_COMP_ID = {**S365_COMP_IDS,
+                "Premier League": 7, "Primera Division": 11, "Serie A": 17,
+                "Bundesliga": 25, "Ligue 1": 35, "UEFA Champions League": 572}

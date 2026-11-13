@@ -463,6 +463,9 @@
     if(!last)return false;
     var any=false;
     last.gs.forEach(function(g){calcMin(g,last.at);});
+    /* the standings team card reads the same reply (2026-11-13) */
+    window.__lvGames=last.gs;
+    try{document.dispatchEvent(new CustomEvent('lv:update'));}catch(e){}
     favRender(last.gs);
     last.gs.forEach(function(g){
       var arr=map[norm(g.h)+'|'+norm(g.a)];

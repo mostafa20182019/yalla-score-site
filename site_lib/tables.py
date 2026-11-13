@@ -182,7 +182,9 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
                  f'{(" " + esc(season_label)) if season_label else ""}</span>')
     else:
         badge = ""
-    return (f'<div class="ltable" data-comp="{esc(comp)}" data-cl="{esc(comp_label(comp))}"{"" if embedded else " hidden"}>'
+    from site_lib.competitions import LIVE_COMP_ID
+    return (f'<div class="ltable" data-comp="{esc(comp)}" data-cl="{esc(comp_label(comp))}" '
+            f'data-cid="{LIVE_COMP_ID.get(comp, "")}"{"" if embedded else " hidden"}>'
             f'<div class="lt-head">{comp_icon(comp)} {esc(title) if title else "جدول ترتيب " + esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'

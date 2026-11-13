@@ -86,6 +86,21 @@ bs = io.open("build_site.py", encoding="utf-8").read()
 ck("17 build() registers the context before the first table is drawn",
    bs.index("set_team_info(") < bs.index("comp_order = matches_page("))
 
+# the live line (same day, user: «خلى ... البطاقة لحظية كمان»)
+from site_lib.competitions import LIVE_COMP_ID                # noqa: E402
+ck("18 every table names its competition's id in the live feed",
+   'data-cid="78"' in out and LIVE_COMP_ID["Premier League"] == 7 and LIVE_COMP_ID["Egyptian Premier League"] == 552)
+lj = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
+ck("19 LIVE_JS shares its reply and announces each one",
+   "window.__lvGames=last.gs;" in lj and "new CustomEvent('lv:update')" in lj)
+ck("20 the card's live line stays inside the table's own competition (no Saudi «الأهلي» on Al Ahly)",
+   "if(String(x.c)!==String(cid)) continue;" in js and "if(!cid) return '';" in js)
+ck("21 a match already shown as the last result is not repeated as «انتهت للتو»",
+   "c.ls.s===(g.hs+' - '+g.as)" in js)
+ck("22 the live line follows the feed while the card is open",
+   "document.addEventListener('lv:update',function(){ if(!pop.hidden) paintLive(); });" in js)
+ck("23 the card names the teams the way LIVE_JS does", "replace(/[أإآ]/g,'ا').replace(/ة/g,'ه')" in js)
+
 print()
 if fails:
     print(f"{len(fails)} FAILED: " + "; ".join(fails))

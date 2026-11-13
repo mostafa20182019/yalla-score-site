@@ -19,6 +19,42 @@
   function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
   function txt(td){ return td?(td.textContent||'').trim():''; }
   var RES={w:['فوز','tc-w'],d:['تعادل','tc-d'],l:['خسارة','tc-l']};
+  /* the team's match RIGHT NOW (2026-11-13, user: «خلى ... البطاقة لحظية»):
+     from the reply LIVE_JS already polls (window.__lvGames, refreshed on
+     'lv:update'), inside the table's own competition only (data-cid), names
+     compared the way LIVE_JS compares them. A live match shows its score and
+     minute; one that ended and is not yet the row's «آخر نتيجة» (the site
+     rebuilds after the whistle) shows as just finished. Nothing else moves:
+     the table's numbers change only with the official standings. */
+  function norm(s){return(s||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
+  var cur=null;
+  function liveHtml(){
+    if(!cur) return '';
+    var gs=window.__lvGames||[], nm=norm(cur.name), cid=cur.cid;
+    if(!cid) return '';
+    var g=null;
+    for(var i=0;i<gs.length;i++){
+      var x=gs[i];
+      if(String(x.c)!==String(cid)) continue;
+      if(norm(x.h)===nm||norm(x.a)===nm){ if(x.live){ g=x; break; } if(!g) g=x; }
+    }
+    if(!g) return '';
+    var c=cur.c||{};
+    if(!g.live){
+      /* already the row's last result = nothing new to say */
+      if(c.ls&&norm(c.ls.h)===norm(g.h)&&norm(c.ls.a)===norm(g.a)&&c.ls.s===(g.hs+' - '+g.as)) return '';
+    }
+    var url='';
+    [c.nx,c.ls].forEach(function(m){ if(!url&&m&&m.u&&norm(m.h)===norm(g.h)&&norm(m.a)===norm(g.a)) url=m.u; });
+    var inner='<span class="tc-lv-p'+(g.live?' on':'')+'">'+(g.live?'مباشر الآن':'انتهت للتو')+'</span>'
+      +'<span class="tc-lv-m"><bdi>'+esc(g.h)+'</bdi> <b>'+esc(g.hs)+' - '+esc(g.as)+'</b> <bdi>'+esc(g.a)+'</bdi></span>'
+      +(g.live&&g.min?'<span class="tc-lv-min">'+esc(g.min)+'</span>':'');
+    return url?'<a class="tc-live" href="'+esc(url)+'">'+inner+'</a>':'<div class="tc-live">'+inner+'</div>';
+  }
+  function paintLive(){
+    var box=body.querySelector('.tc-lv'); if(box) box.innerHTML=liveHtml();
+  }
+  document.addEventListener('lv:update',function(){ if(!pop.hidden) paintLive(); });
   function open(btn){
     var tr=btn.closest('tr'), table=btn.closest('.ltable'); if(!tr) return;
     var td=tr.children, n=td.length;
@@ -28,10 +64,12 @@
     var c={}; try{ c=JSON.parse(tr.getAttribute('data-tc')||'{}'); }catch(e){ c={}; }
     var name=txt(btn.querySelector('bdi')), img=btn.querySelector('img');
     var league=(table&&table.getAttribute('data-cl'))||'';
+    cur={name:name,cid:(table&&table.getAttribute('data-cid'))||'',c:c};
     var h='<div class="tc-top">'+(img?'<img src="'+esc(img.getAttribute('src'))+'" alt="" width="52" height="52">':'')
       +'<div class="tc-who"><b class="tc-n">'+esc(name)+'</b>'
       +(v.pos?'<span class="tc-m">المركز '+esc(v.pos)+(league?' في '+esc(league):'')+'</span>':'')+'</div>'
-      +(v.pts!==''?'<span class="tc-pts"><b>'+esc(v.pts)+'</b>نقطة</span>':'')+'</div>';
+      +(v.pts!==''?'<span class="tc-pts"><b>'+esc(v.pts)+'</b>نقطة</span>':'')+'</div>'
+      +'<div class="tc-lv">'+liveHtml()+'</div>';
     h+='<div class="tc-grid">'
       +[['لعب',v.p],['فوز',v.w],['تعادل',v.d],['خسارة',v.l],['له',v.gf],['عليه',v.ga],['الفارق',v.gd],
         ['النقاط/مباراة',(+v.p>0?((+v.pts)/(+v.p)).toFixed(2):'—')]]
