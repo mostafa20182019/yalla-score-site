@@ -64,9 +64,23 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                    if m.get("competition") == comp
                    and (m.get("status") or "").upper() in ("UPCOMING", "LIVE")][:6]
         if st and st.get("table"):
+            # the link preview: the top of the table on our own card (og_card.py,
+            # 2026-11-13). Not for a zeroed pre-season table: five clubs on 0
+            # points in alphabetical order would read as a ranking.
+            import og_card
+            from site_lib.dates import fmt_day
+            _og = None
+            if not st.get("zeroed") and not st.get("past"):
+                _og = og_card.league(
+                    label, "جدول الترتيب",
+                    [(r.get("pos"), r.get("crest"), ar_team(r.get("team")), r.get("pts"))
+                     for r in st["table"][:5]],
+                    "نقطة", season, "تحديث " + " ".join(fmt_day(REF_TODAY).split()[1:]),
+                    os.path.join(DIST, "og", "standings", f"{slug}.jpg"))
             page_head = Markup(head(f"ترتيب {label} اليوم — جدول الترتيب الكامل {season} | {SITE_NAME}",
                                     standings_desc(label, season, st["table"], st.get("zeroed")),
-                                    SITE_BASE + st_url, active="leagues"))
+                                    SITE_BASE + st_url, active="leagues",
+                                    image=f"{SITE_BASE}/og/standings/{slug}.jpg" if _og else None))
             crumbs_ld = Markup(breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                               ("البطولات", SITE_BASE + "/leagues.html"),
                                               (f"ترتيب {label}", SITE_BASE + st_url)]))
@@ -131,9 +145,20 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             # the page must exist whenever the league is active (the footer
             # links to /scorers/egypt.html sitewide) - a stale-gated chart
             # gets a placeholder, never last season's names
+            import og_card
+            from site_lib.dates import fmt_day
+            _og = None
+            if sc:
+                _og = og_card.league(
+                    label, "الهدافون",
+                    [(k, r.get("crest"), r.get("name"), r.get("goals")) for k, r in zip(
+                        og_card.shared_ranks([r.get("goals") for r in sc[:5]]), sc[:5])],
+                    "هدف", season, "تحديث " + " ".join(fmt_day(REF_TODAY).split()[1:]),
+                    os.path.join(DIST, "og", "scorers", f"{slug}.jpg"), head="الترتيب · اللاعب")
             page_head = Markup(head(f"هداف {label} {season} — ترتيب الهدافين وصناع الأهداف | {SITE_NAME}",
                                     scorers_desc(label, season, sc),
-                                    SITE_BASE + sc_url, active="leagues"))
+                                    SITE_BASE + sc_url, active="leagues",
+                                    image=f"{SITE_BASE}/og/scorers/{slug}.jpg" if _og else None))
             scorers = scorers_list(sc, "أهداف") if sc else ""
             assists = scorers_list(asst, "صناعة") if asst else ""
             # a list of ten names is not a page; the reading is what makes it

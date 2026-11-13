@@ -35,7 +35,7 @@ def h2h_pages(articles, m_all, urls, fx_by_comp=None):
                 continue
             for side in ("home", "away"):
                 if ar_team(m.get(side)) == club and m.get(side + "_badge"):
-                    return local_crest(m[side + "_badge"])
+                    return m[side + "_badge"]          # the feed url; local_crest() at use
         return ""
 
     written = 0
@@ -145,8 +145,15 @@ def h2h_pages(articles, m_all, urls, fx_by_comp=None):
 
         title = f"مواجهات {a} و{b}: نتائج آخر {games_n(n)} والمباراة القادمة | {SITE_NAME}"
         desc = f"{lead} آخر مباراة: {last_txt}"
-        ca, cb = crest_of(a, pair["league"]), crest_of(b, pair["league"])
-        page_head = head(title, desc, SITE_BASE + url)
+        _ua, _ub = crest_of(a, pair["league"]), crest_of(b, pair["league"])
+        ca, cb = (local_crest(_ua) if _ua else ""), (local_crest(_ub) if _ub else "")
+        # the link preview: the tally on our own card (og_card.py, designer
+        # review 2026-11-13) - the page shared the site banner until then
+        import og_card
+        _og = og_card.h2h(a, b, n, H.ar_month_year(oldest["date"]), t["wins"][a], t["draws"],
+                          t["wins"][b], _ua, _ub, os.path.join(DIST, "og", "h2h", f"{slug}.jpg"))
+        page_head = head(title, desc, SITE_BASE + url,
+                         image=f"{SITE_BASE}/og/h2h/{slug}.jpg" if _og else None)
         crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                    ("المباريات", SITE_BASE + "/matches.html"),
                                    (f"مواجهات {a} و{b}", SITE_BASE + url)])

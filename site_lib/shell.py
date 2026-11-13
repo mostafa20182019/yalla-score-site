@@ -95,7 +95,8 @@ def _og_dims(url):
     if url in _OG_DIMS:
         return _OG_DIMS[url]
     rel = url[len(SITE_BASE) + 1:].split("?")[0]
-    cand = [os.path.join(HERE, rel)]
+    # dist/ too: the og images drawn at build time (og_card.py) live only there
+    cand = [os.path.join(HERE, rel), os.path.join(DIST, rel)]
     if rel.startswith("assets/"):
         cand.append(os.path.join(HERE, "assets-src", rel[len("assets/"):]))
     dims = (None, None)
