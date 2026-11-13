@@ -43,7 +43,12 @@ def feed_games(game_id):
                     "comp": x.get("competitionDisplayName") or "",
                     "home": (x.get("homeCompetitor") or {}).get("name") or "",
                     "away": (x.get("awayCompetitor") or {}).get("name") or "",
-                    "hg": int(sc[0]), "ag": int(sc[1])})
+                    "hg": int(sc[0]), "ag": int(sc[1]),
+                    # how it ended, in the feed's words («انتهت», «بعد ركلات
+                    # الترجيح», «فوز تقني») and who won (1 home, 2 away, -1
+                    # draw): a shoot-out winner and an awarded result are
+                    # read from these, not typed by hand
+                    "status": x.get("statusText") or "", "win": x.get("winner")})
     return out
 
 
@@ -53,8 +58,19 @@ def merge(old, new):
     ids = {str(g.get("id")) for g in old}
     dates = {g.get("date") for g in old}
     add = [g for g in new if g.get("date") and str(g.get("id")) not in ids and g["date"] not in dates]
+    # a saved game gains the fields it lacks (status / win, added 2026-11-13);
+    # nothing it already holds is rewritten
+    fresh = {str(g.get("id")): g for g in new}
+    grown = 0
+    old = [dict(g) for g in old]
+    for g in old:
+        src = fresh.get(str(g.get("id"))) or {}
+        for k in ("status", "win"):
+            if k not in g and k in src:
+                g[k] = src[k]
+                grown += 1
     games = sorted(old + add, key=lambda g: g.get("date") or "", reverse=True)
-    return games, len(add)
+    return games, len(add) + (1 if grown else 0)
 
 
 def main():

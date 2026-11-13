@@ -19,7 +19,8 @@ from site_lib.text import esc, jsonld
 from site_lib.urls import article_href, breadcrumb_ld, match_url
 
 
-def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
+def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
+               fx_by_comp=None, sc_by_comp=None, sc_ok=None):
     """/team/<slug> - evergreen SEO hubs for the highest-volume Arabic query
     family: «أخبار الأهلي اليوم»، «مباريات الزمالك القادمة»، «نتيجة ريال مدريد».
     One page per curated club: latest news + next matches + recent results +
@@ -35,9 +36,18 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
         league_ar = comp_label(tp["league"])
         cm = [m for m in club_matches_src
               if _team_match(tp, m) and m.get("home") and m.get("kickoff")]
-        up_next = [m for m in cm
-                   if (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
-                   and m["kickoff"] >= REF_TODAY][:3]
+        # the next matches come from the SEASON, not only the day window of
+        # m_all (SEO review 2026-11-13: Trabzonspor's page showed 1 of its 11
+        # scheduled matches). A match without a page yet is a row with no link.
+        _seen = {m.get("match_id") for m in cm}
+        _later = [m for fx in (fx_by_comp or {}).values() for r in (fx or {}).get("rounds") or []
+                  for m in r.get("matches") or []
+                  if m.get("match_id") not in _seen and _team_match(tp, m)
+                  and m.get("home") and m.get("kickoff")]
+        up_next = sorted((m for m in cm + _later
+                          if (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
+                          and m["kickoff"] >= REF_TODAY),
+                         key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))[:5]
         last_res = [m for m in reversed(cm)
                     if (m.get("status") or "").upper() == "FINISHED"
                     and m.get("home_score") is not None][:5]
@@ -117,7 +127,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
         up_rows = []
         for m in up_next:
             up_rows.append(match_row(m, show_time=True, show_comp=True, show_date=True,
-                                     link=match_url(m)))
+                                     link=match_url(m) if m.get("match_id") in m_all else None))
         last_rows = []
         for m in last_res:
             last_rows.append(match_row(m, show_time=False, show_comp=True, show_date=True,
@@ -167,6 +177,24 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
                         f"{name} في المركز {srow.get('pos')} برصيد "
                         + (f"{_pts} نقطة" if _pts in (0, 1, 2) else _cnt(_pts, "نقطة واحدة", "نقطتين", "نقاط", "نقطة"))
                         + " من " + _cnt(srow.get("played"), "مباراة واحدة", "مباراتين", "مباريات", "مباراة") + "."))
+        # the club's top scorer in its league, when the saved chart names one
+        _chart = (sc_by_comp or {}).get(tp["league"]) if (sc_ok or {}).get(tp["league"]) else None
+        _top = next((r for r in _chart or []
+                     if any(t in (r.get("team") or "") for t, _ in tp["match_tokens"])
+                     and int(r.get("goals") or 0) > 0), None)
+        if _top:
+            from site_lib.stats import _cnt as _cn
+            faq.append((f"من هداف {name} في {league_ar} هذا الموسم؟",
+                        f"{_top['name']} برصيد "
+                        + _cn(_top["goals"], "هدف واحد", "هدفين", "أهداف", "هدفًا")
+                        + f" في {league_ar}."))
+        # the league's hub pages, only the ones the build writes
+        _ls = COMP_SLUG.get(tp["league"])
+        hub_links = []
+        if _ls and ((fx_by_comp or {}).get(tp["league"]) or {}).get("rounds"):
+            hub_links.append({"href": Markup(f"/fixtures/{_ls}.html"), "label": f"جدول مباريات {league_ar}"})
+        if _ls and st and st.get("table"):
+            hub_links.append({"href": Markup(f"/scorers/{_ls}.html"), "label": f"هدافو {league_ar}"})
         faq_html = ""
         if faq:
             faq_html = ('<section class="minfo faq"><h2>أسئلة شائعة عن ' + esc(name) + '</h2>'
@@ -177,10 +205,9 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
                                                   "acceptedAnswer": {"@type": "Answer", "text": a}}
                                                  for q, a in faq]}))
         # the pair's head-to-head page (/h2h/<slug>, 2026-11-13), from both clubs
-        from site_lib.h2h import pair_for_club
-        _pair = pair_for_club(slug)
-        h2h_link = ({"href": Markup(f"/h2h/{_pair['slug']}.html"),
-                     "label": f"تاريخ مواجهات {_pair['a']} و{_pair['b']}"} if _pair else None)
+        from site_lib.h2h import link_label, pairs_for_club
+        h2h_link = [{"href": Markup(f"/h2h/{_p['slug']}.html"), "label": link_label(_p)}
+                    for _p in pairs_for_club(slug)]
         others = [o for o in TEAM_PAGES if o["slug"] != slug]
         club_ld = jsonld({
             "@context": "https://schema.org", "@type": "SportsTeam",
@@ -199,7 +226,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls):
             table_heading=Markup(table_heading), table=Markup(table),
             others=[{"slug": Markup(o["slug"]), "name": o["name"]} for o in others],
             club_ld=Markup(club_ld), faq=Markup(faq_html), popup=Markup(popup),
-            h2h=h2h_link,
+            h2h=h2h_link, hub_links=hub_links,
             page_foot=Markup(foot())))
         urls.append(t_url)
     print(f"  + club pages: {len(TEAM_PAGES)}")

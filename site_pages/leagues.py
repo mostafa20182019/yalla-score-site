@@ -6,7 +6,7 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import datetime
 import os
-from site_lib.competitions import COMP_SLUG, comp_season
+from site_lib.competitions import COMP_SLUG, COMP_TV, comp_season
 from site_lib.config import DIST, PREDICTIONS_ON, REF_TODAY, SHOW_STATS_PAGE, SITE_BASE, SITE_NAME
 from site_lib.matchdata import match_goals
 from site_lib.names import ar_team, comp_label
@@ -17,7 +17,7 @@ from site_lib.snippets import LT_GAMES_JS, ROUNDS_JS, ST_TABS_JS
 from site_lib.stats import _cnt, scorers_read, standings_analysis
 from site_lib.tables import (clubs_panel, league_rounds_panel, match_row, round_on_show,
                              scorers_list, standings_table)
-from site_lib.text import esc
+from site_lib.text import esc, jsonld
 from site_lib.urls import breadcrumb_ld, match_url
 from site_lib.league_desc import fixtures_desc, scorers_desc, standings_desc
 
@@ -239,6 +239,52 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
                                 SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True,
                                            pages=m_all if m_all is not None else None)
+        # «مباريات X القادمة» in words (SEO review 2026-11-13: the page ranked
+        # ~10 for that query with no heading, no sentence and no visible list
+        # saying it - every round but one is `hidden`). The round on show as
+        # real rows, and the same facts as questions. Computed, never written.
+        from site_lib.dates import fmt_day
+        rn, rd_ms = round_on_show(fx)
+        _pool = m_all or {}
+        shown = sorted((_pool.get(m.get("match_id"), m) for m in rd_ms),
+                       key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+        _rd_label = next((r.get("label") for r in rounds if r.get("round") == rn and r.get("label")),
+                         f"الجولة {rn}" if rn is not None else "")
+        _coming = [m for m in shown if (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
+                   and m.get("kickoff")]
+        next_title = (f"مباريات {label} القادمة: {_rd_label}" if _coming
+                      else f"{label}: {_rd_label}" if shown else "")
+        next_rows = [match_row(m, show_time=True, show_comp=False, show_date=True, card_link=False,
+                               link=match_url(m) if m.get("match_id") in _pool else None)
+                     for m in shown]
+        faq = []
+        if _coming:
+            _d1, _d2 = _coming[0]["kickoff"], _coming[-1]["kickoff"]
+            faq.append((f"متى مباريات {_rd_label} من {label}؟",
+                        (f"تقام يوم {fmt_day(_d1)}." if _d1 == _d2
+                         else f"تبدأ يوم {fmt_day(_d1)}. تنتهي يوم {fmt_day(_d2)}.")))
+        _done = sorted((m for r in rounds for m in r.get("matches") or []
+                        if (m.get("status") or "").upper() == "FINISHED"
+                        and m.get("home_score") is not None and m.get("kickoff")),
+                       key=lambda m: (m.get("kickoff"), m.get("koff_time") or ""), reverse=True)
+        if _done:
+            _last = [m for m in _done if m["kickoff"] == _done[0]["kickoff"]][:3]
+            faq.append((f"ما آخر نتائج {label}؟",
+                        f"نتائج يوم {fmt_day(_done[0]['kickoff'])}: "
+                        + " ".join(f"{ar_team(m.get('home'))} {m.get('home_score')} - "
+                                   f"{m.get('away_score')} {ar_team(m.get('away'))}." for m in _last)))
+        if COMP_TV.get(comp):
+            faq.append((f"ما القناة الناقلة لمباريات {label}؟",
+                        f"{COMP_TV[comp]} في المنطقة العربية."))
+        faq_html = ""
+        if faq:
+            faq_html = (f'<section class="minfo faq"><h2>أسئلة شائعة عن مباريات {esc(label)}</h2>'
+                        + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(ans)}</p></details>'
+                                  for q, ans in faq) + '</section>'
+                        + jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                                  "mainEntity": [{"@type": "Question", "name": q,
+                                                  "acceptedAnswer": {"@type": "Answer", "text": ans}}
+                                                 for q, ans in faq]}))
         # a group stage's tables, group by group (user 2026-11-13)
         from site_lib.clubs import TEAM_PAGES
         from site_lib.tables import group_tables_panel
@@ -267,6 +313,8 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
                         else _cnt(len(rounds), "جولة واحدة", "جولتان", "جولات", "جولة")),
             matches_txt=_cnt(n_m, "مباراة واحدة", "مباراتان", "مباريات", "مباراة"),
             rounds_panel=Markup(rounds_panel),
+            next_title=next_title, next_rows=[Markup(x) for x in next_rows],
+            faq=Markup(faq_html), popup=Markup(pred_pop(next_rows)),
             groups_panel=Markup(groups_panel),
             staged=any(r.get("label") for r in rounds),
             links=[Markup(x) for x in _links], crumbs_ld=Markup(crumbs_ld),

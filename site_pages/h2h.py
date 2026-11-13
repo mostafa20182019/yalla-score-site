@@ -21,7 +21,7 @@ from site_lib.text import esc, jsonld
 from site_lib.urls import article_href, breadcrumb_ld, match_url
 
 
-def h2h_pages(articles, m_all, urls):
+def h2h_pages(articles, m_all, urls, fx_by_comp=None):
     """/h2h/<slug> for every pair in site_lib.h2h.PAIRS that has at least
     four meetings on record. Markup: h2h.html. Returns how many were written."""
     os.makedirs(os.path.join(DIST, "h2h"), exist_ok=True)
@@ -41,15 +41,16 @@ def h2h_pages(articles, m_all, urls):
     written = 0
     for pair in H.PAIRS:
         a, b, slug = pair["a"], pair["b"], pair["slug"]
-        notes = H.load_notes(pair)
-        games = H.meetings(pair, H.load_history(pair), m_all)
+        history = H.load_history(pair)
+        notes = H.notes_for(pair, history)
+        games = H.meetings(pair, history, m_all)
         if len(games) < 4:
             print(f"  ! h2h {slug}: only {len(games)} meeting(s) on record - no page")
             continue
         n = len(games)
         t = H.tally(games, pair, notes)
         last, oldest = games[0], games[-1]
-        nxt = H.next_meeting(pair, m_all, REF_TODAY)
+        nxt = H.next_meeting(pair, m_all, REF_TODAY, fx_by_comp)
         url = f"/h2h/{slug}.html"
 
         def won(club):
@@ -106,7 +107,7 @@ def h2h_pages(articles, m_all, urls):
         next_row = ""
         if nxt:
             next_row = match_row(nxt, show_time=True, show_comp=True, show_date=True,
-                                 link=match_url(nxt))
+                                 link=match_url(nxt) if nxt.get("match_id") in m_all else None)
             next_txt = (f"{ar_team(nxt.get('home'))} ضد {ar_team(nxt.get('away'))} "
                         f"يوم {day_month(nxt.get('kickoff'), weekday=True)}"
                         + (f" الساعة {nxt.get('koff_time')} بتوقيت القاهرة" if nxt.get("koff_time") else "")
@@ -117,7 +118,10 @@ def h2h_pages(articles, m_all, urls):
         tps = {tp["slug"]: tp for tp in TEAM_PAGES}
         ta, tb = tps.get(pair["a_slug"]), tps.get(pair["b_slug"])
         news = []
-        for art in [x for x in articles if ta and tb and _team_news(ta, x) and _team_news(tb, x)][:6]:
+        # both clubs curated: their own news matchers; otherwise both names in the title
+        _both = ((lambda x: _team_news(ta, x) and _team_news(tb, x)) if ta and tb
+                 else (lambda x: a in (x.get("title") or "") and b in (x.get("title") or "")))
+        for art in [x for x in articles if _both(x)][:6]:
             _t = art_reltime(art)
             _img = thumb_url(art.get("image_url"))
             news.append({"href": Markup(article_href(art)), "title": art["title"],
@@ -154,7 +158,7 @@ def h2h_pages(articles, m_all, urls):
         lslug = COMP_SLUG.get(pair["league"])
         write(f"h2h/{slug}.html", render(
             "h2h.html", page_head=Markup(page_head), crumbs_ld=Markup(crumbs_ld),
-            a=a, b=b, a_slug=Markup(pair["a_slug"]), b_slug=Markup(pair["b_slug"]),
+            a=a, b=b, a_slug=Markup(pair["a_slug"] or ""), b_slug=Markup(pair["b_slug"] or ""),
             crest_a=crest_img(ca, a), crest_b=crest_img(cb, b),
             n_txt=games_n(n), since=H.ar_month_year(oldest["date"]), lead=lead,
             wins_a=t["wins"][a], wins_b=t["wins"][b], draws=t["draws"],

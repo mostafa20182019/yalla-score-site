@@ -91,6 +91,42 @@ ck("18 the committed history holds the derby (15 games or more, all between the 
 import site_lib.shell as SH                                # noqa: E402
 import site_pages.h2h as P                                 # noqa: E402
 
+# what the feed says about how a game ended becomes the note; a hand note wins
+FEED = [dict(HIST[1], status="فوز تقني", win=1), dict(HIST[2], status="بعد ركلات الترجيح", win=2),
+        dict(HIST[0], status="انتهت", win=2)]
+_keep = H.load_notes
+H.load_notes = lambda pair: {}
+nf = H.notes_for(PAIR, FEED)
+ck("18a an awarded result is read from the feed's own words",
+   nf.get("2025-03-11") == {"note": "قرار إداري", "played": False}, nf)
+ck("18b a shoot-out names its winner from the feed (away side here)",
+   nf.get("2024-10-24") == {"note": "الزمالك بالترجيح", "winner": B}, nf)
+ck("18c a normal result gets no note", "2026-10-11" not in nf)
+H.load_notes = lambda pair: {"2024-10-24": NOTES["2024-10-24"]}
+ck("18d a hand-checked note wins over the feed", H.notes_for(PAIR, FEED)["2024-10-24"]["winner"] == A)
+H.load_notes = _keep
+ck("18e every pair has a unique slug and a game id",
+   len({p["slug"] for p in H.PAIRS}) == len(H.PAIRS) and all(p.get("game") for p in H.PAIRS))
+ck("18f every committed pair holds four meetings or more",
+   all(len((doc["pairs"].get(H.pair_key(p["a"], p["b"])) or {}).get("games") or []) >= 4 for p in H.PAIRS))
+ck("18g a club page lists every pair it belongs to",
+   [p["slug"] for p in H.pairs_for_club("al-ahly")] == ["al-ahly-zamalek", "al-ahly-pyramids"]
+   and H.pairs_for_club(None) == [])
+mg, grew = HH.merge([dict(HIST[1])], [dict(HIST[1], status="فوز تقني", win=1)])
+ck("18h a saved game gains status / win without changing its score",
+   grew == 1 and mg[0]["status"] == "فوز تقني" and (mg[0]["hg"], mg[0]["ag"]) == (3, 0), mg)
+ck("18i another pair's game never joins the list",
+   len(H.meetings(PAIR, HIST + [dict(HIST[0], id=77, date="2020-01-01", away="بيراميدز")], {})) == len(HIST))
+
+ck("18j a shoot-out saved with an uneven score is left out, a level one stays",
+   [x["id"] for x in H.meetings(PAIR, [dict(HIST[0], id=1, status="بعد ركلات الترجيح", hg=5, ag=4),
+                                       dict(HIST[2], id=2, status="بعد ركلات الترجيح")], {})] == ["2"])
+FX = {"Egyptian Premier League": {"rounds": [{"round": 20, "matches": [
+    {"match_id": 9, "home": A, "away": B, "kickoff": "2027-01-10", "status": "UPCOMING"}]}]}}
+ck("18k the next meeting is found in the season's fixtures when it has no page yet",
+   H.next_meeting(PAIR, {}, "2026-11-13", FX)["match_id"] == 9)
+
+H.PAIRS = [PAIR]          # the page checks below render the fixture pair only
 out = {}
 tmp = tempfile.mkdtemp()
 P.DIST = tmp
@@ -133,9 +169,9 @@ out.clear()
 ck("32 fewer than four meetings on record = no page", P.h2h_pages([], {}, []) == 0 and not out)
 
 tpl = io.open("site_src/templates/club.html", encoding="utf-8").read()
-ck("33 the club page links to its head-to-head page", "h2h.href" in tpl)
+ck("33 the club page links to its head-to-head pages", "for x in h2h" in tpl)
 src = io.open("build_site.py", encoding="utf-8").read()
-ck("34 build() writes the pages after the club pages", src.index("club_pages(_plog") < src.index("h2h_pages(articles, m_all, urls)"))
+ck("34 build() writes the pages after the club pages", src.index("club_pages(_plog") < src.index("h2h_pages(articles, m_all, urls"))
 
 # the links INTO the page and the hub triangle (SEO review 2026-11-13)
 ck("35 a match between the two finds its pair, another match does not",

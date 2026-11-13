@@ -244,8 +244,9 @@ def build():
     if PREDICTIONS_ON:            # /analysis + /analysis/<league> + /predictions
         analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
                          _upcoming, forms, matches, urls, _xg)
-    club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls)
-    h2h_pages(articles, m_all, urls)   # «مواجهات الأهلي والزمالك» (2026-11-13)
+    club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
+               fx_by_comp=fx_by_comp, sc_by_comp=sc_by_comp, sc_ok=sc_ok)
+    h2h_pages(articles, m_all, urls, fx_by_comp)   # «مواجهات الأهلي والزمالك» (2026-11-13)
     stats_page(comp_order, fixtures, forms, league["league_stats_sec"], matches, sc_by_comp,
                sc_ok, st_by_comp, urls)
 

@@ -92,8 +92,12 @@
 {{ faq_ld }}
 <nav class="club-chips" aria-label="صفحات متصلة">
   <span>للمتابعة:</span>
+  {% if a_slug %}
   <a href="/team/{{ a_slug }}.html">{{ a }}</a>
+  {% endif %}
+  {% if b_slug %}
   <a href="/team/{{ b_slug }}.html">{{ b }}</a>
+  {% endif %}
   {% if league_slug %}
   <a href="/standings/{{ league_slug }}.html">ترتيب {{ league_ar }}</a>
   <a href="/fixtures/{{ league_slug }}.html">جدول {{ league_ar }}</a>

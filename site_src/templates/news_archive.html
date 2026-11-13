@@ -5,6 +5,7 @@
 {% if crumbs %}
 <nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/news.html">كل الأخبار</a> › {{ h1 }}</nav>
 {% endif %}
+<nav class="news-sec" aria-label="أقسام الأخبار">{% for s in sections %}<a href="{{ s.href }}"{% if s.cur %} class="cur" aria-current="page"{% endif %}>{{ s.label }}</a>{% endfor %}</nav>
 {% if rows %}
 <div class="alist">
   {% for r in rows %}
@@ -25,7 +26,7 @@
    runs newest first); the count tells a reader and a crawler how deep it goes #}
 <nav class="pager" aria-label="صفحات الأرشيف">
   {% if pager.prev %}<a class="pg-a" href="{{ pager.prev }}">الأحدث</a>{% endif %}
-  <span class="pg-n">صفحة {{ pager.k }} من {{ pager.n }}</span>
+  {% for p in pager.nums %}{% if p.gap %}<span class="pg-n">…</span>{% endif %}{% if p.cur %}<span class="pg-k cur" aria-current="page">{{ p.k }}</span>{% else %}<a class="pg-k" href="{{ p.href }}">{{ p.k }}</a>{% endif %}{% endfor %}
   {% if pager.next %}<a class="pg-a" href="{{ pager.next }}">الأقدم</a>{% endif %}
 </nav>
 {% endif %}

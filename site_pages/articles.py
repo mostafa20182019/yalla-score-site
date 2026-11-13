@@ -245,12 +245,21 @@ def news_archive_pages(articles, urls):
             return f"news/p{k}.html" if stem == "news" else f"{stem}-p{k}.html"
 
         for k, chunk in enumerate(pages, 1):
+            # numbered links (site review 2026-11-13: with «الأحدث / الأقدم»
+            # alone 115 articles sat 7-26 clicks from the home page): the
+            # first, the last and two either side of this one
+            _n = len(pages)
+            _ks = sorted({1, _n} | {j for j in range(k - 2, k + 3) if 1 <= j <= _n})
             _news_archive_page(pname(k), h1, title, desc, chunk,
-                               {"k": k, "n": len(pages),
+                               {"k": k, "n": _n,
                                 "prev": "/" + pname(k - 1) if k > 1 else "",
-                                "next": "/" + pname(k + 1) if k < len(pages) else ""})
+                                "next": "/" + pname(k + 1) if k < _n else "",
+                                "nums": [{"k": j, "href": Markup("/" + pname(j)), "cur": j == k,
+                                          "gap": i > 0 and j - _ks[i - 1] > 1}
+                                         for i, j in enumerate(_ks)]},
+                               stem)
 
-    def _news_archive_page(fname, h1, title, desc, arts, pager):
+    def _news_archive_page(fname, h1, title, desc, arts, pager, stem="news"):
         if pager["k"] > 1:
             title = f"{title} — صفحة {pager['k']}"
             desc = f"{desc} (الصفحة {pager['k']} من {pager['n']})"
@@ -287,7 +296,14 @@ def news_archive_pages(articles, urls):
             })
         write(fname, render("news_archive.html", page_head=page_head, h1=h1,
                             crumbs=(fname != "news.html" and not fname.startswith("news/p")),
-                            rows=rows, pager=pager, page_foot=Markup(foot())))
+                            rows=rows, pager=pager,
+                            # the three archives link each other (the section
+                            # pages had no link from any page body)
+                            sections=[{"href": Markup(h), "label": l, "cur": s == stem} for h, l, s in (
+                                ("/news.html", "كل الأخبار", "news"),
+                                ("/news/egypt.html", "الكرة المصرية", "news/egypt"),
+                                ("/news/europe.html", "الكرة الأوروبية", "news/europe"))],
+                            page_foot=Markup(foot())))
         urls.append("/" + fname)
 
     os.makedirs(os.path.join(DIST, "news"), exist_ok=True)   # /news/p2 ... live there too

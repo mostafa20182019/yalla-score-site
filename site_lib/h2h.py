@@ -33,7 +33,22 @@ PAIRS = [
     {"slug": "al-ahly-zamalek", "a": "الأهلي", "b": "الزمالك",
      "a_slug": "al-ahly", "b_slug": "zamalek",
      "league": "Egyptian Premier League", "game": 4804684},
+    # 2026-11-13 (SEO review): the season's title match is 23 Nov; a club
+    # without a /team page has slug None
+    {"slug": "al-ahly-pyramids", "a": "الأهلي", "b": "بيراميدز",
+     "a_slug": "al-ahly", "b_slug": "pyramids",
+     "league": "Egyptian Premier League", "game": 4804736},
+    {"slug": "zamalek-pyramids", "a": "الزمالك", "b": "بيراميدز",
+     "a_slug": "zamalek", "b_slug": "pyramids",
+     "league": "Egyptian Premier League", "game": 4804928},
+    {"slug": "trabzonspor-fenerbahce", "a": "طرابزون سبور", "b": "فنربخشة",
+     "a_slug": "trabzonspor", "b_slug": None,
+     "league": "Turkish Super Lig", "game": 4763717},
 ]
+
+# how the feed says a game ended (h2h_history.py keeps its words)
+_AWARDED = "فوز تقني"
+_PENS = "ركلات الترجيح"
 
 
 def pair_key(a, b):
@@ -41,12 +56,14 @@ def pair_key(a, b):
     return "|".join(sorted((a, b)))
 
 
+def pairs_for_club(slug):
+    """Every pair this club page belongs to."""
+    return [p for p in PAIRS if slug and slug in (p["a_slug"], p["b_slug"])]
+
+
 def pair_for_club(slug):
     """The first pair this club page belongs to, or None."""
-    for p in PAIRS:
-        if slug in (p["a_slug"], p["b_slug"]):
-            return p
-    return None
+    return (pairs_for_club(slug) or [None])[0]
 
 
 def pairs_for_league(comp):
@@ -93,6 +110,22 @@ def load_notes(pair):
     return (_load("h2h_notes.json").get(pair_key(pair["a"], pair["b"])) or {}).get("games") or {}
 
 
+def notes_for(pair, history):
+    """{date: {note, played, winner}}: what the FEED says about each saved
+    game (an awarded result, a shoot-out and its winner), with the
+    hand-checked file on top - a hand note always wins."""
+    out = {}
+    for g in history or []:
+        st, d = g.get("status") or "", (g.get("date") or "")[:10]
+        if _AWARDED in st:
+            out[d] = {"note": "قرار إداري", "played": False}
+        elif _PENS in st and g.get("win") in (1, 2):
+            w = ar_team(g.get("home") if g["win"] == 1 else g.get("away"))
+            out[d] = {"note": f"{w} بالترجيح", "winner": w}
+    out.update(load_notes(pair))
+    return out
+
+
 def is_pair(pair, home, away):
     return {ar_team(home), ar_team(away)} == {pair["a"], pair["b"]}
 
@@ -109,6 +142,14 @@ def meetings(pair, history, m_all):
             ours[str(m["match_id"])] = m
     for g in history:
         if g.get("hg") is None or g.get("ag") is None or not g.get("date"):
+            continue
+        if not is_pair(pair, g.get("home"), g.get("away")):
+            continue                      # never another pair's game
+        if _PENS in (g.get("status") or "") and int(g["hg"]) != int(g["ag"]):
+            # a shoot-out follows a LEVEL score: an uneven one here is the
+            # shoot-out's own count saved as the result (الزمالك 5-4 بيراميدز,
+            # 2025-11-06), so the real score is unknown - the game is left out
+            # rather than shown wrong
             continue
         gid = str(g.get("id") or "")
         out.append({"id": gid, "date": g["date"][:10], "comp": g.get("comp") or "",
@@ -214,9 +255,16 @@ def unbeaten_run(games, pair):
     return lead, n
 
 
-def next_meeting(pair, m_all, today):
-    """Our next scheduled match between the two, or None."""
-    up = [m for m in (m_all or {}).values()
+def next_meeting(pair, m_all, today, fx_by_comp=None):
+    """Our next scheduled match between the two, or None: from the matches
+    that have a page (m_all) and from the season's fixtures, so a meeting weeks
+    away still shows."""
+    pool = dict(m_all or {})
+    for fx in (fx_by_comp or {}).values():
+        for r in (fx or {}).get("rounds") or []:
+            for m in r.get("matches") or []:
+                pool.setdefault(m.get("match_id"), m)
+    up = [m for m in pool.values()
           if is_pair(pair, m.get("home"), m.get("away"))
           and (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
           and (m.get("kickoff") or "") >= today]

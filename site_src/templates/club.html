@@ -57,8 +57,11 @@
 </section>
 {% endif %}
 {{ faq }}
+{% if hub_links %}
+<p class="more-link">{% for x in hub_links %}{% if not loop.first %} · {% endif %}<a href="{{ x.href }}">{{ x.label }} ←</a>{% endfor %}</p>
+{% endif %}
 {% if h2h %}
-<p class="h2h-cta"><a href="{{ h2h.href }}">{{ h2h.label }} ←</a></p>
+<p class="h2h-cta more-link">{% for x in h2h %}{% if not loop.first %} · {% endif %}<a href="{{ x.href }}">{{ x.label }} ←</a>{% endfor %}</p>
 {% endif %}
 <nav class="club-chips" aria-label="صفحات الأندية">
   <span>أندية أخرى:</span>
