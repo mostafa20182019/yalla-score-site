@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-13T15:02:59+02:00",
+ "generated_at": "2026-11-13T19:07:49+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1680,6 +1680,18 @@
    "is_person": false,
    "source": "team-photos/man-united/marble-crest-wide.jpg",
    "added": "2026-10-18",
+   "width": 1600
+  },
+  {
+   "file": "man-united-mauricio-pochettino-usmnt-close-mar2026.jpg",
+   "credit": "صورة: المدرب الأرجنتيني ماوريسيو بوتشيتينو، مدير مانشستر يونايتد الفني الجديد، في لقطة مقربة خلال مباراة لمنتخب الولايات المتحدة بصفته مديره الفني في مارس 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "المدرب ماوريسيو بوتشيتينو",
+   "club": "مانشستر يونايتد",
+   "slug": "man-united",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/man-united/mauricio-pochettino-usmnt-close-mar2026.jpg",
+   "added": "2026-11-13",
    "width": 1600
   },
   {
