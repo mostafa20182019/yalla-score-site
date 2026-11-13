@@ -190,7 +190,7 @@ def focus_of(match):
 def hook_lines(tab, match):
     """(«مصر على القمة…», «والليلة نكمّل قدام مالاوي») from the two rows."""
     if HOOK_LINES:
-        return HOOK_LINES[0], HOOK_LINES[1]
+        return tuple(HOOK_LINES)
     me = focus_of(match)
     opp = match["away"] if me == match["home"] else match["home"]
     pts = {r["team"]: r["pts"] for r in tab}
@@ -309,7 +309,7 @@ def build(tab, match):
     home, away = match["home"], match["away"]
     url = badges([match])
     me = focus_of(match)
-    hook1, hook2 = hook_lines(tab, match)
+    hooks = hook_lines(tab, match)        # 2 lines, or 3 when hand-written
     rounds = rounds_played(tab)
     q = QUALIFY.get(match["competition"], 0)
     comp_full, _ = edition(match)
@@ -327,11 +327,14 @@ def build(tab, match):
         d = ImageDraw.Draw(lay)
         versus(d, W / 2, 650, 64)
         M.put(im, lay, e, dy=M.SLIDE * (1 - e))
-        for i, (s, col) in enumerate(((hook1, C.WHITE), (hook2, M.GOLD))):
+        # the first line white, the rest gold; a hand-written long line can be
+        # split over a third line instead of shrinking (2026-11-13)
+        white = 2 if len(hooks) == 4 else 1           # 4 lines = two sentences of two lines each
+        for i, (s, col) in enumerate((h, C.WHITE if i < white else M.GOLD) for i, h in enumerate(hooks)):
             e = M.ease(t, 0.35 + i * M.STAGGER, M.FADE)
             if e > 0:
                 lay = M.layer()
-                centre_line(ImageDraw.Draw(lay), 900 + i * 120, s, "ExtraBold", 84, col)
+                centre_line(ImageDraw.Draw(lay), 900 + i * (120 if len(hooks) < 4 else 105), s, "ExtraBold", 84, col)
                 M.put(im, lay, e, dy=M.SLIDE * (1 - e))
         return im
 
@@ -443,15 +446,15 @@ def main():
     ap.add_argument("--sheet", help="also write a contact sheet PNG")
     ap.add_argument("--caption", help="write the post text here (default <out>-caption.txt)")
     ap.add_argument("--png", help="write stills (one per scene) into this folder, no MP4")
-    ap.add_argument("--hook", help='the two hook lines, "first|second" (default: computed)')
+    ap.add_argument("--hook", help='2-4 hook lines, "a|b[|c[|d]]"; with 4 the first two are white (default: computed)')
     ap.add_argument("--outro", help='the two closing lines, "first|second" (default: «توقعك كام؟»)')
     ap.add_argument("--lead", help="the caption's first line (default: computed)")
     ap.add_argument("--data", help="read the match files from this folder instead of data/")
     args = ap.parse_args()
     global HOOK_LINES, OUTRO_LINES, LEAD
-    two = lambda v, flag: (lambda p: p if len(p) == 2 and all(p) else ap.error(f'{flag} needs "first|second"'))(
+    two = lambda v, flag, most=2: (lambda p: p if 2 <= len(p) <= most and all(p) else ap.error(f'{flag} needs "first|second"'))(
         [x.strip() for x in v.split("|")])
-    HOOK_LINES = two(args.hook, "--hook") if args.hook else None
+    HOOK_LINES = two(args.hook, "--hook", 4) if args.hook else None
     OUTRO_LINES = two(args.outro, "--outro") if args.outro else None
     LEAD = args.lead.strip() if args.lead else None
     if args.data:
