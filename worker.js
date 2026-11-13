@@ -157,17 +157,51 @@ async function gameDetail(gid) {
 // (or «بطاقة» / card in the name; «ثانية» = second yellow = red), substitution
 // = «تبديل» / "Substitution" with the player going off first in extraPlayers.
 // Only games of the competitions we cover; null on any failure.
-export async function gameEvents(gid) {
+// Team stats of one game (match_stats.parse_stats ported): the same six
+// numbers the finished page shows, read by stable ids, sides by the game's
+// home id. null when the feed has none (the CAF competitions carry none).
+const STAT_KEYS = { 76: "xg", 79: "xgot", 3: "shots", 4: "sot", 24: "big", 10: "poss" };
+function statNum(v) {
+  const s = String(v == null ? "" : v).replace("%", "").replace(",", ".").trim();
+  if (s === "") return null;
+  const f = Number(s);
+  return Number.isFinite(f) ? f : null;
+}
+export function parseStats(doc, homeId) {
+  const out = { h: {}, a: {} };
+  const hid = homeId ?? (((doc.games || [])[0] || {}).homeCompetitor || {}).id;
+  if (hid == null) return null;
+  for (const t of doc.statistics || []) {
+    const k = STAT_KEYS[t.id];
+    if (!k) continue;
+    const v = statNum(t.value);
+    if (v != null) out[t.competitorId === hid ? "h" : "a"][k] = v;
+  }
+  return Object.keys(out.h).length && Object.keys(out.a).length ? out : null;
+}
+async function gameStats(gid, homeId) {
   try {
     const r = await fetch(
-      `https://webws.365scores.com/web/game/?appTypeId=5&langId=27&gameId=${gid}`,
-      { headers: S365_HEADERS, cf: { cacheTtl: 12, cacheEverything: true } });
+      `https://webws.365scores.com/web/game/stats/?appTypeId=5&langId=27&timezoneName=Africa/Cairo&games=${gid}`,
+      { headers: S365_HEADERS, cf: { cacheTtl: 20, cacheEverything: true } });
+    if (!r.ok) return null;
+    return parseStats(await r.json(), homeId);
+  } catch (e) { return null; }
+}
+
+export async function gameEvents(gid) {
+  try {
+    const [r, sr] = await Promise.all([
+      fetch(`https://webws.365scores.com/web/game/?appTypeId=5&langId=27&gameId=${gid}`,
+            { headers: S365_HEADERS, cf: { cacheTtl: 12, cacheEverything: true } }),
+      gameStats(gid, null).then((s) => s, () => null),
+    ]);
     if (!r.ok) return null;
     const game = (await r.json()).game || {};
     if (!game.id || !LIVE_COMPS.split(",").includes(String(game.competitionId))) return null;
     const home = game.homeCompetitor || {};
-    const members = {};
-    for (const m of game.members || []) members[m.id] = (m.name || "").trim();
+    const members = {}, jersey = {};
+    for (const m of game.members || []) { members[m.id] = (m.name || "").trim(); jersey[m.id] = m.jerseyNumber; }
     const side = (ev) => ev.competitorId == null
       ? (ev.num === 1 ? "h" : "a") : (ev.competitorId === home.id ? "h" : "a");
     const minute = (ev) => {
@@ -194,7 +228,43 @@ export async function gameEvents(gid) {
         subs.push({ s: side(ev), i: player, o: other, m: minute(ev) });
       }
     }
-    return { id: game.id, live: game.statusGroup === 3, cards, subs };
+    // the starting XIs (fetch_data._detail_rows): name, number, position and
+    // the live rating; a side counts only with exactly 11 starters
+    const lineups = {};
+    for (const [k, comp] of [["h", home], ["a", game.awayCompetitor || {}]]) {
+      const lu = comp.lineups;
+      if (!lu || typeof lu !== "object") continue;
+      const xi = [];
+      for (const mm of lu.members || []) {
+        if (mm.status !== 1) continue;
+        const pid = mm.id ?? mm.playerId ?? mm.athleteId;
+        const n = members[pid];
+        if (!n) continue;
+        const p = { n };
+        if (jersey[pid] != null) p.num = jersey[pid];
+        if (mm.position && mm.position.name) p.pos = mm.position.name;
+        if (Number(mm.ranking) > 0) p.rt = Number(mm.ranking);
+        xi.push(p);
+      }
+      if (xi.length === 11) {
+        const f = lu.formation;
+        lineups[k] = { f: typeof f === "string" ? f : ((f && f.name) || ""), xi };
+      }
+    }
+    // the substitution orientation guard of _detail_rows: the player coming
+    // ON is never a starter - when most changes say otherwise, the feed's
+    // convention is the reverse of ours here, so swap them all
+    const starters = new Set(Object.values(lineups).flatMap((l) => l.xi.map((p) => p.n)));
+    if (subs.length && starters.size) {
+      const wrong = subs.filter((s) => starters.has(s.i) && !starters.has(s.o)).length;
+      const right = subs.filter((s) => starters.has(s.o) && !starters.has(s.i)).length;
+      if (wrong > right) for (const s of subs) [s.i, s.o] = [s.o, s.i];
+    }
+    // the stats reply names its own home; re-read it against THIS game's
+    const stats = sr && (sr.h || sr.a) ? sr : null;
+    return { id: game.id, live: game.statusGroup === 3, cards, subs,
+             ...(Object.keys(lineups).length ? { lineups } : {}),
+             ...(stats ? { stats } : {}) };
   } catch (e) { return null; }
 }
 

@@ -630,7 +630,9 @@ def match_details_html(e, flipped, h_ar, a_ar):
                         "rt": f'{float(p["rt"]):.1f}' if rc else "", "rc": rc or "",
                         "ev": player_events(p.get("name")), "st": card_rows(p["st"])})
                 parts.append(
-                    f'<div class="pp" style="--xv:{x:.1f}%;--yv:{y:.1f}%"{tap}>'
+                    # data-n: LIVE_JS paintPitch finds the chip by name to
+                    # repaint its rating and badges during the match
+                    f'<div class="pp" data-n="{esc(p.get("name") or "")}" style="--xv:{x:.1f}%;--yv:{y:.1f}%"{tap}>'
                     f'<span class="pp-ava">{ava}{rt}{bd}{cap}</span>'
                     f'<span class="pp-nm"><bdi>{nm}</bdi></span></div>')
         parts.append('</div>')

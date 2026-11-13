@@ -121,7 +121,8 @@
     if(note&&(!g.live||ev)){note.parentNode.removeChild(note);note=null;}
     if(!hasG&&!(ev&&(ev.cards.length+ev.subs.length)))return;
     if(!tl){
-      hero.insertAdjacentHTML('afterend','<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl" data-bk="0"></div></section>');
+      var st0=document.querySelector('.mstats');
+      (st0||hero).insertAdjacentHTML('afterend','<section class="minfo"><h2>أحداث المباراة</h2><div class="mtl" data-bk="0"></div></section>');
       tl=document.querySelector('.mtl');
     }
     if(g.live&&!ev&&!note)tl.insertAdjacentHTML('afterend','<p class="hintline tl-note">الأهداف تتحدّث لحظيًا. البطاقات والتبديلات تتحدّث كل بضع دقائق.</p>');
@@ -165,6 +166,115 @@
     /* newest first; in one minute the goal, then the card, then the change */
     all.sort(function(a,b){return b.k-a.k||a.o-b.o||a.i-b.i;});
     all.forEach(function(x){tl.appendChild(x.el);});
+  }
+  /* «أرقام المباراة» and the lineup while the match is on (2026-11-13, user:
+     «خلى الاحصائيات والتشكيل يكونوا لحظيين»). Same reply as the cards and
+     changes (/live/ev/<gameId>.json, the worker's ports of match_stats and
+     _detail_rows), same markup as tables.match_stats_html and the pitch.
+     The stats bars are rebuilt; on the pitch each player's rating, card,
+     change and goal/assist badges follow the match (chips found by data-n).
+     A page built before the XI was out gets the plain lineup list. */
+  var SROWS=[['الأهداف المتوقعة (xG)','xg',2],['xG على المرمى','xgot',2],['التسديدات','shots',0],
+             ['تسديدات على المرمى','sot',0],['فرص خطيرة','big',0],['الاستحواذ','poss','%']];
+  function sFmt(v,f){return f===2?Number(v).toFixed(2):(f==='%'?v+'%':String(v));}
+  function paintStats(hero,g,ev){
+    if(!ev.stats)return;
+    var row=hero.querySelector('[data-lv]')||hero;
+    var hn=row.getAttribute('data-h')||'',an=row.getAttribute('data-a')||'';
+    var H=g.sw?ev.stats.a:ev.stats.h,A=g.sw?ev.stats.h:ev.stats.a;
+    if(!H||!A)return;
+    var bars='';
+    SROWS.forEach(function(s){
+      var hv=H[s[1]],av=A[s[1]]; if(hv==null||av==null)return;
+      var tot=(+hv||0)+(+av||0),hp=tot?Math.round(100*hv/tot):0,ap=tot?100-hp:0;
+      var lh=hv>av?' on':'',la=av>hv?' on':'';
+      bars+='<div class="sb"><div class="sb-l"><b class="sb-v'+lh+'">'+sFmt(hv,s[2])+'</b><span>'+s[0]+'</span><b class="sb-v'+la+'">'+sFmt(av,s[2])+'</b></div>'
+        +'<div class="sb-t" aria-hidden="true"><span class="sb-h"><i class="'+lh.trim()+'" style="width:'+hp+'%"></i></span>'
+        +'<span class="sb-a"><i class="'+la.trim()+'" style="width:'+ap+'%"></i></span></div></div>';
+    });
+    if(!bars)return;
+    var inner='<div class="sb-teams"><bdi>'+escH(hn)+'</bdi><bdi>'+escH(an)+'</bdi></div>'+bars;
+    var sec=document.querySelector('.mstats');
+    if(!sec){
+      var tl=document.querySelector('.mtl'),before=tl&&tl.closest('section');
+      var html='<section class="minfo mstats"><h2>أرقام مباراة '+escH(hn)+' و'+escH(an)+'</h2><div class="sbars"></div>'
+        +'<p class="hintline">الأرقام تتحدّث أثناء المباراة. المصدر: 365scores.</p></section>';
+      if(before)before.insertAdjacentHTML('beforebegin',html);else hero.insertAdjacentHTML('afterend',html);
+      sec=document.querySelector('.mstats');
+    }
+    var sb=sec.querySelector('.sbars'); if(!sb)return;
+    if(sb.getAttribute('data-ls')===inner.length+'|'+bars)return;
+    sb.setAttribute('data-ls',inner.length+'|'+bars);
+    sb.innerHTML=inner;
+  }
+  var PBOOT='<svg viewBox="0 0 16 16" aria-hidden="true"><path fill="#0f172a" d="M2.2 3.2h3.6l1 3.1 4.8 1.9c1.4.5 2.2 1.4 2.2 2.6v.7H2.2z"/><path fill="#0f172a" d="M3 12.3h1.6v1.6H3zm4.2 0h1.6v1.6H7.2zm4.2 0H13v1.6h-1.6z"/></svg>';
+  function rtCls(r){return r>=8?'r8':r>=7?'r7':r>=6.5?'r65':'r6';}
+  function paintPitch(hero,g,ev,useEv){
+    var chips=[].slice.call(document.querySelectorAll('.pitch .pp[data-n]'));
+    var lus=ev.lineups||{};
+    if(!chips.length){
+      /* no pitch and no list on the page: the plain list, page sides */
+      if(document.querySelector('.pitch,.lu')||!lus.h||!lus.a)return;
+      var row=hero.querySelector('[data-lv]')||hero;
+      var hn=row.getAttribute('data-h')||'',an=row.getAttribute('data-a')||'';
+      var L=[[hn,g.sw?lus.a:lus.h],[an,g.sw?lus.h:lus.a]],html='';
+      L.forEach(function(t){
+        html+='<div class="lu-t"><h3><bdi>'+escH(t[0])+'</bdi>'+(t[1].f?' <span class="lu-f" dir="ltr">'+escH(t[1].f)+'</span>':'')+'</h3><ol class="lu-l">';
+        t[1].xi.forEach(function(p){
+          html+='<li><span class="lu-n">'+(p.num!=null?escH(p.num):'·')+'</span> <bdi>'+escH(p.n)+'</bdi>'+(p.pos?'<span class="lu-p">'+escH(p.pos)+'</span>':'')+'</li>';
+        });
+        html+='</ol></div>';
+      });
+      var anchor=(document.querySelector('.mtl')||{}).closest?document.querySelector('.mtl').closest('section'):(document.querySelector('.mstats')||hero);
+      anchor.insertAdjacentHTML('afterend','<section class="minfo lu-live"><h2>تشكيل '+escH(hn)+' و'+escH(an)+'</h2><div class="lu">'+html+'</div></section>');
+      return;
+    }
+    var rt={};
+    ['h','a'].forEach(function(k){(lus[k]&&lus[k].xi||[]).forEach(function(p){if(p.rt>0)rt[p.n]=p.rt;});});
+    var card={},off={},sc={},og={},as={};
+    if(useEv){
+      ev.cards.forEach(function(c){card[c.p]=(c.c==='r'||card[c.p]==='r')?'r':'y';});
+      ev.subs.forEach(function(s){off[s.o]=1;});
+    }
+    var hasG=!!(g.goals&&g.goals.length);
+    if(hasG)g.goals.forEach(function(x){
+      if(x.p){var b=x.t==='عكسية'?og:sc;b[x.p]=(b[x.p]||0)+1;}
+      if(x.a)as[x.a]=(as[x.a]||0)+1;
+    });
+    chips.forEach(function(c){
+      var n=c.getAttribute('data-n'),ava=c.querySelector('.pp-ava'); if(!ava)return;
+      var cap=ava.querySelector('.pp-cap');
+      function put(html){if(cap)cap.insertAdjacentHTML('beforebegin',html);else ava.insertAdjacentHTML('beforeend',html);}
+      function drop(sel){[].slice.call(ava.querySelectorAll(sel)).forEach(function(x){x.parentNode.removeChild(x);});}
+      if(rt[n]){
+        var r=ava.querySelector('.pp-rt'),cls='pp-rt '+rtCls(rt[n]),txt=rt[n].toFixed(1);
+        if(r){r.className=cls;r.textContent=txt;}
+        else{var fb=ava.querySelector('.pp-fb');(fb||ava.firstChild).insertAdjacentHTML(fb?'afterend':'beforebegin','<span class="'+cls+'">'+txt+'</span>');}
+      }
+      if(useEv){
+        drop('.pp-card,.pp-sub');
+        var bd='';
+        if(card[n])bd+='<span class="pp-card '+card[n]+'"></span>';
+        if(off[n])bd+='<span class="pp-sub">⇄</span>';
+        if(bd){var e0=ava.querySelector('.pp-evs');if(e0)e0.insertAdjacentHTML('beforebegin',bd);else put(bd);}
+      }
+      if(hasG){
+        drop('.pp-evs');
+        var out='';
+        [[sc[n],'','⚽','هدف'],[og[n],' og','⚽','هدف عكسي'],[as[n],' as',PBOOT,'صناعة هدف']].forEach(function(b){
+          if(b[0])out+='<span class="pp-ev'+b[1]+'" title="'+b[3]+'" aria-label="'+b[3]+'">'+b[2]+(b[0]>1?'<b>'+b[0]+'</b>':'')+'</span>';
+        });
+        if(out)put('<span class="pp-evs">'+out+'</span>');
+      }
+    });
+  }
+  function paintExtras(e,g){
+    var hero=e.closest&&e.closest('.mp-hero'); if(!hero)return;
+    if(!EV||String(EV.id)!==String(g.id))return;
+    var tl=document.querySelector('.mtl'),baked=tl?+(tl.getAttribute('data-bk')||0):0;
+    var useEv=(EV.cards.length+EV.subs.length)>=baked;
+    paintStats(hero,g,EV);
+    paintPitch(hero,g,EV,useEv);
   }
   /* replay the CSS animation on an element that may already carry the class:
      removing it is not enough, the browser needs a reflow in between. */
@@ -216,6 +326,7 @@
         var sd=document.querySelector('[data-lv-state]');
         if(sd){sd.textContent=g.live?('جارية الآن'+(g.min?' · '+g.min:'')):'انتهت';}
         paintTimeline(e,g);
+        paintExtras(e,g);
       }
     }
   }
