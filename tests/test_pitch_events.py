@@ -131,5 +131,27 @@ ck("18 a pre-match XI (no match played) has no player cards", 'data-i="' not in 
 ck("19 a pitch with no stats at all ships no card data (the script waits for live numbers)",
    'id="ppData"' not in html and 'data-i="' not in html and "window.__ppLive" in html)
 
+# 2026-11-13 (user screenshot, تونس × ليبيا): the lineup's first version put
+# all eleven on one line, and the phone pitch had every side mirrored
+from site_lib.matchdata import _pitch_rows                   # noqa: E402
+_one = {"xi": [{"name": f"p{i}", "ln": 1, "sd": i * 10} for i in range(11)]}
+ck("20 eleven players on one line are no pitch (the plain list shows instead)", _pitch_rows(_one, True) is None)
+_two = {"xi": [{"name": "gk", "ln": 1, "sd": 50}] + [{"name": f"p{i}", "ln": 2, "sd": i * 10} for i in range(10)]}
+ck("21 ten outfield players on one line are no pitch either", _pitch_rows(_two, True) is None)
+# Tunisia's real XI that evening (fieldSide 0 = left back علي معلول, 100 = right back محمد دراغر)
+_tun = {"xi": [{"name": n, "ln": ln, "sd": sd} for n, ln, sd in (
+    ("دحمان", 1, 50), ("معلول", 2, 0), ("الطالبي", 2, 33), ("غرام", 2, 66), ("دراغر", 2, 100),
+    ("العيدوني", 3, 20), ("بن رمضان", 3, 80), ("سعد", 4, 0), ("الغربي", 4, 50), ("لطيف", 4, 100),
+    ("شواط", 5, 50))]}
+rows = {p["name"]: (x, y) for x, y, p in _pitch_rows(_tun, True)}
+ck("22 a real 4-2-3-1 is a pitch: the keeper alone, five lines", rows and len({y for x, y in rows.values()}) == 5)
+ck("23 the build's x runs from the team's LEFT (fieldSide 0) to its right",
+   rows["معلول"][0] < rows["دراغر"][0], rows)
+css = open("site_src/style.css", encoding="utf-8").read()
+ck("24 the phone pitch mirrors x (home faces down: its left is the screen's right)",
+   ".pp{position:absolute;left:calc(100% - var(--xv));top:var(--yv)" in css)
+ck("25 the wide pitch keeps its own axes (home faces right: its left is the top)",
+   ".pitch .pp{left:var(--yv);top:var(--xv)}" in css)
+
 print(f"\n{len(fails)} FAILED" if fails else "\nALL OK")
 sys.exit(1 if fails else 0)

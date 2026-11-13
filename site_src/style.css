@@ -892,7 +892,12 @@ html.lt-lock{overflow:hidden}
 .pt-lab .lu-f{background:rgba(10,61,28,.75);color:#fff}
 .pt-lab-h{top:6px;left:8px}
 .pt-lab-a{bottom:6px;right:8px}
-.pp{position:absolute;left:var(--xv);top:var(--yv);transform:translate(-50%,-50%);
+/* the phone pitch is vertical: home at the top FACING DOWN, so its left side
+   (fieldSide 0, the left back) is on the screen's RIGHT, and the away team at
+   the bottom faces up with its left on the screen's left - the x axis runs
+   mirrored (user 2026-11-13: «اللاعب اليمين بيكون على الشمال»). The wide
+   pitch (>=760px) swaps the axes and was already right. */
+.pp{position:absolute;left:calc(100% - var(--xv));top:var(--yv);transform:translate(-50%,-50%);
   display:flex;flex-direction:column;align-items:center;gap:2px;width:76px;pointer-events:none}
 @media(min-width:760px){
   .pitch{aspect-ratio:16/10;max-width:840px;

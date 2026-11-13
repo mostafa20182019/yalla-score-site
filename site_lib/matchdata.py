@@ -259,6 +259,16 @@ def _pitch_rows(lu, top):
     xi = (lu or {}).get("xi") or []
     if sum(1 for p in xi if p.get("ln")) < 8:
         return None
+    # the feed's FIRST version of a lineup can carry the same line for every
+    # player (user screenshot 2026-11-13, تونس × ليبيا: eleven chips on one
+    # row, names on top of each other, fixed a build later). A real formation
+    # has a keeper alone on his line and at least three lines; anything else
+    # is the plain list until the feed fills the lines in.
+    _per = {}
+    for p in xi:
+        _per[p.get("ln") or 99] = _per.get(p.get("ln") or 99, 0) + 1
+    if len(_per) < 3 or max(_per.values()) > 6:
+        return None
     lines = {}
     for p in xi:
         lines.setdefault(p.get("ln") or 99, []).append(p)
