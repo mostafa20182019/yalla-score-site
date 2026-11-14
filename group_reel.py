@@ -165,7 +165,7 @@ TODAY = None            # the posting day (Cairo); None = today. Tests pin it.
 # Hand-written lines (2026-11-13, Sudan v Senegal: «السودان مازال لديه الفرصة
 # ... نتمنى تحقيق نتيجة ايجابية»): --hook "a|b", --outro "a|b" and --lead
 # replace the computed wording; the table and the match card stay computed.
-HOOK_LINES = OUTRO_LINES = LEAD = None
+HOOK_LINES = OUTRO_LINES = LEAD = TABLE_TITLE = None
 
 
 def tonight(match):
@@ -342,7 +342,12 @@ def build(tab, match):
         im = bg.copy()
         M.header(im)
         d = ImageDraw.Draw(im)
-        centre_line(d, 418, f"المجموعة {rounds_words(rounds)}", "ExtraBold", 50, C.WHITE)
+        _tt = (TABLE_TITLE or f"المجموعة {rounds_words(rounds)}").split("|")
+        if len(_tt) == 1:
+            centre_line(d, 418, _tt[0], "ExtraBold", 50, C.WHITE)
+        else:                     # «a|b»: the title, and a gold line under it (2026-11-13)
+            centre_line(d, 380, _tt[0], "ExtraBold", 50, C.WHITE)
+            centre_line(d, 434, _tt[1], "Bold", 40, M.GOLD)
         fh = C.font("Bold", 32)
         for x, s in ((X_PL, "لعب"), (X_GD, "الفرق"), (X_PTS, "نقاط")):
             C.draw_center(d, x, 496, C.ar(s), fh, M.SOFT)
@@ -449,14 +454,16 @@ def main():
     ap.add_argument("--hook", help='2-4 hook lines, "a|b[|c[|d]]"; with 4 the first two are white (default: computed)')
     ap.add_argument("--outro", help='the two closing lines, "first|second" (default: «توقعك كام؟»)')
     ap.add_argument("--lead", help="the caption's first line (default: computed)")
+    ap.add_argument("--table-title", help="the line over the table, or «title|second line» (default: «المجموعة بعد N جولات»)")
     ap.add_argument("--data", help="read the match files from this folder instead of data/")
     args = ap.parse_args()
-    global HOOK_LINES, OUTRO_LINES, LEAD
+    global HOOK_LINES, OUTRO_LINES, LEAD, TABLE_TITLE
     two = lambda v, flag, most=2: (lambda p: p if 2 <= len(p) <= most and all(p) else ap.error(f'{flag} needs "first|second"'))(
         [x.strip() for x in v.split("|")])
     HOOK_LINES = two(args.hook, "--hook", 4) if args.hook else None
     OUTRO_LINES = two(args.outro, "--outro") if args.outro else None
     LEAD = args.lead.strip() if args.lead else None
+    TABLE_TITLE = args.table_title.strip() if args.table_title else None
     if args.data:
         import site_lib.config as _cfg
         _cfg.DATA = os.path.abspath(args.data)
