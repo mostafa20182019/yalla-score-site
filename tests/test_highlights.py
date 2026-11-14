@@ -101,8 +101,18 @@ if html:
        "nt-goals" in nav and "أهداف المباريات" in nav)
     mx = open("dist/matches.html", encoding="utf-8").read()
     btns = re.findall(r'<a class="mhl" href="(https://www\.youtube\.com/watch\?v=[\w-]{11})" target="_blank" rel="noopener"', mx)
+    # what the check MEANS (2026-11-14): a finished match on the day list that
+    # has a video shows the button, and every button opens YouTube. It used to
+    # demand at least one button - during the international break (no league
+    # match after 11-10, the national-team videos not matched yet) the list
+    # had none to show, and the deploy gate blocked every deploy from the
+    # morning of 11-14.
+    _vid_ids = {str(e.get("match_id")) for e in H.load()[0].values() if e.get("match_id")}
+    _fin_ids = re.findall(r'class="mrow mrow-fin"[^>]*>\s*<a class="mstretch" href="/m/(\d+)"', mx)
+    _owed = [x for x in _fin_ids if x in _vid_ids]
     ok("18b the day list carries a «الأهداف» button on matches that have a video, opening YouTube",
-       btns and mx.count('class="mhl"') == len(btns), len(btns))
+       mx.count('class="mhl"') == len(btns) and len(btns) >= len(_owed),
+       f"{len(btns)} buttons, {len(_owed)} finished matches with a video, {len(_fin_ids)} finished rows")
     import glob as _g
     ok("18c the match page's own row carries it too",
        any('class="mhl"' in open(f, encoding="utf-8").read() for f in _g.glob("dist/m/*.html")[:400]))
