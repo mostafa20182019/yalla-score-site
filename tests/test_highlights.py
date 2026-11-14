@@ -90,7 +90,7 @@ if html:
        'class="gl-sc sc-in"' in html)
     regs = re.findall(r'data-reg="(\w+)"', html)
     ok("16 every card carries its region for the الكل · مصر · السعودية · أوروبا chips",
-       regs and set(regs) <= {"eg", "sa", "eu"} and all(f'data-f="{r}"' in html for r in ("eg", "sa", "eu")))
+       regs and set(regs) <= {"eg", "sa", "eu", "nt"} and all(f'data-f="{r}"' in html for r in ("eg", "sa", "eu", "nt")))
     lines = re.findall(r'<article class="gl-card"[^>]*>.*?</article>', html, re.S)
     mps = [re.search(r'href="(/m/\d+)', c) for c in lines]
     ok("17 no match appears twice for one channel (ON Sport's أهداف + ملخص of one game)",
@@ -159,6 +159,38 @@ ok("19 a failing highlights fetch never fails the data fetch", "highlights faile
 ds = open("data_store.py", encoding="utf-8").read()
 ok("20 the store carries the file and merges it by video id", '"highlights.json"' in ds
    and '"highlights.json": lambda e: str(e.get("vid"))' in ds)
+
+# the national teams (2026-11-14, user: «أيوه ضيفها») - beIN's titles for them
+NT = [{"match_id": 701, "competition": "Africa Cup of Nations Qualification", "kickoff": "2026-11-13",
+       "status": "FINISHED", "home": "مصر", "away": "مالاوي", "ar_home": "مصر", "ar_away": "مالاوي",
+       "home_score": 5, "away_score": 0, "round": 3},
+      {"match_id": 702, "competition": "Africa Cup of Nations Qualification", "kickoff": "2026-11-17",
+       "status": "FINISHED", "home": "مالاوي", "away": "مصر", "ar_home": "مالاوي", "ar_away": "مصر",
+       "home_score": 0, "away_score": 1, "round": 4},
+      {"match_id": 703, "competition": "UEFA Nations League", "kickoff": "2026-11-12",
+       "status": "FINISHED", "home": "إيطاليا", "away": "فرنسا", "ar_home": "إيطاليا", "ar_away": "فرنسا",
+       "home_score": 3, "away_score": 1, "round": 5}]
+_bein = next(c for c in H.CHANNELS if c["key"] == "bein")
+_now = datetime(2026, 11, 18, 12, tzinfo=timezone.utc)
+
+
+def nt(title, pub=None):
+    m = H.match_for(title, pub, _bein["scope"], NT, _now)
+    return m and m["match_id"]
+
+
+ok("27 beIN carries the AFCON qualifiers and the Nations League", H.NATIONS <= _bein["scope"])
+ok("28 «الجولة الثالثة» is round 3: a first-leg video found later never lands on the return leg",
+   nt("ملخص مباراة مصر ومالاوي | تصفيات كأس أمم إفريقيا 2027 - الجولة الثالثة") == 701
+   and nt("ملخص مباراة مالاوي ومصر | تصفيات كأس أمم إفريقيا 2027 - الجولة الرابعة") == 702)
+ok("29 a Nations League highlight finds its match",
+   nt("ملخص مباراة إيطاليا وفرنسا | دوري الأمم الأوروبية - الجولة الخامسة") == 703)
+ok("30 round words read as numbers, digits still win", H.title_round("الجولة الأولى") == 1
+   and H.title_round("الجولة 12") == 12 and H.title_round("بلا جولة") is None)
+ok("31 a national-team card is region «nt» (المنتخبات), a league card keeps its channel's",
+   H.entry(_bein, "x", "t", "", dict(NT[0]))["region"] == "nt"
+   and H.entry(_bein, "x", "t", "", {"match_id": 1, "competition": "Premier League",
+                                    "ar_home": "a", "ar_away": "b"})["region"] == "eu")
 
 print("\nALL HIGHLIGHTS TESTS PASSED" if not fails else f"\n{len(fails)} FAILED")
 sys.exit(1 if fails else 0)

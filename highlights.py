@@ -48,11 +48,18 @@ FILE = os.path.join(HERE, "data", "highlights.json")
 # beIN: the leagues and UEFA cups it broadcasts (Serie A / Bundesliga left it).
 EUROPE = {"Premier League", "Primera Division", "Ligue 1", "Turkish Super Lig",
           "UEFA Champions League", "UEFA Europa League", "UEFA Conference League"}
+# the national teams (2026-11-14, user: «أيوه ضيفها»): beIN holds both, and
+# its «ملخص مباراة مصر ومالاوي | تصفيات كأس أمم إفريقيا 2027 - الجولة الثالثة»
+# sat unmatched through the whole international break. Their cards get their
+# own region on /goals («المنتخبات»): a Morocco-Niger video is neither Egypt
+# nor Europe.
+NATIONS = {"Africa Cup of Nations Qualification", "UEFA Nations League"}
+REGION_BY_COMP = {c: "nt" for c in NATIONS}
 EGYPT = {"Egyptian Premier League", "CAF Champions League", "CAF Confederation Cup",
          "Egypt Cup", "Egyptian League Cup"}
 CHANNELS = [
     {"key": "bein", "name": "beIN SPORTS", "id": "UCJUCcJUeh0Cz2xyKwkw5Q1w",
-     "handle": "@beINSPORTS", "scope": EUROPE, "search": "ملخص مباراة", "region": "eu"},
+     "handle": "@beINSPORTS", "scope": EUROPE | NATIONS, "search": "ملخص مباراة", "region": "eu"},
     {"key": "on", "name": "ON Sport", "id": "UCo2TvjBHS1BtyIkeGGTMe6w",
      "handle": "@ONSportEG", "scope": EGYPT, "search": "أهداف مباراة", "region": "eg"},
     # 2026-11-03 (user: «ضيف القنوات الجديدة»), each checked the same day:
@@ -118,6 +125,14 @@ def tokens(s):
 # (the first run tied three different Turkish highlights to آمد سبور - أيوب
 # سبور through it), «اف سي» trails «زد اف سي»
 GENERIC = {"سبور", "اف", "سي", "fc", "sc", "نادي", "club"}
+# words of a COMPETITION or a region, which national teams also carry
+# («جنوب أفريقيا», «أفريقيا الوسطى»): on their own they name no team - every
+# beIN national-team title says «كأس أمم إفريقيا», and on 2026-11-14 the
+# targeted search tied a women's AFCON video and an AFCON-2025 one to those two
+# teams through «إفريقيا». A full name still matches when ALL its words are
+# in the title; these words just never stand in for the name.
+COMP_WORDS = {norm(w) for w in ("أفريقيا", "إفريقيا", "افريقيا", "أوروبا", "اوروبا", "آسيا", "أمم",
+                                "كأس", "العالم", "الأوروبية", "الأفريقية", "الإفريقية", "دوري")}
 
 
 def _tok_hit(t, title_tokens):
@@ -154,7 +169,10 @@ def team_hits(team, title_tokens, clubs=()):
         if any(mine < c and all(_tok_hit(t, title_tokens) for t in c) for c in clubs):
             return 0
         return 2 * len(mine)
-    longest = max(mine, key=len)
+    own = [t for t in mine if t not in COMP_WORDS]
+    if not own:
+        return 0
+    longest = max(own, key=len)
     if (len(mine) >= 2 and len(longest) >= 5 and _tok_hit(longest, title_tokens)
             and frozenset([longest]) not in clubs):
         return 1
@@ -181,10 +199,21 @@ def title_season(title):
     return None
 
 
+_ORDINALS = {"الاولى": 1, "الثانية": 2, "الثالثة": 3, "الرابعة": 4, "الخامسة": 5,
+             "السادسة": 6, "السابعة": 7, "الثامنة": 8, "التاسعة": 9, "العاشرة": 10}
+
+
 def title_round(title):
-    """«الجولة 9» / «الجولة 12» -> 9 / 12 (digits only), or None."""
+    """«الجولة 9» / «الجولة 12» -> 9 / 12, and the words beIN writes for the
+    national teams' matchdays («الجولة الثالثة» -> 3, 2026-11-14): a team meets
+    the same opponent twice in one break (مصر × مالاوي on the 13th, مالاوي ×
+    مصر on the 17th) and the titles carry no score, so the round is what keeps
+    a first-leg video found later off the return leg. None when absent."""
     m = re.search(r"الجولة\s*(?:الـ\s*)?(\d{1,2})(?!\d)", title or "")
-    return int(m.group(1)) if m else None
+    if m:
+        return int(m.group(1))
+    m = re.search(r"الجولة\s+(ال\S+)", re.sub("[أإآ]", "ا", title or ""))
+    return _ORDINALS.get(m.group(1)) if m else None
 
 
 def title_score(title):
@@ -199,10 +228,19 @@ def is_highlight(title):
     return any(norm(h) in t for h in HIGHLIGHT)
 
 
+# women's and youth football: never a match of ours (2026-11-14: «ملخص مباراة
+# كينيا والجزائر | ... كأس أمم إفريقيا للسيدات» found by a targeted search)
+# «الشباب» alone is a Saudi club (Al Shabab) and «الأولمبي» an Egyptian one -
+# only their national-team forms count here
+NOT_OURS = re.compile(r"سيدات|للشباب|منتخب الشباب|الناشئين|الناشئات|المنتخب الأولمبي|المنتخب الاولمبي|تحت\s*\d{2}|U\s?-?\d{2}", re.I)
+
+
 def qualifies(ch, title):
     """A highlight title for this channel: the highlight words, or - on a
     channel whose highlight titles are just «X 2 - 4 Y | ...» (AD Sports) - a
     stated score; match_for then demands it be OUR score for both clubs."""
+    if NOT_OURS.search(title or ""):
+        return False
     if ch.get("needs_score") and not title_score(title):
         return False
     return is_highlight(title) or bool(ch.get("score_titles") and title_score(title))
@@ -289,6 +327,10 @@ def match_for(title, published, scope, pool, now=None):
     # tied itself to this season's Lecce 1-2 Genoa, 2026-11-03)
     said_season = title_season(title)
     said_round = title_round(title)
+    # a title whose only years are before the match's («كأس أمم إفريقيا المغرب
+    # 2025» for a 2026 qualifier, 2026-11-14) is another tournament's video;
+    # a later year is fine (the 2027 AFCON's qualifiers are played in 2026)
+    said_years = [int(y) for y in re.findall(r"(?<!\d)(20\d\d)(?!\d)", title or "")]
     now = now or datetime.now(timezone.utc)
     try:
         up = datetime.fromisoformat(published.replace("Z", "+00:00")) if published else None
@@ -310,6 +352,8 @@ def match_for(title, published, scope, pool, now=None):
             continue
         if said_round and m.get("round") and said_round != int(m["round"]):
             continue
+        if said_years and max(said_years) < int((m.get("kickoff") or "0000")[:4] or 0):
+            continue
         key = (h + a, m.get("kickoff") or "")
         if best_key is None or key > best_key:
             best, best_key = m, key
@@ -317,7 +361,8 @@ def match_for(title, published, scope, pool, now=None):
 
 
 def entry(ch, vid, title, published, m):
-    return {"vid": vid, "ch": ch["key"], "channel": ch["name"], "region": ch.get("region", ""),
+    return {"vid": vid, "ch": ch["key"], "channel": ch["name"],
+            "region": REGION_BY_COMP.get(m.get("competition"), ch.get("region", "")),
             "title": title,
             "published": published or "", "match_id": str(m["match_id"]),
             "competition": m.get("competition"), "kickoff": m.get("kickoff"),
