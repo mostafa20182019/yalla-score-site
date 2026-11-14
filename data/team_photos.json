@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-13T19:07:49+00:00",
+ "generated_at": "2026-11-14T19:35:39+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -576,6 +576,18 @@
    "is_person": true,
    "source": "team-photos/barcelona/eric-garcia-spain-wc2026-final.jpg",
    "added": "2026-11-08",
+   "width": 1600
+  },
+  {
+   "file": "barcelona-gavi-spain-wc2026.jpg",
+   "credit": "صورة: جافي بقميص منتخب إسبانيا خلال كأس العالم 2026 — تصوير Bryan Berlin (WikiPortraits)، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "جافي",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/barcelona/gavi-spain-wc2026.jpg",
+   "added": "2026-11-14",
    "width": 1600
   },
   {
