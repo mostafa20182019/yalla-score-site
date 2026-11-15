@@ -96,6 +96,67 @@ def complete(goals, hs, as_):
     return goals is not None and len(goals) == hs + as_
 
 
+# A match is frozen only once it is surely OVER (2026-11-15, user: «صلح نتائج
+# الجابون والنيجر»). On 2026-09-29 the feed listed two AFCON qualifiers
+# FINISHED while they were still being played: Gabon - Niger froze at 0-0 twenty
+# minutes in (0-0 is «complete» at once) and Zambia - Togo at 1-0 thirty-five
+# minutes in (its one goal added up). Frozen = never corrected, so both stood
+# for seven weeks against the real 2-0s, and the group table's W/D/L popups
+# refused those teams. SETTLE_MIN = 90' + a 15' half-time: no match can be
+# over sooner. Measured on the archive: every proper freeze came 110+ minutes
+# after kick-off, the two bad ones at 20 and 35 - a wider gate (135 was tried)
+# unfreezes ~600 good entries and costs them their scorers, so do not widen it.
+SETTLE_MIN = 105
+
+
+def _ko_utc(m):
+    from zoneinfo import ZoneInfo
+    try:
+        return datetime.fromisoformat(f'{m["kickoff"]}T{m.get("koff_time") or "23:59"}').replace(
+            tzinfo=ZoneInfo("Africa/Cairo")).astimezone(timezone.utc)
+    except (KeyError, TypeError, ValueError):
+        return None
+
+
+def settled(m, now=None):
+    """True when the match's kick-off is at least SETTLE_MIN minutes before
+    `now` (an ISO UTC string or datetime; default: the clock). No usable
+    kick-off = not settled (kept, never frozen on a guess)."""
+    from datetime import timedelta
+    ko = _ko_utc(m)
+    if ko is None:
+        return False
+    if isinstance(now, str):
+        try:
+            now = datetime.fromisoformat(now.replace("Z", "+00:00"))
+        except ValueError:             # a test's label stamp («T0»): the clock
+            now = None
+    if now is None:
+        now = datetime.now(timezone.utc)
+    return now >= ko + timedelta(minutes=SETTLE_MIN)
+
+
+def unfreeze_early(arch):
+    """Entries a run froze before the match was over (see SETTLE_MIN): they
+    lose the freeze, so the next update() takes the feed's final score again
+    (matches_archive.json keeps 120 days). Idempotent. Returns the ids."""
+    from datetime import timedelta
+    out = []
+    for k, r in arch.items():
+        if not r.get("frozen") or not r.get("frozen_at"):
+            continue
+        ko = _ko_utc(r)
+        try:
+            fz = datetime.fromisoformat(r["frozen_at"].replace("Z", "+00:00"))
+        except ValueError:
+            continue
+        if ko is not None and fz < ko + timedelta(minutes=SETTLE_MIN):
+            r["frozen"] = False
+            r.pop("frozen_at", None)
+            out.append(k)
+    return out
+
+
 # The feed saying a match was NOT played outranks anything in the archive,
 # frozen included. Found during the hand-over itself: Levante - Athletic
 # (2026-09-16) was POSTPONED and rescheduled to 10-21, but one Oracle export
@@ -129,7 +190,7 @@ def update(arch, rows, goals_for, now=None):
         goals = goals_for(m)
         new = dict(_row(m), match_id=mid, goals=goals if goals else None,
                    frozen=False, src=(old or {}).get("src") or "python")
-        if complete(goals, m["home_score"], m["away_score"]):
+        if complete(goals, m["home_score"], m["away_score"]) and settled(m, now):
             new["frozen"], new["frozen_at"] = True, now
             froze += 1
         if old is None:
@@ -206,6 +267,7 @@ def run():
     import build_site as b
     arch = load()
     fixed = repair(arch)
+    early = unfreeze_early(arch)
     idx = b.goals_index(frozen=[])
     a, f, u, rm = update(arch, _feed_rows(), lambda m: b.match_goals(idx, m))
     save(arch, purged=rm + fixed)
@@ -213,7 +275,8 @@ def run():
     print(f"results archive: {len(arch)} finished matches ({fz} frozen); "
           f"this run +{a} new, {f} frozen, {u} updated"
           + (f", {rm} REMOVED (the feed says not played)" if rm else "")
-          + (f", {fixed} REPAIRED away (see REPAIRS)" if fixed else ""))
+          + (f", {fixed} REPAIRED away (see REPAIRS)" if fixed else "")
+          + (f", {len(early)} UNFROZEN (frozen before the final whistle: {', '.join(early)})" if early else ""))
     return 0
 
 

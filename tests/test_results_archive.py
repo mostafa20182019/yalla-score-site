@@ -33,6 +33,26 @@ def row(mid, hs, as_, status="FINISHED", home="الأهلي", away="الزمال
 
 G2 = [{"side": "h", "player": "زيزو", "minute": "10"}, {"side": "a", "player": "ناصر", "minute": "70"}]
 
+# 0) never frozen before the final whistle (2026-11-15: Gabon - Niger froze at
+#    0-0 twenty minutes in, Zambia - Togo at 1-0 thirty-five minutes in)
+_m = row(9, 0, 0, kickoff="2026-09-29")
+_m["koff_time"] = "22:00"                                    # 19:00 UTC (Cairo +3 then)
+ck("0a a match is not settled 20 minutes after kick-off", not RA.settled(_m, "2026-09-29T19:20:56Z"))
+ck("0b it is settled SETTLE_MIN after kick-off", RA.settled(_m, "2026-09-29T21:15:00Z"))
+ck("0c no kick-off = never settled", not RA.settled({"kickoff": None}, "2030-01-01T00:00:00Z"))
+_a = {}
+RA.update(_a, [_m], lambda m: None, now="2026-09-29T19:20:56Z")
+ck("0d a 0-0 the feed calls FINISHED mid-match is KEPT, not frozen", "9" in _a and not _a["9"]["frozen"])
+RA.update(_a, [dict(_m, home_score=2)], lambda m: None, now="2026-09-29T21:30:00Z")
+ck("0e so the final score replaces it", _a["9"]["home_score"] == 2)
+_b = {"9": dict(_m, match_id="9", frozen=True, frozen_at="2026-09-29T19:20:56Z", goals=None),
+      "8": dict(_m, match_id="8", frozen=True, frozen_at="2026-09-29T23:00:00Z", goals=None)}
+ck("0f an entry frozen before the whistle is unfrozen, a proper one is not",
+   RA.unfreeze_early(_b) == ["9"] and not _b["9"]["frozen"] and _b["8"]["frozen"]
+   and RA.unfreeze_early(_b) == [])
+RA.update(_b, [dict(_m, home_score=2)], lambda m: None, now="2026-11-15T18:00:00Z")
+ck("0g and the next run takes the feed's real score", _b["9"]["home_score"] == 2 and _b["9"]["frozen"] is False)
+
 # 1) the completeness gate - Oracle's rule, exactly
 ck("1a 0-0 is complete with no scorers (freezes at once)", RA.complete(None, 0, 0))
 ck("1b 1-1 with two scorers is complete", RA.complete(G2, 1, 1))
@@ -102,6 +122,8 @@ if real:
     ck("7c every frozen row passes the gate it was frozen under",
        all(RA.complete(r.get("goals"), r["home_score"], r["away_score"]) for r in frozen),
        f"{len(frozen)} frozen")
+    ck("7c2 no frozen row was frozen before its final whistle",
+       not RA.unfreeze_early({k: dict(r) for k, r in real.items()}))
     ck("7d the opening weekend Oracle held survives the hand-over (>= 2026-08-13)",
        min(r["kickoff"] for r in real.values()) <= "2026-08-14")
 
