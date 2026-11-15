@@ -70,6 +70,8 @@ sh = io.open("site_lib/shell.py", encoding="utf-8").read()
 # وحذف التاب الخاصة بالتحليلات») - no tab; /insights stays and lights أخبار
 ck("nav: «التوقعات» -> /analysis (behind the switch); no «التحليلات» tab",
    '📈</span> التوقعات' in sh and 'href="/insights.html" class="navtab' not in sh and "🧠</span> التحليلات" not in sh)
+ck("no «التحليلات» in the footer either (user 2026-11-15: «شيل من تحت التحليلات»)",
+   '<a href="/insights.html">التحليلات</a>' not in sh)
 na = io.open("site_src/templates/news_archive.html", encoding="utf-8").read()
 ck("the news lists label an analysis with its kind, like /insights did",
    '<span class="ins-k ins-{{ r.k }}">{{ r.kl }}</span>' in na and '"kl": kind_label.get(k' in io.open("site_pages/articles.py", encoding="utf-8").read())
