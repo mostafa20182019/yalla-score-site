@@ -34,7 +34,7 @@ games = [{"match_id": 1, "home": "جلطة سراي", "away": "x", "kickoff": "2
 out = T.standings_table("Turkish Super Lig", rows, embedded=True, games=games)
 ck("1 each row says how many finished matches our data holds (the double-count guard)",
    'data-pc="2"' in out)
-ck("2 without the season's matches the row says nothing (the guard falls back to the last result)",
+ck("2 without the season's matches the row says nothing (such a row is never recalculated)",
    "data-pc" not in T.standings_table("Turkish Super Lig", rows, embedded=True))
 ck("3 a pre-season table and a last-season table never go live",
    " data-z" in T.standings_table("Turkish Super Lig", rows, embedded=True, zeroed=True)
@@ -48,7 +48,9 @@ ck("4 it runs on the live reply's event, per table with a live id, never a data-
 ck("5 only matches of the table's own competition, between two of its teams",
    "String(g.c)===String(cid)" in js and "if(!H||!A) return;" in js)
 ck("6 a live match counts only while the official «لعب» equals our finished count",
-   "if(g.live) return r.pc===null||r.v[0]===r.pc;" in js)
+   "if(g.live) return r.v[0]===r.pc;" in js)
+ck("6b a row with no finished count is never recalculated (the source's table already counts the live match)",
+   "if(r.pc===null) return false;" in js and "return !inPool" not in js)
 ck("7 a just-ended match counts only while the official table has not counted it",
    "return inPool?r.v[0]<r.pc:r.v[0]===r.pc;" in js)
 ck("8 both sides must pass, or the match is left out", ".every(function(r){" in js)
@@ -63,6 +65,10 @@ ck("12 every calculation starts from the official numbers, never from the last l
 ck("13 a changed row drops the match-list buttons (they list the official matches)",
    "if(x.d) r.cells[k+1].textContent=String(x.v[k]);" in js)
 ck("14 the table says «مباشر» while it is live", "lt-lvb" in js and ">مباشر<" in js)
+ck("14b the label goes when the last live match ends (the numbers may still wait for the official table)",
+   "if(!anyLive){ if(lb) lb.parentNode.removeChild(lb); }" in js and "if(g.live) anyLive=true;" in js)
+ck("14c an ended match of an earlier day is never «just ended» (it was counted twice: «لعب 7» of 6)",
+   "if(!g.live&&g.d&&g.d<cut) return;" in js and "Date.now()-36*3600e3" in js)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()
 ck("15 it ships once, in app.js", "(REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS, LIVE_LEAGUE_JS" in sh)
 lj = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()

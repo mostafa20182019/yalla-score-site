@@ -12,7 +12,18 @@
      official table's «لعب» equals that count; a match that just ended is
      added only while the official table has not counted it yet (it refreshes
      a few minutes after the whistle). When either side fails, the match is
-     left out. Tie order: points, difference, goals for, then the official
+     left out. AN OLD MATCH IS NEVER «JUST ENDED» (2026-11-15: the reply
+     also lists matches of earlier days; Montenegro 2-1 Latvia of three days
+     before was no longer either side's last result, so the guard took it for
+     uncounted and the table said «لعب 7» in a six-round group): an ended
+     match is looked at only when its day (g.d) is today or yesterday.
+     A ROW WITHOUT data-pc IS NEVER RECALCULATED (same day: the group tables
+     carry no count, and the source's table already counts a match in play -
+     Finland 3-0 San Marino at 25' stood in the official row as «لعب 6» - so
+     adding the live match counted it twice for the whole match).
+     «مباشر» is on the table only while a match IS live; a table that only
+     waits for the official numbers after the whistle carries no label.
+     Tie order: points, difference, goals for, then the official
      order - leagues break ties differently, which is why the label says
      «لو انتهت المباريات الآن». */
   function norm(s){return(s||'').replace(/[أإآ]/g,'ا').replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
@@ -50,15 +61,17 @@
     var B=base(tbl); if(!B) return;
     var by={}; B.rows.forEach(function(r){by[r.name]=r;});
     var gs=(window.__lvGames||[]).filter(function(g){return String(g.c)===String(cid);});
-    var add={}, playing={}, used=[];
+    var add={}, playing={}, used=[], anyLive=false;
+    var cut=new Date(Date.now()-36*3600e3).toISOString().slice(0,10);
     gs.forEach(function(g){
       var H=by[norm(g.h)],A=by[norm(g.a)]; if(!H||!A) return;
       if(g.hs==null||g.as==null) return;
+      if(!g.live&&g.d&&g.d<cut) return;
       var ok=[H,A].every(function(r){
-        if(g.live) return r.pc===null||r.v[0]===r.pc;
+        if(r.pc===null) return false;
+        if(g.live) return r.v[0]===r.pc;
         /* just ended: does the official table count it already? */
         var inPool=!!(r.tc.ls&&same(r.tc.ls,g)&&r.tc.ls.s===(g.hs+' - '+g.as));
-        if(r.pc===null) return !inPool;
         return inPool?r.v[0]<r.pc:r.v[0]===r.pc;
       });
       if(!ok) return;
@@ -68,6 +81,7 @@
         d[0]++;d[res]++;d[4]+=x[1];d[5]+=x[2];d[6]+=x[1]-x[2];d[7]+=res===1?3:(res===2?1:0);
         if(g.live) playing[x[0].name]=1;
       });
+      if(g.live) anyLive=true;
       used.push(g.h+g.hs+g.a+g.as+(g.live?'L':'E'));
     });
     var sig=used.join('|');
@@ -94,8 +108,9 @@
       r.tr.classList.toggle('lt-lvr',!!playing[r.name]);
       B.tb.appendChild(r.tr);
     });
-    var head=tbl.querySelector('.lt-head');
-    if(head&&!head.querySelector('.lt-lvb'))
+    var head=tbl.querySelector('.lt-head'), lb=tbl.querySelector('.lt-lvb');
+    if(!anyLive){ if(lb) lb.parentNode.removeChild(lb); }
+    else if(head&&!lb)
       head.insertAdjacentHTML('beforeend','<span class="lt-lvb" title="الترتيب لو انتهت المباريات الجارية الآن">مباشر</span>');
   }
   function run(){[].forEach.call(document.querySelectorAll('.ltable[data-cid]'),apply);}
