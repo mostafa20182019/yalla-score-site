@@ -112,6 +112,20 @@ ck("5a both runs' additions survive the overlap", rc == 0 and "100" in got and "
 ck("5b a frozen result from the other run beats our unfrozen copy",
    got["100"]["frozen"] is True and got["100"]["home_score"] == 2)
 
+# 5c) ...but a DELIBERATE unfreeze (results_archive.unfreeze_early: frozen
+# before the final whistle) beats the store's early freeze - without this the
+# early 1-0 came back on every push (Zambia - Togo, 2026-11-14) - while a
+# freeze made AFTER our unfreeze (another run re-froze it) still wins
+_th = json.dumps({"results": [{"match_id": "1", "frozen": True, "frozen_at": "2026-09-29T16:35:50Z", "home_score": 1},
+                              {"match_id": "2", "frozen": True, "frozen_at": "2026-11-15T10:00:00Z", "home_score": 2}]}).encode()
+_ou = json.dumps({"results": [{"match_id": "1", "frozen": False, "unfrozen_at": "2026-11-15T09:00:00Z", "home_score": 2},
+                              {"match_id": "2", "frozen": False, "unfrozen_at": "2026-11-15T09:00:00Z", "home_score": 9}]}).encode()
+_m = {e["match_id"]: e for e in json.loads(DS.merge("results_archive.json", _ou, _th))["results"]}
+ck("5c a deliberate unfreeze beats the store's earlier (early) freeze",
+   _m["1"]["frozen"] is False and _m["1"]["home_score"] == 2)
+ck("5d a freeze newer than our unfreeze still wins",
+   _m["2"]["frozen"] is True and _m["2"]["home_score"] == 2)
+
 # 6) rule 1: an empty store or a bundle missing the essentials is never pulled
 KV.clear()
 ck("6a pulling an empty store fails (the workflow stops before building)", DS.pull() == 2)

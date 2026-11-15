@@ -194,7 +194,10 @@ def remote_put(blob):
 # ------------------------------------------------------------------ the rules
 def merge(name, ours, theirs):
     """Union by key for an accumulating file (ours wins; a frozen result from
-    either side survives). Anything else: ours, as before (newest fetch wins)."""
+    either side survives - unless ours was DELIBERATELY unfrozen after that
+    freeze: results_archive.unfreeze_early stamps `unfrozen_at`, and a freeze
+    older than the stamp is the early one it undid). Anything else: ours, as
+    before (newest fetch wins)."""
     kf = ACCUMULATING.get(name)
     if not kf:
         return ours
@@ -202,7 +205,8 @@ def merge(name, ours, theirs):
     merged = {kf(e): e for e in _items(b)}
     for e in _items(a):
         k, old = kf(e), merged.get(kf(e))
-        if old and old.get("frozen") and not e.get("frozen"):
+        if old and old.get("frozen") and not e.get("frozen") and not (
+                e.get("unfrozen_at") and (old.get("frozen_at") or "") < e["unfrozen_at"]):
             continue
         merged[k] = e
     return json.dumps(_set_items(a, list(merged.values())), ensure_ascii=False).encode("utf-8")

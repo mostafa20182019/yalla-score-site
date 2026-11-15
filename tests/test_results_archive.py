@@ -50,8 +50,12 @@ _b = {"9": dict(_m, match_id="9", frozen=True, frozen_at="2026-09-29T19:20:56Z",
 ck("0f an entry frozen before the whistle is unfrozen, a proper one is not",
    RA.unfreeze_early(_b) == ["9"] and not _b["9"]["frozen"] and _b["8"]["frozen"]
    and RA.unfreeze_early(_b) == [])
+ck("0f2 the unfrozen entry is stamped, so the store's merge lets the unfreeze through",
+   bool(_b["9"].get("unfrozen_at")) and "unfrozen_at" not in _b["8"])
 RA.update(_b, [dict(_m, home_score=2)], lambda m: None, now="2026-11-15T18:00:00Z")
 ck("0g and the next run takes the feed's real score", _b["9"]["home_score"] == 2 and _b["9"]["frozen"] is False)
+ck("0g2 ...and keeps the unfreeze stamp, or the store's merge brings the early freeze back",
+   bool(_b["9"].get("unfrozen_at")))
 
 # 1) the completeness gate - Oracle's rule, exactly
 ck("1a 0-0 is complete with no scorers (freezes at once)", RA.complete(None, 0, 0))

@@ -73,14 +73,29 @@ def fixtures_goals(comp):
 def pool_goals(comp):
     return sum(int(m["home_score"]) + int(m["away_score"]) for m in pool.get(comp, []))
 
-blocked = []
+# A competition that has not kicked off yet (no finished match in the pool or
+# the fixtures) has no CURRENT list: 365scores serves the last edition's, and
+# rejecting it is the guard doing its job (U-17 World Cup, 2026-11-14: 48 goals
+# from the 2025 edition, 0 played in Qatar yet - Tests red for that). So those
+# are not "current lists rejected" (5) - they must BE rejected (5b).
+def has_played(comp):
+    return bool(pool.get(comp)) or any(
+        m.get("status") == "FINISHED" and m.get("home_score") is not None
+        for rd in (fx_by.get(comp) or {}).get("rounds", []) for m in rd.get("matches", []))
+
+blocked, not_started = [], []
 for comp, srows in sc_by.items():
     tbl = (st_by.get(comp) or {}).get("table") or []
     mx = max((r.get("played") or 0) for r in tbl) if tbl else 0
-    if not B.chart_is_current(srows, max(pool_goals(comp), fixtures_goals(comp)), mx):
+    cur = B.chart_is_current(srows, max(pool_goals(comp), fixtures_goals(comp)), mx)
+    if not has_played(comp):
+        not_started.append((comp, cur))
+    elif not cur:
         blocked.append((comp, sum(B._pval(x) for x in srows), pool_goals(comp)))
 ok("5 no league's current top-scorer list is rejected once the pool is the denominator",
    not blocked, blocked)
+ok("5b a list for a competition that has not kicked off is rejected (last edition's)",
+   not any(cur for _, cur in not_started), [c for c, _ in not_started])
 
 thin = [(c, fixtures_goals(c), pool_goals(c)) for c in sc_by
         if fixtures_goals(c) < pool_goals(c) / 2]

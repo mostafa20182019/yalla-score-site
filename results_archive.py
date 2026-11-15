@@ -136,11 +136,17 @@ def settled(m, now=None):
     return now >= ko + timedelta(minutes=SETTLE_MIN)
 
 
-def unfreeze_early(arch):
+def unfreeze_early(arch, now=None):
     """Entries a run froze before the match was over (see SETTLE_MIN): they
     lose the freeze, so the next update() takes the feed's final score again
-    (matches_archive.json keeps 120 days). Idempotent. Returns the ids."""
+    (matches_archive.json keeps 120 days). Idempotent. Returns the ids.
+
+    The entry is stamped `unfrozen_at`: the data store's merge keeps a frozen
+    copy over an unfrozen one (a frozen result from either run survives), and
+    without the stamp the store's own early-frozen copy won every push - the
+    unfreeze of 2026-11-14 never left the runner (Tests red: 7c2)."""
     from datetime import timedelta
+    now = now or _now()
     out = []
     for k, r in arch.items():
         if not r.get("frozen") or not r.get("frozen_at"):
@@ -153,6 +159,7 @@ def unfreeze_early(arch):
         if ko is not None and fz < ko + timedelta(minutes=SETTLE_MIN):
             r["frozen"] = False
             r.pop("frozen_at", None)
+            r["unfrozen_at"] = now
             out.append(k)
     return out
 
@@ -190,6 +197,8 @@ def update(arch, rows, goals_for, now=None):
         goals = goals_for(m)
         new = dict(_row(m), match_id=mid, goals=goals if goals else None,
                    frozen=False, src=(old or {}).get("src") or "python")
+        if (old or {}).get("unfrozen_at"):      # kept for the store's merge (unfreeze_early)
+            new["unfrozen_at"] = old["unfrozen_at"]
         if complete(goals, m["home_score"], m["away_score"]) and settled(m, now):
             new["frozen"], new["frozen_at"] = True, now
             froze += 1
