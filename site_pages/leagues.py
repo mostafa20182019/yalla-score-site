@@ -237,7 +237,8 @@ ARAB_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup", "egypt-second-division"
               "morocco", "algeria", "tunisia", "libya")
 
 
-def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_all=None):
+def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_all=None,
+                   bycomp=None):
     """/fixtures/<slug> - a league's whole season. These used to be INSIDE
     /matches, hidden behind the league filter: 2,206 fixture rows and 4,955
     crest tags that every visitor downloaded to look at the 82 rows of one day.
@@ -313,7 +314,19 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
         # a group stage's tables, group by group (user 2026-11-13)
         from site_lib.clubs import TEAM_PAGES
         from site_lib.tables import group_tables_panel
-        groups_panel = group_tables_panel(comp, (groups_by_comp or {}).get(comp), TEAM_PAGES)
+        # «لعب / ف / ت / خ» open the group's matches, as in a league table
+        # (user 2026-11-15). The matches are the SEASON POOL (bycomp: this
+        # season's fixtures + the results archive) - the page's own rounds
+        # hold only the last weeks, and a «لعب 6» opening two matches is
+        # refused by standings_table anyway.
+        _by_fx = {(ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff")): mid
+                  for mid, m in (m_all or {}).items()}
+        groups_panel = group_tables_panel(
+            comp, (groups_by_comp or {}).get(comp), TEAM_PAGES,
+            games=(bycomp or {}).get(comp) if bycomp is not None else None,
+            pages=(lambda m: m.get("match_id") if m.get("match_id") in m_all else
+                   _by_fx.get((ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff"))))
+            if m_all is not None else None)
         _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
@@ -330,6 +343,8 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
                                    (f"جدول {label}", SITE_BASE + f"/fixtures/{slug}.html")])
         write(f"fixtures/{slug}.html", render(
             "fixtures.html", page_head=page_head, label=label, season=season,
+            # the group tables' «لعب / ف / ت / خ» popup - only where a button exists
+            games_js=Markup(LT_GAMES_JS if 'class="lt-n"' in groups_panel else ""),
             # what the page HOLDS, with number agreement - it used to say «كل
             # جولات… 11 جولة» while the Turkish feed carries rounds 10-20 only
             # (SEO review 2026-11-13: a wrong claim, and «2 جولة» / «3 دور»)

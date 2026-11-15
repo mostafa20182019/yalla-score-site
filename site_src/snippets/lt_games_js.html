@@ -4,9 +4,12 @@
      2026-11-01). The table row carries data-gm="id:w,id:l,..." (kick-off
      order) and the matches sit once each in .lt-games; this clones them into
      one popup, newest first. Escape, the × and the backdrop close it. */
-  var store=document.querySelector('.lt-games'); if(!store) return;
+  /* a group stage (/fixtures/<slug>, 2026-11-15) has one table and one
+     store PER GROUP: every store on the page is indexed. */
+  var stores=document.querySelectorAll('.lt-games'); if(!stores.length) return;
+  var store=stores[0];
   var byId={}, ready=null;
-  function index(){ [].forEach.call(store.children,function(e){ byId[e.getAttribute('data-id')]=e; }); }
+  function index(){ [].forEach.call(stores,function(s){ [].forEach.call(s.children,function(e){ byId[e.getAttribute('data-id')]=e; }); }); }
   index();
   /* a match page ships the table without the store (2026-11-07): it is the
      standings page's, and data-src says which - fetched on the first tap.

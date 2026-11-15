@@ -54,6 +54,31 @@ ck("10 each group's table is titled by the group", "المجموعة ب</div>" i
 ck("11 no followed team -> the first group", 'data-current="1"' in group_tables_panel("UEFA Nations League", g, TEAM_PAGES))
 ck("12 nothing to show -> nothing", group_tables_panel(comp, [], TEAM_PAGES) == "" and group_tables_panel(comp, None, TEAM_PAGES) == "")
 
+# «لعب / ف / ت / خ» open the group's matches (user 2026-11-15)
+import site_lib.tables as T                                  # noqa: E402
+tbl = [{"pos": 1, "team": "AA", "played": 1, "won": 1, "draw": 0, "lost": 0, "gf": 2, "ga": 0, "gd": 2, "pts": 3},
+       {"pos": 2, "team": "BB", "played": 1, "won": 0, "draw": 0, "lost": 1, "gf": 0, "ga": 2, "gd": -2, "pts": 0}]
+gm = [{"match_id": 11, "home": "AA", "away": "BB", "kickoff": "2026-09-25", "home_score": 2, "away_score": 0},
+      # a play-off against a team of ANOTHER group is not a group match
+      {"match_id": 12, "home": "AA", "away": "ZZ", "kickoff": "2026-03-20", "home_score": 1, "away_score": 1}]
+ck("15 a group's matches are those between two of its own teams",
+   [m["match_id"] for m in T._group_games(tbl, gm)] == [11] and T._group_games(tbl, None) is None)
+gh = group_tables_panel(comp, [{"num": 1, "name": "المجموعة أ", "table": tbl}], (), games=gm,
+                        pages=lambda m: m["match_id"])
+ck("16 with the season's matches the numbers are buttons and the group carries its own store",
+   gh.count('class="lt-n"') == 4 and 'data-gm="11:w"' in gh and 'data-gm="11:l"' in gh
+   and gh.count('class="lt-games"') == 1 and 'data-id="11"' in gh and 'data-id="12"' not in gh)
+ck("17 without them the table is as before: plain numbers, no count", 'class="lt-n"' not in html and "data-pc" not in html)
+lg = open("site_src/snippets/lt_games_js.html", encoding="utf-8").read()
+ck("18 the popup indexes EVERY store on the page (one per group)",
+   "document.querySelectorAll('.lt-games')" in lg and "[].forEach.call(stores,function(s){" in lg)
+lp = open("site_pages/leagues.py", encoding="utf-8").read()
+ck("19 the season page ships the popup script where a button exists, fed from the season pool",
+   "games_js=Markup(LT_GAMES_JS if 'class=\"lt-n\"' in groups_panel else \"\")" in lp
+   and "games=(bycomp or {}).get(comp) if bycomp is not None else None" in lp
+   and "{{ games_js }}" in open("site_src/templates/fixtures.html", encoding="utf-8").read()
+   and "bycomp=_bycomp" in open("build_site.py", encoding="utf-8").read())
+
 src = open("site_src/templates/fixtures.html", encoding="utf-8").read()
 ck("13 the season page shows the groups above the rounds", src.index("{{ groups_panel }}") < src.index("{{ rounds_panel }}"))
 bs = open("build_site.py", encoding="utf-8").read()

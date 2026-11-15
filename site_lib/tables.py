@@ -202,11 +202,28 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             f'<tbody>{"".join(body)}</tbody></table></div>{store}</div>')
 
 
-def group_tables_panel(comp, groups, focus_tps=()):
+def _group_games(table, games):
+    """The finished matches played between two teams of this group table;
+    None (no buttons, no count) when the caller gave no matches."""
+    if games is None:
+        return None
+    keys = {team_key(r.get("team")) for r in table}
+    return [m for m in games
+            if team_key(m.get("home")) in keys and team_key(m.get("away")) in keys]
+
+
+def group_tables_panel(comp, groups, focus_tps=(), games=None, pages=None):
     """A group stage, one group at a time behind the rounds navigator
     (‹ المجموعة › - ROUNDS_JS drives it like the rounds; user 2026-11-13).
     Opens on the first group holding a club/team we follow (focus_tps: the
-    TEAM_PAGES entries - منتخب مصر for the AFCON qualifiers), else group 1."""
+    TEAM_PAGES entries - منتخب مصر for the AFCON qualifiers), else group 1.
+
+    `games` = the competition's finished matches (user 2026-11-15: «لما اضغط
+    على فاز او تعادل او خسر يفتحلى بوب يب فيها الماتشات دى زى الدورى
+    الانجليزى»). Each group's table gets only the matches between two of ITS
+    teams - a preliminary round or a play-off against a team of another group
+    is not a group match - and standings_table makes the numbers buttons only
+    for a team whose four numbers all equal what we hold. `pages` as there."""
     from site_lib.names import _team_match
     groups = [g for g in groups or [] if g.get("table")]
     if not groups:
@@ -226,7 +243,9 @@ def group_tables_panel(comp, groups, focus_tps=()):
              '<div class="rounds">']
     for g in groups:
         parts.append(f'<div class="round" data-round="{g["num"]}" data-label="{esc(g["name"])}" hidden>'
-                     + standings_table(comp, g["table"], embedded=True, title=g["name"]) + '</div>')
+                     + standings_table(comp, g["table"], embedded=True, title=g["name"],
+                                       games=_group_games(g["table"], games), pages=pages)
+                     + '</div>')
     parts.append('</div></div>')
     return "".join(parts)
 
