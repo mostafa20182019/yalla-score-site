@@ -408,6 +408,10 @@ html.lt-lock{overflow:hidden}
 .fx-ph{font-size:.9rem}
 .fx-time{color:var(--green-d);font-weight:800;white-space:nowrap}
 .fx-sc{font-weight:900;white-space:nowrap}
+/* a live match in the rounds list (2026-11-15) */
+.fx-mid{display:flex;flex-direction:column;align-items:center;gap:1px}
+.fx-live .fx-sc{color:var(--live)}
+.fx-lv{font-style:normal;font-size:.62rem;font-weight:800;color:var(--live);white-space:nowrap}
 /* rounds navigator */
 .rnav{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 10px;
   background:#f1f5f9;border-radius:999px;padding:4px 6px}

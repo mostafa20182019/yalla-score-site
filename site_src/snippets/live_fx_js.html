@@ -1,0 +1,43 @@
+<script>
+(function(){
+  /* the rounds list follows live matches (user 2026-11-15: «فيه مباريات فى
+     الجولات بتكون مباشر بس مبتظهرش انها مباشر»). Rows kicking off around the
+     build day carry data-fh / data-fa / data-fd (fixture_mini). On every live
+     reply ('lv:update', LIVE_JS) a row whose pair + day is in the reply
+     shows the score; a live one turns red with «مباشر» and the minute, an
+     ended one drops the badge. Either name order (the sources can disagree
+     on who is at home), same day only (two meetings in a week). A row the
+     reply does not name is left as built. */
+  function norm(s){return(s||'').replace(/[أإآ]/g,'ا')
+    .replace(/ة/g,'ه').replace(/ى/g,'ي').replace(/[.'’]/g,'').replace(/\s+/g,'');}
+  function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+  function pill(hs,as_){return '<b class="fx-sc sc-in"><span>'+esc(hs)+'</span><i>-</i><span>'+esc(as_)+'</span></b>';}
+  function paint(){
+    var rows=document.querySelectorAll('.fx[data-fh]');
+    if(!rows.length) return;
+    var by={};
+    (window.__lvGames||[]).forEach(function(g){
+      if(g.hs==null||g.as==null) return;
+      by[norm(g.h)+'|'+norm(g.a)]={g:g,sw:false};
+      by[norm(g.a)+'|'+norm(g.h)]={g:g,sw:true};
+    });
+    [].forEach.call(rows,function(r){
+      var hit=by[norm(r.getAttribute('data-fh'))+'|'+norm(r.getAttribute('data-fa'))];
+      if(!hit) return;
+      var g=hit.g, d=r.getAttribute('data-fd')||'';
+      if(g.d&&d&&g.d!==d) return;
+      var hs=hit.sw?g.as:g.hs, as_=hit.sw?g.hs:g.as;
+      var sig=(g.live?'L':'F')+hs+'-'+as_+(g.live?g.min||'':'');
+      if(r.__sig===sig) return; r.__sig=sig;
+      var mid=r.querySelector('.fx-mid,.fx-sc,.fx-time'); if(!mid) return;
+      var html=g.live
+        ?'<span class="fx-mid">'+pill(hs,as_)+'<i class="fx-lv">'+(g.min?'مباشر '+esc(g.min):'مباشر')+'</i></span>'
+        :pill(hs,as_);
+      mid.insertAdjacentHTML('beforebegin',html); mid.parentNode.removeChild(mid);
+      r.classList.toggle('fx-live',!!g.live);
+    });
+  }
+  document.addEventListener('lv:update',paint);
+})();
+</script>

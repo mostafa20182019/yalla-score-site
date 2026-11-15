@@ -231,6 +231,19 @@ def group_tables_panel(comp, groups, focus_tps=()):
     return "".join(parts)
 
 
+def _near_today(ko):
+    """A kick-off day close enough to the build that the page may still be
+    on screen while it is played (pages rebuild every ~30 min; a day either
+    side covers the UTC/Cairo gap and a page left open overnight)."""
+    import datetime
+    from site_lib.config import REF_TODAY
+    try:
+        d = (datetime.date.fromisoformat(ko[:10]) - datetime.date.fromisoformat(REF_TODAY)).days
+    except ValueError:
+        return False
+    return -1 <= d <= 1
+
+
 def fixture_mini(m, link=None):
     """Compact fixture row for the league side panel (FotMob-style).
     link (2026-11-13, SEO + site review): the row IS the link to the match
@@ -246,8 +259,20 @@ def fixture_mini(m, link=None):
         mid = score_pill(m.get("home_score"), m.get("away_score"), "fx-sc sc-in")
     else:
         mid = f'<span class="fx-time">{esc(m.get("koff_time") or "")}</span>'
-    _open, _close = ((f'<a class="fx" href="{esc(link)}">', '</a>') if link
-                     else ('<div class="fx">', '</div>'))
+    # live in the rounds list (user 2026-11-15: «فيه مباريات فى الجولات بتكون
+    # مباشر بس مبتظهرش انها مباشر»): a LIVE row says so when built, and a row
+    # kicking off around today carries its names + day so LIVE_FX_JS can paint
+    # it from /live.json (data-fh, NOT data-lv: this row has no mrow markup).
+    cls, attrs = "fx", ""
+    if st == "LIVE":
+        cls += " fx-live"
+        mid = f'<span class="fx-mid">{mid}<i class="fx-lv">مباشر</i></span>'
+    ko = m.get("kickoff") or ""
+    if st != "FINISHED" and ko and _near_today(ko):
+        attrs = (f' data-fh="{esc(ar_team(m.get("home")))}" data-fa="{esc(ar_team(m.get("away")))}"'
+                 f' data-fd="{esc(ko)}"')
+    _open, _close = ((f'<a class="{cls}" href="{esc(link)}"{attrs}>', '</a>') if link
+                     else (f'<div class="{cls}"{attrs}>', '</div>'))
     return (f'{_open}'
             f'<span class="fx-home"><bdi>{esc(ar_team(m.get("home")))}</bdi>{cr(m.get("home_badge"))}</span>'
             f'{mid}'

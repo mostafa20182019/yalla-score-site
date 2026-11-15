@@ -51,7 +51,7 @@ ck("11 the tab says «مباشر» while anything is added; the built numbers ot
    "lg-lvb" in js and "t.innerHTML=el.__html[s]" in js)
 ck("12 names and scores written into the tile are escaped", "esc(big.x.h)" in js and "esc(big.x.hs)" in js)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()
-ck("13 it ships once, in app.js", "LIVE_LEAGUE_JS)" in sh)
+ck("13 it ships once, in app.js", "LIVE_LEAGUE_JS, LIVE_FX_JS)" in sh)
 lj = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
 ck("14 the live script starts on a page whose only live part is this tab", ".lg-num[data-cid]" in lj)
 
