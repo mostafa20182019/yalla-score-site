@@ -58,15 +58,18 @@ ck("9 points: 3 a win, 1 a draw; played, W/D/L and goals both ways",
    "d[7]+=res===1?3:(res===2?1:0)" in js and "d[4]+=x[1];d[5]+=x[2];d[6]+=x[1]-x[2]" in js)
 ck("10 order: points, difference, goals for, then the official order",
    "b.v[7]-a.v[7]||b.v[6]-a.v[6]||b.v[4]-a.v[4]||a.r.pos-b.r.pos" in js)
-ck("11 the official table comes back when nothing is live", "if(!used.length){ if(B.sig) restore(tbl,B); return; }" in js
+ck("11 the official table comes back when nothing is live", "if(!used.length&&!anyLive){ if(B.sig) restore(tbl,B); return; }" in js
    and "c.innerHTML=r.html[i]" in js)
 ck("12 every calculation starts from the official numbers, never from the last live picture",
    "var d=add[r.name], v=r.v.slice();" in js and "if(tbl.__lt) return tbl.__lt;" in js)
 ck("13 a changed row drops the match-list buttons (they list the official matches)",
    "if(x.d) r.cells[k+1].textContent=String(x.v[k]);" in js)
 ck("14 the table says «مباشر» while it is live", "lt-lvb" in js and ">مباشر<" in js)
+ck("14a a team on the pitch is marked even when its numbers cannot be recalculated",
+   "if(g.live){ playing[H.name]=1; playing[A.name]=1; anyLive=true; }" in js
+   and "B.rows.forEach(function(r){r.tr.classList.toggle('lt-lvr',!!playing[r.name]);});" in js)
 ck("14b the label goes when the last live match ends (the numbers may still wait for the official table)",
-   "if(!anyLive){ if(lb) lb.parentNode.removeChild(lb); }" in js and "if(g.live) anyLive=true;" in js)
+   "if(!anyLive){ if(lb) lb.parentNode.removeChild(lb); }" in js and "anyLive=true; }" in js)
 ck("14c an ended match of an earlier day is never «just ended» (it was counted twice: «لعب 7» of 6)",
    "if(!g.live&&g.d&&g.d<cut) return;" in js and "Date.now()-36*3600e3" in js)
 sh = io.open("site_lib/shell.py", encoding="utf-8").read()

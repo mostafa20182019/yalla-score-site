@@ -67,6 +67,11 @@
       var H=by[norm(g.h)],A=by[norm(g.a)]; if(!H||!A) return;
       if(g.hs==null||g.as==null) return;
       if(!g.live&&g.d&&g.d<cut) return;
+      /* a team on the pitch is ALWAYS marked, and the table says «مباشر»,
+         even when its numbers cannot be recalculated (user 2026-11-15: the
+         group table lost the highlight - the source's table already counted
+         the match in play, so the guard below left it out entirely) */
+      if(g.live){ playing[H.name]=1; playing[A.name]=1; anyLive=true; }
       var ok=[H,A].every(function(r){
         if(r.pc===null) return false;
         if(g.live) return r.v[0]===r.pc;
@@ -79,14 +84,20 @@
         var d=add[x[0].name]=add[x[0].name]||[0,0,0,0,0,0,0,0];
         var res=x[1]>x[2]?1:(x[1]===x[2]?2:3);
         d[0]++;d[res]++;d[4]+=x[1];d[5]+=x[2];d[6]+=x[1]-x[2];d[7]+=res===1?3:(res===2?1:0);
-        if(g.live) playing[x[0].name]=1;
       });
-      if(g.live) anyLive=true;
       used.push(g.h+g.hs+g.a+g.as+(g.live?'L':'E'));
     });
-    var sig=used.join('|');
-    if(!used.length){ if(B.sig) restore(tbl,B); return; }
+    var sig=used.join('|')+'#'+Object.keys(playing).sort().join(',');
+    if(!used.length&&!anyLive){ if(B.sig) restore(tbl,B); return; }
     if(sig===B.sig) return;
+    if(!used.length){
+      /* nothing to add: the official numbers and order stay, only the marks */
+      restore(tbl,B); B.sig=sig;
+      B.rows.forEach(function(r){r.tr.classList.toggle('lt-lvr',!!playing[r.name]);});
+      var hd=tbl.querySelector('.lt-head');
+      if(hd) hd.insertAdjacentHTML('beforeend','<span class="lt-lvb" title="مباراة جارية الآن">مباشر</span>');
+      return;
+    }
     B.sig=sig;
     var now=B.rows.map(function(r){
       var d=add[r.name], v=r.v.slice();
