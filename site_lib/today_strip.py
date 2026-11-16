@@ -64,7 +64,7 @@ def today_strip(matches, today=None, limit=LIMIT):
             f'<span class="ts-teams">{hb}<bdi>{esc(h)}</bdi> <span class="tk-mid">{mid}</span> <bdi>{esc(a)}</bdi>{ab}</span>'
             f'</a>')
     return ('<section class="ts" aria-label="مباريات اليوم">'
-            '<div class="ts-h"><h2>⚽ مباريات اليوم</h2><a class="ts-all" href="/matches.html">كل المباريات ←</a></div>'
+            '<div class="ts-h"><h2>⚽ مباريات اليوم</h2><a class="ts-all" href="/">كل المباريات ←</a></div>'
             f'<div class="ts-row">{"".join(its)}</div></section>')
 
 
@@ -119,7 +119,7 @@ def today_cards(matches, today=None, limit=CARDS, pills=""):
             '<div class="sec-h"><h2 class="page-h">⚽ أهم مباريات اليوم</h2>'
             f'<span class="tc-side">{pills}</span></div>'
             f'<div class="tc-row">{"".join(its)}</div>'
-            '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div></section>')
+            '<div class="blk-more"><a class="see-all" href="/">كل المباريات ←</a></div></section>')
 
 
 def match_centre(standings, matches, articles, ge_idx, fixtures=None):

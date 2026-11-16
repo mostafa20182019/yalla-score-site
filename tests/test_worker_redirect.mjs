@@ -34,4 +34,16 @@ r = await worker.fetch(new Request("https://elgoon.com/nope"),
 assert.equal(r.status, 404);
 assert.equal(r.headers.get("cache-control"), "no-store");
 
+// /matches -> / (2026-11-17), the query kept; its fragments are NOT redirected
+const page = envWith(new Response("<html>", { status: 200 }));
+for (const p of ["/matches", "/matches/", "/matches.html"]) {
+  r = await worker.fetch(new Request("https://elgoon.com" + p + "?utm=fb"), page, {});
+  assert.equal(r.status, 301, p);
+  assert.equal(r.headers.get("location"), "/?utm=fb", p);
+}
+for (const p of ["/matches/d/2026-11-17", "/matches/l/egypt"]) {
+  r = await worker.fetch(new Request("https://elgoon.com" + p), envWith(new Response("<div>", { status: 200 })), {});
+  assert.equal(r.status, 200, p);
+}
+
 console.log("ok worker redirect: 307 -> 301 (query kept), 200 and 404 unchanged");

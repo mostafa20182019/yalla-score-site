@@ -431,7 +431,7 @@ def clubs_panel(st_by_comp, sc_ok, sc_by_comp, forms, matches, fixtures):
                        f' · {esc(when)}'
                        + (f' {esc(nxt.get("koff_time"))}' if nxt.get("koff_time") else "")
                        + '</span>')
-        cards.append(f'<a class="cl-card" href="/matches.html">'
+        cards.append(f'<a class="cl-card" href="/">'
                      f'<span class="cl-top">{crest}<span class="cl-n"><bdi>{esc(name)}</bdi></span></span>'
                      f'<span class="cl-lg">{esc(comp_label(comp))}</span>'
                      f'<span class="cl-row">{rank}{form}</span>{top}</a>')

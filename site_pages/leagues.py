@@ -327,7 +327,7 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
             pages=(lambda m: m.get("match_id") if m.get("match_id") in m_all else
                    _by_fx.get((ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff"))))
             if m_all is not None else None)
-        _links = [f'<a href="/matches.html">مباريات اليوم ←</a>']
+        _links = [f'<a href="/">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
         # the scorers page is written by league_pages, before this function

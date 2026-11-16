@@ -155,7 +155,6 @@ def h2h_pages(articles, m_all, urls, fx_by_comp=None):
         page_head = head(title, desc, SITE_BASE + url,
                          image=f"{SITE_BASE}/og/h2h/{slug}.jpg" if _og else None)
         crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
-                                   ("المباريات", SITE_BASE + "/matches.html"),
                                    (f"مواجهات {a} و{b}", SITE_BASE + url)])
 
         def crest_img(src, club):

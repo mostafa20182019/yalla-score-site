@@ -48,7 +48,8 @@ ck("4 the rest follow COMP_ORDER", (ids.index("3") < ids.index("7")) == (_o("Ser
 ck("5 the cap holds", len(TS.pick_today(M * 3, today=T, limit=4)) == 4)
 
 html = TS.today_strip(M, today=T)
-ck("6 the section links to /matches and names itself", 'href="/matches.html"' in html and "مباريات اليوم" in html)
+ck("6 the section links to the matches tab (the home page since /matches 301s, 2026-11-17) and names itself",
+   'class="ts-all" href="/"' in html and "/matches.html" not in html and "مباريات اليوم" in html)
 ck("7 every row links to its match page", html.count('href="/m/') == 5, str(html.count('href="/m/')))
 ck("8 rows carry the live-score contract (data-lv + Arabic names + tk-mid)", html.count("data-lv") == 5 and 'data-h="ليدز يونايتد"' in html and html.count('class="tk-mid"') == 5)
 ck("9 a live row shows dashes, never a baked score; a finished one its score; an upcoming one its time",
@@ -67,7 +68,7 @@ ck("13 the stylesheet knows the block", ".ts-row{" in css and ".ts .ts-item{" in
 # ---- the home cards (2026-10-22): the same pick, one card per match, the match page behind it
 cards = TS.today_cards(M, today=T)
 ck("14 the home block carries the heading, the all-matches link and one card per picked match",
-   cards.startswith('<section class="tc"') and "⚽ أهم مباريات اليوم</h2>" in cards and 'href="/matches.html"' in cards
+   cards.startswith('<section class="tc"') and "⚽ أهم مباريات اليوم</h2>" in cards and 'class="see-all" href="/"' in cards and "/matches.html" not in cards
    and cards.count('class="tc-card tk-item') == len(rows), str(cards.count('class="tc-card tk-item')))
 ck("15 every card is a link to its match page in the live contract (data-lv, the two names, a .tk-mid)",
    cards.count("data-lv") == len(rows) and cards.count('class="tc-mid tk-mid"') == len(rows)

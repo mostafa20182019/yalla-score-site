@@ -112,8 +112,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         og_img = (f"{SITE_BASE}/media/{_card}"
                   if os.path.exists(os.path.join(HERE, "media", _card)) else img)
         page_head = head(title, desc, SITE_BASE + t_url, image=og_img)
-        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
-                                   ("المباريات", SITE_BASE + "/matches.html"),
+        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                    (name, SITE_BASE + t_url)])
         _img = (f'<img class="club-crest" src="{esc(crest)}" alt="{esc(name)}" '
                 'width="64" height="64" loading="eager">' if crest else "")

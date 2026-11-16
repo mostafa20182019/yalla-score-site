@@ -66,11 +66,11 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
     # today's count, the headline fixture and the latest score.
     _mdesc = matches_desc(matches, REF_TODAY, TEAM_PAGES, comp_order)
     page_head = head(f"مواعيد ونتائج مباريات اليوم بتوقيت القاهرة | {SITE_NAME}",
-                     _mdesc, SITE_BASE + "/matches.html", active="matches")
+                     _mdesc, SITE_BASE + "/", active="matches")
     # CollectionPage (SEO review 2026-11-12: /matches carried no schema)
     page_head += jsonld({"@context": "https://schema.org", "@type": "CollectionPage",
                          "name": "مواعيد ونتائج مباريات اليوم بتوقيت القاهرة",
-                         "description": _mdesc, "url": SITE_BASE + "/matches.html",
+                         "description": _mdesc, "url": SITE_BASE + "/",
                          "inLanguage": "ar",
                          "isPartOf": {"@type": "WebSite", "@id": SITE_BASE + "/#website",
                                       "name": SITE_NAME, "url": SITE_BASE + "/"}})
@@ -407,8 +407,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         if _cslug:
             comp_href = (f"/standings/{_cslug}.html" if (stc and stc.get("table"))
                          else f"/fixtures/{_cslug}.html")
-        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
-                                   ("المباريات", SITE_BASE + "/matches.html")]
+        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/")]
                                   + ([(comp, SITE_BASE + comp_href)] if comp_href else [])
                                   + [(title.split(" — ")[0], SITE_BASE + murl)])
         _html = render(

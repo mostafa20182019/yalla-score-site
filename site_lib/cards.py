@@ -264,7 +264,7 @@ def global_clubs_block(matches, fixtures, articles, standings):
     tiles.sort(key=lambda x: (0 if "gc-today" in x[1] else 1, GLOBAL_CLUBS.index(x[0])))
     return ('<section class="gc"><div class="sec-h"><h2 class="page-h">🌍 الأندية العالمية</h2></div>'
             f'<div class="gc-row">{"".join(t for _, t in tiles)}</div>'
-            '<div class="blk-more"><a class="see-all" href="/matches.html">كل المباريات ←</a></div>'
+            '<div class="blk-more"><a class="see-all" href="/">كل المباريات ←</a></div>'
             + mini_tables(standings, GLOBAL_TABLES) + '</section>')
 
 

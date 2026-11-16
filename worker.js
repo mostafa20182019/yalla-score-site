@@ -1262,6 +1262,14 @@ export default {
       url.protocol = "https:";
       return Response.redirect(url.toString(), 301);
     }
+    // 2026-11-17 (user: «Yes, redirect it»): /matches is an older page than the
+    // «المباريات» tab, which IS the home page - old links and posts landed on
+    // it. The page itself goes to /, permanently. ONLY the page: the home page
+    // fetches its day and league fragments from /matches/d/... and /matches/l/...
+    if (url.pathname === "/matches" || url.pathname === "/matches/" || url.pathname === "/matches.html") {
+      return new Response(null, { status: 301,
+        headers: { location: "/" + url.search, "cache-control": "public, max-age=3600" } });
+    }
     if (url.pathname === "/admin/api" || url.pathname.startsWith("/admin/api/")) {
       return adminApi(request, env, url);
     }

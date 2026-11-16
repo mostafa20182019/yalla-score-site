@@ -79,7 +79,7 @@ def robots_sitemap_ads(articles, urls):
     # last crawl (it ignores changefreq/priority but uses lastmod). Listing,
     # team, standings and scorers pages are rebuilt with fresh data every
     # run -> today; legal/static pages carry none.
-    _dyn = ("/", "/matches.html", "/news.html", "/stats.html", "/analysis.html", "/insights.html")
+    _dyn = ("/", "/news.html", "/stats.html", "/analysis.html", "/insights.html")
     sm = ['<?xml version="1.0" encoding="UTF-8"?>',
           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
     for u in urls:
@@ -234,5 +234,5 @@ def write_assets():
             shutil.copy(_logo, os.path.join(DIST, "assets", "logo.png"))
             break
 
-    urls = ["/", "/matches.html"]
+    urls = ["/"]   # /matches 301s to / since 2026-11-17 (worker.js)
     return urls
