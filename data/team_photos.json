@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-16T08:10:26+00:00",
+ "generated_at": "2026-11-16T19:10:00+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -588,6 +588,18 @@
    "is_person": true,
    "source": "team-photos/barcelona/eric-garcia-spain-wc2026-final.jpg",
    "added": "2026-11-08",
+   "width": 1600
+  },
+  {
+   "file": "barcelona-frenkie-de-jong-barcelona-2024.jpg",
+   "credit": "صورة: فرينكي دي يونج بقميص برشلونة — تصوير El Biyo، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "فرينكي دي يونج",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2024,
+   "is_person": true,
+   "source": "team-photos/barcelona/frenkie-de-jong-barcelona-2024.jpg",
+   "added": "2026-11-16",
    "width": 1600
   },
   {
