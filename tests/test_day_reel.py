@@ -65,7 +65,7 @@ right, left = ink(R.W / 2 + 40, R.W / 2 + 150), ink(R.W / 2 - 150, R.W / 2 - 40)
 check(right > left, f"the «8» (home) is right of the dash, the «1» left (ink {right} vs {left})")
 
 cap = D.caption(ms[:3], "2026-11-08", now)
-check(cap.count("8 - 1") == 3 and "elgoon.com/matches" in cap and "#الجون" in cap, "caption: every result, the link, the tag")
+check(cap.count("8 - 1") == 3 and "https://elgoon.com/" + chr(10) in cap and "elgoon.com/matches" not in cap and "#الجون" in cap, "caption: every result, the link, the tag")
 
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

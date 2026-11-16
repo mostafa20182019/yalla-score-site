@@ -148,7 +148,7 @@ def comp_tag(comp):
 
 def comp_url(comp, page="fixtures"):
     slug = COMP_SLUG.get(comp)
-    return f"{SITE}/{page}/{slug}.html" if slug else f"{SITE}/matches"
+    return f"{SITE}/{page}/{slug}.html" if slug else f"{SITE}/"
 
 
 def ar_date(d, weekday=False, year=True):

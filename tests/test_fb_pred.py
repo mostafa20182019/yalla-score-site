@@ -129,7 +129,7 @@ ck("29 the card takes the day's FINISHED matches of the nine leagues only, curat
 cap = fp.daycard_caption(got, "2026-10-22")
 ck("30 the caption: the title line, one line per result with the league, the matches link, the tags",
    cap.splitlines()[0].startswith("📊 نتائج أبرز مباريات اليوم") and "الزمالك 1 - 0 سموحة · الدوري المصري" in cap and "ليفربول 2 - 0 إيفرتون" in cap
-   and "https://elgoon.com/matches" in cap and "#الجون" in cap, cap)
+   and "https://elgoon.com/" + chr(10) in cap and "elgoon.com/matches" not in cap and "#الجون" in cap, cap)
 wf2 = io.open(".github/workflows/fb-post.yml", encoding="utf-8").read()
 ck("31 the workflow takes daycard=results", "daycard:" in wf2 and 'python fb_post.py --daycard "$DAYCARD"' in wf2)
 

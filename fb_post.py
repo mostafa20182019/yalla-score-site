@@ -1040,7 +1040,7 @@ def daycard_caption(ms, date):
     lines = [f"📊 نتائج أبرز مباريات اليوم ({date})"]
     for m in ms:
         lines.append(f"{ar_team(m['home'])} {m['home_score']} - {m['away_score']} {ar_team(m['away'])} · {comp_label(m['competition'])}")
-    lines.append(f"كل النتائج والجداول: {SITE}/matches")
+    lines.append(f"كل النتائج والمواعيد: {SITE}/")   # the «المباريات» tab = home (2026-11-17)
     lines.append("#الجون #نتائج_المباريات")
     return "\n".join(lines)
 

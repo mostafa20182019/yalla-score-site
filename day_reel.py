@@ -138,7 +138,7 @@ def caption(ms, date, now=None):
     for m in ms:
         lines.append(f"{ar_team(m['home'])} {m['home_score']} - {m['away_score']} {ar_team(m['away'])}")
     lines += ["", "أنهي نتيجة فاجئتك؟ قولنا في الكومنتات 👇", "",
-              "كل النتائج والجداول: https://elgoon.com/matches", "#الجون #نتائج_المباريات"]
+              "كل النتائج والمواعيد: https://elgoon.com/", "#الجون #نتائج_المباريات"]
     return "\n".join(lines) + "\n"
 
 
