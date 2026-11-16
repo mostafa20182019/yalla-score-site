@@ -63,6 +63,14 @@ ck("10 the head-to-head page passes its own tally to the image", "og_card.h2h(a,
 ck("11 nothing is drawn into git: the images go to dist/og",
    'os.path.join(DIST, "og"' in src and 'os.path.join(DIST, "og"' in hsrc)
 
+# 2026-11-16: Facebook kept the TIGER on news posts - it caches a picture by URL,
+# and the banner kept its URL through the rebrand. The default image is versioned.
+import re as _re
+_h = SH.head("t", "d", "https://elgoon.com/a/1")
+ck("12 the default share image carries ?v= from its own bytes, typed png",
+   bool(_re.search(r'og:image" content="https://elgoon.com/assets/og-banner\.png\?v=[0-9a-f]{8}"', _h))
+   and 'og:image:type" content="image/png"' in _h and 'og:image:width" content="1200"' in _h, _h[:0])
+
 print()
 if fails:
     print(f"{len(fails)} FAILED: " + "; ".join(fails))

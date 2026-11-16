@@ -137,6 +137,23 @@ def noindex(html):
     return html.replace(_ROBOTS_INDEX, '<meta name="robots" content="noindex">', 1)
 
 
+def _og_banner_url():
+    """The default share image, VERSIONED by its content (2026-11-16: Facebook
+    still showed the tiger on news posts 9 days after the rebrand - it caches
+    a picture by its URL, and /assets/og-banner.png kept the same URL when the
+    file changed). A new banner = a new ?v=, so every share fetches it again."""
+    import hashlib
+    try:
+        with open(os.path.join(HERE, "assets-src", "og-banner.png"), "rb") as f:
+            v = hashlib.md5(f.read()).hexdigest()[:8]
+    except OSError:
+        return SITE_BASE + "/assets/og-banner.png"
+    return SITE_BASE + "/assets/og-banner.png?v=" + v
+
+
+OG_BANNER = _og_banner_url()
+
+
 def head(title, desc, url, image=None, og_type="website", active="",
          preload_img=None):
     # preload_img: the page's LCP image (the home hero is a CSS background,
@@ -151,7 +168,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
     # rendered no preview at all) — and at least 200px. The branded 1200x630
     # banner is both the default and the SVG-placeholder replacement.
     if not image or image.lower().endswith(".svg"):
-        image = SITE_BASE + "/assets/og-banner.png"
+        image = OG_BANNER
     img = image
     # og:image:width/height: without them Facebook renders the FIRST share of
     # a URL with NO image (it fetches the picture asynchronously and only later
@@ -161,9 +178,9 @@ def head(title, desc, url, image=None, og_type="website", active="",
     # Tiny images (club crests ~95px on match/team pages) are below Facebook's
     # 200px minimum and look broken in Discover/Twitter cards → use the banner.
     if ogw and ogw < 400:
-        img = SITE_BASE + "/assets/og-banner.png"
+        img = OG_BANNER
         ogw, ogh = _og_dims(img)
-    og_type_img = "png" if img.lower().endswith(".png") else "jpeg"
+    og_type_img = "png" if img.lower().split("?")[0].endswith(".png") else "jpeg"
     og_dims = (
         f'\n<meta property="og:image:width" content="{ogw}">'
         f'\n<meta property="og:image:height" content="{ogh}">'
