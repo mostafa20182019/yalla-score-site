@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-17T16:34:43+00:00",
+ "generated_at": "2026-11-17T17:13:06+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2436,6 +2436,18 @@
    "is_person": true,
    "source": "team-photos/real-madrid/real-madrid-bernabeu-entrance.jpg",
    "added": "2026-10-13",
+   "width": 1600
+  },
+  {
+   "file": "real-madrid-dani-carvajal-bernabeu-2016.jpg",
+   "credit": "صورة: دانييل كارفاخال لاعب ريال مدريد خلال الإحماء في ملعب سانتياغو برنابيو عام 2016، تصوير Ruben Ortega، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "دانييل كارفاخال",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2016,
+   "is_person": true,
+   "source": "team-photos/real-madrid/dani-carvajal-bernabeu-2016.jpg",
+   "added": "2026-11-17",
    "width": 1600
   },
   {
