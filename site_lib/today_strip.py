@@ -59,7 +59,7 @@ def today_strip(matches, today=None, limit=LIMIT):
             mid = f'<span class="tk-t">{esc(m.get("koff_time") or "")}</span>'
         cls = "ts-item tk-item" + (" ts-live" if st == "LIVE" else " ts-fin" if st == "FINISHED" else "")
         its.append(
-            f'<a class="{cls}" href="{esc(match_url(m))}" data-lv data-h="{esc(h)}" data-a="{esc(a)}">'
+            f'<a class="{cls}" href="{esc(match_url(m))}" data-lv data-h="{esc(h)}" data-a="{esc(a)}" data-d="{esc(m.get("kickoff") or "")}">'
             f'<span class="ts-comp">{esc(comp_label(m.get("competition") or ""))}</span>'
             f'<span class="ts-teams">{hb}<bdi>{esc(h)}</bdi> <span class="tk-mid">{mid}</span> <bdi>{esc(a)}</bdi>{ab}</span>'
             f'</a>')
@@ -106,7 +106,7 @@ def today_cards(matches, today=None, limit=CARDS, pills=""):
         tv = m.get("channel") or COMP_TV.get(m.get("competition") or "") or ""
         tv_html = f'<span class="tc-tv">📺 {esc(str(tv))}</span>' if tv else "<span></span>"
         its.append(
-            f'<a class="tc-card tk-item{cls}" href="{esc(match_url(m))}" data-lv data-h="{esc(h)}" data-a="{esc(a)}">'
+            f'<a class="tc-card tk-item{cls}" href="{esc(match_url(m))}" data-lv data-h="{esc(h)}" data-a="{esc(a)}" data-d="{esc(m.get("kickoff") or "")}">'
             f'<span class="tc-top"><span class="tc-comp">{esc(comp_label(m.get("competition") or ""))}</span>'
             f'<span class="tc-when">{esc(when)}</span></span>'
             f'<span class="tc-t">{crest(m.get("home_badge"))}<bdi>{esc(h)}</bdi></span>'

@@ -108,7 +108,7 @@ def make_ticker(matches):
         # 2026-09-03: «اليوم» next to today's matches); live rows keep the dot
         day = ("" if st == "LIVE"
                else f'<span class="tk-d">{esc(_tk_date(m.get("kickoff")))}</span>')
-        its.append(f'<span class="tk-item" data-lv data-h="{esc(ar_team(m.get("home")))}" data-a="{esc(ar_team(m.get("away")))}">{day}{hb}<bdi>{esc(ar_team(m.get("home")))}</bdi> <span class="tk-mid">{mid}</span> <bdi>{esc(ar_team(m.get("away")))}</bdi>{ab}</span>')
+        its.append(f'<span class="tk-item" data-lv data-h="{esc(ar_team(m.get("home")))}" data-a="{esc(ar_team(m.get("away")))}" data-d="{esc(m.get("kickoff") or "")}">{day}{hb}<bdi>{esc(ar_team(m.get("home")))}</bdi> <span class="tk-mid">{mid}</span> <bdi>{esc(ar_team(m.get("away")))}</bdi>{ab}</span>')
     seq = "".join(its)
     return ('<a class="ticker" href="/" aria-label="نتائج المباريات — اضغط للتفاصيل">'
             f'<div class="tk-track">{seq}{seq}</div></a>')

@@ -142,6 +142,16 @@ ck("9a the channel may shrink and ends in an ellipsis",
 ck("9b the «بطاقة المباراة» link never shrinks or wraps",
    _go and "flex:0 0 auto" in _go.group(1) and "white-space:nowrap" in _go.group(1), _go.group(1) if _go else "")
 
+# 2026-11-17 (user screenshot): the strip showed Somalia 0-2 Ghana while the
+# match stood 0-1 - with no data-d the live script matched by names only and
+# painted the 11-12 Ghana 2-0 Somalia (still in /live.json) reversed onto it
+import site_lib.ticker as _TK
+_tk = _TK.make_ticker(M)
+ck("16 strip items, home cards and ticker items carry the match day (data-d)",
+   html.count('data-d="') == html.count("data-lv") and cards.count('data-d="') == cards.count("data-lv")
+   and (not _tk or _tk.count('data-d="') == _tk.count("data-lv"))
+   and ('data-d="%s"' % rows[0]["kickoff"]) in html)
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

@@ -21,7 +21,9 @@
   /* same pair, same DAY (2026-11-06): the feed keeps recent results for days,
      and two clubs meeting twice in a week (league + cup) had the older result
      painted over the next fixture. Either side without a day (an older reply
-     during a deploy, the day strip's cards) keeps the old name-only match. */
+     during a deploy) keeps the old name-only match. The day strip, the home
+     cards and the ticker carry data-d too since 2026-11-17 (without it the
+     strip painted Ghana 2-0 Somalia of 11-12 over the 11-16 match). */
   function sameDay(x,g){return !x.d||!g.d||x.d===g.d;}
   els.forEach(reg);
   /* rows that arrive AFTER load (a fetched day or league view on /matches,
