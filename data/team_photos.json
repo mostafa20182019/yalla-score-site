@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-16T19:10:00+00:00",
+ "generated_at": "2026-11-17T16:34:43+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -516,6 +516,18 @@
    "is_person": true,
    "source": "team-photos/arsenal/bukayo-saka-england-wc2026.jpg",
    "added": "2026-10-22",
+   "width": 1600
+  },
+  {
+   "file": "arsenal-david-raya-arsenal-training-2023.jpg",
+   "credit": "صورة: ديفيد رايا بقميص أرسنال قبل مباراة في دوري أبطال أوروبا أمام آر سي لنس — تصوير Supporterhéninois، رخصة CC0 (ويكيميديا كومنز)",
+   "subject": "ديفيد رايا",
+   "club": "أرسنال",
+   "slug": "arsenal",
+   "year": 2023,
+   "is_person": true,
+   "source": "team-photos/arsenal/david-raya-arsenal-training-2023.jpg",
+   "added": "2026-11-17",
    "width": 1600
   },
   {
