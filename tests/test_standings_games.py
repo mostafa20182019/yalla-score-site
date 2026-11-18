@@ -13,6 +13,7 @@ one file and as text in another, the club respelt in between).
 import os, re, sys, glob
 sys.stdout.reconfigure(encoding="utf-8")
 sys.path.insert(0, os.getcwd())
+from site_lib.names import ar_team  # noqa: E402
 from site_lib.tables import standings_table, team_results, team_key
 import analysis as AN
 
@@ -60,6 +61,8 @@ ok("7 without games the table is unchanged (club pages)",
 
 ok("8 one club under two spellings is ONE team for the count",
    team_key("غلطة سراي") == team_key("جلطة سراي"))
+ok("8b Ethiopia's two feed spellings are one team, shown the standings' way",
+   team_key("أثيوبيا") == team_key("إثيوبيا") == "إثيوبيا" and ar_team("أثيوبيا") == "إثيوبيا")
 
 # the duplicate: same match, id as number in fixtures and as text in the archive,
 # club respelt in between - season_matches must keep ONE

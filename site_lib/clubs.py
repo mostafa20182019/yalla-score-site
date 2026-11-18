@@ -120,11 +120,16 @@ TEAM_PAGES = [
 # lists (tables.team_results) found 4 of Galatasaray's 10 matches. ONLY for
 # counting a team's results - not display, and not the live layer, which
 # matches the feed's current spelling exactly.
-TEAM_SPELLINGS = {"غلطة سراي": "جلطة سراي", "جالطة سراي": "جلطة سراي"}
+# Ethiopia: the match feed wrote «أثيوبيا» for AFCON 2027 qualifying rounds 1-3
+# and «إثيوبيا» (the standings' and the correct spelling) from round 4
+# (2026-11-17) - its «لعب / ف / ت / خ» list showed 1 match of 4 (user 2026-11-18).
+TEAM_SPELLINGS = {"غلطة سراي": "جلطة سراي", "جالطة سراي": "جلطة سراي", "أثيوبيا": "إثيوبيا"}
 
 # Arabic display names for football-data's Latin team names (365scores
 # leagues arrive Arabic-native). Unmapped names fall through unchanged.
 AR_TEAM = {
+    # the feed's older spelling, shown as the current one (TEAM_SPELLINGS)
+    "أثيوبيا": "إثيوبيا",
     # 2026-11-04: Champions League clubs the live layer could not find - it
     # matches 365scores' Arabic spelling exactly, so these are copied from
     # its feed (Galatasaray, Slavia and Sporting were realigned the same day;

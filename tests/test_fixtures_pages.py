@@ -96,8 +96,11 @@ for f in pages:
     # reuse the same navigator and «round» markup, one per group
     _rp = t.find('<div class="lg-fix rounds-panel" ')
     got = len(re.findall(r'class="round"', t[_rp:] if _rp >= 0 else t))
+    # want >= 1, not >= 2: between windows a 365scores national-team
+    # competition holds ONE round (Nations League 2026-11-18: only round 6 -
+    # its fixtures come from the feed's recent results + upcoming games)
     ok = ("rounds-panel" in t and "rn-next" in t
-          and got == want and want >= 2
+          and got == want and want >= 1
           and f'<link rel="canonical" href="https://elgoon.com/fixtures/{slug}"' in t
           and "BreadcrumbList" in t and "<h1" in t)
     ck(f"9 {name}: all rounds + navigator + canonical + breadcrumbs", ok,
