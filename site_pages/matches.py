@@ -207,6 +207,16 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             m_all[m["match_id"]] = m      # day-window copy is always fresher
     # ±7 days, not ±30: see the sitemap note at the match-page append below
     sm_cut = (datetime.date.today() - datetime.timedelta(days=7)).isoformat()
+    # ... and 7 days AHEAD too (SEO review 2026-11-18): every fixture of the
+    # season was advertised, and two fixtures of one league months away share
+    # 74-78% of their text (table, scorers, news) - Google answered with
+    # «Crawled - not indexed». A far fixture stays built, linked and indexable;
+    # it enters the sitemap when its week comes.
+    sm_end = (datetime.date.today() + datetime.timedelta(days=7)).isoformat()
+    # the days on which a match page really changes: line-ups, the score, the
+    # reading after it
+    lm_from = (datetime.date.today() - datetime.timedelta(days=2)).isoformat()
+    lm_to = (datetime.date.today() + datetime.timedelta(days=2)).isoformat()
     n_mp = 0
     n_mp_idx = 0
     n_mp_sm = 0
@@ -433,11 +443,23 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             has_asst=bool(_as_h), assists=Markup(_as_h), tabs_js=Markup(ST_TABS_JS),
             games_js=Markup(LT_GAMES_JS if 'class="lt-n"' in table else ""),
             crumbs_ld=Markup(crumbs_ld), page_foot=Markup(foot()))
-        # lastmod: a page whose match is recent/upcoming changes every run;
-        # an old finished match settled around its kickoff day.
-        _LASTMOD[murl] = (REF_TODAY if m["kickoff"] >= (datetime.date.today()
-                                                        - datetime.timedelta(days=2)).isoformat()
-                          else m["kickoff"])
+        # lastmod must be TRUE or absent (SEO review 2026-11-18: 317 match
+        # pages said «today» every day, and Google drops a lastmod it catches
+        # lying - the articles' real dates lose their weight with it).
+        # Within two days of kick-off the page really changes -> today. An old
+        # finished match settled on its kick-off day. A fixture further away
+        # changes only in its shared blocks: the date of its article if it
+        # carries one, otherwise no lastmod at all.
+        if lm_from <= m["kickoff"] <= lm_to:
+            _LASTMOD[murl] = REF_TODAY
+        elif m["kickoff"] < lm_from:
+            _LASTMOD[murl] = m["kickoff"]
+        else:
+            _am = (_art or {}).get("updated_ts") or (_art or {}).get("pub_ts") or (_art or {}).get("pub_date")
+            if _am:
+                _LASTMOD[murl] = _am
+            else:
+                _LASTMOD.pop(murl, None)
         # AdSense "low value content" rejection (2026-09-04): a match page with
         # no real content yet stays reachable but is NOINDEXed and out of the
         # sitemap; it becomes indexable once the content arrives. Since
@@ -458,7 +480,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             # page stays indexable and linked; the sitemap carries only the last
             # 7 days + everything to come, any curated-club match, and any page
             # carrying an original article (that URL replaced an article URL).
-            if m["kickoff"] >= sm_cut or _art or _clubs:
+            if sm_cut <= m["kickoff"] <= sm_end or _art or _clubs:
                 urls.append(murl)
                 n_mp_sm += 1
     print(f"  + match pages: {n_mp} ({n_mp_idx} indexable, {n_mp_sm} in the sitemap)")

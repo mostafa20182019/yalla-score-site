@@ -304,7 +304,12 @@ def news_archive_pages(articles, urls):
                                 ("/news/egypt.html", "الكرة المصرية", "news/egypt"),
                                 ("/news/europe.html", "الكرة الأوروبية", "news/europe"))],
                             page_foot=Markup(foot())))
-        urls.append("/" + fname)
+        # only the FIRST page of each archive is advertised (SEO review
+        # 2026-11-18): 51 continuation pages sat in the sitemap dated «today»
+        # every day. They stay canonical and indexable, and the numbered pager
+        # (2026-11-13) is how a crawler reaches them.
+        if pager["k"] == 1:
+            urls.append("/" + fname)
 
     os.makedirs(os.path.join(DIST, "news"), exist_ok=True)   # /news/p2 ... live there too
     # the title is the query, the H1 stays «كل الأخبار» (SEO review 2026-11-12:

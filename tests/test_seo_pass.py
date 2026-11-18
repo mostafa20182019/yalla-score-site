@@ -6,12 +6,14 @@
   2. the season's details from the D1 archive fill what the 45-day store lost
      (matchdata.merge_details), so an old result keeps its reading and its index;
   3. the news archives are paginated (40 rows a page, /news/p2 ...), each page
-     a canonical URL in the sitemap with «الأحدث» / «الأقدم» links;
+     a canonical URL (only the first page of an archive is in the sitemap since
+     2026-11-18) with «الأحدث» / «الأقدم» links;
   4. the home page has an H1 and a match page's H1 is the query its title answers.
 
 Run from the site root:  python tests/test_seo_pass.py
 """
 import io
+import re
 import os
 import sys
 import tempfile
@@ -155,9 +157,11 @@ try:
        and 'href="/news">الأحدث' in p2 and 'href="/news/p3">الأقدم' in p2)
     ok("3d the newest article opens the first page, the oldest closes the last",
        p1.index('خبر 1<') < p1.index('خبر 40<') and 'خبر 85<' in p3 and 'خبر 41<' not in p1)
-    ok("3e every page is in the sitemap list; the section archives paginate as /news/<section>-p2",
-       "/news.html" in urls and "/news/p2.html" in urls and "/news/p3.html" in urls
-       and "/news/egypt.html" in urls and not any(u.startswith("/news/egypt-p") for u in urls))
+    # 2026-11-18: only the first page of an archive is advertised; the
+    # continuation pages are reached through the numbered pager
+    ok("3e the sitemap list carries the first page of each archive, never a continuation page",
+       "/news.html" in urls and "/news/egypt.html" in urls
+       and not any(re.search(r"(/p|-p)\d+\.html$", u) for u in urls))
     ok("3f a continuation page shows no breadcrumb to itself", 'class="crumbs"' not in p2)
 finally:
     SH.DIST, AP.DIST = _d1, _d2
