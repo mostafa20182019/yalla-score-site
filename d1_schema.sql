@@ -606,5 +606,6 @@ CREATE TABLE IF NOT EXISTS push_subs (
   endpoint    TEXT PRIMARY KEY,
   p256dh      TEXT NOT NULL,
   auth        TEXT NOT NULL,
-  created_at  INTEGER NOT NULL            -- epoch seconds
+  created_at  INTEGER NOT NULL,           -- epoch seconds
+  team        TEXT                        -- «تابع فريقك» (2026-11-19): the ONE club page slug this browser follows, or NULL; the live table got it by the Worker's ALTER (push.js)
 );

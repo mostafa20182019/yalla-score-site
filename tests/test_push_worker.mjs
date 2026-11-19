@@ -111,5 +111,31 @@ ck("16 no D1 binding: 503", r.status === 503);
 const res = await worker.fetch(new Request("https://elgoon.com/sw.js"), env(fakeDB()), { waitUntil() {} });
 ck("17 every other path still goes to the static assets (sw.js included)", (await res.text()) === "asset");
 
+// ------------------------------------------- «تابع فريقك» (2026-11-19)
+const teamBinds = async (body) => {
+  const d = fakeDB();
+  const rr = await call(req("/push/subscribe", body), d);
+  const row = d.seen.find(([s]) => s.includes("INSERT INTO push_subs"));
+  return [rr.status, row && row[1][4], row && row[1][5]];
+};
+let tb = await teamBinds({ ...SUB, team: "al-ahly" });
+ck("18 a followed club is stored on the row", tb[0] === 200 && tb[1] === "al-ahly" && tb[2] === 1, String(tb));
+tb = await teamBinds(SUB);
+ck("19 a body WITHOUT the key leaves the stored club alone (sw.js re-subscribes without it)", tb[1] === null && tb[2] === 0, String(tb));
+tb = await teamBinds({ ...SUB, team: "" });
+ck("20 an empty club clears it", tb[1] === null && tb[2] === 1, String(tb));
+for (const bad of ["../x", "AL-AHLY", "a", "x".repeat(41), 7, { a: 1 }, "al ahly"]) {
+  tb = await teamBinds({ ...SUB, team: bad });
+  ck(`21 a club that is not a slug is never stored (${JSON.stringify(bad).slice(0, 14)})`, tb[0] === 200 && tb[1] === null, String(tb));
+}
+const dupDb = fakeDB({ throwOn: "push_team_col" });
+dupDb.prepare = ((orig) => (sql) => {
+  const st = orig(sql);
+  if (sql.includes("push_team_col")) st.run = async () => { throw new Error("duplicate column name: team"); };
+  return st;
+})(dupDb.prepare.bind(dupDb));
+r = await call(req("/push/subscribe", { ...SUB, team: "zamalek" }), dupDb);
+ck("22 the column already being there is not an error", r.status === 200 && r.j && r.j.ok, String(r.status));
+
 console.log(fails.length ? `\nFAILED: ${fails.join(", ")}` : "\nall push worker checks passed");
 process.exit(fails.length ? 1 : 0);

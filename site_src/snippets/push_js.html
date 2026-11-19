@@ -47,10 +47,22 @@
     return fetch(path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(body)})
       .then(function(r){if(!r.ok)throw new Error('http '+r.status);return r;});
   }
+  /* «تابع فريقك» (2026-11-19): the followed club rides with the subscription,
+     so its goals, results and news can be sent to its followers only */
+  function team(){
+    var t='';try{t=localStorage.getItem('elgoonTeam')||'';}catch(e){}
+    return /^[a-z0-9-]{2,40}$/.test(t)&&t!=='none'?t:'';
+  }
+  function withTeam(j){j.team=team();return j;}
   function current(){
     return navigator.serviceWorker.getRegistration('/').then(function(reg){return reg?reg.pushManager.getSubscription():null;});
   }
   if(can)current().then(function(s){mark(!!s);}).catch(function(){});
+  /* called by follow_js when the reader follows / changes / drops a club: an
+     existing subscription is told, nothing is asked of a reader without one */
+  if(can)window.__pushTeam=function(){
+    current().then(function(s){if(s)return post('/push/subscribe',withTeam(s.toJSON()));}).catch(function(){});
+  };
   function on(){
     /* requestPermission FIRST and straight from the tap: Safari refuses a
        prompt that is not the direct result of a user gesture */
@@ -63,8 +75,8 @@
           return s||reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:key(KEY)});
         });
       })
-      .then(function(sub){return post('/push/subscribe',sub.toJSON());})
-      .then(function(){mark(true);toast('تم تفعيل الإشعارات 🔔 سيصلك إشعار فور نشر خبر جديد.');});
+      .then(function(sub){return post('/push/subscribe',withTeam(sub.toJSON()));})
+      .then(function(){mark(true);toast(team()?'تم تفعيل الإشعارات 🔔 ستصلك أهداف فريقك ونتائجه وأخباره.':'تم تفعيل الإشعارات 🔔 سيصلك إشعار فور نشر خبر جديد.');});
   }
   function off(){
     return current().then(function(s){

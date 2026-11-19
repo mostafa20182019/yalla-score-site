@@ -7,7 +7,7 @@ imports these back under the same names."""
 import os
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_SLUG
-from site_lib.config import DIST, HERE, REF_TODAY, SITE_BASE, SITE_NAME
+from site_lib.config import DIST, HERE, REF_TODAY, SITE_BASE, SITE_NAME, VAPID_PUBLIC_KEY
 from site_lib.crests import local_crest
 from site_lib.dates import art_reltime
 from site_lib.names import _team_match, _team_news, comp_label
@@ -221,7 +221,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                          + [table_heading, table, club_ld])
         write(f"team/{slug}.html", render(
             "club.html", page_head=Markup(page_head), crumbs_ld=Markup(crumbs_ld),
-            name=name, slug=Markup(slug), crest_img=Markup(_img), position=Markup(_pos),
+            name=name, slug=Markup(slug), push_on=bool(VAPID_PUBLIC_KEY), crest_img=Markup(_img), position=Markup(_pos),
             up_rows=[Markup(x) for x in up_rows], last_rows=[Markup(x) for x in last_rows],
             news=news_items, has_table=bool(st and st.get("table")),
             table_heading=Markup(table_heading), table=Markup(table),

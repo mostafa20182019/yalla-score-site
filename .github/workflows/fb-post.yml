@@ -104,6 +104,8 @@ jobs:
       - name: Post new articles to Facebook
         env:
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}
+          # web push to a club's followers (push_team.py, 2026-11-19)
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           # the goal and full-time cards go to the Telegram channel too (2026-11-12)
           TG_BOT_TOKEN: ${{ secrets.TG_BOT_TOKEN }}
           TG_CHAT_ID: ${{ secrets.TG_CHAT_ID }}
@@ -139,8 +141,13 @@ jobs:
             python moment_reel.py --script "moments/$MOMENT.json" --publish | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$WHISTLE" ]; then
             python fb_post.py --whistle "$WHISTLE" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+            # «تابع فريقك» (2026-11-19): the same kick-off / full-time to the
+            # browsers that follow one of the two clubs - only once the card
+            # above is posted, and never a reason for this job to fail
+            python push_team.py --whistle "$WHISTLE" | tee -a /tmp/fb.txt || true
           elif [ -n "$GOAL" ]; then
             python fb_post.py --goal "$GOAL" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+            python push_team.py --goal "$GOAL" | tee -a /tmp/fb.txt || true
           elif [ -n "$XI" ]; then
             python fb_post.py --xi "$XI" | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
           elif [ -n "$TEXT" ]; then

@@ -12,7 +12,12 @@
     {# «تابع فريقك» (2026-11-19): [hidden] until FOLLOW_JS finds storage it can
        use - a dead button is worse than none. The choice stays in the browser. #}
     <button id="followBtn" class="follow-btn" type="button" data-slug="{{ slug }}" data-name="{{ name }}" aria-pressed="false" hidden></button>
-    <p id="followNote" class="follow-note" hidden>تظهر مباريات {{ name }} وأخباره أولًا في <a href="/">الصفحة الرئيسية</a>.</p>
+    <p id="followNote" class="follow-note" hidden>تظهر مباريات {{ name }} وأخباره أولًا في <a href="/">الصفحة الرئيسية</a>.
+      {% if push_on %}
+      {# the same button as the bell (push_js.html): a follower who switches it on gets this club's goals, results and news #}
+      <button type="button" class="push-btn follow-push" hidden aria-pressed="false"><span class="push-lbl">فعّل الإشعارات</span></button>
+      {% endif %}
+    </p>
   </div>
 </header>
 {% if up_rows %}

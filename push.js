@@ -19,6 +19,13 @@
  *   - both keys must look like the base64url keys a browser generates.
  * Each accepted subscribe costs ONE row write (an upsert keyed on the
  * endpoint), so a reader who taps the bell twice does not grow the table.
+ *
+ * «تابع فريقك» (2026-11-19): the body may carry `team` - the slug of the ONE
+ * club page the reader follows (snippets/follow_js.html). It is kept on the
+ * row so push_team.py can send that club's goals, results and news to its
+ * followers only. A body WITHOUT the key leaves the stored team alone (sw.js
+ * re-subscribes without it when the push service rotates a subscription);
+ * `team: ""` clears it.
  */
 
 const ORIGIN = "https://elgoon.com";
@@ -37,11 +44,26 @@ const PUSH_HOSTS = [
 
 const SCHEMA = "CREATE TABLE IF NOT EXISTS push_subs (endpoint TEXT PRIMARY KEY, " +
   "p256dh TEXT NOT NULL, auth TEXT NOT NULL, created_at INTEGER NOT NULL)";
+// the followed club, added 2026-11-19 to a table that already existed
+const ADD_TEAM = "/*push_team_col*/ ALTER TABLE push_subs ADD COLUMN team TEXT";
+const TEAM = /^[a-z0-9-]{2,40}$/;
 let ready = false;
 async function ensure(env) {
   if (ready) return;
   await env.DB.prepare(SCHEMA).run();
+  // SQLite has no ADD COLUMN IF NOT EXISTS: "duplicate column name" means the
+  // column is there, which is the state we want. Once per Worker instance.
+  try { await env.DB.prepare(ADD_TEAM).run(); } catch (e) {
+    if (!/duplicate column/i.test(String(e && e.message))) throw e;
+  }
   ready = true;
+}
+
+/** [is the key present, the slug or null] */
+export function pushTeam(body) {
+  const has = Object.prototype.hasOwnProperty.call(body, "team");
+  const t = has && typeof body.team === "string" && TEAM.test(body.team) ? body.team : null;
+  return [has, t];
 }
 
 function reply(body, status = 200) {
@@ -86,10 +108,12 @@ export async function pushApi(request, env, url) {
     await ensure(env);
     if (url.pathname === "/push/subscribe") {
       if (!pushKeysOk(body.keys)) return reply({ error: "bad keys" }, 400);
+      const [hasTeam, team] = pushTeam(body);
       await env.DB.prepare(
-        "/*push_sub*/ INSERT INTO push_subs (endpoint, p256dh, auth, created_at) VALUES (?, ?, ?, ?) " +
-        "ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth"
-      ).bind(body.endpoint, body.keys.p256dh, body.keys.auth, Math.floor(Date.now() / 1000)).run();
+        "/*push_sub*/ INSERT INTO push_subs (endpoint, p256dh, auth, created_at, team) VALUES (?, ?, ?, ?, ?) " +
+        "ON CONFLICT(endpoint) DO UPDATE SET p256dh = excluded.p256dh, auth = excluded.auth, " +
+        "team = CASE WHEN ? = 1 THEN excluded.team ELSE push_subs.team END"
+      ).bind(body.endpoint, body.keys.p256dh, body.keys.auth, Math.floor(Date.now() / 1000), team, hasTeam ? 1 : 0).run();
       return reply({ ok: true });
     }
     if (url.pathname === "/push/unsubscribe") {

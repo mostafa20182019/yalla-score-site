@@ -1,6 +1,9 @@
 <script>
 /* «تابع فريقك» (2026-11-19): the visitor picks ONE club, kept in this browser
-   only (localStorage, no account, nothing sent to us). The club page carries
+   (localStorage, no account). It reaches us in ONE case only: a reader who
+   has switched notifications on - the club's slug is then stored with the
+   push subscription (push_js.html, window.__pushTeam), so that club's goals,
+   results and news go to its followers. The club page carries
    the button; the home page opens with that club's block, fetched from
    /my/<slug>.json - a build-made fragment, never drawn from guesses. A browser
    with no storage (private mode, in-app webviews that block it) simply shows
@@ -9,7 +12,10 @@
   var KEY='elgoonTeam', LS;
   try{ LS=window.localStorage; LS.getItem(KEY); }catch(e){ return; }
   function get(){ try{ return LS.getItem(KEY)||''; }catch(e){ return ''; } }
-  function set(v){ try{ if(v) LS.setItem(KEY,v); else LS.removeItem(KEY); }catch(e){} }
+  function set(v){
+    try{ if(v) LS.setItem(KEY,v); else LS.removeItem(KEY); }catch(e){}
+    if(window.__pushTeam) window.__pushTeam();
+  }
   function ok(s){ return /^[a-z0-9-]{2,40}$/.test(s); }
 
   /* 1. the club page: the follow button */
