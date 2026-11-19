@@ -131,6 +131,8 @@ jobs:
           FB_EVENTS: ${{ vars.FB_EVENTS }}
           # the club-form / club-streak cards + reels (2026-11-09) print until this one is "on" as well
           FB_FORM: ${{ vars.FB_FORM }}
+          # the social review's kinds (story_social.py, 2026-11-19) print until this one is "on"
+          FB_SOCIAL: ${{ vars.FB_SOCIAL }}
         run: |
           if [ "${MOMENT#file:}" != "$MOMENT" ]; then
             # a finished reel file (user 2026-11-11): uploaded as it is, no ffmpeg.

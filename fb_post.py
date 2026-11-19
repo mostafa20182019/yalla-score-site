@@ -1237,6 +1237,23 @@ def text_post(token, path, dry=False):
 # quiet night posts nothing. --dry prints the texts: the user reads the
 # wording before anything goes live.
 FORM_KINDS = ("club-form", "club-streak")      # story_events.KIND_FORM / KIND_STREAK: a CARD, not a text post
+# the social review's kinds (story_social.py, 2026-11-19): «رقم الليلة», «سيناريو
+# الجولة», «ركن السودان», «سؤال الجون». Their own switch, FB_SOCIAL, for the
+# same reason FB_FORM exists: he reads a new kind's wording before it is live.
+SOCIAL_KINDS = ("night-number", "round-scenario", "sudan-corner", "goon-question")
+
+
+def social_on():
+    return (os.environ.get("FB_SOCIAL", "") or "").strip().lower() == "on"
+
+
+def event_text(ev):
+    """The post's text; «سؤال الجون» opens with yesterday's answer when
+    yesterday's question is on record."""
+    if not ev.get("prev_ref"):
+        return ev["text"]
+    import story_social as SS
+    return SS.with_prev(ev, lambda k, r: bool((store.get_post(k, r) or {}).get("post_id")))
 
 
 def post_event(token, ev):
@@ -1251,7 +1268,7 @@ def post_event(token, ev):
             import traceback
             where = traceback.extract_tb(e.__traceback__)[-1]
             print(f"{ev['kind']} {ev['ref']}: card failed ({e} at {os.path.basename(where.filename)}:{where.lineno}) - posting the text")
-    return post_text(token, ev["text"])
+    return post_text(token, event_text(ev))
 
 
 def event_reel(ev, token):
@@ -1290,15 +1307,18 @@ def events_post(token, dry=False, today=None):
         print("events: FB_EVENTS is not on - the texts are printed, nothing is posted")
     elif not dry and not armed_form and any(ev["kind"] in FORM_KINDS for ev in evs):
         print("events: FB_FORM is not on - the club-form / club-streak captions are printed, not posted")
+    armed_social = social_on()
+    if not dry and armed and not armed_social and any(ev["kind"] in SOCIAL_KINDS for ev in evs):
+        print("events: FB_SOCIAL is not on - the social kinds are printed, not posted")
     rc = 0
     for ev in evs:
         kind, ref, title = ev["kind"], ev["ref"], (ev.get("title") or "")[:80]
         rec = store.get_post(kind, ref)
         if rec and rec.get("post_id"):
             print(f"{kind} {ref}: already posted ({rec['post_id']})"); continue
-        if dry or not armed or (kind in FORM_KINDS and not armed_form):
+        if dry or not armed or (kind in FORM_KINDS and not armed_form) or (kind in SOCIAL_KINDS and not armed_social):
             how = " (the form card as a photo; the reel behind FB_REELS)" if kind in FORM_KINDS else ""
-            print(f"--- {kind} / {ref}{how}\n{ev['text']}\n"); continue
+            print(f"--- {kind} / {ref}{how}\n{event_text(ev)}\n"); continue
         if not token:
             print(f"{kind} {ref}: FB_PAGE_TOKEN not set - skipping"); continue
         if not store.claim(kind, ref, title=title):
@@ -1349,7 +1369,10 @@ def main() -> int:
             evs = SE.detect()
         except Exception as e:  # noqa: BLE001
             print(f"events: detector failed ({e})", file=sys.stderr); print(0); return 0
-        n = sum(1 for ev in evs if not (store.get_post(ev["kind"], ev["ref"]) or {}).get("post_id"))
+        # a social kind that is still switched off is not "pending": it would
+        # dispatch the posting workflow on every refresh only to print itself
+        n = sum(1 for ev in evs if not (store.get_post(ev["kind"], ev["ref"]) or {}).get("post_id")
+                and (ev["kind"] not in SOCIAL_KINDS or social_on()))
         print(n); return 0
     if "--pending" in sys.argv[1:]:
         # how many articles WOULD be posted - lets publish.yml dispatch the

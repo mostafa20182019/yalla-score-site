@@ -122,6 +122,7 @@ def load_data():
         "scorers": _load("scorers.json"),
         "archive": merge_archive(_load("results_archive.json"), _load("matches_archive.json")),
         "articles": _load("articles.json"),
+        "stats": _load("match_stats.json"),
         "moments": load_moments(),
     }
 
@@ -890,6 +891,8 @@ def club_streak(matches, fixtures, archive, today=None, n=FORM_N, clubs=None):
 
 
 # ---------------------------------------------------------------- all of it
+import story_social as SS                                   # noqa: E402
+
 # THE REGISTRY: one entry per event kind, in posting order. A new kind is a
 # new pure function (data, today) -> [event(...)] and one line here, plus a
 # numbered case in tests/test_fb_post.py. Everything else - the store dedup,
@@ -901,6 +904,11 @@ DETECTORS = [
     (KIND_OTD, lambda d, today: on_this_day(d.get("archive"), d.get("moments"), today)),
     (KIND_FORM, lambda d, today: club_form_before_match(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
     (KIND_STREAK, lambda d, today: club_streak(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
+    # the social review's kinds (story_social.py, 2026-11-19) - behind FB_SOCIAL in fb_post.py
+    (SS.KIND_NUMBER, lambda d, today: SS.night_number(d.get("matches"), d.get("archive"), d.get("stats"), today)),
+    (SS.KIND_SCENARIO, lambda d, today: SS.round_scenario(d.get("matches"), d.get("fixtures"), d.get("standings"), today)),
+    (SS.KIND_SUDAN, lambda d, today: SS.sudan_corner(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
+    (SS.KIND_QUESTION, lambda d, today: SS.goon_question(d.get("matches"), d.get("archive"), today)),
 ]
 
 
