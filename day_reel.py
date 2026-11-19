@@ -49,8 +49,14 @@ MAX_SHOTS = 2
 MAX_MATCHES = PER_SHOT * MAX_SHOTS   # what main() asks fb_post.daycard_matches for
 INTRO, OUTRO = 2.5, 3.0
 PAGE, PAGE_TWO = 7.0, 4.5            # one shot alone / each of two
-BAND_TOP, BAND_BOTTOM = 480, R.SAFE_BOTTOM - 10   # under the page title, inside the Reels safe band
-ROW_MAX_H = 170
+# Designer review 2026-11-19: the big wordmark took the top third of every
+# shot. On the results shots it is HEAD_LOGO_H high, as high as the Reels top
+# safe line allows (the default mark starts at 195), the title sits under it
+# and the rows get the room.
+HEAD_LOGO_H, HEAD_LOGO_Y, TITLE_Y = 110, 250, 318
+BAND_TOP, BAND_BOTTOM = 392, R.SAFE_BOTTOM - 10   # under the page title, inside the Reels safe band
+ROW_MAX_H = 185
+RED = (225, 29, 72)                  # the red of the board in the logo
 HOME_X, AWAY_X = W - 150, 150        # the crests: clear of the Reels like/comment column on the right
 SCORE_DX = 52                        # each side's goals, this far from the dash
 NAME_GAP = 100                       # the names stop this far from the centre
@@ -86,32 +92,83 @@ def day_name(date):
     return f"{_AR_DAYS[dd.weekday()]} {dd.day} {_AR_MONTHS[dd.month]}"
 
 
-def row(im, t, m, cy, t0, h):
-    """One result on ONE line, h tall: fades and slides in at t0."""
+_MARK = {}
+
+
+def mark(size):
+    """The board-and-arrow of the logo (assets-src/mark-512.png), size px."""
+    size = max(8, int(size))
+    if size not in _MARK:
+        try:
+            im = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA")
+            _MARK[size] = im.resize((size, size), Image.LANCZOS)
+        except OSError:
+            _MARK[size] = None
+    return _MARK[size]
+
+
+def hero_of(ms):
+    """THE result of the night - what the opening shot shows and which row
+    carries the board-and-arrow (designer review 2026-11-19: «السهم على
+    المباراة = اختيار الجون»): a curated club's match first, else the widest
+    margin, then the most goals, then the caller's order. ONE rule with the
+    card (day_card.day_hero), so the night's card and its reel frame the same
+    match."""
+    import day_card as DC
+    ms = [dict(m, status=m.get("status") or "FINISHED") for m in ms]
+    if not ms:
+        return None
+    h = DC.day_hero(ms)
+    return h
+
+
+def row(im, t, m, cy, t0, h, name_size=None, hero=False):
+    """One result on ONE line, h tall: fades and slides in at t0. name_size =
+    one size for every name of the shot (a long name used to shrink alone);
+    hero = the night's result: a red frame and the logo's board between the
+    two scores instead of the dash."""
     from site_lib.names import ar_team, comp_label
     e = M.ease(t, t0, M.FADE + 0.1)
     if e <= 0:
         return
     lay = M.layer()
     d = ImageDraw.Draw(lay)
-    d.rounded_rectangle((50, cy - h / 2 + 6, W - 50, cy + h / 2 - 6), int(h * 0.2), fill=(255, 255, 255, 26))
+    d.rounded_rectangle((50, cy - h / 2 + 6, W - 50, cy + h / 2 - 6), int(h * 0.2), fill=(255, 255, 255, 46 if hero else 26),
+                        outline=RED + (255,) if hero else None, width=5 if hero else 0)
     cs = int(min(104, h * 0.62))                       # the crest
     for side, x, anchor, edge in (("home", HOME_X, "rm", HOME_X - cs / 2 - 16),
                                   ("away", AWAY_X, "lm", AWAY_X + cs / 2 + 16)):
         R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), cs, x, cy)
         nm = C.ar(ar_team(m[side]))
         room = abs(edge - W / 2) - NAME_GAP
-        d.text((edge, cy), nm, font=C.fit(d, nm, "ExtraBold", int(min(42, h * 0.3)), room, 22),
+        d.text((edge, cy), nm, font=(C.font("ExtraBold", name_size) if name_size
+                                     else C.fit(d, nm, "ExtraBold", int(min(42, h * 0.3)), room, 22)),
                fill=C.WHITE, anchor=anchor)
     sy = cy - h * 0.09
     f = C.font("ExtraBold", int(min(84, h * 0.5)))
     d.text((W / 2 + SCORE_DX, sy), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
     d.text((W / 2 - SCORE_DX, sy), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
-    d.text((W / 2, sy), "-", font=C.font("ExtraBold", int(min(60, h * 0.36))), fill=M.GOLD, anchor="mm")
+    mk = mark(h * 0.3) if hero else None
+    if mk is not None:
+        lay.paste(mk, (int(W / 2 - mk.width / 2), int(sy - mk.height / 2)), mk)
+    else:
+        d.text((W / 2, sy), "-", font=C.font("ExtraBold", int(min(60, h * 0.36))), fill=M.GOLD, anchor="mm")
+    # the league under the score: white, and never under 26 px - the gold at
+    # 18 px could not be read on the light blue
     lb = C.ar(comp_label(m["competition"]))
-    d.text((W / 2, cy + h * 0.31), lb, font=C.fit(d, lb, "Bold", int(max(18, min(26, h * 0.17))), 2 * NAME_GAP + 60, 14),
-           fill=M.GOLD, anchor="mm")
+    d.text((W / 2, cy + h * 0.31), lb, font=C.fit(d, lb, "Bold", int(max(26, min(30, h * 0.17))), 2 * NAME_GAP + 80, 20),
+           fill=(255, 255, 255, 215), anchor="mm")
     M.put(im, lay, e, dy=M.SLIDE * (1 - e))
+
+
+def shot_name_size(rows, h):
+    """ONE size for every name of a shot: the smallest any of them needs."""
+    from site_lib.names import ar_team
+    d = ImageDraw.Draw(Image.new("RGBA", (8, 8)))
+    cs = int(min(104, h * 0.62))
+    room = abs((HOME_X - cs / 2 - 16) - W / 2) - NAME_GAP
+    top = int(min(42, h * 0.3))
+    return min(C.fit(d, C.ar(ar_team(m[k])), "ExtraBold", top, room, 22).size for m in rows for k in ("home", "away"))
 
 
 def build(ms, date, now=None):
@@ -123,31 +180,63 @@ def build(ms, date, now=None):
     ctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
     title, when = rel_label(date, now), day_name(date)
 
+    _h = hero_of(ms)
+    hero = next((m for m in ms if _h is not None and m.get("match_id") == _h.get("match_id")
+                 and m.get("home") == _h.get("home")), None)
+
+    def head(im):
+        R.logo_at(im, W / 2, HEAD_LOGO_Y, HEAD_LOGO_H)
+
     def intro(t):
+        """The opening shot IS the night's result (designer review
+        2026-11-19: the first second was a logo and a general title - a big
+        score stops the thumb): the two crests, the score with the logo's
+        board between the numbers, the two names, the league, then how many
+        results follow."""
+        from site_lib.names import ar_team, comp_label
         im = bg.copy()
-        M.header(im)
-        M.big_at(im, t, title, 600, 170)
+        head(im)
+        C.draw_center(ImageDraw.Draw(im), W / 2, TITLE_Y, C.ar(title), C.font("ExtraBold", 56), C.WHITE)
+        m = hero
+        e = M.ease(t, 0.1, M.FADE + 0.15)
+        if m is not None and e > 0:
+            lay = M.layer()
+            d = ImageDraw.Draw(lay)
+            cy = 760
+            for side, x in (("home", W * 0.8), ("away", W * 0.2)):
+                R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), 210, x, cy)
+                nm = C.ar(ar_team(m[side]))
+                d.text((x, cy + 170), nm, font=C.fit(d, nm, "ExtraBold", 54, W * 0.38, 30), fill=C.WHITE, anchor="mm")
+            f = C.font("ExtraBold", 210)
+            d.text((W / 2 + 105, cy - 20), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
+            d.text((W / 2 - 105, cy - 20), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
+            mk = mark(64)
+            if mk is not None:
+                lay.paste(mk, (int(W / 2 - 32), int(cy - 20 - 32)), mk)
+            lb = C.ar(comp_label(m["competition"]))
+            d.text((W / 2, cy + 300), lb, font=C.fit(d, lb, "Bold", 44, W * 0.8, 28), fill=(255, 255, 255, 225), anchor="mm")
+            M.put(im, lay, e, dy=M.SLIDE * (1 - e))
         # «من الدوريات الكبرى» only when it is true: a break night's results
         # come from the qualifiers and the cups (2026-11-19)
         from site_lib.competitions import LEAGUE_BAR
-        _big = all(m.get("competition") in LEAGUE_BAR for m in ms)
-        # rel_label() already carries the date on a day that is neither today
-        # nor yesterday: «نتائج الثلاثاء 17 نوفمبر» + «الثلاثاء 17 نوفمبر» under it
-        # (designer review 2026-11-19) - the day is then said once
+        _big = all(x.get("competition") in LEAGUE_BAR for x in ms)
         _n = f"{len(ms)} مباريات من الدوريات الكبرى" if _big else f"أبرز {len(ms)} نتائج"
-        M.lines_block(im, t, [_n] if when in title else [when, _n], (900, 990),
-                      weight="ExtraBold", size=56, t0=0.45)
+        # the date is said once: in the title when it carries it, else here
+        M.lines_block(im, t, [_n] if when in title else [f"{when} · {_n}"], (1200,),
+                      weight="ExtraBold", size=48, t0=0.55)
         return im
 
     def page(rows):
+        h, ys = row_geometry(len(rows))
+        nsz = shot_name_size(rows, h)
+
         def draw(t):
             im = bg.copy()
-            M.header(im)
-            C.draw_center(ImageDraw.Draw(im), W / 2, 425, C.ar(title if when in title else f"{title} · {when}"),
+            head(im)
+            C.draw_center(ImageDraw.Draw(im), W / 2, TITLE_Y, C.ar(title if when in title else f"{title} · {when}"),
                           C.font("ExtraBold", 40), C.WHITE)
-            h, ys = row_geometry(len(rows))
             for i, m in enumerate(rows):
-                row(im, t, m, ys[i], 0.1 + i * 0.15, h)
+                row(im, t, m, ys[i], 0.1 + i * 0.15, h, name_size=nsz, hero=m is hero)
             return im
         return draw
 

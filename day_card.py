@@ -54,7 +54,73 @@ def pick_matches(ms, tokens, keep_order=False):
     return [m for _, m in out]
 
 
-def render(ms, date, comp, out, part=None, parts=1, title=None):
+RED = (225, 29, 72)        # the red of the board in the logo
+LIGHT_TOP, LIGHT_BOT = (31, 148, 211), (13, 78, 132)   # the reels' blue (theme="light")
+_MARK = {}
+
+
+def _mark(size):
+    """The board-and-arrow of the logo, size px (None when the file is gone)."""
+    if size not in _MARK:
+        try:
+            _MARK[size] = Image.open(os.path.join(HERE, "assets-src", "mark-512.png")).convert("RGBA").resize(
+                (size, size), Image.LANCZOS)
+        except OSError:
+            _MARK[size] = None
+    return _MARK[size]
+
+
+def day_hero(rows):
+    """THE match of the card - the row framed in the logo's red, first on the
+    card (designer review 2026-11-19: «السهم على المباراة = اختيار الجون»): a
+    match between TWO curated sides (ليفربول × مانشستر يونايتد beats برشلونة
+    × فياريال), then one curated side, then Egypt's own team at any age, then
+    an Arab national team; on a results card with none of them, the widest
+    margin. The first of equals wins - the caller's order is a ranking."""
+    from site_lib.clubs import CURATED_PAGES
+    from site_lib.competitions import is_arab_nation_match
+    from site_lib.names import _team_match
+    rows = list(rows)
+
+    def sides(m):
+        return sum(1 for k in ("home", "away")
+                   if any(_team_match(tp, {"home": m.get(k), "away": "", "competition": m.get("competition")})
+                          for tp in CURATED_PAGES))
+
+    def egypt(m):
+        return any(str(m.get(k) or "").split(" تحت")[0].strip() == "مصر" for k in ("home", "away"))
+
+    best = max(rows, key=lambda m: (sides(m), egypt(m), is_arab_nation_match(m), -rows.index(m)), default=None)
+    if best is not None and (sides(best) or egypt(best) or is_arab_nation_match(best)):
+        return best
+    fin = [m for m in rows if (m.get("status") or "").upper() == "FINISHED" and m.get("home_score") is not None]
+    if not fin:
+        return None
+    return max(fin, key=lambda m: (abs(int(m["home_score"]) - int(m["away_score"])),
+                                   int(m["home_score"]) + int(m["away_score"]), -rows.index(m)))
+
+
+def day_groups(rows, hero=None):
+    """[(competition, [matches])]: the hero's competition first and the hero
+    first in it, the others in the order they first appear."""
+    comps = []
+    for m in rows:
+        if m.get("competition") not in comps:
+            comps.append(m.get("competition"))
+    if hero is not None:
+        comps.remove(hero.get("competition"))
+        comps.insert(0, hero.get("competition"))
+    out = []
+    for c in comps:
+        g = [m for m in rows if m.get("competition") == c]
+        if hero is not None and hero in g:
+            g.remove(hero)
+            g.insert(0, hero)
+        out.append((c, g))
+    return out
+
+
+def render(ms, date, comp, out, part=None, parts=1, title=None, theme="dark"):
     """part/parts (2026-10-15, the Europa League's 18-match Thursdays): page
     `part` of `parts`, nine matches each, the subtitle says which."""
     import fb_cards as FC
@@ -65,7 +131,8 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
     d = ImageDraw.Draw(img)
     for y in range(H):
         t = y / (H - 1)
-        d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(TOP, BOT)))
+        d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t)
+                                            for p, q in zip(*((LIGHT_TOP, LIGHT_BOT) if theme == "light" else (TOP, BOT)))))
     glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     ImageDraw.Draw(glow).ellipse([W // 2 - 420, 60, W // 2 + 420, 700], fill=(31, 148, 211, 70))
     glow = glow.filter(ImageFilter.GaussianBlur(120))
@@ -99,6 +166,123 @@ def render(ms, date, comp, out, part=None, parts=1, title=None):
             f = FC.font("ExtraBold", int(r * 0.9))
             s = FC.ar((name or "?").strip()[:1])
             d.text((cx - d.textlength(s, font=f) / 2, cy - r * 0.6), s, font=f, fill=(16, 62, 108))
+
+    # ------------------------------------------------------------------
+    # THE DAY ACROSS COMPETITIONS (the nightly results card and the morning
+    # fixtures card), redrawn after the designer review of 2026-11-19:
+    #   * one header: a red tag saying what the card is, a two-word title,
+    #     the date ONCE (it was in the corner, in the title and under it);
+    #   * the matches under their competition's name, said once per group,
+    #     not under every score;
+    #   * ONE match framed in the logo's red with the board beside its score;
+    #   * a fixture's kick-off on a white pill like a score, its verified
+    #     channel under it (the morning reader's question).
+    # A single competition's card keeps the layout below.
+    if comp == "all" and not part:
+        from zoneinfo import ZoneInfo
+        from site_lib.competitions import match_tv
+        when = MC.when_ar(date, None)                       # «الثلاثاء 17 نوفمبر»
+        wd, _, dm = when.partition(" ")
+        try:
+            delta = (datetime.date.fromisoformat(date) - datetime.datetime.now(ZoneInfo("Africa/Cairo")).date()).days
+        except ValueError:
+            delta = None
+        rel = {0: "اليوم", 1: "الغد", -1: "أمس"}.get(delta)
+        rows = list(ms[:MAX_ROWS])
+        sts = [(m.get("status") or "").upper() for m in rows]
+        done = any(x == "FINISHED" for x in sts)
+        FC.wordmark_at(img, W - 40, 66, 64, anchor="rm")
+        tag = "نتائج" if done else "مواعيد"
+        ftag = FC.font("ExtraBold", 30)
+        tw = d.textlength(FC.ar(tag), font=ftag)
+        rrect([40, 40, 40 + tw + 44, 94], 27, RED + (255,))
+        text_l(62, 47, tag, ftag, WHITE)
+        big = ("نتائج " if done else "مباريات ") + (rel or wd)
+        text_c(W // 2, 118, big, fit(big, "ExtraBold", 96, W - 80, 56))
+        sub = (when if rel else dm) + ("" if done else " · بتوقيت القاهرة")
+        text_c(W // 2, 238, sub, FC.font("Bold", 30), SOFT)
+
+        hero = day_hero(rows)
+        groups = day_groups(rows, hero)
+        n, GAP, HEAD, Y0, YB = max(len(rows), 1), 8, 48, 296, 1262
+        CH = min(140, (YB - Y0 - len(groups) * HEAD - GAP * n) // n)
+        grouped = CH >= 76
+        if not grouped:                 # too many competitions for nine rows: the name goes back under each score
+            groups = [(None, ([hero] if hero else []) + [m for m in rows if m is not hero])]
+            CH = min(140, (YB - Y0 - GAP * n) // n)
+        used = (len(groups) * HEAD if grouped else 0) + n * (CH + GAP)
+        y = Y0 + max(0, (YB - Y0 - used) // 2)
+        R = 44 if CH >= 120 else 36 if CH >= 90 else 30
+        fn = FC.font("ExtraBold", 36 if CH >= 120 else 31 if CH >= 90 else 27)
+        fs = FC.font("ExtraBold", 36 if CH >= 90 else 30)
+        fc = FC.font("Bold", 18)
+        for cname, gms in groups:
+            if grouped:
+                lb = comp_label(cname)
+                lx = W - 40
+                lurl = COMP_LOGO.get(cname)
+                lim = None
+                if lurl:
+                    try:
+                        lim = FC.crest_image(lurl, 30)
+                    except Exception:                       # noqa: BLE001
+                        lim = None
+                if lim is not None:
+                    d.ellipse([lx - 40, y + 4, lx, y + 44], fill=WHITE)
+                    img.paste(lim, (lx - 20 - lim.width // 2, y + 24 - lim.height // 2), lim)
+                    lx -= 52
+                text_r(lx, y + 6, lb, FC.font("ExtraBold", 28), GOLD)
+                y += HEAD
+            for m in gms:
+                is_hero = m is hero
+                rrect([40, y, W - 40, y + CH], 18, (255, 255, 255, 40) if is_hero else CARD_FILL,
+                      RED + (255,) if is_hero else None, 5 if is_hero else 1)
+                cy = y + CH // 2
+                h, a = ar_team(m.get("home")), ar_team(m.get("away"))
+                crest(W - 40 - 16 - R, cy, R, h, m.get("home_badge"))
+                crest(40 + 16 + R, cy, R, a, m.get("away_badge"))
+                st = (m.get("status") or "").upper()
+                fin = st == "FINISHED" and m.get("home_score") is not None
+                live_now = st == "LIVE" and m.get("home_score") is not None
+                under = "" if grouped else comp_label(m.get("competition"))
+                if not (fin or live_now) and grouped:
+                    under = str(m.get("channel") or match_tv(m) or "")
+                py = cy - (10 if under or live_now else 0)
+                # HOME sits on the right of the card, so its goals are the right-hand number
+                t = f"{m.get('away_score')} - {m.get('home_score')}" if (fin or live_now) else (m.get("koff_time") or "--:--")
+                rrect([W // 2 - 66, py - 23, W // 2 + 66, py + 23], 12,
+                      (200, 16, 46, 235) if live_now else (255, 255, 255, 235))
+                ink = WHITE if live_now else (16, 62, 108)
+                bx = d.textbbox((0, 0), t, font=fs)
+                d.text((W // 2 - (bx[0] + bx[2]) / 2, py - (bx[1] + bx[3]) / 2), t, font=fs, fill=ink)
+                if live_now:
+                    text_c(W // 2, py + 26, "مباشر", fc, (255, 120, 140))
+                elif under:
+                    text_c(W // 2, py + 27, under, fit(under, "Bold", 18, 300, 13), SOFT)
+                side_w = W // 2 - 66 - (40 + 16 + 2 * R + 14) - 10
+                away_w = side_w
+                if is_hero:
+                    mk = _mark(40)
+                    if mk is not None:
+                        img.paste(mk, (W // 2 - 66 - 12 - 40, py - 20), mk)
+                        away_w = side_w - 56
+                fh = fit(h, "ExtraBold", fn.size, side_w, 18)
+                fa = fit(a, "ExtraBold", fn.size, away_w, 18)
+                text_r(W - 40 - 16 - 2 * R - 14, cy - fh.size * 0.62, h, fh, WHITE)   # home RIGHT
+                text_l(40 + 16 + 2 * R + 14, cy - fa.size * 0.62, a, fa, WHITE)       # away LEFT
+                y += CH + GAP
+        if len(ms) > MAX_ROWS:
+            text_c(W // 2, YB + 2, f"و{len(ms) - MAX_ROWS} مباريات أخرى في الموقع", FC.font("Bold", 22), DIM)
+        text_l(40, H - 46, "elgoon.com", FC.font("Bold", 24), SOFT)
+        live_n = sum(1 for x in sts if x == "LIVE")
+        still = {1: "ومباراة واحدة مستمرة", 2: "ومباراتان مستمرتان"}.get(live_n, f"و{live_n} مباريات مستمرة")
+        foot = ("النتائج النهائية" if all(x == "FINISHED" for x in sts) else
+                f"نتائج نهائية · {still}" if (done and live_n) else
+                "المواعيد: الجدول الرسمي · قد تتغير")
+        text_r(W - 40, H - 44, foot, FC.font("Regular", 22), DIM)
+        img.save(out, quality=90, optimize=True)
+        return {"n": len(ms), "rows": len(rows), "hero": (hero or {}).get("match_id"), "grouped": grouped,
+                "groups": len(groups)}
 
     # brand + title
     FC.wordmark_at(img, W - 40, 62, 60, anchor="rm")     # the brand: the wordmark

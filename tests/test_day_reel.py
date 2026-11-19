@@ -79,8 +79,33 @@ check(right > left, f"the «8» (home) is right of the dash, the «1» left (ink
 _src = open("day_reel.py", encoding="utf-8").read()
 check(D.rel_label("2026-11-05", now) == "نتائج " + D.day_name("2026-11-05")
       and 'title if when in title else f"{title} · {when}"' in _src
-      and "[_n] if when in title else [when, _n]" in _src,
+      and '[_n] if when in title else [f"{when} · {_n}"]' in _src,
       "an older day says its date once: in the title, not again beside it or under it")
+
+# designer review 2026-11-19 (second list): the opening shot is the night's
+# result, one row carries the logo's board, the head logo is small.
+def _m(i, h, a, hs, as_, comp="Premier League"):
+    return {"match_id": i, "home": h, "away": a, "home_score": hs, "away_score": as_, "competition": comp,
+            "home_badge": None, "away_badge": None}
+
+
+_night = [_m(1, "Everton FC", "Fulham FC", 5, 0), _m(2, "Liverpool FC", "Brentford FC", 1, 0),
+          _m(3, "Arsenal FC", "Chelsea FC", 1, 1)]
+check(D.hero_of(_night)["match_id"] == 3, "the night's result: two curated sides beat one, and beat a 5-0 between others")
+check(D.hero_of(_night[:2])["match_id"] == 2, "...one curated side beats the widest margin")
+check(D.hero_of([_m(1, "Everton FC", "Fulham FC", 5, 0), _m(2, "Fulham FC", "Brentford FC", 1, 0)])["match_id"] == 1
+      and D.hero_of([]) is None, "...with no curated side: the widest margin; no results, no hero")
+_q = "Africa Cup of Nations Qualification"
+check(D.hero_of([_m(1, "توجو", "الجزائر", 0, 3, _q), _m(2, "مالاوي", "مصر", 0, 0, _q)])["match_id"] == 2,
+      "...Egypt's match before another Arab nation's, whatever the score")
+check(D.BAND_TOP < 420 and D.HEAD_LOGO_Y - D.HEAD_LOGO_H / 2 >= 195 and D.ROW_MAX_H >= 180,
+      "the small head logo starts at the top safe line and the rows get the room")
+_h6, _ = D.row_geometry(6)
+_long = [_m(i, "Wolverhampton Wanderers FC", "Chelsea FC", 1, 0) for i in range(2)]
+check(22 <= D.shot_name_size(_long, _h6) <= D.shot_name_size(_night, _h6) <= 42,
+      "one name size for a whole shot: the longest name sets it")
+check("hero=m is hero" in _src and "mark(h * 0.3) if hero" in _src and "max(26," in _src,
+      "the hero row carries the board instead of the dash; the league label is never under 26 px")
 cap = D.caption(ms[:3], "2026-11-08", now)
 check(cap.count("8 - 1") == 3 and "https://elgoon.com/" + chr(10) in cap and "elgoon.com/matches" not in cap and "#الجون" in cap, "caption: every result, the link, the tag")
 
