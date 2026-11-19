@@ -125,7 +125,9 @@ ck("11j the U-17 World Cup + «دوري المحترفين المصري»: same 
    {n: (ids.get(n), bs.S365_COMP_IDS.get(n), _ce(n)) for n in _N11})
 ck("11k ...the second division after the Arab first divisions (right after Libya) and under «الدوريات العربية»; the national teams (AFCON quals, Nations League, U-17 World Cup) above the Arab leagues",
    bs.COMP_ORDER[1:3] == ["Egypt Cup", "Egyptian League Cup"]
-   and bs.COMP_ORDER.index("Egyptian Second Division") == bs.COMP_ORDER.index("Libyan Premier League") + 1
+   # «right after Libya» until 2026-11-19; the Iraqi and Syrian FIRST divisions sit before it now
+   and bs.COMP_ORDER.index("Egyptian Second Division") == bs.COMP_ORDER.index("Syrian Premier League") + 1
+   and bs.COMP_ORDER.index("Libyan Premier League") < bs.COMP_ORDER.index("Iraq Stars League") < bs.COMP_ORDER.index("Syrian Premier League")
    and bs.COMP_ORDER.index("Egyptian Second Division") > bs.COMP_ORDER.index("Tunisian Ligue 1")
    and max(bs.COMP_ORDER.index(n) for n in ("Africa Cup of Nations Qualification", "UEFA Nations League", "FIFA U-17 World Cup"))
        < min(bs.COMP_ORDER.index(n) for n in ("Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1", "Libyan Premier League"))
@@ -143,6 +145,21 @@ ck("11m U-17 World Cup: an Arab team's match names Alkass too, any other match b
    and _mtv({"competition": _u, "home": "البرازيل تحت 17", "away": "فرنسا تحت 17"}) == "beIN Sports"
    and _mtv({"competition": "Africa Cup of Nations Qualification", "home": "مصر", "away": "مالاوي"}) == "beIN Sports"
    and _mtv({"competition": "Egyptian Second Division", "home": "x", "away": "y"}) == "")
+# 2026-11-19 (user: «نركز برضه على الدورى السورى والعراقى» → «ضيف الاتنين»)
+_N19 = {"Iraq Stars League": (6822, "iraq", "🇮🇶", "الدوري العراقي"),
+        "Syrian Premier League": (564, "syria", "🇸🇾", "الدوري السوري")}
+_arab = __import__("site_pages.leagues", fromlist=["ARAB_SLUGS"]).ARAB_SLUGS
+ck("11n the Iraqi and Syrian leagues: same id in fetch_data, build, the worker and match_brief; slug, label, emblem, flag; under «الدوريات العربية»",
+   all(ids.get(n) == i and bs.S365_COMP_IDS.get(n) == i and str(i) in live.split(",")
+       and str(i) in __import__("match_brief").S365_ALL.split(",") and str(i) in fd.S365_ALL_COMPS.split(",")
+       and bs.COMP_SLUG.get(n) == s and bs.COMP_LABEL.get(n) == l and n in bs.COMP_LOGO
+       and _ce(n) == f and _ce(l) == f and s in _arab and n in bs.S365_COMPETITIONS
+       for n, (i, s, f, l) in _N19.items()),
+   {n: (ids.get(n), bs.S365_COMP_IDS.get(n), _ce(n), _ce(l)) for n, (i, s, f, l) in _N19.items()})
+ck("11o the Iraqi chart is fetched, the Syrian one is not (the feed's is empty); neither claims a TV channel without a source",
+   (6822, "Iraq Stars League") in fd.S365_SCORER_COMPS and not any(i == 564 for i, _ in fd.S365_SCORER_COMPS)
+   and not any(n in bs.COMP_TV for n in _N19))
+ck("11p «الدوري السوري الممتاز» is not read as the English «Premier» league's lion", _ce("Syrian Premier League") != "🦁")
 from site_lib.competitions import comp_season as _cs
 ck("11l the U-17 World Cup is a one-year tournament: its pages say «2026», a league keeps «2026-2027»",
    _cs("FIFA U-17 World Cup", "2026-2027", [{"matches": [{"kickoff": "2026-11-21"}, {"kickoff": "2026-11-19"}]}]) == "2026"

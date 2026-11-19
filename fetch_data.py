@@ -784,6 +784,14 @@ S365_LEAGUES = [
     (554, "Tunisian Ligue 1"),
     (559, "Libyan Premier League"),
     (7685, "UEFA Conference League"),
+    # user, 2026-11-19 («نركز برضه على الدورى السورى والعراقى» → «ضيف
+    # الاتنين»): the readers who find the site in Syria and Iraq. Ids from
+    # 365scores' own search (langId=27): 6822 «الدوري العراقي» (20 clubs,
+    # one table, goal events + line-ups + a scorers chart), 564 «الدوري
+    # السوري الممتاز» (14 clubs, one table, fixtures and results ONLY - the
+    # feed carries no goal events, no line-ups and an empty scorers chart).
+    (6822, "Iraq Stars League"),
+    (564, "Syrian Premier League"),
     # user ask 2026-11-03: «ضيف بطولتى كأس مصر وكأس عاصمة مصر». 553 egypt-cup
     # (knock-out: no table, no round numbers - its matches, results and
     # match pages, no rounds panel); 7808 = 365scores' «كأس الرابطة المصرية»
@@ -1149,7 +1157,7 @@ GOAL_DETAIL_CAP = 65        # per-run ceiling on game/ detail calls
 GOAL_PRIORITY = ("الأهلي", "الزمالك", "بيراميدز", "ريال مدريد", "برشلونة",
                  "مانشستر", "أرسنال", "ليفربول", "تشيلسي", "طرابزون سبور",
                  "الهلال السوداني")
-S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808,6994,5582"
+S365_ALL_COMPS = "552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808,6994,5582,6822,564"
 
 def _is_shootout(ev):
     """True for an event of the penalty shoot-out (365scores stage 11, status
@@ -1637,6 +1645,7 @@ S365_SCORER_COMPS = [
     (7685, "UEFA Conference League"),
     (553, "Egypt Cup"), (7808, "Egyptian League Cup"),
     (6994, "Egyptian Second Division"), (5582, "FIFA U-17 World Cup"),   # 2026-11-11
+    (6822, "Iraq Stars League"),          # 2026-11-19; the Syrian chart is empty in the feed
 ]
 
 # the response carries several athlete charts per competition; these are the

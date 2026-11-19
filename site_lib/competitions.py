@@ -20,7 +20,9 @@ S365_COMPETITIONS = ("Egyptian Premier League", "Turkish Super Lig",
                      # 2026-11-03 (user ask)
                      "Egypt Cup", "Egyptian League Cup",
                      # 2026-11-11 (user ask)
-                     "Egyptian Second Division", "FIFA U-17 World Cup")
+                     "Egyptian Second Division", "FIFA U-17 World Cup",
+                     # 2026-11-19 (user ask)
+                     "Iraq Stars League", "Syrian Premier League")
 
 # The header ticker shows ONLY these clubs' matches (user pick 2026-08-08).
 # Tokens are substring-matched against football-data team names, so keep them
@@ -56,6 +58,8 @@ COMP_SLUG = {
     "Egyptian League Cup": "egypt-capital-cup",
     "Egyptian Second Division": "egypt-second-division",   # 2026-11-11
     "FIFA U-17 World Cup": "u17-world-cup",                 # 2026-11-11
+    "Iraq Stars League": "iraq",                            # 2026-11-19
+    "Syrian Premier League": "syria",                       # 2026-11-19
 }
 
 # MENA broadcast rights per competition — feeds the «القنوات الناقلة» block
@@ -166,6 +170,15 @@ COMP_LOGO = {
         "https://imagecache.365scores.com/image/upload/"
         "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
         "d_Competitions:default1.png/v4/Competitions/7685",
+    # 2026-11-19: the Iraqi and the Syrian leagues
+    "Iraq Stars League":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/6822",
+    "Syrian Premier League":
+        "https://imagecache.365scores.com/image/upload/"
+        "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
+        "d_Competitions:default1.png/v4/Competitions/564",
     "Egypt Cup":
         "https://imagecache.365scores.com/image/upload/"
         "f_png,w_68,h_68,c_limit,q_auto:eco,dpr_2,"
@@ -205,6 +218,8 @@ COMP_LABEL = {
     "Algerian Ligue 1": "الدوري الجزائري",
     "Tunisian Ligue 1": "الدوري التونسي",
     "Libyan Premier League": "الدوري الليبي",
+    "Iraq Stars League": "الدوري العراقي",        # 2026-11-19
+    "Syrian Premier League": "الدوري السوري",     # 365scores: «الدوري السوري الممتاز»
     "UEFA Conference League": "دوري المؤتمر الأوروبي",
     "Egypt Cup": "كأس مصر",
     "Egyptian League Cup": "كأس عاصمة مصر",   # 365scores: «كأس الرابطة المصرية»
@@ -256,13 +271,16 @@ COMP_ORDER = ["Egyptian Premier League",
               # the North African leagues (user ask 2026-11-02)
               "Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1",
               "Libyan Premier League",
+              # the Iraqi and the Syrian leagues (user ask 2026-11-19) - Arab first
+              # divisions, so before the second division below
+              "Iraq Stars League", "Syrian Premier League",
               # a second division comes after every Arab FIRST division (user,
               # 2026-11-11: «نزل الدورى التونسى تحت» when it sat after the cups)
               "Egyptian Second Division"]
 
 # 365scores competition ids for the leagues TICKER_TEAMS scopes by name —
 # must agree with LIVE_COMPS in worker.js
-# (552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808,6994,5582).
+# (552,78,649,7,11,17,25,35,572,624,588,7016,573,627,557,560,554,559,7685,553,7808,6994,5582,6822,564).
 # (LIVE_COMP_ID below adds the football-data leagues' 365scores ids)
 S365_COMP_IDS = {
     "Egyptian Premier League": 552,
@@ -282,6 +300,8 @@ S365_COMP_IDS = {
     "Egyptian League Cup": 7808,
     "Egyptian Second Division": 6994,   # 2026-11-11
     "FIFA U-17 World Cup": 5582,        # 2026-11-11
+    "Iraq Stars League": 6822,          # 2026-11-19
+    "Syrian Premier League": 564,       # 2026-11-19
 }
 
 

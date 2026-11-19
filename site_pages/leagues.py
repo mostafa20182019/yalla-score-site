@@ -238,7 +238,7 @@ DOMESTIC_SLUGS = ("england", "spain", "italy", "germany", "france", "turkey")
 # Egyptian league and cups and the Saudi league (user, 2026-11-03: «انقل الدورى
 # المصرى وكأس مصر والدورى السعودى للدوريات العربية»)
 ARAB_SLUGS = ("egypt", "egypt-cup", "egypt-capital-cup", "egypt-second-division", "saudi",
-              "morocco", "algeria", "tunisia", "libya")
+              "morocco", "algeria", "tunisia", "libya", "iraq", "syria")
 
 
 def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_all=None,
