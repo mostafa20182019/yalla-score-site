@@ -114,7 +114,9 @@ t0 = rd(pages[0])
 ck("11 the title is the query a reader types",
    # 2026-11-12: «مواعيد المباريات القادمة» (GSC queries); 2026-11-13: the
    # season moved to the end so those words survive truncation
-   re.search(r"<title>جدول مباريات .+: مواعيد (المباريات القادمة|الدور القادم) والنتائج", t0) is not None,
+   # 2026-11-19: a long name (the Africa qualifiers) drops the season, then
+   # «والنتائج», to stay whole in the results - never the query words
+   re.search(r"<title>جدول مباريات .+: مواعيد (المباريات القادمة|الدور القادم)( والنتائج|</title>| \|)", t0) is not None,
    re.search(r"<title>(.*?)</title>", t0).group(1)[:60])
 ck("12 the page says how many rounds and matches it holds, in words",
    # 2026-11-13: what the page HOLDS, with number agreement («3 أدوار», «11 جولة»)
