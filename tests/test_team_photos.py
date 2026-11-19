@@ -123,8 +123,9 @@ ck("7c the source was left alone (already web-sized)", Image.open(os.path.join(l
 ck("6a every curated club page has a folder", all(os.path.isdir(os.path.join("team-photos", s)) for s in TP.TEAMS), str([s for s in TP.TEAMS if not os.path.isdir(os.path.join("team-photos", s))]))
 ck("6b every folder ships its credits.txt", all(os.path.exists(os.path.join("team-photos", s, "credits.txt")) for s in TP.TEAMS))
 import site_lib.clubs as C
-ck("6c the slugs are the /team/<slug> slugs", set(p["slug"] for p in C.TEAM_PAGES) <= set(TP.TEAMS))
-ck("6d the Arabic names are the site's spellings", all(TP.TEAMS[p["slug"]] == p["name"] for p in C.TEAM_PAGES))
+# the curated clubs: a page-only entry (2026-11-19) has no photo folder
+ck("6c the slugs are the /team/<slug> slugs", set(p["slug"] for p in C.CURATED_PAGES) <= set(TP.TEAMS))
+ck("6d the Arabic names are the site's spellings", all(TP.TEAMS[p["slug"]] == p["name"] for p in C.CURATED_PAGES))
 real = TP.load_registry()
 ck("6e the committed registry is well-formed", isinstance(real.get("photos"), list) and all({"file", "credit", "club", "source"} <= set(p) for p in real["photos"]))
 for p in real["photos"]:

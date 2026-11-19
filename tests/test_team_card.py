@@ -55,8 +55,10 @@ ck("3 top scorer: the team's first name on the chart, goals in words",
 ck("4 a curated club links its club page", d.get("tp") == "/team/trabzonspor")
 f = T.team_card_data(COMP, "فنربخشة", today="2026-11-13")
 ck("5 a match without a page has no link", f.get("nx", {}).get("u") == "", f.get("nx"))
+# فنربخشة has its own page since 2026-11-19 (page-only entry); «قاسم باشا» has none
 ck("6 no scorer on the chart = no scorer line; no club page = no link",
-   "sc" not in f and "tp" not in f, f)
+   "sc" not in f and f.get("tp") == "/team/fenerbahce"
+   and "tp" not in T.team_card_data(COMP, "قاسم باشا", today="2026-11-13"), f)
 ck("7 a draw is a draw", T.team_card_data(COMP, "قاسم باشا", today="2026-11-13")["ls"]["r"] == "d")
 ck("8 a chart that failed its freshness check gives no scorer",
    (T.set_team_info(FX, SC, {COMP: False}, [1, 3]) or True)

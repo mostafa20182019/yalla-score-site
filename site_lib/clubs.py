@@ -113,7 +113,36 @@ TEAM_PAGES = [
      # another curated side (article 1146: Salah + «منتخب مصر» got the
      # «طرابزون سبور» crumb and keywords - SEO review 2026-11-12)
      "proxy_tokens": ["محمد صلاح"]},
+    # ---- PAGE-ONLY entries (user, 2026-11-19: «أيوه، الأربعة»). Search shows
+    # the site near position 10 for the Turkish league in Syria, Iraq and
+    # Turkey, with one Turkish club page (Trabzonspor); Sudan is where the
+    # Facebook audience grows. These four get a /team page, the «تابع فريقك»
+    # picker, club chips and the sitemap - and NOTHING a curated club gets:
+    # no ticker, no live Facebook cards, no match previews / reports
+    # (match_brief), no club-form posts (story_events), no reserved push
+    # slot. `page_only` is that line; CURATED_PAGES below is the list without
+    # them. Names are the feed's own, matched EXACTLY («السودان» is not
+    # «جنوب السودان»); the Champions League is football-data's Latin name.
+    {"slug": "galatasaray", "name": "جلطة سراي", "league": "Turkish Super Lig", "page_only": True,
+     "match_tokens": [("جلطة سراي", ("Turkish Super Lig", "UEFA Champions League")),
+                      ("Galatasaray SK", "UEFA Champions League")],
+     "news_tokens": ["جلطة سراي", "غلطة سراي", "جالطة سراي", "غلطه سراي", "جالاتا سراي"]},
+    {"slug": "fenerbahce", "name": "فنربخشة", "league": "Turkish Super Lig", "page_only": True,
+     "match_tokens": [("فنربخشة", ("Turkish Super Lig", "UEFA Champions League")),
+                      ("Fenerbahçe SK", "UEFA Champions League")],
+     "news_tokens": ["فنربخشة", "فنربخشه", "فناربخشة", "فنار بخشة"]},
+    {"slug": "besiktas", "name": "بشكتاش", "league": "Turkish Super Lig", "page_only": True,
+     "match_tokens": [("بشكتاش", ("Turkish Super Lig", "UEFA Europa League"))],
+     "news_tokens": ["بشكتاش", "بيشكتاش", "بشيكتاش"]},
+    {"slug": "sudan", "name": "منتخب السودان", "league": NT_SCOPE[0], "page_only": True,
+     "match_tokens": [("السودان", NT_SCOPE)],
+     "news_tokens": ["منتخب السودان", "المنتخب السوداني", "صقور الجديان"],
+     "news_excl": ["منتخب السودان للشباب", "منتخب السودان الأولمبي", "منتخب السودان تحت", "منتخب جنوب السودان"]},
 ]
+
+# the clubs the site is curated around: every TEAM_PAGES entry that is more
+# than a page. Whatever means «a curated club's match / story» reads THIS.
+CURATED_PAGES = [tp for tp in TEAM_PAGES if not tp.get("page_only")]
 
 # One club, several spellings over a season: 365scores wrote «غلطة سراي» until
 # mid-October 2026 and «جلطة سراي» since, so the standings' «لعب / ف / ت / خ»

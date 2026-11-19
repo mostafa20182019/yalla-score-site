@@ -119,6 +119,8 @@ def curated_tier(a):
     («خلي دايمًا توقعات وتقارير الفرق المميزة في الأول»): the home analyses
     block leads with these, Egyptian first, newest within each tier."""
     for tp in TEAM_PAGES:
+        if tp.get("page_only"):
+            continue                      # a page, not a curated side (clubs.CURATED_PAGES)
         if _team_news(tp, a):
             return 0 if (tp.get("league") == "Egyptian Premier League" or tp is _NT_PAGE) else 1
     return 2

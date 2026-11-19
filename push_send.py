@@ -132,6 +132,8 @@ def priority(art):
         return 2
     txt = (art.get("title") or "") + " " + (art.get("summary") or "")
     for tp in TEAM_PAGES:
+        if tp.get("page_only"):
+            continue                      # no reserved slot for a page-only entry (2026-11-19)
         if any(t in txt for t in tp["news_tokens"]) and \
                 not any(x in txt for x in tp.get("news_excl", [])):
             return 1

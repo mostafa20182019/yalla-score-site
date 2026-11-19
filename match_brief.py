@@ -97,13 +97,19 @@ def _norm(s):
 
 def curated_club(m):
     """(club page dict) for the FIRST curated club in this match, else None."""
-    for tp in b.TEAM_PAGES:
+    for tp in _curated():
         if b._team_match(tp, m):
             return tp
     return None
 
+def _curated():
+    """The curated clubs - a page-only entry (clubs.CURATED_PAGES, 2026-11-19)
+    has a /team page but no previews, reports or featured weight."""
+    from site_lib.clubs import CURATED_PAGES
+    return CURATED_PAGES
+
 def curated_clubs(m):
-    return [tp for tp in b.TEAM_PAGES if b._team_match(tp, m)]
+    return [tp for tp in _curated() if b._team_match(tp, m)]
 
 
 def featured_sides(m):
@@ -118,7 +124,7 @@ def featured_sides(m):
         name = m.get(side)
         if (b.ar_team(name) in focus
                 or any(b._team_match(tp, {"home": name, "away": "", "competition": m.get("competition")})
-                       for tp in b.TEAM_PAGES)):
+                       for tp in _curated())):
             n += 1
     return n
 

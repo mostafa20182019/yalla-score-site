@@ -626,8 +626,8 @@ CAIRO_TZ = "Africa/Cairo"
 
 
 def form_clubs():
-    from site_lib.clubs import TEAM_PAGES
-    return [tp for tp in TEAM_PAGES if tp["slug"] != "egypt"]
+    from site_lib.clubs import CURATED_PAGES     # a page-only entry gets no form post (2026-11-19)
+    return [tp for tp in CURATED_PAGES if tp["slug"] != "egypt"]
 
 
 def club_side(tp, m):
