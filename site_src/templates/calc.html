@@ -22,7 +22,7 @@
       <div class="calc-m"><span class="calc-h"><bdi>{{ m.h }}</bdi></span><span class="calc-vs">×</span><span class="calc-a"><bdi>{{ m.a }}</bdi></span>{% if m.when %}<span class="calc-w">{{ m.when }}</span>{% endif %}</div>
       {% endfor %}
     </div>
-    <p class="calc-bar"><span id="calcCount"></span><button type="button" id="calcReset" hidden>مسح التوقعات</button></p>
+    <p class="calc-bar"><span id="calcCount"></span>{# the reader's own table as a link (#p=...): what brings the page back to Facebook and WhatsApp #}<a id="calcShare" class="share-btn" href="#" target="_blank" rel="noopener" hidden>شارك توقعك ↗</a><button type="button" id="calcReset" hidden>مسح التوقعات</button></p>
     {# what the last pick did to the two teams, kept in sight: on a phone the
        table is more than a screen below the buttons (site review 2026-11-19) #}
     <div id="calcFx" class="calc-fx" role="status" hidden><span id="calcFxText" class="calc-fx-t"></span><button type="button" id="calcFxGo" class="calc-fx-go">الجدول ↓</button></div>

@@ -1646,6 +1646,31 @@ html.my-has #myTeam[hidden]{display:block;min-height:188px}
 .my-n{display:block;margin-top:8px;padding:10px 0 2px;border-top:1px solid #eef2f6;font-weight:700;font-size:.9rem;color:#0f172a;text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .my-n:hover{color:var(--green-d)}
 
+/* site review 2026-11-19: what comes right after a story, the calculator's
+   doors, the two sides before a match */
+.a-act{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:18px 0 6px}
+.a-act .follow-btn{margin-top:0}
+.share-btn{display:inline-flex;align-items:center;font:inherit;font-weight:800;font-size:.9rem;min-height:44px;padding:0 18px;border-radius:999px;border:1.5px solid #cbd5e1;background:#fff;color:#0f172a;text-decoration:none;cursor:pointer}
+.share-btn:hover{border-color:var(--green-d);color:var(--green-d)}
+.share-btn[hidden]{display:none}
+.a-rel{margin:14px 0 4px}
+.a-rel h2{font-size:1.05rem;margin:0 0 8px}
+.calc-cta{margin:0 0 12px}
+.calc-cta a{display:flex;align-items:center;min-height:48px;padding:8px 14px;border-radius:12px;background:#eaf5fc;border:1px solid #cfe6f5;color:var(--green-d);font-weight:800;font-size:.92rem;text-decoration:none;line-height:1.6}
+.calc-d{margin:10px 0 0;padding:6px 0 0;border-top:1px solid #eef2f6;text-align:center;font-size:.76rem;font-weight:800;color:var(--muted)}
+.calc-d:first-child{margin-top:0;border-top:0}
+.calc-d+.calc-m{border-top:0}
+.form-card .fc-r{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #eef2f6;min-height:44px}
+.form-card h2+.fc-r{border-top:0}
+.form-card .fc-r img{width:26px;height:26px;object-fit:contain;flex:none}
+.form-card .fc-r b{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fc-p{font-size:.76rem;font-weight:800;color:var(--muted);white-space:nowrap}
+.fc-f{margin-inline-start:auto;display:inline-flex;gap:3px;flex:none}
+.fc-k{margin:6px 0 0;font-size:.74rem;font-weight:700;color:var(--muted)}
+/* the two sides of THIS match in the table under it */
+.lt-me{color:var(--green-d);font-weight:900}
+tr:has(.lt-me) td{background:#eaf5fc}
+
 /* the «الجون» cover placeholder (media/ph-*.svg, 16:9) is shown WHOLE on its
    own blue: a wide box with object-fit:cover sliced the logo on desktop
    (user, 2026-11-11: the Inzaghi story's hero at 1780x500). Last in the file:

@@ -405,10 +405,46 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                     store_src=f"/standings/{_slug}" if _slug else None)
             table = _table_html[_ck]
         _sc_h, _as_h = comp_charts(m.get("competition")) if table else ("", "")
-        news = []
-        if articles:
+        # the two sides' own stories first (site review 2026-11-19: الأهلي ×
+        # بيراميدز opened its news with a story about Barcelona); the general
+        # list only when neither side has a club page or a story
+        news, news_title = [], "آخر الأخبار"
+        _tps = [tp for tp in TEAM_PAGES if _team_match(tp, m)]
+        if articles and _tps:
+            from site_lib.names import _team_news
+            for a in articles:
+                if any(_team_news(tp, a) for tp in _tps):
+                    news.append({"href": Markup(article_href(a)), "title": a["title"]})
+                    if len(news) == 4:
+                        break
+            if news:
+                news_title = "أخبار " + " و".join(tp["name"] for tp in _tps[:2])
+        if articles and not news:
             for a in articles[:4]:
                 news.append({"href": Markup(article_href(a)), "title": a["title"]})
+        # the two sides in the table: their rows marked, and - before the match
+        # is over - a two-line card with where each stands and its last five
+        form_card = ""
+        if table and stc and stc.get("table") and not stc.get("zeroed"):
+            from site_lib.tables import form_dots
+            _fm = forms.get(m.get("competition"), {}) or {}
+            _rows = {r.get("team"): r for r in stc["table"]}
+            _two = [(_rows.get(m.get(k)), m.get(k)) for k in ("home", "away")]
+            for _r, _nm in _two:
+                if _r:
+                    _b = f'<bdi>{esc(ar_team(_nm))}</bdi>'
+                    table = table.replace(_b, f'<bdi class="lt-me">{esc(ar_team(_nm))}</bdi>', 1)
+            if st != "FINISHED" and all(r for r, _ in _two):
+                def _fline(r, nm):
+                    _c = (f'<img src="{esc(local_crest(r["crest"]))}" alt="" width="26" height="26" loading="lazy">'
+                          if r.get("crest") else "")
+                    _p = int(r.get("pts") or 0)
+                    return ('<div class="fc-r">' + _c + f'<b><bdi>{esc(ar_team(nm))}</bdi></b>'
+                            f'<span class="fc-p">المركز {esc(str(r.get("pos")))} · {_p} {"نقاط" if 3 <= _p <= 10 else "نقطة"}</span>'
+                            f'<span class="fc-f">{form_dots(_fm.get(nm, []))}</span></div>')
+                form_card = ('<section class="minfo form-card"><h2>الفريقان قبل المباراة</h2>'
+                             + "".join(_fline(r, nm) for r, nm in _two)
+                             + '<p class="fc-k">آخر 5 مباريات لكل فريق: أخضر فوز، رمادي تعادل، أحمر خسارة. الأحدث على اليسار.</p></section>')
         # the competition crumb links its hub (SEO audit 2026-11-06: it pointed
         # at the page itself on ~1,190 indexed match pages - the standings and
         # fixtures pages had no link from them); the last crumb is the page
@@ -438,7 +474,8 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             h2h=(lambda _p: {"href": Markup(f'/h2h/{_p["slug"]}.html'), "label": _H2H.link_label(_p)}
                  if _p else None)(_H2H.pair_of_match(m.get("home"), m.get("away"))),
             has_table=bool(stc and stc.get("table")), table_heading=Markup(table_heading),
-            table=Markup(table), faq=Markup(_faq_html or ""), news=news,
+            table=Markup(table), faq=Markup(_faq_html or ""), news=news, news_title=news_title,
+            form_card=Markup(form_card),
             label=comp, has_sc=bool(_sc_h), scorers=Markup(_sc_h),
             has_asst=bool(_as_h), assists=Markup(_as_h), tabs_js=Markup(ST_TABS_JS),
             games_js=Markup(LT_GAMES_JS if 'class="lt-n"' in table else ""),

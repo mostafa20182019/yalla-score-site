@@ -13,6 +13,10 @@
 {# the top-rated starter, as a picture (2026-11-06: «اليوزر ... بيحب يشوف
    المعلومات من الصور») - tables.motm_html; finished matches only #}
 {{ motm }}
+{# «فورمة الفريقين» (site review 2026-11-19): before kick-off the page had
+   nothing about the two sides themselves, and the table's last-five column
+   is hidden on a phone. Two lines from the table's own rows - computed. #}
+{{ form_card }}
 {# «موعد المباراة والقنوات الناقلة» and «قراءة قبل المباراة» left the page
    (user, 2026-10-31): the same facts repeat elsewhere; new pre-match
    information is to come. Kick-off and channel stay in «معلومات المباراة». #}
@@ -64,7 +68,7 @@
 {{ faq }}
 {% if news %}
 <section class="minfo">
-  <h2>آخر الأخبار</h2>
+  <h2>{{ news_title }}</h2>
   <ul class="mp-newslist">
     {% for n in news %}
     <li><a href="{{ n.href }}">{{ n.title }}</a></li>

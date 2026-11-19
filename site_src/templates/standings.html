@@ -5,6 +5,9 @@
 <nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/leagues.html">البطولات</a> › ترتيب {{ label }}</nav>
 <h1 class="page-h">ترتيب {{ label }} {{ season }}</h1>
 <p class="hintline">جدول {{ label }} الكامل — يتحدّث تلقائيًا بعد كل مباراة، مع نتائج آخر 5 مباريات لكل فريق.</p>
+{% if calc_href %}
+<p class="calc-cta"><a href="{{ calc_href }}">🧮 حاسبة الترتيب: اختر نتائج المباريات القادمة وشاهد الجدول يتغيّر ←</a></p>
+{% endif %}
 {# the table, the scorers and the assists as tabs (user, 2026-10-31: «عايز
    الهدافين وصانعى الاهداف فى تابات جنب الترتيب»). All three panes are in the
    HTML (indexable, and readable without JS); ST_TABS_JS shows the tab bar and

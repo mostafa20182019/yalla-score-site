@@ -9,6 +9,17 @@
    with no storage (private mode, in-app webviews that block it) simply shows
    neither the button nor the block. */
 (function(){
+  /* «مشاركة» (site review 2026-11-19: no page had a way to pass a story on).
+     The button is a plain WhatsApp link that works with no script; where the
+     browser has its own share sheet, that opens instead. No third-party code. */
+  [].slice.call(document.querySelectorAll('a.share-btn')).forEach(function(a){
+    a.addEventListener('click',function(ev){
+      if(!navigator.share) return;                      /* the link itself does the job */
+      ev.preventDefault();
+      navigator.share({title:a.getAttribute('data-share-title')||document.title,
+                       url:a.getAttribute('data-share-url')||location.href}).catch(function(){});
+    });
+  });
   var KEY='elgoonTeam', LS;
   try{ LS=window.localStorage; LS.getItem(KEY); }catch(e){ return; }
   function get(){ try{ return LS.getItem(KEY)||''; }catch(e){ return ''; } }
@@ -26,10 +37,13 @@
     if(m) c.add(m);
   }
 
-  /* 1. the club page: the follow button */
-  var b=document.getElementById('followBtn');
-  if(b){
-    var slug=b.getAttribute('data-slug'), nm=b.getAttribute('data-name'), note=document.getElementById('followNote');
+  /* 1. the follow button: on the club page (#followBtn, with its note) and,
+     since the site review of 2026-11-19, under every article that names a
+     club in its title - the page a reader from Facebook actually lands on */
+  [].slice.call(document.querySelectorAll('.follow-btn')).forEach(function(b){
+    var slug=b.getAttribute('data-slug'), nm=b.getAttribute('data-name');
+    if(!ok(slug||'')) return;
+    var note=b.id==='followBtn' ? document.getElementById('followNote') : null;
     var paint=function(){
       var on=get()===slug;
       b.textContent=on ? '✓ فريقك · إلغاء المتابعة' : '⭐ تابع '+nm;
@@ -38,7 +52,7 @@
     };
     b.hidden=false; paint();
     b.addEventListener('click',function(){ set(get()===slug ? '' : slug); paint(); });
-  }
+  });
 
   /* 2. the home page: the followed club's block, or the picker */
   var box=document.getElementById('myTeam'); if(!box) return;

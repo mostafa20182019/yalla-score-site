@@ -131,12 +131,15 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             _more.append(f'<a href="{sc_url}">ترتيب هدافي {esc(label)} ←</a>')
             # «حاسبة الترتيب» (2026-11-19) - the same test the page builder uses
             from site_lib.calc import calc_data as _calc_data
-            if _calc_data(st, (fx_by_comp or {}).get(comp)):
+            _has_calc = bool(_calc_data(st, (fx_by_comp or {}).get(comp)))
+            if _has_calc:
                 _more.append(f'<a href="/calc/{slug}.html">حاسبة ترتيب {esc(label)}: توقّع النتائج وشاهد الجدول ←</a>')
             _more += [f'<a href="/h2h/{p["slug"]}.html">{esc(_H2H.link_label(p))} ←</a>'
                       for p in _H2H.pairs_for_league(comp)]
             write(f"standings/{slug}.html", render(
                 "standings.html", page_head=page_head, crumbs_ld=crumbs_ld, label=label,
+                # a button above the table, not only the last line of the page
+                calc_href=Markup(f"/calc/{slug}.html") if _has_calc else "",
                 season=season, table=Markup(table), has_sc=bool(sc),
                 sc_url=Markup(sc_url), scorers=Markup(scorers),
                 has_asst=bool(asst), assists=Markup(assists), tabs_js=Markup(ST_TABS_JS), games_js=Markup(LT_GAMES_JS),
@@ -334,6 +337,9 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
         _links = [f'<a href="/">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
+        from site_lib.calc import calc_data as _calc_data_fx
+        if _calc_data_fx(st_by_comp.get(comp), fx):
+            _links.append(f'<a href="/calc/{slug}.html">حاسبة ترتيب {esc(label)} ←</a>')
         # the scorers page is written by league_pages, before this function
         if os.path.exists(os.path.join(DIST, "scorers", f"{slug}.html")):
             _links.append(f'<a href="/scorers/{slug}.html">هدافو {esc(label)} ←</a>')

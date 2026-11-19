@@ -90,11 +90,15 @@ els.calc.querySelector = (s) => s==='.calc-prev' ? prev : s==='.calc-next' ? nex
 els.calcData.textContent = JSON.stringify(DATA);
 global.document = { getElementById: (i) => els[i] || null, createElement: node };
 global.localStorage = { getItem: (k) => (k in store ? store[k] : null), setItem: (k,v) => { store[k]=v; } };
+global.location = { hash: HASH, origin: 'https://elgoon.com', pathname: '/calc/t' };
 BODY
 const table = () => els.calcBody.children.map(tr => [tr.children[2].children[0].children[1].textContent, +tr.children[3].textContent,
                                                   tr.children[4].textContent, +tr.children[5].textContent, tr.children[1].textContent]);
-const pick = (i, v) => els.calcMatches.children[i].children[1].children[v].click();
-const out = { start: table(), round: els.calcRound.textContent, n: els.calcMatches.children.length };
+// the list also holds the day headers (.calc-d) since 2026-11-19: the matches are the .calc-m rows
+const mrows = () => els.calcMatches.children.filter(c => c.className.indexOf('calc-m') === 0);
+const pick = (i, v) => mrows()[i].children[1].children[v].click();
+const out = { start: table(), round: els.calcRound.textContent, n: mrows().length,
+              heads: els.calcMatches.children.filter(c => c.className === 'calc-d').length };
 pick(0, 2);                       // match 1: the AWAY side (ب) wins
 out.afterAway = table(); out.stored = store['elgoonCalc:t']; out.count = els.calcCount.textContent;
 pick(0, 2);                       // the same button again: the pick is taken back
@@ -107,7 +111,7 @@ console.log(JSON.stringify(out));
 """
 tmp = os.path.join(tempfile.mkdtemp(), "calc_run.js")
 io.open(tmp, "w", encoding="utf-8").write(
-    harness.replace("DATA", json.dumps(d, ensure_ascii=False)).replace("BODY", body))
+    harness.replace("DATA", json.dumps(d, ensure_ascii=False)).replace("HASH", "''").replace("BODY", body))
 r = subprocess.run(["node", tmp], capture_output=True, text=True, encoding="utf-8")
 o = json.loads(r.stdout) if r.returncode == 0 and r.stdout.strip() else {}
 ck("8 the script runs and opens on the nearest round with the table as saved",
@@ -117,13 +121,22 @@ ck("9 an away win: +3 points, one more match, +1 / -1 goal difference - and the 
    aw and aw["ب"][3] == 13 and aw["ب"][1] == 6 and aw["ب"][2] == "+1" and aw["أ"][3] == 12 and aw["أ"][2] == "-1"
    and [x[0] for x in o["afterAway"]][:2] == ["ب", "أ"], str(o.get("afterAway")))
 ck("10 the arrows say who moved", aw and aw["ب"][4] == "▲1" and aw["أ"][4] == "▼1")
-ck("11 the pick is kept in the browser, per league", o.get("stored") == '{"1":"a"}' and "1" in (o.get("count") or ""))
+ck("11 the pick is kept in the browser, per league", o.get("stored") == '{"1":"a"}' and "مباراة واحدة" in (o.get("count") or ""))
 ck("12 the same button again takes the pick back", o.get("undone") == o.get("start"))
 mx = {x[0]: x for x in o.get("mixed", [])}
 ck("13 a draw gives a point each and leaves the goal difference; a home win gives three",
    mx and mx["أ"][3] == 13 and mx["ب"][3] == 11 and mx["أ"][2] == "0" and mx["ج"][3] == 11 and mx["د"][3] == 6)
 ck("14 the next round opens, and the last one has no «next»", o.get("round2") == "الجولة 7" and o.get("nextDisabled") is True)
 ck("15 «مسح التوقعات» puts the table back", o.get("reset") == o.get("start") and o.get("storedAfter") == "{}")
+ck("15b one day header for the three matches that share a kick-off", o.get("heads") == 1, str(o.get("heads")))
+# a shared link: #p=<match>.<h|d|a> - known matches only, anything else ignored
+tmp2 = os.path.join(tempfile.mkdtemp(), "calc_hash.js")
+io.open(tmp2, "w", encoding="utf-8").write(
+    harness.replace("DATA", json.dumps(d, ensure_ascii=False)).replace("HASH", "'#p=1.a,999.h,2.x,<b>.h'").replace("BODY", body))
+r2 = subprocess.run(["node", tmp2], capture_output=True, text=True, encoding="utf-8")
+o2 = json.loads(r2.stdout) if r2.returncode == 0 and r2.stdout.strip() else {}
+ck("15c a shared link opens the sender's table: the known pick is applied, an unknown match / a bad letter / markup are ignored",
+   [x[0] for x in o2.get("start", [])][:2] == ["ب", "أ"] and {x[0]: x[3] for x in o2.get("start", [])}.get("ب") == 13, r2.stderr[:200])
 ck("16 nothing from the feed is parsed as HTML", "innerHTML" not in body and "insertAdjacentHTML" not in body
    and "document.write" not in body)
 ck("17 no request leaves the page", "fetch(" not in body and "XMLHttpRequest" not in body and "sendBeacon" not in body)

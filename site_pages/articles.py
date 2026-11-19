@@ -44,6 +44,12 @@ def article_pages(articles, articles_all, matches, urls):
     n_thin = 0
     # «مباريات اليوم» under every article body (2026-10-18): one strip, built once
     from site_lib.today_strip import today_strip
+    # the Telegram line under an article only while the channel posts
+    try:
+        import tg_post as _tgp
+        _TG_ON = not getattr(_tgp, "CHANNEL_PAUSED", False)
+    except Exception:                                     # noqa: BLE001
+        _TG_ON = False
     _today_strip = today_strip(matches)
     # «للمتابعة» (SEO audit 2026-11-06): the links the writer kept forgetting
     # (2.2 per article, 12 with none, none to /standings), resolved from the
@@ -188,11 +194,18 @@ def article_pages(articles, articles_all, matches, urls):
                                                     "acceptedAnswer": {"@type": "Answer", "text": f["a"]}} for f in _faq]}))
         # official posts about the story, click-to-load (2026-09-13)
         embeds = Markup(embeds_block(a.get("embeds")))
+        # «اقرأ أيضًا»: three, with their pictures, right under the story (site
+        # review 2026-11-19: four bare links sat more than a screen below it)
         related = []
-        for b in related_articles(a, articles):
+        for b in related_articles(a, articles)[:3]:
             _bt = art_reltime(b)
+            _bi = thumb_url(b.get("image_url"))
             related.append({"href": Markup(article_href(b)), "title": b["title"],
+                            "th": Markup(f'<span class="al-th"><img src="{esc(_bi)}" alt="" loading="lazy" decoding="async"></span>'
+                                         if _bi else '<span class="al-th noimg">⚽</span>'),
                             "when": Markup(_bt) if _bt else ""})
+        from urllib.parse import quote as _q
+        _share = "https://wa.me/?text=" + _q(f'{a["title"]} {url}')
         _ahtml = render(
             "article.html",
             page_head=page_head, article_ld=article_ld, crumbs_ld=crumbs_ld, crumbs=crumbs,
@@ -202,7 +215,10 @@ def article_pages(articles, articles_all, matches, urls):
             follow=follow,
             sources=sources, faq=[{"q": f["q"], "a": f["a"]} for f in _faq], faq_ld=faq_ld,
             embeds=embeds, clubs=[{"slug": Markup(tp["slug"]), "name": tp["name"]} for tp in _clubs],
-            related=related, push_cta=Markup(push_cta()), tg_url=TG_CHANNEL_URL,
+            related=related, push_cta=Markup(push_cta()), tg_url=TG_CHANNEL_URL, tg_on=_TG_ON,
+            # the club the TITLE names (_lead_tp): its follow button
+            lead=({"slug": Markup(_lead_tp["slug"]), "name": _lead_tp["name"]} if _lead_tp else None),
+            share_href=Markup(_share), share_url=Markup(url),
             today_strip=Markup(_today_strip), page_foot=Markup(foot()))
         p = [_ahtml]
         if _words < ARTICLE_MIN_WORDS:

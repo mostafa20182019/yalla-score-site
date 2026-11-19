@@ -16,13 +16,29 @@
   var live={}; D.rounds.forEach(function(r){ r.m.forEach(function(m){ live[m[0]]=1; }); });
   Object.keys(picks).forEach(function(k){ if(!live[k]||'hda'.indexOf(picks[k])<0) delete picks[k]; });
   function save(){ try{ localStorage.setItem(KEY,JSON.stringify(picks)); }catch(e){} }
+  /* «شارك توقعك» (site review 2026-11-19): the picks ride in the link's
+     fragment - #p=<match>.<h|d|a>,... - so a friend opens the same table.
+     A fragment never reaches a server; only known matches and h/d/a are read. */
+  function link(){
+    var ks=Object.keys(picks).sort();
+    return location.origin+location.pathname+(ks.length?'#p='+ks.map(function(k){ return k+'.'+picks[k]; }).join(','):'');
+  }
+  (function(){
+    var h=location.hash||''; if(h.indexOf('#p=')!==0) return;
+    var got={}, n=0;
+    h.slice(3).split(',').forEach(function(x){
+      var m=/^([A-Za-z0-9-]{1,24})\.([hda])$/.exec(x);
+      if(m&&live[m[1]]){ got[m[1]]=m[2]; n++; }
+    });
+    if(n){ picks=got; save(); }
+  })();
   function el(tag,cls,txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
   function crest(t){ var s=el('span','calc-cr'); if(t.c){ var i=document.createElement('img'); i.src=t.c; i.alt=''; i.width=24; i.height=24; i.loading='lazy'; s.appendChild(i); } return s; }
 
   var elRound=document.getElementById('calcRound'), elMs=document.getElementById('calcMatches'),
       elBody=document.getElementById('calcBody'), elCount=document.getElementById('calcCount'),
       elReset=document.getElementById('calcReset'), prev=root.querySelector('.calc-prev'), next=root.querySelector('.calc-next'),
-      elFx=document.getElementById('calcFx'), elFxT=document.getElementById('calcFxText'), elFxGo=document.getElementById('calcFxGo');
+      elShare=document.getElementById('calcShare'), elFx=document.getElementById('calcFx'), elFxT=document.getElementById('calcFxText'), elFxGo=document.getElementById('calcFxGo');
 
   function table(){
     var rows=D.teams.map(function(t,i){ return {i:i,n:t.n,c:t.c,p:t.p,w:t.w,d:t.d,l:t.l,gf:t.gf,ga:t.ga,pts:t.pts,ch:0}; });
@@ -73,8 +89,11 @@
     elFx.hidden=false;
   }
   function drawRound(){
-    var r=D.rounds[ri]; elRound.textContent='الجولة '+r.r; elMs.textContent='';
+    var r=D.rounds[ri], lastW=null; elRound.textContent='الجولة '+r.r; elMs.textContent='';
     r.m.forEach(function(m){
+      /* the day and hour ONCE above the matches that share them, not under
+         every match: a round was 1267 px tall on a phone */
+      if(m[3]&&m[3]!==lastW){ elMs.appendChild(el('div','calc-d',m[3])); lastW=m[3]; }
       var h=D.teams[m[1]], a=D.teams[m[2]], row=el('div','calc-m'), v=picks[m[0]];
       var hs=el('span','calc-h'+(v==='h'?' calc-win':'')); hs.appendChild(crest(h)); hs.appendChild(el('bdi','',h.n)); row.appendChild(hs);
       var bs=el('span','calc-btns'); bs.setAttribute('role','group'); bs.setAttribute('aria-label','نتيجة '+h.n+' و'+a.n);
@@ -90,7 +109,6 @@
       });
       row.appendChild(bs);
       var as=el('span','calc-a'+(v==='a'?' calc-win':'')); as.appendChild(el('bdi','',a.n)); as.appendChild(crest(a)); row.appendChild(as);
-      if(m[3]) row.appendChild(el('span','calc-w',m[3]));
       elMs.appendChild(row);
     });
     if(prev){ prev.hidden=false; prev.disabled=ri===0; }
@@ -98,8 +116,14 @@
   }
   function count(){
     var n=Object.keys(picks).length;
-    if(elCount) elCount.textContent=n? ('توقعاتك: '+n+(n>10?' مباراة':n>2?' مباريات':n===2?' مباراتان':' مباراة')) : 'لم تختر أي نتيجة بعد';
+    if(elCount) elCount.textContent=n? ('توقعاتك: '+(n===1?'مباراة واحدة':n===2?'مباراتان':n<=10?n+' مباريات':n+' مباراة')) : 'لم تختر أي نتيجة بعد';
     if(elReset) elReset.hidden=!n;
+    if(elShare){
+      var u=link(), ttl=document.title;
+      elShare.hidden=!n;
+      elShare.href='https://wa.me/?text='+encodeURIComponent(ttl+' '+u);
+      elShare.setAttribute('data-share-url',u); elShare.setAttribute('data-share-title',ttl);
+    }
   }
   if(prev) prev.addEventListener('click',function(){ if(ri>0){ ri--; drawRound(); } });
   if(next) next.addEventListener('click',function(){ if(ri<D.rounds.length-1){ ri++; drawRound(); } });

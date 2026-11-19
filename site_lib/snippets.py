@@ -27,7 +27,7 @@ FILTERS_HTML = (
     '<button type="button" class="mf-chip" data-f="live" aria-pressed="false"><span class="mf-dot"></span>مباشر</button>'
     '<button type="button" class="mf-chip" data-f="time" aria-pressed="false">⏱ حسب الوقت</button>'
     '<label class="mf-search"><span aria-hidden="true">🔍</span>'
-    '<input type="search" id="mfQ" placeholder="فلتر: فريق أو بطولة" autocomplete="off" aria-label="فلتر المباريات"></label>'
+    '<input type="search" id="mfQ" placeholder="فريق أو بطولة" autocomplete="off" aria-label="فلتر المباريات"></label>'
     '</div>')
 MATCHES_JS = _src("snippets/matches_js.html")
 # /standings/<slug>: table · scorers · assists as tabs (2026-10-31)

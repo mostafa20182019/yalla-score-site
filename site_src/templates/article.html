@@ -22,6 +22,35 @@
   <p class="lead">{{ summary }}</p>
   {% endif %}
   <div class="a-body">{{ body }}</div>
+  {# what a reader does NEXT, right where the story ends (site review
+     2026-11-19: 1.39 pages a visit, and the reader from Facebook lands HERE):
+     follow the club the title names («تابع فريقك» - the button was on the
+     club page only), pass the story on, then three more stories with their
+     pictures. The share link is a plain WhatsApp link; FOLLOW_JS swaps in the
+     phone's own share sheet where there is one. #}
+  <div class="a-act">
+    {% if lead %}
+    <button class="follow-btn" type="button" data-slug="{{ lead.slug }}" data-name="{{ lead.name }}" aria-pressed="false" hidden></button>
+    {% endif %}
+    <a class="share-btn" href="{{ share_href }}" target="_blank" rel="noopener" data-share-title="{{ title }}" data-share-url="{{ share_url }}">مشاركة ↗</a>
+  </div>
+  {% if related %}
+  <section class="a-rel">
+    <h2>اقرأ أيضًا</h2>
+    <div class="alist">
+      {% for r in related %}
+      <a class="al-row" href="{{ r.href }}">{{ r.th }}
+        <span class="al-b">
+          <b class="al-t">{{ r.title }}</b>
+          {% if r.when %}
+          <span class="al-m">{{ r.when }}</span>
+          {% endif %}
+        </span>
+      </a>
+      {% endfor %}
+    </div>
+  </section>
+  {% endif %}
   {# «مباريات اليوم» (2026-10-18): 1.18 pages per visit said the reader leaves
      after one story - today's matches, live first, each a link to its page #}
   {{ today_strip }}
@@ -69,19 +98,11 @@
   </nav>
   {% endif %}
   {{ push_cta }}
-  {# growth plan week 1 (2026-10-08): the returning-reader channel, under every article #}
+  {# growth plan week 1 (2026-10-08): the returning-reader channel, under every article.
+     Only while the channel POSTS (tg_post.CHANNEL_PAUSED): the line promised
+     «لحظة بلحظة» on a channel the user paused on 2026-11-13 #}
+  {% if tg_on %}
   <p class="a-tg">📣 النتائج والأخبار لحظة بلحظة على <a href="{{ tg_url }}" target="_blank" rel="noopener">قناة الجون على تيليجرام</a></p>
+  {% endif %}
 </article>
-{# related articles: internal links between pieces about the same match/club/
-   topic - articles used to get ~2 inbound links each (listing pages only) #}
-{% if related %}
-<section class="minfo related">
-  <h2>مقالات ذات صلة</h2>
-  <ul class="mp-newslist">
-    {% for r in related %}
-    <li><a href="{{ r.href }}">{{ r.title }}</a>{% if r.when %} <span class="club-when">({{ r.when }})</span>{% endif %}</li>
-    {% endfor %}
-  </ul>
-</section>
-{% endif %}
 {{ page_foot }}
