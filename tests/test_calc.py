@@ -91,7 +91,7 @@ els.calcData.textContent = JSON.stringify(DATA);
 global.document = { getElementById: (i) => els[i] || null, createElement: node };
 global.localStorage = { getItem: (k) => (k in store ? store[k] : null), setItem: (k,v) => { store[k]=v; } };
 BODY
-const table = () => els.calcBody.children.map(tr => [tr.children[2].children[1].textContent, +tr.children[3].textContent,
+const table = () => els.calcBody.children.map(tr => [tr.children[2].children[0].children[1].textContent, +tr.children[3].textContent,
                                                   tr.children[4].textContent, +tr.children[5].textContent, tr.children[1].textContent]);
 const pick = (i, v) => els.calcMatches.children[i].children[1].children[v].click();
 const out = { start: table(), round: els.calcRound.textContent, n: els.calcMatches.children.length };
@@ -127,6 +127,18 @@ ck("15 «مسح التوقعات» puts the table back", o.get("reset") == o.get
 ck("16 nothing from the feed is parsed as HTML", "innerHTML" not in body and "insertAdjacentHTML" not in body
    and "document.write" not in body)
 ck("17 no request leaves the page", "fetch(" not in body and "XMLHttpRequest" not in body and "sendBeacon" not in body)
+# site review 2026-11-19
+ck("17b the picked side is told apart: the button is ticked and the winner's name goes bold",
+   "(v===o[0]?'✓ ':'')+o[1]" in body and "v==='h'?' calc-win':''" in body and "v==='a'?' calc-win':''" in body)
+ck("17c the cells holding one signed number are LTR («+15», «▲1»), and the name sits in a span, not a flex table cell",
+   body.count("setAttribute('dir','ltr')") >= 3 and "el('span','calc-tmw')" in body
+   and "td.calc-tm{display:flex" not in io.open("site_src/style.css", encoding="utf-8").read())
+_tplc = io.open("site_src/templates/calc.html", encoding="utf-8").read()
+_cssc = io.open("site_src/style.css", encoding="utf-8").read()
+ck("17d the effect of the last pick stays in sight: a sticky bar, hidden until a pick, with a way down to the table",
+   'id="calcFx" class="calc-fx" role="status" hidden' in _tplc and 'id="calcFxGo"' in _tplc
+   and ".calc-fx{position:sticky" in _cssc and "effect(m,drawTable())" in body and "effect(null)" in body)
+ck("17e the choice buttons are finger-sized", ".calc-b{" in _cssc and "min-height:44px;min-width:48px" in _cssc)
 
 # ------------------------------------------------- the page and its wiring
 tpl = io.open("site_src/templates/calc.html", encoding="utf-8").read()

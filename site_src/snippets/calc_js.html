@@ -21,7 +21,8 @@
 
   var elRound=document.getElementById('calcRound'), elMs=document.getElementById('calcMatches'),
       elBody=document.getElementById('calcBody'), elCount=document.getElementById('calcCount'),
-      elReset=document.getElementById('calcReset'), prev=root.querySelector('.calc-prev'), next=root.querySelector('.calc-next');
+      elReset=document.getElementById('calcReset'), prev=root.querySelector('.calc-prev'), next=root.querySelector('.calc-next'),
+      elFx=document.getElementById('calcFx'), elFxT=document.getElementById('calcFxText'), elFxGo=document.getElementById('calcFxGo');
 
   function table(){
     var rows=D.teams.map(function(t,i){ return {i:i,n:t.n,c:t.c,p:t.p,w:t.w,d:t.d,l:t.l,gf:t.gf,ga:t.ga,pts:t.pts,ch:0}; });
@@ -40,33 +41,55 @@
     rows.forEach(function(r,pos){
       var tr=el('tr', r.ch?'calc-ch':'');
       tr.appendChild(el('td','calc-pos',String(pos+1)));
+      /* dir=ltr on the two cells that hold ONE signed number: in an RTL cell
+         «+15» drew as «15+» and «▲1» as «1▲» */
       var mv=r.i-pos, m=el('td','calc-mv'+(mv>0?' up':mv<0?' dn':''), mv>0?'▲'+mv:mv<0?'▼'+(-mv):'');
+      m.setAttribute('dir','ltr');
       if(mv) m.setAttribute('aria-label',(mv>0?'صعد ':'هبط ')+Math.abs(mv));
       tr.appendChild(m);
-      var nm=el('td','calc-tm'); nm.appendChild(crest(r)); nm.appendChild(el('bdi','',r.n)); tr.appendChild(nm);
+      var nm=el('td','calc-tm'), w=el('span','calc-tmw'); w.appendChild(crest(r)); w.appendChild(el('bdi','',r.n)); nm.appendChild(w); tr.appendChild(nm);
       tr.appendChild(el('td','',String(r.p)));
-      var gd=r.gf-r.ga; tr.appendChild(el('td','calc-gd',(gd>0?'+':'')+gd));
+      var gd=r.gf-r.ga, g=el('td','calc-gd',(gd>0?'+':'')+gd); g.setAttribute('dir','ltr'); tr.appendChild(g);
       tr.appendChild(el('td','calc-pts',String(r.pts)));
       elBody.appendChild(tr);
     });
+    return rows;
+  }
+  /* the table sits a screen below the buttons on a phone: say what the pick
+     just did, where the reader's thumb is */
+  function effect(m,rows){
+    if(!elFx||!elFxT) return;
+    if(!m||!picks[m[0]]){ elFx.hidden=true; return; }
+    elFxT.textContent='';
+    [m[1],m[2]].forEach(function(ti,k){
+      var pos=-1; rows.forEach(function(r,p){ if(r.i===ti) pos=p; });
+      if(pos<0) return;
+      if(k) elFxT.appendChild(document.createTextNode(' · '));
+      elFxT.appendChild(el('bdi','',D.teams[ti].n));
+      elFxT.appendChild(document.createTextNode(': المركز '+(pos+1)));
+      var mv=ti-pos;
+      if(mv){ var a=el('i',mv>0?'up':'dn',mv>0?'▲'+mv:'▼'+(-mv)); a.setAttribute('dir','ltr'); elFxT.appendChild(a); }
+    });
+    elFx.hidden=false;
   }
   function drawRound(){
     var r=D.rounds[ri]; elRound.textContent='الجولة '+r.r; elMs.textContent='';
     r.m.forEach(function(m){
-      var h=D.teams[m[1]], a=D.teams[m[2]], row=el('div','calc-m');
-      var hs=el('span','calc-h'); hs.appendChild(crest(h)); hs.appendChild(el('bdi','',h.n)); row.appendChild(hs);
+      var h=D.teams[m[1]], a=D.teams[m[2]], row=el('div','calc-m'), v=picks[m[0]];
+      var hs=el('span','calc-h'+(v==='h'?' calc-win':'')); hs.appendChild(crest(h)); hs.appendChild(el('bdi','',h.n)); row.appendChild(hs);
       var bs=el('span','calc-btns'); bs.setAttribute('role','group'); bs.setAttribute('aria-label','نتيجة '+h.n+' و'+a.n);
       [['h','فوز','فوز '+h.n],['d','تعادل','تعادل'],['a','فوز','فوز '+a.n]].forEach(function(o){
-        var b=el('button','calc-b'+(picks[m[0]]===o[0]?' on':''),o[1]); b.type='button';
-        b.setAttribute('aria-label',o[2]); b.setAttribute('aria-pressed',picks[m[0]]===o[0]?'true':'false');
+        /* the two «فوز» buttons read the same: the picked one is ticked and the winner's name goes bold */
+        var b=el('button','calc-b'+(v===o[0]?' on':''),(v===o[0]?'✓ ':'')+o[1]); b.type='button';
+        b.setAttribute('aria-label',o[2]); b.setAttribute('aria-pressed',v===o[0]?'true':'false');
         b.addEventListener('click',function(){
           if(picks[m[0]]===o[0]) delete picks[m[0]]; else picks[m[0]]=o[0];
-          save(); drawRound(); drawTable(); count();
+          save(); drawRound(); effect(m,drawTable()); count();
         });
         bs.appendChild(b);
       });
       row.appendChild(bs);
-      var as=el('span','calc-a'); as.appendChild(el('bdi','',a.n)); as.appendChild(crest(a)); row.appendChild(as);
+      var as=el('span','calc-a'+(v==='a'?' calc-win':'')); as.appendChild(el('bdi','',a.n)); as.appendChild(crest(a)); row.appendChild(as);
       if(m[3]) row.appendChild(el('span','calc-w',m[3]));
       elMs.appendChild(row);
     });
@@ -80,7 +103,10 @@
   }
   if(prev) prev.addEventListener('click',function(){ if(ri>0){ ri--; drawRound(); } });
   if(next) next.addEventListener('click',function(){ if(ri<D.rounds.length-1){ ri++; drawRound(); } });
-  if(elReset) elReset.addEventListener('click',function(){ picks={}; save(); drawRound(); drawTable(); count(); });
+  if(elReset) elReset.addEventListener('click',function(){ picks={}; save(); drawRound(); drawTable(); effect(null); count(); });
+  if(elFxGo) elFxGo.addEventListener('click',function(){
+    var t=root.querySelector('.calc-t'); if(t&&t.scrollIntoView) t.scrollIntoView({block:'start'});
+  });
   root.classList.add('calc-on');
   drawRound(); drawTable(); count();
 })();

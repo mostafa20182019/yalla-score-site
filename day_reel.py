@@ -131,7 +131,11 @@ def build(ms, date, now=None):
         # come from the qualifiers and the cups (2026-11-19)
         from site_lib.competitions import LEAGUE_BAR
         _big = all(m.get("competition") in LEAGUE_BAR for m in ms)
-        M.lines_block(im, t, [when, f"{len(ms)} مباريات من الدوريات الكبرى" if _big else f"أبرز {len(ms)} نتائج"], (900, 990),
+        # rel_label() already carries the date on a day that is neither today
+        # nor yesterday: «نتائج الثلاثاء 17 نوفمبر» + «الثلاثاء 17 نوفمبر» under it
+        # (designer review 2026-11-19) - the day is then said once
+        _n = f"{len(ms)} مباريات من الدوريات الكبرى" if _big else f"أبرز {len(ms)} نتائج"
+        M.lines_block(im, t, [_n] if when in title else [when, _n], (900, 990),
                       weight="ExtraBold", size=56, t0=0.45)
         return im
 
@@ -139,7 +143,7 @@ def build(ms, date, now=None):
         def draw(t):
             im = bg.copy()
             M.header(im)
-            C.draw_center(ImageDraw.Draw(im), W / 2, 425, C.ar(f"{title} · {when}"),
+            C.draw_center(ImageDraw.Draw(im), W / 2, 425, C.ar(title if when in title else f"{title} · {when}"),
                           C.font("ExtraBold", 40), C.WHITE)
             h, ys = row_geometry(len(rows))
             for i, m in enumerate(rows):

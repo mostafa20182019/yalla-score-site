@@ -31,6 +31,9 @@
    its last result, its news - filled by FOLLOW_JS from /my/<slug>.json when
    this browser follows one; otherwise the one-line picker. Both [hidden] in
    the HTML: a crawler and a first-time reader see the page as it was. #}
+{# MY_BOOT: two lines that run before the first paint and say which state
+   this browser is in, so the block's room is reserved and nothing jumps #}
+{{ my_boot }}
 <div id="myTeam" class="my-team" hidden></div>
 {{ my_pick }}
 {# THE MATCH CENTRE (site_lib/today_strip.match_centre): leagues | the

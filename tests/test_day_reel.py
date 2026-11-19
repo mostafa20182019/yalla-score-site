@@ -74,6 +74,13 @@ def ink(x0, x1):
 right, left = ink(R.W / 2 + 20, R.W / 2 + 90), ink(R.W / 2 - 90, R.W / 2 - 20)
 check(right > left, f"the «8» (home) is right of the dash, the «1» left (ink {right} vs {left})")
 
+# designer review 2026-11-19: on a day that is neither today nor yesterday the
+# title already carries the date - it must not be said a second time
+_src = open("day_reel.py", encoding="utf-8").read()
+check(D.rel_label("2026-11-05", now) == "نتائج " + D.day_name("2026-11-05")
+      and 'title if when in title else f"{title} · {when}"' in _src
+      and "[_n] if when in title else [when, _n]" in _src,
+      "an older day says its date once: in the title, not again beside it or under it")
 cap = D.caption(ms[:3], "2026-11-08", now)
 check(cap.count("8 - 1") == 3 and "https://elgoon.com/" + chr(10) in cap and "elgoon.com/matches" not in cap and "#الجون" in cap, "caption: every result, the link, the tag")
 

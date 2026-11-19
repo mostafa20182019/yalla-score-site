@@ -231,9 +231,14 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             page_foot=Markup(foot())))
         urls.append(t_url)
         # «تابع فريقك» (2026-11-19): the home page's block for a visitor who
-        # follows this club - the first row of each list above, two news rows.
+        # follows this club - ONE row (its next match, else its last result),
+        # where it stands in a few words, one news line.
         # A fragment, not a page: out of the sitemap, noindex in _headers.
+        _chip = ""
+        if srow:
+            _cp = int(srow.get("pts") or 0)
+            _chip = f'المركز {srow.get("pos")} · {_cp} {"نقاط" if 3 <= _cp <= 10 else "نقطة"}'
         write_text(f"my/{slug}.json", my_json(_clean_urls(my_block_html(
-            name, slug, crest, _pos, up_rows[0] if up_rows else "", last_rows[0] if last_rows else "",
+            name, slug, crest, _chip, up_rows[0] if up_rows else (last_rows[0] if last_rows else ""),
             [{"href": str(n["href"]), "title": n["title"]} for n in news_items]))))
     print(f"  + club pages: {len(TEAM_PAGES)}")

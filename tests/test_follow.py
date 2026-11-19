@@ -38,18 +38,21 @@ ck("1 the picker is hidden in the HTML and lists every club page once",
    and all(pick.count(f'data-slug="{tp["slug"]}"') == 1 for tp in TEAM_PAGES), pick[:120])
 ck("2 ...with a way to dismiss it", "data-my-no" in pick)
 
-blk = F.my_block_html("الأهلي", "al-ahly", "/assets/crests/x.png", '<p class="club-pos">المركز 2</p>',
-                      '<div class="mrow" data-lv>UP</div>', '<div class="mrow" data-lv>LAST</div>',
-                      [{"href": "/a/1.html", "title": "خبر <أول>"}, {"href": "/a/2.html", "title": "ثان"},
-                       {"href": "/a/3.html", "title": "ثالث"}])
-ck("3 the block: the club's name, its page, the next match before the last result, two news rows",
-   "فريقك: الأهلي" in blk and 'href="/team/al-ahly.html"' in blk and blk.index("UP") < blk.index("LAST")
-   and blk.count('class="my-n"') == 2 and "ثالث" not in blk)
+blk = F.my_block_html("الأهلي", "al-ahly", "/assets/crests/x.png", "المركز 2 · 20 نقطة",
+                      '<div class="mrow" data-lv>UP</div>',
+                      [{"href": "/a/1.html", "title": "خبر <أول>"}, {"href": "/a/2.html", "title": "ثان"}])
+# the block is SMALL (site review 2026-11-19: the first one was 433 px tall and
+# pushed the day's matches off the first screen)
+ck("3 the block: the club's name linked to its page, where it stands, ONE match row, ONE news line",
+   'class="my-name" href="/team/al-ahly.html"' in blk and "<b>الأهلي</b>" in blk
+   and '<span class="my-chip">المركز 2 · 20 نقطة</span>' in blk and blk.count('class="mrow"') == 1
+   and blk.count('class="my-n"') == 1 and "ثان" not in blk)
 ck("4 a news title is escaped", "خبر &lt;أول&gt;" in blk and "<أول>" not in blk)
-ck("5 the block carries the «تغيير الفريق» control", "data-my-x" in blk)
-empty = F.my_block_html("مصر", "egypt", "", "", "", "", [])
-ck("6 a club with no rows and no news still gives a valid block, with no empty list",
-   "فريقك: مصر" in empty and 'class="mlist"' not in empty and 'class="my-news"' not in empty and "<img" not in empty)
+ck("5 the block carries the «تغيير» control, named for a screen reader", 'data-my-x aria-label="تغيير الفريق"' in blk)
+empty = F.my_block_html("مصر", "egypt", "", "", "", [])
+ck("6 a club with no row, no chip and no news still gives a valid block, with nothing empty in it",
+   "<b>مصر</b>" in empty and 'class="mlist"' not in empty and 'class="my-n"' not in empty
+   and 'class="my-chip"' not in empty and "<img" not in empty)
 ck("7 the fragment is JSON with one key", json.loads(F.my_json(blk)) == {"html": blk})
 
 js = SH.FOLLOW_JS
@@ -67,6 +70,15 @@ ck("13 the club page's button and note are hidden in the HTML",
    'id="followBtn"' in club and 'data-slug="{{ slug }}"' in club
    and club.split('id="followBtn"')[1].split(">")[0].rstrip().endswith("hidden")
    and club.split('id="followNote"')[1].split(">")[0].rstrip().endswith("hidden"))
+# site review 2026-11-19
+ck("13b the push button sits OUTSIDE the sentence (inline it cut the link beside it in two)",
+   club.index('id="followNote"') < club.index("</p>", club.index('id="followNote"')) < club.index('class="push-btn follow-push"'))
+ck("13c ONLY a 404 clears the reader's club; any other failed answer keeps it",
+   "if(r.status===404) return 'gone';" in js and "if(d==='gone'){ set(''); showPick(); return; }" in js
+   and js.count("set('')") == 2)          # the 404 branch and «تغيير» - nowhere else
+ck("13d the block's room is reserved before the first paint, and released when nothing is shown",
+   "localStorage.getItem('elgoonTeam')" in F.MY_BOOT and "my-has" in F.MY_BOOT and "{{ my_boot }}" in home
+   and home.index("{{ my_boot }}") < home.index('id="myTeam"') and "mode('')" in js)
 ck("14 the home block is hidden in the HTML and sits UNDER the ad strip (firm rule: the ad slot never moves)",
    '<div id="myTeam" class="my-team" hidden></div>' in home and home.index("home-topad") < home.index('id="myTeam"')
    < home.index("{{ match_centre }}"))
@@ -74,6 +86,11 @@ hd = io.open("root-extras/_headers", encoding="utf-8").read()
 ck("15 the fragments are kept out of the index", "/my/*\n  X-Robots-Tag: noindex" in hd.replace("\r\n", "\n"))
 css = io.open("site_src/style.css", encoding="utf-8").read()
 ck("16 [hidden] wins over the picker's display:flex", ".my-pick[hidden],.my-team[hidden]{display:none}" in css)
+ck("16b finger-sized targets: the follow button, the club chips, the ×, «تغيير», the push button",
+   all(x in css for x in (".follow-btn{", ".mp-c{", ".mp-x{", ".my-x{", ".follow-push{"))
+   and all("min-height:44px" in css.split(sel, 1)[1].split("}", 1)[0]
+           for sel in (".follow-btn{", ".mp-c{", ".mp-x{", ".my-x{", ".follow-push{")))
+ck("16c the clubs get their own full line in the picker", ".mp-list{flex-basis:100%" in css and ".my-pick{display:flex;flex-wrap:wrap" in css)
 
 # the built files, when a build is at hand
 dist = os.path.join(os.getcwd(), "dist")
@@ -81,7 +98,7 @@ if os.path.exists(os.path.join(dist, "my")):
     miss = [tp["slug"] for tp in TEAM_PAGES if not os.path.exists(os.path.join(dist, "my", tp["slug"] + ".json"))]
     ck("17 every club page has its fragment", not miss, str(miss))
     d = json.load(io.open(os.path.join(dist, "my", TEAM_PAGES[0]["slug"] + ".json"), encoding="utf-8"))
-    ck("18 ...with clean URLs (no .html) like every page", ".html" not in d["html"] and "فريقك:" in d["html"])
+    ck("18 ...with clean URLs (no .html) like every page", ".html" not in d["html"] and 'class="my-lbl">فريقك<' in d["html"])
     sm = io.open(os.path.join(dist, "sitemap.xml"), encoding="utf-8").read()
     ck("19 no fragment in the sitemap", "/my/" not in sm)
 

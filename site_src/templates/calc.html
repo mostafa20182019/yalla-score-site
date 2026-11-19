@@ -23,6 +23,9 @@
       {% endfor %}
     </div>
     <p class="calc-bar"><span id="calcCount"></span><button type="button" id="calcReset" hidden>مسح التوقعات</button></p>
+    {# what the last pick did to the two teams, kept in sight: on a phone the
+       table is more than a screen below the buttons (site review 2026-11-19) #}
+    <div id="calcFx" class="calc-fx" role="status" hidden><span id="calcFxText" class="calc-fx-t"></span><button type="button" id="calcFxGo" class="calc-fx-go">الجدول ↓</button></div>
   </section>
   <section class="minfo">
     <h2>ترتيب {{ label }} بعد توقعاتك</h2>

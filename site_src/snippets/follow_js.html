@@ -17,6 +17,14 @@
     if(window.__pushTeam) window.__pushTeam();
   }
   function ok(s){ return /^[a-z0-9-]{2,40}$/.test(s); }
+  /* the class the page's inline script put on <html> before the first paint
+     (home.html): it reserves the block's room so nothing jumps. Kept in step
+     with what is really shown. */
+  function mode(m){
+    var c=document.documentElement.classList;
+    c.remove('my-has'); c.remove('my-ask'); c.remove('my-off');
+    if(m) c.add(m);
+  }
 
   /* 1. the club page: the follow button */
   var b=document.getElementById('followBtn');
@@ -32,29 +40,39 @@
     b.addEventListener('click',function(){ set(get()===slug ? '' : slug); paint(); });
   }
 
-  /* 2. the home page: the followed club's block, or the one-line picker */
+  /* 2. the home page: the followed club's block, or the picker */
   var box=document.getElementById('myTeam'); if(!box) return;
   var pick=document.getElementById('myPick');
-  function showPick(){ box.hidden=true; box.innerHTML=''; if(pick) pick.hidden=(get()==='none'); }
+  function showPick(){
+    box.hidden=true; box.innerHTML='';
+    var off=get()==='none';
+    if(pick) pick.hidden=off;
+    mode(off ? 'my-off' : 'my-ask');
+  }
   function load(slug){
     fetch('/my/'+slug+'.json',{cache:'no-cache'})
-      .then(function(r){ return r.ok ? r.json() : null; })
+      /* ONLY a 404 means the club page is gone. Any other failure (a 5xx, a
+         deploy in flight) is a passing thing: the first version cleared the
+         reader's club - and took it off their push subscription - on any
+         answer that was not 200 (site review 2026-11-19). */
+      .then(function(r){ if(r.status===404) return 'gone'; return r.ok ? r.json() : null; })
       .then(function(d){
-        if(!d||!d.html){ set(''); showPick(); return; }   /* a club page that no longer exists */
+        if(d==='gone'){ set(''); showPick(); return; }
+        if(!d||!d.html){ if(pick) pick.hidden=true; mode(''); return; }   /* keep the choice, show nothing this time */
         if(pick) pick.hidden=true;
-        box.innerHTML=d.html; box.hidden=false;
+        box.innerHTML=d.html; box.hidden=false; mode('my-has');
         var x=box.querySelector('[data-my-x]');
         if(x) x.addEventListener('click',function(){ set(''); showPick(); });
         if(window.__lvAdd) window.__lvAdd(box);          /* its rows join the live layer */
       })
-      .catch(function(){ if(pick) pick.hidden=true; });  /* offline: no block, the page as it is */
+      .catch(function(){ if(pick) pick.hidden=true; mode(''); });  /* offline: no block, the page as it is */
   }
   if(pick){
     [].slice.call(pick.querySelectorAll('[data-slug]')).forEach(function(c){
       c.addEventListener('click',function(){ var s=c.getAttribute('data-slug'); if(ok(s)){ set(s); load(s); } });
     });
     var no=pick.querySelector('[data-my-no]');
-    if(no) no.addEventListener('click',function(){ set('none'); pick.hidden=true; });
+    if(no) no.addEventListener('click',function(){ set('none'); pick.hidden=true; mode('my-off'); });
   }
   var cur=get();
   if(ok(cur) && cur!=='none') load(cur); else showPick();
