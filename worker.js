@@ -1410,6 +1410,13 @@ export default {
     if (event.cron === "1,16,31,46 * * * *" && when.getUTCHours() === 22 && when.getUTCMinutes() === 16) {
       await dispatchWorkflow(env, "fb-post.yml", { daycard: "results" });
     }
+    // 07:01 UTC (09:01 / 10:01 Cairo) -> fb-post.yml daycard=today: the
+    // MORNING card, today's fixtures with kick-off times and channels (user,
+    // 2026-11-19 - a fixed appointment every day, the results card's twin).
+    // Rides the same 15-minute firing: no sixth cron string.
+    if (event.cron === "1,16,31,46 * * * *" && when.getUTCHours() === 7 && when.getUTCMinutes() === 1) {
+      await dispatchWorkflow(env, "fb-post.yml", { daycard: "today" });
+    }
     if (event.cron === "0 6,8,11,14,17,19 * * *" && when.getUTCDay() === 1 && when.getUTCHours() === 6) {
       await dispatchWorkflow(env, "round-article.yml", { competition: "auto-europe" });
     }

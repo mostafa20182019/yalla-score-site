@@ -152,6 +152,50 @@ ck("30 the caption: the title line, one line per result with the league, the mat
 wf2 = io.open(".github/workflows/fb-post.yml", encoding="utf-8").read()
 ck("31 the workflow takes daycard=results", "daycard:" in wf2 and 'python fb_post.py --daycard "$DAYCARD"' in wf2)
 
+# ---- the MORNING card: today's fixtures (2026-11-19)
+def _tm(i, comp, h, a, t, st="UPCOMING", **kw):
+    m = {"match_id": i, "competition": comp, "home": h, "away": a, "kickoff": "2026-11-23", "koff_time": t,
+         "status": st, "home_score": None, "away_score": None}
+    m.update(kw)
+    return m
+
+
+_td = [_tm(1, "Premier League", "Brentford FC", "Everton FC", "22:00"),
+       _tm(2, "Egyptian Premier League", "الأهلي", "بيراميدز", "20:00"),
+       _tm(3, "Egyptian Premier League", "الجونة", "الزمالك", "17:00"),
+       _tm(4, "Serie A", "AC Monza", "ACF Fiorentina", "21:45"),
+       _tm(5, "Egyptian Premier League", "سموحة", "زد", "15:00", "FINISHED", home_score=1, away_score=0),
+       _tm(6, "Primera Division", "Levante UD", "Elche CF", "22:00", "LIVE", home_score=0, away_score=0),
+       _tm(7, "Saudi Pro League", "الأهلي", "النصر", "19:30"),
+       _tm(8, "Turkish Super Lig", "x", "y", None)]
+_tg = fp.todaycard_matches(_td, "2026-11-23")
+ck("32 the morning card: only matches still to be played, with a kick-off time, in kick-off order",
+   [m["match_id"] for m in _tg] == [3, 7, 2, 4, 1], str([m["match_id"] for m in _tg]))
+_tc = fp.todaycard_caption(_tg, "2026-11-23")
+ck("33 its caption: the day, one line a match with time, league and VERIFIED channel, the site, the tags",
+   _tc.splitlines()[0] == "📅 مباريات اليوم — الاثنين 23 نوفمبر"
+   and "🕗 20:00 · الأهلي × بيراميدز · الدوري المصري · 📺 أون سبورت (OnTime Sports)" in _tc
+   and "المواعيد بتوقيت القاهرة." in _tc and "https://elgoon.com/" + chr(10) in _tc and "#مباريات_اليوم" in _tc, _tc)
+ck("34 the Saudi «الأهلي» is written «الأهلي السعودي», never the bare Egyptian name",
+   "🕗 19:30 · الأهلي السعودي × النصر · الدوري السعودي" in _tc)
+_nc = fp.todaycard_caption([_tm(9, "Egyptian Second Division", "أ", "ب", "15:00")], "2026-11-23")
+ck("35 a match with no verified channel names none", "📺" not in _nc and "🕗 15:00 · أ × ب" in _nc)
+_bk = [_tm(11, "Egypt Cup", "r", "s", "19:00"), _tm(12, "Africa Cup of Nations Qualification", "ليبيا", "تونس", "21:00"),
+       _tm(13, "Africa Cup of Nations Qualification", "بورندي", "زامبيا", "15:00")]
+ck("36 a break day takes every competition, like the night card - still read by the clock",
+   [m["match_id"] for m in fp.todaycard_matches(_bk, "2026-11-23")] == [13, 11, 12])
+ck("37 the day is the Cairo day; an empty day gives nothing",
+   fp.todaycard_date(_d2.datetime(2026, 11, 23, 9, 1, tzinfo=_Z("Africa/Cairo"))) == "2026-11-23"
+   and fp.todaycard_matches(_td, "2026-11-24") == [])
+_wk = io.open("worker.js", encoding="utf-8").read()
+ck("38 the Worker dispatches it at 07:01 UTC on the 15-minute firing; the workflow runs ONLY the card for it",
+   'when.getUTCHours() === 7 && when.getUTCMinutes() === 1' in _wk and '{ daycard: "today" }' in _wk
+   and wf2.index('[ "$DAYCARD" = "today" ]') < wf2.index('elif [ -n "$DAYCARD" ]; then')
+   and "python fb_post.py --daycard today | tee /tmp/fb.txt" in wf2)
+import re as _re
+ck("39 still five cron strings (the free plan's cap)",
+   len(_re.findall(r'"[^"]+"', _re.search(r"crons = \[(.*?)\]", io.open("wrangler.toml", encoding="utf-8").read(), _re.S).group(1))) == 5)
+
 print()
 print("ALL FB PREDICTION TESTS PASSED" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

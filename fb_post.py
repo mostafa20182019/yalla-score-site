@@ -1063,9 +1063,12 @@ def daycard_caption(ms, date):
 
 
 def daycard_post(token, what="results", dry=False):
-    """Render and post the day's results card; 0 = done or nothing to do."""
+    """Render and post the day's results card; 0 = done or nothing to do.
+    what="today" is the MORNING card - the day's fixtures (todaycard_post)."""
     import day_card as DC
     import match_brief as MB
+    if what == "today":
+        return todaycard_post(token, dry=dry)
     if what != "results":
         print(f"daycard: unknown kind {what}"); return 1
     date = daycard_date()
@@ -1093,6 +1096,94 @@ def daycard_post(token, what="results", dry=False):
         print(f"posted the day card for {date} ({len(ms)} matches): {pid}")
     except Exception as e:  # noqa: BLE001
         print(f"daycard {date}: post FAILED: {e}")
+        store.release("card", ref)
+        return 1
+    return 0
+
+
+# ---------------------------------------------------------------- the morning card: today's fixtures
+# User, 2026-11-19 (step 4 of «محتوى يخلى المستخدم يرجعلك تانى» - a fixed
+# appointment every day): «مباريات اليوم والقنوات» in the morning, the results
+# at night. The same picking rule as the night card (the nine leagues; a day
+# on which they give too few takes every competition, curated first, then the
+# Arab national teams), on the matches still to be played. The card shows
+# them by kick-off; the caption adds each match's verified channel
+# (competitions.match_tv) - a match with none gets none, never a guess.
+TODAY_MIN = 2
+
+
+def todaycard_date(now=None):
+    from zoneinfo import ZoneInfo
+    now = now or datetime.datetime.now(ZoneInfo("Africa/Cairo"))
+    if now.tzinfo is None:
+        now = now.replace(tzinfo=ZoneInfo("Africa/Cairo"))
+    return now.astimezone(ZoneInfo("Africa/Cairo")).strftime("%Y-%m-%d")
+
+
+def todaycard_matches(matches, date):
+    """The day's matches still to be played - picked like the night card's
+    results, then put in kick-off order (a schedule is read by the clock)."""
+    import day_card as DC
+    from site_lib.competitions import COMP_ORDER, LEAGUE_BAR, is_arab_nation_match
+    from site_lib.names import _is_ticker_team
+    todo = [m for m in DC.day_matches(matches, date, "all")
+            if (m.get("status") or "").upper() in ("UPCOMING", "TIMED", "SCHEDULED") and m.get("home_score") is None
+            and m.get("koff_time")]
+    ms = [m for m in todo if m.get("competition") in LEAGUE_BAR]
+    if len(ms) >= DAYCARD_MIN:
+        ms.sort(key=lambda m: (0 if _is_ticker_team(m) else 1, LEAGUE_BAR.index(m["competition"]), m["koff_time"]))
+    else:
+        _rank = lambda c: COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER)
+        ms = sorted(todo, key=lambda m: (0 if _is_ticker_team(m) else 1 if is_arab_nation_match(m) else 2,
+                                         _rank(m.get("competition")), m["koff_time"]))
+    return sorted(ms[:DC.MAX_ROWS], key=lambda m: (m["koff_time"], m.get("home") or ""))
+
+
+def todaycard_caption(ms, date):
+    from site_lib.competitions import match_tv
+    from site_lib.dates import day_month
+    from site_lib.names import ar_team_in, comp_label
+    lines = [f"📅 مباريات اليوم — {day_month(date, weekday=True)}", ""]
+    for m in ms:
+        tv = m.get("channel") or match_tv(m)
+        # ar_team_in: the Saudi «الأهلي» is written «الأهلي السعودي» - on this
+        # page the bare name is the Egyptian club
+        c = m["competition"]
+        lines.append(f"🕗 {m['koff_time']} · {ar_team_in(m['home'], c)} × {ar_team_in(m['away'], c)} · {comp_label(c)}"
+                     + (f" · 📺 {tv}" if tv else ""))
+    lines += ["", "المواعيد بتوقيت القاهرة.", f"كل المباريات لحظة بلحظة: {SITE}/", "#الجون #مباريات_اليوم"]
+    return "\n".join(lines)
+
+
+def todaycard_post(token, dry=False):
+    """Render and post the morning fixtures card; 0 = done or nothing to do."""
+    import day_card as DC
+    import match_brief as MB
+    date = todaycard_date()
+    ref = f"today:{date}"
+    rec = store.get_post("card", ref)
+    if rec and rec.get("post_id"):
+        print(f"todaycard {date}: already posted ({rec['post_id']})"); return 0
+    ms = todaycard_matches(MB.load_all()["matches"], date)
+    if len(ms) < TODAY_MIN:
+        print(f"todaycard {date}: only {len(ms)} match(es) to play today - nothing posted"); return 0
+    caption = todaycard_caption(ms, date)
+    out = os.path.join(HERE, "data", "briefs", f"today-{date}.jpg")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    DC.render(ms, date, "all", out, title="أبرز مباريات")
+    if dry:
+        print(caption); print(out); return 0
+    if not token:
+        print("FB_PAGE_TOKEN not set - skipping"); return 0
+    if not store.claim("card", ref, title=f"today {date}"):
+        print(f"todaycard {date}: claimed by another run - nothing posted"); return 0
+    try:
+        with open(out, "rb") as fh:
+            pid = post_photo(token, fh.read(), caption)
+        store.record_post("card", ref, pid, title=f"today {date}")
+        print(f"posted the fixtures card for {date} ({len(ms)} matches): {pid}")
+    except Exception as e:  # noqa: BLE001
+        print(f"todaycard {date}: post FAILED: {e}")
         store.release("card", ref)
         return 1
     return 0
