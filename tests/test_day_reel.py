@@ -3,9 +3,9 @@ r"""The day's RESULTS reel (day_reel.py, 2026-11-09).
 
     python tests/test_day_reel.py      (from the repo root)
 
-What it guards: «أمس» / «اليوم» from the Cairo clock, ONE results shot with
-every result (six to nine rows, user 2026-11-19: «الصورة الواحدة فى الريل
-تاخد ست مباريات على الاقل») between the intro and the outro, every frame 1080x1920, the rows
+What it guards: «أمس» / «اليوم» from the Cairo clock, SIX results a shot
+(user 2026-11-19: «النتائج ممكن اكتر من لقطة بس اللقطة الواحدة فيها ست
+مباريات») between the intro and the outro, every frame 1080x1920, the rows
 inside the Reels safe band and clear of the right-hand button column, the
 home goals drawn on the RIGHT of the dash, and a caption naming every
 result. No ffmpeg needed: frames only.
@@ -44,18 +44,20 @@ def match(i, hs, as_):
 
 ms = [match(i, 8, 1) for i in range(7)]   # 8 = lots of ink, 1 = little
 scenes = D.build(ms, "2026-11-08", now)
-check(len(scenes) == 3, f"7 matches -> intro + ONE shot with all seven + outro ({len(scenes)})")
-for _n in (3, 6, 9, 12):
-    _sc = D.build([match(i, 2, 1) for i in range(_n)], "2026-11-08", now)
-    _h, _ys = D.row_geometry(min(_n, D.MAX_ROWS))
-    check(len(_sc) == 3 and sum(s[1] for s in _sc) <= 15 and len(_ys) == min(_n, 9)
-          and _ys[0] - _h / 2 >= D.BAND_TOP - 1 and _ys[-1] + _h / 2 <= R.SAFE_BOTTOM,
-          f"{_n} matches: one shot of {min(_n, 9)} rows, inside the safe band, {sum(s[1] for s in _sc):.1f} s")
+check(len(scenes) == 3, f"7 matches -> intro + ONE shot of six + outro ({len(scenes)})")
+for _n, _want in ((3, [3]), (6, [6]), (9, [6]), (11, [6]), (12, [6, 6]), (20, [6, 6])):
+    _ms = [match(i, 2, 1) for i in range(_n)]
+    _sc = D.build(_ms, "2026-11-08", now)
+    _got = [len(p) for p in D.shots(_ms)]
+    check(_got == _want and len(_sc) == 2 + len(_want) and sum(s[1] for s in _sc) <= 15,
+          f"{_n} matches: shots of {_got} - six a shot, full shots only - {sum(s[1] for s in _sc):.1f} s")
+_h6, _ys6 = D.row_geometry(D.PER_SHOT)
+check(_ys6[0] - _h6 / 2 >= D.BAND_TOP - 1 and _ys6[-1] + _h6 / 2 <= R.SAFE_BOTTOM, "six rows fill the safe band, no more")
 check(scenes[-1][2] is False, "the outro is not pushed in twice")
 secs = sum(s[1] for s in scenes)
 check(12 <= secs <= 15, f"length {secs:.1f} s (15 s or less, user rule 2026-11-10)")
 
-_h7, _ys7 = D.row_geometry(7)
+_h7, _ys7 = D.row_geometry(6)
 last_row_bottom = _ys7[-1] + _h7 / 2
 check(last_row_bottom <= R.SAFE_BOTTOM, f"rows end at {last_row_bottom:.0f} <= safe band {R.SAFE_BOTTOM}")
 check(D.HOME_X + 52 < R.W * 0.91, "home crest clear of the like/comment column")

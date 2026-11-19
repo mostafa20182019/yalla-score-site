@@ -1022,9 +1022,10 @@ def daycard_date(now=None):
     return (now - datetime.timedelta(hours=4)).strftime("%Y-%m-%d")
 
 
-def daycard_matches(matches, date):
+def daycard_matches(matches, date, limit=None):
     """The day's FINISHED matches of the nine leagues, the curated clubs'
-    first, then the leagues' order, then kick-off - at most nine (one card).
+    first, then the leagues' order, then kick-off - at most nine (one card;
+    `limit` raises it for the reel, which shows two shots of six).
 
     A day on which the nine leagues give fewer than DAYCARD_MIN results (an
     international break, a cup week) takes its results from EVERYTHING that
@@ -1040,7 +1041,7 @@ def daycard_matches(matches, date):
     ms = [m for m in done if m.get("competition") in LEAGUE_BAR]
     if len(ms) >= DAYCARD_MIN:
         ms.sort(key=lambda m: (0 if _is_ticker_team(m) else 1, LEAGUE_BAR.index(m["competition"]), m.get("koff_time") or ""))
-        return ms[:DC.MAX_ROWS]
+        return ms[:limit or DC.MAX_ROWS]
     # ... the curated first, then the Arab national teams (17 November: 18
     # qualifiers, and by kick-off alone the card showed Burundi and Lesotho
     # while Algeria, Tunisia and Morocco stayed out), then the rest
@@ -1048,7 +1049,7 @@ def daycard_matches(matches, date):
     _rank = lambda c: COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER)
     done.sort(key=lambda m: (0 if _is_ticker_team(m) else 1 if is_arab_nation_match(m) else 2,
                              _rank(m.get("competition")), m.get("koff_time") or ""))
-    return done[:DC.MAX_ROWS]
+    return done[:limit or DC.MAX_ROWS]
 
 
 def daycard_caption(ms, date):

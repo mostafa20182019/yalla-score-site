@@ -9,11 +9,11 @@ the reel canvas (fb_reel background + wordmark, the Reels safe band) and
 encoded by moment_reel.encode with the page's music loop:
 
     intro 2.5 s  «نتائج أمس» + the day + «9 مباريات من الدوريات الكبرى»
-    page  7-8 s  ONE shot with every result, six to nine rows (user,
-                 2026-11-19: «الصورة الواحدة فى الريل تاخد ست مباريات على
-                 الاقل» - it was three a page, the first six only) - home
-                 crest/name on the RIGHT and its goals right of the dash (the
-                 RTL rule), the league under the score
+    shots        SIX results a shot (user, 2026-11-19: «النتائج ممكن اكتر
+                 من لقطة بس اللقطة الواحدة فيها ست مباريات» - it was three a
+                 shot): one shot of 7 s, or two of 4.5 s when the night has
+                 twelve - home crest/name on the RIGHT and its goals right of
+                 the dash (the RTL rule), the league under the score
     outro 3 s    the wordmark + «كل النتائج والجداول» + elgoon.com
 
 Posted by fb-post.yml right after the results card (daycard=results), with
@@ -39,13 +39,16 @@ import moment_reel as M              # noqa: E402
 import store                         # noqa: E402
 
 W, H, FPS = M.W, M.H, M.FPS
-# ONE results shot (user 2026-11-19): every result of the night's card on a
-# single frame, at least six when the day has six - nine at most, the card's
-# own limit. 2.5 + 8 + 3 = 13.5 s at most (user rule 2026-11-10: every reel
-# is 15 s or less); the caption still lists every result.
-MAX_ROWS = 9
+# SIX results a shot (user 2026-11-19), and only FULL shots after the first:
+# a night of 6-11 results shows its first six, a night of twelve or more two
+# shots of six; fewer than six = the one short shot the day has. Two shots at
+# most: 2.5 + 2 x 4.5 + 3 = 14.5 s (user rule 2026-11-10: every reel is 15 s
+# or less). The caption still lists every result the caller passed.
+PER_SHOT = 6
+MAX_SHOTS = 2
+MAX_MATCHES = PER_SHOT * MAX_SHOTS   # what main() asks fb_post.daycard_matches for
 INTRO, OUTRO = 2.5, 3.0
-PAGE, PAGE_LONG = 7.0, 8.0           # seven rows or more get the extra second
+PAGE, PAGE_TWO = 7.0, 4.5            # one shot alone / each of two
 BAND_TOP, BAND_BOTTOM = 480, R.SAFE_BOTTOM - 10   # under the page title, inside the Reels safe band
 ROW_MAX_H = 170
 HOME_X, AWAY_X = W - 150, 150        # the crests: clear of the Reels like/comment column on the right
@@ -62,8 +65,11 @@ def row_geometry(n):
     return h, [top + h * (i + 0.5) for i in range(n)]
 
 
-def page_secs(n):
-    return PAGE_LONG if n > 6 else PAGE
+def shots(ms):
+    """The results split into shots of PER_SHOT - full ones only past the first."""
+    ms = list(ms)
+    n = max(1, min(MAX_SHOTS, len(ms) // PER_SHOT))
+    return [ms[i * PER_SHOT:(i + 1) * PER_SHOT] for i in range(n)]
 
 
 def rel_label(date, now=None):
@@ -111,7 +117,8 @@ def row(im, t, m, cy, t0, h):
 def build(ms, date, now=None):
     """The scenes as (draw(t) -> frame, seconds, push_in) - push_in False for
     the outro, which moment_reel.scene already pushes in."""
-    ms = list(ms)[:MAX_ROWS]
+    pages = shots(ms)
+    ms = [m for p in pages for m in p]
     bg = R.background()
     ctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
     title, when = rel_label(date, now), day_name(date)
@@ -136,7 +143,7 @@ def build(ms, date, now=None):
                           C.font("ExtraBold", 40), C.WHITE)
             h, ys = row_geometry(len(rows))
             for i, m in enumerate(rows):
-                row(im, t, m, ys[i], 0.15 + i * 0.22, h)
+                row(im, t, m, ys[i], 0.1 + i * 0.15, h)
             return im
         return draw
 
@@ -144,7 +151,8 @@ def build(ms, date, now=None):
         sc = {"kind": "cta", "secs": OUTRO, "lines": ["كل النتائج والجداول", "لحظة بلحظة على الجون"]}
         return M.scene(sc, t, ctx)
 
-    return [(intro, INTRO, True), (page(ms), page_secs(len(ms)), True), (outro, OUTRO, False)]
+    secs = PAGE if len(pages) == 1 else PAGE_TWO
+    return [(intro, INTRO, True)] + [(page(p), secs, True) for p in pages] + [(outro, OUTRO, False)]
 
 
 def push_in(im, t, dur):
@@ -208,7 +216,7 @@ def main():
         if rec and rec.get("post_id"):
             print(f"day reel {date}: already posted ({rec['post_id']})")
             return 0
-    ms = P.daycard_matches(MB.load_all()["matches"], date)
+    ms = P.daycard_matches(MB.load_all()["matches"], date, limit=MAX_MATCHES)
     if len(ms) < P.DAYCARD_MIN:
         print(f"day reel {date}: only {len(ms)} finished match(es) - no reel")
         return 0
