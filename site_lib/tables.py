@@ -158,7 +158,15 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
         body.append(
             f'<tr{tr_attr}><td class="lt-pos">{cell(r.get("pos"))}</td>'
             # the name opens the team card (snippets/team_card_js.html)
-            f'<td class="lt-team"><button type="button" class="lt-tb">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></button></td>'
+            # ... and where the club has a page, the name IS a link to it (SEO
+            # review 2026-11-19: the page was reachable only through the card's
+            # script, so no crawler saw /standings/turkey point at
+            # /team/trabzonspor). The card's script still takes the tap
+            # (preventDefault on .lt-tb); without it the link simply opens.
+            + (f'<td class="lt-team"><a class="lt-tb" href="{esc(_tc["tp"])}.html">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></a></td>'
+               if _tc.get("tp") else
+               f'<td class="lt-team"><button type="button" class="lt-tb">{crest}<bdi>{esc(ar_team(r.get("team")))}</bdi></button></td>')
+            + 
             f'{fmtd}'
             f'{num("played", "p")}{num("won", "w")}'
             f'{num("draw", "d")}{num("lost", "l")}'

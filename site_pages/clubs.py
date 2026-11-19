@@ -21,7 +21,7 @@ from site_lib.urls import article_href, breadcrumb_ld, match_url
 
 
 def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
-               fx_by_comp=None, sc_by_comp=None, sc_ok=None):
+               fx_by_comp=None, sc_by_comp=None, sc_ok=None, md_idx=None):
     """/team/<slug> - evergreen SEO hubs for the highest-volume Arabic query
     family: «أخبار الأهلي اليوم»، «مباريات الزمالك القادمة»، «نتيجة ريال مدريد».
     One page per curated club: latest news + next matches + recent results +
@@ -189,6 +189,19 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                         f"{_top['name']} برصيد "
                         + _cn(_top["goals"], "هدف واحد", "هدفين", "أهداف", "هدفًا")
                         + f" في {league_ar}."))
+        # «أرقام لاعبي الفريق» (SEO review 2026-11-19) - site_lib/squad_stats.py
+        from site_lib.squad_stats import squad_stats
+        _sq = squad_stats(tp, cm, md_idx)
+        squad = None
+        if _sq:
+            from site_lib.stats import _cnt as _cq
+            squad = {"n_txt": _cq(_sq["n"], "مباراة واحدة", "مباراتين", "مباريات", "مباراة"),
+                     "rows": _sq["rows"], "rated": any(r["rating"] for r in _sq["rows"])}
+            _t0 = _sq["rows"][0]
+            faq.append((f"من أكثر لاعبي {name} مشاركة هذا الموسم؟",
+                        f"{_t0['name']}: شارك في " + _cq(_t0["apps"], "مباراة واحدة", "مباراتين", "مباريات", "مباراة")
+                        + " من " + _cq(_sq["n"], "مباراة واحدة", "مباراتين", "مباريات", "مباراة")
+                        + f" لدينا تشكيلها لـ{name} هذا الموسم."))
         # the league's hub pages, only the ones the build writes
         _ls = COMP_SLUG.get(tp["league"])
         hub_links = []
@@ -225,7 +238,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                          + [table_heading, table, club_ld])
         write(f"team/{slug}.html", render(
             "club.html", page_head=Markup(page_head), crumbs_ld=Markup(crumbs_ld),
-            name=name, slug=Markup(slug), push_on=bool(VAPID_PUBLIC_KEY), crest_img=Markup(_img), position=Markup(_pos),
+            name=name, slug=Markup(slug), push_on=bool(VAPID_PUBLIC_KEY), squad=squad, crest_img=Markup(_img), position=Markup(_pos),
             up_rows=[Markup(x) for x in up_rows], last_rows=[Markup(x) for x in last_rows],
             news=news_items, has_table=bool(st and st.get("table")),
             table_heading=Markup(table_heading), table=Markup(table),

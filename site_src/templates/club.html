@@ -61,6 +61,25 @@
   <p class="hintline">تُنشر أخبار {{ name }} هنا فور ورودها.</p>
   {% endif %}
 </section>
+{# «أرقام لاعبي الفريق» (SEO review 2026-11-19): what the results box does
+   not show. Computed from the line-ups, goals and cards of the matches we
+   hold - the first line says how many. #}
+{% if squad %}
+<section class="minfo squad">
+  <h2>أرقام لاعبي {{ name }} هذا الموسم</h2>
+  <p class="hintline">من {{ squad.n_txt }} لدينا تشكيلها لـ{{ name }} هذا الموسم، في كل البطولات. «شارك» = أساسيًا أو بديلًا.</p>
+  <div class="sq-wrap">
+    <table class="sq-t">
+      <thead><tr><th class="sq-n">اللاعب</th><th>شارك</th><th>أساسي</th><th>أهداف</th><th>إنذار</th><th>طرد</th>{% if squad.rated %}<th>تقييم</th>{% endif %}</tr></thead>
+      <tbody>
+        {% for r in squad.rows %}
+        <tr><td class="sq-n"><bdi>{{ r.name }}</bdi>{% if r.pos %}<span class="sq-p">{{ r.pos }}</span>{% endif %}</td><td>{{ r.apps }}</td><td>{{ r.starts }}</td><td>{{ r.goals }}</td><td>{{ r.yellow }}</td><td>{{ r.red }}</td>{% if squad.rated %}<td>{{ r.rating }}</td>{% endif %}</tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endif %}
 {% if has_table %}
 <section class="minfo">
   <h2>{{ table_heading }}</h2>

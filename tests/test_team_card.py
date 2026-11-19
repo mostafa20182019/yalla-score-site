@@ -68,7 +68,12 @@ T.set_team_info(FX, SC, {COMP: True}, [1, 3])
 rows = [{"pos": 2, "team": "طرابزون سبور", "played": 11, "won": 8, "draw": 1, "lost": 2,
          "gf": 26, "ga": 8, "gd": 18, "pts": 25}]
 out = T.standings_table(COMP, rows, embedded=True)
-ck("9 the team name is a button", '<td class="lt-team"><button type="button" class="lt-tb">' in out)
+# 2026-11-19: a club WITH a page gets a real link (a crawler can follow it; the
+# card's script still takes the tap); a club without one keeps the button
+ck("9 the team name opens the card: a link to the club page where there is one, a button otherwise",
+   '<td class="lt-team"><a class="lt-tb" href="/team/trabzonspor.html">' in out
+   and '<td class="lt-team"><button type="button" class="lt-tb">' in T.standings_table(
+       COMP, [dict(rows[0], team="قاسم باشا")], embedded=True))
 m = re.search(r'<tr data-tc="([^"]*)"', out)
 ck("10 the row carries the card data, escaped JSON", bool(m) and json.loads(html.unescape(m.group(1))).get("tp") == "/team/trabzonspor")
 ck("11 the table names its competition for the card", 'data-cl="الدوري التركي"' in out)

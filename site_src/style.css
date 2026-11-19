@@ -1671,6 +1671,18 @@ html.my-has #myTeam[hidden]{display:block;min-height:188px}
 .lt-me{color:var(--green-d);font-weight:900}
 tr:has(.lt-me) td{background:#eaf5fc}
 
+/* SEO review 2026-11-19: the club name in a table is a link where the club
+   has a page; the squad's numbers on the club page */
+a.lt-tb{text-decoration:none}
+.sq-wrap{overflow-x:auto}
+.sq-t{width:100%;border-collapse:collapse;font-size:.88rem}
+.sq-t th{font-size:.72rem;color:var(--muted);font-weight:800;padding:6px 4px;text-align:center;border-bottom:1px solid #e2e8f0;white-space:nowrap}
+.sq-t td{padding:8px 4px;text-align:center;border-bottom:1px solid #f1f5f9}
+.sq-t .sq-n{text-align:start;font-weight:800}
+/* seven columns on a 375 px phone: tighter cells, the name free to wrap */
+@media(max-width:560px){.sq-t{font-size:.82rem}.sq-t th{font-size:.66rem;padding:6px 1px}.sq-t td{padding:8px 1px}}
+.sq-p{display:block;font-size:.7rem;font-weight:700;color:var(--muted)}
+
 /* the «الجون» cover placeholder (media/ph-*.svg, 16:9) is shown WHOLE on its
    own blue: a wide box with object-fit:cover sliced the logo on desktop
    (user, 2026-11-11: the Inzaghi story's hero at 1780x500). Last in the file:

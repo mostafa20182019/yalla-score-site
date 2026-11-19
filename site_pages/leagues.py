@@ -180,6 +180,10 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                 _also.append(f'<a href="/fixtures/{slug}.html">جدول مباريات {esc(label)}</a>')
             _html = render(
                 "scorers.html", page_head=page_head, label=label, season=season,
+                # the one hub page that had no BreadcrumbList (SEO review 2026-11-19)
+                crumbs_ld=Markup(breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
+                                                ("البطولات", SITE_BASE + "/leagues.html"),
+                                                (f"هدافو {label}", SITE_BASE + sc_url)])),
                 also=[Markup(x) for x in _also],
                 has_sc=bool(sc), scorers=Markup(scorers), has_asst=bool(asst),
                 assists=Markup(assists), reading=Markup(_sr or ""),
@@ -267,7 +271,16 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
         # «جدول مباريات الدوري التركي» 28, «مواعيد مباريات الدوري التركي» -
         # all at ~10. The title carries «مواعيد» and «المباريات القادمة».
         _next = "الدور القادم" if any(r.get("label") for r in rounds) else "المباريات القادمة"   # a cup's stages
-        page_head = Markup(head(f"جدول مباريات {label}: مواعيد {_next} والنتائج {season} | {SITE_NAME}",
+        # ... and stays whole in the results (SEO review 2026-11-19: the Africa
+        # qualifiers' title was 80 characters, Turkey's and Libya's 71 - cut
+        # mid-phrase). What goes first is the SEASON, then «والنتائج» - never
+        # «مواعيد» or «المباريات القادمة», the words the queries are made of.
+        _ft = next((t for t in (f"جدول مباريات {label}: مواعيد {_next} والنتائج {season}",
+                                f"جدول مباريات {label}: مواعيد {_next} والنتائج",
+                                f"جدول مباريات {label}: مواعيد {_next}",
+                                f"مواعيد مباريات {label}")      # كأس الكونفدرالية الأفريقية: the longest name we carry
+                    if len(t) <= 62), f"مواعيد مباريات {label}")   # 62 = seo_title's own limit
+        page_head = Markup(head(f"{_ft} | {SITE_NAME}",
                                 fixtures_desc(label, season, rounds, n_m),
                                 SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True,
