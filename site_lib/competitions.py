@@ -86,6 +86,25 @@ COMP_TV = {
     "FIFA U-17 World Cup": "beIN Sports",
 }
 
+# Qatar 2026 (user 2026-11-19): Alkass shows the matches of the five Arab
+# teams free-to-air, next to beIN (Elwatan / Btolat / Tahia Masr, 2026-11-19).
+# Only THEIR matches - any other match of the tournament stays on beIN alone.
+U17_ARAB_TEAMS = ("مصر", "الجزائر", "السعودية", "المغرب", "قطر")
+U17_ARAB_TV = "beIN Sports وقنوات الكأس (مفتوحة)"
+
+
+def match_tv(m):
+    """The verified channel of ONE match: the competition's entry in COMP_TV,
+    widened where a broadcaster carries only some matches of a competition.
+    "" when nothing is verified. A channel named by the feed (m["channel"])
+    stays the caller's first choice, as before."""
+    comp = m.get("competition") or ""
+    if comp == "FIFA U-17 World Cup":
+        _teams = {str(m.get(k) or "").split(" تحت")[0].strip() for k in ("home", "away")}
+        if _teams & set(U17_ARAB_TEAMS):
+            return U17_ARAB_TV
+    return COMP_TV.get(comp) or ""
+
 # official competition emblems (same host as the team crests already used)
 COMP_LOGO = {
     "Premier League":   "https://crests.football-data.org/PL.png",

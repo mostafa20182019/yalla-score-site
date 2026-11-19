@@ -8,7 +8,7 @@ rows reuse the ticker's contract so LIVE_JS paints the live score seconds
 after load (`data-lv` + `data-h`/`data-a`, a `.tk-mid` holding a `tk-s`
 pill): no second script, no baked live score (user rule 2026-08-31).
 """
-from site_lib.competitions import COMP_ORDER, COMP_TV
+from site_lib.competitions import COMP_ORDER, match_tv
 from site_lib.config import REF_TODAY
 from site_lib.crests import local_crest
 from site_lib.matchdata import score_pill
@@ -103,7 +103,7 @@ def today_cards(matches, today=None, limit=CARDS, pills=""):
             t = m.get("koff_time") or ""
             # the time sits in the middle pill; the top says only «اليوم»
             when, mid, cls = "اليوم", f'<span class="tk-t">{esc(t)}</span>', ""
-        tv = m.get("channel") or COMP_TV.get(m.get("competition") or "") or ""
+        tv = m.get("channel") or match_tv(m)
         tv_html = f'<span class="tc-tv">📺 {esc(str(tv))}</span>' if tv else "<span></span>"
         its.append(
             f'<a class="tc-card tk-item{cls}" href="{esc(match_url(m))}" data-lv data-h="{esc(h)}" data-a="{esc(a)}" data-d="{esc(m.get("kickoff") or "")}">'

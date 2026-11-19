@@ -134,6 +134,15 @@ ck("11k ...the second division after the Arab first divisions (right after Libya
    # U-17 World Cup got beIN on 2026-11-19 (MENA rights, three dated sources)
    and "Egyptian Second Division" not in bs.COMP_TV
    and bs.COMP_TV.get("FIFA U-17 World Cup") == "beIN Sports")
+# 2026-11-19 (user): Alkass next to beIN for the five Arab teams' matches only
+from site_lib.competitions import match_tv as _mtv
+_u = "FIFA U-17 World Cup"
+ck("11m U-17 World Cup: an Arab team's match names Alkass too, any other match beIN alone; other competitions keep COMP_TV",
+   _mtv({"competition": _u, "home": "مصر تحت 17", "away": "اليونان تحت 17"}) == "beIN Sports وقنوات الكأس (مفتوحة)"
+   and _mtv({"competition": _u, "home": "البرازيل تحت 17", "away": "قطر تحت 17"}) == "beIN Sports وقنوات الكأس (مفتوحة)"
+   and _mtv({"competition": _u, "home": "البرازيل تحت 17", "away": "فرنسا تحت 17"}) == "beIN Sports"
+   and _mtv({"competition": "Africa Cup of Nations Qualification", "home": "مصر", "away": "مالاوي"}) == "beIN Sports"
+   and _mtv({"competition": "Egyptian Second Division", "home": "x", "away": "y"}) == "")
 from site_lib.competitions import comp_season as _cs
 ck("11l the U-17 World Cup is a one-year tournament: its pages say «2026», a league keeps «2026-2027»",
    _cs("FIFA U-17 World Cup", "2026-2027", [{"matches": [{"kickoff": "2026-11-21"}, {"kickoff": "2026-11-19"}]}]) == "2026"

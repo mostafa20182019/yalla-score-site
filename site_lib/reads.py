@@ -6,7 +6,7 @@ Moved verbatim out of build_site.py (2026-09-26, tools/move_names.py):
 source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 from site_lib.arabic import _ORD_AR
-from site_lib.competitions import COMP_TV
+from site_lib.competitions import match_tv
 from site_lib.dates import _days_between, fmt_day
 from site_lib.matchdata import _rt_class, _side_of, match_ratings, match_story
 from site_lib.names import _club_pool, ar_team
@@ -230,7 +230,7 @@ def pre_match_read(m, h_ar, a_ar, comp_label_txt, st=None, form_map=None,
                                     if m.get("koff_time") else "")
     faq.append((f"متى مباراة {h_ar} و{a_ar}؟",
                 f"تُقام يوم {when} ضمن {comp_label_txt}."))
-    ch = m.get("channel") or COMP_TV.get(m.get("competition"))
+    ch = m.get("channel") or match_tv(m)
     faq.append((f"ما القناة الناقلة لمباراة {h_ar} و{a_ar}؟",
                 f"تُنقل عبر {ch}." if ch else
                 "لم تتوفر بعد معلومات القناة الناقلة لهذه المباراة، وتُحدَّث الصفحة فور توفرها."))

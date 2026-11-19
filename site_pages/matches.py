@@ -7,7 +7,7 @@ import datetime
 import os
 from site_lib.articles import ensure_match_image, match_article_block
 from site_lib.clubs import TEAM_PAGES
-from site_lib.competitions import COMP_ORDER, COMP_SLUG, COMP_TV
+from site_lib.competitions import COMP_ORDER, COMP_SLUG, match_tv
 from site_lib import h2h as _H2H
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
 from site_lib.crests import comp_icon, local_crest
@@ -264,7 +264,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                      f"{comp} | {SITE_NAME}")
             # the channel in the snippet (SEO review 2026-11-13: 0 of 220
             # upcoming pages named it there, though the page shows it)
-            _ch = m.get("channel") or COMP_TV.get(m.get("competition"))
+            _ch = m.get("channel") or match_tv(m)
             desc = (f"موعد مباراة {h_ar} و{a_ar} في {comp}: {when}."
                     + (f" القناة الناقلة: {_ch}." if _ch else "")
                     + " النتيجة المباشرة ومسجلو الأهداف هنا.")
@@ -368,11 +368,11 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             info.append(("موعد الانطلاق", f"{m['koff_time']} بتوقيت القاهرة"))
         if m.get("channel"):
             info.append(("القناة الناقلة", str(m["channel"])))
-        elif st != "FINISHED" and COMP_TV.get(m.get("competition")):
+        elif st != "FINISHED" and match_tv(m):
             # growth plan 2026-10-08: «موعد المباراة والقنوات الناقلة» is the
             # title's promise; the verified per-competition map keeps it when
             # the feed names no channel (every European league, in practice)
-            info.append(("القنوات الناقلة", COMP_TV[m["competition"]]))
+            info.append(("القنوات الناقلة", match_tv(m)))
         state_txt = {"FINISHED": "انتهت", "LIVE": "جارية الآن",
                      "UPCOMING": "لم تبدأ بعد", "POSTPONED": "مؤجلة"}.get(st)
         if state_txt:
@@ -426,7 +426,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             h1=title.split(" — ")[0],
             hero_row=Markup(hero_row), kickoff_info=kickoff_info, round_txt=Markup(_rd),
             when_txt=Markup(_tw), channel=str(m["channel"]) if m.get("channel") else "",
-            comp_tv=COMP_TV.get(m.get("competition")) or "",
+            comp_tv=match_tv(m),
             article_block=Markup(article_block), pre_read=Markup(pre_read),
             post_read=Markup(post_read), details=Markup(details), absence=Markup(absence),
             prediction=Markup(_pb or ""), info=info_rows, show_info=st != "FINISHED",

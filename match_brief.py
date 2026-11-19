@@ -543,7 +543,8 @@ def build_brief(d, m, kind):
             "round": m.get("round"), "kickoff_cairo": ko.strftime("%Y-%m-%d %H:%M") if ko else None,
             "weekday_ar": b._AR_DAYS[ko.weekday()] if ko else None,
             "home": h_ar, "away": a_ar,
-            "tv": m.get("channel") or b.COMP_TV.get(comp),   # verified map as the fallback (2026-10-08)
+            # verified map as the fallback (2026-10-08), per match since 2026-11-19
+            "tv": m.get("channel") or __import__("site_lib.competitions", fromlist=["match_tv"]).match_tv(m) or None,
             "status": m.get("status"), "score": (f"{m.get('home_score')}-{m.get('away_score')}"
                                                 if m.get("home_score") is not None else None),
             "url": b.match_url(m),
