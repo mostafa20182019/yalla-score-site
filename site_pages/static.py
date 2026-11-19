@@ -194,12 +194,25 @@ def goals_page(videos, m_all, urls):
             "home_crest": crest(v.get("home_badge")), "away_crest": crest(v.get("away_badge")),
             "score": Markup(score_pill(v.get("home_score"), v.get("away_score"), "gl-sc sc-in")),
             "day": fmt_day(v.get("kickoff")),
+            # the card's own heading (SEO review 2026-11-19: the page had no
+            # H2 while «ملخص مباراة X» is what is searched for)
+            "h": f"ملخص وأهداف مباراة {v.get('home') or ''} و{v.get('away') or ''}",
             "match_url": f"/m/{mid}.html" if m_all is None or mid in {str(k) for k in m_all} else ""})
     page_head = Markup(head(f"أهداف المباريات اليوم — ملخصات الدوري المصري والدوريات الأوروبية | {SITE_NAME}",
                             "شاهد أهداف وملخصات مباريات الدوري المصري والدوريات الأوروبية ودوري أبطال أوروبا "
                             "من القنوات الرسمية beIN SPORTS وON Sport على يوتيوب.",
                             SITE_BASE + "/goals.html", active="goals"))
+    # the list as data: each highlight's MATCH PAGE (ours), in page order. No
+    # VideoObject - the videos are not on this page, they open on YouTube.
+    from site_lib.urls import breadcrumb_ld
+    _items = [c for c in cards if c["match_url"]]
+    list_ld = (jsonld({"@context": "https://schema.org", "@type": "ItemList", "name": "أهداف وملخصات المباريات",
+                       "itemListElement": [{"@type": "ListItem", "position": i, "name": c["h"],
+                                            "url": SITE_BASE + c["match_url"]}
+                                           for i, c in enumerate(_items[:30], 1)]}) if _items else "")
+    crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"), ("أهداف المباريات", SITE_BASE + "/goals.html")])
     write("goals.html", render("goals.html", page_head=page_head, cards=cards,
+                               list_ld=Markup(list_ld), crumbs_ld=Markup(crumbs_ld),
                                goals_js=Markup(GOALS_JS), page_foot=Markup(foot())))
     urls.append("/goals.html")
     print(f"  + goals page: {len(cards)} highlight links")

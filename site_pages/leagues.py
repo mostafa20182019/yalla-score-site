@@ -23,7 +23,7 @@ from site_lib.league_desc import fixtures_desc, scorers_desc, standings_desc
 
 
 def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp, sc_ok,
-                 st_by_comp, urls, fx_by_comp=None, m_all=None, ge_idx=None):
+                 st_by_comp, urls, fx_by_comp=None, m_all=None, ge_idx=None, md_idx=None):
     """Evergreen SEO landing pages with their own URLs: «ترتيب الدوري المصري» and
     «هدافو الدوري المصري» are huge monthly queries that a tab inside /matches can
     never rank for. One /standings/<slug> per league with a table, and one
@@ -176,6 +176,22 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             # empty - see scorers_read)
             _sr, _sfaq, _sw = scorers_read(label, season, sc, asst,
                                            (st or {}).get("table"), _bycomp.get(comp))
+            # the scorers beyond the feed's ten + each club's top scorer,
+            # counted from the archive and shown only when the count agrees
+            # with the chart (SEO review 2026-11-19; site_lib/full_scorers.py)
+            from site_lib.full_scorers import full_scorers as _full_scorers
+            from site_lib.stats import _cnt as _fcnt
+            _fs = _full_scorers(_bycomp.get(comp), md_idx, sc) if sc else None
+            _goals_txt = lambda n: _fcnt(n, "هدف واحد", "هدفان", "أهداف", "هدفًا")      # noqa: E731
+            _rest_rows = [{"name": p, "team": t, "goals": n} for p, t, n in (_fs or {}).get("rest") or []]
+            _club_rows = [{"team": t, "names": "، ".join(ps[:3]) + (f" و{len(ps) - 3} آخرون" if len(ps) > 3 else ""),
+                           "goals": n} for t, ps, n in (_fs or {}).get("clubs") or []]
+            if _club_rows:
+                _cf = "؛ ".join(f"{c['team']}: {c['names']} ({_goals_txt(c['goals'])})" for c in _club_rows[:8])
+                _q, _a = f"من هداف كل نادٍ في {label} {season}؟", _cf + "."
+                _fq = (f'<details><summary>{esc(_q)}</summary><p>{esc(_a)}</p></details>')
+                if _sfaq and "</section>" in _sfaq:
+                    _sfaq = _sfaq.replace("</section>", _fq + "</section>", 1)
             _also = []
             if st and st.get("table"):
                 _also.append(f'<a href="{st_url}">جدول ترتيب {esc(label)} كاملًا</a>')
@@ -188,6 +204,7 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
                                                 ("البطولات", SITE_BASE + "/leagues.html"),
                                                 (f"هدافو {label}", SITE_BASE + sc_url)])),
                 also=[Markup(x) for x in _also],
+                rest=_rest_rows, rest_ones=(_fs or {}).get("ones") or 0, club_tops=_club_rows,
                 has_sc=bool(sc), scorers=Markup(scorers), has_asst=bool(asst),
                 assists=Markup(assists), reading=Markup(_sr or ""),
                 has_table=bool(st and st.get("table")), st_url=Markup(st_url),

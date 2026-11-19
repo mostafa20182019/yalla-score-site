@@ -247,7 +247,7 @@ def build():
     _LN.READY = {c for c in COMP_SLUG if _LN.league_numbers((_bycomp or {}).get(c), md_idx)}
     _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
                                              sc_by_comp, sc_ok, st_by_comp, urls,
-                                             fx_by_comp, m_all, ge_idx)
+                                             fx_by_comp, m_all, ge_idx, md_idx=md_idx)
     fixtures_pages(fx_by_comp, season, st_by_comp, urls,
                    {s.get("competition"): s["groups"] for s in standings or [] if s.get("groups")},
                    m_all=m_all, bycomp=_bycomp)

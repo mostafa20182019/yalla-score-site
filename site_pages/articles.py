@@ -10,7 +10,7 @@ from site_lib.articles import _MOVED_LINKS, article_clubs, author_ld, article_mo
 from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_RELTIME, DIST, FB_PAGE_URL, PLACEHOLDER_IMGS, SHOW_HEADLINES, SITE_BASE, SITE_NAME, TG_CHANNEL_URL, load
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_SLUG
-from site_lib.config import REF_TODAY
+from site_lib.config import REF_TODAY, SAME_AS
 from site_lib.dates import art_date, art_reltime, fmt_day, rel_ar
 from site_lib.names import _egy_article, _eur_article, _team_match, ar_team, comp_label
 from site_lib.render import Markup, render
@@ -89,7 +89,7 @@ def article_pages(articles, articles_all, matches, urls):
               "author": author_ld(a),
               "publisher": {"@type": "Organization", "@id": SITE_BASE + "/#org",
                             "name": SITE_NAME, "url": SITE_BASE + "/",
-                            "sameAs": [FB_PAGE_URL, TG_CHANNEL_URL],
+                            "sameAs": SAME_AS,
                             "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"}}}
         # the club the TITLE names comes first (SEO audit 2026-11-06: article
         # 1080 about Pyramids got the «الأهلي» crumb, 1076 about Marmoush at

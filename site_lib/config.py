@@ -41,6 +41,13 @@ FB_PAGE_URL = "https://www.facebook.com/104238901487012"
 # the owned Telegram channel (created by the user 2026-09-22; tg_post.py
 # posts every new article to it after deploy, same machinery as Facebook)
 TG_CHANNEL_URL = "https://t.me/yallascore"
+# Every profile that IS «الجون» elsewhere - the `sameAs` of the Organization
+# in the home page's and every article's JSON-LD (SEO review 2026-11-19: one
+# entity under one name). A new account (YouTube, TikTok, ...) = its URL added
+# to EXTRA_PROFILES, nothing else. Only accounts that exist and carry the
+# site's name and link: a dead or wrong URL here misleads the search engine.
+EXTRA_PROFILES = []
+SAME_AS = [FB_PAGE_URL, TG_CHANNEL_URL] + EXTRA_PROFILES
 # Web push (2026-09-27): the PUBLIC half of the VAPID key pair (base64url, 87
 # characters, starts with "B"). Public by design - every browser that
 # subscribes is handed it. The PRIVATE half is the GitHub secret

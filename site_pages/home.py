@@ -5,7 +5,7 @@ source and comments exactly as they were there. Edit here; build_site
 imports these back under the same names."""
 import json
 from site_lib.articles import pinned_first
-from site_lib.config import FB_PAGE_URL, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
+from site_lib.config import FB_PAGE_URL, SAME_AS, SITE_BASE, SITE_DESC, SITE_NAME, SITE_TAGLINE, TG_CHANNEL_URL
 from site_lib.crests import local_crest
 from site_lib.names import _is_ticker_team, ar_team, fav_club_names
 from site_lib.render import Markup, render
@@ -48,7 +48,7 @@ def home_page(articles, fixtures, ge_idx, matches, standings):
              # our own site - the Latin and Arabic spellings are one entity
              "alternateName": BRAND_ALIASES,
              "logo": {"@type": "ImageObject", "url": SITE_BASE + "/assets/logo.png"},
-             "sameAs": [FB_PAGE_URL, TG_CHANNEL_URL],
+             "sameAs": SAME_AS,
              "email": "yallascore.eg@gmail.com"},
             {"@type": "WebSite", "@id": SITE_BASE + "/#website",
              "name": SITE_NAME, "alternateName": BRAND_ALIASES, "url": SITE_BASE + "/",

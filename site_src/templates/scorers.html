@@ -12,6 +12,34 @@
   <p class="hintline">تُحدَّث قائمة الهدافين تلقائيًا مع انطلاق جولات الموسم الجديد.</p>
   {% endif %}
 </section>
+{% if rest %}
+<section class="minfo">
+  <h2>بقية هدافي {{ label }}</h2>
+  <p class="hintline">كل من سجل هدفين أو أكثر خارج العشرة الأوائل، من أهداف مباريات الموسم كلها. الهدف العكسي لا يُحسب لصاحبه.</p>
+  <table class="nb-t">
+    <thead><tr><th class="nb-n">اللاعب</th><th class="nb-n">النادي</th><th>أهداف</th></tr></thead>
+    <tbody>
+    {% for r in rest %}
+    <tr><td class="nb-n">{{ r.name }}</td><td class="nb-n">{{ r.team }}</td><td class="nb-v">{{ r.goals }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if rest_ones %}<p class="hintline">وسجل {{ rest_ones }} لاعبًا آخرون هدفًا واحدًا.</p>{% endif %}
+</section>
+{% endif %}
+{% if club_tops %}
+<section class="minfo">
+  <h2>هداف كل نادٍ في {{ label }}</h2>
+  <table class="nb-t">
+    <thead><tr><th class="nb-n">النادي</th><th class="nb-n">الهداف</th><th>أهداف</th></tr></thead>
+    <tbody>
+    {% for c in club_tops %}
+    <tr><td class="nb-n">{{ c.team }}</td><td class="nb-n">{{ c.names }}</td><td class="nb-v">{{ c.goals }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
 {% if has_asst %}
 <section class="minfo">
   <h2>صناع الأهداف</h2>

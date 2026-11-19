@@ -7,6 +7,8 @@
    with NO separator by site_lib.render: break between tags, never inside a
    sentence. #}
 {{ page_head }}
+{{ crumbs_ld }}
+{{ list_ld }}
 <nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › أهداف المباريات</nav>
 <h1 class="page-h">أهداف المباريات</h1>
 <p class="hintline">ملخصات وأهداف المباريات من القنوات الرسمية على يوتيوب، كل بطولة من القناة صاحبة حقوقها: <bdi>beIN SPORTS</bdi> و<bdi>AD Sports</bdi> و<bdi>MBC Action</bdi> للبطولات الأوروبية ومباريات المنتخبات، وثمانية للدوري السعودي، و<bdi>ON Sport</bdi> للمباريات المصرية.</p>
@@ -27,6 +29,7 @@
       <span class="gl-ch gl-ch-{{ c.ch }}">{{ c.channel }}</span>
     </a>
     <div class="gl-body">
+      <h2 class="gl-h">{{ c.h }}</h2>
       <span class="gl-comp">{{ c.comp }}</span>
       <a class="gl-line" href="{{ c.yt }}" target="_blank" rel="noopener">
         <span class="gl-t">{{ c.home_crest }}<bdi>{{ c.home }}</bdi></span>
