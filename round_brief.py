@@ -38,9 +38,11 @@ from site_lib.names import ar_team, comp_label           # noqa: E402
 from site_lib.competitions import COMP_SLUG              # noqa: E402
 
 RECENT_DAYS = 4          # a round review older than this is history, not news
-# the leagues this runs for, in the order --pick prefers them (Egyptian first)
-LEAGUES = ["Egyptian Premier League", "Premier League", "Primera Division", "Serie A",
-           "Bundesliga", "Ligue 1", "Saudi Pro League", "Turkish Super Lig"]
+# the leagues this runs for, in the order --pick prefers them (Egyptian first;
+# the Turkish league second since 2026-11-19 - writer review: a corner nobody
+# holds in Arabic, one «الجولة بالأرقام» a round is its whole editorial share)
+LEAGUES = ["Egyptian Premier League", "Turkish Super Lig", "Premier League", "Primera Division", "Serie A",
+           "Bundesliga", "Ligue 1", "Saudi Pro League"]
 EUROPE = ("Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1")
 DATA_SOURCE_NAME = "بيانات الجون"
 
