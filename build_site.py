@@ -111,6 +111,7 @@ from site_pages.matches import matches_page, match_pages  # noqa: E402
 from site_pages.leagues import league_pages, fixtures_pages, leagues_page, stats_page  # noqa: E402
 from site_pages.clubs import club_pages  # noqa: E402
 from site_pages.calc import calc_pages  # noqa: E402
+from site_pages.numbers import numbers_pages  # noqa: E402
 from site_pages.h2h import h2h_pages  # noqa: E402
 from site_pages.predictions import (  # noqa: E402,F401
     prediction_history_page, analysis_pages, analysis_section)
@@ -242,6 +243,8 @@ def build():
     m_all = match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
                         articles, fixtures, forms, ge_idx, matches, md_idx, st_by_comp, urls, _mstats,
                         charts=(sc_by_comp, sc_ok, as_by_comp, as_ok))
+    from site_lib import league_numbers as _LN
+    _LN.READY = {c for c in COMP_SLUG if _LN.league_numbers((_bycomp or {}).get(c), md_idx)}
     _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
                                              sc_by_comp, sc_ok, st_by_comp, urls,
                                              fx_by_comp, m_all, ge_idx)
@@ -249,6 +252,7 @@ def build():
                    {s.get("competition"): s["groups"] for s in standings or [] if s.get("groups")},
                    m_all=m_all, bycomp=_bycomp)
     calc_pages(fx_by_comp, season, st_by_comp, urls)    # «حاسبة الترتيب» (2026-11-19)
+    numbers_pages(_bycomp, md_idx, season, fx_by_comp, st_by_comp, urls)   # «أرقام الدوري» (2026-11-19)
     leagues_page(_comps_with_table, fx_by_comp, urls)   # «البطولات» tab (2026-10-26)
     if PREDICTIONS_ON:            # /analysis + /analysis/<league> + /predictions
         analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,

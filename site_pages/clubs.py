@@ -209,6 +209,9 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             hub_links.append({"href": Markup(f"/fixtures/{_ls}.html"), "label": f"جدول مباريات {league_ar}"})
         if _ls and st and st.get("table"):
             hub_links.append({"href": Markup(f"/scorers/{_ls}.html"), "label": f"هدافو {league_ar}"})
+        from site_lib.league_numbers import READY as _NB_READY
+        if _ls and tp["league"] in _NB_READY:
+            hub_links.append({"href": Markup(f"/numbers/{_ls}.html"), "label": f"إحصائيات {league_ar}"})
         # the table calculator (site review 2026-11-19: one text link led to it)
         from site_lib.calc import calc_data as _calc_data
         if _ls and _calc_data(st, (fx_by_comp or {}).get(tp["league"])):

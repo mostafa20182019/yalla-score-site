@@ -1,0 +1,66 @@
+{# /numbers/<slug> - «أرقام الدوري» (SEO review 2026-11-19): the cards and the
+   late goals of a league, added up from the match details the site holds.
+   The first paragraph says from how many matches. Lines are joined with NO
+   separator by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/leagues.html">البطولات</a> › أرقام {{ label }}</nav>
+<h1 class="page-h">إحصائيات {{ label }} {{ season }}</h1>
+<section class="minfo">
+  <p>أرقام {{ label }} {{ season }} محسوبة من أحداث <b>{{ n_txt }}</b> من أصل {{ of_txt }} انتهت هذا الموسم: {{ goals_txt }}، {{ yellow_txt }}، {{ red_txt }}.</p>
+  <p class="hintline">البطاقة تُحسب للاعب شارك في المباراة فقط. تتحدّث الصفحة تلقائيًا بعد كل مباراة.</p>
+</section>
+{% if booked %}
+<section class="minfo">
+  <h2>أكثر اللاعبين حصولًا على إنذارات في {{ label }}</h2>
+  <table class="nb-t">
+    <thead><tr><th>#</th><th class="nb-n">اللاعب</th><th class="nb-n">الفريق</th><th>إنذارات</th></tr></thead>
+    <tbody>
+      {% for r in booked %}
+      <tr><td>{{ loop.index }}</td><td class="nb-n"><bdi>{{ r.player }}</bdi></td><td class="nb-n"><bdi>{{ r.team }}</bdi></td><td class="nb-v">{{ r.n }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% if sent_off %}
+<section class="minfo">
+  <h2>البطاقات الحمراء في {{ label }}</h2>
+  <table class="nb-t">
+    <thead><tr><th class="nb-n">اللاعب</th><th class="nb-n">الفريق</th><th class="nb-n">أمام</th><th>الدقيقة</th></tr></thead>
+    <tbody>
+      {% for r in sent_off %}
+      <tr><td class="nb-n"><bdi>{{ r.player }}</bdi></td><td class="nb-n"><bdi>{{ r.team }}</bdi></td><td class="nb-n"><bdi>{{ r.opp }}</bdi></td><td class="nb-v">{{ r.minute }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+<section class="minfo">
+  <h2>بطاقات الأندية في {{ label }}</h2>
+  <table class="nb-t">
+    <thead><tr><th>#</th><th class="nb-n">الفريق</th><th>إنذارات</th><th>طرد</th></tr></thead>
+    <tbody>
+      {% for r in teams %}
+      <tr><td>{{ loop.index }}</td><td class="nb-n"><bdi>{{ r.team }}</bdi></td><td class="nb-v">{{ r.yellow }}</td><td>{{ r.red }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% if late_teams %}
+<section class="minfo">
+  <h2>أهداف آخر ربع ساعة في {{ label }}</h2>
+  <p class="hintline">{{ late_txt }}</p>
+  <table class="nb-t">
+    <thead><tr><th>#</th><th class="nb-n">الفريق</th><th>أهداف بعد الدقيقة 75</th></tr></thead>
+    <tbody>
+      {% for r in late_teams %}
+      <tr><td>{{ loop.index }}</td><td class="nb-n"><bdi>{{ r.team }}</bdi></td><td class="nb-v">{{ r.n }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{{ faq }}
+<p class="more-link">{% for link in links %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
+{{ page_foot }}

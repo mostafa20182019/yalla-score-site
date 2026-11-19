@@ -42,7 +42,8 @@ ck("5 the Nations League names read as level + group",
    F._group_name("دوري ا - بيت 1", 1) == "المستوى أ · المجموعة 1" and F._group_name("دوري د - بيت 2", 15) == "المستوى د · المجموعة 2")
 ck("6 a plain group name passes through; none -> «المجموعة n»",
    F._group_name("المجموعة ب", 2) == "المجموعة ب" and F._group_name(None, 3) == "المجموعة 3")
-ck("7 only the two group stages are split", F.GROUP_TABLES == {588, 7016})
+# + the CAF Champions League and Confederation Cup group stages since 2026-11-19
+ck("7 only the four group stages are split", F.GROUP_TABLES == {588, 7016, 624, 627})
 
 comp = "Africa Cup of Nations Qualification"
 html = group_tables_panel(comp, g, TEAM_PAGES)

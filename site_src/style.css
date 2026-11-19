@@ -1683,6 +1683,14 @@ a.lt-tb{text-decoration:none}
 @media(max-width:560px){.sq-t{font-size:.82rem}.sq-t th{font-size:.66rem;padding:6px 1px}.sq-t td{padding:8px 1px}}
 .sq-p{display:block;font-size:.7rem;font-weight:700;color:var(--muted)}
 
+/* «أرقام الدوري» (2026-11-19): /numbers/<slug> */
+.nb-t{width:100%;border-collapse:collapse;font-size:.9rem}
+.nb-t th{font-size:.72rem;color:var(--muted);font-weight:800;padding:6px 4px;text-align:center;border-bottom:1px solid #e2e8f0}
+.nb-t td{padding:8px 4px;text-align:center;border-bottom:1px solid #f1f5f9}
+.nb-t .nb-n{text-align:start}
+.nb-t td.nb-n:first-of-type{font-weight:800}
+.nb-v{font-weight:900}
+
 /* the «الجون» cover placeholder (media/ph-*.svg, 16:9) is shown WHOLE on its
    own blue: a wide box with object-fit:cover sliced the logo on desktop
    (user, 2026-11-11: the Inzaghi story's hero at 1780x500). Last in the file:

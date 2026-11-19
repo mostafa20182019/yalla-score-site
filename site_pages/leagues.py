@@ -131,6 +131,9 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             _more.append(f'<a href="{sc_url}">ترتيب هدافي {esc(label)} ←</a>')
             # «حاسبة الترتيب» (2026-11-19) - the same test the page builder uses
             from site_lib.calc import calc_data as _calc_data
+            from site_lib.league_numbers import READY as _NB_READY
+            if comp in _NB_READY:
+                _more.append(f'<a href="/numbers/{slug}.html">إحصائيات {esc(label)}: الإنذارات والطرد ←</a>')
             _has_calc = bool(_calc_data(st, (fx_by_comp or {}).get(comp)))
             if _has_calc:
                 _more.append(f'<a href="/calc/{slug}.html">حاسبة ترتيب {esc(label)}: توقّع النتائج وشاهد الجدول ←</a>')
@@ -322,6 +325,19 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
         if COMP_TV.get(comp):
             faq.append((f"ما القناة الناقلة لمباريات {label}؟",
                         f"{COMP_TV[comp]} في المنطقة العربية."))
+        # «في أي مجموعة X؟» (SEO review 2026-11-19): one question per club page
+        # that plays in this group stage, answered from the group tables the
+        # page shows - the group's name and the other sides of it. Computed.
+        from site_lib.clubs import TEAM_PAGES as _TPS
+        from site_lib.names import _team_match as _tmatch
+        for _g in (groups_by_comp or {}).get(comp) or []:
+            _names = [r.get("team") for r in _g.get("table") or [] if r.get("team")]
+            for _tp in _TPS:
+                _mine = [n for n in _names if _tmatch(_tp, {"home": n, "away": "", "competition": comp})]
+                if len(_mine) == 1 and len(_names) >= 3:
+                    _others = [ar_team(n) for n in _names if n != _mine[0]]
+                    faq.append((f"في أي مجموعة {_tp['name']} في {label}؟",
+                                f"{_tp['name']} في {_g.get('name')} مع " + " و".join(_others) + "."))
         faq_html = ""
         if faq:
             faq_html = (f'<section class="minfo faq"><h2>أسئلة شائعة عن مباريات {esc(label)}</h2>'
@@ -350,6 +366,9 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
         _links = [f'<a href="/">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
+        from site_lib.league_numbers import READY as _NB_READY_FX
+        if comp in _NB_READY_FX:
+            _links.append(f'<a href="/numbers/{slug}.html">إحصائيات {esc(label)} ←</a>')
         from site_lib.calc import calc_data as _calc_data_fx
         if _calc_data_fx(st_by_comp.get(comp), fx):
             _links.append(f'<a href="/calc/{slug}.html">حاسبة ترتيب {esc(label)} ←</a>')

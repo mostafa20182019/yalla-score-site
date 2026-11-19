@@ -819,7 +819,12 @@ EGY_ENABLED = True
 # guard below rightly refuses it as «the table»; for these competitions it is
 # kept split, as {"groups": [{num, name, table}]}, and "table" stays absent so
 # nothing that reads a league table ever sees it.
-GROUP_TABLES = {588, 7016}
+# + the CAF Champions League (624) and the Confederation Cup (627), SEO review
+# 2026-11-19: search shows «مجموعة الزمالك في دوري ابطال افريقيا» at 13 with
+# no page answering it. Probed the same day: stage 2 of both carries four
+# named groups (rows with groupNum; the preliminary rounds' teams have none
+# and are dropped by s365_group_tables). Group stage from 27 Nov 2026.
+GROUP_TABLES = {588, 7016, 624, 627}
 
 
 def _group_name(name, num):

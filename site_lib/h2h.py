@@ -42,8 +42,36 @@ PAIRS = [
      "a_slug": "zamalek", "b_slug": "pyramids",
      "league": "Egyptian Premier League", "game": 4804928},
     {"slug": "trabzonspor-fenerbahce", "a": "طرابزون سبور", "b": "فنربخشة",
-     "a_slug": "trabzonspor", "b_slug": None,
+     "a_slug": "trabzonspor", "b_slug": "fenerbahce",      # its page exists since 2026-11-19
      "league": "Turkish Super Lig", "game": 4763717},
+    # 2026-11-19 (SEO review): «اخر مباريات الاهلي وبيراميدز» sits at 7-11 with
+    # four pairs on the site. Ten more, each with a 365scores game id from
+    # our own fixtures: the Turkish big four among themselves, the Saudi big
+    # three, the Tunis and Algiers derbies. NOT added: بيراميدز × الهلال
+    # السوداني and الزمالك × النادي الأفريقي (the feed holds no past meeting -
+    # a pair with fewer than four gets no page); الاتحاد × الأهلي (Saudi) - on this
+    # site the bare «الأهلي» is the Egyptian club, and a pair's two names are
+    # its title.
+    {"slug": "galatasaray-fenerbahce", "a": "جلطة سراي", "b": "فنربخشة",
+     "a_slug": "galatasaray", "b_slug": "fenerbahce", "league": "Turkish Super Lig", "game": 4763765},
+    {"slug": "besiktas-fenerbahce", "a": "بشكتاش", "b": "فنربخشة",
+     "a_slug": "besiktas", "b_slug": "fenerbahce", "league": "Turkish Super Lig", "game": 4764286},
+    {"slug": "galatasaray-besiktas", "a": "جلطة سراي", "b": "بشكتاش",
+     "a_slug": "galatasaray", "b_slug": "besiktas", "league": "Turkish Super Lig", "game": 4763734},
+    {"slug": "trabzonspor-galatasaray", "a": "طرابزون سبور", "b": "جلطة سراي",
+     "a_slug": "trabzonspor", "b_slug": "galatasaray", "league": "Turkish Super Lig", "game": 4764299},
+    {"slug": "trabzonspor-besiktas", "a": "طرابزون سبور", "b": "بشكتاش",
+     "a_slug": "trabzonspor", "b_slug": "besiktas", "league": "Turkish Super Lig", "game": 4764316},
+    {"slug": "al-hilal-al-nassr", "a": "الهلال", "b": "النصر",
+     "a_slug": None, "b_slug": None, "league": "Saudi Pro League", "game": 4789387},
+    {"slug": "al-hilal-al-ittihad", "a": "الهلال", "b": "الاتحاد",
+     "a_slug": None, "b_slug": None, "league": "Saudi Pro League", "game": 4789468},
+    {"slug": "al-nassr-al-ittihad", "a": "النصر", "b": "الاتحاد",
+     "a_slug": None, "b_slug": None, "league": "Saudi Pro League", "game": 4788243},
+    {"slug": "esperance-club-africain", "a": "الترجي", "b": "النادي الأفريقي",
+     "a_slug": None, "b_slug": None, "league": "Tunisian Ligue 1", "game": 4798225},
+    {"slug": "mc-alger-usm-alger", "a": "مولودية الجزائر", "b": "اتحاد العاصمة",
+     "a_slug": None, "b_slug": None, "league": "Algerian Ligue 1", "game": 4803179},
 ]
 
 # how the feed says a game ended (h2h_history.py keeps its words)
