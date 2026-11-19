@@ -1024,15 +1024,31 @@ def daycard_date(now=None):
 
 def daycard_matches(matches, date):
     """The day's FINISHED matches of the nine leagues, the curated clubs'
-    first, then the leagues' order, then kick-off - at most nine (one card)."""
+    first, then the leagues' order, then kick-off - at most nine (one card).
+
+    A day on which the nine leagues give fewer than DAYCARD_MIN results (an
+    international break, a cup week) takes its results from EVERYTHING that
+    was played - the Africa qualifiers, the Nations League, the Egypt Cup, the
+    Arab leagues... - in the site's own competition order (user 2026-11-19:
+    «نجيب من اللى بيتلعب ... بحيث نحافظ عليه يوميا»; from 11-15 to 11-18 the
+    job ran every night and posted nothing, 3 to 26 finished matches a day)."""
     import day_card as DC
-    from site_lib.competitions import LEAGUE_BAR
+    from site_lib.competitions import COMP_ORDER, LEAGUE_BAR
     from site_lib.names import _is_ticker_team
-    ms = [m for m in DC.day_matches(matches, date, "all")
-          if m.get("competition") in LEAGUE_BAR and (m.get("status") or "").upper() == "FINISHED"
-          and m.get("home_score") is not None]
-    ms.sort(key=lambda m: (0 if _is_ticker_team(m) else 1, LEAGUE_BAR.index(m["competition"]), m.get("koff_time") or ""))
-    return ms[:DC.MAX_ROWS]
+    done = [m for m in DC.day_matches(matches, date, "all")
+            if (m.get("status") or "").upper() == "FINISHED" and m.get("home_score") is not None]
+    ms = [m for m in done if m.get("competition") in LEAGUE_BAR]
+    if len(ms) >= DAYCARD_MIN:
+        ms.sort(key=lambda m: (0 if _is_ticker_team(m) else 1, LEAGUE_BAR.index(m["competition"]), m.get("koff_time") or ""))
+        return ms[:DC.MAX_ROWS]
+    # ... the curated first, then the Arab national teams (17 November: 18
+    # qualifiers, and by kick-off alone the card showed Burundi and Lesotho
+    # while Algeria, Tunisia and Morocco stayed out), then the rest
+    from site_lib.competitions import is_arab_nation_match
+    _rank = lambda c: COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER)
+    done.sort(key=lambda m: (0 if _is_ticker_team(m) else 1 if is_arab_nation_match(m) else 2,
+                             _rank(m.get("competition")), m.get("koff_time") or ""))
+    return done[:DC.MAX_ROWS]
 
 
 def daycard_caption(ms, date):
@@ -1058,7 +1074,7 @@ def daycard_post(token, what="results", dry=False):
         print(f"daycard {date}: already posted ({rec['post_id']})"); return 0
     ms = daycard_matches(MB.load_all()["matches"], date)
     if len(ms) < DAYCARD_MIN:
-        print(f"daycard {date}: only {len(ms)} finished match(es) of the nine leagues - nothing posted"); return 0
+        print(f"daycard {date}: only {len(ms)} finished match(es) in every competition - nothing posted"); return 0
     caption = daycard_caption(ms, date)
     out = os.path.join(HERE, "data", "briefs", f"day-{date}.jpg")
     os.makedirs(os.path.dirname(out), exist_ok=True)

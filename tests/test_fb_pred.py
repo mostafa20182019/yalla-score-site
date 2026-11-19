@@ -123,9 +123,28 @@ _dm = [{"match_id": 1, "competition": "Premier League", "home": "Liverpool FC", 
        {"match_id": 3, "competition": "Serie A", "home": "Juventus FC", "away": "AC Milan", "kickoff": "2026-10-22", "koff_time": "21:45", "status": "UPCOMING"},
        {"match_id": 4, "competition": "Egyptian Premier League", "home": "الزمالك", "away": "سموحة", "kickoff": "2026-10-22", "koff_time": "17:00", "status": "FINISHED", "home_score": 1, "away_score": 0},
        {"match_id": 5, "competition": "Bundesliga", "home": "FC Bayern München", "away": "VfB Stuttgart", "kickoff": "2026-10-21", "koff_time": "19:30", "status": "FINISHED", "home_score": 3, "away_score": 1}]
+_dm.append({"match_id": 6, "competition": "Ligue 1", "home": "Olympique Lyonnais", "away": "FC Nantes", "kickoff": "2026-10-22", "koff_time": "20:00", "status": "FINISHED", "home_score": 0, "away_score": 0})
 got = fp.daycard_matches(_dm, "2026-10-22")
 ck("29 the card takes the day's FINISHED matches of the nine leagues only, curated first (Zamalek, Liverpool), not the Europa League, not tomorrow",
-   [m["match_id"] for m in got] == [4, 1], str([m["match_id"] for m in got]))
+   [m["match_id"] for m in got] == [4, 1, 6], str([m["match_id"] for m in got]))
+# 2026-11-19 (user): an international break must not leave the page without
+# its nightly results - under three results from the nine leagues, the card
+# takes what WAS played, in the site's competition order
+_ib = [{"match_id": 11, "competition": "Algerian Ligue 1", "home": "x", "away": "y", "kickoff": "2026-11-18", "koff_time": "16:00", "status": "FINISHED", "home_score": 1, "away_score": 0},
+       {"match_id": 12, "competition": "UEFA Nations League", "home": "p", "away": "q", "kickoff": "2026-11-18", "koff_time": "21:45", "status": "FINISHED", "home_score": 2, "away_score": 2},
+       {"match_id": 13, "competition": "Egypt Cup", "home": "r", "away": "s", "kickoff": "2026-11-18", "koff_time": "19:00", "status": "FINISHED", "home_score": 0, "away_score": 1},
+       {"match_id": 14, "competition": "Premier League", "home": "Everton FC", "away": "Fulham FC", "kickoff": "2026-11-18", "koff_time": "22:00", "status": "FINISHED", "home_score": 1, "away_score": 1},
+       {"match_id": 15, "competition": "Africa Cup of Nations Qualification", "home": "t", "away": "u", "kickoff": "2026-11-18", "koff_time": "18:00", "status": "UPCOMING"},
+       {"match_id": 16, "competition": "Some Unlisted Cup", "home": "v", "away": "w", "kickoff": "2026-11-18", "koff_time": "12:00", "status": "FINISHED", "home_score": 3, "away_score": 0}]
+_gb = [m["match_id"] for m in fp.daycard_matches(_ib, "2026-11-18")]
+ck("29b a break day (one league result): every finished match, in the site's competition order - cup, league, national teams, Arab league, unlisted last; never an unfinished one",
+   _gb == [13, 14, 12, 11, 16], str(_gb))
+ck("29c ...and a day with nothing finished still gives nothing", fp.daycard_matches(_ib, "2026-11-19") == [])
+_nt = [{"match_id": 21, "competition": "Africa Cup of Nations Qualification", "home": "بورندي", "away": "زامبيا", "kickoff": "2026-11-17", "koff_time": "15:00", "status": "FINISHED", "home_score": 1, "away_score": 1},
+       {"match_id": 22, "competition": "Africa Cup of Nations Qualification", "home": "ليبيا", "away": "تونس", "kickoff": "2026-11-17", "koff_time": "21:00", "status": "FINISHED", "home_score": 1, "away_score": 1},
+       {"match_id": 23, "competition": "FIFA U-17 World Cup", "home": "البرازيل تحت 17", "away": "قطر تحت 17", "kickoff": "2026-11-17", "koff_time": "18:00", "status": "FINISHED", "home_score": 2, "away_score": 0}]
+_gn = [m["match_id"] for m in fp.daycard_matches(_nt, "2026-11-17")]
+ck("29d on a night of qualifiers the Arab national teams lead (an under-17 side counts), whatever the kick-off", _gn == [22, 23, 21], str(_gn))
 cap = fp.daycard_caption(got, "2026-10-22")
 ck("30 the caption: the title line, one line per result with the league, the matches link, the tags",
    cap.splitlines()[0].startswith("📊 نتائج أبرز مباريات اليوم") and "الزمالك 1 - 0 سموحة · الدوري المصري" in cap and "ليفربول 2 - 0 إيفرتون" in cap

@@ -94,7 +94,11 @@ def build(ms, date, now=None):
         im = bg.copy()
         M.header(im)
         M.big_at(im, t, title, 600, 170)
-        M.lines_block(im, t, [when, f"{len(ms)} مباريات من الدوريات الكبرى"], (900, 990),
+        # «من الدوريات الكبرى» only when it is true: a break night's results
+        # come from the qualifiers and the cups (2026-11-19)
+        from site_lib.competitions import LEAGUE_BAR
+        _big = all(m.get("competition") in LEAGUE_BAR for m in ms)
+        M.lines_block(im, t, [when, f"{len(ms)} مباريات من الدوريات الكبرى" if _big else f"أبرز {len(ms)} نتائج"], (900, 990),
                       weight="ExtraBold", size=56, t0=0.45)
         return im
 

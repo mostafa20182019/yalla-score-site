@@ -89,6 +89,18 @@ COMP_TV = {
 # Qatar 2026 (user 2026-11-19): Alkass shows the matches of the five Arab
 # teams free-to-air, next to beIN (Elwatan / Btolat / Tahia Masr, 2026-11-19).
 # Only THEIR matches - any other match of the tournament stays on beIN alone.
+# The Arab national teams, as the feed names them - on a night of thirty
+# qualifiers the results card leads with theirs (fb_post.daycard_matches).
+ARAB_NATIONS = frozenset((
+    "مصر", "الجزائر", "تونس", "المغرب", "ليبيا", "السودان", "موريتانيا", "جزر القمر",
+    "الصومال", "جيبوتي", "السعودية", "قطر", "الإمارات", "العراق", "الأردن", "سوريا",
+    "لبنان", "فلسطين", "الكويت", "البحرين", "عمان", "اليمن"))
+
+
+def is_arab_nation_match(m):
+    return any(str(m.get(k) or "").split(" تحت")[0].strip() in ARAB_NATIONS for k in ("home", "away"))
+
+
 U17_ARAB_TEAMS = ("مصر", "الجزائر", "السعودية", "المغرب", "قطر")
 U17_ARAB_TV = "beIN Sports وقنوات الكأس (مفتوحة)"
 
