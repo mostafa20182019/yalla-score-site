@@ -69,7 +69,7 @@ ITEMS = [
     ("الأهلي يجدد عقد ياسر إبراهيم حتى 2029", "الأهرام", 99.0, "http://g/8"),
 ]
 _real_rss, _real_cov = S.rss, S.covered_tokens
-S.rss = lambda q: ITEMS if q == S.EGY_QUERIES[0] else []
+S.rss = lambda q, ed="EG": ITEMS if q == S.EGY_QUERIES[0] else []
 S.covered_tokens = lambda: []
 cands, lines = S.scan()
 titles = " | ".join(c["title"] for c in cands)
@@ -91,11 +91,63 @@ cands2, _ = S.scan()
 ok("12 a story we already published is not offered again",
    not any("ياسر إبراهيم" in c["title"] for c in cands2),
    [c["title"] for c in cands2])
+# ---- the Sudan lane (2026-11-19): its own queries, Sudan's edition, a bar of two, one seat
+print()
+print("== the Sudan lane ==")
+SUD = [("مدرب الهلال السوداني يترقب مواجهة الشرطة", "winwin.com", 2.0, "http://s/1"),
+       ("مدرب الهلال السوداني يترقب مواجهة الشرطة في الدوري", "شبكة تواصل", 3.0, "http://s/2"),
+       # ONE site under three spellings must stay one outlet
+       ("منتخب السودان يعلن قائمته الجديدة", "winwin", 1.0, "http://s/3"),
+       ("منتخب السودان يعلن قائمته الجديدة رسميا", "winwin.com", 1.5, "http://s/4"),
+       ("منتخب السودان يعلن قائمته الجديدة اليوم", "www.winwin.com", 2.0, "http://s/5"),
+       # other sports never take a seat
+       ("سلة الهلال السوداني تفوز بالبطولة", "أ", 1.0, "http://s/6"),
+       ("سلة الهلال السوداني تفوز بالبطولة اليوم", "ب", 1.0, "http://s/7"),
+       ("سلة الهلال السوداني تفوز بالبطولة رسميا", "ج", 1.0, "http://s/8")]
+_asked = []
+
+
+def _fake(q, ed="EG"):
+    _asked.append((q, ed))
+    if q == S.SUDAN_QUERIES[0] and ed == S.SUDAN_EDITION:
+        return SUD
+    return ITEMS if q == S.EGY_QUERIES[0] else []
+
+
+S.rss, S.covered_tokens = _fake, (lambda: [])
+cs, ls = S.scan()
+by = {c["title"]: c for c in cs}
+ok("13 the Sudanese queries are asked of Egypt's edition AND Sudan's own",
+   all((q, "EG") in _asked and (q, S.SUDAN_EDITION) in _asked for q in S.SUDAN_QUERIES))
+ok("14 a Sudanese story on TWO outlets makes the shortlist, tagged sudan",
+   any("الهلال السوداني يترقب" in t and c["lane"] == "sudan" and c["n_outlets"] == 2 for t, c in by.items()), str(list(by)))
+ok("15 ...while two outlets is still not enough on any other lane", not any("مدرب حراس" in t for t in by))
+ok("16 one site under three spellings is ONE outlet: that story does not pass the bar of two",
+   not any("منتخب السودان يعلن" in t for t in by) and S.outlet_key("www.WinWin.com") == S.outlet_key("winwin") == "winwin")
+ok("17 other sports and the women's sides take no seat; «لمسة اليد» is still football",
+   not any("سلة" in t for t in by) and S.off_scope("سيدات ريال مدريد") and not S.off_scope("لمسة اليد تحرم الأهلي من هدف"))
+# fifteen bigger stories: the Sudan lane keeps its seat, as the LAST of the fifteen
+BIG = []
+for k in range(16):
+    for o in ("أ", "ب", "ج", "د"):
+        # sixteen DIFFERENT stories: no word shared between two of them
+        BIG.append((f"نادي{k} يوقع عقد{k} مع لاعب{k} حتى موسم{k}", o, 1.0, f"http://b/{k}/{o}"))
+S.rss = lambda q, ed="EG": (SUD[:2] if (q == S.SUDAN_QUERIES[0] and ed == S.SUDAN_EDITION)
+                            else BIG if q == S.EGY_QUERIES[0] else [])
+cs3, ls3 = S.scan()
+ok("18 with fifteen bigger stories on the wire the Sudan lane still has its seat - the last one, not a sixteenth",
+   len(cs3) == S.MAX_CANDIDATES and cs3[-1]["lane"] == "sudan" and sum(1 for c in cs3 if c["lane"] == "sudan") == 1,
+   str([(c["lane"], c["n_outlets"]) for c in cs3]))
+ok("19 the prompt makes it a rule that can be carried out: one Sudanese story a day, replacing this run's, never a second article",
+   "ONE SUDANESE STORY A DAY, WHEN ONE QUALIFIES" in PROMPT and "It REPLACES this run's story" in PROMPT
+   and "when no stronger story of the lane exists" not in PROMPT)
+ok("20 ...and the two writer-review rules are in it: a follow-up is not a new story; our own numbers beat a weak story",
+   "A FOLLOW-UP IS NOT A NEW STORY" in PROMPT and "OUR OWN NUMBERS BEAT A WEAK STORY" in PROMPT)
 S.rss, S.covered_tokens = _real_rss, _real_cov
 
 print()
 print("== every failure is silent ==")
-S.rss = lambda q: (_ for _ in ()).throw(RuntimeError("network down"))
+S.rss = lambda q, ed="EG": (_ for _ in ()).throw(RuntimeError("network down"))
 S.covered_tokens = lambda: (_ for _ in ()).throw(RuntimeError("no archive"))
 _out = os.path.join(tempfile.gettempdir(), "test_story_scan_out.json")
 if os.path.exists(_out):

@@ -103,10 +103,11 @@ def curated_club(m):
     return None
 
 def _curated():
-    """The curated clubs - a page-only entry (clubs.CURATED_PAGES, 2026-11-19)
-    has a /team page but no previews, reports or featured weight."""
-    from site_lib.clubs import CURATED_PAGES
-    return CURATED_PAGES
+    """The sides whose matches get a preview and a report: the curated clubs
+    and a page-only side marked match_pieces (منتخب السودان). A plain
+    page-only entry has a /team page and nothing more."""
+    from site_lib.clubs import MATCH_PIECE_PAGES
+    return MATCH_PIECE_PAGES
 
 def curated_clubs(m):
     return [tp for tp in _curated() if b._team_match(tp, m)]

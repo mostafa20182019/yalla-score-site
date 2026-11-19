@@ -57,8 +57,14 @@ ck("7 «السودان» is the national team in the qualifiers - never «جنو
 
 import match_brief as MB                                # noqa: E402
 ck("8 no preview / report weight: a page-only club's match has no curated club",
-   MB.curated_club(m(T, "جلطة سراي", "فنربخشة")) is None and MB.curated_clubs(m(T, "بشكتاش", "قاسم باشا")) == []
-   and MB.curated_club(m(Q, "السودان", "السنغال")) is None)
+   MB.curated_club(m(T, "جلطة سراي", "فنربخشة")) is None and MB.curated_clubs(m(T, "بشكتاش", "قاسم باشا")) == [])
+# writer review 2026-11-19: السودان 2-4 السنغال passed with no preview and no
+# report. The national team is the ONE page-only side whose matches get them.
+ck("8b ...except منتخب السودان (match_pieces): its matches get a preview and a report, and nothing else curated",
+   (MB.curated_club(m(Q, "السودان", "السنغال")) or {}).get("slug") == "sudan"
+   and MB.curated_club(m(Q, "جنوب السودان", "أنجولا")) is None
+   and by["sudan"].get("page_only") and by["sudan"] not in C.CURATED_PAGES
+   and [tp["slug"] for tp in C.MATCH_PIECE_PAGES if tp.get("page_only")] == ["sudan"])
 ck("9 ...while a curated club's match still has one, against a page-only side too",
    (MB.curated_club(m(T, "طرابزون سبور", "جلطة سراي")) or {}).get("slug") == "trabzonspor")
 import story_events as SE                               # noqa: E402

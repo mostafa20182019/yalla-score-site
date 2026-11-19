@@ -45,12 +45,22 @@ EGY_QUERIES = ["الدوري المصري", "الأهلي", "الزمالك", "�
 GLOBAL_QUERIES = ["بايرن ميونخ", "باريس سان جيرمان", "يوفنتوس", "إنتر ميلان", "ميلان",
                   "أتلتيكو مدريد", "دورتموند", "توتنهام", "نابولي", "النصر السعودي", "الهلال السعودي"]
 CLUB_QUERIES = ["ريال مدريد", "برشلونة", "ليفربول", "مانشستر يونايتد",
-                "مانشستر سيتي", "أرسنال", "تشيلسي", "طرابزون سبور",
-                # Sudanese football (user 2026-11-13: the Facebook audience
-                # growing from Sudan) - the club by its full name, and the NT
-                "الهلال السوداني", "منتخب السودان"]
+                "مانشستر سيتي", "أرسنال", "تشيلسي", "طرابزون سبور"]
+# Sudanese football (user 2026-11-13: the Facebook audience growing from
+# Sudan). ITS OWN LANE since 2026-11-19: six days after the rule not one
+# article had named «الهلال السوداني» or «منتخب السودان». Measured that day:
+# the two queries returned 4 and 2 fresh headlines, EVERY story on ONE outlet,
+# so none passed MIN_OUTLETS = 3, and one that had would have sorted under
+# the Al Ahly and Real Madrid stories and fallen off the 15. So: its own
+# queries, asked of Google News' SUDAN edition as well (25 items in two days
+# there against 2 in Egypt's), a bar of TWO outlets, and one seat of the
+# shortlist kept for its best story. The article's own source gate
+# (article_put.py: two independent domains) is untouched.
+SUDAN_QUERIES = ["الهلال السوداني", "منتخب السودان", "الدوري السوداني"]
+SUDAN_EDITION = "SD"
 
 MAX_AGE_H = 30      # "the last ~24h", with room for a slot that ran late
+LANE_MIN_OUTLETS = {"sudan": 2}   # a lane's own bar; every other lane uses MIN_OUTLETS
 MIN_OUTLETS = 3     # a shortlist bar, NOT the source gate: article_put.py
                     # still demands two independent domains in the article
                     # itself. Three outlets on the wire just means the story
@@ -58,12 +68,42 @@ MIN_OUTLETS = 3     # a shortlist bar, NOT the source gate: article_put.py
                     # stories (useless), 3+ gives 23, 5+ gives 4.
 COVERED_DAYS = 4    # how far back to look for "we already wrote this"
 MAX_CANDIDATES = 15
+# other sports and the women's sides: «out of scope» in the prompt, but they
+# took seats of the fifteen (2026-11-19: Al Ahly basketball, the handball
+# Super Cup twice, a Mediterranean forum, one-leg football, Real Madrid
+# women - five of fifteen). Whole phrases only: «لمسة اليد» is football.
+OFF_SCOPE = ("كرة السلة", "سلة الأهلي", "سلة الزمالك", "كرة اليد", "يد الأهلي", "يد الزمالك",
+             "سوبر اليد", "الكرة الطائرة", "طائرة الأهلي", "طائرة الزمالك", "كرة الماء",
+             "سيدات", "للسيدات", "الكرة النسائية", "الساق الواحدة", "منتدى", "ألعاب القوى",
+             "التنس", "السباحة", "الهوكي", "التايكوندو", "الجودو", "المصارعة")
 
 
-def rss(query):
-    """Headlines for one query: [(title, outlet, age_hours, link)]."""
+# «سلة <club>» / «طائرة <club>»: the word alone, before a name - any club's
+# basketball or volleyball side, not only the two listed above
+_OFF_WORD = re.compile(r"(^|[\s:«\"])(سلة|طائرة)\s+\S")
+
+
+def off_scope(title):
+    t = title or ""
+    return any(x in t for x in OFF_SCOPE) or bool(_OFF_WORD.search(t))
+
+
+def outlet_key(src):
+    """One outlet, one key: «winwin», «winwin.com» and «www.winwin.com» were
+    three outlets to the counter - with a bar of two that would let ONE site
+    pass as two. Lower-case, no «www.», no trailing domain ending."""
+    s = (src or "").strip().lower()
+    s = re.sub(r"^https?://", "", s)
+    s = re.sub(r"^www\.", "", s)
+    s = re.sub(r"\.(com|net|org|info|tv|news|eg|sd|sa|qa|ae|ma|dz|tn|co\.uk)(\.[a-z]{2})?/?$", "", s)
+    return s.strip() or "?"
+
+
+def rss(query, edition="EG"):
+    """Headlines for one query: [(title, outlet, age_hours, link)]. `edition`
+    is the Google News country edition (EG by default, SD for Sudan)."""
     url = ("https://news.google.com/rss/search?q="
-           + urllib.parse.quote(query) + "&hl=ar&gl=EG&ceid=EG:ar")
+           + urllib.parse.quote(query) + f"&hl=ar&gl={edition}&ceid={edition}:ar")
     xml = FD.http_get(url)
     now = datetime.datetime.now(datetime.timezone.utc)
     out = []
@@ -106,18 +146,26 @@ def scan():
     """-> (candidates, report lines)."""
     lines, items = [], []
     # every query belongs to a lane: egypt / club (the curated seven) / global
-    lanes = [(q, "egypt") for q in EGY_QUERIES] + [(q, "club") for q in CLUB_QUERIES] + [(q, "global") for q in GLOBAL_QUERIES]
-    for q, lane in lanes:
+    lanes = ([(q, "egypt", "EG") for q in EGY_QUERIES] + [(q, "club", "EG") for q in CLUB_QUERIES]
+             + [(q, "global", "EG") for q in GLOBAL_QUERIES]
+             # the Sudanese queries from both editions: Egypt's and Sudan's own
+             + [(q, "sudan", ed) for q in SUDAN_QUERIES for ed in ("EG", SUDAN_EDITION)])
+    dropped = 0
+    for q, lane, ed in lanes:
         try:
-            got = rss(q)
+            got = rss(q, ed)
         except Exception as e:
-            lines.append(f"  !! «{q}» failed ({e}) - skipped")
+            lines.append(f"  !! «{q}» ({ed}) failed ({e}) - skipped")
             continue
         fresh = [x for x in got if x[2] <= MAX_AGE_H]
+        kept = [x for x in fresh if not off_scope(x[0])]
+        dropped += len(fresh) - len(kept)
         # an Egyptian reader cannot open these, so they are not sources
-        items += [tuple(x) + (lane,) for x in fresh
+        items += [tuple(x) + (lane,) for x in kept
                   if not any(b in (x[1] or "") for b in FD.BLOCKED_SOURCE_NAMES)]
-        lines.append(f"  {q}: {len(fresh)} fresh of {len(got)}")
+        lines.append(f"  {q}{'' if ed == 'EG' else ' [' + ed + ']'}: {len(fresh)} fresh of {len(got)}")
+    if dropped:
+        lines.append(f"  ({dropped} headline(s) of other sports / women's sides left out)")
 
     clusters = []            # [tokens, {outlets}, title, [links], min_age, lane]
     for title, src, age, link, lane in items:
@@ -126,15 +174,18 @@ def scan():
             continue
         for c in clusters:
             if FD._same_story(tok, c[0]):
-                c[1].add(src or "?")
+                c[1].add(outlet_key(src))
+                c[6].add(src or "?")
+                if lane == "sudan":
+                    c[5] = "sudan"            # a story the Sudan queries also found is a Sudan story
                 if link and len(c[3]) < 4:
                     c[3].append(link)
                 c[4] = min(c[4], age)
                 break
         else:
-            clusters.append([tok, {src or "?"}, title, [link] if link else [], age, lane])
+            clusters.append([tok, {outlet_key(src)}, title, [link] if link else [], age, lane, {src or "?"}])
 
-    strong = [c for c in clusters if len(c[1]) >= MIN_OUTLETS]
+    strong = [c for c in clusters if len(c[1]) >= LANE_MIN_OUTLETS.get(c[5], MIN_OUTLETS)]
     done = covered_tokens()
     new = [c for c in strong
            if not any(FD._same_story(c[0], d) for d in done)]
@@ -142,9 +193,16 @@ def scan():
     lines.append(f"  -> {len(clusters)} distinct stories, {len(strong)} on "
                  f"{MIN_OUTLETS}+ outlets, {len(new)} of those not yet on the site")
 
-    cands = [{"title": c[2], "outlets": sorted(c[1]), "n_outlets": len(c[1]),
+    top = new[:MAX_CANDIDATES]
+    # the Sudan lane's seat: its best story is on the list even when fifteen
+    # bigger ones are - it takes the last seat, it is not added on top
+    sud = [c for c in new if c[5] == "sudan"]
+    if sud and not any(c[5] == "sudan" for c in top):
+        top = top[:MAX_CANDIDATES - 1] + [sud[0]]
+        lines.append("  (the Sudan lane's best story takes the last seat)")
+    cands = [{"title": c[2], "outlets": sorted(c[6]), "n_outlets": len(c[1]),
               "hours_ago": round(c[4], 1), "links": c[3], "lane": c[5]}
-             for c in new[:MAX_CANDIDATES]]
+             for c in top]
     return cands, lines
 
 

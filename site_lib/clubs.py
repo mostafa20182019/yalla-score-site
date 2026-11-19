@@ -134,7 +134,11 @@ TEAM_PAGES = [
     {"slug": "besiktas", "name": "بشكتاش", "league": "Turkish Super Lig", "page_only": True,
      "match_tokens": [("بشكتاش", ("Turkish Super Lig", "UEFA Europa League"))],
      "news_tokens": ["بشكتاش", "بيشكتاش", "بشيكتاش"]},
-    {"slug": "sudan", "name": "منتخب السودان", "league": NT_SCOPE[0], "page_only": True,
+    # match_pieces (writer review 2026-11-19): the one page-only side whose
+    # matches DO get a preview and a report - السودان 2-4 السنغال passed with
+    # neither, and a data piece needs no outlets, which is exactly what the
+    # Sudanese news wire lacks. Everything else about it stays page-only.
+    {"slug": "sudan", "name": "منتخب السودان", "league": NT_SCOPE[0], "page_only": True, "match_pieces": True,
      "match_tokens": [("السودان", NT_SCOPE)],
      "news_tokens": ["منتخب السودان", "المنتخب السوداني", "صقور الجديان"],
      "news_excl": ["منتخب السودان للشباب", "منتخب السودان الأولمبي", "منتخب السودان تحت", "منتخب جنوب السودان"]},
@@ -143,6 +147,9 @@ TEAM_PAGES = [
 # the clubs the site is curated around: every TEAM_PAGES entry that is more
 # than a page. Whatever means «a curated club's match / story» reads THIS.
 CURATED_PAGES = [tp for tp in TEAM_PAGES if not tp.get("page_only")]
+# whose matches the match-article pipeline writes about (match_brief): the
+# curated clubs + a page-only side marked match_pieces
+MATCH_PIECE_PAGES = [tp for tp in TEAM_PAGES if not tp.get("page_only") or tp.get("match_pieces")]
 
 # One club, several spellings over a season: 365scores wrote «غلطة سراي» until
 # mid-October 2026 and «جلطة سراي» since, so the standings' «لعب / ف / ت / خ»
