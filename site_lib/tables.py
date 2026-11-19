@@ -918,3 +918,30 @@ def match_row(m, show_time=False, show_comp=True, goals=None, link=None,
   {pbtn}
   {gblock}
 </div>"""
+
+
+JUMP_TARGETS = (('<section class="minfo marticle">', "mp-report", "التقرير"),
+                ('<section class="minfo mstats">', "mp-stats", "الأرقام"),
+                ('<section class="minfo"><h2>أحداث المباراة</h2>', "mp-events", "الأحداث"),
+                ('<section class="minfo"><h2>تشكيل ', "mp-xi", "التشكيل"))
+
+
+def jump_chips(article_block, details):
+    """(article_block, details, nav): each section that exists gets an id and
+    a chip. No nav for fewer than two sections, or without the report - the
+    chips exist because the report is long."""
+    found = []
+    for mark, sid, label in JUMP_TARGETS:
+        tagged = mark.replace("<section ", f'<section id="{sid}" ', 1)
+        if mark in article_block:
+            article_block = article_block.replace(mark, tagged, 1)
+        elif mark in details:
+            details = details.replace(mark, tagged, 1)
+        else:
+            continue
+        found.append((sid, label))
+    if len(found) < 2 or found[0][0] != "mp-report":
+        return article_block, details, ""
+    nav = ('<nav class="mp-jump" aria-label="أقسام الصفحة">'
+           + "".join(f'<a href="#{sid}">{label}</a>' for sid, label in found) + '</nav>')
+    return article_block, details, nav

@@ -260,5 +260,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             _chip = f'المركز {srow.get("pos")} · {_cp} {"نقاط" if 3 <= _cp <= 10 else "نقطة"}'
         write_text(f"my/{slug}.json", my_json(_clean_urls(my_block_html(
             name, slug, crest, _chip, up_rows[0] if up_rows else (last_rows[0] if last_rows else ""),
-            [{"href": str(n["href"]), "title": n["title"]} for n in news_items]))))
+            [{"href": str(n["href"]), "title": n["title"]} for n in news_items],
+            calc=next(({"href": str(h["href"]), "label": h["label"]} for h in hub_links
+                       if str(h["href"]).startswith("/calc/")), None)))))
     print(f"  + club pages: {len(TEAM_PAGES)}")

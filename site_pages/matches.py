@@ -6,6 +6,7 @@ imports these back under the same names."""
 import datetime
 import os
 from site_lib.articles import ensure_match_image, match_article_block
+from site_lib.tables import jump_chips
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_ORDER, COMP_SLUG, match_tv
 from site_lib import h2h as _H2H
@@ -353,6 +354,12 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             # «أرقام المباراة»: xG + shots (match_stats.py), above the lineups
             details = match_stats_html((mstats or {}).get(str(mid)), h_ar, a_ar) + details
         absence = absence_block(_squad, m.get("competition"), m, h_ar, a_ar)
+        # jump chips (site review 2026-11-19): on a finished page the report
+        # is ~4700px tall and stands before the timeline and the line-ups.
+        # The order stays as approved; one row of #anchor links under the score.
+        jump = ""
+        if st == "FINISHED":
+            article_block, details, jump = jump_chips(article_block, details)
         # «توقع الجون»: model probabilities for an upcoming match; for a
         # finished one, what the model said before kick-off vs the result
         _pb = pred_block(m, _preds.get(str(mid)) if st == "UPCOMING" else None,
@@ -463,6 +470,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             hero_row=Markup(hero_row), kickoff_info=kickoff_info, round_txt=Markup(_rd),
             when_txt=Markup(_tw), channel=str(m["channel"]) if m.get("channel") else "",
             comp_tv=match_tv(m),
+            jump=Markup(jump),
             article_block=Markup(article_block), pre_read=Markup(pre_read),
             post_read=Markup(post_read), details=Markup(details), absence=Markup(absence),
             prediction=Markup(_pb or ""), info=info_rows, show_info=st != "FINISHED",

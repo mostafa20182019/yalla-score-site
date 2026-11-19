@@ -43,7 +43,7 @@ def my_pick_html():
             '</div>')
 
 
-def my_block_html(name, slug, crest, chip, row, news):
+def my_block_html(name, slug, crest, chip, row, news, calc=None):
     """The followed club's block. chip = a few words on where the club stands
     («المركز 2 · 20 نقطة») or ""; row = ONE of the club page's own match rows
     (HTML: its next match, else its last result) or ""; news = [{"href",
@@ -58,6 +58,7 @@ def my_block_html(name, slug, crest, chip, row, news):
             '</div>'
             + (f'<div class="mlist">{row}</div>' if row else "")
             + (f'<a class="my-n" href="{esc(first["href"])}">{esc(first["title"])}</a>' if first else "")
+            + (f'<a class="my-calc" href="{esc(calc["href"])}">🧮 {esc(calc["label"])} ←</a>' if calc else "")
             + '</section>')
 
 
