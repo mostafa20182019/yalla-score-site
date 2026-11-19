@@ -80,6 +80,10 @@ COMP_TV = {
     "UEFA Nations League": "beIN Sports",           # Raya 2026-09-24
     "UEFA Europa League": "beIN Sports",            # same UEFA club package as the UCL in MENA (2024/25-2026/27)
     "CAF Confederation Cup": "beIN Sports",         # the CAF club package, like the CAF CL (user-confirmed 2026-09-02)
+    # Qatar 2026: beIN holds the MENA rights (Elwatan / Btolat / 365Scores,
+    # 2026-11-19). Alkass also shows the five Arab teams' matches free-to-air,
+    # but not every match - so it is NOT written here for the whole competition.
+    "FIFA U-17 World Cup": "beIN Sports",
 }
 
 # official competition emblems (same host as the team crests already used)
