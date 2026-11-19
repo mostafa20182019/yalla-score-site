@@ -909,6 +909,8 @@ DETECTORS = [
     (SS.KIND_SCENARIO, lambda d, today: SS.round_scenario(d.get("matches"), d.get("fixtures"), d.get("standings"), today)),
     (SS.KIND_SUDAN, lambda d, today: SS.sudan_corner(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
     (SS.KIND_QUESTION, lambda d, today: SS.goon_question(d.get("matches"), d.get("archive"), today)),
+    (SS.KIND_MOVERS, lambda d, today: SS.round_movers(d.get("matches"), d.get("fixtures"), d.get("standings"), today)),
+    (SS.KIND_ABROAD, lambda d, today: SS.abroad_week(d.get("matches"), d.get("archive"), today)),
 ]
 
 

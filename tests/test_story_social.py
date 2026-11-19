@@ -10,6 +10,7 @@ memory), each kind fires once and only at its hour, the names are exact
 and all four stay PRINTED until the repo variable FB_SOCIAL is "on".
 """
 import datetime
+import io
 import os
 import sys
 from zoneinfo import ZoneInfo
@@ -168,8 +169,9 @@ _S.question_of = _orig_q
 # ---------------------------------------------------------------- the switch
 import fb_post as fp        # noqa: E402
 src = open("fb_post.py", encoding="utf-8").read()
-ck("25 the four kinds are registered and are exactly fb_post's SOCIAL_KINDS",
-   tuple(SS.SOCIAL_KINDS) == fp.SOCIAL_KINDS and [k for k, _ in SE.DETECTORS][-4:] == list(SS.SOCIAL_KINDS))
+ck("25 the kinds are registered and are exactly fb_post's SOCIAL_KINDS",
+   tuple(SS.SOCIAL_KINDS) == fp.SOCIAL_KINDS and len(SS.SOCIAL_KINDS) == 6
+   and [k for k, _ in SE.DETECTORS][-6:] == list(SS.SOCIAL_KINDS))
 os.environ.pop("FB_SOCIAL", None)
 off = fp.social_on()
 os.environ["FB_SOCIAL"] = "on"
@@ -184,6 +186,94 @@ for e in SE.detect(SE.load_data(), datetime.date(2026, 11, 20)):
     if e["kind"] in SS.SOCIAL_KINDS:
         ck(f"28 real data, {e['kind']}: plain lines, #الجون last, no line over 120 chars",
            e["text"].splitlines()[-1].startswith("#الجون") and all(len(x) <= 120 for x in e["text"].splitlines()), e["text"])
+
+# ---------------------------------------------------------------- «الصاعد والهابط»
+PLG = "Premier League"
+tbl = [{"pos": i + 1, "team": t, "pts": p} for i, (t, p) in enumerate(
+    (("Arsenal FC", 20), ("Liverpool FC", 17), ("Chelsea FC", 16), ("Everton FC", 13), ("Fulham FC", 12),
+     ("Brentford FC", 10), ("Leeds United FC", 9), ("Burnley FC", 5)))]
+RND = [res(1, "Arsenal FC", "Burnley FC", 2, 0, "2026-11-07", PLG), res(2, "Brentford FC", "Liverpool FC", 0, 1, "2026-11-08", PLG),
+       res(3, "Everton FC", "Leeds United FC", 3, 0, "2026-11-08", PLG), res(4, "Chelsea FC", "Fulham FC", 0, 0, "2026-11-07", PLG)]
+# before the round: Arsenal 17, Chelsea 15, Liverpool 14, Fulham 11, Everton 10, Brentford 10, Leeds 9, Burnley 5
+mv = {t: (b, a) for t, b, a in SS.round_moves(tbl, RND)}
+ck("29 the place before the round is rebuilt from the round's own points; the place after is the table's",
+   mv.get(SE.ar_team("Liverpool FC")) == (3, 2) and mv.get(SE.ar_team("Chelsea FC")) == (2, 3)
+   and mv.get(SE.ar_team("Fulham FC")) == (4, 5), str(mv))
+ck("30 two sides level on points before the round have no certain place: both are left out (Everton, Brentford on 10)",
+   SE.ar_team("Everton FC") not in mv and SE.ar_team("Brentford FC") not in mv)
+FXM = [{"competition": PLG, "rounds": [{"round": 10, "matches": RND},
+                                       {"round": 11, "matches": [dict(res(9, "Arsenal FC", "Everton FC", None, None, "2026-11-21", PLG), status="UPCOMING")]}]}]
+big2 = [{"pos": 1, "team": "Arsenal FC", "pts": 20}, {"pos": 2, "team": "Liverpool FC", "pts": 15},
+        {"pos": 3, "team": "Chelsea FC", "pts": 14}, {"pos": 4, "team": "Everton FC", "pts": 13},
+        {"pos": 5, "team": "Fulham FC", "pts": 9}, {"pos": 6, "team": "Brentford FC", "pts": 8},
+        {"pos": 7, "team": "Leeds United FC", "pts": 6}, {"pos": 8, "team": "Burnley FC", "pts": 5}]
+# before: Arsenal 17, Chelsea 13, Liverpool 12, Everton 10, Fulham 8, Brentford 8 (level), Leeds 6, Burnley 5 -> nobody moves 2
+FX2 = [{"competition": PLG, "rounds": [{"round": 10, "matches": RND}]}]
+ck("31 nobody moved two places: no post", SS.round_movers([], FX2, [{"competition": PLG, "table": big2}], datetime.date(2026, 11, 9)) == [])
+JT = [{"pos": 1, "team": "Everton FC", "pts": 16}, {"pos": 2, "team": "Arsenal FC", "pts": 15},
+      {"pos": 3, "team": "Chelsea FC", "pts": 14}, {"pos": 4, "team": "Liverpool FC", "pts": 12},
+      {"pos": 5, "team": "Fulham FC", "pts": 9}, {"pos": 6, "team": "Brentford FC", "pts": 7},
+      {"pos": 7, "team": "Leeds United FC", "pts": 6}, {"pos": 8, "team": "Burnley FC", "pts": 5}]
+JR = [res(1, "Burnley FC", "Arsenal FC", 1, 0, "2026-11-07", PLG), res(2, "Brentford FC", "Liverpool FC", 1, 0, "2026-11-08", PLG),
+      res(3, "Everton FC", "Leeds United FC", 3, 0, "2026-11-08", PLG), res(4, "Fulham FC", "Chelsea FC", 2, 0, "2026-11-07", PLG)]
+# before: Arsenal 15, Chelsea 14, Everton 13, Liverpool 12, Fulham 6, Leeds 6 (level), Brentford 4, Burnley 2
+# Everton 3 -> 1 (up two); Brentford 7 -> 6, Burnley 8 -> 8
+JFX = [{"competition": PLG, "rounds": [{"round": 10, "matches": JR}, FXM[0]["rounds"][1]]}]
+ev = SS.round_movers([], JFX, [{"competition": PLG, "table": JT}], datetime.date(2026, 11, 9))
+t = ev[0]["text"] if ev else ""
+ck("32 the evening after the round: the side that climbed two places, with both places",
+   len(ev) == 1 and ev[0]["ref"] == f"{PLG}:R10:2026-27" and f"{SE.ar_team('Everton FC')} تقدم مركزين: من المركز 3 إلى 1." in t
+   and "standings/england" in t, t)
+ck("33 only on the day after the round's last match, from 21:00 Cairo",
+   SS.round_movers([], JFX, [{"competition": PLG, "table": JT}], datetime.date(2026, 11, 10)) == []
+   and SS.round_movers([], JFX, [{"competition": PLG, "table": JT}], at(2026, 11, 9, 20, 0)) == []
+   and len(SS.round_movers([], JFX, [{"competition": PLG, "table": JT}], at(2026, 11, 9, 21, 5))) == 1)
+later = [{"competition": PLG, "rounds": [{"round": 10, "matches": JR},
+                                         {"round": 11, "matches": [res(9, "Arsenal FC", "Everton FC", 1, 0, "2026-11-09", PLG)]}]}]
+ck("34 a match of another round played since: the table is not this round's table, no post",
+   SS.round_movers([], later, [{"competition": PLG, "table": JT}], datetime.date(2026, 11, 9)) == [])
+ck("35 a side of the round missing from the table: nothing is rebuilt", SS.round_moves(JT[:7], JR) == [])
+
+# ---------------------------------------------------------------- «محترفونا هذا الأسبوع»
+TR = "Turkish Super Lig"
+wk = [dict(res(1, "طرابزون سبور", "ألانيا سبور", 2, 0, "2026-11-14", TR),
+           goals=[{"side": "h", "player": "محمد صلاح", "minute": "10"}, {"side": "h", "player": "محمد صلاح", "minute": "60"}]),
+      dict(res(2, "قونيا سبور", "طرابزون سبور", 1, 1, "2026-11-10", TR),
+           goals=[{"side": "h", "player": "محمد صلاح", "minute": "5"}, {"side": "a", "player": "لاعب آخر", "minute": "80"}]),
+      dict(res(3, "طرابزون سبور", "بشكتاش", 0, 1, "2026-11-01", TR),
+           goals=[{"side": "a", "player": "محمد صلاح", "minute": "9"}])]
+PL1 = [{"name": "محمد صلاح", "team": "طرابزون سبور", "nation": "مصر"}]
+MON = datetime.date(2026, 11, 16)
+ev = SS.abroad_week(wk, [], MON, players=PL1)
+t = ev[0]["text"] if ev else ""
+ck("36 Monday: the listed player's goals of the last seven days, in his OWN club's matches only",
+   len(ev) == 1 and ev[0]["ref"] == "2026-W47" and "محمد صلاح سجل هدفين لـطرابزون سبور في الفوز 2-0 على ألانيا سبور." in t
+   and t.count("محمد صلاح سجل") == 1, t)
+ck("37 a namesake on the other side and a goal credited to the opponent are not his (the 1-1 at قونيا سبور)", "قونيا" not in t)
+ck("38 an empty list, a quiet week, another weekday: no post",
+   SS.abroad_week(wk, [], MON, players=[]) == [] and SS.abroad_week(wk[2:], [], MON, players=PL1) == []
+   and SS.abroad_week(wk, [], datetime.date(2026, 11, 17), players=PL1) == [])
+ck("39 the list file is the user's: it ships empty, so nothing posts until he names the players",
+   SS.load_abroad() == [] and os.path.exists(SS.ABROAD_FILE))
+
+# ---------------------------------------------------------------- the two cards
+import social_card as SC        # noqa: E402
+import tempfile                 # noqa: E402
+from PIL import Image           # noqa: E402
+
+num = SS.night_number(ms, [], st, datetime.date(2026, 10, 31))[0]
+out = os.path.join(tempfile.mkdtemp(), "n.jpg")
+im = SC.render(num, out)
+px = im.convert("RGB").getpixel((60, 67))
+ck("40 «رقم الليلة» as a card: 1080x1350, the red tag, drawn from the event alone",
+   im.size == (1080, 1350) and px[0] > 190 and px[1] < 80 and len(SC.render_bytes(num)) > 20000)
+qim = SC.render(_q_ev[0])
+ck("41 «سؤال الجون» as a card - and the card's source never reads the answer",
+   qim.size == (1080, 1350) and 'ev["answer"]' not in io.open("social_card.py", encoding="utf-8").read()
+   and "ev.get(\"answer\")" not in io.open("social_card.py", encoding="utf-8").read())
+ck("42 both kinds post as a photo with the text as caption, the text alone when the card fails",
+   tuple(SC.CARD_KINDS) == fp.SOCIAL_CARD_KINDS and "SCard.render_bytes(ev), event_text(ev)" in src
+   and "card failed" in src)
 
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

@@ -22,6 +22,12 @@ each goes out once through the store like every other kind:
                   line of the NEXT day's question (fb_post adds it only when
                   yesterday's question is on record).
 
+  round_movers    «الصاعد والهابط»: the evening after a league round ended,
+                  the sides that climbed or dropped two places or more -
+                  only the sides whose place before the round is certain.
+  abroad_week     «محترفونا هذا الأسبوع»: Monday, the week's goals of the
+                  players listed by hand in abroad_players.json.
+
 THE SWITCH: these kinds are SOCIAL_KINDS in fb_post.py and stay printed, not
 posted, until the repo variable FB_SOCIAL is "on" - the user reads a new
 kind's wording before it goes live (his firm rule).
@@ -36,7 +42,9 @@ KIND_NUMBER = "night-number"
 KIND_SCENARIO = "round-scenario"
 KIND_SUDAN = "sudan-corner"
 KIND_QUESTION = "goon-question"
-SOCIAL_KINDS = (KIND_NUMBER, KIND_SCENARIO, KIND_SUDAN, KIND_QUESTION)
+KIND_MOVERS = "round-movers"
+KIND_ABROAD = "abroad-week"
+SOCIAL_KINDS = (KIND_NUMBER, KIND_SCENARIO, KIND_SUDAN, KIND_QUESTION, KIND_MOVERS, KIND_ABROAD)
 
 # ---- «رقم الليلة»
 XG_GAP = 1.0                 # the loser's xG minus the winner's, at least
@@ -137,7 +145,8 @@ def night_number(matches, archive, stats, today=None):
                      f"{SE.SITE}/m/{m.get('match_id')}" if m.get("match_id") else SE.SITE + "/", "أرقام المباراة",
                      [SE.comp_tag(m.get("competition")), SE._club_tag(win), SE._club_tag(lose)],
                      competition=m.get("competition"),
-                     match={"match_id": m.get("match_id"), "home": h, "away": a, "home_score": hs, "away_score": as_},
+                     match={"match_id": m.get("match_id"), "home": h, "away": a, "home_score": hs, "away_score": as_,
+                            "home_badge": m.get("home_badge"), "away_badge": m.get("away_badge")},
                      number=wsh, shots={"winner": wsh, "loser": lsh})]
 
 
@@ -325,3 +334,155 @@ def with_prev(ev, on_record):
     if ev.get("prev_line") and ev.get("prev_ref") and on_record(ev["kind"], ev["prev_ref"]):
         return ev["prev_line"] + "\n\n" + ev["text"]
     return ev["text"]
+
+
+# ---------------------------------------------------------------- «الصاعد والهابط»
+MOVERS_COMPS = ("Egyptian Premier League", "Turkish Super Lig", "Premier League", "Primera Division",
+                "Saudi Pro League")
+MOVERS_FROM_H = 21           # Cairo, the day after the round's last match
+MOVERS_MIN = 2               # a move of one place is not a story
+MOVERS_EACH = 2              # the two biggest climbs and the two biggest drops
+MOVERS_MAX = 2               # leagues an evening
+
+
+def _places(n):
+    n = int(n)
+    return "مركزًا واحدًا" if n == 1 else "مركزين" if n == 2 else f"{n} مراكز" if n <= 10 else f"{n} مركزًا"
+
+
+def round_moves(table, round_matches):
+    """[(team, before, after)] for the sides whose place BEFORE the round is
+    certain. after = the official position. before is rebuilt by taking the
+    round's own points off the official table - and a side level on points
+    with another before the round has no certain place (the tie-breakers
+    are the league's, not ours), so it is left out. [] when a side of the
+    round is not in the table."""
+    SE = _se()
+    rows = {SE.ar_team(r.get("team") or ""): r for r in table or [] if r.get("team")}
+    got = {t: 0 for t in rows}
+    for m in round_matches:
+        h, a = SE._side_names(m)
+        if h not in rows or a not in rows or not SE._finished(m):
+            return []
+        hs, as_ = int(m["home_score"]), int(m["away_score"])
+        got[h] += 3 if hs > as_ else 1 if hs == as_ else 0
+        got[a] += 3 if as_ > hs else 1 if hs == as_ else 0
+    before = {t: int(rows[t].get("pts") or 0) - got[t] for t in rows}
+    if any(v < 0 for v in before.values()):
+        return []
+    out = []
+    for t, p in before.items():
+        if sum(1 for u, q in before.items() if u != t and q == p):
+            continue
+        out.append((t, 1 + sum(1 for q in before.values() if q > p), int(rows[t].get("pos") or 0)))
+    return out
+
+
+def round_movers(matches, fixtures, standings, today=None, comps=MOVERS_COMPS):
+    """The evening after a league round ended: who climbed and who dropped.
+    Only when the table we hold IS the table after that round - no match of
+    a later round started, no other match of the league played since the
+    round began."""
+    SE = _se()
+    now = SE._now(today)
+    if not _after(now, today, MOVERS_FROM_H):
+        return []
+    yesterday = (_cairo_day(now) - datetime.timedelta(days=1)).isoformat()
+    fresh = {str(m.get("match_id")): m for m in matches or []}
+    tables = {s.get("competition"): s for s in standings or []}
+    found = []
+    for fx in fixtures or []:
+        comp = fx.get("competition")
+        st = tables.get(comp) or {}
+        if comp not in comps or st.get("zeroed") or not st.get("table"):
+            continue
+        rounds = [(r.get("round"), [fresh.get(str(m.get("match_id")), m) for m in r.get("matches") or []])
+                  for r in fx.get("rounds") or [] if r.get("matches")]
+        for rn, ms in rounds:
+            if not all(SE._finished(m) for m in ms):
+                continue
+            days = sorted(str(m.get("kickoff") or "")[:10] for m in ms)
+            if days[-1] != yesterday:
+                continue
+            others = [m for r2, ms2 in rounds if r2 != rn for m in ms2]
+            if any(SE._started(m) and str(m.get("kickoff") or "")[:10] >= days[0] for m in others):
+                continue                    # the table has moved on: it is not this round's table
+            moves = [(t, b, a, b - a) for t, b, a in round_moves(st["table"], ms)]
+            up = sorted((x for x in moves if x[3] >= MOVERS_MIN), key=lambda x: (-x[3], x[2]))[:MOVERS_EACH]
+            down = sorted((x for x in moves if x[3] <= -MOVERS_MIN), key=lambda x: (x[3], x[2]))[:MOVERS_EACH]
+            if not up and not down:
+                continue
+            lines = [f"📈 حركة الجدول بعد الجولة {rn} من {SE.comp_label(comp)}."]
+            lines += [f"{t} تقدم {_places(mv)}: من المركز {b} إلى {a}." for t, b, a, mv in up]
+            lines += [f"{t} تراجع {_places(-mv)}: من المركز {b} إلى {a}." for t, b, a, mv in down]
+            season = SE.season_of(days[0])
+            found.append((max(abs(x[3]) for x in up + down), SE.event(
+                KIND_MOVERS, f"{comp}:R{rn}:{season}", f"حركة الجدول بعد الجولة {rn} من {SE.comp_label(comp)}", lines,
+                SE.comp_url(comp, "standings"), "الجدول كاملًا",
+                [SE.comp_tag(comp)] + [SE._club_tag(x[0]) for x in (up + down)[:2]],
+                competition=comp, round=rn, season=season,
+                moves=[{"team": t, "before": b, "after": a} for t, b, a, _ in up + down])))
+    found.sort(key=lambda x: -x[0])
+    return [ev for _, ev in found[:MOVERS_MAX]]
+
+
+# ---------------------------------------------------------------- «محترفونا هذا الأسبوع»
+ABROAD_FILE = "abroad_players.json"      # repo root: the user's list (player as the feed writes him + his club)
+ABROAD_WEEKDAY, ABROAD_FROM_H = 0, 13    # Monday 13:00 Cairo
+
+
+def load_abroad(path=None):
+    """[{name, team, nation}] - the hand-kept list. A name is matched EXACTLY
+    and only in his own club's matches: names repeat across leagues, and a
+    goal credited to the other side is an own goal."""
+    import io
+    import json
+    import os
+    p = path or os.path.join(os.path.dirname(os.path.abspath(__file__)), ABROAD_FILE)
+    try:
+        with io.open(p, encoding="utf-8") as f:
+            rows = json.load(f).get("players") or []
+    except (OSError, ValueError):
+        return []
+    return [r for r in rows if isinstance(r, dict) and (r.get("name") or "").strip() and (r.get("team") or "").strip()]
+
+
+def abroad_week(matches, archive, today=None, players=None):
+    """Monday: the goals of the listed players in the seven days before."""
+    SE = _se()
+    now = SE._now(today)
+    if now.weekday() != ABROAD_WEEKDAY or not _after(now, today, ABROAD_FROM_H):
+        return []
+    players = load_abroad() if players is None else players
+    if not players:
+        return []
+    day = _cairo_day(now)
+    lo, hi = (day - datetime.timedelta(days=7)).isoformat(), (day - datetime.timedelta(days=1)).isoformat()
+    pool = sorted((m for m in SE.results_pool(matches, archive) if lo <= str(m.get("kickoff") or "")[:10] <= hi and m.get("goals")),
+                  key=lambda m: (str(m.get("kickoff") or ""), m.get("koff_time") or ""))
+    lines, who = [], []
+    for p in players:
+        name, team = p["name"].strip(), p["team"].strip()
+        for m in pool:
+            h, a = SE._side_names(m)
+            side = "h" if h == team else "a" if a == team else None
+            if not side:
+                continue
+            n = sum(1 for g in m["goals"] if g.get("side") == side and (g.get("player") or "").strip() == name)
+            if not n:
+                continue
+            hs, as_ = int(m["home_score"]), int(m["away_score"])
+            gf, ga = (hs, as_) if side == "h" else (as_, hs)
+            opp = a if side == "h" else h
+            how = (f"في الفوز {gf}-{ga} على {opp}" if gf > ga else f"في التعادل {gf}-{ga} مع {opp}" if gf == ga
+                   else f"في الخسارة {gf}-{ga} أمام {opp}")
+            goals = "هدفًا" if n == 1 else "هدفين" if n == 2 else f"{n} أهداف"
+            lines.append(f"{name} سجل {goals} لـ{team} {how}.")
+            if name not in who:
+                who.append(name)
+    if not lines:
+        return []
+    iso = day.isocalendar()
+    return [SE.event(KIND_ABROAD, f"{iso[0]}-W{iso[1]:02d}", "محترفونا هذا الأسبوع", ["🌍 محترفونا هذا الأسبوع"] + lines,
+                     SE.SITE + "/", "كل النتائج", [SE._club_tag(w) for w in who[:3]],
+                     players=who, week=[lo, hi])]

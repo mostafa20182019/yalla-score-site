@@ -1240,7 +1240,10 @@ FORM_KINDS = ("club-form", "club-streak")      # story_events.KIND_FORM / KIND_S
 # the social review's kinds (story_social.py, 2026-11-19): «رقم الليلة», «سيناريو
 # الجولة», «ركن السودان», «سؤال الجون». Their own switch, FB_SOCIAL, for the
 # same reason FB_FORM exists: he reads a new kind's wording before it is live.
-SOCIAL_KINDS = ("night-number", "round-scenario", "sudan-corner", "goon-question")
+SOCIAL_KINDS = ("night-number", "round-scenario", "sudan-corner", "goon-question", "round-movers", "abroad-week")
+
+
+SOCIAL_CARD_KINDS = ("night-number", "goon-question")       # social_card.CARD_KINDS
 
 
 def social_on():
@@ -1268,6 +1271,14 @@ def post_event(token, ev):
             import traceback
             where = traceback.extract_tb(e.__traceback__)[-1]
             print(f"{ev['kind']} {ev['ref']}: card failed ({e} at {os.path.basename(where.filename)}:{where.lineno}) - posting the text")
+    # «رقم الليلة» and «سؤال الجون» as a CARD (social_card.py) with the text as
+    # its caption; the text alone when the card cannot be drawn
+    if ev.get("kind") in SOCIAL_CARD_KINDS:
+        try:
+            import social_card as SCard
+            return post_photo(token, SCard.render_bytes(ev), event_text(ev))
+        except Exception as e:  # noqa: BLE001
+            print(f"{ev['kind']} {ev['ref']}: card failed ({e}) - posting the text")
     return post_text(token, event_text(ev))
 
 
