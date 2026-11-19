@@ -130,7 +130,10 @@ ck("11k ...the second division after the Arab first divisions (right after Libya
    and max(bs.COMP_ORDER.index(n) for n in ("Africa Cup of Nations Qualification", "UEFA Nations League", "FIFA U-17 World Cup"))
        < min(bs.COMP_ORDER.index(n) for n in ("Moroccan Botola Pro", "Algerian Ligue 1", "Tunisian Ligue 1", "Libyan Premier League"))
    and "egypt-second-division" in __import__("site_pages.leagues", fromlist=["ARAB_SLUGS"]).ARAB_SLUGS
-   and not any(n in bs.COMP_TV for n in _N11))
+   # no channel without a source: the second division still has none; the
+   # U-17 World Cup got beIN on 2026-11-19 (MENA rights, three dated sources)
+   and "Egyptian Second Division" not in bs.COMP_TV
+   and bs.COMP_TV.get("FIFA U-17 World Cup") == "beIN Sports")
 from site_lib.competitions import comp_season as _cs
 ck("11l the U-17 World Cup is a one-year tournament: its pages say «2026», a league keeps «2026-2027»",
    _cs("FIFA U-17 World Cup", "2026-2027", [{"matches": [{"kickoff": "2026-11-21"}, {"kickoff": "2026-11-19"}]}]) == "2026"
