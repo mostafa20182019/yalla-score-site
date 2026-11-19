@@ -1,0 +1,56 @@
+<script>
+/* «تابع فريقك» (2026-11-19): the visitor picks ONE club, kept in this browser
+   only (localStorage, no account, nothing sent to us). The club page carries
+   the button; the home page opens with that club's block, fetched from
+   /my/<slug>.json - a build-made fragment, never drawn from guesses. A browser
+   with no storage (private mode, in-app webviews that block it) simply shows
+   neither the button nor the block. */
+(function(){
+  var KEY='elgoonTeam', LS;
+  try{ LS=window.localStorage; LS.getItem(KEY); }catch(e){ return; }
+  function get(){ try{ return LS.getItem(KEY)||''; }catch(e){ return ''; } }
+  function set(v){ try{ if(v) LS.setItem(KEY,v); else LS.removeItem(KEY); }catch(e){} }
+  function ok(s){ return /^[a-z0-9-]{2,40}$/.test(s); }
+
+  /* 1. the club page: the follow button */
+  var b=document.getElementById('followBtn');
+  if(b){
+    var slug=b.getAttribute('data-slug'), nm=b.getAttribute('data-name'), note=document.getElementById('followNote');
+    var paint=function(){
+      var on=get()===slug;
+      b.textContent=on ? '✓ فريقك · إلغاء المتابعة' : '⭐ تابع '+nm;
+      b.classList.toggle('on',on); b.setAttribute('aria-pressed',on?'true':'false');
+      if(note) note.hidden=!on;
+    };
+    b.hidden=false; paint();
+    b.addEventListener('click',function(){ set(get()===slug ? '' : slug); paint(); });
+  }
+
+  /* 2. the home page: the followed club's block, or the one-line picker */
+  var box=document.getElementById('myTeam'); if(!box) return;
+  var pick=document.getElementById('myPick');
+  function showPick(){ box.hidden=true; box.innerHTML=''; if(pick) pick.hidden=(get()==='none'); }
+  function load(slug){
+    fetch('/my/'+slug+'.json',{cache:'no-cache'})
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(d){
+        if(!d||!d.html){ set(''); showPick(); return; }   /* a club page that no longer exists */
+        if(pick) pick.hidden=true;
+        box.innerHTML=d.html; box.hidden=false;
+        var x=box.querySelector('[data-my-x]');
+        if(x) x.addEventListener('click',function(){ set(''); showPick(); });
+        if(window.__lvAdd) window.__lvAdd(box);          /* its rows join the live layer */
+      })
+      .catch(function(){ if(pick) pick.hidden=true; });  /* offline: no block, the page as it is */
+  }
+  if(pick){
+    [].slice.call(pick.querySelectorAll('[data-slug]')).forEach(function(c){
+      c.addEventListener('click',function(){ var s=c.getAttribute('data-slug'); if(ok(s)){ set(s); load(s); } });
+    });
+    var no=pick.querySelector('[data-my-no]');
+    if(no) no.addEventListener('click',function(){ set('none'); pick.hidden=true; });
+  }
+  var cur=get();
+  if(ok(cur) && cur!=='none') load(cur); else showPick();
+})();
+</script>

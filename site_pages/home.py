@@ -73,4 +73,5 @@ def home_page(articles, fixtures, ge_idx, matches, standings):
                   + ';</script>')
     write("index.html", render(
         "home.html", page_head=Markup(page_head), org_ld=Markup(org_ld), ad=Markup(ad),
+        my_pick=Markup(__import__("site_lib.follow", fromlist=["my_pick_html"]).my_pick_html()),
         match_centre=Markup(_centre), fav_script=Markup(fav_script), page_foot=Markup(foot())))

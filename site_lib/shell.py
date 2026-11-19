@@ -391,6 +391,8 @@ def write(rel, content):
 REL_JS = _src("snippets/rel_js.html")
 # the standings tables' team card (2026-11-13) - any page with a table
 TEAM_CARD_JS = _src("snippets/team_card_js.html")
+# «تابع فريقك» (2026-11-19): the club page's button + the home page's block
+FOLLOW_JS = _src("snippets/follow_js.html")
 # the live table (2026-11-13): standings recalculated while matches are on
 LIVE_TABLE_JS = _src("snippets/live_table_js.html")
 # the live scorers / assists charts (2026-11-14)
@@ -423,7 +425,8 @@ def app_js():
     """The file's content: each snippet in its own try, so one that throws
     cannot stop the next (they were separate <script> blocks before)."""
     return "\n".join("try{" + _js_body(s) + "\n}catch(e){}"
-                     for s in (REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS, LIVE_LEAGUE_JS, LIVE_FX_JS)) + "\n"
+                     for s in (REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS, LIVE_LEAGUE_JS, LIVE_FX_JS)) + "\n" \
+        + "try{" + _js_body(FOLLOW_JS) + "\n}catch(e){}\n"     # «تابع فريقك», after the live layer it hands its rows to
 
 
 def app_js_tag():

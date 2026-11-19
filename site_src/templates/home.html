@@ -27,6 +27,12 @@
    user, 2026-10-26: «المباريات اللى تظهر فوق عشان هيه مباشر تكون للفرق
    المميزة بس»). #}
 <div id="favLive" class="fav-wrap" hidden></div>
+{# «تابع فريقك» (2026-11-19): the visitor's own club first - its next match,
+   its last result, its news - filled by FOLLOW_JS from /my/<slug>.json when
+   this browser follows one; otherwise the one-line picker. Both [hidden] in
+   the HTML: a crawler and a first-time reader see the page as it was. #}
+<div id="myTeam" class="my-team" hidden></div>
+{{ my_pick }}
 {# THE MATCH CENTRE (site_lib/today_strip.match_centre): leagues | the
    /matches day list with its filters | latest news. Phones show the middle
    column only. #}

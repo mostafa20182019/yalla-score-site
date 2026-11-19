@@ -11,6 +11,8 @@
   X-Robots-Tag: noindex
 /matches/l/*
   X-Robots-Tag: noindex
+/my/*
+  X-Robots-Tag: noindex
 /assets/*
   ! Cache-Control
   Cache-Control: public, max-age=86400

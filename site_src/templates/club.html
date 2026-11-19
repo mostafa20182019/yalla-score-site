@@ -9,6 +9,10 @@
     <h1 class="page-h">{{ name }}: النتائج والمباريات القادمة والأخبار</h1>
     <p class="hintline">كل جديد {{ name }}: الأخبار والمباريات والنتائج{% if has_table %} والترتيب{% endif %} في مكان واحد — تتحدّث تلقائيًا.</p>
     {{ position }}
+    {# «تابع فريقك» (2026-11-19): [hidden] until FOLLOW_JS finds storage it can
+       use - a dead button is worse than none. The choice stays in the browser. #}
+    <button id="followBtn" class="follow-btn" type="button" data-slug="{{ slug }}" data-name="{{ name }}" aria-pressed="false" hidden></button>
+    <p id="followNote" class="follow-note" hidden>تظهر مباريات {{ name }} وأخباره أولًا في <a href="/">الصفحة الرئيسية</a>.</p>
   </div>
 </header>
 {% if up_rows %}

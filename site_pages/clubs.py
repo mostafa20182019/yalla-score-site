@@ -13,7 +13,8 @@ from site_lib.dates import art_reltime
 from site_lib.names import _team_match, _team_news, comp_label
 from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
-from site_lib.shell import foot, head, thumb_url, write
+from site_lib.follow import my_block_html, my_json
+from site_lib.shell import _clean_urls, foot, head, thumb_url, write, write_text
 from site_lib.tables import match_row, standings_table
 from site_lib.text import esc, jsonld
 from site_lib.urls import article_href, breadcrumb_ld, match_url
@@ -29,6 +30,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
     (templated 2026-09-26); the pieces are built here in the same order as
     before. Returns the loop's last _img / a / img / r under the same names."""
     os.makedirs(os.path.join(DIST, "team"), exist_ok=True)
+    os.makedirs(os.path.join(DIST, "my"), exist_ok=True)     # «تابع فريقك» fragments
     club_matches_src = sorted(m_all.values(),
                               key=lambda m: m.get("kickoff") or "")
     for tp in TEAM_PAGES:
@@ -219,7 +221,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                          + [table_heading, table, club_ld])
         write(f"team/{slug}.html", render(
             "club.html", page_head=Markup(page_head), crumbs_ld=Markup(crumbs_ld),
-            name=name, crest_img=Markup(_img), position=Markup(_pos),
+            name=name, slug=Markup(slug), crest_img=Markup(_img), position=Markup(_pos),
             up_rows=[Markup(x) for x in up_rows], last_rows=[Markup(x) for x in last_rows],
             news=news_items, has_table=bool(st and st.get("table")),
             table_heading=Markup(table_heading), table=Markup(table),
@@ -228,4 +230,10 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             h2h=h2h_link, hub_links=hub_links,
             page_foot=Markup(foot())))
         urls.append(t_url)
+        # «تابع فريقك» (2026-11-19): the home page's block for a visitor who
+        # follows this club - the first row of each list above, two news rows.
+        # A fragment, not a page: out of the sitemap, noindex in _headers.
+        write_text(f"my/{slug}.json", my_json(_clean_urls(my_block_html(
+            name, slug, crest, _pos, up_rows[0] if up_rows else "", last_rows[0] if last_rows else "",
+            [{"href": str(n["href"]), "title": n["title"]} for n in news_items]))))
     print(f"  + club pages: {len(TEAM_PAGES)}")
