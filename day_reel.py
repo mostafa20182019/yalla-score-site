@@ -9,8 +9,11 @@ the reel canvas (fb_reel background + wordmark, the Reels safe band) and
 encoded by moment_reel.encode with the page's music loop:
 
     intro 2.5 s  «نتائج أمس» + the day + «9 مباريات من الدوريات الكبرى»
-    pages 4 s    three results each - home crest/name on the RIGHT and its
-                 goals right of the dash (the RTL rule), the league above
+    page  7-8 s  ONE shot with every result, six to nine rows (user,
+                 2026-11-19: «الصورة الواحدة فى الريل تاخد ست مباريات على
+                 الاقل» - it was three a page, the first six only) - home
+                 crest/name on the RIGHT and its goals right of the dash (the
+                 RTL rule), the league under the score
     outro 3 s    the wordmark + «كل النتائج والجداول» + elgoon.com
 
 Posted by fb-post.yml right after the results card (daycard=results), with
@@ -36,15 +39,31 @@ import moment_reel as M              # noqa: E402
 import store                         # noqa: E402
 
 W, H, FPS = M.W, M.H, M.FPS
-PER_PAGE = 3
-INTRO, PAGE, OUTRO = 2.5, 4.0, 3.0
-# two pages at most: 2.5 + 2 x 4 + 3 = 13.5 s (user rule 2026-11-10: every reel is 15 s or less). A busier
-# day shows its first six results (the order the caller ranks them); the
-# caption still lists every one.
-MAX_PAGES = 2
-ROW_TOP, ROW_H = 690, 290            # row centres 690 / 980 / 1270: inside the safe band (R.SAFE_BOTTOM)
-HOME_X, AWAY_X = W * 0.76, W * 0.24  # clear of the Reels like/comment column on the right
-NAME_W = W * 0.27
+# ONE results shot (user 2026-11-19): every result of the night's card on a
+# single frame, at least six when the day has six - nine at most, the card's
+# own limit. 2.5 + 8 + 3 = 13.5 s at most (user rule 2026-11-10: every reel
+# is 15 s or less); the caption still lists every result.
+MAX_ROWS = 9
+INTRO, OUTRO = 2.5, 3.0
+PAGE, PAGE_LONG = 7.0, 8.0           # seven rows or more get the extra second
+BAND_TOP, BAND_BOTTOM = 480, R.SAFE_BOTTOM - 10   # under the page title, inside the Reels safe band
+ROW_MAX_H = 170
+HOME_X, AWAY_X = W - 150, 150        # the crests: clear of the Reels like/comment column on the right
+SCORE_DX = 52                        # each side's goals, this far from the dash
+NAME_GAP = 100                       # the names stop this far from the centre
+
+
+def row_geometry(n):
+    """(row height, [row centres]) for n rows: they fill the band, a short
+    list sits in its middle with rows no taller than ROW_MAX_H."""
+    n = max(1, n)
+    h = min(ROW_MAX_H, (BAND_BOTTOM - BAND_TOP) / n)
+    top = BAND_TOP + ((BAND_BOTTOM - BAND_TOP) - n * h) / 2
+    return h, [top + h * (i + 0.5) for i in range(n)]
+
+
+def page_secs(n):
+    return PAGE_LONG if n > 6 else PAGE
 
 
 def rel_label(date, now=None):
@@ -61,31 +80,38 @@ def day_name(date):
     return f"{_AR_DAYS[dd.weekday()]} {dd.day} {_AR_MONTHS[dd.month]}"
 
 
-def row(im, t, m, cy, t0):
-    """One result card: fades and slides in at t0."""
+def row(im, t, m, cy, t0, h):
+    """One result on ONE line, h tall: fades and slides in at t0."""
     from site_lib.names import ar_team, comp_label
     e = M.ease(t, t0, M.FADE + 0.1)
     if e <= 0:
         return
     lay = M.layer()
     d = ImageDraw.Draw(lay)
-    d.rounded_rectangle((60, cy - 125, W - 60, cy + 125), 34, fill=(255, 255, 255, 26))
-    C.draw_center(d, W / 2, cy - 108, C.ar(comp_label(m["competition"])), C.font("Bold", 30), M.GOLD)
-    for side, x in (("home", HOME_X), ("away", AWAY_X)):
-        R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), 120, x, cy - 10)
+    d.rounded_rectangle((50, cy - h / 2 + 6, W - 50, cy + h / 2 - 6), int(h * 0.2), fill=(255, 255, 255, 26))
+    cs = int(min(104, h * 0.62))                       # the crest
+    for side, x, anchor, edge in (("home", HOME_X, "rm", HOME_X - cs / 2 - 16),
+                                  ("away", AWAY_X, "lm", AWAY_X + cs / 2 + 16)):
+        R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), cs, x, cy)
         nm = C.ar(ar_team(m[side]))
-        C.draw_center(d, x, cy + 62, nm, C.fit(d, nm, "ExtraBold", 36, NAME_W, 22), C.WHITE)
-    f = C.font("ExtraBold", 110)
-    C.draw_center(d, W / 2 + 95, cy - 70, str(m["home_score"]), f, C.WHITE)   # HOME goals on the right
-    C.draw_center(d, W / 2 - 95, cy - 70, str(m["away_score"]), f, C.WHITE)
-    C.draw_center(d, W / 2, cy - 55, "-", C.font("ExtraBold", 80), M.GOLD)
+        room = abs(edge - W / 2) - NAME_GAP
+        d.text((edge, cy), nm, font=C.fit(d, nm, "ExtraBold", int(min(42, h * 0.3)), room, 22),
+               fill=C.WHITE, anchor=anchor)
+    sy = cy - h * 0.09
+    f = C.font("ExtraBold", int(min(84, h * 0.5)))
+    d.text((W / 2 + SCORE_DX, sy), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
+    d.text((W / 2 - SCORE_DX, sy), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
+    d.text((W / 2, sy), "-", font=C.font("ExtraBold", int(min(60, h * 0.36))), fill=M.GOLD, anchor="mm")
+    lb = C.ar(comp_label(m["competition"]))
+    d.text((W / 2, cy + h * 0.31), lb, font=C.fit(d, lb, "Bold", int(max(18, min(26, h * 0.17))), 2 * NAME_GAP + 60, 14),
+           fill=M.GOLD, anchor="mm")
     M.put(im, lay, e, dy=M.SLIDE * (1 - e))
 
 
 def build(ms, date, now=None):
     """The scenes as (draw(t) -> frame, seconds, push_in) - push_in False for
     the outro, which moment_reel.scene already pushes in."""
-    ms = list(ms)[:MAX_PAGES * PER_PAGE]
+    ms = list(ms)[:MAX_ROWS]
     bg = R.background()
     ctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
     title, when = rel_label(date, now), day_name(date)
@@ -108,8 +134,9 @@ def build(ms, date, now=None):
             M.header(im)
             C.draw_center(ImageDraw.Draw(im), W / 2, 425, C.ar(f"{title} · {when}"),
                           C.font("ExtraBold", 40), C.WHITE)
+            h, ys = row_geometry(len(rows))
             for i, m in enumerate(rows):
-                row(im, t, m, ROW_TOP + i * ROW_H, 0.15 + i * 0.35)
+                row(im, t, m, ys[i], 0.15 + i * 0.22, h)
             return im
         return draw
 
@@ -117,8 +144,7 @@ def build(ms, date, now=None):
         sc = {"kind": "cta", "secs": OUTRO, "lines": ["كل النتائج والجداول", "لحظة بلحظة على الجون"]}
         return M.scene(sc, t, ctx)
 
-    pages = [ms[i:i + PER_PAGE] for i in range(0, len(ms), PER_PAGE)]
-    return [(intro, INTRO, True)] + [(page(p), PAGE, True) for p in pages] + [(outro, OUTRO, False)]
+    return [(intro, INTRO, True), (page(ms), page_secs(len(ms)), True), (outro, OUTRO, False)]
 
 
 def push_in(im, t, dur):
