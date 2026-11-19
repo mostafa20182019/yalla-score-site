@@ -55422,11 +55422,54 @@
    "seq": 6,
    "side": "a",
    "tag": null
+  },
+  {
+   "away": "شبيبة الأبيار",
+   "c": 560,
+   "cancelled": true,
+   "cancelled_at": "2026-11-18T17:10:00+00:00",
+   "game_id": "4890775",
+   "home": "شباب عين تموشنت",
+   "minute": "24'",
+   "player": null,
+   "score": "0-1",
+   "seen_at": "2026-11-18T17:09:00+00:00",
+   "seq": 1,
+   "side": "a",
+   "tag": null
+  },
+  {
+   "away": "الاتحاد السكندري",
+   "c": 553,
+   "cancelled": false,
+   "game_id": "4893635",
+   "home": "الجونة",
+   "minute": "105+1",
+   "player": "مؤمن عوض",
+   "score": "0-1",
+   "seen_at": "2026-11-18T17:20:00+00:00",
+   "seq": 1,
+   "side": "a",
+   "tag": null
+  },
+  {
+   "away": "نجم بن عكنون",
+   "c": 560,
+   "cancelled": false,
+   "game_id": "4890774",
+   "home": "النادي الرياضي القسنطيني",
+   "minute": "44",
+   "player": "نسيم الغول",
+   "score": "1-0",
+   "seen_at": "2026-11-18T17:33:00+00:00",
+   "seq": 1,
+   "side": "h",
+   "tag": null
   }
  ],
  "meta": {
-  "exported_at": "2026-11-18T10:19:16+00:00",
-  "n": 3828,
+  "exported_at": "2026-11-19T10:29:20+00:00",
+  "n": 3831,
   "source": "worker live store"
  }
 }

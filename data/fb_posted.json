@@ -1140,6 +1140,60 @@
    "title": "جي جي جابرييل رحل عن مانشستر يونايتد ويقترب من ريال مدريد",
    "ts": 1794990084
   },
+  "1191": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497028815869895",
+   "title": "خوان ماتا أعلن اعتزاله كرة القدم رسميًا عن عمر 38 عامًا",
+   "ts": 1795001250
+  },
+  "1192": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497166122522831",
+   "title": "أردا جولر يجدد عقده مع ريال مدريد رسميًا حتى 2032",
+   "ts": 1795011609
+  },
+  "1193": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497261562513287",
+   "title": "محمد صلاح يحصل على شارع باسمه في طرابزون رسميًا بعد موافقة تركيا",
+   "ts": 1795018802
+  },
+  "1194": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497315765841200",
+   "title": "محمد صلاح غاب عن قائمة مرشحي جلوب سوكر لأفضل لاعب في العالم",
+   "ts": 1795023007
+  },
+  "1195": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497398242499619",
+   "title": "برشلونة يحصد 3 من 5 جوائز الدوري الإسباني لموسم 2025-2026",
+   "ts": 1795030216
+  },
+  "1196": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497544399151670",
+   "title": "كومباني يعود لقيادة بايرن ميونخ بعد تعافيه من التهاب السحايا",
+   "ts": 1795046078
+  },
+  "1197": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497785422460901",
+   "title": "الأهلي يتصدر تصويت جائزة أفضل نادٍ تاريخي في جلوب سوكر 2026",
+   "ts": 1795069234
+  },
+  "1198": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497864319119678",
+   "title": "موعد مباراة الأهلي والنصر في الدوري السعودي والقناة الناقلة",
+   "ts": 1795076542
+  },
+  "1199": {
+   "og_ok": true,
+   "post_id": "104238901487012_1497864482452995",
+   "title": "محمد صلاح عاد لتدريبات طرابزون سبور قبل مواجهة أيوب سبور",
+   "ts": 1795076547
+  },
   "350": {
    "post_id": "104238901487012_1425812626324848",
    "title": "رسميًا.. طرابزون سبور يتعاقد مع فرانكولينو دجو لتعزيز هجوم فريق محمد صلاح",
@@ -6294,8 +6348,8 @@
  "posted_indexnow": {
   "https://elgoon.com/": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960765
+   "title": "2026-11-19",
+   "ts": 1795047088
   },
   "https://elgoon.com/a/1076": {
    "post_id": "1",
@@ -6752,165 +6806,205 @@
    "title": "2026-11-18T10:02:15+02:00",
    "ts": 1794990044
   },
+  "https://elgoon.com/a/1191": {
+   "post_id": "1",
+   "title": "2026-11-18T13:07:35+02:00",
+   "ts": 1795001216
+  },
+  "https://elgoon.com/a/1192": {
+   "post_id": "1",
+   "title": "2026-11-18T16:04:03+02:00",
+   "ts": 1795011565
+  },
+  "https://elgoon.com/a/1193": {
+   "post_id": "1",
+   "title": "2026-11-18T17:55:50+02:00",
+   "ts": 1795018767
+  },
+  "https://elgoon.com/a/1194": {
+   "post_id": "1",
+   "title": "2026-11-18T19:07:17+02:00",
+   "ts": 1795022975
+  },
+  "https://elgoon.com/a/1195": {
+   "post_id": "1",
+   "title": "2026-11-18T21:08:07+02:00",
+   "ts": 1795030183
+  },
+  "https://elgoon.com/a/1196": {
+   "post_id": "1",
+   "title": "2026-11-19T01:50:00+02:00",
+   "ts": 1795047102
+  },
+  "https://elgoon.com/a/1197": {
+   "post_id": "1",
+   "title": "2026-11-19T08:05:46+02:00",
+   "ts": 1795069185
+  },
+  "https://elgoon.com/a/1199": {
+   "post_id": "1",
+   "title": "2026-11-19T10:07:08+02:00",
+   "ts": 1795076504
+  },
   "https://elgoon.com/fixtures/afcon-qualifiers": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960777
+   "title": "2026-11-19",
+   "ts": 1795047094
   },
   "https://elgoon.com/fixtures/algeria": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960778
+   "title": "2026-11-19",
+   "ts": 1795047095
   },
   "https://elgoon.com/fixtures/caf-champions-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960777
+   "title": "2026-11-19",
+   "ts": 1795047094
   },
   "https://elgoon.com/fixtures/caf-confederation-cup": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960777
+   "title": "2026-11-19",
+   "ts": 1795047095
   },
   "https://elgoon.com/fixtures/champions-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960777
+   "title": "2026-11-19",
+   "ts": 1795047094
   },
   "https://elgoon.com/fixtures/conference-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960778
+   "title": "2026-11-19",
+   "ts": 1795047096
   },
   "https://elgoon.com/fixtures/egypt": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960775
+   "title": "2026-11-19",
+   "ts": 1795047092
   },
   "https://elgoon.com/fixtures/egypt-capital-cup": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960778
+   "title": "2026-11-19",
+   "ts": 1795047096
   },
   "https://elgoon.com/fixtures/egypt-cup": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960778
+   "title": "2026-11-19",
+   "ts": 1795047096
   },
   "https://elgoon.com/fixtures/egypt-second-division": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960779
+   "title": "2026-11-19",
+   "ts": 1795047096
   },
   "https://elgoon.com/fixtures/england": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960775
+   "title": "2026-11-19",
+   "ts": 1795047093
   },
   "https://elgoon.com/fixtures/europa-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960777
+   "title": "2026-11-19",
+   "ts": 1795047095
   },
   "https://elgoon.com/fixtures/france": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960776
+   "title": "2026-11-19",
+   "ts": 1795047093
   },
   "https://elgoon.com/fixtures/germany": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960776
+   "title": "2026-11-19",
+   "ts": 1795047093
   },
   "https://elgoon.com/fixtures/italy": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960776
+   "title": "2026-11-19",
+   "ts": 1795047093
   },
   "https://elgoon.com/fixtures/libya": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960778
+   "title": "2026-11-19",
+   "ts": 1795047096
   },
   "https://elgoon.com/fixtures/morocco": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960777
+   "title": "2026-11-19",
+   "ts": 1795047095
   },
   "https://elgoon.com/fixtures/nations-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960777
+   "title": "2026-11-19",
+   "ts": 1795047094
   },
   "https://elgoon.com/fixtures/saudi": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960776
+   "title": "2026-11-19",
+   "ts": 1795047094
   },
   "https://elgoon.com/fixtures/spain": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960776
+   "title": "2026-11-19",
+   "ts": 1795047093
   },
   "https://elgoon.com/fixtures/tunisia": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960778
+   "title": "2026-11-19",
+   "ts": 1795047095
   },
   "https://elgoon.com/fixtures/turkey": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960776
+   "title": "2026-11-19",
+   "ts": 1795047094
   },
   "https://elgoon.com/fixtures/u17-world-cup": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960779
+   "title": "2026-11-19",
+   "ts": 1795047097
   },
   "https://elgoon.com/insights": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960779
+   "title": "2026-11-19",
+   "ts": 1795047097
   },
   "https://elgoon.com/m/4672264": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961525
+   "title": "2026-11-19",
+   "ts": 1795047106
   },
   "https://elgoon.com/m/4672265": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961525
+   "title": "2026-11-19",
+   "ts": 1795047106
   },
   "https://elgoon.com/m/4672266": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961525
+   "title": "2026-11-19",
+   "ts": 1795047106
   },
   "https://elgoon.com/m/4672267": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961525
+   "title": "2026-11-19",
+   "ts": 1795047106
   },
   "https://elgoon.com/m/4672268": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961525
+   "title": "2026-11-19",
+   "ts": 1795047106
   },
   "https://elgoon.com/m/4672269": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961526
+   "title": "2026-11-19",
+   "ts": 1795047106
   },
   "https://elgoon.com/m/4672270": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961526
+   "title": "2026-11-19",
+   "ts": 1795047107
   },
   "https://elgoon.com/m/4672271": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961526
+   "title": "2026-11-19",
+   "ts": 1795047107
   },
   "https://elgoon.com/m/4672272": {
    "post_id": "1",
@@ -7139,8 +7233,8 @@
   },
   "https://elgoon.com/m/4716607": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961522
+   "title": "2026-11-19",
+   "ts": 1795047102
   },
   "https://elgoon.com/m/4716612": {
    "post_id": "1",
@@ -7149,8 +7243,8 @@
   },
   "https://elgoon.com/m/4716613": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961524
+   "title": "2026-11-19",
+   "ts": 1795047105
   },
   "https://elgoon.com/m/4722676": {
    "post_id": "1",
@@ -7159,8 +7253,8 @@
   },
   "https://elgoon.com/m/4722678": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961523
+   "title": "2026-11-19",
+   "ts": 1795047103
   },
   "https://elgoon.com/m/4763732": {
    "post_id": "1",
@@ -7209,8 +7303,8 @@
   },
   "https://elgoon.com/m/4763741": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961534
+   "title": "2026-11-19",
+   "ts": 1795048133
   },
   "https://elgoon.com/m/4763742": {
    "post_id": "1",
@@ -7219,8 +7313,8 @@
   },
   "https://elgoon.com/m/4763743": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962308
+   "title": "2026-11-19",
+   "ts": 1795048137
   },
   "https://elgoon.com/m/4763744": {
    "post_id": "1",
@@ -7229,13 +7323,13 @@
   },
   "https://elgoon.com/m/4763745": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961533
+   "title": "2026-11-19",
+   "ts": 1795048132
   },
   "https://elgoon.com/m/4763746": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961534
+   "title": "2026-11-19",
+   "ts": 1795048133
   },
   "https://elgoon.com/m/4763747": {
    "post_id": "1",
@@ -7354,13 +7448,13 @@
   },
   "https://elgoon.com/m/4772999": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961530
+   "title": "2026-11-19",
+   "ts": 1795048128
   },
   "https://elgoon.com/m/4773000": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961530
+   "title": "2026-11-19",
+   "ts": 1795048129
   },
   "https://elgoon.com/m/4773001": {
    "post_id": "1",
@@ -7369,38 +7463,38 @@
   },
   "https://elgoon.com/m/4773002": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961530
+   "title": "2026-11-19",
+   "ts": 1795048129
   },
   "https://elgoon.com/m/4773003": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961531
+   "title": "2026-11-19",
+   "ts": 1795048129
   },
   "https://elgoon.com/m/4773004": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961527
+   "title": "2026-11-19",
+   "ts": 1795048124
   },
   "https://elgoon.com/m/4773005": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961527
+   "title": "2026-11-19",
+   "ts": 1795048125
   },
   "https://elgoon.com/m/4773006": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961527
+   "title": "2026-11-19",
+   "ts": 1795048125
   },
   "https://elgoon.com/m/4773007": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961527
+   "title": "2026-11-19",
+   "ts": 1795048125
   },
   "https://elgoon.com/m/4773008": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961528
+   "title": "2026-11-19",
+   "ts": 1795048125
   },
   "https://elgoon.com/m/4789411": {
    "post_id": "1",
@@ -7424,8 +7518,8 @@
   },
   "https://elgoon.com/m/4789415": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961532
+   "title": "2026-11-19",
+   "ts": 1795048131
   },
   "https://elgoon.com/m/4789416": {
    "post_id": "1",
@@ -7439,8 +7533,8 @@
   },
   "https://elgoon.com/m/4789418": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961532
+   "title": "2026-11-19",
+   "ts": 1795048131
   },
   "https://elgoon.com/m/4789419": {
    "post_id": "1",
@@ -7459,28 +7553,28 @@
   },
   "https://elgoon.com/m/4798226": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961534
+   "title": "2026-11-19",
+   "ts": 1795048133
   },
   "https://elgoon.com/m/4798227": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961531
+   "title": "2026-11-19",
+   "ts": 1795048129
   },
   "https://elgoon.com/m/4798228": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962306
+   "title": "2026-11-19",
+   "ts": 1795048134
   },
   "https://elgoon.com/m/4798229": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961531
+   "title": "2026-11-19",
+   "ts": 1795048130
   },
   "https://elgoon.com/m/4798230": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962306
+   "title": "2026-11-19",
+   "ts": 1795048134
   },
   "https://elgoon.com/m/4798231": {
    "post_id": "1",
@@ -7489,8 +7583,8 @@
   },
   "https://elgoon.com/m/4798232": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961531
+   "title": "2026-11-19",
+   "ts": 1795048130
   },
   "https://elgoon.com/m/4800243": {
    "post_id": "1",
@@ -7714,43 +7808,43 @@
   },
   "https://elgoon.com/m/4803183": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961530
+   "title": "2026-11-19",
+   "ts": 1795048128
   },
   "https://elgoon.com/m/4803184": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961528
+   "title": "2026-11-19",
+   "ts": 1795048126
   },
   "https://elgoon.com/m/4803185": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961528
+   "title": "2026-11-19",
+   "ts": 1795048126
   },
   "https://elgoon.com/m/4803186": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961529
+   "title": "2026-11-19",
+   "ts": 1795048127
   },
   "https://elgoon.com/m/4803187": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961529
+   "title": "2026-11-19",
+   "ts": 1795048127
   },
   "https://elgoon.com/m/4803188": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961529
+   "title": "2026-11-19",
+   "ts": 1795048127
   },
   "https://elgoon.com/m/4803190": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961529
+   "title": "2026-11-19",
+   "ts": 1795048127
   },
   "https://elgoon.com/m/4803191": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961530
+   "title": "2026-11-19",
+   "ts": 1795048128
   },
   "https://elgoon.com/m/4804735": {
    "post_id": "1",
@@ -8304,8 +8398,8 @@
   },
   "https://elgoon.com/m/4883534": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961523
+   "title": "2026-11-19",
+   "ts": 1795047104
   },
   "https://elgoon.com/m/4883921": {
    "post_id": "1",
@@ -8439,73 +8533,73 @@
   },
   "https://elgoon.com/m/4883947": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961522
+   "title": "2026-11-19",
+   "ts": 1795047103
   },
   "https://elgoon.com/m/4883948": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961522
+   "title": "2026-11-19",
+   "ts": 1795047103
   },
   "https://elgoon.com/m/4883949": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961522
+   "title": "2026-11-19",
+   "ts": 1795047103
   },
   "https://elgoon.com/m/4883950": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961523
+   "title": "2026-11-19",
+   "ts": 1795047103
   },
   "https://elgoon.com/m/4883951": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961523
+   "title": "2026-11-19",
+   "ts": 1795047103
   },
   "https://elgoon.com/m/4883952": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961523
+   "title": "2026-11-19",
+   "ts": 1795047104
   },
   "https://elgoon.com/m/4883953": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961524
+   "title": "2026-11-19",
+   "ts": 1795047104
   },
   "https://elgoon.com/m/4883954": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962306
+   "title": "2026-11-19",
+   "ts": 1795047104
   },
   "https://elgoon.com/m/4883955": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961524
+   "title": "2026-11-19",
+   "ts": 1795047104
   },
   "https://elgoon.com/m/4883956": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961524
+   "title": "2026-11-19",
+   "ts": 1795047105
   },
   "https://elgoon.com/m/4883957": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794972356
+   "title": "2026-11-19",
+   "ts": 1795047105
   },
   "https://elgoon.com/m/4883958": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794972356
+   "title": "2026-11-19",
+   "ts": 1795047105
   },
   "https://elgoon.com/m/4883959": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961524
+   "title": "2026-11-19",
+   "ts": 1795047105
   },
   "https://elgoon.com/m/4883960": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961526
+   "title": "2026-11-19",
+   "ts": 1795047107
   },
   "https://elgoon.com/m/4885266": {
    "post_id": "1",
@@ -8619,43 +8713,43 @@
   },
   "https://elgoon.com/m/4890774": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961526
+   "title": "2026-11-19",
+   "ts": 1795048124
   },
   "https://elgoon.com/m/4890775": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961527
+   "title": "2026-11-19",
+   "ts": 1795048124
   },
   "https://elgoon.com/m/4890776": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961528
+   "title": "2026-11-19",
+   "ts": 1795048126
   },
   "https://elgoon.com/m/4890777": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961528
+   "title": "2026-11-19",
+   "ts": 1795048126
   },
   "https://elgoon.com/m/4890778": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961530
+   "title": "2026-11-19",
+   "ts": 1795048128
   },
   "https://elgoon.com/m/4890779": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961531
+   "title": "2026-11-19",
+   "ts": 1795048130
   },
   "https://elgoon.com/m/4890780": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961532
+   "title": "2026-11-19",
+   "ts": 1795048130
   },
   "https://elgoon.com/m/4890781": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961532
+   "title": "2026-11-19",
+   "ts": 1795048131
   },
   "https://elgoon.com/m/4890782": {
    "post_id": "1",
@@ -8709,8 +8803,8 @@
   },
   "https://elgoon.com/m/4891951": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961532
+   "title": "2026-11-19",
+   "ts": 1795048131
   },
   "https://elgoon.com/m/4891965": {
    "post_id": "1",
@@ -8756,6 +8850,11 @@
    "post_id": "1",
    "title": "2026-11-18",
    "ts": 1794963523
+  },
+  "https://elgoon.com/m/4893635": {
+   "post_id": "1",
+   "title": "2026-11-19",
+   "ts": 1795047107
   },
   "https://elgoon.com/m/558509": {
    "post_id": "1",
@@ -8839,23 +8938,23 @@
   },
   "https://elgoon.com/m/558525": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962306
+   "title": "2026-11-19",
+   "ts": 1795048134
   },
   "https://elgoon.com/m/558526": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962309
+   "title": "2026-11-19",
+   "ts": 1795048138
   },
   "https://elgoon.com/m/558527": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962309
+   "title": "2026-11-19",
+   "ts": 1795048139
   },
   "https://elgoon.com/m/558528": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962307
+   "title": "2026-11-19",
+   "ts": 1795048134
   },
   "https://elgoon.com/m/558529": {
    "post_id": "1",
@@ -8964,23 +9063,23 @@
   },
   "https://elgoon.com/m/559621": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962309
+   "title": "2026-11-19",
+   "ts": 1795048139
   },
   "https://elgoon.com/m/559622": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961533
+   "title": "2026-11-19",
+   "ts": 1795048132
   },
   "https://elgoon.com/m/559623": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962309
+   "title": "2026-11-19",
+   "ts": 1795048139
   },
   "https://elgoon.com/m/559624": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962310
+   "title": "2026-11-19",
+   "ts": 1795048140
   },
   "https://elgoon.com/m/559625": {
    "post_id": "1",
@@ -8994,13 +9093,13 @@
   },
   "https://elgoon.com/m/559627": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962310
+   "title": "2026-11-19",
+   "ts": 1795048140
   },
   "https://elgoon.com/m/559628": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962308
+   "title": "2026-11-19",
+   "ts": 1795048138
   },
   "https://elgoon.com/m/559629": {
    "post_id": "1",
@@ -9114,18 +9213,18 @@
   },
   "https://elgoon.com/m/560642": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962307
+   "title": "2026-11-19",
+   "ts": 1795048136
   },
   "https://elgoon.com/m/560643": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961533
+   "title": "2026-11-19",
+   "ts": 1795048132
   },
   "https://elgoon.com/m/560644": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962308
+   "title": "2026-11-19",
+   "ts": 1795048136
   },
   "https://elgoon.com/m/560645": {
    "post_id": "1",
@@ -9139,13 +9238,13 @@
   },
   "https://elgoon.com/m/560647": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962308
+   "title": "2026-11-19",
+   "ts": 1795048136
   },
   "https://elgoon.com/m/560648": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962308
+   "title": "2026-11-19",
+   "ts": 1795048137
   },
   "https://elgoon.com/m/560649": {
    "post_id": "1",
@@ -9154,13 +9253,13 @@
   },
   "https://elgoon.com/m/560650": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962308
+   "title": "2026-11-19",
+   "ts": 1795048137
   },
   "https://elgoon.com/m/560651": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962309
+   "title": "2026-11-19",
+   "ts": 1795048138
   },
   "https://elgoon.com/m/560652": {
    "post_id": "1",
@@ -9314,8 +9413,8 @@
   },
   "https://elgoon.com/m/564748": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961533
+   "title": "2026-11-19",
+   "ts": 1795048132
   },
   "https://elgoon.com/m/564749": {
    "post_id": "1",
@@ -9329,8 +9428,8 @@
   },
   "https://elgoon.com/m/564751": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962308
+   "title": "2026-11-19",
+   "ts": 1795048137
   },
   "https://elgoon.com/m/564752": {
    "post_id": "1",
@@ -9344,18 +9443,18 @@
   },
   "https://elgoon.com/m/564754": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962310
+   "title": "2026-11-19",
+   "ts": 1795048140
   },
   "https://elgoon.com/m/564755": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961534
+   "title": "2026-11-19",
+   "ts": 1795048133
   },
   "https://elgoon.com/m/564756": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962309
+   "title": "2026-11-19",
+   "ts": 1795048138
   },
   "https://elgoon.com/m/564757": {
    "post_id": "1",
@@ -9469,33 +9568,33 @@
   },
   "https://elgoon.com/m/565857": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962307
+   "title": "2026-11-19",
+   "ts": 1795048135
   },
   "https://elgoon.com/m/565858": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962307
+   "title": "2026-11-19",
+   "ts": 1795048135
   },
   "https://elgoon.com/m/565859": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961533
+   "title": "2026-11-19",
+   "ts": 1795048131
   },
   "https://elgoon.com/m/565860": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962307
+   "title": "2026-11-19",
+   "ts": 1795048135
   },
   "https://elgoon.com/m/565861": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962309
+   "title": "2026-11-19",
+   "ts": 1795048139
   },
   "https://elgoon.com/m/565862": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962307
+   "title": "2026-11-19",
+   "ts": 1795048135
   },
   "https://elgoon.com/m/565863": {
    "post_id": "1",
@@ -9509,8 +9608,8 @@
   },
   "https://elgoon.com/m/565865": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794962307
+   "title": "2026-11-19",
+   "ts": 1795048136
   },
   "https://elgoon.com/m/565866": {
    "post_id": "1",
@@ -9744,13 +9843,13 @@
   },
   "https://elgoon.com/news": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960765
+   "title": "2026-11-19",
+   "ts": 1795047089
   },
   "https://elgoon.com/news/egypt": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960769
+   "title": "2026-11-19",
+   "ts": 1795047089
   },
   "https://elgoon.com/news/egypt-p10": {
    "post_id": "1",
@@ -9814,8 +9913,8 @@
   },
   "https://elgoon.com/news/europe": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960771
+   "title": "2026-11-19",
+   "ts": 1795047089
   },
   "https://elgoon.com/news/europe-p10": {
    "post_id": "1",
@@ -9999,223 +10098,223 @@
   },
   "https://elgoon.com/scorers/algeria": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960775
+   "title": "2026-11-19",
+   "ts": 1795047091
   },
   "https://elgoon.com/scorers/champions-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960774
+   "title": "2026-11-19",
+   "ts": 1795047091
   },
   "https://elgoon.com/scorers/conference-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960775
+   "title": "2026-11-19",
+   "ts": 1795047092
   },
   "https://elgoon.com/scorers/egypt": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960773
+   "title": "2026-11-19",
+   "ts": 1795047089
   },
   "https://elgoon.com/scorers/egypt-capital-cup": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960775
+   "title": "2026-11-19",
+   "ts": 1795047092
   },
   "https://elgoon.com/scorers/egypt-cup": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960775
+   "title": "2026-11-19",
+   "ts": 1795047092
   },
   "https://elgoon.com/scorers/england": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960773
+   "title": "2026-11-19",
+   "ts": 1795047089
   },
   "https://elgoon.com/scorers/europa-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960774
+   "title": "2026-11-19",
+   "ts": 1795047091
   },
   "https://elgoon.com/scorers/france": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960774
+   "title": "2026-11-19",
+   "ts": 1795047090
   },
   "https://elgoon.com/scorers/germany": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960773
+   "title": "2026-11-19",
+   "ts": 1795047090
   },
   "https://elgoon.com/scorers/italy": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960773
+   "title": "2026-11-19",
+   "ts": 1795047090
   },
   "https://elgoon.com/scorers/morocco": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960774
+   "title": "2026-11-19",
+   "ts": 1795047091
   },
   "https://elgoon.com/scorers/saudi": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960774
+   "title": "2026-11-19",
+   "ts": 1795047091
   },
   "https://elgoon.com/scorers/spain": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960773
+   "title": "2026-11-19",
+   "ts": 1795047090
   },
   "https://elgoon.com/scorers/tunisia": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960775
+   "title": "2026-11-19",
+   "ts": 1795047092
   },
   "https://elgoon.com/scorers/turkey": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960774
+   "title": "2026-11-19",
+   "ts": 1795047090
   },
   "https://elgoon.com/standings/algeria": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961515
+   "title": "2026-11-19",
+   "ts": 1795047099
   },
   "https://elgoon.com/standings/champions-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961514
+   "title": "2026-11-19",
+   "ts": 1795047098
   },
   "https://elgoon.com/standings/conference-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961515
+   "title": "2026-11-19",
+   "ts": 1795047099
   },
   "https://elgoon.com/standings/egypt": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960779
+   "title": "2026-11-19",
+   "ts": 1795047097
   },
   "https://elgoon.com/standings/egypt-second-division": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961516
+   "title": "2026-11-19",
+   "ts": 1795047100
   },
   "https://elgoon.com/standings/england": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960779
+   "title": "2026-11-19",
+   "ts": 1795047097
   },
   "https://elgoon.com/standings/europa-league": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961515
+   "title": "2026-11-19",
+   "ts": 1795047099
   },
   "https://elgoon.com/standings/france": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960780
+   "title": "2026-11-19",
+   "ts": 1795047098
   },
   "https://elgoon.com/standings/germany": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960780
+   "title": "2026-11-19",
+   "ts": 1795047098
   },
   "https://elgoon.com/standings/italy": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960780
+   "title": "2026-11-19",
+   "ts": 1795047098
   },
   "https://elgoon.com/standings/morocco": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961515
+   "title": "2026-11-19",
+   "ts": 1795047099
   },
   "https://elgoon.com/standings/saudi": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960780
+   "title": "2026-11-19",
+   "ts": 1795047098
   },
   "https://elgoon.com/standings/spain": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960779
+   "title": "2026-11-19",
+   "ts": 1795047097
   },
   "https://elgoon.com/standings/tunisia": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961515
+   "title": "2026-11-19",
+   "ts": 1795047099
   },
   "https://elgoon.com/standings/turkey": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794960780
+   "title": "2026-11-19",
+   "ts": 1795047098
   },
   "https://elgoon.com/team/al-ahly": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961516
+   "title": "2026-11-19",
+   "ts": 1795047100
   },
   "https://elgoon.com/team/al-hilal-sudan": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961518
+   "title": "2026-11-19",
+   "ts": 1795047102
   },
   "https://elgoon.com/team/arsenal": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961517
+   "title": "2026-11-19",
+   "ts": 1795047101
   },
   "https://elgoon.com/team/barcelona": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961517
+   "title": "2026-11-19",
+   "ts": 1795047101
   },
   "https://elgoon.com/team/chelsea": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961518
+   "title": "2026-11-19",
+   "ts": 1795047102
   },
   "https://elgoon.com/team/egypt": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961516
+   "title": "2026-11-19",
+   "ts": 1795047100
   },
   "https://elgoon.com/team/liverpool": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961518
+   "title": "2026-11-19",
+   "ts": 1795047101
   },
   "https://elgoon.com/team/man-city": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961517
+   "title": "2026-11-19",
+   "ts": 1795047101
   },
   "https://elgoon.com/team/man-united": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961517
+   "title": "2026-11-19",
+   "ts": 1795047101
   },
   "https://elgoon.com/team/pyramids": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961516
+   "title": "2026-11-19",
+   "ts": 1795047100
   },
   "https://elgoon.com/team/real-madrid": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961517
+   "title": "2026-11-19",
+   "ts": 1795047101
   },
   "https://elgoon.com/team/trabzonspor": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961518
+   "title": "2026-11-19",
+   "ts": 1795047102
   },
   "https://elgoon.com/team/zamalek": {
    "post_id": "1",
-   "title": "2026-11-18",
-   "ts": 1794961516
+   "title": "2026-11-19",
+   "ts": 1795047100
   },
   "https://yallascore.site/": {
    "post_id": "1",
@@ -14738,6 +14837,36 @@
    "title": "جي جي جابرييل رحل عن مانشستر يونايتد ويقترب من ريال مدريد",
    "ts": 1794990047
   },
+  "1191": {
+   "post_id": "1/1",
+   "title": "خوان ماتا أعلن اعتزاله كرة القدم رسميًا عن عمر 38 عامًا",
+   "ts": 1795001220
+  },
+  "1192": {
+   "post_id": "1/1",
+   "title": "أردا جولر يجدد عقده مع ريال مدريد رسميًا حتى 2032",
+   "ts": 1795011569
+  },
+  "1196": {
+   "post_id": "1/1",
+   "title": "كومباني يعود لقيادة بايرن ميونخ بعد تعافيه من التهاب السحايا",
+   "ts": 1795072960
+  },
+  "1197": {
+   "post_id": "1/1",
+   "title": "الأهلي يتصدر تصويت جائزة أفضل نادٍ تاريخي في جلوب سوكر 2026",
+   "ts": 1795069189
+  },
+  "1198": {
+   "post_id": "1/1",
+   "title": "موعد مباراة الأهلي والنصر في الدوري السعودي والقناة الناقلة",
+   "ts": 1795082095
+  },
+  "1199": {
+   "post_id": "1/1",
+   "title": "محمد صلاح عاد لتدريبات طرابزون سبور قبل مواجهة أيوب سبور",
+   "ts": 1795077599
+  },
   "623": {
    "post_id": "1/1",
    "title": "الأهلي يكشف إصابتي بنشرقي والدبيس قبل ديربي الزمالك",
@@ -15964,6 +16093,16 @@
    "title": "سلافيا براغ - أرسنال",
    "ts": 1793832356
   },
+  "file:egypt-cup-r16-2026-11-18": {
+   "post_id": "2293382181459719",
+   "title": "reel egypt-cup-r16-2026-11-18",
+   "ts": 1795010060
+  },
+  "file:egypt-u17-greece-2026-11-19": {
+   "post_id": "1140586475615318",
+   "title": "reel egypt-u17-greece-2026-11-19",
+   "ts": 1795075861
+  },
   "file:nations-qf-2026-11-18": {
    "post_id": "1450204523885718",
    "title": "reel nations-qf-2026-11-18",
@@ -15983,6 +16122,13 @@
    "post_id": "1424459779896084",
    "title": "ليلة برج العرب — صلاح وضربة جزاء 28 سنة",
    "ts": 1793907546
+  }
+ },
+ "posted_text": {
+  "egypt-u17-greece-2026-11-19": {
+   "post_id": "104238901487012_1497858759120234",
+   "title": "🇪🇬 النهارده منتخب مصر للناشئين يبدأ مشواره في كأس العالم تحت 17 سنة في قطر.",
+   "ts": 1795076027
   }
  },
  "posted_tg": {
