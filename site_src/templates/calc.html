@@ -1,0 +1,44 @@
+{# /calc/<slug> - «حاسبة الترتيب» (2026-11-19): the reader picks the coming
+   results and the table re-sorts (snippets/calc_js.html). Without the script
+   the page still says something true: the table as it stands and the next
+   round's matches - that is what a crawler reads. Lines are joined with NO
+   separator by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+<nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/leagues.html">البطولات</a> › حاسبة ترتيب {{ label }}</nav>
+<h1 class="page-h">حاسبة ترتيب {{ label }} {{ season }}</h1>
+<section class="minfo">
+  <p>اختر نتيجة كل مباراة قادمة في {{ label }}، وشاهد جدول الترتيب يتغيّر أمامك فورًا. المتاح الآن: <b>{{ rounds_txt }}</b> و<b>{{ matches_txt }}</b> لم تُلعب بعد.</p>
+  <p class="hintline">الفوز يُحسب 1-0 والتعادل 1-1. عند تساوي النقاط يكون الترتيب بفارق الأهداف ثم الأهداف المسجلة، وقد تختلف لائحة البطولة الرسمية. اختياراتك تبقى في متصفحك فقط.</p>
+</section>
+<div id="calc" class="calc" data-slug="{{ slug }}">
+  <section class="minfo">
+    <div class="calc-nav">
+      <button type="button" class="calc-prev" aria-label="الجولة السابقة" hidden>›</button>
+      <h2 id="calcRound">الجولة {{ first_round }}</h2>
+      <button type="button" class="calc-next" aria-label="الجولة التالية" hidden>‹</button>
+    </div>
+    <div id="calcMatches" class="calc-ms">
+      {% for m in first %}
+      <div class="calc-m"><span class="calc-h"><bdi>{{ m.h }}</bdi></span><span class="calc-vs">×</span><span class="calc-a"><bdi>{{ m.a }}</bdi></span>{% if m.when %}<span class="calc-w">{{ m.when }}</span>{% endif %}</div>
+      {% endfor %}
+    </div>
+    <p class="calc-bar"><span id="calcCount"></span><button type="button" id="calcReset" hidden>مسح التوقعات</button></p>
+  </section>
+  <section class="minfo">
+    <h2>ترتيب {{ label }} بعد توقعاتك</h2>
+    <table class="calc-t">
+      <thead><tr><th>#</th><th><span class="sr-only">التغيّر</span></th><th class="calc-tm">الفريق</th><th>لعب</th><th>+/-</th><th>نقاط</th></tr></thead>
+      <tbody id="calcBody">
+        {% for r in rows %}
+        <tr><td class="calc-pos">{{ r.pos }}</td><td class="calc-mv"></td><td class="calc-tm"><bdi>{{ r.name }}</bdi></td><td>{{ r.p }}</td><td class="calc-gd">{{ r.gd }}</td><td class="calc-pts">{{ r.pts }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </section>
+</div>
+{{ faq }}
+<p class="more-link">{% for link in links %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
+{{ crumbs_ld }}
+<script type="application/json" id="calcData">{{ data }}</script>
+{{ calc_js }}
+{{ page_foot }}

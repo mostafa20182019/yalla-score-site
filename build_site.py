@@ -110,6 +110,7 @@ from site_pages.insights import insights_page  # noqa: E402
 from site_pages.matches import matches_page, match_pages  # noqa: E402
 from site_pages.leagues import league_pages, fixtures_pages, leagues_page, stats_page  # noqa: E402
 from site_pages.clubs import club_pages  # noqa: E402
+from site_pages.calc import calc_pages  # noqa: E402
 from site_pages.h2h import h2h_pages  # noqa: E402
 from site_pages.predictions import (  # noqa: E402,F401
     prediction_history_page, analysis_pages, analysis_section)
@@ -247,6 +248,7 @@ def build():
     fixtures_pages(fx_by_comp, season, st_by_comp, urls,
                    {s.get("competition"): s["groups"] for s in standings or [] if s.get("groups")},
                    m_all=m_all, bycomp=_bycomp)
+    calc_pages(fx_by_comp, season, st_by_comp, urls)    # «حاسبة الترتيب» (2026-11-19)
     leagues_page(_comps_with_table, fx_by_comp, urls)   # «البطولات» tab (2026-10-26)
     if PREDICTIONS_ON:            # /analysis + /analysis/<league> + /predictions
         analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,

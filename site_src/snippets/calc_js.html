@@ -1,0 +1,87 @@
+<script>
+/* «حاسبة الترتيب» (2026-11-19): /calc/<slug>. The page's JSON (#calcData) is
+   the saved table and the matches still to play; the reader picks home win /
+   draw / away win per match and the table is re-added and re-sorted here, in
+   the browser. A win counts 1-0 and a draw 1-1 (the page says so). The picks
+   are kept in this browser only (localStorage), per league. Every name is
+   written with textContent - nothing from the feed is ever parsed as HTML. */
+(function(){
+  var root=document.getElementById('calc'), src=document.getElementById('calcData');
+  if(!root||!src) return;
+  var D; try{ D=JSON.parse(src.textContent); }catch(e){ return; }
+  if(!D||!D.teams||!D.rounds||!D.rounds.length) return;
+  var KEY='elgoonCalc:'+(root.getAttribute('data-slug')||''), picks={}, ri=0;
+  try{ picks=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ picks={}; }
+  /* a pick for a match that has since been played (it left the list) is dropped */
+  var live={}; D.rounds.forEach(function(r){ r.m.forEach(function(m){ live[m[0]]=1; }); });
+  Object.keys(picks).forEach(function(k){ if(!live[k]||'hda'.indexOf(picks[k])<0) delete picks[k]; });
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(picks)); }catch(e){} }
+  function el(tag,cls,txt){ var e=document.createElement(tag); if(cls) e.className=cls; if(txt!=null) e.textContent=txt; return e; }
+  function crest(t){ var s=el('span','calc-cr'); if(t.c){ var i=document.createElement('img'); i.src=t.c; i.alt=''; i.width=24; i.height=24; i.loading='lazy'; s.appendChild(i); } return s; }
+
+  var elRound=document.getElementById('calcRound'), elMs=document.getElementById('calcMatches'),
+      elBody=document.getElementById('calcBody'), elCount=document.getElementById('calcCount'),
+      elReset=document.getElementById('calcReset'), prev=root.querySelector('.calc-prev'), next=root.querySelector('.calc-next');
+
+  function table(){
+    var rows=D.teams.map(function(t,i){ return {i:i,n:t.n,c:t.c,p:t.p,w:t.w,d:t.d,l:t.l,gf:t.gf,ga:t.ga,pts:t.pts,ch:0}; });
+    D.rounds.forEach(function(r){ r.m.forEach(function(m){
+      var v=picks[m[0]]; if(!v) return;
+      var h=rows[m[1]], a=rows[m[2]]; h.p++; a.p++; h.ch=a.ch=1;
+      if(v==='h'){ h.w++; a.l++; h.pts+=3; h.gf++; a.ga++; }
+      else if(v==='a'){ a.w++; h.l++; a.pts+=3; a.gf++; h.ga++; }
+      else { h.d++; a.d++; h.pts++; a.pts++; h.gf++; h.ga++; a.gf++; a.ga++; }
+    }); });
+    rows.sort(function(x,y){ return (y.pts-x.pts)||((y.gf-y.ga)-(x.gf-x.ga))||(y.gf-x.gf)||(x.i-y.i); });
+    return rows;
+  }
+  function drawTable(){
+    var rows=table(); elBody.textContent='';
+    rows.forEach(function(r,pos){
+      var tr=el('tr', r.ch?'calc-ch':'');
+      tr.appendChild(el('td','calc-pos',String(pos+1)));
+      var mv=r.i-pos, m=el('td','calc-mv'+(mv>0?' up':mv<0?' dn':''), mv>0?'▲'+mv:mv<0?'▼'+(-mv):'');
+      if(mv) m.setAttribute('aria-label',(mv>0?'صعد ':'هبط ')+Math.abs(mv));
+      tr.appendChild(m);
+      var nm=el('td','calc-tm'); nm.appendChild(crest(r)); nm.appendChild(el('bdi','',r.n)); tr.appendChild(nm);
+      tr.appendChild(el('td','',String(r.p)));
+      var gd=r.gf-r.ga; tr.appendChild(el('td','calc-gd',(gd>0?'+':'')+gd));
+      tr.appendChild(el('td','calc-pts',String(r.pts)));
+      elBody.appendChild(tr);
+    });
+  }
+  function drawRound(){
+    var r=D.rounds[ri]; elRound.textContent='الجولة '+r.r; elMs.textContent='';
+    r.m.forEach(function(m){
+      var h=D.teams[m[1]], a=D.teams[m[2]], row=el('div','calc-m');
+      var hs=el('span','calc-h'); hs.appendChild(crest(h)); hs.appendChild(el('bdi','',h.n)); row.appendChild(hs);
+      var bs=el('span','calc-btns'); bs.setAttribute('role','group'); bs.setAttribute('aria-label','نتيجة '+h.n+' و'+a.n);
+      [['h','فوز','فوز '+h.n],['d','تعادل','تعادل'],['a','فوز','فوز '+a.n]].forEach(function(o){
+        var b=el('button','calc-b'+(picks[m[0]]===o[0]?' on':''),o[1]); b.type='button';
+        b.setAttribute('aria-label',o[2]); b.setAttribute('aria-pressed',picks[m[0]]===o[0]?'true':'false');
+        b.addEventListener('click',function(){
+          if(picks[m[0]]===o[0]) delete picks[m[0]]; else picks[m[0]]=o[0];
+          save(); drawRound(); drawTable(); count();
+        });
+        bs.appendChild(b);
+      });
+      row.appendChild(bs);
+      var as=el('span','calc-a'); as.appendChild(el('bdi','',a.n)); as.appendChild(crest(a)); row.appendChild(as);
+      if(m[3]) row.appendChild(el('span','calc-w',m[3]));
+      elMs.appendChild(row);
+    });
+    if(prev){ prev.hidden=false; prev.disabled=ri===0; }
+    if(next){ next.hidden=false; next.disabled=ri===D.rounds.length-1; }
+  }
+  function count(){
+    var n=Object.keys(picks).length;
+    if(elCount) elCount.textContent=n? ('توقعاتك: '+n+(n>10?' مباراة':n>2?' مباريات':n===2?' مباراتان':' مباراة')) : 'لم تختر أي نتيجة بعد';
+    if(elReset) elReset.hidden=!n;
+  }
+  if(prev) prev.addEventListener('click',function(){ if(ri>0){ ri--; drawRound(); } });
+  if(next) next.addEventListener('click',function(){ if(ri<D.rounds.length-1){ ri++; drawRound(); } });
+  if(elReset) elReset.addEventListener('click',function(){ picks={}; save(); drawRound(); drawTable(); count(); });
+  root.classList.add('calc-on');
+  drawRound(); drawTable(); count();
+})();
+</script>

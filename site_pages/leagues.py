@@ -129,6 +129,10 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
             if ((fx_by_comp or {}).get(comp) or {}).get("rounds"):
                 _more.append(f'<a href="/fixtures/{slug}.html">جدول مباريات {esc(label)} ومواعيد المباريات القادمة ←</a>')
             _more.append(f'<a href="{sc_url}">ترتيب هدافي {esc(label)} ←</a>')
+            # «حاسبة الترتيب» (2026-11-19) - the same test the page builder uses
+            from site_lib.calc import calc_data as _calc_data
+            if _calc_data(st, (fx_by_comp or {}).get(comp)):
+                _more.append(f'<a href="/calc/{slug}.html">حاسبة ترتيب {esc(label)}: توقّع النتائج وشاهد الجدول ←</a>')
             _more += [f'<a href="/h2h/{p["slug"]}.html">{esc(_H2H.link_label(p))} ←</a>'
                       for p in _H2H.pairs_for_league(comp)]
             write(f"standings/{slug}.html", render(

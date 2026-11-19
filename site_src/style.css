@@ -1556,6 +1556,44 @@ a.tc-v{color:var(--green-d)}
 a.fx{color:inherit;text-decoration:none}
 a.fx:hover{background:#f4f8fb}
 @media(max-width:560px){.h2h-t{font-size:.82rem}.h2h-t th,.h2h-t td{padding:8px 4px}.h2h-t thead th{white-space:normal}.h2h-cell b{font-size:1.6rem}.h2h-crest{width:44px;height:44px}.h2h-mid{min-width:64px}.h2h-r{gap:6px;font-size:.92rem}}
+
+/* «حاسبة الترتيب» (2026-11-19): /calc/<slug> */
+.calc-nav{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.calc-nav h2{margin:0;font-size:1.05rem}
+.calc-prev,.calc-next{font:inherit;font-size:1.3rem;font-weight:900;line-height:1;cursor:pointer;border:0;border-radius:50%;width:40px;height:40px;background:var(--green-d);color:#fff}
+.calc-prev:disabled,.calc-next:disabled{background:#cbd5e1;cursor:default}
+.calc-prev[hidden],.calc-next[hidden]{display:none}
+.calc-ms{display:flex;flex-direction:column}
+.calc-m{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:6px 8px;padding:10px 0;border-top:1px solid #eef2f6}
+.calc-m:first-child{border-top:0}
+.calc-h,.calc-a{display:flex;align-items:center;gap:6px;font-weight:800;font-size:.92rem;min-width:0}
+.calc-a{justify-content:flex-end}
+.calc-h bdi,.calc-a bdi{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.calc-cr{display:inline-flex;width:24px;height:24px;flex:none}
+.calc-cr img{width:24px;height:24px;object-fit:contain}
+.calc-vs{color:var(--muted);font-weight:800}
+.calc-btns{display:inline-flex;gap:4px}
+.calc-b{font:inherit;font-size:.78rem;font-weight:800;cursor:pointer;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;border-radius:999px;padding:0 10px;min-height:36px;min-width:44px}
+.calc-b.on{background:var(--green-d);border-color:var(--green-d);color:#fff}
+.calc-w{grid-column:1/-1;text-align:center;font-size:.74rem;font-weight:700;color:var(--muted)}
+.calc-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:10px 0 0;font-size:.82rem;font-weight:700;color:var(--muted)}
+#calcReset{font:inherit;font-size:.8rem;font-weight:800;cursor:pointer;border:1px solid #cbd5e1;background:#fff;color:#b91c1c;border-radius:999px;padding:0 14px;min-height:36px}
+#calcReset[hidden]{display:none}
+.calc-t{width:100%;border-collapse:collapse;font-size:.9rem}
+.calc-t th{font-size:.74rem;color:var(--muted);font-weight:800;padding:6px 4px;text-align:center;border-bottom:1px solid #e2e8f0}
+.calc-t td{padding:8px 4px;text-align:center;border-bottom:1px solid #f1f5f9}
+.calc-t .calc-tm{text-align:start;font-weight:800}
+.calc-t td.calc-tm{display:flex;align-items:center;gap:8px}
+.calc-pos{width:28px;color:var(--muted);font-weight:800}
+.calc-mv{width:34px;font-size:.72rem;font-weight:900}
+.calc-mv.up{color:#15803d}
+.calc-mv.dn{color:#b91c1c}
+.calc-pts{font-weight:900}
+.calc-ch td{background:#f0f9ff}
+/* phones: the two names on one line, whole; the three choices under them, full width
+   (side by side the buttons cut «وادي دجلة» and «الاتحاد السكندري» to three letters) */
+@media(max-width:560px){.calc-m{grid-template-columns:1fr 1fr}.calc-btns{grid-column:1/-1;grid-row:2;display:flex}.calc-b{flex:1}.calc-h bdi,.calc-a bdi{white-space:normal}}
+
 /* «تابع فريقك» (2026-11-19): the club page's button, the home page's picker and block */
 .follow-btn{margin-top:10px;font:inherit;font-weight:800;font-size:.9rem;cursor:pointer;border:1.5px solid var(--green-d);background:#fff;color:var(--green-d);border-radius:999px;padding:7px 16px;min-height:40px}
 .follow-btn.on{background:var(--green-d);color:#fff}
