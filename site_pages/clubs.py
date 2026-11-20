@@ -267,7 +267,10 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         from site_lib.h2h import link_label, pairs_for_club
         h2h_link = [{"href": Markup(f"/h2h/{_p['slug']}.html"), "label": link_label(_p)}
                     for _p in pairs_for_club(slug)]
-        others = [o for o in TEAM_PAGES if o["slug"] != slug]
+        # a league page (2026-11-20) is listed beside its own league only:
+        # thirty-five more chips on every club page would bury the rest
+        others = [o for o in TEAM_PAGES if o["slug"] != slug
+                  and (not o.get("league_page") or o["league"] == tp["league"])]
         club_ld = jsonld({
             "@context": "https://schema.org", "@type": "SportsTeam",
             "name": name, "sport": "Football", "url": SITE_BASE + t_url,

@@ -546,7 +546,10 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             # page stays indexable and linked; the sitemap carries only the last
             # 7 days + everything to come, any curated-club match, and any page
             # carrying an original article (that URL replaced an article URL).
-            if sm_cut <= m["kickoff"] <= sm_end or _art or _clubs:
+            # a LEAGUE page's club (2026-11-20) does not keep its matches in
+            # the sitemap for the season: that would put every Egyptian and
+            # Saudi league match there - the thin pages the cap is for
+            if sm_cut <= m["kickoff"] <= sm_end or _art or any(not tp.get("league_page") for tp in _clubs):
                 urls.append(murl)
                 n_mp_sm += 1
     print(f"  + match pages: {n_mp} ({n_mp_idx} indexable, {n_mp_sm} in the sitemap)")

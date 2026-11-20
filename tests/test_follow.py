@@ -33,9 +33,13 @@ def ck(msg, cond, extra=""):
 
 
 pick = F.my_pick_html()
-ck("1 the picker is hidden in the HTML and lists every club page once",
+# the league pages (2026-11-20: every club of the Egyptian and Saudi leagues)
+# have a page and a follow button on it, but are not in the picker - it
+# would be fifty chips
+ck("1 the picker is hidden in the HTML and lists every club page once - the league pages apart",
    'id="myPick"' in pick and " hidden>" in pick.split(">")[0] + ">"
-   and all(pick.count(f'data-slug="{tp["slug"]}"') == 1 for tp in TEAM_PAGES), pick[:120])
+   and all(pick.count(f'data-slug="{tp["slug"]}"') == (0 if tp.get("league_page") else 1) for tp in TEAM_PAGES)
+   and pick.count("data-slug=") <= 20, pick[:120])
 ck("2 ...with a way to dismiss it", "data-my-no" in pick)
 
 blk = F.my_block_html("الأهلي", "al-ahly", "/assets/crests/x.png", "المركز 2 · 20 نقطة",

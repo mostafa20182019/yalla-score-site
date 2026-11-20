@@ -73,13 +73,15 @@ def G(c, h, a, hs=1, as_=0, i=900):
 # ------------------------------------------------------------- 1. whose game
 ck("1 an Egyptian league match between two club pages reaches both",
    T.slugs_for_game(G(552, "الأهلي", "بيراميدز")) == ["al-ahly", "pyramids"])
-ck("2 the Saudi «الأهلي» (Saudi Pro League) is not the Egyptian club", T.slugs_for_game(G(649, "الفتح", "الأهلي")) == [])
+ck("2 the Saudi «الأهلي» (Saudi Pro League) is not the Egyptian club: its own page since 2026-11-20, never al-ahly",
+   sorted(T.slugs_for_game(G(649, "الفتح", "الأهلي"))) == ["al-ahli-saudi", "al-fateh"])
 ck("3 «الأهلي طرابلس» is not «الأهلي»: exact names", T.slugs_for_game(G(627, "الأهلي طرابلس", "الزمالك")) == ["zamalek"])
 ck("4 a European club is matched by its Arabic name (the payload is the Arabic feed)",
    T.slugs_for_game(G(7, "ليفربول", "تشيلسي")) == ["liverpool", "chelsea"])
 ck("5 the national team's page takes the qualifiers, not the under-17 side",
    T.slugs_for_game(G(588, "مالاوي", "مصر")) == ["egypt"] and T.slugs_for_game(G(5582, "مصر تحت 17", "اليونان تحت 17")) == [])
-ck("6 a match of clubs with no page reaches nobody", T.slugs_for_game(G(552, "سموحة", "زد")) == [])
+ck("6 a match of clubs with no page reaches nobody; a league page's club reaches its own followers",
+   T.slugs_for_game(G(552, "فاركو", "حرس الحدود")) == [] and T.slugs_for_game(G(552, "سموحة", "زد")) == ["smouha", "zed"])
 
 # ------------------------------------------------------------- 2. payloads
 gp = json.loads(T.goal_payload(G(552, "الأهلي", "بيراميدز"), {"s": "h", "p": "إمام عاشور", "m": "34"}))

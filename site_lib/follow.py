@@ -38,7 +38,7 @@ MY_BOOT = ("<script>try{var t=localStorage.getItem('elgoonTeam'),o=false;"
 
 def my_pick_html():
     chips = "".join(f'<button type="button" class="mp-c" data-slug="{esc(tp["slug"])}">{esc(tp["name"])}</button>'
-                    for tp in TEAM_PAGES)
+                    for tp in TEAM_PAGES if not tp.get("league_page"))   # the picker stays short (2026-11-20)
     return ('<div id="myPick" class="my-pick" hidden>'
             '<b class="mp-t">⭐ اختر فريقك</b>'
             '<button type="button" class="mp-x" data-my-no aria-label="إخفاء اختيار الفريق">×</button>'

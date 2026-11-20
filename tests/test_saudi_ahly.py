@@ -78,8 +78,8 @@ ck("13 «شباب الأهلي» (Dubai) is cut out, not a veto",
 # --- the match-row link (same scope rule)
 ck("14 _team_link: Al Ahly on a CAF Champions League row is linked",
    "/team/al-ahly" in N._team_link(CAF, "الأهلي"))
-ck("15 _team_link: «الأهلي» on a Saudi Pro League row is NOT linked",
-   "/team/" not in N._team_link(SPL, "الأهلي"))
+ck("15 _team_link: «الأهلي» on a Saudi Pro League row links the SAUDI club's page (2026-11-20), never the Egyptian one",
+   "/team/al-ahli-saudi" in N._team_link(SPL, "الأهلي") and "/team/al-ahly" not in N._team_link(SPL, "الأهلي"))
 
 # --- article_put: the brief's competition + no cache bleed between drafts
 import article_put as AP                                           # noqa: E402

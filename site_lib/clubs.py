@@ -144,6 +144,74 @@ TEAM_PAGES = [
      "news_excl": ["منتخب السودان للشباب", "منتخب السودان الأولمبي", "منتخب السودان تحت", "منتخب جنوب السودان"]},
 ]
 
+# ---- LEAGUE PAGES (user 2026-11-20, «اعمل 13»; SEO review of the same day):
+# a page for EVERY club of the Egyptian and the Saudi league. /standings/egypt
+# linked 3 of its 20 clubs and /standings/saudi none, while the one page of
+# this kind we had (Trabzonspor) is the site's only non-brand ranking. Each is
+# page_only - a /team page, its table row's link, the sitemap - and
+# league_page on top: NOT in the «اختر فريقك» picker and not in every other
+# club page's «أندية أخرى» list (fifty chips), only beside its own league.
+#   feed  = the feed's own name, matched EXACTLY inside the scope
+#   name  = the page's name. A Saudi namesake of another club we cover says
+#           so («الأهلي السعودي», «الهلال السعودي») - on this site the bare
+#           name is the Egyptian club / the Sudanese side.
+#   news  = phrases that can only mean THIS club. A bare «المصري» is in
+#           «الدوري المصري» and a bare «الاتحاد» is four clubs, so a club with
+#           no safe phrase simply gets fewer stories on its page.
+# Five Egyptian names are the feed's spelling as it stands («الشرقية إنبي»,
+# «منتخب السويس بتروجت», «البنك الاهلي», «بترول اسيوط», «ابو قير للاسمدة»):
+# every table on the site shows them so, and a rename is the owner's call.
+# SLUGS ARE NEVER RENAMED.
+_EGY_LEAGUE = ("Egyptian Premier League", "Egypt Cup", "Egyptian League Cup",
+               "CAF Champions League", "CAF Confederation Cup")
+_KSA_LEAGUE = ("Saudi Pro League",)
+
+
+def _lp(slug, feed, league, scope, news, name=None):
+    return {"slug": slug, "name": name or feed, "league": league, "page_only": True, "league_page": True,
+            "match_tokens": [(feed, scope)], "news_tokens": list(news)}
+
+
+LEAGUE_PAGES = [_lp(s, f, "Egyptian Premier League", _EGY_LEAGUE, n) for s, f, n in (
+    ("ceramica-cleopatra", "سيراميكا كليوباترا", ["سيراميكا كليوباترا"]),
+    ("al-ittihad-alexandria", "الاتحاد السكندري", ["الاتحاد السكندري"]),
+    ("modern-sport", "مودرن سبورت", ["مودرن سبورت"]),
+    ("al-mokawloon", "المقاولون العرب", ["المقاولون العرب"]),
+    ("national-bank-egypt", "البنك الاهلي", ["البنك الأهلي", "البنك الاهلي"]),
+    ("smouha", "سموحة", ["سموحة"]),
+    ("zed", "زد", ["نادي زد", "زد إف سي"]),
+    ("petrojet", "منتخب السويس بتروجت", ["بتروجت"]),
+    ("al-masry", "المصري", ["المصري البورسعيدي", "النادي المصري"]),
+    ("el-qanah", "القناة", ["نادي القناة"]),
+    ("tala-ea-el-gaish", "طلائع الجيش", ["طلائع الجيش"]),
+    ("wadi-degla", "وادي دجلة", ["وادي دجلة"]),
+    ("enppi", "الشرقية إنبي", ["إنبي"]),
+    ("ghazl-el-mahalla", "غزل المحلة", ["غزل المحلة"]),
+    ("petrol-asyut", "بترول اسيوط", ["بترول أسيوط", "بترول اسيوط"]),
+    ("abu-qir-fertilizers", "ابو قير للاسمدة", ["أبو قير للأسمدة", "ابو قير للاسمدة"]),
+    ("el-gouna", "الجونة", ["نادي الجونة", "فريق الجونة"]),
+)] + [_lp(s, f, "Saudi Pro League", _KSA_LEAGUE, n, name=nm) for s, f, nm, n in (
+    ("al-hilal-saudi", "الهلال", "الهلال السعودي", ["الهلال السعودي"]),
+    ("al-qadsiah", "القادسية", "القادسية السعودي", ["القادسية السعودي", "نادي القادسية"]),
+    ("al-nassr", "النصر", "النصر السعودي", ["النصر السعودي"]),
+    ("al-ittihad-saudi", "الاتحاد", "الاتحاد السعودي", ["الاتحاد السعودي", "اتحاد جدة"]),
+    ("neom", "نيوم", None, ["نادي نيوم", "فريق نيوم"]),
+    ("al-ahli-saudi", "الأهلي", "الأهلي السعودي", ["الأهلي السعودي", "أهلي جدة"]),
+    ("al-ettifaq", "الاتفاق", None, ["نادي الاتفاق", "الاتفاق السعودي"]),
+    ("al-diriyah", "الدرعية", None, ["نادي الدرعية"]),
+    ("al-khaleej", "الخليج", None, ["نادي الخليج", "الخليج السعودي"]),
+    ("al-shabab-saudi", "الشباب", "الشباب السعودي", ["الشباب السعودي"]),
+    ("al-kholood", "الخلود", None, ["نادي الخلود"]),
+    ("al-riyadh", "الرياض", "نادي الرياض", ["نادي الرياض"]),
+    ("al-fayha", "الفيحاء", None, ["نادي الفيحاء", "الفيحاء السعودي"]),
+    ("al-hazem", "الحزم", None, ["نادي الحزم"]),
+    ("al-faisaly-saudi", "الفيصلي", "الفيصلي السعودي", ["الفيصلي السعودي"]),
+    ("al-fateh", "الفتح", None, ["نادي الفتح", "الفتح السعودي"]),
+    ("al-taawoun", "التعاون", None, ["نادي التعاون", "التعاون السعودي"]),
+    ("abha", "أبها", "نادي أبها", ["نادي أبها"]),
+)]
+TEAM_PAGES += LEAGUE_PAGES
+
 # the clubs the site is curated around: every TEAM_PAGES entry that is more
 # than a page. Whatever means «a curated club's match / story» reads THIS.
 CURATED_PAGES = [tp for tp in TEAM_PAGES if not tp.get("page_only")]
