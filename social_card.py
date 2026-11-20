@@ -174,6 +174,48 @@ def render(ev, out=None):
     return img
 
 
+def render_movers(ev, out=None):
+    """«حركة الجدول» as a still: for a round in which fewer than four clubs
+    moved (movers_reel.REEL_MIN_MOVES). ev = story_social.round_movers()'s
+    event: competition, round, moves [{team, before, after, crest}]."""
+    from site_lib.names import comp_label
+    c = _Canvas("حركة الجدول")
+    label = comp_label(ev["competition"])
+    c.centre(W // 2, 190, label, c.fit(label, "ExtraBold", 76, W - 120, 40))
+    c.centre(W // 2, 300, f"بعد الجولة {ev['round']}", c.FC.font("Bold", 44), GOLD)
+    moves = ev["moves"][:4]
+    rh = 250
+    top = 430 + (760 - rh * len(moves)) // 2
+    for i, mv in enumerate(moves):
+        y0 = top + i * rh
+        cy = y0 + (rh - 24) // 2
+        up = mv["after"] < mv["before"]
+        col = (22, 163, 74) if up else RED
+        c.rrect([40, y0, W - 40, y0 + rh - 24], 30, (255, 255, 255, 30), (255, 255, 255, 70), 2)
+        c.crest(W - 40 - 34 - 76, cy, 76, mv["team"], mv.get("crest"))
+        edge = W - 40 - 34 - 152 - 24
+        c.right(edge, cy - 66, mv["team"], c.fit(mv["team"], "ExtraBold", 60, edge - 330, 30))
+        sub = f"من المركز {mv['before']} إلى {mv['after']}"
+        c.right(edge, cy + 14, sub, c.FC.font("Bold", 36), SOFT)
+        # the chip: which way, and how many places
+        c.rrect([70, cy - 62, 290, cy + 62], 38, col + (255,))
+        tx, tw = 228, 26
+        tri = ([(tx, cy - tw), (tx - tw, cy + tw * 0.75), (tx + tw, cy + tw * 0.75)] if up
+               else [(tx, cy + tw), (tx - tw, cy - tw * 0.75), (tx + tw, cy - tw * 0.75)])
+        c.d.polygon(tri, fill=WHITE)
+        c.mid(138, cy, str(abs(mv["before"] - mv["after"])), c.FC.font("ExtraBold", 78))
+    c.foot("الترتيب قبل الجولة وبعدها")
+    if out:
+        c.img.save(out, "JPEG", quality=90, optimize=True)
+    return c.img
+
+
+def render_movers_bytes(ev):
+    buf = io.BytesIO()
+    render_movers(ev).save(buf, "JPEG", quality=90, optimize=True)
+    return buf.getvalue()
+
+
 def render_bytes(ev):
     buf = io.BytesIO()
     render(ev).save(buf, "JPEG", quality=90, optimize=True)

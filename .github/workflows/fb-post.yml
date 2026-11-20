@@ -172,6 +172,10 @@ jobs:
             # a club-form event also makes a reel (form_reel.py, behind FB_REELS)
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
             python fb_post.py --events | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+            # the round reels' slots (reel_slots.py, 2026-11-20): the scorers
+            # reel from 13:00, the title race from 16:00, the table's movers
+            # from 19:00 Cairo - one a run, three hours apart; never fails the job
+            python reel_slots.py --run | tee -a /tmp/fb.txt || true
           elif [ "$DAYCARD" = "today" ]; then
             # the MORNING card (2026-11-19): today's fixtures with their
             # kick-off times and channels - the Worker dispatches it at 07:01
@@ -197,20 +201,12 @@ jobs:
             # the same results as a reel (day_reel.py, user 2026-11-09), once a day
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
             python day_reel.py --publish | tee -a /tmp/fb.txt; rc3=${PIPESTATUS[0]}
-            # the scorers race (scorers_reel.py, user 2026-11-10 «أتمتها»): the
-            # Premier League / Egyptian league / La Liga reel once a round ends,
-            # one league a night, each round once (store kind reel / scorers:...)
-            python scorers_reel.py --auto | tee -a /tmp/fb.txt; rc4=${PIPESTATUS[0]}
-            # «الصاعد والهابط» (movers_reel.py, 2026-11-20): the table's movers
-            # the night after a league round ends - one league a night, each
-            # round once; it never fails the job
-            python movers_reel.py --auto | tee -a /tmp/fb.txt || true
-            # the title race as lines, once every three rounds of a league
-            # (behind FB_RACE); it never fails the job
-            python race_reel.py --auto | tee -a /tmp/fb.txt || true
+            # the scorers reel, the title race and the table's movers do NOT
+            # ride here any more (2026-11-20): three reels on top of the
+            # results reel buried each other at 00:16. They go out the next
+            # day in their own slots - reel_slots.py, the `events` run above.
             python fb_post.py --events | tee -a /tmp/fb.txt; rc2=${PIPESTATUS[0]}
             [ "$rc" = 0 ] && rc=$rc3
-            [ "$rc" = 0 ] && rc=$rc4
             [ "$rc" = 0 ] && rc=$rc2
           elif [ -n "$UPDATE" ]; then
             python fb_update_posts.py ${UPDATE//,/ } | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}

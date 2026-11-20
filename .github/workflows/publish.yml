@@ -367,10 +367,15 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
           FB_SOCIAL: ${{ vars.FB_SOCIAL }}
+          FB_RACE: ${{ vars.FB_RACE }}
         run: |
           N=$(python fb_post.py --events --pending)
           echo "story events pending a Facebook post: $N"
-          if [ "$N" = "0" ]; then exit 0; fi
+          # a round reel whose slot has come (reel_slots.py: scorers 13:00,
+          # race 16:00, movers 19:00 Cairo) rides the same run
+          S=$(python reel_slots.py --pending 2>/dev/null | tail -1)
+          echo "round reel slot due: ${S:-0}"
+          if [ "$N" = "0" ] && [ "${S:-0}" != "1" ]; then exit 0; fi
           curl -sS -X POST \
             -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
             -H "Accept: application/vnd.github+json" \

@@ -156,24 +156,38 @@ def _slug(ref):
     return re.sub(r"[^a-z0-9]+", "-", ref.lower()).strip("-")
 
 
+REEL_MIN_MOVES = 4      # fewer clubs than this is a CARD: two rows on a quarter of the screen for 12.5 s
+                        # was the thinnest reel on the page (designer review 2026-11-20)
+
+
+def pending(day, data=None):
+    """[(ref, event)] of the rounds that ended the day before `day` and have
+    no post yet. Raises what the data or the store raises."""
+    out = []
+    for ev in events_for(day, data):
+        ref = f"movers:{ev['ref']}"
+        rec = store.get_post(R.KIND, ref)
+        if not (rec and rec.get("post_id")):
+            out.append((ref, ev))
+    return out
+
+
+def post_card(token, ev, cap):
+    """The same moves as a still card (social_card.render_movers)."""
+    import fb_post as P
+    import social_card as SC
+    return P.post_photo(token, SC.render_movers_bytes(ev), cap)
+
+
 def auto(dry=False, today=None):
     """Claim-then-post, kind 'reel' / 'movers:<ref>': one league a night,
     each round once. Never raises: a social error must not fail the night."""
     from zoneinfo import ZoneInfo
     day = today or datetime.datetime.now(ZoneInfo("Africa/Cairo")).date()
     try:
-        evs = events_for(day)
+        todo = pending(day)
     except Exception as e:                                   # noqa: BLE001
-        print(f"movers reel: the data cannot be read ({str(e)[:120]}) - next night"); return 0
-    todo = []
-    for ev in evs:
-        ref = f"movers:{ev['ref']}"
-        try:
-            rec = store.get_post(R.KIND, ref)
-        except Exception as e:                               # noqa: BLE001
-            print(f"movers reel: the store cannot be read ({str(e)[:120]}) - next night"); return 0
-        if not (rec and rec.get("post_id")):
-            todo.append((ref, ev))
+        print(f"movers reel: the data or the store cannot be read ({str(e)[:120]}) - next time"); return 0
     if not todo:
         print("movers reel: no round ended yesterday with a move of two places"); return 0
     ref, ev = todo[0]
@@ -184,6 +198,15 @@ def auto(dry=False, today=None):
         print(cap); return 0
     if not store.claim(R.KIND, ref, title=ev["title"][:80]):
         print(f"movers reel {ref}: already published or held by another run"); return 0
+    if len(ev["moves"]) < REEL_MIN_MOVES:
+        try:
+            pid = post_card(token, ev, cap)
+            store.record_post(R.KIND, ref, pid, title=ev["title"][:80])
+            print(f"movers {ref}: {len(ev['moves'])} move(s) - published as a card, {pid}")
+        except Exception as e:                               # noqa: BLE001
+            store.release(R.KIND, ref)
+            print(f"movers card {ref} FAILED: {e}")
+        return 0
     path = os.path.join(HERE, "media", "reels", f"{_slug(ref)}.mp4")
     try:
         ok, _ = render(ev, path)

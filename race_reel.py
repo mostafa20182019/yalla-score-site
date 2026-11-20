@@ -227,22 +227,16 @@ def armed():
     return (os.environ.get("FB_RACE", "") or "").strip().lower() == "on"
 
 
-def auto(dry=False, today=None):
-    """One league whose round ended yesterday and whose round number is a
-    multiple of RACE_EVERY; kind 'reel' / 'race:<competition>:R<n>'. Never
-    raises: a social error must not fail the night."""
+def pending(day):
+    """[(competition, round, rows, ref)] owed: a league whose round ended the
+    day before `day`, whose round number is a multiple of RACE_EVERY, whose
+    counts equal the table's, and that has no reel yet. Raises what the data
+    or the store raises."""
     import movers_reel as MV
-    from zoneinfo import ZoneInfo
-    day = today or datetime.datetime.now(ZoneInfo("Africa/Cairo")).date()
-    try:
-        import story_events as SE
-        import story_social as SS
-        d = SE.load_data()
-        ended = SS.rounds_ended(d.get("matches"), d.get("fixtures"), day) if hasattr(SS, "rounds_ended") else \
-            [(ev["competition"], ev["round"]) for ev in MV.events_for(day, d)]
-    except Exception as e:                                   # noqa: BLE001
-        print(f"race reel: the data cannot be read ({str(e)[:120]}) - next night"); return 0
-    for comp, rnd in ended:
+    import story_events as SE
+    d = SE.load_data()
+    out = []
+    for comp, rnd in [(ev["competition"], ev["round"]) for ev in MV.events_for(day, d)]:
         try:
             if int(rnd) % RACE_EVERY:
                 continue
@@ -250,11 +244,25 @@ def auto(dry=False, today=None):
             continue
         rows = load(comp, day)
         if not rows:
-            print(f"race reel {comp} R{rnd}: our counts do not equal the table's - no reel"); continue
+            continue
         ref = f"race:{comp}:R{rnd}"
         rec = store.get_post(R.KIND, ref)
-        if rec and rec.get("post_id"):
-            continue
+        if not (rec and rec.get("post_id")):
+            out.append((comp, rnd, rows, ref))
+    return out
+
+
+def auto(dry=False, today=None):
+    """One league a run (pending()); kind 'reel' / 'race:<competition>:R<n>'.
+    Never raises: a social error must not fail the run."""
+    import movers_reel as MV
+    from zoneinfo import ZoneInfo
+    day = today or datetime.datetime.now(ZoneInfo("Africa/Cairo")).date()
+    try:
+        todo = pending(day)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"race reel: the data or the store cannot be read ({str(e)[:120]}) - next time"); return 0
+    for comp, rnd, rows, ref in todo:
         cap = caption(comp, rows, rnd)
         token = os.environ.get("FB_PAGE_TOKEN", "").strip()
         if dry or not token or not armed():

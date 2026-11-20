@@ -87,8 +87,9 @@ ck("10 a table that does not hold the round yet (it lags the results): no event,
 ck("11 the movers are a reel now, not a text post: the kind is in no post list",
    SS.KIND_MOVERS not in SS.SOCIAL_KINDS and SS.KIND_MOVERS not in [k for k, _ in SE.DETECTORS])
 wf = io.open(".github/workflows/fb-post.yml", encoding="utf-8").read()
-ck("12 the nightly run posts it after the scorers reel and can never fail the job",
-   "python movers_reel.py --auto | tee -a /tmp/fb.txt || true" in wf and wf.index("scorers_reel.py --auto") < wf.index("movers_reel.py --auto"))
+# since 2026-11-20 it has its own slot the next evening (reel_slots.py, tests/test_reel_slots.py)
+ck("12 it goes out in its slot, after the scorers reel's, through a run that can never fail on it",
+   "python reel_slots.py --run | tee -a /tmp/fb.txt || true" in wf and "python movers_reel.py --auto" not in wf)
 
 # ---------------------------------------------------------------- 11: a club's month on the dial
 import club_clock as CC            # noqa: E402
