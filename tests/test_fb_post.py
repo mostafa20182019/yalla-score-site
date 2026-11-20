@@ -175,8 +175,9 @@ run([A(503, 1)])
 assert feed_links() == [] and store.get_post("article", 503) is None
 print("14 OK: an article past MAX_POST_ATTEMPTS is skipped")
 
-# 15) PHOTO A/B (growth plan week 1): even id + readable image -> /me/photos with
-#     the caption; odd id -> link post; even id with an SVG placeholder -> link post
+# 15) PHOTO POSTS. The A/B of growth plan week 1 (even id = photo, odd = link)
+#     ended 2026-11-20 («ثبّت الصورة»): EVERY article with a readable image goes
+#     to /me/photos with the caption; an SVG placeholder stays a link post
 reset_state()
 photos = []
 fp.post_photo = lambda token, img, caption: (photos.append((len(img), caption)), "PHOTO_1")[1]
@@ -186,17 +187,27 @@ with open(os.path.join(fp.MEDIA, "card.jpg"), "wb") as _f:
 run([A(600, 1, image_url=f"{fp.SITE}/media/card.jpg", fb_post="T600 text\nnumbers"),
      A(601, 1, image_url=f"{fp.SITE}/media/card.jpg"),
      A(602, 1, image_url=f"{fp.SITE}/media/ph-pitch.svg")])
-assert len(photos) == 1 and photos[0][0] == 5002, photos
-assert photos[0][1].endswith(f"\n{fp.SITE}/a/600"), "the link must live in the caption text"
+assert len(photos) == 2 and all(n == 5002 for n, _ in photos), photos
+_cap = {c.split("/a/")[-1][:3]: c for _, c in photos}
+assert set(_cap) == {"600", "601"}, photos                      # the odd id too, since the experiment ended
+assert _cap["600"].endswith(f"\n{fp.SITE}/a/600"), "the link must live in the caption text"
+assert f"{fp.SITE}/a/601" in _cap["601"]
 # order-free: the three share one pub_ts to the millisecond on Windows and
 # differ by microseconds on Linux, so the posting order is not the point here
-assert sorted(feed_links()) == ["https%3A%2F%2Felgoon.com%2Fa%2F601", "https%3A%2F%2Felgoon.com%2Fa%2F602"], feed_links()
+assert sorted(feed_links()) == ["https%3A%2F%2Felgoon.com%2Fa%2F602"], feed_links()
 assert posted_ids() == ["600", "601", "602"] and state()["600"]["post_id"] == "PHOTO_1"
 assert fp.variant({"article_id": "600"}) == "photo" and fp.variant({"article_id": "601"}) == "link"
+# 2026-11-20: the experiment ended («ثبّت الصورة») - every article goes out as a
+# photo now, odd ids too; variant() stays the record of the experiment's weeks
+assert fp.PHOTO_ALWAYS and fp.post_variant({"article_id": "601"}) == "photo" and fp.post_variant({"article_id": "600"}) == "photo"
 fp.PHOTO_AB = False
 assert fp.variant({"article_id": "600"}) == "link"
 fp.PHOTO_AB = True
-print("15 OK: photo A/B - even id with an image is a photo post (link in the caption), odd/SVG stay link posts")
+# the switch back: with PHOTO_ALWAYS off the experiment's parity decides again
+fp.PHOTO_ALWAYS = False
+assert fp.post_variant({"article_id": "601"}) == "link" and fp.post_variant({"article_id": "600"}) == "photo"
+fp.PHOTO_ALWAYS = True
+print("15 OK: every article with an image is a photo post (link in the caption); an SVG placeholder stays a link post")
 
 print("ALL FB_POST TESTS PASSED")
 

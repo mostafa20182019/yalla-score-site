@@ -72,6 +72,13 @@ MEDIA = os.path.join(HERE, "media")
 # old link post; the variant is a function of the id, so Insights can be
 # read per variant without storing anything. Set False to go back to links.
 PHOTO_AB = True
+# THE A/B ENDED 2026-11-20 (user: «ثبّت الصورة»): it had run since 2026-10-08,
+# its read-out was due on 10-22 and was never read, and half the article
+# posts were still going out as links. From this date EVERY article goes out
+# as a photo post (post_variant); variant() - the id's parity - stays as the
+# record of how the posts of the experiment's weeks went out, for
+# growth_kpi.py and fb_ab_list.py. Set False to go back to link posts.
+PHOTO_ALWAYS = True
 # PREDICTION POSTS ARE OFF unless the repo variable FB_PREDICTIONS is "on"
 # (user, 2026-10-18: «مش عايز بوستات للتوقعات على الفيس بوك الفترة دى»). Covers
 # the prediction CARD post (--prediction), and the auto-posting of articles
@@ -279,6 +286,12 @@ def variant(art):
         return "link"
 
 
+def post_variant(art):
+    """How an article goes out NOW: a photo post (PHOTO_ALWAYS), else what
+    the experiment's parity says."""
+    return "photo" if PHOTO_ALWAYS else variant(art)
+
+
 def image_bytes(art):
     """The article's image as bytes: media/<name> from the checkout first, else
     downloaded; None for our SVG placeholders (Facebook refuses SVG) or when
@@ -328,8 +341,8 @@ def post_photo(token, img, caption):
 
 def post_article(token, art):
     """Publish the post (page already verified live by the caller): a PHOTO
-    post for the A/B's photo variant when the image can be read, else the
-    classic link post."""
+    post when the image can be read (every article since 2026-11-20), else
+    the classic link post."""
     link = article_link(art)
     title = (art.get("title") or "").strip()
     summary = (art.get("summary") or "").strip()
@@ -343,7 +356,7 @@ def post_article(token, art):
         # a report written while the model was on can still carry its line
         # («🤖 …», «هل أصاب توقع الجون») - those lines never go out now
         message = _strip_pred(message)
-    if variant(art) == "photo":
+    if post_variant(art) == "photo":
         img = image_bytes(art)
         if img:
             if link not in message:
