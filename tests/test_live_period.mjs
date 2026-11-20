@@ -39,7 +39,7 @@ const js = fs.readFileSync(new URL("../site_src/snippets/live_js.html", import.m
 const m = js.match(/var CAP=\{[^}]*\};\s*function calcMin\(g,at\)\{[\s\S]*?\n  \}/);
 ck("calcMin is found in live_js.html", !!m);
 if (m) {
-  const calc = new Function(`${m[0]}; return calcMin;`)();
+  const calc = new Function(`var STALE=150000; ${m[0]}; return calcMin;`)();
   const at = Date.now();                       // no time has passed: the minute is the feed's
   const show = (hf, gt) => { const x = { live: true, min: "", gt, hf }; calc(x, at); return x.min; };
   ck("in play: the minute itself", show(1, 30) === "30'" && show(2, 70) === "70'" && show(3, 97) === "97'" && show(4, 112) === "112'");

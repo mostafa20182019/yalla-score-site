@@ -173,7 +173,16 @@ const FB_CLAIM = "/*fb_claim*/ INSERT OR IGNORE INTO fb_posted (kind, ref_id, ti
 const FB_REC = "/*fb_rec*/ UPDATE fb_posted SET post_id = ?, posted_at = ? WHERE kind = ? AND ref_id = ?";
 const FB_FIND = "/*fb_find*/ SELECT post_id FROM fb_posted WHERE kind = ? AND ref_id = ?";
 const FB_ROW = "/*fb_row*/ SELECT post_id, claimed_at FROM fb_posted WHERE kind = ? AND ref_id = ?";
-const FB_STALE = "/*fb_stale*/ SELECT ref_id, title FROM fb_posted WHERE kind = ? AND post_id IS NULL AND claimed_at < ? AND claimed_at > ?";
+const FB_STALE = "/*fb_stale*/ SELECT ref_id, title, claimed_at FROM fb_posted WHERE kind = ? AND post_id IS NULL AND claimed_at < ? AND claimed_at > ?";
+// THE FALLBACK'S LOCK (audit 2026-11-20): two refreshes that both found the
+// same stale claim both published it - the select and the record had nothing
+// between them (two concurrent calls gave two posts for one goal). Whoever is
+// about to publish an open claim first MOVES its claimed_at, and only while
+// it is still the value just read: one UPDATE changes the row, every other
+// caller's changes nothing and stands down. fb_post.py takes the same lock
+// before it draws (store.take), so a card finishing at the four-minute mark
+// and the text fallback can no longer both go out.
+const FB_TAKE = "/*fb_take*/ UPDATE fb_posted SET claimed_at = ? WHERE kind = ? AND ref_id = ? AND post_id IS NULL AND claimed_at = ?";
 const FB_DROP = "/*fb_drop*/ DELETE FROM fb_posted WHERE kind = ? AND ref_id = ? AND post_id IS NULL";
 const LG_LIST = "/*lg_list*/ SELECT side, player, minute, tag FROM live_goals WHERE game_id = ? AND cancelled = 0 ORDER BY seq";
 const LG_ROW = "/*lg_row*/ SELECT cancelled FROM live_goals WHERE game_id = ? AND seq = ?";
@@ -204,6 +213,13 @@ async function record(env, kind, ref, postId) {
 }
 async function drop(env, kind, ref) {
   await env.DB.prepare(FB_DROP).bind(kind, ref).run();
+}
+// true = this caller owns the open claim now (see FB_TAKE)
+async function take(env, kind, ref, claimedAt) {
+  const was = Number(claimedAt || 0);
+  const r = await env.DB.prepare(FB_TAKE)
+    .bind(Math.max(Math.floor(Date.now() / 1000), was + 1), kind, ref, was).run();
+  return !!(r && r.meta && r.meta.changes === 1);
 }
 async function fbRow(env, kind, ref) {
   const r = await env.DB.prepare(FB_ROW).bind(kind, ref).first();
@@ -273,6 +289,9 @@ export async function goalFallbacks(env, now) {
         try { lg = await env.DB.prepare(LG_ROW).bind(Number(gid), Number(seq)).first(); } catch (e) { lg = null; }
         if (lg && Number(lg.cancelled)) { await drop(env, kind, String(row.ref_id)); continue; }
       }
+      let mine = false;
+      try { mine = await take(env, kind, String(row.ref_id), row.claimed_at); } catch (e) { mine = false; }
+      if (!mine) continue;        // another refresh, or the runner, took it first
       const pid = await publish(env, row.title, await cardUrl(env, gid));
       if (pid) { await record(env, kind, String(row.ref_id), pid); out.posted += 1; }
     }

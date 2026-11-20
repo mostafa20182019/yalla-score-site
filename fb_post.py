@@ -1019,6 +1019,10 @@ def goal_post(token, payload, dry=False):
         print("FB_PAGE_TOKEN not set - skipping"); return 0
     if not rec and not store.claim("goal", ref, title=caption.split("\n")[0]):
         print(f"goal {ref}: claimed by another run - nothing posted"); return 0
+    # the Worker's claim: lock it before drawing, or its text fallback can
+    # publish the same goal while the card is being made (store.take)
+    if rec and rec.get("claimed_at") is not None and not store.take("goal", ref, rec["claimed_at"]):
+        print(f"goal {ref}: the text fallback (or another run) took it first - nothing posted"); return 0
     # the live detail is fetched for the crests anyway; it is also the one
     # check that a dispatched goal still STANDS. 2026-10-24: the list showed
     # Pyramids 2-1 El Merrikh Bentiu for one refresh, the Worker dispatched
@@ -1114,6 +1118,9 @@ def whistle_post(token, payload, dry=False):
         print("FB_PAGE_TOKEN not set - skipping"); return 0
     if not rec and not store.claim(kind, ref, title=caption.split("\n")[0]):
         print(f"{kind} {ref}: claimed by another run - nothing posted"); return 0
+    # the Worker's claim: lock it before drawing (store.take, as goal_post)
+    if rec and rec.get("claimed_at") is not None and not store.take(kind, ref, rec["claimed_at"]):
+        print(f"{kind} {ref}: the text fallback (or another run) took it first - nothing posted"); return 0
     try:
         try:
             game = GC._s365_game(g["id"])

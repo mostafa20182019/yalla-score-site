@@ -340,7 +340,42 @@
     el.classList.add('sc-pop');
     setTimeout(function(){el.classList.remove('sc-pop');},1500);
   }
+  /* A ROW NEVER SAYS «مباشر» ON OLD DATA (audit 2026-11-20). The Worker
+     stops serving a snapshot older than 90 s; the page had no such rule. A
+     poll that failed (no signal, a 5xx), a reply with no games, or a match
+     that left the feed all left the row on «مباشر 2 - 1» until a reload -
+     with the minute still counting up to «90+» by itself. Every live paint is
+     stamped with its reply's time (__lvT); a row whose stamp is older than
+     STALE loses the live label and the minute and says so. The score stays:
+     it was true when it was read, and the label says it is not live any
+     more. The next good reply paints it again. */
+  var STALE=150000;
+  function unlive(e){
+    e.__lvT=0;
+    if(e.classList.contains('tk-item')){
+      var mid=e.querySelector('.tk-mid');
+      if(mid){var dot=mid.querySelector('.tk-dot');if(dot)dot.parentNode.removeChild(dot);
+        var sl=mid.querySelector('.tk-live');if(sl)sl.classList.remove('tk-live');}
+      var wl=e.querySelector('.tc-when');
+      if(wl){wl.textContent='توقف التحديث';e.classList.remove('tc-live');}
+    }else{
+      var lm=e.querySelector('.lv-min');if(lm)lm.parentNode.removeChild(lm);
+      e.classList.remove('mrow-live');
+      var pill=e.querySelector('.pill');
+      if(pill){pill.className='pill pill-stale';pill.textContent='توقف التحديث';}
+      if(e.closest&&e.closest('.mp-hero')){
+        var sd=document.querySelector('[data-lv-state]');
+        if(sd)sd.textContent='توقف التحديث - حدّث الصفحة';
+      }
+    }
+  }
+  function sweep(){
+    var now=Date.now();
+    for(var k in map){if(!map.hasOwnProperty(k))continue;
+      map[k].forEach(function(x){if(x.e.__lvT&&now-x.e.__lvT>STALE)unlive(x.e);});}
+  }
   function paint(e,g){
+    e.__lvT=g.live&&last?last.at:0;
     var sc=g.hs+' - '+g.as;
     /* a goal = the number differs from the LAST PAINTED one. data-sc is absent
        on the first paint, so a visitor arriving mid-match never sees a flash
@@ -465,12 +500,16 @@
   var CAP={1:45,2:90,3:105,4:120};
   function calcMin(g,at){
     if(!g.live||g.min==='استراحة'||!(g.gt>0))return;
+    if(Date.now()-at>STALE)return;        /* an old reply's minute is not advanced by guessing */
     var est=Math.floor(g.gt+(Date.now()-at)/60000);
     var cap=CAP[g.hf]||(est>105?120:est>90?105:est>45?90:45);   /* an old reply without the period: read it off the minute */
     g.min=est>cap?cap+'+':est+"'";
   }
   function render(){
     if(!last)return false;
+    /* a reply too old to be true paints nothing (a tab woken after an hour
+       used to flash the hour-old minute before the new reply landed) */
+    if(Date.now()-last.at>STALE){sweep();favRender([]);return false;}
     var any=false;
     last.gs.forEach(function(g){calcMin(g,last.at);});
     /* the standings team card reads the same reply (2026-11-13) */
@@ -482,6 +521,7 @@
       if(arr){arr.forEach(function(x){if(sameDay(x,g))paint(x.e,x.sw?swap(g):g);});}
       if(g.live)any=true;
     });
+    sweep();
     return any;
   }
   /* kickoff-aware cadence: __koTs (build-time epochs of nearby kickoffs)
@@ -505,18 +545,21 @@
          baseline includes cache staleness; clamped so a wrong client clock
          cannot warp the minute by more than 3 minutes */
       var age=Math.max(0,Math.min(180000,Date.now()-(d.ts||Date.now())));
+      /* a reply that says it failed carries no games: it must not replace
+         the last good one, or the rows it painted would never age out */
+      if(d.ok===false){sweep();schedule(hadLive?60000:120000);return;}
       last={gs:d.games||[],at:Date.now()-age};
       var any=render();
-      if(d.ok===false){schedule(hadLive?60000:120000);return;}
       if(any)grace=3;else if(grace>0)grace--;
       hadLive=any;
       schedule(nextDelay(any));
-    }).catch(function(){schedule(hadLive?60000:120000);});
+    }).catch(function(){sweep();schedule(hadLive?60000:120000);});
   }
   /* re-render the local minute between polls. paint() only flashes when the
      SCORE string changes, so this repaint can never trigger a goal flash. */
   setInterval(function(){
-    if(hadLive&&document.visibilityState==='visible')render();
+    if(document.visibilityState!=='visible')return;
+    if(hadLive)render();else sweep();
   },20000);
   function schedule(ms){clearTimeout(timer);timer=setTimeout(tick,ms);}
   document.addEventListener('visibilitychange',function(){

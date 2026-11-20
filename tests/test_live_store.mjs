@@ -141,7 +141,7 @@ globalThis.caches = { default: { match: async () => undefined, put: async () => 
 
 const worker = (await import(new URL("../worker.js", import.meta.url).href)).default;
 const db = fakeD1();
-const env = { DB: db };
+const env = { DB: db, LIST_LAG_MS: -1 };      // the list's wait off: these scenarios move a score at once (see test_live_posts.mjs, the audit's block)
 const waits = [];
 const ctx = { waitUntil(p) { waits.push(p); } };
 const call = async () => {

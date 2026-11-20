@@ -43,7 +43,7 @@ ck("3 the list stays newest first", [re.search(r'data-m="([^"]*)"', r).group(1) 
 js = io.open("site_src/snippets/live_js.html", encoding="utf-8").read()
 fn = js.split("function paintTimeline(e,g){")[1].split("\n  }\n")[0]
 ck("4 the timeline is painted from the match page's own row only",
-   "e.closest('.mp-hero')" in fn and "paintTimeline(e,g);" in js.split("data-lv-state")[1])
+   "e.closest('.mp-hero')" in fn and "paintTimeline(e,g);" in js.split("data-lv-state")[-1])     # the LAST use: paint()'s; unlive() names the same hook above it since 2026-11-20
 ck("5 with no goal list and no events reply nothing is touched",
    "if(!hasG&&!(ev&&(ev.cards.length+ev.subs.length)))return;" in fn)
 ck("6 goal rows go only when the reply names the goals; card and change rows only when the events reply is in use",

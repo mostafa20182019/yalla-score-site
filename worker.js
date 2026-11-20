@@ -410,6 +410,7 @@ async function liveScoresData() {
       if (d.apply && w.live) {
         g.hs = d.hs; g.as = d.as; g.live = d.live;
         g.min = d.min; g.gt = d.gt; g.hf = d.hf;
+        g.ds = 1;                 // read from the DETAIL this refresh (storeApply: the stronger source)
         dt++;
       }
       if (d.goals) g.goals = d.goals;
@@ -583,6 +584,35 @@ async function storeRead(env, now) {
 // the same goal on both sides: side + player + minute
 const goalKey = (g) => `${g.s}|${g.p || ""}|${g.m || ""}`;
 
+// LIVE DATA NEVER MOVES BACKWARDS FROM THE WEAKER SOURCE (audit 2026-11-20).
+// A game is read from two places: its DETAIL (fresher - marked g.ds by
+// liveScoresData) and the LIST (about two minutes behind). The detail is
+// asked for every live game, but one call can fail, and on a busy evening a
+// game can fall past DETAIL_CAP - that refresh then has only the list. Until
+// this guard such a refresh could UNDO what the detail had already said:
+//   - a goal the detail gave (1-0, posted) met a list still on 0-0: the score
+//     path saw «the score went down», cancelled the goal and edited its
+//     Facebook post to «الهدف لم يُحتسب» - the page went 1-0, 0-0, 1-0;
+//   - a match the detail had ended (full-time post out) met a list still
+//     saying live, and was served «مباشر» again.
+// So a list-only read never revives an ended match, and never lowers a score
+// while the stored one is younger than the list's lag (LIST_LAG_MS): it is
+// behind, not a VAR decision. A score still lower after that is real and
+// goes through as before; a read from the detail is never held back.
+export const LIST_LAG_MS = 3 * 60 * 1000;
+export function forwardOnly(g, p, now, lag = LIST_LAG_MS) {
+  if (!p || g.ds) return g;
+  if (!p.live && g.live) {
+    g.live = false; g.hs = p.hs; g.as = p.as_; g.min = ""; g.gt = 0; g.hf = 0;
+    return g;
+  }
+  const young = p.changed_at != null && now - Number(p.changed_at) <= lag;
+  if (young && (g.hs < p.hs || g.as < p.as_)) {
+    g.hs = Math.max(g.hs, p.hs); g.as = Math.max(g.as, p.as_);
+  }
+  return g;
+}
+
 // Compare the fresh upstream read with the stored rows, write what changed,
 // append goal events. Returns {upserts, events} for the log and the tests.
 async function storeApply(env, fresh, now) {
@@ -611,8 +641,15 @@ async function storeApply(env, fresh, now) {
   for (const g of fresh.games) {
     if (!g.id) continue;
     const p = prev[g.id];
+    // env.LIST_LAG_MS: the tests of the cancel machinery itself switch the wait off
+    forwardOnly(g, p, now, env.LIST_LAG_MS != null ? Number(env.LIST_LAG_MS) : LIST_LAG_MS);
     const oldGoals = p && p.goals ? JSON.parse(p.goals) : [];
     const newGoals = g.goals || [];
+    // the list kept for diffing when this refresh brings none: a goal the
+    // score path cancels below leaves it too, so the same goal GIVEN AGAIN
+    // (a VAR decision reversed, or the detail returning) is a new key - logged
+    // and posted again, not silently ignored against a row left cancelled
+    let keptList = null;
     if (!p) {
       // first sight of this game today: the goals already on the board are
       // events ONLY when the detail names them (scorer + minute). A bare score
@@ -695,6 +732,8 @@ async function storeApply(env, fresh, now) {
               .bind(now, g.id, side, g.id, side));
             events += 1;
             cancels.push({ g, ev: { s: side } });
+            if (keptList === null) keptList = oldGoals.slice();
+            for (let k = keptList.length - 1; k >= 0; k--) if (keptList[k].s === side) { keptList.splice(k, 1); break; }
           }
         }
       }
@@ -737,7 +776,8 @@ async function storeApply(env, fresh, now) {
     // we already had. Writing null here is what duplicated goals: the next
     // detailed refresh saw an empty "before" and logged every goal on the
     // board again (2026-10-17, «لامين يامال 10'» twice at half-time).
-    const goalsJson = g.goals === undefined ? (p && p.goals ? p.goals : null)
+    const goalsJson = g.goals === undefined
+      ? (keptList !== null ? (keptList.length ? JSON.stringify(keptList) : null) : (p && p.goals ? p.goals : null))
       : (newGoals.length ? JSON.stringify(newGoals) : null);
     const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
       || (p.goals || null) !== goalsJson || breakNow !== breakBefore;

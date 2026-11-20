@@ -81,7 +81,13 @@ function fakeD1() {
       return { results: [], changes: 1 };
     }
     if (sql.includes("/*fb_rec*/")) { const r = fb.get(`${b[2]}|${b[3]}`); if (r) { r.post_id = b[0]; r.posted_at = b[1]; } return { results: [], changes: r ? 1 : 0 }; }
-    if (sql.includes("/*fb_stale*/")) return { results: [...fb.values()].filter(r => r.kind === b[0] && !r.post_id && r.claimed_at < b[1] && r.claimed_at > b[2]).map(r => ({ ref_id: r.ref_id, title: r.title })) };
+    if (sql.includes("/*fb_stale*/")) return { results: [...fb.values()].filter(r => r.kind === b[0] && !r.post_id && r.claimed_at < b[1] && r.claimed_at > b[2]).map(r => ({ ref_id: r.ref_id, title: r.title, claimed_at: r.claimed_at })) };
+    // the fallback's lock (2026-11-20): move claimed_at only while it is the value that was read
+    if (sql.includes("/*fb_take*/")) {
+      const r = fb.get(`${b[1]}|${b[2]}`);
+      if (r && !r.post_id && r.claimed_at === b[3]) { r.claimed_at = b[0]; return { results: [], changes: 1 }; }
+      return { results: [], changes: 0 };
+    }
     if (sql.includes("/*fb_row*/")) { const r = fb.get(`${b[0]}|${b[1]}`); return { first: r ? { post_id: r.post_id, claimed_at: r.claimed_at } : null }; }
     if (sql.includes("/*fb_find*/")) { const r = fb.get(`${b[0]}|${b[1]}`); return { first: r && r.post_id ? { post_id: r.post_id } : null }; }
     if (sql.includes("/*fb_drop*/")) { const r = fb.get(`${b[0]}|${b[1]}`); if (r && !r.post_id) fb.delete(`${b[0]}|${b[1]}`); return { results: [] }; }
@@ -94,7 +100,7 @@ function fakeD1() {
     async first() { const r = exec(sql, this._b); return "first" in r ? r.first : (r.results[0] || null); },
     async run() { const r = exec(sql, this._b); return { success: true, meta: { changes: r.changes ?? 1 } }; },
   });
-  const api = { state, fb, goals, stalePrev: null, prepare: (sql) => mk(sql), batch: async (st) => st.map(s => exec(s.sql, s._b)) };
+  const api = { state, fb, goals, meta, stalePrev: null, prepare: (sql) => mk(sql), batch: async (st) => st.map(s => exec(s.sql, s._b)) };
   return api;
 }
 
@@ -149,7 +155,10 @@ globalThis.caches = { default: { match: async () => undefined, put: async () => 
 
 const worker = (await import(new URL("../worker.js", import.meta.url).href)).default;
 const db = fakeD1();
-const env = { DB: db, FB_PAGE_TOKEN: "tok",
+// LIST_LAG_MS -1 = the list's wait is off for the scenarios below, which test
+// the cancel machinery on a score that falls at once; the audit's own
+// scenarios at the end of the file run with production's wait (envReal)
+const env = { DB: db, FB_PAGE_TOKEN: "tok", LIST_LAG_MS: -1,
               ASSETS: { fetch: async () => new Response(cardOk ? "img" : "no", { status: cardOk ? 200 : 404 }) } };
 const tick = () => worker.scheduled({ cron: "* * * * *" }, env, {});
 const posts = () => fbCalls.filter(c => c.path === "me/photos" || c.path === "me/feed");
@@ -574,6 +583,96 @@ await tick();
 ck("50 the shoot-out kicks are ignored: the one real goal is posted, named",
    posts().length === n8 + 1 && posts()[n8].caption.includes("🥅 زيزو · الدقيقة 70")
    && db.goals.filter(g => g.game_id === 1000 && !g.cancelled).length === 1, JSON.stringify(posts().slice(-1)));
+
+/* ------------------------------------------------ the audit of 2026-11-20 */
+// Every scenario above runs with the list's wait switched OFF (env.LIST_LAG_MS
+// = -1): they test the cancel machinery itself, on a score that falls at once.
+// These run as production does - the list is behind the detail, not a referee.
+const envReal = { ...env };
+delete envReal.LIST_LAG_MS;
+const tickReal = () => worker.scheduled({ cron: "* * * * *" }, envReal, {});
+const snapGame = (id) => (JSON.parse(db.meta.get("snapshot")).games || []).find(g => g.id === id);
+
+// H1: the detail gave a goal, the next refresh has only the (older) list
+LIST = { games: [live(2001, 552, "الأهلي", "سموحة", 0, 0), ...filler] };
+await tickReal();
+detailFor[2001] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 60 }]);
+LIST.games[0] = live(2001, 552, "الأهلي", "سموحة", 0, 0);       // the list has not caught up
+const nA = posts().length;
+await tickReal();
+const goalPostA = posts()[nA];
+ck("A1 the detail's goal is posted while the list still says 0-0",
+   posts().length === nA + 1 && goalPostA && goalPostA.caption.startsWith("⚽ هدف! الأهلي 1 - 0 سموحة"), JSON.stringify(posts().slice(-1)));
+const callsA = fbCalls.length;
+delete detailFor[2001];                                        // the detail call fails this minute
+await tickReal();
+ck("A2 a refresh with ONLY the older list does not take the goal back: no edit, no «لم يُحتسب», the row not cancelled",
+   fbCalls.length === callsA && db.goals.filter(g => g.game_id === 2001 && g.cancelled).length === 0, JSON.stringify(fbCalls.slice(callsA)));
+ck("A3 ...and the page is still served 1-0, not 0-0",
+   (snapGame(2001) || {}).hs === 1 && (snapGame(2001) || {}).as === 0, JSON.stringify(snapGame(2001)));
+LIST.games[0] = live(2001, 552, "الأهلي", "سموحة", 1, 0);       // the list catches up
+await tickReal();
+ck("A4 once the list catches up nothing is posted twice", posts().length === nA + 1 && fbCalls.length === callsA);
+
+// H1, the other half: a score that is STILL lower once the list's lag has passed is real
+LIST = { games: [live(2002, 552, "الزمالك", "زد", 1, 0), ...filler] };
+await tickReal();
+LIST.games[0] = live(2002, 552, "الزمالك", "زد", 0, 0);
+await tickReal();
+ck("B1 inside the wait a lower list score is held", (snapGame(2002) || {}).hs === 1);
+db.state.get(2002).changed_at -= 4 * 60 * 1000;                // four minutes later
+await tickReal();
+ck("B2 after the wait the lower score goes through - a real decision is not hidden for ever",
+   (snapGame(2002) || {}).hs === 0, JSON.stringify(snapGame(2002)));
+
+// H2: the detail ended the match; a later refresh has only a list that still says live
+LIST = { games: [live(2003, 552, "بيراميدز", "المصري", 2, 0), ...filler] };
+await tickReal();
+detailFor[2003] = withStatus(DETAIL(2, 0, [{ s: "h", pid: 11, m: 10 }, { s: "h", pid: 11, m: 20 }]),
+                             { statusGroup: 4, statusText: "انتهت", shortStatusText: "انتهت" });
+const nC = posts().length;
+await tickReal();
+ck("C1 the detail's final whistle is served and posted once",
+   (snapGame(2003) || {}).live === false && posts().length === nC + 1 && posts()[nC].caption.startsWith("🏁"), JSON.stringify(posts().slice(-1)));
+delete detailFor[2003];
+await tickReal(); await tickReal();
+ck("C2 an ended match does not come back to «مباشر» from the list, and gets no second full-time post",
+   (snapGame(2003) || {}).live === false && db.state.get(2003).live === 0 && posts().length === nC + 1, JSON.stringify(snapGame(2003)));
+
+// H1, part three: a goal cancelled by the score, then GIVEN AGAIN, is a goal again
+LIST = { games: [live(2004, 552, "الأهلي", "الجونة", 0, 0), ...filler] };
+await tick();
+detailFor[2004] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 33 }]);
+LIST.games[0] = live(2004, 552, "الأهلي", "الجونة", 1, 0);
+await tick();
+delete detailFor[2004];
+LIST.games[0] = live(2004, 552, "الأهلي", "الجونة", 0, 0);      // taken back (the wait is off in `env`)
+await tick();
+ck("D1 the goal is cancelled", db.goals.filter(g => g.game_id === 2004 && !g.cancelled).length === 0);
+detailFor[2004] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 33 }]);  // ...and given again
+LIST.games[0] = live(2004, 552, "الأهلي", "الجونة", 1, 0);
+const nD = posts().length;
+await tick();
+ck("D2 the same goal given again is logged and posted again - not ignored against a row left cancelled",
+   db.goals.filter(g => g.game_id === 2004 && !g.cancelled).length === 1 && posts().length === nD + 1, JSON.stringify(db.goals.filter(g => g.game_id === 2004)));
+
+// H4: two refreshes find the same stale claim at the same moment
+const { goalFallbacks } = await import(new URL("../liveposts.js", import.meta.url).href);
+db.fb.set("goal|3001:1", { kind: "goal", ref_id: "3001:1", title: "⚽ هدف! الأهلي 1 - 0 سموحة\n🥅 زيزو · الدقيقة 12",
+                           claimed_at: Math.floor(Date.now() / 1000) - 10 * 60, post_id: null });
+const nE = posts().length;
+await Promise.all([goalFallbacks(envGh, Date.now()), goalFallbacks(envGh, Date.now()), goalFallbacks(envGh, Date.now())]);
+ck("E1 three overlapping fallbacks publish a stale claim ONCE",
+   posts().length === nE + 1 && !!db.fb.get("goal|3001:1").post_id, `${posts().length - nE} posts`);
+await goalFallbacks(envGh, Date.now());
+ck("E2 ...and never again", posts().length === nE + 1);
+db.fb.set("goal|3002:1", { kind: "goal", ref_id: "3002:1", title: "⚽ هدف! الزمالك 1 - 0 زد\n🥅 شيكابالا · الدقيقة 5",
+                           claimed_at: Math.floor(Date.now() / 1000) - 10 * 60, post_id: null });
+db.fb.get("goal|3002:1").claimed_at += 1;                      // the runner took it a moment ago (store.take)
+const staleSeen = { ref_id: "3002:1", claimed_at: db.fb.get("goal|3002:1").claimed_at - 1 };
+const takeStmt = db.prepare("/*fb_take*/ UPDATE fb_posted SET claimed_at = ? WHERE kind = ? AND ref_id = ? AND post_id IS NULL AND claimed_at = ?");
+const rTake = await takeStmt.bind(Math.floor(Date.now() / 1000), "goal", "3002:1", staleSeen.claimed_at).run();
+ck("E3 a claim the runner has taken cannot be taken by the fallback that read it before", rTake.meta.changes === 0);
 
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

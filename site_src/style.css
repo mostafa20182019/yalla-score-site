@@ -1705,6 +1705,8 @@ a.lt-tb{text-decoration:none}
 .mlist.mp-hero>.mrow .team span{font-size:.95rem;font-weight:800}
 .mlist.mp-hero>.mrow .score,.mlist.mp-hero>.mrow .ko{font-size:1.6rem}
 .mp-act{margin:10px 0 4px}
+/* a row whose live data stopped arriving (live_js.html, unlive) */
+.pill-stale{background:#94a3b8}
 /* the toast sat over the phone's bottom bar (site review 2026-11-20) */
 @media(max-width:760px){.push-toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}}
 /* the goals video on a match page: one wide facade, no card lift */

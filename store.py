@@ -308,6 +308,21 @@ def claim(kind, ref_id, title=None, score=None):
     return bool(rows)
 
 
+def take(kind, ref_id, claimed_at):
+    """The lock before publishing an OPEN claim somebody else made (the Worker
+    claims a goal / whistle and dispatches us; its text fallback publishes the
+    same claim four minutes later). Moves claimed_at only while it is still
+    the value we read - liveposts.js FB_TAKE is the same statement - so of the
+    runner and the fallback exactly one publishes. True = ours to post."""
+    ref_id, was = str(ref_id), int(claimed_at or 0)
+    if backend() == "json":
+        return True                      # no atomic store, as claim() explains
+    rows = sql("UPDATE fb_posted SET claimed_at = ? WHERE kind = ? AND ref_id = ? "
+               "AND post_id IS NULL AND claimed_at = ? RETURNING ref_id",
+               [max(int(time.time()), was + 1), kind, ref_id, was])
+    return bool(rows)
+
+
 def record_post(kind, ref_id, post_id, title=None, score=None, og_ok=False):
     """Mark a claim as actually published."""
     ref_id, now = str(ref_id), int(time.time())
