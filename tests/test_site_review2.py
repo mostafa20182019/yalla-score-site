@@ -161,10 +161,18 @@ ck("20 tap targets of 44px for the chips and the door; the sticky header does no
 dist = os.path.join(os.getcwd(), "dist")
 if os.path.isdir(os.path.join(dist, "my")):
     import glob
-    with_art = [p for p in glob.glob(os.path.join(dist, "m", "*.html"))[:400] if 'id="mp-report"' in io.open(p, encoding="utf-8").read()]
-    ck("21 the built site: finished pages with a report carry the chips; الأهلي's block has the door",
-       with_art and all('class="mp-jump"' in io.open(p, encoding="utf-8").read() for p in with_art[:20])
-       and "my-calc" in io.open(os.path.join(dist, "my", "al-ahly.json"), encoding="utf-8").read())
+    # EVERY page is read, in a fixed order (2026-11-20): this took the first
+    # 400 names glob returned - an order the filesystem picks - and went red
+    # on GitHub whenever none of those 400 held a report, while the same
+    # commit passed in the run beside it (the «intermittent» Tests failure
+    # of 1b897443 / 5b573529 / 8a2760c0). Both halves are relations now: no
+    # report page, or no calculator page, checks nothing.
+    with_art = [p for p in sorted(glob.glob(os.path.join(dist, "m", "*.html")))
+                if 'id="mp-report"' in io.open(p, encoding="utf-8").read()]
+    has_calc = os.path.exists(os.path.join(dist, "calc", "egypt.html"))
+    ck(f"21 the built site: finished pages with a report carry the chips ({len(with_art)}); الأهلي's block has the door",
+       all('class="mp-jump"' in io.open(p, encoding="utf-8").read() for p in with_art[:40])
+       and (not has_calc or "my-calc" in io.open(os.path.join(dist, "my", "al-ahly.json"), encoding="utf-8").read()))
 
 
 # --- site review 2026-11-20: the «فريقي» tab and the match page's exits ---
