@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-19T23:51:43+00:00",
+ "generated_at": "2026-11-20T08:10:53+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2497,6 +2497,18 @@
    "source": "team-photos/real-madrid/endrick-brazil-worldcup-2026.jpg",
    "added": "2026-11-10",
    "width": 600
+  },
+  {
+   "file": "real-madrid-ferland-mendy-real-madrid-2022.jpg",
+   "credit": "صورة: فيرلاند ميندي لاعب ريال مدريد يصافح الكاردينال كارلوس أوسورو خلال احتفال الفريق بثنائية الدوري ودوري أبطال أوروبا عام 2022 — تصوير Fotografías Archimadrid.es، رخصة CC BY 2.0 (ويكيميديا كومنز)",
+   "subject": "فيرلاند ميندي لاعب ريال مدريد",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2022,
+   "is_person": true,
+   "source": "team-photos/real-madrid/ferland-mendy-real-madrid-2022.jpg",
+   "added": "2026-11-20",
+   "width": 1600
   },
   {
    "file": "real-madrid-identity-card.jpg",
