@@ -117,16 +117,20 @@ def build(ev):
         M.put(im, lay, e, dy=M.SLIDE * (1 - e))
 
     def page(t):
+        # THE CLUBS ARE ON THE FIRST FRAME (designer review 2026-11-20: the
+        # reel opened on the wordmark, then a title, and the first club came
+        # after a second or more). No title shot: the first row stands whole
+        # at 0 s and the others follow it.
         im = bg.copy()
-        head(im, f"{label} · بعد الجولة {ev['round']}")
+        head(im, f"حركة الجدول · {label} · الجولة {ev['round']}")
         for i, mv in enumerate(moves):
-            row(im, t, mv, ys[i], 0.1 + i * 0.2)
+            row(im, t, mv, ys[i], -1.0 if i == 0 else 0.35 + i * 0.3)
         return im
 
     def outro(t):
         return M.scene({"kind": "cta", "secs": OUTRO, "lines": ["الجدول كاملًا بعد كل جولة", "على الجون"]}, t, mctx)
 
-    return [(intro, INTRO, True), (page, PAGE, True), (outro, OUTRO, False)]
+    return [(page, INTRO + PAGE, True), (outro, OUTRO, False)]
 
 
 def caption(ev):

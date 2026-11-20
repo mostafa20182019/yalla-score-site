@@ -117,7 +117,7 @@ def build(ctx):
     def intro(t):
         im = bg.copy()
         head(im, "المواجهات المباشرة")
-        e = M.ease(t, 0.1, M.FADE + 0.15)
+        e = 1.0          # whole on the first frame (designer review 2026-11-20)
         if e > 0:
             lay = M.layer()
             crests(lay, 760, 250)
@@ -125,7 +125,7 @@ def build(ctx):
             if mk is not None:
                 lay.paste(mk, (int(W / 2 - 60), 700), mk)
             M.put(im, lay, e, dy=M.SLIDE * (1 - e))
-        M.lines_block(im, t, [f"آخر {_meetings(ctx['n'])} بينهما"], (1180,), weight="ExtraBold", size=56, t0=0.55)
+        M.lines_block(im, t, [f"آخر {_meetings(ctx['n'])} بينهما"], (1180,), weight="ExtraBold", size=56, t0=-1.0)
         return im
 
     def tally(t):

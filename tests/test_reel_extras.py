@@ -76,7 +76,8 @@ ck("7 the reel is drawn from story_social's event: the same moves, each with the
    len(evs) == 1 and evs[0]["moves"] and all({"team", "before", "after", "crest"} <= set(m) for m in evs[0]["moves"]))
 ev = evs[0]
 scenes = MV.build(ev)
-ck("8 three scenes, 12.5 s, every frame 1080x1920", len(scenes) == 3 and abs(sum(s[1] for s in scenes) - 12.5) < 1e-9
+# two scenes since 2026-11-20: the title-only opening left, the clubs are on frame 0
+ck("8 two scenes (rows, outro), 12.5 s, every frame 1080x1920", len(scenes) == 2 and abs(sum(s[1] for s in scenes) - 12.5) < 1e-9
    and all(draw(dur - 0.05).size == (R.W, R.H) for draw, dur, _ in scenes))
 cap = MV.caption(ev)
 ck("9 the caption is the event's own lines, one question, the table's link, #الجون",

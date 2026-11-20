@@ -44,15 +44,17 @@ def match(i, hs, as_):
 
 ms = [match(i, 8, 1) for i in range(7)]   # 8 = lots of ink, 1 = little
 scenes = D.build(ms, "2026-11-08", now)
-check(len(scenes) == 3, f"7 matches -> intro + ONE shot of six + outro ({len(scenes)})")
-for _n, _want in ((3, [3]), (6, [6]), (9, [6]), (11, [6]), (12, [6, 6]), (20, [6, 6])):
+check(len(scenes) == 3, f"7 matches -> intro + ONE shot of four + outro ({len(scenes)})")
+# four a shot since 2026-11-20 (the designer's review: six rows were too small to read)
+check(D.PER_SHOT == 4 and D.MAX_MATCHES == 8, "four results a shot, eight at most")
+for _n, _want in ((3, [3]), (4, [4]), (6, [4]), (7, [4]), (8, [4, 4]), (12, [4, 4]), (20, [4, 4])):
     _ms = [match(i, 2, 1) for i in range(_n)]
     _sc = D.build(_ms, "2026-11-08", now)
     _got = [len(p) for p in D.shots(_ms)]
     check(_got == _want and len(_sc) == 2 + len(_want) and sum(s[1] for s in _sc) <= 15,
-          f"{_n} matches: shots of {_got} - six a shot, full shots only - {sum(s[1] for s in _sc):.1f} s")
+          f"{_n} matches: shots of {_got} - four a shot, full shots only - {sum(s[1] for s in _sc):.1f} s")
 _h6, _ys6 = D.row_geometry(D.PER_SHOT)
-check(_ys6[0] - _h6 / 2 >= D.BAND_TOP - 1 and _ys6[-1] + _h6 / 2 <= R.SAFE_BOTTOM, "six rows fill the safe band, no more")
+check(_ys6[0] - _h6 / 2 >= D.BAND_TOP - 1 and _ys6[-1] + _h6 / 2 <= R.SAFE_BOTTOM, "a full shot's rows fill the safe band, no more")
 check(scenes[-1][2] is False, "the outro is not pushed in twice")
 secs = sum(s[1] for s in scenes)
 check(12 <= secs <= 15, f"length {secs:.1f} s (15 s or less, user rule 2026-11-10)")
@@ -102,10 +104,20 @@ check(D.BAND_TOP < 420 and D.HEAD_LOGO_Y - D.HEAD_LOGO_H / 2 >= 195 and D.ROW_MA
       "the small head logo starts at the top safe line and the rows get the room")
 _h6, _ = D.row_geometry(6)
 _long = [_m(i, "Wolverhampton Wanderers FC", "Chelsea FC", 1, 0) for i in range(2)]
-check(22 <= D.shot_name_size(_long, _h6) <= D.shot_name_size(_night, _h6) <= 42,
+_h4, _ = D.row_geometry(4)
+check(_h4 >= 250 and D.shot_name_size(_night, _h4) >= 36,
+      f"four rows are {_h4:.0f} px tall and a normal name is drawn at 36 px or more (it was ~30 with six)")
+check(24 <= D.shot_name_size(_long, _h6) <= D.shot_name_size(_night, _h6) <= 46,
       "one name size for a whole shot: the longest name sets it")
-check("hero=m is hero" in _src and "mark(h * 0.3) if hero" in _src and "max(26," in _src,
-      "the hero row carries the board instead of the dash; the league label is never under 26 px")
+check("hero=m is hero" in _src and "outline=RED + (255,) if hero" in _src and "max(26," in _src,
+      "the hero row carries the red frame (the dash stays between the numbers); the league label is never under 26 px")
+# the first frame IS the match (designer review 2026-11-20): frame 0 is the
+# cover and the moment the thumb decides - it used to be the wordmark alone
+_f0 = D.build(_night, "2026-11-08", now)[0][0](0.0)
+_f1 = D.build(_night, "2026-11-08", now)[0][0](2.0)
+_box = (60, 560, 1020, 1000)
+check(list(_f0.crop(_box).convert("RGB").getdata()) == list(_f1.crop(_box).convert("RGB").getdata()),
+      "the opening shot's match is whole at 0 s - the same pixels as two seconds later")
 cap = D.caption(ms[:3], "2026-11-08", now)
 check(cap.count("8 - 1") == 3 and "https://elgoon.com/" + chr(10) in cap and "elgoon.com/matches" not in cap and "#الجون" in cap, "caption: every result, the link, the tag")
 
@@ -139,9 +151,9 @@ _pool = [dict(_f(i, f"Team {i} FC", f"Side {i} FC", f"{10 + i % 9}:00"), kickoff
 _orig = _P.todaycard_matches
 _P.todaycard_matches = lambda matches, date, limit=None: sorted(matches[:limit or 9], key=lambda m: m["koff_time"])
 try:
-    check(len(D.today_matches(_pool, "2026-11-22")) == 6 and len(D.today_matches(_pool[:4], "2026-11-22")) == 4
-          and len(D.today_matches(_pool + _pool[:3], "2026-11-22")) == 12,
-          "nine fixtures show their six most important (full shots only), four show four, twelve show twelve")
+    check(len(D.today_matches(_pool, "2026-11-22")) == 8 and len(D.today_matches(_pool[:4], "2026-11-22")) == 4
+          and len(D.today_matches(_pool[:7], "2026-11-22")) == 4 and len(D.today_matches(_pool + _pool[:3], "2026-11-22")) == 8,
+          "nine fixtures show eight (two full shots of four), seven show four, four show four, twelve show eight")
 finally:
     _P.todaycard_matches = _orig
 _wf = open(".github/workflows/fb-post.yml", encoding="utf-8").read()

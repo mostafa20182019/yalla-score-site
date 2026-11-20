@@ -45,7 +45,12 @@ W, H, FPS = M.W, M.H, M.FPS
 # shots of six; fewer than six = the one short shot the day has. Two shots at
 # most: 2.5 + 2 x 4.5 + 3 = 14.5 s (user rule 2026-11-10: every reel is 15 s
 # or less). The caption still lists every result the caller passed.
-PER_SHOT = 6
+# FOUR a shot since 2026-11-20 (designer review; user: «اعمل 6»): six rows
+# left the names at ~30 px and the league line at ~24 px on a phone, with a
+# few hundred pixels of empty blue above the caption. Four rows are a third
+# taller, the name sits UNDER its crest with room to be read, and the caption
+# still lists every result. A night of 4-7 shows four, eight or more two shots.
+PER_SHOT = 4
 MAX_SHOTS = 2
 MAX_MATCHES = PER_SHOT * MAX_SHOTS   # what main() asks fb_post.daycard_matches for
 INTRO, OUTRO = 2.5, 3.0
@@ -56,12 +61,13 @@ PAGE, PAGE_TWO = 7.0, 4.5            # one shot alone / each of two
 # and the rows get the room.
 HEAD_LOGO_H, HEAD_LOGO_Y, TITLE_Y = 110, 250, 318
 BAND_TOP, BAND_BOTTOM = 392, R.SAFE_BOTTOM - 10   # under the page title, inside the Reels safe band
-ROW_MAX_H = 185
+ROW_MAX_H = 270
 RED = (225, 29, 72)                  # the red of the board in the logo
-HOME_X, AWAY_X = W - 150, 150        # the crests: clear of the Reels like/comment column on the right
-SCORE_DX = 52                        # each side's goals, this far from the dash
-NAME_GAP = 100                       # the names stop this far from the centre
-PILL_W = 176                         # a kick-off time's white pill (the morning reel) - inside the names' gap
+HOME_X, AWAY_X = W / 2 + 270, W / 2 - 270   # the crests, each with its name under it
+NAME_ROOM = 380                      # a name's width, centred under its crest (ends inside the row's card)
+SCORE_DX = 74                        # each side's goals, this far from the dash
+NAME_GAP = 100                       # half the width the league line may take between the crests
+PILL_W = 250                         # a kick-off time's white pill (the morning reel) - between the crests
 INK = (16, 62, 108)
 
 
@@ -143,63 +149,57 @@ def under_line(m, fixtures):
 
 
 def row(im, t, m, cy, t0, h, name_size=None, hero=False, fixtures=False):
-    """One result on ONE line, h tall: fades and slides in at t0. name_size =
-    one size for every name of the shot (a long name used to shrink alone);
-    hero = the night's result: a red frame and the logo's board between the
-    two scores instead of the dash. fixtures = a match still to be played:
-    its kick-off time on a white pill where the score would be."""
-    from site_lib.names import ar_team, comp_label
+    """One result, h tall: fades and slides in at t0. The two crests either
+    side of the score, each side's NAME UNDER ITS CREST (2026-11-20: beside
+    the crest a name had 220 px and came out at ~30 px). name_size = one size
+    for every name of the shot (a long name used to shrink alone); hero = the
+    night's result: a red frame and the logo's board between the two scores
+    instead of the dash. fixtures = a match still to be played: its kick-off
+    time on a white pill where the score would be."""
+    from site_lib.names import ar_team
     e = M.ease(t, t0, M.FADE + 0.1)
     if e <= 0:
         return
     lay = M.layer()
     d = ImageDraw.Draw(lay)
-    d.rounded_rectangle((50, cy - h / 2 + 6, W - 50, cy + h / 2 - 6), int(h * 0.2), fill=(255, 255, 255, 46 if hero else 26),
+    d.rounded_rectangle((50, cy - h / 2 + 6, W - 50, cy + h / 2 - 6), int(h * 0.14), fill=(255, 255, 255, 46 if hero else 26),
                         outline=RED + (255,) if hero else None, width=5 if hero else 0)
-    cs = int(min(104, h * 0.62))                       # the crest
-    for side, x, anchor, edge in (("home", HOME_X, "rm", HOME_X - cs / 2 - 16),
-                                  ("away", AWAY_X, "lm", AWAY_X + cs / 2 + 16)):
-        R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), cs, x, cy)
+    cs = int(min(120, h * 0.45))                       # the crest
+    top, ny = cy - h * 0.17, cy + h * 0.33             # the crest/score line, the names' line
+    for side, x in (("home", HOME_X), ("away", AWAY_X)):
+        R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), cs, x, top)
         nm = C.ar(team_name(m, side))
-        room = abs(edge - W / 2) - NAME_GAP
-        d.text((edge, cy), nm, font=(C.font("ExtraBold", name_size) if name_size
-                                     else C.fit(d, nm, "ExtraBold", int(min(42, h * 0.3)), room, 22)),
-               fill=C.WHITE, anchor=anchor)
-    sy = cy - h * 0.09
+        d.text((x, ny), nm, font=(C.font("ExtraBold", name_size) if name_size
+                                  else C.fit(d, nm, "ExtraBold", int(min(46, h * 0.18)), NAME_ROOM, 24)),
+               fill=C.WHITE, anchor="mm")
     if fixtures:
-        ft = C.font("ExtraBold", int(min(52, h * 0.3)))
-        ph = int(min(70, h * 0.4))
-        d.rounded_rectangle((W / 2 - PILL_W / 2, sy - ph / 2, W / 2 + PILL_W / 2, sy + ph / 2), int(ph * 0.3),
+        ft = C.font("ExtraBold", int(min(78, h * 0.3)))
+        ph = int(min(104, h * 0.4))
+        d.rounded_rectangle((W / 2 - PILL_W / 2, top - ph / 2, W / 2 + PILL_W / 2, top + ph / 2), int(ph * 0.3),
                             fill=(255, 255, 255, 240))
-        d.text((W / 2, sy), str(m.get("koff_time") or "--:--"), font=ft, fill=INK, anchor="mm")
+        d.text((W / 2, top), str(m.get("koff_time") or "--:--"), font=ft, fill=INK, anchor="mm")
     else:
-        f = C.font("ExtraBold", int(min(84, h * 0.5)))
-        d.text((W / 2 + SCORE_DX, sy), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
-        d.text((W / 2 - SCORE_DX, sy), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
-        mk = mark(h * 0.3) if hero else None
-        if mk is not None:
-            lay.paste(mk, (int(W / 2 - mk.width / 2), int(sy - mk.height / 2)), mk)
-        else:
-            d.text((W / 2, sy), "-", font=C.font("ExtraBold", int(min(60, h * 0.36))), fill=M.GOLD, anchor="mm")
-    # the league under the score: white, and never under 26 px - the gold at
-    # 18 px could not be read on the light blue. Under a kick-off time the
-    # channel stands beside it, and the line may run wider than the gap
-    # between the names (it sits below them).
+        f = C.font("ExtraBold", int(min(124, h * 0.46)))
+        d.text((W / 2 + SCORE_DX, top), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
+        d.text((W / 2 - SCORE_DX, top), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
+        # the dash between the numbers - on the night's result too: the
+        # board went there and «0 🎯 0» read oddly (designer, same review);
+        # the red frame alone marks the hero
+        d.text((W / 2, top), "-", font=C.font("ExtraBold", int(min(80, h * 0.3))), fill=M.GOLD, anchor="mm")
+    # the league (and, under a kick-off time, the channel) on its OWN line
+    # between the score and the names - white, never under 26 px. Not on the
+    # names' line: two long names meet in the middle and ran over it.
     lb = C.ar(under_line(m, fixtures))
-    d.text((W / 2, cy + h * 0.31), lb, font=C.fit(d, lb, "Bold", int(max(26, min(30, h * 0.17))),
-                                                  (W - 2 * 190) if fixtures else 2 * NAME_GAP + 80, 20),
-           fill=(255, 255, 255, 215), anchor="mm")
+    d.text((W / 2, cy + h * 0.115), lb, font=C.fit(d, lb, "Bold", int(max(26, min(32, h * 0.12))), 2 * (HOME_X - W / 2) - cs - 30, 22),
+           fill=(255, 255, 255, 225), anchor="mm")
     M.put(im, lay, e, dy=M.SLIDE * (1 - e))
 
 
 def shot_name_size(rows, h):
     """ONE size for every name of a shot: the smallest any of them needs."""
-    from site_lib.names import ar_team
     d = ImageDraw.Draw(Image.new("RGBA", (8, 8)))
-    cs = int(min(104, h * 0.62))
-    room = abs((HOME_X - cs / 2 - 16) - W / 2) - NAME_GAP
-    top = int(min(42, h * 0.3))
-    return min(C.fit(d, C.ar(team_name(m, k)), "ExtraBold", top, room, 22).size for m in rows for k in ("home", "away"))
+    top = int(min(46, h * 0.18))
+    return min(C.fit(d, C.ar(team_name(m, k)), "ExtraBold", top, NAME_ROOM, 24).size for m in rows for k in ("home", "away"))
 
 
 def today_label(date, now=None):
@@ -242,7 +242,11 @@ def build(ms, date, now=None, fixtures=False):
         head(im)
         C.draw_center(ImageDraw.Draw(im), W / 2, TITLE_Y, C.ar(title), C.font("ExtraBold", 56), C.WHITE)
         m = hero
-        e = M.ease(t, 0.1, M.FADE + 0.15)
+        # WHOLE ON THE FIRST FRAME (designer review 2026-11-20: at 0 s the reel
+        # showed the wordmark alone, the match half-faded at 0.4 s - and frame
+        # 0 is the cover and the moment the thumb decides). No fade-in here:
+        # the shot's own push-in is the motion.
+        e = 1.0
         if m is not None and e > 0:
             lay = M.layer()
             d = ImageDraw.Draw(lay)
@@ -278,7 +282,7 @@ def build(ms, date, now=None, fixtures=False):
             _n = "مباراتان اليوم" if len(ms) == 2 else f"أبرز {len(ms)} مباريات · بتوقيت القاهرة"
         # the date is said once: in the title when it carries it, else here
         M.lines_block(im, t, [_n] if when in title else [f"{when} · {_n}"], (1200,),
-                      weight="ExtraBold", size=48, t0=0.55)
+                      weight="ExtraBold", size=48, t0=-1.0)
         return im
 
     def page(rows):
