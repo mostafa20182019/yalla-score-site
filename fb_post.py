@@ -1190,7 +1190,8 @@ def daycard_matches(matches, date, limit=None):
 
 def daycard_caption(ms, date):
     from site_lib.names import ar_team, comp_label
-    lines = [f"📊 نتائج أبرز مباريات اليوم ({date})"]
+    from site_lib.dates import day_month as _dm
+    lines = [f"📊 نتائج أبرز مباريات {_dm(date, weekday=True)}"]     # the day by name, not an ISO date (2026-11-20)
     for m in ms:
         lines.append(f"{ar_team(m['home'])} {m['home_score']} - {m['away_score']} {ar_team(m['away'])} · {comp_label(m['competition'])}")
     lines.append(f"كل النتائج والمواعيد: {SITE}/")   # the «المباريات» tab = home (2026-11-17)
@@ -1289,7 +1290,9 @@ def todaycard_caption(ms, date):
         c = m["competition"]
         lines.append(f"🕗 {m['koff_time']} · {ar_team_in(m['home'], c)} × {ar_team_in(m['away'], c)} · {comp_label(c)}"
                      + (f" · 📺 {tv}" if tv else ""))
-    lines += ["", "المواعيد بتوقيت القاهرة.", f"كل المباريات لحظة بلحظة: {SITE}/", "#الجون #مباريات_اليوم"]
+    # a question in every caption that had none (social review 2026-11-20)
+    lines += ["", "المواعيد بتوقيت القاهرة.", "", "هتتفرج على أنهي ماتش النهارده؟ قولنا في الكومنتات 👇", "",
+              f"كل المباريات لحظة بلحظة: {SITE}/", "#الجون #مباريات_اليوم"]
     return "\n".join(lines)
 
 
@@ -1375,6 +1378,11 @@ def text_post(token, path, dry=False):
 # quiet night posts nothing. --dry prints the texts: the user reads the
 # wording before anything goes live.
 FORM_KINDS = ("club-form", "club-streak")      # story_events.KIND_FORM / KIND_STREAK: a CARD, not a text post
+# The form post is the CARD alone, two a Cairo day at most (user 2026-11-20,
+# «اعمل 10»): the page already carries the morning, results, scorers, movers
+# and head-to-head reels. form_reel.py stays for a hand-made reel.
+FORM_REEL = False
+FORM_DAILY_MAX = 2
 # the social review's kinds (story_social.py, 2026-11-19): «رقم الليلة», «سيناريو
 # الجولة», «ركن السودان», «سؤال الجون». Their own switch, FB_SOCIAL, for the
 # same reason FB_FORM exists: he reads a new kind's wording before it is live.
@@ -1440,7 +1448,7 @@ def post_event(token, ev):
 def event_reel(ev, token):
     """The form REEL after the card (form_reel.py): behind FB_REELS like
     every reel, once per ref through the store, never fails the run."""
-    if ev.get("kind") != "club-form":
+    if ev.get("kind") != "club-form" or not FORM_REEL:
         return
     try:
         import form_reel as FR
@@ -1487,6 +1495,8 @@ def events_post(token, dry=False, today=None):
             print(f"--- {kind} / {ref}{how}\n{event_text(ev)}\n"); continue
         if not token:
             print(f"{kind} {ref}: FB_PAGE_TOKEN not set - skipping"); continue
+        if kind in FORM_KINDS and sum(len(store.posted_since(k, _day_start())) for k in FORM_KINDS) >= FORM_DAILY_MAX:
+            print(f"{kind} {ref}: {FORM_DAILY_MAX} form cards are out today - not posted"); continue
         if not store.claim(kind, ref, title=title):
             print(f"{kind} {ref}: claimed by another run - nothing posted"); continue
         try:

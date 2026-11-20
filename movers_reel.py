@@ -128,7 +128,7 @@ def build(ev):
         return im
 
     def outro(t):
-        return M.scene({"kind": "cta", "secs": OUTRO, "lines": ["الجدول كاملًا بعد كل جولة", "على الجون"]}, t, mctx)
+        return M.scene({"kind": "cta", "secs": OUTRO, "lines": ["تابع صفحة الجون", "حركة الجدول بعد كل جولة"]}, t, mctx)
 
     return [(page, INTRO + PAGE, True), (outro, OUTRO, False)]
 

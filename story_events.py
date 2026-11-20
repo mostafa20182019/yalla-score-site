@@ -246,9 +246,22 @@ def event(kind, ref, title, lines, link, link_label, tags, competition=None, **d
     return ev
 
 
+# ONE question under the facts, for the kinds that had none (social review
+# 2026-11-20). A question about the reader's view - never «توقع», never a
+# prize: nothing here may read as betting.
+ASKS = {
+    "sudan-corner": "رأيك في مشوار الهلال السوداني لحد دلوقتي؟ قولنا في الكومنتات 👇",
+    "goal-clock": "أنهي هدف في الماتش ده كان الأحلى؟ 👇",
+    "club-month-clock": "راضي عن أهداف فريقك الشهر ده؟ قولنا رأيك 👇",
+}
+
+
 def render(ev):
-    """The post: the fact lines, the link line, then «#الجون» + the tags."""
+    """The post: the fact lines, the kind's question when it has one, the
+    link line, then «#الجون» + the tags."""
     out = list(ev.get("lines") or [])
+    if ASKS.get(ev.get("kind")):
+        out += ["", ASKS[ev["kind"]], ""]
     if ev.get("link"):
         out.append(f"{ev.get('link_label') or 'التفاصيل'}: {ev['link']}")
     out.append(" ".join(["#الجون"] + list(ev.get("tags") or [])).rstrip())
@@ -630,6 +643,15 @@ FORM_N, FORM_MAX, FORM_MIN = 8, 10, 5
 FORM_WINDOW_H = 24
 STREAK_WIN, STREAK_WINLESS = 5, 5
 STREAK_MAX_AGE_D = 2
+# THE RULES OF 2026-11-20 (the two questions left open on 2026-11-09, answered
+# by the social review and taken by the user: «اعمل 10»):
+#  - a run is posted when it REACHES one of these lengths and not at every
+#    match after the fifth (six, seven... were a new post each night);
+#  - two curated clubs in one match = ONE form card, for the side on the
+#    longer run (the clubs' own order breaks a tie);
+#  - a match whose pair has a head-to-head page gets NO form card: the
+#    head-to-head reel owns that morning.
+STREAK_STEPS = (5, 8, 10)
 MARKS = {"W": "✅", "D": "➖", "L": "❌"}
 CAIRO_TZ = "Africa/Cairo"
 
@@ -828,7 +850,24 @@ def club_form_before_match(matches, fixtures, archive, today=None, n=FORM_N, hou
             next={"match_id": nxt.get("match_id"), "home": h, "away": a, "home_badge": nxt.get("home_badge"),
                   "away_badge": nxt.get("away_badge"), "kickoff": nxt.get("kickoff"), "koff_time": nxt.get("koff_time"),
                   "competition": nxt.get("competition"), "club_home": club_side(tp, nxt) == "h"}))
-    return events
+    return one_per_match(events)
+
+
+def one_per_match(events):
+    """One form card a match (STREAK_STEPS' comment): none for a pair with a
+    head-to-head page, and of two curated sides the one on the longer run -
+    the list's own order (the clubs' order) breaks a tie."""
+    from site_lib import h2h as H
+    best = {}
+    for ev in events:
+        nx = ev["next"]
+        if H.pair_of_match(nx["home"], nx["away"]):
+            continue
+        cur = best.get(nx["match_id"])
+        if cur is None or ev["run"][1] > cur["run"][1]:
+            best[nx["match_id"]] = ev
+    keep = {id(e) for e in best.values()}
+    return [e for e in events if id(e) in keep]
 
 
 def streak_milestone(rows):
@@ -839,13 +878,13 @@ def streak_milestone(rows):
         return None
     s = form_summary(rows)
     mk, n = s["run"]
-    if mk == "W" and n >= STREAK_WIN:
+    if mk == "W" and n in STREAK_STEPS:
         return ("wins", n)
     if mk == "L" and len(marks) > 1:
         before = form_summary(rows[:-1])["run"]
         if before[0] == "W" and before[1] >= STREAK_WIN:
             return ("first-loss", before[1])
-    if s["winless"] >= STREAK_WINLESS:
+    if s["winless"] in STREAK_STEPS:
         return ("winless", s["winless"])
     return None
 

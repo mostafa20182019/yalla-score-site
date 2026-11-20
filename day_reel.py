@@ -300,8 +300,10 @@ def build(ms, date, now=None, fixtures=False):
         return draw
 
     def outro(t):
-        sc = {"kind": "cta", "secs": OUTRO, "lines": (["كل المواعيد والقنوات", "والنتائج لحظة بلحظة على الجون"] if fixtures
-                                                        else ["كل النتائج والجداول", "لحظة بلحظة على الجون"])}
+        # the closing shot asks for the FOLLOW (social review 2026-11-20): a
+        # reel is mostly seen by people who do not follow the page, and that
+        # is the tap that grows it; the site's address stays under the lines
+        sc = {"kind": "cta", "secs": OUTRO, "lines": ["تابع صفحة الجون", "المباريات كل صباح والنتائج كل ليلة"]}
         return M.scene(sc, t, ctx)
 
     secs = PAGE if len(pages) == 1 else PAGE_TWO
@@ -324,11 +326,21 @@ def frames(scenes):
 
 
 def caption(ms, date, now=None):
-    from site_lib.names import ar_team
-    lines = [f"⚽ {rel_label(date, now)} ({day_name(date)})", ""]
-    for m in ms:
-        lines.append(f"{team_name(m, 'home')} {m['home_score']} - {m['away_score']} {team_name(m, 'away')}")
+    def res(m):
+        return f"{team_name(m, 'home')} {m['home_score']} - {m['away_score']} {team_name(m, 'away')}"
+    # the caption OPENS with the night's result, as the reel does (social
+    # review 2026-11-20: it opened «نتائج أمس» - a heading, not a hook)
+    h = hero_of(ms)
+    hero = next((m for m in ms if h is not None and m.get("match_id") == h.get("match_id")), None)
+    title, when = rel_label(date, now), day_name(date)
+    head = title if when in title else f"{title} ({when})"      # the day is said once
+    if hero is not None and len(ms) > 1:
+        lines = [f"⚽ {res(hero)}", f"وباقي {head}:", ""]
+        lines += [res(m) for m in ms if m is not hero]
+    else:
+        lines = [f"⚽ {head}", ""] + [res(m) for m in ms]
     lines += ["", "أنهي نتيجة فاجئتك؟ قولنا في الكومنتات 👇", "",
+              "تابع الصفحة: النتائج كل ليلة والمباريات كل صباح.",
               "كل النتائج والمواعيد: https://elgoon.com/", "#الجون #نتائج_المباريات"]
     return "\n".join(lines) + "\n"
 

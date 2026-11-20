@@ -542,10 +542,16 @@ reset_state(); os.environ["FB_REELS"] = "1"
 _rendered = []
 FReel.render = lambda ev, out=None, sheet=None: (_rendered.append(ev["ref"]) or ("x.mp4", True, 14.4))
 FReelBase.post_reel = lambda token, path, desc: "VID_1"
+# the shipped rule since 2026-11-20: the form post is the CARD alone, even with FB_REELS on
+assert fp.FORM_REEL is False
+assert run([], argv=("--events", "2026-11-22")) == 0 and len(photos()) == 1 and _rendered == []
+reset_state(); os.environ["FB_REELS"] = "1"
+fp.FORM_REEL = True          # the reel's own plumbing, for the day it is wanted again
 assert run([], argv=("--events", "2026-11-22")) == 0 and len(photos()) == 1
 assert _rendered == ["form:barcelona:564749"] and store.get_post(FReelBase.KIND, "form:barcelona:564749")["post_id"] == "VID_1"
 assert run([], argv=("--events", "2026-11-22")) == 0 and _rendered == ["form:barcelona:564749"], "reel rendered twice"
 os.environ.pop("FB_REELS", None)
+fp.FORM_REEL = False
 reset_state()
 _ok = FCard.render_bytes
 FCard.render_bytes = lambda ev, **kw: (_ for _ in ()).throw(RuntimeError("no font"))

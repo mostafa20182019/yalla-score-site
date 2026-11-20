@@ -183,7 +183,7 @@ def build(ctx):
         return im
 
     def outro(t):
-        return M.scene({"kind": "cta", "secs": OUTRO, "lines": ["كل المواجهات مباراة بمباراة", "على الجون"]}, t, mctx)
+        return M.scene({"kind": "cta", "secs": OUTRO, "lines": ["تابع صفحة الجون", "أرقام المواجهات قبل كل قمة"]}, t, mctx)
 
     return [(intro, INTRO, True), (tally, TALLY, True), (games, GAMES, True), (outro, OUTRO, False)]
 
@@ -197,7 +197,8 @@ def caption(ctx):
     if nx and nx.get("kickoff"):
         when = H.ar_date(nx["kickoff"]) + (f" الساعة {nx['koff_time']} بتوقيت القاهرة" if nx.get("koff_time") else "")
         lines += ["", f"المواجهة القادمة: {when}."]
-    lines += ["", f"كل المواجهات مباراة بمباراة: https://elgoon.com/h2h/{ctx['pair']['slug']}",
+    lines += ["", "بتشجع مين؟ اكتب اسم فريقك في الكومنتات 👇",
+              "", f"كل المواجهات مباراة بمباراة: https://elgoon.com/h2h/{ctx['pair']['slug']}",
               f"#الجون #{a.replace(' ', '_')} #{b.replace(' ', '_')}"]
     return "\n".join(lines) + "\n"
 
