@@ -143,6 +143,10 @@ jobs:
           FB_FORM: ${{ vars.FB_FORM }}
           # the social review's kinds (story_social.py, 2026-11-19) print until this one is "on"
           FB_SOCIAL: ${{ vars.FB_SOCIAL }}
+          # the match-day poster (match_poster.py) and the title-race reel
+          # (race_reel.py), 2026-11-20: each prints until its own variable is "on"
+          FB_POSTER: ${{ vars.FB_POSTER }}
+          FB_RACE: ${{ vars.FB_RACE }}
         run: |
           if [ "${MOMENT#file:}" != "$MOMENT" ]; then
             # a finished reel file (user 2026-11-11): uploaded as it is, no ffmpeg.
@@ -183,6 +187,9 @@ jobs:
             # (h2h_reel.py, rewritten 2026-11-20) - nothing on any other day
             python h2h_reel.py --auto --publish | tee -a /tmp/fb.txt; rc5=${PIPESTATUS[0]}
             [ "$rc" = 0 ] && rc=$rc5
+            # the day's match in the two clubs' own colours, when one of ours
+            # plays (behind FB_POSTER); it never fails the job
+            python match_poster.py --auto --publish | tee -a /tmp/fb.txt || true
           elif [ -n "$DAYCARD" ]; then
             # the nightly hook: the results card, then whatever the data says
             # is news tonight (story_events.py) - each once, through the store
@@ -198,6 +205,9 @@ jobs:
             # the night after a league round ends - one league a night, each
             # round once; it never fails the job
             python movers_reel.py --auto | tee -a /tmp/fb.txt || true
+            # the title race as lines, once every three rounds of a league
+            # (behind FB_RACE); it never fails the job
+            python race_reel.py --auto | tee -a /tmp/fb.txt || true
             python fb_post.py --events | tee -a /tmp/fb.txt; rc2=${PIPESTATUS[0]}
             [ "$rc" = 0 ] && rc=$rc3
             [ "$rc" = 0 ] && rc=$rc4
