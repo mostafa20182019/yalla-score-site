@@ -674,5 +674,30 @@ const takeStmt = db.prepare("/*fb_take*/ UPDATE fb_posted SET claimed_at = ? WHE
 const rTake = await takeStmt.bind(Math.floor(Date.now() / 1000), "goal", "3002:1", staleSeen.claimed_at).run();
 ck("E3 a claim the runner has taken cannot be taken by the fallback that read it before", rTake.meta.changes === 0);
 
+// THE BUDGET (audit 2026-11-20): a refresh in which nothing happened reads no goal log
+const realPrepare = db.prepare;
+let opened = 0, prepared = 0;
+db.prepare = (sql) => { prepared += 1; if (sql.includes("/*lg_open*/")) opened += 1; return realPrepare(sql); };
+LIST = { games: [live(4001, 552, "الأهلي", "سموحة", 1, 0), live(4002, 552, "الزمالك", "زد", 0, 0), ...filler] };
+detailFor[4001] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 12 }]);
+await tick();                                                   // first sight of the two
+opened = 0; prepared = 0;
+await tick(); await tick();                                     // nothing moves
+ck("F1 an idle refresh reads NO goal log, however many games are listed", opened === 0, `${opened} lg_open over two idle refreshes`);
+ck("F2 ...and stays a handful of statements, not one per game", prepared / 2 <= 12, `${prepared / 2} statements a refresh for ${LIST.games.length} games`);
+opened = 0;
+detailFor[4001] = DETAIL(2, 0, [{ s: "h", pid: 11, m: 12 }, { s: "h", pid: 11, m: 40 }]);
+LIST.games[0] = live(4001, 552, "الأهلي", "سموحة", 2, 0);
+const nF = posts().length;
+await tick();
+ck("F3 a goal reads the log of THAT game only, and is still logged and posted",
+   opened === 1 && posts().length === nF + 1 && db.goals.filter(g => g.game_id === 4001 && !g.cancelled).length === 2, `${opened} lg_open`);
+opened = 0;
+LIST.games[1] = live(4002, 552, "الزمالك", "زد", 1, 0);         // a score-only goal on the other game
+await tick();
+ck("F4 a score that moved with no goal list reads its log too (the held row needs the next seq)",
+   opened === 1 && db.goals.filter(g => g.game_id === 4002 && g.held).length === 1, `${opened} lg_open`);
+db.prepare = realPrepare;
+
 console.log(fails.length ? `\n${fails.length} FAILED: ${fails.join("; ")}` : "\nALL LIVE POST TESTS PASSED");
 process.exit(fails.length ? 1 : 0);

@@ -665,7 +665,19 @@ async function storeApply(env, fresh, now) {
       // post listed «لامين يامال 10'» twice)
       // (every row counts for the next seq - a cancelled seq is never reused;
       // only live rows can be named)
-      const logRows = ((await env.DB.prepare("/*lg_open*/ SELECT seq, side, player, minute, cancelled, held FROM live_goals WHERE game_id = ? ORDER BY seq")
+      // ...but ONLY for a game where something moved (audit 2026-11-20). This
+      // read ran for every listed game on every refresh, one awaited query
+      // each: 104 statements for 100 games on a refresh in which nothing had
+      // happened, some 2 million row reads a day against a budget of 5 - and
+      // every one of them made the refresh slower, which widens the window
+      // two refreshes overlap in. The log is needed to diff a goal list whose
+      // keys changed, or a score that changed; a game that did neither logs,
+      // names and cancels nothing below, so it is not read.
+      const _old = new Set(oldGoals.map(goalKey)), _new = new Set(newGoals.map(goalKey));
+      const moved = (g.goals !== undefined && (newGoals.length || oldGoals.length))
+        ? (newGoals.some(ev => !_old.has(goalKey(ev))) || oldGoals.some(ev => !_new.has(goalKey(ev))))
+        : (g.hs !== p.hs || g.as !== p.as_);
+      const logRows = !moved ? [] : ((await env.DB.prepare("/*lg_open*/ SELECT seq, side, player, minute, cancelled, held FROM live_goals WHERE game_id = ? ORDER BY seq")
         .bind(g.id).all()).results) || [];
       let seq = logRows.reduce((m, r) => Math.max(m, Number(r.seq) || 0), 0);
       const openRows = logRows.filter(r => !r.cancelled);
