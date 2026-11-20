@@ -10,6 +10,14 @@
 {# .mp-hero: LIVE_JS repaints THIS row's pill/score like any match row, and
    since 2026-09-13 also the «الحالة» line of the info card below #}
 <div class="mlist mp-hero">{{ hero_row }}</div>
+{# follow the club + pass the match on (site review 2026-11-20) - the
+   article's own block; FOLLOW_JS is on every page #}
+<div class="a-act mp-act">
+  {% if lead %}
+  <button class="follow-btn" type="button" data-slug="{{ lead.slug }}" data-name="{{ lead.name }}" aria-pressed="false" hidden></button>
+  {% endif %}
+  <a class="share-btn" href="{{ share_href }}" target="_blank" rel="noopener" data-share-title="{{ h1 }}" data-share-url="{{ share_url }}">مشاركة ↗</a>
+</div>
 {{ jump }}
 {# the top-rated starter, as a picture (2026-11-06: «اليوزر ... بيحب يشوف
    المعلومات من الصور») - tables.motm_html; finished matches only #}
@@ -66,15 +74,21 @@
 {% endif %}
 {# «لعب / ف / ت / خ» popups (2026-11-07) - the standings page's script #}
 {{ games_js }}
+{# «مباريات اليوم»: where to go next, as under an article #}
+{{ today_strip }}
 {{ faq }}
 {% if news %}
 <section class="minfo">
   <h2>{{ news_title }}</h2>
-  <ul class="mp-newslist">
+  <div class="alist">
     {% for n in news %}
-    <li><a href="{{ n.href }}">{{ n.title }}</a></li>
+    <a class="al-row" href="{{ n.href }}">{{ n.th }}
+      <span class="al-b">
+        <b class="al-t">{{ n.title }}</b>
+      </span>
+    </a>
     {% endfor %}
-  </ul>
+  </div>
 </section>
 {% endif %}
 {# NO SportsEvent markup (removed 2026-09-23): Google requires a location and

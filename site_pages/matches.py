@@ -221,6 +221,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
     n_mp = 0
     n_mp_idx = 0
     n_mp_sm = 0
+    from urllib.parse import quote as _quote
+    from site_lib.today_strip import today_strip as _ts
+    _today_strip = _ts(matches)          # the same strip on every match page: built once
     for mid, m in sorted(m_all.items(), key=lambda kv: kv[1].get("kickoff") or ""):
         if not (m.get("home") and m.get("away") and m.get("kickoff")):
             continue
@@ -284,8 +287,10 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         # og:type=article when the page carries its story (SEO audit 2026-11-06)
         page_head = head(title, desc, SITE_BASE + murl, image=img, active="matches",
                          og_type="article" if _art else "website")
+        # the day too (site review 2026-11-20): an upcoming match showed
+        # «22:00» with no day - the date sat two cards lower
         hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals,
-                             highlight=_hl, show_assist=True)
+                             highlight=_hl, show_assist=True, show_date=True)
         kickoff_info = st not in ("FINISHED", "POSTPONED")
         _tw = _rd = ""
         if kickoff_info:
@@ -416,19 +421,28 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         # بيراميدز opened its news with a story about Barcelona); the general
         # list only when neither side has a club page or a story
         news, news_title = [], "آخر الأخبار"
+
+        def _news_row(a):
+            # the /news row, picture + title (site review 2026-11-20: the
+            # match page listed its stories as bare bullets)
+            from site_lib.shell import thumb_url as _thumb
+            _ni = _thumb(a.get("image_url"))
+            return {"href": Markup(article_href(a)), "title": a["title"],
+                    "th": Markup(f'<span class="al-th"><img src="{esc(_ni)}" alt="" loading="lazy" decoding="async"></span>'
+                                 if _ni else '<span class="al-th noimg">⚽</span>')}
         _tps = [tp for tp in TEAM_PAGES if _team_match(tp, m)]
         if articles and _tps:
             from site_lib.names import _team_news
             for a in articles:
                 if any(_team_news(tp, a) for tp in _tps):
-                    news.append({"href": Markup(article_href(a)), "title": a["title"]})
+                    news.append(_news_row(a))
                     if len(news) == 4:
                         break
             if news:
                 news_title = "أخبار " + " و".join(tp["name"] for tp in _tps[:2])
         if articles and not news:
             for a in articles[:4]:
-                news.append({"href": Markup(article_href(a)), "title": a["title"]})
+                news.append(_news_row(a))
         # the two sides in the table: their rows marked, and - before the match
         # is over - a two-line card with where each stands and its last five
         form_card = ""
@@ -485,6 +499,11 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                  if _p else None)(_H2H.pair_of_match(m.get("home"), m.get("away"))),
             has_table=bool(stc and stc.get("table")), table_heading=Markup(table_heading),
             table=Markup(table), faq=Markup(_faq_html or ""), news=news, news_title=news_title,
+            # follow + share + today's matches (site review 2026-11-20: the page
+            # behind every match post was a dead end)
+            lead=({"slug": Markup(_clubs[0]["slug"]), "name": _clubs[0]["name"]} if _clubs else None),
+            share_href=Markup("https://wa.me/?text=" + _quote(f"{title.split(' — ')[0]} {SITE_BASE}/m/{mid}")),
+            share_url=Markup(f"{SITE_BASE}/m/{mid}"), today_strip=Markup(_today_strip),
             form_card=Markup(form_card),
             label=comp, has_sc=bool(_sc_h), scorers=Markup(_sc_h),
             has_asst=bool(_as_h), assists=Markup(_as_h), tabs_js=Markup(ST_TABS_JS),

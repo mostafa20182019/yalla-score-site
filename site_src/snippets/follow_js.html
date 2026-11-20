@@ -31,11 +31,25 @@
   function hidden(){ try{ return window.sessionStorage.getItem(OFF)==='1'; }catch(e){ return false; } }
   function hide(){ try{ window.sessionStorage.setItem(OFF,'1'); }catch(e){} }
   function get(){ try{ return LS.getItem(KEY)||''; }catch(e){ return ''; } }
+  function ok(s){ return /^[a-z0-9-]{2,40}$/.test(s); }
+  /* the «فريقي» tab (site review 2026-11-20): following a club paid off on
+     the home page only, and a reader from Facebook lands on an article or a
+     match. The tab is in every page's bar, hidden; with a followed club it
+     points at that club's page and shows - one tap away from anywhere. */
+  function tab(){
+    var t=document.querySelector('.navtab.nt-my'); if(!t) return;
+    var s=get();
+    if(!ok(s)){ t.hidden=true; return; }
+    t.setAttribute('href','/team/'+s);
+    t.hidden=false;
+    t.classList.toggle('is-active',location.pathname.replace(/\.html$/,'')==='/team/'+s);
+  }
   function set(v){
     try{ if(v) LS.setItem(KEY,v); else LS.removeItem(KEY); }catch(e){}
     if(window.__pushTeam) window.__pushTeam();
+    tab();
   }
-  function ok(s){ return /^[a-z0-9-]{2,40}$/.test(s); }
+  tab();
   /* the class the page's inline script put on <html> before the first paint
      (home.html): it reserves the block's room so nothing jumps. Kept in step
      with what is really shown. */

@@ -166,5 +166,28 @@ if os.path.isdir(os.path.join(dist, "my")):
        with_art and all('class="mp-jump"' in io.open(p, encoding="utf-8").read() for p in with_art[:20])
        and "my-calc" in io.open(os.path.join(dist, "my", "al-ahly.json"), encoding="utf-8").read())
 
-print("ALL OK" if not fails else f"{fails} FAILED")
+
+# --- site review 2026-11-20: the «فريقي» tab and the match page's exits ---
+import glob as _glob      # noqa: E402
+_sh = open("site_lib/shell.py", encoding="utf-8").read()
+_fj = open("site_src/snippets/follow_js.html", encoding="utf-8").read()
+_css = open("site_src/style.css", encoding="utf-8").read()
+ck("R20-1 the «فريقي» tab is in every page's bar, hidden until a club is followed",
+   'class="navtab nt-my" hidden' in _sh and ".navtab[hidden]{display:none}" in _css)
+ck("R20-2 the follow script points it at the followed club's page and re-paints on every change",
+   "t.setAttribute('href','/team/'+s)" in _fj and _fj.count("tab();") >= 2
+   and _fj.index("tab();\n") < _fj.index("var box=document.getElementById('myTeam')"))
+_mp = sorted(_glob.glob(os.path.join("dist", "m", "*.html")))
+if _mp:
+    _bad = []
+    for _f in _mp[:: max(1, len(_mp) // 60)]:
+        _h = open(_f, encoding="utf-8").read()
+        _id = os.path.basename(_f)[:-5]
+        if not (_h.count('class="share-btn"') == 1 and f'data-share-url="https://elgoon.com/m/{_id}"' in _h
+                and "mp-newslist" not in _h):
+            _bad.append(_id)
+    ck(f"R20-3 built match pages: one share button with the page's own clean URL, news as picture rows", not _bad, str(_bad[:5]))
+    ck("R20-4 the match hero is bigger than a list row and keeps the row's classes for the live layer",
+       ".mlist.mp-hero>.mrow .team img{width:48px;height:48px}" in _css)
+print("\nALL OK" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)
