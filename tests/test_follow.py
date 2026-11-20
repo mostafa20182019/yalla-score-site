@@ -102,5 +102,14 @@ if os.path.exists(os.path.join(dist, "my")):
     sm = io.open(os.path.join(dist, "sitemap.xml"), encoding="utf-8").read()
     ck("19 no fragment in the sitemap", "/my/" not in sm)
 
+# user 2026-11-20: the picker's x hid it for ever («مش راضى يظهرلى تانى»)
+import site_lib.follow as _F        # noqa: E402
+ck("20 the picker's x is remembered for the VISIT (sessionStorage), never written into localStorage",
+   "sessionStorage.setItem(OFF,'1')" in js and "set('none')" not in js and "hide(); pick.hidden=true" in js)
+ck("21 an old 'none' left by the first version is cleared on sight, and is no choice",
+   "if(LS.getItem(KEY)==='none') LS.removeItem(KEY)" in js and "if(ok(cur)) load(cur); else showPick();" in js)
+ck("22 the pre-paint class agrees: hidden only while this visit's flag is set",
+   "sessionStorage.getItem('elgoonPickOff')==='1'" in _F.MY_BOOT and "t==='none'?'my-off'" not in _F.MY_BOOT)
+
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

@@ -20,8 +20,16 @@
                        url:a.getAttribute('data-share-url')||location.href}).catch(function(){});
     });
   });
-  var KEY='elgoonTeam', LS;
+  var KEY='elgoonTeam', OFF='elgoonPickOff', LS;
   try{ LS=window.localStorage; LS.getItem(KEY); }catch(e){ return; }
+  /* The picker's × hides it for THIS VISIT only (user 2026-11-20: «ضغطت على
+     الاكس اختفى بس مش راضى يظهرلى تانى - محتاجين يظهر تانى لما نفتح الموقع
+     تانى»). The first version wrote 'none' into localStorage, which is
+     forever; the dismissal now lives in sessionStorage (this tab, this
+     visit) and an old 'none' is cleared on sight. */
+  try{ if(LS.getItem(KEY)==='none') LS.removeItem(KEY); }catch(e){}
+  function hidden(){ try{ return window.sessionStorage.getItem(OFF)==='1'; }catch(e){ return false; } }
+  function hide(){ try{ window.sessionStorage.setItem(OFF,'1'); }catch(e){} }
   function get(){ try{ return LS.getItem(KEY)||''; }catch(e){ return ''; } }
   function set(v){
     try{ if(v) LS.setItem(KEY,v); else LS.removeItem(KEY); }catch(e){}
@@ -59,7 +67,7 @@
   var pick=document.getElementById('myPick');
   function showPick(){
     box.hidden=true; box.innerHTML='';
-    var off=get()==='none';
+    var off=hidden();
     if(pick) pick.hidden=off;
     mode(off ? 'my-off' : 'my-ask');
   }
@@ -86,9 +94,9 @@
       c.addEventListener('click',function(){ var s=c.getAttribute('data-slug'); if(ok(s)){ set(s); load(s); } });
     });
     var no=pick.querySelector('[data-my-no]');
-    if(no) no.addEventListener('click',function(){ set('none'); pick.hidden=true; mode('my-off'); });
+    if(no) no.addEventListener('click',function(){ hide(); pick.hidden=true; mode('my-off'); });
   }
   var cur=get();
-  if(ok(cur) && cur!=='none') load(cur); else showPick();
+  if(ok(cur)) load(cur); else showPick();
 })();
 </script>

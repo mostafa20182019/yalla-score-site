@@ -28,9 +28,12 @@ from site_lib.text import esc
 # before the first paint: which of the three states this browser is in. The
 # CSS keys the picker's / the block's reserved room on it; follow_js keeps it
 # in step afterwards. No storage -> no class -> nothing reserved, nothing shown.
-MY_BOOT = ("<script>try{var t=localStorage.getItem('elgoonTeam');"
+# The picker's × is remembered for the VISIT (sessionStorage), not for ever
+# (user 2026-11-20); an old 'none' in localStorage counts as no choice.
+MY_BOOT = ("<script>try{var t=localStorage.getItem('elgoonTeam'),o=false;"
+           "try{o=sessionStorage.getItem('elgoonPickOff')==='1'}catch(e){}"
            "document.documentElement.classList.add(/^[a-z0-9-]{2,40}$/.test(t||'')&&t!=='none'?'my-has':"
-           "t==='none'?'my-off':'my-ask');}catch(e){}</script>")
+           "o?'my-off':'my-ask');}catch(e){}</script>")
 
 
 def my_pick_html():
