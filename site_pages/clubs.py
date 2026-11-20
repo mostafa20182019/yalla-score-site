@@ -15,6 +15,7 @@ from site_lib.predictions import pred_pop
 from site_lib.render import Markup, render
 from site_lib.follow import my_block_html, my_json
 from site_lib.shell import _clean_urls, foot, head, thumb_url, write, write_text
+from site_lib.stats import more_matches_txt
 from site_lib.tables import match_row, standings_table
 from site_lib.text import esc, jsonld
 from site_lib.urls import article_href, breadcrumb_ld, match_url
@@ -46,13 +47,27 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                   for m in r.get("matches") or []
                   if m.get("match_id") not in _seen and _team_match(tp, m)
                   and m.get("home") and m.get("kickoff")]
-        up_next = sorted((m for m in cm + _later
+        # THE WHOLE SEASON is on the page (SEO review 2026-11-20: الأهلي's page
+        # listed 5 of the 18 matches the data holds, and «جدول مباريات الأهلي
+        # 2026-2027» had nothing to land on). The first five stay as they
+        # were - the FAQ, the follow block and the card read them - and the
+        # rest sit under them in a <details>: in the HTML, closed on screen.
+        _up_all = sorted((m for m in cm + _later
                           if (m.get("status") or "").upper() in ("UPCOMING", "LIVE")
                           and m["kickoff"] >= REF_TODAY),
-                         key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))[:5]
-        last_res = [m for m in reversed(cm)
+                         key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+        up_next = _up_all[:5]
+        _season_from = f"{str(season)[:4]}-07-01" if str(season)[:4].isdigit() else ""
+        _res_all = [m for m in reversed(cm)
                     if (m.get("status") or "").upper() == "FINISHED"
-                    and m.get("home_score") is not None][:5]
+                    and m.get("home_score") is not None]
+        last_res = _res_all[:5]
+        up_more = [match_row(m, show_time=True, show_comp=True, show_date=True, card_link=False,
+                             link=match_url(m) if m.get("match_id") in m_all else None)
+                   for m in _up_all[5:]]
+        last_more = [match_row(m, show_time=False, show_comp=True, show_date=True, card_link=False,
+                               link=match_url(m))
+                     for m in _res_all[5:] if not _season_from or m["kickoff"] >= _season_from]
         news = [a for a in articles if _team_news(tp, a)][:8]
         st = st_by_comp.get(tp["league"])
         srow = None
@@ -268,7 +283,9 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             up_rows=[Markup(x) for x in up_rows], last_rows=[Markup(x) for x in last_rows],
             news=news_items, has_table=bool(st and st.get("table")),
             table_heading=Markup(table_heading), table=Markup(table),
-            group_tables=group_tables,
+            group_tables=group_tables, season=season,
+            up_more_txt=more_matches_txt(len(up_more)), last_more_txt=more_matches_txt(len(last_more)),
+            up_more=[Markup(x) for x in up_more], last_more=[Markup(x) for x in last_more],
             others=[{"slug": Markup(o["slug"]), "name": o["name"]} for o in others],
             club_ld=Markup(club_ld), faq=Markup(faq_html), popup=Markup(popup),
             h2h=h2h_link, hub_links=hub_links,

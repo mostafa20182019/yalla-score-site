@@ -7,6 +7,11 @@ from site_lib.names import _gnorm, _team_link, ar_team
 from site_lib.text import _pval, esc, jsonld
 
 
+def more_matches_txt(n):
+    """«7 مباريات أخرى» - the label of a club page's «rest of the season» block."""
+    return _cnt(n, "مباراة واحدة أخرى", "مباراتان أخريان", "مباريات أخرى", "مباراة أخرى")
+
+
 def _cnt(n, one, two, few, many):
     """Arabic count with proper agreement: 1 -> one ("نقطة واحدة"),
     2 -> two ("نقطتان"), 3-10 -> "n few" ("5 نقاط"), 0/11+ -> "n many" ("12 نقطة")."""

@@ -30,6 +30,16 @@
     {{ row }}
     {% endfor %}
   </div>
+  {% if up_more %}
+  <details class="more-d">
+    <summary>جدول مباريات {{ name }} {{ season }}: {{ up_more_txt }}</summary>
+    <div class="mlist">
+      {% for row in up_more %}
+      {{ row }}
+      {% endfor %}
+    </div>
+  </details>
+  {% endif %}
 </section>
 {% endif %}
 {% if last_rows %}
@@ -40,6 +50,16 @@
     {{ row }}
     {% endfor %}
   </div>
+  {% if last_more %}
+  <details class="more-d">
+    <summary>كل نتائج {{ name }} في موسم {{ season }}: {{ last_more_txt }}</summary>
+    <div class="mlist">
+      {% for row in last_more %}
+      {{ row }}
+      {% endfor %}
+    </div>
+  </details>
+  {% endif %}
 </section>
 {% endif %}
 <section class="minfo">

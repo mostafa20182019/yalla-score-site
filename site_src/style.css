@@ -1704,6 +1704,13 @@ a.lt-tb{text-decoration:none}
 .mlist.mp-hero>.mrow .team span{font-size:.95rem;font-weight:800}
 .mlist.mp-hero>.mrow .score,.mlist.mp-hero>.mrow .ko{font-size:1.6rem}
 .mp-act{margin:10px 0 4px}
+/* the rest of a club's season, closed until asked for (2026-11-20) */
+.more-d{margin-top:10px}
+.more-d>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border-radius:999px;background:#eaf5fc;color:var(--green-d);font-weight:800;font-size:.9rem;text-align:center}
+.more-d>summary::-webkit-details-marker{display:none}
+.more-d>summary::after{content:"▾";margin-inline-start:8px}
+.more-d[open]>summary::after{content:"▴"}
+.more-d[open]>summary{margin-bottom:10px}
 .mp-jump{display:flex;gap:8px;margin:10px 0 14px;overflow-x:auto;scrollbar-width:none}
 .mp-jump::-webkit-scrollbar{display:none}
 .mp-jump a{flex:0 0 auto;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;background:#eaf5fc;color:var(--green-d);font-weight:800;font-size:.86rem;text-decoration:none}
