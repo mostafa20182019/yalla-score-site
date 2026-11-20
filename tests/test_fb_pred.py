@@ -10,6 +10,9 @@ for _k in ("CF_API_TOKEN", "CF_ACCOUNT_ID", "CF_D1_ID", "FB_PAGE_TOKEN"):
 os.environ["D1_SQLITE"] = os.path.join(tempfile.mkdtemp(), "state.sqlite")
 import store
 import fb_post as fp
+# the daily cap is off here (2026-11-20): these checks are about WHICH pieces
+# are left out, written when a run posted three - the cap has test_article_cap.py
+fp.AUTO_MAX_PER_RUN, fp.ARTICLE_DAILY_CAP, fp.ARTICLE_GAP_MIN, fp.DIGEST_HOUR = 3, 10 ** 6, 0, 99
 store.init_schema()
 
 fails = 0

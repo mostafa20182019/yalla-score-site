@@ -113,7 +113,19 @@ def is_prediction_post(art):
     text = title + chr(10) + str(art.get("fb_post") or "")
     return any(k in text for k in PREDICTION_MARKS)
 AUTO_MAX_AGE_H = 6       # --auto never posts an article older than this (10 articles/day: 12h re-posted a half-day backlog on 2026-09-03)
-AUTO_MAX_PER_RUN = 3     # --auto posts at most this many per run (staggers a backlog)
+AUTO_MAX_PER_RUN = 1     # --auto posts at most this many per run (3 until 2026-11-20)
+# THE DAILY CAP (user 2026-11-20, «اعمل 4», after the social review: the page
+# took 6-16 article posts a day, 58 posts in all on 8 November, and 54 article
+# posts in one October week left the followers flat). At most ARTICLE_DAILY_CAP
+# article posts a Cairo day, ARTICLE_GAP_MIN apart, the Egyptian and Sudanese
+# sides first, then the other curated clubs, then the rest. The 09-12 rule «an
+# article on the site lands on Facebook» still holds: what the cap leaves out
+# goes in ONE evening post, the digest (digest_due / post_digest below).
+ARTICLE_DAILY_CAP = 5
+ARTICLE_GAP_MIN = 60
+DIGEST_HOUR = 21         # Cairo: the digest goes out on the first run from this hour
+DIGEST_MAX = 8           # titles in the digest; the rest are behind its /news link
+HOME_SLUGS = ("al-ahly", "zamalek", "pyramids", "al-hilal-sudan", "egypt", "sudan")
 # POSTING WINDOW - OFF (2026-09-12, second decision of the day). A window of
 # Cairo hours [open, close) was added in the morning to post only 13:00-01:00
 # ("fewer runs"); by the afternoon the user restated the rule the page should
@@ -405,11 +417,120 @@ def heal_previews(token):
             print(f"  preview for article {aid} is good now")
 
 
-def pending(items):
-    """Articles not yet posted and young enough, oldest first, capped per run.
-    Shared by --auto and --pending. This is a filter, not a lock - auto() still
-    has to win the claim before it posts anything."""
-    posted = store.posted_ids("article")
+def article_rank(art):
+    """0 = about an Egyptian or Sudanese side we follow, 1 = another curated
+    club, 2 = the rest. The site's own matcher (names._team_news), so the Saudi
+    «الأهلي» never ranks as the Egyptian club."""
+    try:
+        from site_lib.clubs import TEAM_PAGES
+        from site_lib.names import _team_news
+        hit = [tp["slug"] for tp in TEAM_PAGES if _team_news(tp, art)]
+    except Exception:            # noqa: BLE001 - a ranking must never stop a post
+        return 2
+    return 0 if any(s in HOME_SLUGS for s in hit) else 1 if hit else 2
+
+
+def _day_start(now=None):
+    """Epoch seconds of 00:00 today on the Cairo clock."""
+    n = (now or _now()).astimezone(CAIRO)
+    return int(n.replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+
+
+def posted_today(now=None):
+    """Today's article posts (Cairo day), newest first. Bounded at both ends:
+    a post stamped after `now`'s day is not today's (a clock passed in by a
+    test, or a run started just before midnight)."""
+    start = _day_start(now)
+    return [r for r in store.posted_since("article", start) if r["posted_at"] < start + 86400]
+
+
+def _no_post_yet():
+    return set(store.posted_ids("article")) | set(store.posted_ids("digest_item"))
+
+
+def digest_items(items, now=None):
+    """Today's articles the daily cap left without a post: published on
+    today's Cairo date, and either too old for a post of their own or the
+    cap is already used up. Home sides first, then the newest."""
+    now = now or _now()
+    today = now.astimezone(CAIRO).date()
+    capped = len(posted_today(now)) >= ARTICLE_DAILY_CAP
+    done = _no_post_yet()
+    out = []
+    for art in items:
+        aid = str(art.get("article_id", "")).strip()
+        pub = article_pub_dt(art)
+        if not aid or aid in done or not pub or pub.astimezone(CAIRO).date() != today:
+            continue
+        if not FB_PREDICTIONS and is_prediction_post(art):
+            continue
+        if capped or open_hours(pub, now) > AUTO_MAX_AGE_H:
+            out.append(art)
+    out.sort(key=lambda a: (article_rank(a), -article_pub_dt(a).timestamp()))
+    return out
+
+
+def digest_due(items, now=None):
+    """The digest's articles when it is time for it and it has not gone out, else []."""
+    now = now or _now()
+    c = now.astimezone(CAIRO)
+    if c.hour < DIGEST_HOUR or store.get_post("digest", c.date().isoformat()):
+        return []
+    return digest_items(items, now)
+
+
+def digest_text(arts):
+    """«أخبار اليوم على الجون»: each title with its link, then the news page."""
+    lines = ["📰 أخبار اليوم على الجون", ""]
+    for a in arts[:DIGEST_MAX]:
+        lines += [f"▪️ {(a.get('title') or '').strip()}", article_link(a), ""]
+    lines.append(f"كل الأخبار: {SITE}/news")
+    return "\n".join(lines)
+
+
+def post_digest(token, items, now=None, dry=False):
+    """One post for the articles the cap left out. Claimed by the Cairo date,
+    so two runs never post it twice; each article is recorded as a
+    digest_item, so it never gets a post of its own afterwards."""
+    now = now or _now()
+    arts = digest_due(items, now)
+    if not arts:
+        return None
+    text = digest_text(arts)
+    if dry or not token:
+        print(text)
+        return None
+    day = now.astimezone(CAIRO).date().isoformat()
+    if not store.claim("digest", day, title=f"{len(arts)} articles"):
+        return None
+    try:
+        pid = post_text(token, text)
+    except Exception as e:       # noqa: BLE001 - give the claim back, the next run retries
+        store.release("digest", day)
+        print(f"digest failed: {e}")
+        return None
+    store.record_post("digest", day, pid, title=f"{len(arts)} articles")
+    for a in arts:
+        aid = str(a.get("article_id", "")).strip()
+        if store.claim("digest_item", aid, title=a.get("title")):
+            store.record_post("digest_item", aid, pid, title=a.get("title"))
+    print(f"digest posted: {len(arts)} article(s) -> {pid}")
+    return pid
+
+
+def pending(items, now=None):
+    """The article(s) to post NOW: not yet posted, young enough, inside the
+    day's cap and the gap since the last one; home sides first, then the
+    oldest. Shared by --auto and --pending. This is a filter, not a lock -
+    auto() still has to win the claim before it posts anything."""
+    now = now or _now()
+    today = posted_today(now)
+    if len(today) >= ARTICLE_DAILY_CAP:
+        print(f"daily cap: {len(today)} article posts today - the rest go in the digest", file=sys.stderr)
+        return []
+    if today and 0 <= now.timestamp() - today[0]["posted_at"] < ARTICLE_GAP_MIN * 60:
+        return []                # the last article post is under an hour old
+    posted = _no_post_yet()
     todo = []
     for art in items:
         aid = str(art.get("article_id", "")).strip()
@@ -425,13 +546,15 @@ def pending(items):
             print(f"article {aid}: a prediction post - skipped (FB_PREDICTIONS is off)", file=sys.stderr)
             continue
         todo.append((age, art))
-    todo.sort(key=lambda t: -t[0])            # oldest first, newest last
-    return [art for _, art in todo][:AUTO_MAX_PER_RUN]
+    todo.sort(key=lambda t: (article_rank(t[1]), -t[0]))   # home sides first, then the oldest
+    return [art for _, art in todo][:min(AUTO_MAX_PER_RUN, ARTICLE_DAILY_CAP - len(today))]
 
 
 def auto(token, items):
     print(f"state backend: {store.backend()}")
     todo = pending(items)
+    if token:
+        post_digest(token, items)
     if not todo:
         print("no new article to post")
     elif not token:
@@ -1428,7 +1551,8 @@ def main() -> int:
                   f"(now {_now().astimezone(CAIRO):%H:%M}) - nothing to dispatch", file=sys.stderr)
             print(0)
             return 0
-        print(len(pending(items)))
+        # the digest counts as work to do, or a capped evening never dispatches the run
+        print(len(pending(items)) + (1 if digest_due(items) else 0))
         return 0
     if "--auto" in sys.argv[1:]:
         return auto(token, items)

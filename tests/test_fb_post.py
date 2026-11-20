@@ -20,6 +20,11 @@ fp.time.sleep = lambda s: None
 assert fp.POST_WINDOW is None, f"shipped default must be None, got {fp.POST_WINDOW}"
 assert store.backend() == "sqlite", store.backend()
 store.init_schema()
+# THE DAILY CAP IS OFF HERE (2026-11-20): these are the plumbing tests - claim,
+# wait, scrape, retry - written when a run posted three articles and a day had
+# no limit. The cap, the gap and the digest have their own test
+# (test_article_cap.py); the shipped values are asserted there.
+fp.AUTO_MAX_PER_RUN, fp.ARTICLE_DAILY_CAP, fp.ARTICLE_GAP_MIN, fp.DIGEST_HOUR = 3, 10 ** 6, 0, 99
 
 calls = []
 SITE_404 = {}      # link -> number of times the SITE should still answer with the 404 page

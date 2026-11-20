@@ -44,6 +44,14 @@ Applies to the body, the summary, the FAQ and `fb_post` alike — `fb_post` most
 - No nested clauses («الذي… بعدما… وذلك بعدما…»): split them into sentences. No journalistic flourishes in place of the club's name («الفريق الملكي», «القلعة البيضاء», «البلوجرانا») — the club's name, a nickname at most once per article.
 - Before publishing, reread the `fb_post` line by line: if a line needs a second reading to get its numbers, rewrite it.
 
+## TWO SIZES OF STORY (writer review 2026-11-20; user: «اعمل 3»)
+The last 45 articles all had the same five sections and 430-560 words, whether the story was a title race or a goalkeeper signing a new contract. Size the piece to the story:
+- **ROUTINE story** = a contract renewal, a player back in training, a routine injury update, a squad list, a one-line statement, an award nomination. Write it SHORT: **300-380 words** (300 is the gate's floor, never under it), exactly **three `<h2>`** - what happened, the numbers we hold about the player or club (a table when there are three numbers or more), what comes next. NO «الخلفية» section, NO «ماذا قالت المصادر» section, no paragraph that restates the lead. The 500-700 words of the reference style are for the BIG story only.
+- **BIG story** = a transfer completed, a coach appointed or sacked, a ban or a ruling, a long injury to a first-team player of a curated club, a federation decision, anything the reader will discuss. The reference style below, in full.
+- **ONE ROUTINE EUROPEAN STORY A DAY.** 21 of those 45 articles were routine European news, five of them contract renewals in five days. Before writing a ROUTINE story about a club outside Egypt and Sudan, read today's titles in `data/articles.json` (same `pub_date`): if one routine European story is already there, do not write a second - take an Egyptian or Sudanese candidate, a data article (`data_brief.py --list`), or report "no new story". A BIG European story is never blocked by this.
+- **ONE PLAYER, ONE STORY A DAY.** Four separate pieces on محمد صلاح went out in about thirty hours. A second story about the same player on the same day is written only when it is BIG; otherwise its facts wait for the next piece about him.
+- **NUMBERS IN A TABLE.** Only 4 of the 45 had one. Three numbers or more about the same thing (a season's matches/goals/assists, a contract's years, a run of results) go in a `<table>`, not in a sentence.
+
 ## Hard constraints (protect the site's Google AdSense eligibility)
 - NEVER copy or closely paraphrase text from news sites (يلا كورة، في الجول، كووورة، المصري اليوم...). Facts are free; wording is not. Write 100% original Arabic prose.
 - ONE article per run, and ONLY if there is a genuinely NEW, noteworthy story not already covered. If nothing new/noteworthy, make NO changes and end the run reporting "no new story".

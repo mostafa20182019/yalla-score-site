@@ -74,13 +74,14 @@ const COMP_AR = {
 const EGY_LIVE_COMPS = [552, 624, 627, 553, 7808];   // league, CAF CL, CAF Confederation Cup, Egypt Cup, Capital Cup (2026-11-03)
 export const CURATED_LIVE = [
   // exact (2026-10-17): «الأهلي طرابلس» plays the same Confederation Cup
-  { t: "الأهلي", comps: EGY_LIVE_COMPS, exact: true },
-  { t: "الزمالك", comps: EGY_LIVE_COMPS, exact: true },
-  { t: "بيراميدز", comps: EGY_LIVE_COMPS, exact: true },
-  { t: "مصر", comps: [588], exact: true },
+  // goals: true (user 2026-11-20, «اعمل 5»): the sides whose GOALS get a card
+  { t: "الأهلي", comps: EGY_LIVE_COMPS, exact: true, goals: true },
+  { t: "الزمالك", comps: EGY_LIVE_COMPS, exact: true, goals: true },
+  { t: "بيراميدز", comps: EGY_LIVE_COMPS, exact: true, goals: true },
+  { t: "مصر", comps: [588], exact: true, goals: true },
   { t: "طرابزون سبور", comps: [78, 573] },
   // Al Hilal Omdurman (user 2026-11-13): the feed's own full name, exact, in the CAF Champions League
-  { t: "الهلال السوداني", comps: [624], exact: true },
+  { t: "الهلال السوداني", comps: [624], exact: true, goals: true },
   { t: "ريال مدريد", comps: null },
   { t: "برشلونة", comps: null },
   { t: "مانشستر يونايتد", comps: null },
@@ -92,13 +93,18 @@ export const CURATED_LIVE = [
 // same normalisation match_brief._norm uses, so آرسنال matches أرسنال
 export const arNorm = (x) => (x || "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").trim();
 
-export function curatedLive(g) {
+export function curatedLive(g, list = CURATED_LIVE) {
   const c = Number(g.c || 0);
-  return CURATED_LIVE.some(s => (!s.comps || s.comps.includes(c)) && (s.exact
+  return list.some(s => (!s.comps || s.comps.includes(c)) && (s.exact
     ? [arNorm(g.h), arNorm(g.a)].includes(arNorm(s.t))
     : (arNorm(g.h) + "|" + arNorm(g.a)).includes(arNorm(s.t))));
 }
-export const postScope = curatedLive;
+export const postScope = (g) => curatedLive(g);
+// A GOAL card: the Egyptian and Sudanese sides only (social review 2026-11-20:
+// a European night put 10-15 goal cards on the page - 18 of the 58 posts of
+// 8 November - on top of the kick-off, half-time and full-time posts, which
+// stay for every curated club and already name the scorers).
+export const goalScope = (g) => curatedLive(g, CURATED_LIVE.filter(s => s.goals));
 
 const tag = (name) => "#" + (name || "").trim().replace(/\s+/g, "_");
 // «الأهلي 1 - 0 الزمالك» with SPACES: a glued «1-0» is one LTR run and shows
@@ -278,8 +284,8 @@ export async function goalFallbacks(env, now) {
 // `dispatch(inputs)` = worker.js's fb-post.yml dispatcher (null = no GH_TOKEN)
 export async function livePosts(env, r, dispatch = null) {
   const out = { posted: 0, edited: 0, skipped: 0, dispatched: 0 };
-  const posts = (r && r.posts || []).filter(x => postScope(x.g));
-  const cancels = (r && r.cancels || []).filter(x => postScope(x.g));
+  const posts = (r && r.posts || []).filter(x => goalScope(x.g));
+  const cancels = (r && r.cancels || []).filter(x => goalScope(x.g));
   const hts = (r && r.hts || []).filter(x => postScope(x.g));
   const ends = (r && r.ends || []).filter(x => postScope(x.g));
   const kos = (r && r.kos || []).filter(x => postScope(x.g));
