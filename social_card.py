@@ -33,7 +33,8 @@ W, H = DC.W, DC.H
 WHITE, SOFT, DIM, RED, GOLD = DC.WHITE, DC.SOFT, DC.DIM, DC.RED, DC.GOLD
 BLUE, INK = (31, 148, 211), (16, 62, 108)
 CARD_KINDS = ("night-number", "goon-question")
-TILE = {"W": ("فوز", BLUE + (255,), WHITE), "D": ("تعادل", (255, 255, 255, 60), WHITE), "L": ("خسارة", (255, 255, 255, 235), INK)}
+# a win is the dark ink of the family: on the light background the site's blue tile vanished (2026-11-20)
+TILE = {"W": ("فوز", INK + (255,), WHITE), "D": ("تعادل", (255, 255, 255, 60), WHITE), "L": ("خسارة", (255, 255, 255, 235), INK)}
 
 
 class _Canvas:
@@ -44,7 +45,7 @@ class _Canvas:
         self.d = d = ImageDraw.Draw(self.img)
         for y in range(H):
             t = y / (H - 1)
-            d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(DC.TOP, DC.BOT)))
+            d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(DC.LIGHT_TOP, DC.LIGHT_BOT)))
         glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
         ImageDraw.Draw(glow).ellipse([W // 2 - 420, 160, W // 2 + 420, 860], fill=(31, 148, 211, 80))
         glow = glow.filter(ImageFilter.GaussianBlur(120))

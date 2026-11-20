@@ -1273,6 +1273,16 @@ def post_event(token, ev):
             import traceback
             where = traceback.extract_tb(e.__traceback__)[-1]
             print(f"{ev['kind']} {ev['ref']}: card failed ({e} at {os.path.basename(where.filename)}:{where.lineno}) - posting the text")
+    # «ساعة الأهداف»: the dial (goal_clock.py) with the scorers as its caption
+    if ev.get("kind") == "goal-clock":
+        try:
+            import io
+            import goal_clock as GClock
+            buf = io.BytesIO()
+            GClock.render(ev["match"], ev["goals"]).save(buf, "JPEG", quality=90, optimize=True)
+            return post_photo(token, buf.getvalue(), event_text(ev))
+        except Exception as e:  # noqa: BLE001
+            print(f"{ev['kind']} {ev['ref']}: card failed ({e}) - posting the text")
     # «رقم الليلة» and «سؤال الجون» as a CARD (social_card.py) with the text as
     # its caption; the text alone when the card cannot be drawn
     if ev.get("kind") in SOCIAL_CARD_KINDS:

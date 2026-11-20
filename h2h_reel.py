@@ -1,254 +1,284 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""The head-to-head REEL (2026-10-08, user: «اعمل reel باستخدام الصورة اللى انت
-عملتها الخاصة باخر 10 مواجهات»): the H2H infographic (h2h_card.py) told as a
-14-second vertical video - crests, the tally counting up, the ten meetings
-landing one by one newest first, the last win of each side, the site.
+"""
+Elgoon - the HEAD-TO-HEAD reel, rewritten (user 2026-11-20: «ريل المواجهات
+ممكن نعيد كتابته»).
 
-Same data path as the card (365scores head-to-head, official scores only),
-same brand canvas and encoder as the result reels (fb_reel.py): H.264 +
-silent AAC through ffmpeg when one is available (the GitHub runner, or the
-imageio-ffmpeg wheel locally), else a cv2 PREVIEW that is not uploadable.
+The first version was built on a reel API that no longer exists and on the
+feed's own game list; it had not run since 2026-11-01. This one stands on
+what the site uses today:
 
-    python h2h_reel.py --match 4804684 --out /tmp/h2h.mp4 [--sheet /tmp/sheet.png]
+  * the pairs and their meetings are site_lib/h2h.py's - the same rows the
+    /h2h/<slug> page shows (the saved history + our own finished matches,
+    a result awarded by decision counted but not its goals);
+  * the frames are moment_reel / day_reel's (the brand background, the small
+    head logo, rows that fade in), inside the Reels safe band;
+  * 14.5 s: the two clubs, the count of the meetings we hold, the last five
+    game by game, the outro (user rule: every reel is 15 s or less).
+
+NEVER an all-time record: the reel says «آخر N مواجهة» - what is saved, no
+more (h2h page rule).
+
+    python h2h_reel.py --pair al-ahly-pyramids --out h2h.mp4 --sheet h2h.png
+    python h2h_reel.py --auto --publish     # a pair that meets TODAY (the morning run)
+
+--auto posts one reel on the day two sides of a pair meet (store kind reel /
+h2h:<slug>:<date>), nothing on any other day.
 """
 import argparse
+import datetime
 import os
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
 from PIL import Image, ImageDraw                     # noqa: E402
+
+import day_reel as DR                                # noqa: E402
 import fb_cards as C                                 # noqa: E402
 import fb_reel as R                                  # noqa: E402
-import h2h_card as HC                                # noqa: E402
+import moment_reel as M                              # noqa: E402
+import store                                         # noqa: E402
+from site_lib import h2h as H                        # noqa: E402
 
-W, H, FPS = R.W, R.H, R.FPS
-GOLD = (246, 192, 60)
-SOFT = (222, 238, 248)
-DIM = (170, 192, 214)
-SCENES = [("intro", 2.5), ("tally", 3.0), ("meetings", 6.0), ("cta", 2.5)]
-SAFE_BOTTOM = 340          # Facebook lays the caption + buttons over the bottom of a Reel
-
-
-def footer(d):
-    C.draw_center(d, W / 2, H - SAFE_BOTTOM - 60, C.ar("التحليل الكامل بالأرقام"), C.font("Bold", 34), SOFT)
-    C.draw_center(d, W / 2, H - SAFE_BOTTOM - 10, "elgoon.com", C.font("ExtraBold", 40), C.WHITE)
+W, H_, FPS = M.W, M.H, M.FPS
+INTRO, TALLY, GAMES, OUTRO = 2.5, 3.5, 5.5, 3.0      # 14.5 s
+LAST_N = 5
+MIN_MEETINGS = 4
+INK = DR.INK
 
 
-def _count(d, cx, y, n, t, size, col):
-    """A number counting up to n over the first 60% of its scene."""
-    k = R.ease(min(1.0, t / 0.6))
-    s = str(int(round(n * k)))
-    f = C.font("ExtraBold", size)
-    d.text((cx - d.textlength(s, font=f) / 2, y), s, font=f, fill=col)
+def load_pool():
+    """{match_id: row} - every match we hold, finished or to come."""
+    import results_archive as RA
+    from site_lib.config import load
+    pool = {}
+    rows = list(load("matches.json") or []) + RA.season_rows(RA.load())
+    for f in load("fixtures.json") or []:
+        for r in f.get("rounds") or []:
+            rows += r.get("matches") or []
+    for m in rows:
+        if m.get("match_id") and str(m["match_id"]) not in pool:
+            pool[str(m["match_id"])] = dict(m, status=(m.get("status") or "FINISHED"))
+    return pool
 
 
-def scene_intro(t, ctx):
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    R.header(im, ctx["comp"], None)
-    p = R.ease(t / 1.2)
-    size, y = 320, H * 0.40
-    R.crest_at(im, ctx["m"].get("home_badge"), ctx["h"], size, R.lerp(-size, W * 0.72, p), y)   # home RIGHT
-    R.crest_at(im, ctx["m"].get("away_badge"), ctx["a"], size, R.lerp(W + size, W * 0.28, p), y)
-    if t > 0.6:
-        a = R.ease((t - 0.6) / 0.6)
-        for cx, name in ((W * 0.72, ctx["h"]), (W * 0.28, ctx["a"])):
-            f = C.fit(d, C.ar(name), "ExtraBold", 52, W * 0.42)
-            C.draw_center(d, cx, y + size * 0.62, C.ar(name), f, C.WHITE if a > 0.5 else SOFT)
-    if t > 1.0:
-        k = R.ease((t - 1.0) / 0.8)
-        C.draw_center(d, W / 2, H * 0.66 + (1 - k) * 40, C.ar(f"آخر {ctx['n']} مواجهات"),
-                      C.font("ExtraBold", 92), C.WHITE)
-        C.draw_center(d, W / 2, H * 0.66 + 130 + (1 - k) * 40, C.ar(ctx["when"] or "بينهما"),
-                      C.font("Bold", 40), GOLD)
-    footer(d)
-    return im
+def badge_of(team, pool):
+    from site_lib.names import ar_team
+    for m in pool.values():
+        for side in ("home", "away"):
+            if ar_team(m.get(side) or "") == team and m.get(f"{side}_badge"):
+                return m[f"{side}_badge"]
+    return None
 
 
-def scene_tally(t, ctx):
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    R.header(im, ctx["comp"], None)
-    h, a, w, draws, gf = ctx["h"], ctx["a"], ctx["wins"], ctx["draws"], ctx["goals"]
-    C.draw_center(d, W / 2, H * 0.19, C.ar(f"في آخر {ctx['n']} مواجهات"), C.font("Bold", 44), SOFT)
-    y = H * 0.27
-    for cx, n, label, col in ((W * 0.78, w[h], f"فوز {h}", GOLD), (W * 0.5, draws, "تعادل", C.WHITE),
-                              (W * 0.22, w[a], f"فوز {a}", GOLD)):
-        _count(d, cx, y, n, t, 150, col)
-        f = C.fit(d, C.ar(label), "Bold", 36, W * 0.26)
-        C.draw_center(d, cx, y + 190, C.ar(label), f, SOFT)
-    d.line([(W * 0.36, y + 20), (W * 0.36, y + 170)], fill=(90, 130, 170), width=3)
-    d.line([(W * 0.64, y + 20), (W * 0.64, y + 170)], fill=(90, 130, 170), width=3)
-    if t > 1.2:
-        k = R.ease((t - 1.2) / 0.8)
-        yy = H * 0.56 + (1 - k) * 60
-        C.draw_center(d, W / 2, yy, C.ar("الأهداف المسجّلة"), C.font("ExtraBold", 54), C.WHITE)
-        sub = (f"في {ctx['played']} مباريات لُعبت داخل الملعب" if ctx["played"] < ctx["n"]
-               else f"في {ctx['n']} مباريات بالنتائج الرسمية")
-        C.draw_center(d, W / 2, yy + 66, C.ar(sub), C.font("Regular", 28), DIM)
-        for cx, name in ((W * 0.72, h), (W * 0.28, a)):
-            d.rounded_rectangle((cx - 170, yy + 120, cx + 170, yy + 290), 26, fill=(10, 40, 70))
-            _count(d, cx, yy + 122, gf[name], t - 1.2, 96, C.WHITE)
-            f = C.fit(d, C.ar(f"سجّل {name}"), "Bold", 32, 320)
-            C.draw_center(d, cx, yy + 232, C.ar(f"سجّل {name}"), f, SOFT)
-    footer(d)
-    return im
+def context(pair, pool, today=None):
+    """Everything the reel says, or None when fewer than MIN_MEETINGS
+    meetings are on record."""
+    history = H.load_history(pair)
+    notes = H.notes_for(pair, history)
+    games = H.meetings(pair, history, pool)
+    if len(games) < MIN_MEETINGS:
+        return None
+    t = H.tally(games, pair, notes)
+    a, b = pair["a"], pair["b"]
+    today = today or datetime.date.today().isoformat()
+    nxt = H.next_meeting(pair, pool, today)
+    return {"pair": pair, "a": a, "b": b, "n": len(games), "wins": t["wins"], "draws": t["draws"], "goals": t["goals"],
+            "games": games[:LAST_N], "notes": notes, "next": nxt,
+            "badges": {a: badge_of(a, pool), b: badge_of(b, pool)}}
 
 
-def scene_meetings(t, ctx):
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    R.header(im, ctx["comp"], None)
-    games = ctx["games"]
-    n = len(games)
-    step = 4.8 / max(1, n)                      # all rows are in by 4.8s, then they hold
-    RH = 118
-    y0 = 230 + (10 - n) * RH // 2
-    fn, fs, fd = C.font("ExtraBold", 40), C.font("ExtraBold", 44), C.font("Bold", 24)
-    for i, g in enumerate(games):
-        if t < i * step:
-            break
-        k = R.ease((t - i * step) / 0.35)
-        y = y0 + i * RH
-        x_off = int((1 - k) * 120)
-        d.rounded_rectangle((60 + x_off, y, W - 60 + x_off, y + RH - 12), 20, fill=(10, 40, 70))
-        nb = 40
-        d.ellipse((W - 60 + x_off - nb - 14, y + 10, W - 60 + x_off - 14, y + 10 + nb), fill=GOLD)
-        s = str(i + 1)
-        d.text((W - 60 + x_off - 14 - nb / 2 - d.textlength(s, font=fd) / 2, y + 16), s, font=fd, fill=(20, 30, 50))
-        from site_lib.names import ar_team
-        gh, ga = ar_team(g["home"]), ar_team(g["away"])
-        gn = ctx["notes"].get(g["date"]) or {}
-        # the note (awarded / penalties) rides on the header line in gold: the
-        # row has no room under the score, and the header is where the eye
-        # reads the context anyway
-        head = C.ar(f"{g['comp']} · {HC.ar_date(g['date'])}")
-        f = fd
-        while d.textlength(head, font=f) > W - 260 - (160 if gn.get("note") else 0) and f.size > 16:
-            f = C.font("Bold", f.size - 1)
-        xr = W - 60 + x_off - nb - 30
-        d.text((xr - d.textlength(head, font=f), y + 14), head, font=f, fill=DIM)
-        if gn.get("note"):
-            nt = C.ar(gn["note"])
-            d.text((xr - d.textlength(head, font=f) - 18 - d.textlength(nt, font=f), y + 14), nt, font=f, fill=GOLD)
-        hw = g["hg"] > g["ag"] or gn.get("winner") == gh
-        aw = g["ag"] > g["hg"] or gn.get("winner") == ga
-        mid = W / 2 + x_off
-        fnm = C.fit(d, C.ar(max(gh, ga, key=len)), "ExtraBold", 40, 300)
-        d.text((mid + 90, y + 50), C.ar(gh), font=fnm, fill=C.WHITE if hw else SOFT)      # home RIGHT
-        d.text((mid - 90 - d.textlength(C.ar(ga), font=fnm), y + 50), C.ar(ga), font=fnm, fill=C.WHITE if aw else SOFT)
-        sc = f"{g['ag']} - {g['hg']}"
-        d.rounded_rectangle((mid - 72, y + 48, mid + 72, y + 100), 14, fill=(0, 0, 0))
-        d.text((mid - d.textlength(sc, font=fs) / 2, y + 48), sc, font=fs, fill=C.WHITE)
-    footer(d)
-    return im
+def _meetings(n):
+    return "مواجهتين" if n == 2 else f"{n} مواجهات" if n <= 10 else f"{n} مواجهة"
 
 
-def scene_cta(t, ctx):
-    im = ctx["bg"].copy()
-    d = ImageDraw.Draw(im)
-    R.header(im, ctx["comp"], None)
-    y = H * 0.20
-    f = C.font("Bold", 40)
-    facts = ([ctx["finals"]] if ctx.get("finals") else []) + [
-        (f"آخر فوز لـ{name}: {HC.ar_date(ctx['last'][name])}" if ctx["last"].get(name)
-         else f"{name} بلا فوز في هذه المواجهات") for name in (ctx["h"], ctx["a"])]
-    for i, line in enumerate(facts[:3]):
-        if t < 0.25 * i:
-            continue
-        k = R.ease(min(1.0, (t - 0.25 * i) / 0.5))
-        for chunk in R.wrap(d, line, f, W - 200, lines=2):
-            slide = int((1 - k) * 40)
-            d.rounded_rectangle((70, y - 14 + slide, W - 70, y + 66 + slide), 20, fill=C.WHITE)
-            C.draw_center(d, W / 2, y + slide, chunk, f, C.INK)
-            y += 96
-        y += 20
-    k = R.ease(min(1.0, max(0.0, (t - 0.8) / 0.6)))
-    if k > 0.02:
-        C.draw_center(d, W / 2, H * 0.60, C.ar("التوقع والتحليل الكامل على"),
-                      C.font("Bold", max(1, int(44 * k))), SOFT)
-        C.draw_center(d, W / 2, H * 0.60 + 76, "elgoon.com",
-                      C.font("ExtraBold", max(1, int(72 * k))), C.WHITE)
-        if ctx["when"]:
-            C.draw_center(d, W / 2, H * 0.60 + 190, C.ar(ctx["when"]), C.font("Bold", 36), GOLD)
-    return im
+def build(ctx):
+    """The scenes as (draw(t) -> frame, seconds, push_in)."""
+    bg = R.background()
+    mctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
+    a, b = ctx["a"], ctx["b"]
+    title = f"{a} × {b}"
 
+    def head(im, sub):
+        R.logo_at(im, W / 2, DR.HEAD_LOGO_Y, DR.HEAD_LOGO_H)
+        C.draw_center(ImageDraw.Draw(im), W / 2, DR.TITLE_Y, C.ar(sub), C.fit(ImageDraw.Draw(im), C.ar(sub), "ExtraBold", 44, W - 160, 28), C.WHITE)
 
-SCENE_FN = {"intro": scene_intro, "tally": scene_tally, "meetings": scene_meetings, "cta": scene_cta}
+    def crests(lay, cy, size, names=True):
+        d = ImageDraw.Draw(lay)
+        for team, x in ((a, W * 0.76), (b, W * 0.24)):
+            R.crest_at(lay, ctx["badges"].get(team), team, size, x, cy)
+            if names:
+                nm = C.ar(team)
+                d.text((x, cy + size * 0.5 + 60), nm, font=C.fit(d, nm, "ExtraBold", 58, W * 0.4, 30), fill=C.WHITE, anchor="mm")
 
+    def intro(t):
+        im = bg.copy()
+        head(im, "المواجهات المباشرة")
+        e = M.ease(t, 0.1, M.FADE + 0.15)
+        if e > 0:
+            lay = M.layer()
+            crests(lay, 760, 250)
+            mk = DR.mark(120)
+            if mk is not None:
+                lay.paste(mk, (int(W / 2 - 60), 700), mk)
+            M.put(im, lay, e, dy=M.SLIDE * (1 - e))
+        M.lines_block(im, t, [f"آخر {_meetings(ctx['n'])} بينهما"], (1180,), weight="ExtraBold", size=56, t0=0.55)
+        return im
 
-def context(m, games):
-    import matchup_card as MC
-    from site_lib.names import ar_team, comp_label
-    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
-    notes = HC.load_notes(h, a)
-    w, draws, gf, last, played = HC.tally(games, h, a, notes)
-    return {"m": m, "h": h, "a": a, "games": games, "n": len(games), "wins": w, "draws": draws,
-            "goals": gf, "last": last, "played": played, "notes": notes.get("games") or {},
-            "finals": notes.get("finals"), "comp": comp_label(m.get("competition")),
-            "when": MC.when_ar(m.get("kickoff"), m.get("koff_time")), "bg": R.background()}
+    def tally(t):
+        im = bg.copy()
+        head(im, f"{title} · آخر {_meetings(ctx['n'])}")
+        e = M.ease(t, 0.1, M.FADE + 0.1)
+        if e > 0:
+            lay = M.layer()
+            d = ImageDraw.Draw(lay)
+            crests(lay, 560, 150, names=False)
+            cols = ((W * 0.76, ctx["wins"][a], f"فوز {a}"), (W * 0.5, ctx["draws"], "تعادل"), (W * 0.24, ctx["wins"][b], f"فوز {b}"))
+            for x, n, lbl in cols:
+                d.rounded_rectangle((x - 130, 720, x + 130, 1080), 36, fill=(255, 255, 255, 34))
+                d.text((x, 860), str(n), font=C.font("ExtraBold", 200), fill=C.WHITE, anchor="mm")
+                s = C.ar(lbl)
+                d.text((x, 1020), s, font=C.fit(d, s, "ExtraBold", 36, 236, 20), fill=(255, 255, 255, 225), anchor="mm")
+            g = C.ar(f"الأهداف: {a} {ctx['goals'][a]} · {b} {ctx['goals'][b]}")
+            d.text((W / 2, 1190), g, font=C.fit(d, g, "ExtraBold", 48, W - 160, 28), fill=C.WHITE, anchor="mm")
+            M.put(im, lay, e, dy=M.SLIDE * (1 - e))
+        return im
 
+    rows = ctx["games"]
+    h, ys = DR.row_geometry(len(rows))
 
-def frames(ctx):
-    out = []
-    for name, secs in SCENES:
-        for i in range(int(secs * FPS)):
-            out.append(SCENE_FN[name](i / FPS, ctx))
-    return out
+    def game_row(im, t, g, cy, t0):
+        e = M.ease(t, t0, M.FADE + 0.1)
+        if e <= 0:
+            return
+        lay = M.layer()
+        d = ImageDraw.Draw(lay)
+        d.rounded_rectangle((50, cy - h / 2 + 6, W - 50, cy + h / 2 - 6), int(h * 0.2), fill=(255, 255, 255, 26))
+        cs = int(min(104, h * 0.62))
+        for team, x, anchor, edge in ((g["home"], DR.HOME_X, "rm", DR.HOME_X - cs / 2 - 16),
+                                      (g["away"], DR.AWAY_X, "lm", DR.AWAY_X + cs / 2 + 16)):
+            R.crest_at(lay, ctx["badges"].get(team), team, cs, x, cy)
+            nm = C.ar(team)
+            d.text((edge, cy), nm, font=C.fit(d, nm, "ExtraBold", int(min(42, h * 0.3)), abs(edge - W / 2) - DR.NAME_GAP, 22),
+                   fill=C.WHITE, anchor=anchor)
+        sy = cy - h * 0.09
+        f = C.font("ExtraBold", int(min(84, h * 0.5)))
+        d.text((W / 2 + DR.SCORE_DX, sy), str(g["hg"]), font=f, fill=C.WHITE, anchor="mm")       # HOME goals on the right
+        d.text((W / 2 - DR.SCORE_DX, sy), str(g["ag"]), font=f, fill=C.WHITE, anchor="mm")
+        d.text((W / 2, sy), "-", font=C.font("ExtraBold", int(min(60, h * 0.36))), fill=M.GOLD, anchor="mm")
+        note = (ctx["notes"].get(g["date"]) or {}).get("note")
+        lb = C.ar(" · ".join(x for x in (H.ar_month_year(g["date"]), g.get("comp") or "", note) if x))
+        d.text((W / 2, cy + h * 0.31), lb, font=C.fit(d, lb, "Bold", int(max(26, min(30, h * 0.17))), W - 2 * 190, 18),
+               fill=(255, 255, 255, 215), anchor="mm")
+        M.put(im, lay, e, dy=M.SLIDE * (1 - e))
 
+    def games(t):
+        im = bg.copy()
+        head(im, f"آخر {_meetings(len(rows))} · الأحدث أولًا")
+        for i, g in enumerate(rows):
+            game_row(im, t, g, ys[i], 0.1 + i * 0.18)
+        return im
 
-def contact_sheet(fs, path, cols=4, every=None):
-    """A grid of frames to eyeball the reel without playing it."""
-    every = every or max(1, len(fs) // 12)
-    pick = fs[::every][:12]
-    tw, th = 270, 480
-    sheet = Image.new("RGB", (cols * tw, ((len(pick) + cols - 1) // cols) * th), (20, 20, 20))
-    for i, im in enumerate(pick):
-        sheet.paste(im.resize((tw, th), Image.LANCZOS), ((i % cols) * tw, (i // cols) * th))
-    sheet.save(path)
-    return path
+    def outro(t):
+        return M.scene({"kind": "cta", "secs": OUTRO, "lines": ["كل المواجهات مباراة بمباراة", "على الجون"]}, t, mctx)
+
+    return [(intro, INTRO, True), (tally, TALLY, True), (games, GAMES, True), (outro, OUTRO, False)]
 
 
 def caption(ctx):
-    h, a = ctx["h"], ctx["a"]
-    lines = [f"آخر {ctx['n']} مواجهات بين {h} و{a} في 14 ثانية 🎬",
-             f"{h} فاز {ctx['wins'][h]} · تعادل {ctx['draws']} · {a} فاز {ctx['wins'][a]}"]
-    if ctx.get("finals"):
-        lines.append(f"🏟️ {ctx['finals']}")
-    lines += [
-             f"التوقع والتحليل الكامل: https://elgoon.com/m/{ctx['m'].get('match_id')}",
-             f"#الجون #{h.replace(' ', '_')} #{a.replace(' ', '_')}"]
-    return "\n".join(lines)
+    a, b = ctx["a"], ctx["b"]
+    lines = [f"⚔️ {a} × {b}: آخر {_meetings(ctx['n'])} بينهما", "",
+             f"{a} فاز {ctx['wins'][a]} · تعادل {ctx['draws']} · {b} فاز {ctx['wins'][b]}",
+             f"الأهداف: {a} {ctx['goals'][a]} · {b} {ctx['goals'][b]}"]
+    nx = ctx.get("next")
+    if nx and nx.get("kickoff"):
+        when = H.ar_date(nx["kickoff"]) + (f" الساعة {nx['koff_time']} بتوقيت القاهرة" if nx.get("koff_time") else "")
+        lines += ["", f"المواجهة القادمة: {when}."]
+    lines += ["", f"كل المواجهات مباراة بمباراة: https://elgoon.com/h2h/{ctx['pair']['slug']}",
+              f"#الجون #{a.replace(' ', '_')} #{b.replace(' ', '_')}"]
+    return "\n".join(lines) + "\n"
 
 
-def build(m, out, sheet=None, games=None):
-    games = games if games is not None else HC.h2h_games(m)
-    if len(games) < HC.MIN_GAMES:
-        return None
-    ctx = context(m, games)
-    fs = frames(ctx)
-    ok = R.encode(fs, out)
+def meeting_today(pool, today):
+    """[(pair, match)] for the pairs whose two sides meet today."""
+    out = []
+    for p in H.PAIRS:
+        nx = H.next_meeting(p, pool, today)
+        if nx and str(nx.get("kickoff") or "")[:10] == today and (nx.get("status") or "").upper() == "UPCOMING":
+            out.append((p, nx))
+    return out
+
+
+def render(ctx, out, sheet=None):
+    scenes = build(ctx)
+    secs = sum(s[1] for s in scenes)
+    os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
+    ok = M.encode({"id": f"h2h-{ctx['pair']['slug']}"}, None, out, secs, frame_iter=DR.frames(scenes))
     if sheet:
-        contact_sheet(fs, sheet)
-    return {"uploadable": ok, "frames": len(fs), "seconds": len(fs) / FPS, "caption": caption(ctx)}
+        M.contact_sheet([draw(dur - 0.05) for draw, dur, _ in scenes], sheet, cols=len(scenes))
+    return ok, secs
+
+
+def publish(path, ctx, date):
+    token = os.environ.get("FB_PAGE_TOKEN", "").strip()
+    if not token:
+        print("FB_PAGE_TOKEN not set: rendered, not published")
+        return 0
+    ref = f"h2h:{ctx['pair']['slug']}:{date}"
+    if not store.claim(R.KIND, ref, title=f"h2h reel {ctx['pair']['slug']} {date}"):
+        print(f"h2h reel {ref}: already published or held by another run")
+        return 0
+    try:
+        vid = R.post_reel(token, path, caption(ctx))
+        store.record_post(R.KIND, ref, vid, title=f"h2h reel {ctx['pair']['slug']} {date}")
+        print(f"h2h reel {ref}: published as {vid}")
+        return 0
+    except Exception as e:                                   # noqa: BLE001
+        store.release(R.KIND, ref)
+        print(f"h2h reel {ref} FAILED: {e}")
+        return 1
+
+
+def main():
+    from zoneinfo import ZoneInfo
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--pair", help="a pair's slug (site_lib/h2h.PAIRS)")
+    ap.add_argument("--auto", action="store_true", help="the pair that meets today, if any")
+    ap.add_argument("--out")
+    ap.add_argument("--sheet")
+    ap.add_argument("--publish", action="store_true")
+    args = ap.parse_args()
+    today = datetime.datetime.now(ZoneInfo("Africa/Cairo")).date().isoformat()
+    pool = load_pool()
+    if args.auto:
+        todo = meeting_today(pool, today)
+        if not todo:
+            print(f"h2h reel {today}: no pair meets today"); return 0
+        pair = todo[0][0]
+    else:
+        pair = next((p for p in H.PAIRS if p["slug"] == args.pair), None)
+        if not pair:
+            print("no such pair - see site_lib/h2h.PAIRS"); return 1
+    if args.publish:
+        rec = store.get_post(R.KIND, f"h2h:{pair['slug']}:{today}")
+        if rec and rec.get("post_id"):
+            print(f"h2h reel {pair['slug']} {today}: already posted ({rec['post_id']})"); return 0
+    ctx = context(pair, pool, today)
+    if not ctx:
+        print(f"h2h reel {pair['slug']}: fewer than {MIN_MEETINGS} meetings on record - no reel"); return 0
+    out = args.out or os.path.join(HERE, "media", "reels", f"h2h-{pair['slug']}-{today}.mp4")
+    ok, secs = render(ctx, out, args.sheet)
+    print(f"{out}: {secs:.1f}s, {'UPLOADABLE' if ok else 'NOT uploadable'}")
+    print(caption(ctx))
+    if args.publish:
+        if not ok:
+            print("not publishing a file ffmpeg did not write"); return 1
+        return publish(out, ctx, today)
+    return 0 if ok else 1
 
 
 if __name__ == "__main__":
-    sys.stdout.reconfigure(encoding="utf-8")
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--match", required=True)
-    ap.add_argument("--out", required=True)
-    ap.add_argument("--sheet")
-    args = ap.parse_args()
-    import match_brief as MB
-    d = MB.load_all()
-    m = next((x for x in d["matches"] if str(x.get("match_id")) == str(args.match)), None)
-    if not m:
-        sys.exit(f"match {args.match} is not in matches.json")
-    r = build(m, args.out, args.sheet)
-    if not r:
-        sys.exit("too few meetings on record")
-    print(f"{args.out}: {r['seconds']:.1f}s, {r['frames']} frames, {'UPLOADABLE' if r['uploadable'] else 'preview only'}")
-    print(r["caption"])
+    sys.exit(main())

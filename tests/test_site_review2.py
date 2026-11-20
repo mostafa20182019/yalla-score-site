@@ -100,16 +100,32 @@ ck("8b two rounds played: no sentence yet", Q.group_outlook(table(early), early 
 bad = [dict(r) for r in tb]
 bad[0]["pts"] += 1
 ck("9 a table our rows do not add up to: the whole group is skipped", Q.group_outlook(bad, GAMES + LEFT, 2) == [])
-ck("10 a remaining match missing from the feed: skipped", Q.group_outlook(tb, GAMES + LEFT[:3], 2) == [])
+ck("10 what is left comes from the FORMAT (each pair meets twice), not from the feed: a fixture the feed lacks changes nothing",
+   Q.group_outlook(tb, GAMES + LEFT[:3], 2) == Q.group_outlook(tb, GAMES, 2) == list(out.values()))
+ck("10b a pair that has played three times is not a group we understand",
+   Q.group_outlook(tb, GAMES + [g(99, "أ", "ب", 0, 0)], 2) == [])
 ck("11 the group is over: the table is the answer, no sentence",
    Q.group_outlook(table(GAMES + [dict(m, home_score=1, away_score=0, status="FINISHED") for m in LEFT]),
                    GAMES + [dict(m, home_score=1, away_score=0, status="FINISHED") for m in LEFT], 2) == [])
 ck("12 the same match listed twice is one match", {o["team"]: o["state"] for o in Q.group_outlook(tb, GAMES + GAMES + LEFT + LEFT, 2)}
    == {t: o["state"] for t, o in out.items()})
 grp = [{"name": "المجموعة أ", "table": tb}]
-ck("13 only competitions whose rule is fixed: the two CAF club cups, never the Africa Cup qualifiers (a host changes the rule)",
-   set(Q.QUALIFY) == {"CAF Champions League", "CAF Confederation Cup"}
-   and Q.outlook_html("Africa Cup of Nations Qualification", "التصفيات", grp, GAMES + LEFT) == "")
+ck("13 only competitions whose rule we were given: the two CAF club cups and the Africa Cup qualifiers",
+   set(Q.QUALIFY) == {"CAF Champions League", "CAF Confederation Cup", "Africa Cup of Nations Qualification"}
+   and Q.outlook_html("UEFA Nations League", "x", grp, GAMES + LEFT) == "")
+# the qualifiers' rule (user 2026-11-20): two from a group, ONE from a group that holds a host
+host = {o["team"]: o for o in Q.group_outlook(tb, GAMES, 2, hosts=("أ",), host_slots=1)}
+# أ (12) is the host: the one place is between ب 4, ج 7, د 0 with two matches each
+ck("13b a host's group: the host gets no sentence, and the ONE place is counted among the other sides only",
+   "أ" not in host and host.get("د", {}).get("state") == "out" and host.get("ج", {}).get("state") == "need"
+   and host["ج"]["need"] == 11, str(host))
+ck("13c ...so a side that would be through as second of four is NOT through when the first is a host's group rival",
+   {o["team"]: o["state"] for o in Q.group_outlook(tb, GAMES, 2)}.get("أ") == "in"
+   and Q.group_outlook(tb, GAMES, 2, hosts=("أ", "ب")) == [])
+afq = Q.outlook_html("Africa Cup of Nations Qualification", "تصفيات كأس أمم إفريقيا", grp, GAMES)
+ck("13d the qualifiers' section: «منتخب ...», the destination, the hosts' rule said in words",
+   "منتخب أ ضمن التأهل إلى كأس أمم أفريقيا." in afq and "يتأهل منها فريق واحد فقط غير المستضيف" in afq
+   and "كينيا" in afq)
 html = Q.outlook_html("CAF Champions League", "دوري أبطال أفريقيا", grp, GAMES + LEFT)
 ck("14 the section: the rule, the honest note about ties, one line per side we are sure of",
    'id="qual"' in html and "أول فريقين" in html and "بالنقاط فقط" in html and html.count("<li>") == 3

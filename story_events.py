@@ -123,8 +123,16 @@ def load_data():
         "archive": merge_archive(_load("results_archive.json"), _load("matches_archive.json")),
         "articles": _load("articles.json"),
         "stats": _load("match_stats.json"),
+        "details": _details(),
         "moments": load_moments(),
     }
+
+
+def _details():
+    """The per-match goal / card / line-up entries: the 45-day store plus the
+    season's archive (the same merge the build makes)."""
+    from site_lib.matchdata import merge_details
+    return merge_details(_load("match_details.json"), _load("details_archive.json"))
 
 
 def load_moments(folder=None):
@@ -904,6 +912,8 @@ DETECTORS = [
     (KIND_OTD, lambda d, today: on_this_day(d.get("archive"), d.get("moments"), today)),
     (KIND_FORM, lambda d, today: club_form_before_match(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
     (KIND_STREAK, lambda d, today: club_streak(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
+    # «ساعة الأهداف» (goal_clock.py, 2026-11-20): the night's match on the goal dial, a CARD
+    (SS.KIND_CLOCK, lambda d, today: SS.goal_clock_night(d.get("matches"), d.get("archive"), d.get("details"), today)),
     # the social review's kinds (story_social.py, 2026-11-19) - behind FB_SOCIAL in fb_post.py
     (SS.KIND_NUMBER, lambda d, today: SS.night_number(d.get("matches"), d.get("archive"), d.get("stats"), today)),
     (SS.KIND_SCENARIO, lambda d, today: SS.round_scenario(d.get("matches"), d.get("fixtures"), d.get("standings"), today)),

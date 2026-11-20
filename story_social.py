@@ -486,3 +486,66 @@ def abroad_week(matches, archive, today=None, players=None):
     return [SE.event(KIND_ABROAD, f"{iso[0]}-W{iso[1]:02d}", "محترفونا هذا الأسبوع", ["🌍 محترفونا هذا الأسبوع"] + lines,
                      SE.SITE + "/", "كل النتائج", [SE._club_tag(w) for w in who[:3]],
                      players=who, week=[lo, hi])]
+
+
+# ---------------------------------------------------------------- «ساعة الأهداف»
+# The night's ONE match on the goal dial (goal_clock.py; user 2026-11-20:
+# «شكل ساعة الأهداف جميلة اعملها»). Not a SOCIAL kind: he saw the card and
+# asked for it, so it goes out with the other news-from-the-data posts.
+KIND_CLOCK = "goal-clock"
+CLOCK_MIN_GOALS = 3          # a dial with one mark on it is not a picture
+CLOCK_FROM_H = 23            # Cairo, with the night's results
+
+
+def goal_clock_night(matches, archive, details, today=None):
+    """At most one event a night: the night's match (the same pick as the
+    results card and reel - day_card.day_hero) when it had CLOCK_MIN_GOALS
+    goals, else the match of the leagues of the bar / our clubs / the Arab
+    national teams with the most goals. Only a match whose goal list adds
+    up to its score (goal_clock.goals_of)."""
+    import day_card as DC
+    import goal_clock as GC
+    from site_lib.competitions import LEAGUE_BAR, is_arab_nation_match
+    from site_lib.matchdata import match_details_index
+    from site_lib.names import _is_ticker_team
+    SE = _se()
+    now = SE._now(today)
+    if not _after(now, today, CLOCK_FROM_H):
+        if not (_is_clock(today) and now.hour < 3):
+            return []
+        now = now - datetime.timedelta(days=1)
+    day = _cairo_day(now).isoformat()
+    if not details:
+        return []
+    idx = match_details_index(details)
+    rows = []
+    for m in SE.results_pool(matches, archive):
+        if str(m.get("kickoff") or "")[:10] != day:
+            continue
+        if not (m.get("competition") in LEAGUE_BAR or _is_ticker_team(m) or is_arab_nation_match(m)):
+            continue
+        m = dict(m, status="FINISHED")
+        goals = GC.goals_of(m, idx)
+        if goals and len(goals) >= CLOCK_MIN_GOALS:
+            rows.append((m, goals))
+    if not rows:
+        return []
+    hero = DC.day_hero([m for m, _ in rows])
+    pick = next(((m, g) for m, g in rows if hero is not None and m.get("match_id") == hero.get("match_id")), None)
+    if pick is None or not (DC.day_hero([pick[0]]) and (_is_ticker_team(pick[0]) or is_arab_nation_match(pick[0]))):
+        # none of ours tonight: the dial with the most on it
+        pick = max(rows, key=lambda r: (len(r[1]), -rows.index(r)))
+    m, goals = pick
+    h, a = SE._side_names(m)
+    hs, as_ = int(m["home_score"]), int(m["away_score"])
+    lines = [f"🎯 ساعة الأهداف: {h} {hs}-{as_} {a}."]
+    for g in goals:
+        who = (g["player"] or "هدف") + (" (عكسي)" if g["own"] else "")
+        lines.append(f"الدقيقة {g['minute']}: {who} — {h if g['side'] == 'h' else a}.")
+    return [SE.event(KIND_CLOCK, day, f"ساعة الأهداف: {h} {hs}-{as_} {a}", lines,
+                     f"{SE.SITE}/m/{m.get('match_id')}", "أحداث المباراة",
+                     [SE.comp_tag(m.get("competition")), SE._club_tag(h), SE._club_tag(a)],
+                     competition=m.get("competition"),
+                     match={k: m.get(k) for k in ("match_id", "home", "away", "home_score", "away_score", "home_badge",
+                                                  "away_badge", "competition", "kickoff")},
+                     goals=goals)]

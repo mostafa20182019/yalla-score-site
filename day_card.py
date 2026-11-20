@@ -120,7 +120,7 @@ def day_groups(rows, hero=None):
     return out
 
 
-def render(ms, date, comp, out, part=None, parts=1, title=None, theme="dark"):
+def render(ms, date, comp, out, part=None, parts=1, title=None, theme="light"):
     """part/parts (2026-10-15, the Europa League's 18-match Thursdays): page
     `part` of `parts`, nine matches each, the subtitle says which."""
     import fb_cards as FC

@@ -106,7 +106,7 @@ def render(m, goals, out=None):
     d = ImageDraw.Draw(img)
     for y in range(H):
         t = y / (H - 1)
-        d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(DC.TOP, DC.BOT)))
+        d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(DC.LIGHT_TOP, DC.LIGHT_BOT)))
     glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
     ImageDraw.Draw(glow).ellipse([CX - 420, CY - 380, CX + 420, CY + 380], fill=(31, 148, 211, 70))
     img.paste(glow.filter(ImageFilter.GaussianBlur(120)), (0, 0), glow.filter(ImageFilter.GaussianBlur(120)))

@@ -171,7 +171,7 @@ import fb_post as fp        # noqa: E402
 src = open("fb_post.py", encoding="utf-8").read()
 ck("25 the kinds are registered and are exactly fb_post's SOCIAL_KINDS",
    tuple(SS.SOCIAL_KINDS) == fp.SOCIAL_KINDS and len(SS.SOCIAL_KINDS) == 6
-   and [k for k, _ in SE.DETECTORS][-6:] == list(SS.SOCIAL_KINDS))
+   and [k for k, _ in SE.DETECTORS][-6:] == list(SS.SOCIAL_KINDS) and SS.KIND_CLOCK not in SS.SOCIAL_KINDS)
 os.environ.pop("FB_SOCIAL", None)
 off = fp.social_on()
 os.environ["FB_SOCIAL"] = "on"

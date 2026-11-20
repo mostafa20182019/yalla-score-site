@@ -21,8 +21,13 @@ COMPUTED, never generated, and never possibly-wrong:
     all in the feed - a table we cannot rebuild is a table we do not reason
     about;
   * only competitions listed in QUALIFY, where the number of sides that go
-    through from a group is a fixed rule of the competition. The Africa Cup
-    qualifiers are NOT here: a host in the group changes the rule.
+    through from a group is a fixed rule of the competition;
+  * the Africa Cup qualifiers (user, 2026-11-20: «بيصعد اتنين من كل مجموعة
+    ما عدا المجموعات اللى فيها المستضيف بيصعد منها واحد فقط»): two from a
+    group, ONE from a group that holds a host. The host is already through,
+    so in its group the one place is counted among the OTHER sides only -
+    the host's results still move their points, the host itself is never
+    one of the sides «above» them and gets no sentence.
 """
 import itertools
 from html import escape as esc
@@ -33,6 +38,10 @@ from site_lib.names import ar_team
 QUALIFY = {
     "CAF Champions League": {"slots": 2, "to": "ربع النهائي"},
     "CAF Confederation Cup": {"slots": 2, "to": "ربع النهائي"},
+    # the 2027 finals' three hosts, one in each of three groups
+    "Africa Cup of Nations Qualification": {"slots": 2, "to": "كأس أمم أفريقيا",
+                                            "hosts": ("كينيا", "أوغندا", "تنزانيا"), "host_slots": 1,
+                                            "prefix": "منتخب "},     # «منتخب الكونغو الديمقراطية يضمن»
 }
 MIN_PLAYED = 3        # before half the group stage every side «needs 13 points»: not information
 MAX_LEFT = 8          # 3^8 = 6561 cases a group
@@ -43,14 +52,21 @@ def _fin(m):
     return (not st or st == "FINISHED") and m.get("home_score") is not None and m.get("away_score") is not None
 
 
-def group_outlook(table, games, slots):
+def group_outlook(table, games, slots, hosts=(), host_slots=1):
     """[{team, pts, left, state, need}] for the sides we can say something
     about, in table order; [] when the group cannot be reasoned about.
-    state: "in" | "out" | "need" (need = the total that guarantees it)."""
+    state: "in" | "out" | "need" (need = the total that guarantees it).
+    hosts = sides already through as hosts: a group holding one sends
+    `host_slots` of its OTHER sides."""
     rows = [r for r in table or [] if r.get("team")]
     names = [ar_team(r["team"]) for r in rows]
     n = len(names)
-    if n < 3 or len(set(names)) != n or slots >= n:
+    host_i = {i for i, nm in enumerate(names) if nm in set(hosts or ())}
+    if len(host_i) > 1:
+        return []
+    if host_i:
+        slots = host_slots
+    if n < 3 or len(set(names)) != n or slots >= n - len(host_i):
         return []
     if min(int(r.get("played") or 0) for r in rows) < MIN_PLAYED:
         return []
@@ -79,6 +95,18 @@ def group_outlook(table, games, slots):
         else:
             pts[h] += 1; pts[a] += 1
     total = 2 * (n - 1)
+    # The matches still to play are the FORMAT's, not the feed's (2026-11-20:
+    # the Africa qualifiers' last two rounds were not in the feed yet, and
+    # every group was skipped). A group is a double round-robin: each pair
+    # meets twice, so what is left is two minus what the pair has played -
+    # who is at home does not change the points. A pair that has played more
+    # than twice is not a group we understand.
+    met = {}
+    for h, a, _, _ in done:
+        met[frozenset((h, a))] = met.get(frozenset((h, a)), 0) + 1
+    if any(v > 2 for v in met.values()):
+        return []
+    left = [(i, j) for i in range(n) for j in range(i + 1, n) for _ in range(2 - met.get(frozenset((i, j)), 0))]
     rem = [0] * n
     for h, a in left:
         rem[h] += 1; rem[a] += 1
@@ -104,8 +132,10 @@ def group_outlook(table, games, slots):
             else:
                 p[h] += 1; p[a] += 1
         for i in range(n):
-            ge = sum(1 for j in range(n) if j != i and p[j] >= p[i])
-            gt = sum(1 for j in range(n) if j != i and p[j] > p[i])
+            if i in host_i:
+                continue
+            ge = sum(1 for j in range(n) if j != i and j not in host_i and p[j] >= p[i])
+            gt = sum(1 for j in range(n) if j != i and j not in host_i and p[j] > p[i])
             reach[i].add(p[i])
             if ge >= slots:
                 safe_all[i] = False
@@ -114,6 +144,8 @@ def group_outlook(table, games, slots):
                 out_all[i] = False
     out = []
     for i, nm in enumerate(names):
+        if i in host_i:
+            continue
         row = {"team": nm, "pts": pts[i], "left": rem[i]}
         if safe_all[i]:
             out.append(dict(row, state="in", need=None))
@@ -134,12 +166,13 @@ def _left(n):
     return "مباراة واحدة" if n == 1 else "مباراتان" if n == 2 else f"{n} مباريات"
 
 
-def line(o, to):
+def line(o, to, prefix=""):
+    who = prefix + o["team"]
     if o["state"] == "in":
-        return f"{o['team']} ضمن التأهل إلى {to}."
+        return f"{who} ضمن التأهل إلى {to}."
     if o["state"] == "out":
-        return f"{o['team']} خرج من المنافسة على التأهل."
-    return (f"{o['team']} يضمن التأهل إذا وصل إلى {_pts(o['need'])}. "
+        return f"{who} خرج من المنافسة على التأهل."
+    return (f"{who} يضمن التأهل إذا وصل إلى {_pts(o['need'])}. "
             f"رصيده {_pts(o['pts']) if o['pts'] else 'صفر'}، وأمامه {_left(o['left'])}.")
 
 
@@ -151,7 +184,8 @@ def outlook_groups(comp, groups, games):
         return []
     out = []
     for g in groups or []:
-        lines = [line(o, rule["to"]) for o in group_outlook(g.get("table"), games, rule["slots"])]
+        lines = [line(o, rule["to"], rule.get("prefix", "")) for o in group_outlook(g.get("table"), games, rule["slots"],
+                                                            rule.get("hosts") or (), rule.get("host_slots", 1))]
         if lines:
             out.append((g.get("name") or "", lines))
     return out
@@ -167,6 +201,8 @@ def outlook_html(comp, label, groups, games):
     return ('<section class="minfo qual" id="qual">'
             f'<h2>حسابات التأهل في {esc(label)}</h2>'
             f'<p class="qual-n">يتأهل {two} من كل مجموعة إلى {esc(rule["to"])}. '
+            + (f'المجموعة التي فيها بلد مستضيف ({esc("، ".join(rule["hosts"]))}) يتأهل منها فريق واحد فقط غير المستضيف. '
+               if rule.get("hosts") else "") +
             'الحساب بالنقاط فقط على كل نتائج المباريات المتبقية، والتساوي في النقاط لا يُحسب لصالح أي فريق. '
             'لذلك كل جملة هنا مؤكدة، والفريق الذي لا تظهر له جملة مصيره لم يُحسم.</p>'
             + "".join(f'<h3 class="qual-g">{esc(name)}</h3><ul class="qual-l">'

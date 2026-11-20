@@ -179,6 +179,10 @@ jobs:
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
             python day_reel.py --today --publish | tee -a /tmp/fb.txt; rc3=${PIPESTATUS[0]}
             [ "$rc" = 0 ] && rc=$rc3
+            # a pair of site_lib/h2h.PAIRS meets today: its head-to-head reel
+            # (h2h_reel.py, rewritten 2026-11-20) - nothing on any other day
+            python h2h_reel.py --auto --publish | tee -a /tmp/fb.txt; rc5=${PIPESTATUS[0]}
+            [ "$rc" = 0 ] && rc=$rc5
           elif [ -n "$DAYCARD" ]; then
             # the nightly hook: the results card, then whatever the data says
             # is news tonight (story_events.py) - each once, through the store
