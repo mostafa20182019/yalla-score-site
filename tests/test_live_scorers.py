@@ -40,7 +40,7 @@ ck("4 without a competition (or one the live feed lacks) the chart stays still",
 js = io.open("site_src/snippets/live_scorers_js.html", encoding="utf-8").read()
 ck("5 only goals scored after the build count (two minutes of margin)", "e.w<at+120000" in js)
 ck("6 a goal's time comes from the match minute, a first-half goal seen later crosses the break",
-   "(g.hf===2&&mm[0]<=45)?15:0" in js and "var when=now-ago*60000;" in js)
+   "(g.hf>=2&&mm[0]<=45)?15:0" in js and "var when=now-ago*60000;" in js)
 ck("7 only live matches are read; what was counted stays counted for the page's life",
    "if(!g.live||!(g.gt>0)||!g.goals) return;" in js and "var MEM={};" in js)
 ck("8 an own goal never counts for the scorer", "x.t!=='عكسية'" in js)
