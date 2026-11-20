@@ -268,7 +268,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
     <a href="/leagues.html" class="navtab nt-leagues{la}"><span class="ico" aria-hidden="true"></span> البطولات<span class="nav-en"> | Leagues</span></a>
     <a href="/news.html" class="navtab nt-news{na}"><span class="ico" aria-hidden="true"></span> أخبار<span class="nav-en"> | News</span></a>
     <a href="/goals.html" class="navtab nt-goals{ga}"><span class="ico" aria-hidden="true"></span> أهداف<span class="nav-en"> | Goals</span></a>
-    <a href="/" class="navtab nt-my" hidden><span class="ico" aria-hidden="true"></span> فريقي</a>
+    <a href="/#pick" class="navtab nt-my"><span class="ico" aria-hidden="true"></span> فريقي</a>
 {pred_tab}{stats_tab}{vids_tab}{reels_tab}
     </div></nav><span class="head-social">{social}</span>{push_bell}
   </div>

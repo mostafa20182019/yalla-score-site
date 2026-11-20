@@ -180,8 +180,14 @@ import glob as _glob      # noqa: E402
 _sh = open("site_lib/shell.py", encoding="utf-8").read()
 _fj = open("site_src/snippets/follow_js.html", encoding="utf-8").read()
 _css = open("site_src/style.css", encoding="utf-8").read()
-ck("R20-1 the «فريقي» tab is in every page's bar, hidden until a club is followed",
-   'class="navtab nt-my" hidden' in _sh and ".navtab[hidden]{display:none}" in _css)
+# ALWAYS shown since the same day (user: «ليه تاب فريقي مش ظاهر»): with no
+# club it opens the picker
+ck("R20-1 the «فريقي» tab is in every page's bar and always shows; with no club it opens the picker",
+   '<a href="/#pick" class="navtab nt-my">' in _sh and ".navtab[hidden]{display:none}" in _css
+   and "t.setAttribute('href','/#pick')" in _fj and "location.hash==='#pick'" in _fj
+   and "window.sessionStorage.removeItem(OFF)" in _fj)
+ck("R20-1b a browser with no storage loses the tab instead of keeping a dead one",
+   "catch(e){ var t0=document.querySelector('.navtab.nt-my'); if(t0) t0.hidden=true; return; }" in _fj)
 ck("R20-2 the follow script points it at the followed club's page and re-paints on every change",
    "t.setAttribute('href','/team/'+s)" in _fj and _fj.count("tab();") >= 2
    and _fj.index("tab();\n") < _fj.index("var box=document.getElementById('myTeam')"))

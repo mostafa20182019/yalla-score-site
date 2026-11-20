@@ -66,7 +66,8 @@ ck("9 the choice stays in the browser: localStorage only, no request but the clu
    and "XMLHttpRequest" not in js and "sendBeacon" not in js and "cookie" not in js)
 ck("10 a slug is checked before it is used in a URL", "/^[a-z0-9-]{2,40}$/" in js and "if(ok(cur)" in js and "if(ok(s))" in js)
 ck("11 the block's rows join the live layer", "window.__lvAdd(box)" in js)
-ck("12 a browser without storage shows nothing", js.index("catch(e){ return; }") < js.index("querySelectorAll('.follow-btn')"))
+ck("12 a browser without storage shows nothing - and loses the «فريقي» tab too (2026-11-20)",
+   js.index("t0.hidden=true; return; }") < js.index("querySelectorAll('.follow-btn')"))
 
 club = io.open("site_src/templates/club.html", encoding="utf-8").read()
 home = io.open("site_src/templates/home.html", encoding="utf-8").read()

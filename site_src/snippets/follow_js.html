@@ -21,7 +21,10 @@
     });
   });
   var KEY='elgoonTeam', OFF='elgoonPickOff', LS;
-  try{ LS=window.localStorage; LS.getItem(KEY); }catch(e){ return; }
+  /* a browser with no storage cannot follow a club: the «فريقي» tab would
+     lead nowhere there, so it goes */
+  try{ LS=window.localStorage; LS.getItem(KEY); }
+  catch(e){ var t0=document.querySelector('.navtab.nt-my'); if(t0) t0.hidden=true; return; }
   /* The picker's × hides it for THIS VISIT only (user 2026-11-20: «ضغطت على
      الاكس اختفى بس مش راضى يظهرلى تانى - محتاجين يظهر تانى لما نفتح الموقع
      تانى»). The first version wrote 'none' into localStorage, which is
@@ -42,15 +45,20 @@
   function ok(s){ return /^[a-z0-9-]{2,40}$/.test(s); }
   /* the «فريقي» tab (site review 2026-11-20): following a club paid off on
      the home page only, and a reader from Facebook lands on an article or a
-     match. The tab is in every page's bar, hidden; with a followed club it
-     points at that club's page and shows - one tap away from anywhere. */
+     match. The tab is in every page's bar and ALWAYS shows (user, the same
+     day: «ليه تاب فريقي مش ظاهر» - hidden until a club was followed, nobody
+     could know it was there). With a followed club it opens that club's
+     page; with none it opens the home page's «اختر فريقك» (/#pick). */
   function tab(){
     var t=document.querySelector('.navtab.nt-my'); if(!t) return;
     var s=get();
-    if(!ok(s)){ t.hidden=true; return; }
-    t.setAttribute('href','/team/'+s);
-    t.hidden=false;
-    t.classList.toggle('is-active',location.pathname.replace(/\.html$/,'')==='/team/'+s);
+    if(ok(s)){
+      t.setAttribute('href','/team/'+s);
+      t.classList.toggle('is-active',location.pathname.replace(/\.html$/,'')==='/team/'+s);
+    }else{
+      t.setAttribute('href','/#pick');
+      t.classList.remove('is-active');
+    }
   }
   function set(v){
     try{ if(v) LS.setItem(KEY,v); else LS.removeItem(KEY); }catch(e){}
@@ -120,5 +128,18 @@
   }
   var cur=get();
   if(ok(cur)) load(cur); else showPick();
+  /* the tab with no club yet: bring the picker out - even when its × hid it
+     for this visit, the reader has just asked for it - and into view */
+  function askPick(){
+    try{ window.sessionStorage.removeItem(OFF); }catch(e){}
+    showPick();
+    if(pick && pick.scrollIntoView) pick.scrollIntoView({block:'center'});
+  }
+  if(!ok(cur) && location.hash==='#pick') askPick();
+  var mt=document.querySelector('.navtab.nt-my');
+  if(mt) mt.addEventListener('click',function(ev){
+    if(ok(get())) return;                 /* a followed club: the link opens its page */
+    ev.preventDefault(); askPick();       /* already on the home page: no reload */
+  });
 })();
 </script>

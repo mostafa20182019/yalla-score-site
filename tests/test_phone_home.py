@@ -68,7 +68,8 @@ tabs = re.findall(r'<a href="([^"]+)" class="navtab[^"]*"><span class="ico"[^>]*
 # onto the match rows, then back («عايزك ترجعلى برضه تاب الأهداف») - row buttons stay
 ck("7 the tabs, in order: المباريات (the home) · البطولات · أخبار (/news) · أهداف (/goals) - no التحليلات tab since 2026-10-26",
    [(h, t.strip()) for h, t in tabs] == [("/", "المباريات"), ("/leagues.html", "البطولات"),
-                                        ("/news.html", "أخبار"), ("/goals.html", "أهداف")], str(tabs))
+                                        ("/news.html", "أخبار"), ("/goals.html", "أهداف"),
+                                        ("/#pick", "فريقي")], str(tabs))   # the fifth tab, 2026-11-20
 ck("7b /insights lights أخبار (the analyses live in the news)", 'nt-news is-active' in nav("insights"))
 ck("8 «/» and /matches light المباريات", all(re.search(r'href="/" class="navtab nt-match is-active"', nav(a)) for a in ("home", "matches")))
 ck("9 the news lists light أخبار, not المباريات",
