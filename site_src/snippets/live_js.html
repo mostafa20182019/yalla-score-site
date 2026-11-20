@@ -457,13 +457,17 @@
   /* local minute clock: the worker sends each live game's numeric minute
      (gt) + half (hf) and the reply's build time (ts). The browser advances
      the minute itself between polls, so the shown minute never stalls on
-     the poll/cache cadence. Past 45/90 it shows 45+ / 90+ (convention). */
+     the poll/cache cadence. Past the end of its period it shows that
+     period's own cap: 45+ / 90+, and in EXTRA TIME 105+ / 120+ (hf 3 / 4 -
+     until 2026-11-20 extra time was treated as a first half and showed
+     «45+» throughout). */
   var last=null;
+  var CAP={1:45,2:90,3:105,4:120};
   function calcMin(g,at){
     if(!g.live||g.min==='استراحة'||!(g.gt>0))return;
     var est=Math.floor(g.gt+(Date.now()-at)/60000);
-    if(g.hf===2)g.min=est>90?'90+':est+"'";
-    else g.min=est>45?'45+':est+"'";
+    var cap=CAP[g.hf]||(est>105?120:est>90?105:est>45?90:45);   /* an old reply without the period: read it off the minute */
+    g.min=est>cap?cap+'+':est+"'";
   }
   function render(){
     if(!last)return false;

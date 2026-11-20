@@ -61,12 +61,38 @@ function halfTime(g) {
 const MINUTE_RE = /^\d+(\+\d+)?['′]?$/;   // «70'» / «45+2'» as the feed writes them
 const goalMinute = (g) => MINUTE_RE.test(g.min || "") ? g.min : null;
 
-function liveFields(g) {
+// WHICH PERIOD (hf): 1 / 2 = the two halves, 3 / 4 = the two periods of
+// EXTRA TIME. Until 2026-11-20 it was «2 when the feed says "2", else 1» - so
+// extra time (كهرباء الإسماعيلية 2-2 سيراميكا, Egypt Cup, 20 November) was
+// period 1 and the page's minute clock, which caps a first half at 45, showed
+// «45+» through the whole of it (user: «المشكلة بس في الدقيقة»).
+// The feed's "1" / "2" stand for the halves. Anything else is read from the
+// status words when they name extra time, and from the minute itself
+// otherwise: past 105 is the second period of extra time, past 90 the first.
+// A SECOND HALF's stoppage (minute 95, status "2") stays period 2.
+export function period(g) {
+  const ss = (g.shortStatusText || "").trim();
+  const gt = Number(g.gameTime) > 0 ? Number(g.gameTime) : 0;
+  const txt = `${g.statusText || ""} ${ss}`;
+  const et = /إضافي|اضافي|extra/i.test(txt);
+  // "2" past minute 105 is the second period of extra time, not a second
+  // half with sixteen minutes of stoppage
+  if (!et && ss === "2") return gt > 105 ? 4 : 2;
+  if (!et && ss === "1" && gt <= 90) return 1;
+  if (et || gt > 90) {
+    if (/الثاني|second/i.test(txt) && et) return 4;
+    if (/الأول|الاول|first/i.test(txt) && et) return 3;
+    return gt > 105 ? 4 : 3;
+  }
+  return gt > 45 && ss !== "1" ? 2 : 1;
+}
+
+export function liveFields(g) {
   const ht = halfTime(g);
   return {
     min: ht ? "استراحة" : (g.gameTimeDisplay || ""),
     gt: !ht && g.gameTime > 0 ? g.gameTime : 0,
-    hf: (g.shortStatusText || "").trim() === "2" ? 2 : 1,
+    hf: period(g),
   };
 }
 

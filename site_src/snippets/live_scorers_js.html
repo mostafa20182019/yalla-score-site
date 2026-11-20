@@ -25,7 +25,7 @@
       g.goals.forEach(function(x){
         var mm=minuteOf(x.m), gm=mm[0]+mm[1]; if(!mm[0]) return;
         /* how long ago, in real time: minutes of play since, + the break */
-        var ago=Math.max(0,cur-gm)+((g.hf===2&&mm[0]<=45)?15:0);
+        var ago=Math.max(0,cur-gm)+((g.hf>=2&&mm[0]<=45)?15:0);
         var when=now-ago*60000;
         var team=x.s==='h'?g.h:g.a;
         if(x.p&&x.t!=='عكسية') MEM[g.id+'|g|'+x.p+'|'+x.m]={cid:String(g.c),k:'g',n:norm(x.p),t:norm(team),w:when};
