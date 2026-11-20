@@ -1407,7 +1407,12 @@ export default {
     //   European league's completed round (competition=auto-europe), beside
     //   the daily article that hour.
     const when = new Date(event.scheduledTime || Date.now());
-    if (event.cron === "1,16,31,46 * * * *" && when.getUTCHours() === 22 && when.getUTCMinutes() === 16) {
+    // ... and again at 22:46 (2026-11-20): the 22:16 run of 19 Nov died in
+    // its first step and nothing asked a second time, so the night had no
+    // results card and no reel. Every piece of that run goes out once through
+    // the store, so the second firing posts only what the first did not.
+    if (event.cron === "1,16,31,46 * * * *" && when.getUTCHours() === 22
+        && (when.getUTCMinutes() === 16 || when.getUTCMinutes() === 46)) {
       await dispatchWorkflow(env, "fb-post.yml", { daycard: "results" });
     }
     // 07:01 UTC (09:01 / 10:01 Cairo) -> fb-post.yml daycard=today: the

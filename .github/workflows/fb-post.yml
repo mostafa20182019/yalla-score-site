@@ -87,8 +87,18 @@ jobs:
       # data/ (matches, fixtures, standings...) lives in Workers KV, not git:
       # the prediction and H2H posts read matches.json, so pull first
       # (2026-10-11: «match 4804684 is not in matches.json» on the derby day)
+      # 2026-11-20: ONE failed pull at 22:16 UTC cost the whole night - no
+      # results card, no reel (run 44627104040 stopped here). A failed pull
+      # must still stop the job (stale data is never posted), but only after
+      # three tries a few seconds apart.
       - name: Pull the working data
-        run: python data_store.py pull
+        run: |
+          for i in 1 2 3; do
+            python data_store.py pull && exit 0
+            echo "data pull failed (try $i of 3)"
+            [ "$i" = 3 ] || sleep 20
+          done
+          exit 1
 
       # 2026-10-09: a token of ANOTHER page posted a whole day of articles to it
       # while every run stayed green. Refuse to post with anything but the Yalla
