@@ -233,6 +233,12 @@ COMP_LABEL = {
 SINGLE_YEAR_COMPS = ("FIFA U-17 World Cup",)
 
 
+# competitions whose /standings/<slug> is the GROUPS page (2026-11-20): filled
+# by build() from the standings data before any page is written, so a match
+# page, the fixtures page and /leagues all link the same thing
+GROUP_PAGES = set()
+
+
 def comp_season(comp, season, rounds=None):
     """The season text a competition's pages print: the league season, or -
     for a single-year tournament - the year of its first match (this year

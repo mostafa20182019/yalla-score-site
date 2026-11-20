@@ -108,7 +108,7 @@ from site_pages.articles import (  # noqa: E402
 from site_pages.home import home_page  # noqa: E402
 from site_pages.insights import insights_page  # noqa: E402
 from site_pages.matches import matches_page, match_pages  # noqa: E402
-from site_pages.leagues import league_pages, fixtures_pages, leagues_page, stats_page  # noqa: E402
+from site_pages.leagues import league_pages, fixtures_pages, group_standings_pages, leagues_page, stats_page  # noqa: E402
 from site_pages.clubs import club_pages  # noqa: E402
 from site_pages.calc import calc_pages  # noqa: E402
 from site_pages.numbers import numbers_pages  # noqa: E402
@@ -238,6 +238,13 @@ def build():
                   [m.get("match_id") for m in (load("matches_archive.json") or []) + (matches or [])
                    if m.get("match_id")])
 
+    # the competitions played in groups: registered before any page is built
+    groups_by_comp = {s.get("competition"): s["groups"] for s in standings or [] if s.get("groups")}
+    from site_lib import competitions as _COMPS
+    _COMPS.GROUP_PAGES.clear()
+    _COMPS.GROUP_PAGES.update(c for c, gs in groups_by_comp.items()
+                              if c in COMP_SLUG and c not in st_by_comp
+                              and any(g.get("table") for g in gs))
     comp_order = matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx,
                               league["league_stats_parts"], matches, st_by_comp, standings)
     m_all = match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _tstats,
@@ -248,8 +255,8 @@ def build():
     _comps_with_table, season = league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches,
                                              sc_by_comp, sc_ok, st_by_comp, urls,
                                              fx_by_comp, m_all, ge_idx, md_idx=md_idx)
-    fixtures_pages(fx_by_comp, season, st_by_comp, urls,
-                   {s.get("competition"): s["groups"] for s in standings or [] if s.get("groups")},
+    group_standings_pages(groups_by_comp, fx_by_comp, season, urls, m_all=m_all, bycomp=_bycomp)
+    fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp,
                    m_all=m_all, bycomp=_bycomp)
     calc_pages(fx_by_comp, season, st_by_comp, urls)    # «حاسبة الترتيب» (2026-11-19)
     numbers_pages(_bycomp, md_idx, season, fx_by_comp, st_by_comp, urls)   # «أرقام الدوري» (2026-11-19)
@@ -258,7 +265,8 @@ def build():
         analysis_section(_acc, _comps_with_table, _lparams, _pins, _plog, _preds, _sins, _tstats,
                          _upcoming, forms, matches, urls, _xg)
     club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
-               fx_by_comp=fx_by_comp, sc_by_comp=sc_by_comp, sc_ok=sc_ok, md_idx=md_idx)
+               fx_by_comp=fx_by_comp, sc_by_comp=sc_by_comp, sc_ok=sc_ok, md_idx=md_idx,
+               groups_by_comp=groups_by_comp)
     h2h_pages(articles, m_all, urls, fx_by_comp)   # «مواجهات الأهلي والزمالك» (2026-11-13)
     stats_page(comp_order, fixtures, forms, league["league_stats_sec"], matches, sc_by_comp,
                sc_ok, st_by_comp, urls)

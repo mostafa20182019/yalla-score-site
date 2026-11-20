@@ -86,6 +86,12 @@
   {{ table }}
 </section>
 {% endif %}
+{% for g in group_tables %}
+<section class="minfo">
+  <h2>{{ g.heading }}</h2>
+  {{ g.table }}
+</section>
+{% endfor %}
 {{ faq }}
 {% if hub_links %}
 <p class="more-link">{% for x in hub_links %}{% if not loop.first %} · {% endif %}<a href="{{ x.href }}">{{ x.label }} ←</a>{% endfor %}</p>

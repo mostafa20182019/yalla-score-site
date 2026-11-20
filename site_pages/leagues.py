@@ -225,6 +225,140 @@ def league_pages(_bycomp, _preds, as_by_comp, as_ok, forms, matches, sc_by_comp,
     return _comps_with_table, league_season
 
 
+def group_standings_pages(groups_by_comp, fx_by_comp, season, urls, m_all=None, bycomp=None):
+    """/standings/<slug> for a competition played in GROUPS (SEO review
+    2026-11-20). The group tables existed only inside /fixtures/<slug>, one at
+    a time behind ‹ ›, under a «جدول مباريات» title - nothing answered «ترتيب
+    مجموعات دوري أبطال أفريقيا» or «ترتيب مجموعة بيراميدز», and articles
+    already linked /standings/afcon-qualifiers, a page that did not exist.
+    Here every group is on show with its own heading naming its teams, then
+    «حسابات التأهل», the round on show and the «في أي مجموعة» questions. All
+    of it computed from the same tables the fixtures page shows."""
+    from site_lib.clubs import TEAM_PAGES
+    from site_lib.competitions import GROUP_PAGES
+    from site_lib.names import _team_match
+    from site_lib.qualify import QUALIFY, outlook_html
+    from site_lib.tables import _group_games
+    os.makedirs(os.path.join(DIST, "standings"), exist_ok=True)
+    league_season = season
+    _by_fx = {(ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff")): mid
+              for mid, m in (m_all or {}).items()}
+    pages = ((lambda m: m.get("match_id") if m.get("match_id") in m_all else
+              _by_fx.get((ar_team(m.get("home")), ar_team(m.get("away")), m.get("kickoff"))))
+             if m_all is not None else None)
+    n = 0
+    for comp, slug in COMP_SLUG.items():
+        if comp not in GROUP_PAGES:
+            continue
+        groups = [g for g in (groups_by_comp or {}).get(comp) or [] if g.get("table")]
+        if not groups:
+            continue
+        label = comp_label(comp)
+        fx = (fx_by_comp or {}).get(comp)
+        season = comp_season(comp, league_season, (fx or {}).get("rounds") or None)
+        games = (bycomp or {}).get(comp) if bycomp is not None else None
+        url = f"/standings/{slug}.html"
+        started = any((r.get("played") or 0) for g in groups for r in g["table"])
+
+        def mine(g):
+            """the club pages' teams in this group, by their page name"""
+            return [tp for tp in TEAM_PAGES
+                    if sum(1 for r in g["table"]
+                           if _team_match(tp, {"home": r.get("team") or "", "away": "",
+                                               "competition": comp})) == 1]
+        blocks = []
+        for g in groups:
+            blocks.append({"num": g["num"], "name": g["name"],
+                           "teams": "، ".join(ar_team(r.get("team")) for r in g["table"]),
+                           "table": Markup(standings_table(
+                               comp, g["table"], embedded=True, title=g["name"],
+                               zeroed=False, games=_group_games(g["table"], games), pages=pages))})
+        # the description names where OUR clubs and teams are (the query is
+        # «ترتيب مجموعة بيراميدز»), then what the page holds - whole sentences
+        # inside the ~150 characters a result shows
+        where = [" و".join(tp["name"] for tp in mine(g)) + f" في {g['name']}"
+                 for g in groups if mine(g)]
+        n_txt = _cnt(len(groups), "مجموعة واحدة", "مجموعتين", "مجموعات", "مجموعة")
+        desc = f"ترتيب مجموعات {label} {season}: "
+        for k in (3, 2, 1, 0):
+            d = desc + ("، ".join(where[:k]) + ". " if where[:k] else "") + f"جدول كل مجموعة من {n_txt} في صفحة واحدة."
+            if len(d) <= 150 or k == 0:
+                desc = d
+                break
+        title = next((t for t in (f"ترتيب مجموعات {label} {season}: جدول كل مجموعة",
+                                  f"ترتيب مجموعات {label} {season}",
+                                  f"ترتيب مجموعات {label}") if len(t) <= 62),
+                     f"ترتيب مجموعات {label}")
+        hint = (f"جدول كل مجموعة في {label}، يتحدّث تلقائيًا بعد كل مباراة." if started else
+                "دور المجموعات لم يبدأ بعد: كل الأرقام صفر، والترتيب الظاهر داخل كل مجموعة ليس ترتيبًا فعليًا.")
+        # the round on show, as on a league's standings page
+        rn, rd_ms = round_on_show(fx)
+        _pool = m_all or {}
+        shown = sorted((_pool.get(m.get("match_id"), m) for m in rd_ms),
+                       key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""))
+        _rd_label = next((r.get("label") for r in (fx or {}).get("rounds") or []
+                          if r.get("round") == rn and r.get("label")),
+                         f"الجولة {rn}" if rn is not None else "")
+        next_title = f"{label}: {_rd_label}" if shown else ""
+        next_rows = [match_row(m, show_time=True, show_comp=False, show_date=True, card_link=False,
+                               link=match_url(m) if m.get("match_id") in _pool else None)
+                     for m in shown]
+        faq = []
+        for g in groups:
+            names = [r.get("team") for r in g["table"] if r.get("team")]
+            for tp in mine(g):
+                me = [x for x in names if _team_match(tp, {"home": x, "away": "", "competition": comp})]
+                if len(names) >= 3:
+                    others = [ar_team(x) for x in names if x != me[0]]
+                    faq.append((f"في أي مجموعة {tp['name']} في {label}؟",
+                                f"{tp['name']} في {g['name']} مع " + " و".join(others) + "."))
+        rule = QUALIFY.get(comp)
+        if rule:
+            two = "أول فريقين" if rule["slots"] == 2 else f"أول {rule['slots']} فرق"
+            faq.append((f"كم فريقًا يتأهل من كل مجموعة في {label}؟",
+                        f"يتأهل {two} من كل مجموعة إلى {rule['to']}."
+                        + (f" المجموعة التي فيها بلد مستضيف ({'، '.join(rule['hosts'])}) يتأهل منها فريق واحد فقط غير المستضيف."
+                           if rule.get("hosts") else "")))
+        faq.append((f"كم مجموعة في {label}؟",
+                    _cnt(len(groups), "مجموعة واحدة", "مجموعتان", "مجموعات", "مجموعة") + "."))
+        faq_html = (f'<section class="minfo faq"><h2>أسئلة شائعة عن مجموعات {esc(label)}</h2>'
+                    + "".join(f'<details><summary>{esc(q)}</summary><p>{esc(a)}</p></details>'
+                              for q, a in faq) + '</section>'
+                    + jsonld({"@context": "https://schema.org", "@type": "FAQPage",
+                              "mainEntity": [{"@type": "Question", "name": q,
+                                              "acceptedAnswer": {"@type": "Answer", "text": a}}
+                                             for q, a in faq]}))
+        more = []
+        if (fx or {}).get("rounds"):
+            more.append(f'<a href="/fixtures/{slug}.html">جدول مباريات {esc(label)} ومواعيد المباريات القادمة ←</a>')
+        from site_lib.league_numbers import READY as _NB_READY_G
+        if comp in _NB_READY_G:
+            more.append(f'<a href="/numbers/{slug}.html">إحصائيات {esc(label)} ←</a>')
+        seen = set()
+        for g in groups:
+            for tp in mine(g):
+                if tp["slug"] not in seen:
+                    seen.add(tp["slug"])
+                    more.append(f'<a href="/team/{tp["slug"]}.html">{esc(tp["name"])} ←</a>')
+        tables_html = "".join(str(b["table"]) for b in blocks)
+        write(f"standings/{slug}.html", render(
+            "standings_groups.html",
+            page_head=Markup(head(f"{title} | {SITE_NAME}", desc, SITE_BASE + url, active="leagues")),
+            crumbs_ld=Markup(breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
+                                            ("البطولات", SITE_BASE + "/leagues.html"),
+                                            (f"ترتيب مجموعات {label}", SITE_BASE + url)])),
+            label=label, season=season, hint=hint, groups=blocks, chips=len(blocks) > 4,
+            outlook=Markup(outlook_html(comp, label, groups, games)),
+            next_title=next_title, next_rows=[Markup(x) for x in next_rows],
+            faq=Markup(faq_html), more=[Markup(x) for x in more],
+            games_js=Markup(LT_GAMES_JS if 'class="lt-n"' in tables_html else ""),
+            page_foot=Markup(foot())))
+        urls.append(url)
+        _LASTMOD[url] = REF_TODAY
+        n += 1
+    print(f"  + group standings pages: {n}")
+
+
 def leagues_page(_comps_with_table, fx_by_comp, urls):
     """/leagues - «البطولات», FotMob's Leagues tab (user, 2026-10-26: «عايز
     يكون فيه تاب اسمها البطولات»): every competition we cover, one row each,
@@ -232,13 +366,15 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
     its season's fixtures (/fixtures). A competition with neither (the CAF
     cups have no feed of their own yet) is left out, never a dead row.
     Domestic leagues first, then the continental and international ones."""
-    from site_lib.competitions import COMP_ORDER
+    from site_lib.competitions import COMP_ORDER, GROUP_PAGES as _GROUP_PAGES
     from site_lib.crests import comp_icon
     domestic, arab, rest = [], [], []
     for comp in sorted(COMP_SLUG, key=lambda c: (COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER), c)):
         slug = COMP_SLUG[comp]
         if comp in _comps_with_table:
             href, what = f"/standings/{slug}.html", "الترتيب والهدافون والمباريات"
+        elif comp in _GROUP_PAGES and os.path.exists(os.path.join(DIST, "standings", f"{slug}.html")):
+            href, what = f"/standings/{slug}.html", "ترتيب المجموعات والمباريات"
         elif (fx_by_comp.get(comp) or {}).get("rounds"):
             href, what = f"/fixtures/{slug}.html", "جدول المباريات"
         else:
@@ -388,6 +524,9 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
         _links = [f'<a href="/">مباريات اليوم ←</a>']
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
+        elif os.path.exists(os.path.join(DIST, "standings", f"{slug}.html")):
+            # the groups page (group_standings_pages runs before this function)
+            _links.append(f'<a href="/standings/{slug}.html">ترتيب مجموعات {esc(label)} كلها في صفحة واحدة ←</a>')
         from site_lib.league_numbers import READY as _NB_READY_FX
         if comp in _NB_READY_FX:
             _links.append(f'<a href="/numbers/{slug}.html">إحصائيات {esc(label)} ←</a>')

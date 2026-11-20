@@ -1,0 +1,37 @@
+{# /standings/<slug> for a GROUP competition (CAF Champions League, the
+   Confederation Cup, the Africa Cup qualifiers, the Nations League) - every
+   group's table on one page, none hidden behind a navigator (SEO review
+   2026-11-20: the tables lived only inside /fixtures/<slug>, under a «جدول
+   مباريات» title). Lines are joined with NO separator by site_lib.render:
+   break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/leagues.html">البطولات</a> › ترتيب مجموعات {{ label }}</nav>
+<h1 class="page-h">ترتيب مجموعات {{ label }} {{ season }}</h1>
+<p class="hintline">{{ hint }}</p>
+{% if chips %}
+<nav class="mp-jump" aria-label="المجموعات">{% for g in groups %}<a href="#g{{ g.num }}">{{ g.name }}</a>{% endfor %}</nav>
+{% endif %}
+{% for g in groups %}
+<section class="minfo gst" id="g{{ g.num }}">
+  <h2>{{ g.name }}: {{ g.teams }}</h2>
+  {{ g.table }}
+</section>
+{% endfor %}
+{{ outlook }}
+{% if next_rows %}
+<section class="minfo">
+  <h2>{{ next_title }}</h2>
+  <div class="mlist">
+    {% for row in next_rows %}
+    {{ row }}
+    {% endfor %}
+  </div>
+</section>
+{% endif %}
+{{ faq }}
+{% if more %}
+<p class="more-link">{% for link in more %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
+{% endif %}
+{{ games_js }}
+{{ page_foot }}

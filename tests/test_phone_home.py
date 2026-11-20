@@ -81,7 +81,7 @@ ck("10b the «البطولات» tab is on every page, to /leagues, lit on the l
    and 'href="/leagues.html" class="navtab nt-leagues is-active"' in nav("leagues"))
 lg_py = open("site_pages/leagues.py", encoding="utf-8").read()
 ck("10c /standings, /scorers and /fixtures light it; build() writes /leagues",
-   lg_py.count('active="leagues"') == 4 and "leagues_page(_comps_with_table, fx_by_comp, urls)"
+   lg_py.count('active="leagues"') == 5 and "leagues_page(_comps_with_table, fx_by_comp, urls)"
    in open("build_site.py", encoding="utf-8").read())
 
 css = open("site_src/style.css", encoding="utf-8").read()

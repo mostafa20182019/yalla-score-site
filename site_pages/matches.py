@@ -458,7 +458,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         _cslug = COMP_SLUG.get(m.get("competition"))
         comp_href = ""
         if _cslug:
-            comp_href = (f"/standings/{_cslug}.html" if (stc and stc.get("table"))
+            from site_lib.competitions import GROUP_PAGES as _GP
+            comp_href = (f"/standings/{_cslug}.html"
+                         if ((stc and stc.get("table")) or m.get("competition") in _GP)
                          else f"/fixtures/{_cslug}.html")
         crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/")]
                                   + ([(comp, SITE_BASE + comp_href)] if comp_href else [])

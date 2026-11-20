@@ -21,7 +21,7 @@ from site_lib.urls import article_href, breadcrumb_ld, match_url
 
 
 def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
-               fx_by_comp=None, sc_by_comp=None, sc_ok=None, md_idx=None):
+               fx_by_comp=None, sc_by_comp=None, sc_ok=None, md_idx=None, groups_by_comp=None):
     """/team/<slug> - evergreen SEO hubs for the highest-volume Arabic query
     family: «أخبار الأهلي اليوم»، «مباريات الزمالك القادمة»، «نتيجة ريال مدريد».
     One page per curated club: latest news + next matches + recent results +
@@ -114,7 +114,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         og_img = (f"{SITE_BASE}/media/{_card}"
                   if os.path.exists(os.path.join(HERE, "media", _card)) else img)
         page_head = head(title, desc, SITE_BASE + t_url, image=og_img)
-        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
+        crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/"),
                                    (name, SITE_BASE + t_url)])
         _img = (f'<img class="club-crest" src="{esc(crest)}" alt="{esc(name)}" '
                 'width="64" height="64" loading="eager">' if crest else "")
@@ -153,6 +153,29 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                                     zeroed=st.get("zeroed"),
                                     form_map=forms.get(tp["league"], {}),
                                     embedded=True)
+        # the club's own GROUP in a group competition (SEO review 2026-11-20:
+        # /team/pyramids and /team/al-hilal-sudan never said «المجموعة» while
+        # the two share a Champions League group). Its table, linking the
+        # page that holds every group.
+        group_tables = []
+        from site_lib.competitions import GROUP_PAGES
+        from site_lib.names import ar_team as _ar
+        for _gc in COMP_SLUG:
+            if _gc not in GROUP_PAGES:
+                continue
+            for _g in (groups_by_comp or {}).get(_gc) or []:
+                _in = [r for r in _g.get("table") or []
+                       if _team_match(tp, {"home": r.get("team") or "", "away": "", "competition": _gc})]
+                if len(_in) != 1:
+                    continue
+                _gt = standings_table(_gc, _g["table"], embedded=True, title=_g["name"])
+                _b = f'<bdi>{esc(_ar(_in[0].get("team")))}</bdi>'
+                _gt = _gt.replace(_b, f'<bdi class="lt-me">{esc(_ar(_in[0].get("team")))}</bdi>', 1)
+                group_tables.append({
+                    "heading": Markup(f'<a href="/standings/{COMP_SLUG[_gc]}.html">ترتيب {esc(_g["name"])} في '
+                                      f'{esc(comp_label(_gc))} ←</a>'),
+                    "table": Markup(_gt)})
+                break
         # computed FAQ (2026-11-12): the club queries GSC shows are questions
         # the page already answers in rows - «نتيجة طرابزون سبور اليوم»،
         # «آخر مباراة لطرابزون»، «مباريات طرابزون سبور القادمة». Said once in
@@ -245,6 +268,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             up_rows=[Markup(x) for x in up_rows], last_rows=[Markup(x) for x in last_rows],
             news=news_items, has_table=bool(st and st.get("table")),
             table_heading=Markup(table_heading), table=Markup(table),
+            group_tables=group_tables,
             others=[{"slug": Markup(o["slug"]), "name": o["name"]} for o in others],
             club_ld=Markup(club_ld), faq=Markup(faq_html), popup=Markup(popup),
             h2h=h2h_link, hub_links=hub_links,

@@ -135,7 +135,9 @@ if os.path.isdir(os.path.join(dist, "team")):
     linked = set()
     for f in os.listdir(os.path.join(dist, "standings")):
         linked |= set(re.findall(r'<a class="lt-tb" href="/team/([a-z0-9-]+)"', rd("standings", f)))
-    clubs = {tp["slug"] for tp in TEAM_PAGES if tp["slug"] not in ("egypt", "sudan")}
+    # the national teams too since the GROUP pages (2026-11-20): the Africa
+    # qualifiers' tables link /team/egypt and /team/sudan
+    clubs = {tp["slug"] for tp in TEAM_PAGES}
     ck("22 built standings pages link the club pages of the leagues we hold a table for", len(linked) >= 10 and linked <= clubs,
        str(sorted(linked)))
     tables = [f for f in os.listdir(os.path.join(dist, "team")) if 'class="minfo squad"' in rd("team", f)]
