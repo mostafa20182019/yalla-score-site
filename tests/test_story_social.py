@@ -170,8 +170,9 @@ _S.question_of = _orig_q
 import fb_post as fp        # noqa: E402
 src = open("fb_post.py", encoding="utf-8").read()
 ck("25 the kinds are registered and are exactly fb_post's SOCIAL_KINDS",
-   tuple(SS.SOCIAL_KINDS) == fp.SOCIAL_KINDS and len(SS.SOCIAL_KINDS) == 6
-   and [k for k, _ in SE.DETECTORS][-6:] == list(SS.SOCIAL_KINDS) and SS.KIND_CLOCK not in SS.SOCIAL_KINDS)
+   tuple(SS.SOCIAL_KINDS) == fp.SOCIAL_KINDS and len(SS.SOCIAL_KINDS) == 5
+   and [k for k, _ in SE.DETECTORS][-5:] == list(SS.SOCIAL_KINDS) and SS.KIND_CLOCK not in SS.SOCIAL_KINDS
+   and SS.KIND_MOVERS not in [k for k, _ in SE.DETECTORS])        # the movers are a reel (movers_reel.py)
 os.environ.pop("FB_SOCIAL", None)
 off = fp.social_on()
 os.environ["FB_SOCIAL"] = "on"
@@ -218,6 +219,7 @@ JR = [res(1, "Burnley FC", "Arsenal FC", 1, 0, "2026-11-07", PLG), res(2, "Brent
       res(3, "Everton FC", "Leeds United FC", 3, 0, "2026-11-08", PLG), res(4, "Fulham FC", "Chelsea FC", 2, 0, "2026-11-07", PLG)]
 # before: Arsenal 15, Chelsea 14, Everton 13, Liverpool 12, Fulham 6, Leeds 6 (level), Brentford 4, Burnley 2
 # Everton 3 -> 1 (up two); Brentford 7 -> 6, Burnley 8 -> 8
+JT = [dict(r, played=10) for r in JT]        # the table holds round 10 (a lagging table gives no event)
 JFX = [{"competition": PLG, "rounds": [{"round": 10, "matches": JR}, FXM[0]["rounds"][1]]}]
 ev = SS.round_movers([], JFX, [{"competition": PLG, "table": JT}], datetime.date(2026, 11, 9))
 t = ev[0]["text"] if ev else ""

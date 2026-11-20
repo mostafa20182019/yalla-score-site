@@ -914,12 +914,13 @@ DETECTORS = [
     (KIND_STREAK, lambda d, today: club_streak(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
     # «ساعة الأهداف» (goal_clock.py, 2026-11-20): the night's match on the goal dial, a CARD
     (SS.KIND_CLOCK, lambda d, today: SS.goal_clock_night(d.get("matches"), d.get("archive"), d.get("details"), today)),
+    # «ساعة أهداف الشهر» (club_clock.py, 2026-11-20): one club a day in a month's first days, a CARD
+    (SS.KIND_MONTH, lambda d, today: SS.club_month(d.get("matches"), d.get("archive"), d.get("details"), today)),
     # the social review's kinds (story_social.py, 2026-11-19) - behind FB_SOCIAL in fb_post.py
     (SS.KIND_NUMBER, lambda d, today: SS.night_number(d.get("matches"), d.get("archive"), d.get("stats"), today)),
     (SS.KIND_SCENARIO, lambda d, today: SS.round_scenario(d.get("matches"), d.get("fixtures"), d.get("standings"), today)),
     (SS.KIND_SUDAN, lambda d, today: SS.sudan_corner(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
     (SS.KIND_QUESTION, lambda d, today: SS.goon_question(d.get("matches"), d.get("archive"), today)),
-    (SS.KIND_MOVERS, lambda d, today: SS.round_movers(d.get("matches"), d.get("fixtures"), d.get("standings"), today)),
     (SS.KIND_ABROAD, lambda d, today: SS.abroad_week(d.get("matches"), d.get("archive"), today)),
 ]
 

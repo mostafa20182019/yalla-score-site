@@ -42,7 +42,21 @@ RECENT_DAYS = 4          # a round review older than this is history, not news
 # the Turkish league second since 2026-11-19 - writer review: a corner nobody
 # holds in Arabic, one «الجولة بالأرقام» a round is its whole editorial share)
 LEAGUES = ["Egyptian Premier League", "Turkish Super Lig", "Premier League", "Primera Division", "Serie A",
-           "Bundesliga", "Ligue 1", "Saudi Pro League"]
+           "Bundesliga", "Ligue 1", "Saudi Pro League", "Iraq Stars League"]
+# A league that gets a piece every N rounds, not every round (user 2026-11-20,
+# the writer review's share for the Iraqi league: «الجولة بالأرقام» every two
+# rounds). --pick and --list offer only its rounds divisible by N; --brief
+# still builds any completed round asked for by hand.
+ROUND_EVERY = {"Iraq Stars League": 2}
+
+
+def on_schedule(comp, rnd):
+    """Is this round one the league's rhythm writes about?"""
+    n = ROUND_EVERY.get(comp, 1)
+    try:
+        return n <= 1 or int(rnd) % n == 0
+    except (TypeError, ValueError):
+        return True
 EUROPE = ("Premier League", "Primera Division", "Serie A", "Bundesliga", "Ligue 1")
 DATA_SOURCE_NAME = "بيانات الجون"
 
@@ -302,7 +316,8 @@ def main():
         fixtures = load("fixtures.json")
         done = covered_keys(load("articles.json"))
         cut = (datetime.date.fromisoformat(REF_TODAY) - datetime.timedelta(days=RECENT_DAYS)).isoformat()
-        rows = sorted(completed_rounds(fixtures), key=lambda t: (LEAGUES.index(t[0]), -(t[1] or 0)))
+        rows = sorted((t for t in completed_rounds(fixtures) if on_schedule(t[0], t[1])),
+                      key=lambda t: (LEAGUES.index(t[0]), -(t[1] or 0)))
         if args.list:
             for comp, rnd, d0, d1, _ in rows:
                 k = round_key(comp, rnd)

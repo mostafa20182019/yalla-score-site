@@ -109,7 +109,7 @@ ck("15 covered = an article whose sources carry the pack's key",
    DB.covered_keys([{"sources": [{"note": "data:number:turkey:11"}, {"note": "round:egypt:5"}, "x"]}, {"sources": None}])
    == {"data:number:turkey:11"})
 ck("16 the Turkish league is second in the round pick, after the Egyptian",
-   RB.LEAGUES[:2] == ["Egyptian Premier League", "Turkish Super Lig"] and len(RB.LEAGUES) == len(set(RB.LEAGUES)) == 8)
+   RB.LEAGUES[:2] == ["Egyptian Premier League", "Turkish Super Lig"] and len(RB.LEAGUES) == len(set(RB.LEAGUES)) == 9)        # + the Iraqi league, every two rounds (2026-11-20)
 prompt = io.open(".github/prompts/daily-article.md", encoding="utf-8").read()
 ck("17 the daily prompt knows the tool, its four kinds, the publish flag and the one-a-day limit",
    all(x in prompt for x in ("data_brief.py --list", "standing <club>", "number <league>", "h2h <pair>", "minutes <club>",

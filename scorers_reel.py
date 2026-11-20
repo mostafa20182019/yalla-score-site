@@ -69,6 +69,51 @@ def scorers_for(comp, path=None):
     raise SystemExit(f"no scorers for {comp!r} in scorers.json")
 
 
+# THE SAME RACE FOR THE ASSISTS (user 2026-11-20: the social review's «تناوب
+# ريل الهدافين مع صنّاع الأهداف» - the reel had the same shape every round).
+# An ODD round shows the scorers, an EVEN round the assist makers, when the
+# feed's assists chart is worth a race (ASSISTS_MIN names, a leader on
+# ASSISTS_TOP or more); otherwise the scorers again. One reel a round either
+# way - the store key does not change.
+ASSISTS_MIN, ASSISTS_TOP, ASSISTS_TIE_MAX = 3, 2, 3
+WORDS = {
+    "goals": {"title": "سباق الهدافين", "head": "هدافو", "of": "هدافي", "outro": "ترتيب الهدافين كامل",
+              "ask": "مين هيكسب لقب الهداف في الآخر؟ قولنا في الكومنتات 👇", "link": "ترتيب الهدافين كامل",
+              "tags": lambda tag: f"#الجون #هدافي_{tag} #{tag} #سباق_الهدافين"},
+    "assists": {"title": "سباق صنّاع الأهداف", "head": "صنّاع أهداف", "of": "صنّاع أهداف", "outro": "ترتيب صنّاع الأهداف كامل",
+                "ask": "مين أحسن صانع أهداف في الدوري؟ قولنا في الكومنتات 👇", "link": "الهدافون وصنّاع الأهداف",
+                "tags": lambda tag: f"#الجون #صناع_أهداف_{tag} #{tag} #صناع_الأهداف"},
+}
+
+
+def assists_for(comp, path=None):
+    """The feed's assists chart in the scorers' shape (`goals` = assists), or []."""
+    try:
+        d = json.load(open(path or os.path.join(HERE, "data", "assists.json"), encoding="utf-8"))
+    except (OSError, ValueError):
+        return []
+    for block in d.get("results") or []:
+        for it in block.get("items") or []:
+            if it.get("competition") == comp and it.get("assists"):
+                return [clean(dict(s, goals=s.get("value") if s.get("value") is not None else s.get("goals")))
+                        for s in it["assists"]]
+    return []
+
+
+def what_for(rnd, assists):
+    """"assists" on an even round with a chart worth a race, else "goals"."""
+    try:
+        even = int(rnd) % 2 == 0
+    except (TypeError, ValueError):
+        return "goals"
+    rows = [a for a in assists or [] if a.get("goals", 0) >= 1]
+    if not even or len(rows) < ASSISTS_MIN:
+        return "goals"
+    top = max(a["goals"] for a in rows)
+    # six players level on three is a list, not a race (the Egyptian chart, 2026-11-20)
+    return "assists" if top >= ASSISTS_TOP and sum(1 for a in rows if a["goals"] == top) <= ASSISTS_TIE_MAX else "goals"
+
+
 def clean(s):
     """The feed's names carry stray spaces («كيليان مبابي ») - strip them."""
     out = dict(s)
@@ -284,7 +329,8 @@ def pair_line(lay, cy, text, num, weight, size, fill):
     d.text((x0, cy), str(num), font=f, fill=fill)
 
 
-def build(scorers, comp, label, rnd=None, shots=None):
+def build(scorers, comp, label, rnd=None, shots=None, what="goals"):
+    wd = WORDS[what]
     bg = R.background()
     ctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
     rows = rows_for(scorers)
@@ -295,7 +341,7 @@ def build(scorers, comp, label, rnd=None, shots=None):
     def intro(t):
         im = bg.copy()
         M.header(im)
-        M.big_at(im, t, "سباق الهدافين", 600, 150)
+        M.big_at(im, t, wd["title"], 600, 150 if what == "goals" else 124)
         M.lines_block(im, t, [label], (880,), weight="ExtraBold", size=64, t0=0.35)
         if rnd:
             e = M.ease(t, 0.35 + M.STAGGER, M.FADE)
@@ -309,13 +355,13 @@ def build(scorers, comp, label, rnd=None, shots=None):
         im = bg.copy()
         M.header(im)
         d = ImageDraw.Draw(im)
-        C.draw_center(d, W / 2, 425, C.ar(f"هدافو {label}"), C.font("ExtraBold", 44), C.WHITE)
+        C.draw_center(d, W / 2, 425, C.ar(f"{wd['head']} {label}"), C.font("ExtraBold", 44), C.WHITE)
         for i, r in enumerate(rows):
             row(im, t, r, ROW_TOP + i * ROW_H, 0.1 + i * 0.12, maxg, shots)
         return im
 
     def outro(t):
-        sc = {"kind": "cta", "secs": OUTRO, "lines": ["ترتيب الهدافين كامل", "لحظة بلحظة على الجون"]}
+        sc = {"kind": "cta", "secs": OUTRO, "lines": [wd["outro"], "لحظة بلحظة على الجون"]}
         return M.scene(sc, t, ctx)
 
     return [(intro, INTRO, True), (race, RACE, True), (outro, OUTRO, False)]
@@ -330,23 +376,34 @@ def goals_word(n):
     return f"{n} أهداف" if 3 <= n <= 10 else f"{n} هدفًا"
 
 
-def caption(scorers, comp, label, rnd=None):
+def assists_word(n):
+    if n == 1:
+        return "تمريرة حاسمة واحدة"
+    if n == 2:
+        return "تمريرتين حاسمتين"
+    return f"{n} تمريرات حاسمة" if 3 <= n <= 10 else f"{n} تمريرة حاسمة"
+
+
+def caption(scorers, comp, label, rnd=None, what="goals"):
     from site_lib.competitions import COMP_SLUG
+    wd = WORDS[what]
+    word = goals_word if what == "goals" else assists_word
+    icon = "⚽" if what == "goals" else "🎯"
     rs = ranked(scorers)
     top = [r for r in rs if r["rank"] == 1]
     g = top[0]["goals"]
     if len(top) == 1:
-        hook = f"⚽ {top[0]['name']} يتصدر هدافي {label} برصيد {goals_word(g)}"
+        hook = f"{icon} {top[0]['name']} يتصدر {wd['of']} {label} برصيد {word(g)}"
     else:
-        hook = f"⚽ {' و'.join(r['name'] for r in top)} يتقاسمون صدارة هدافي {label} برصيد {goals_word(g)}"
+        hook = f"{icon} {' و'.join(r['name'] for r in top)} يتقاسمون صدارة {wd['of']} {label} برصيد {word(g)}"
     lines = [hook + (f" بعد الجولة {rnd}" if rnd else ""), ""]
     for r in [r for r in rs if r["rank"] <= 3]:
-        lines.append(f"{r['rank']}. {r['name']} ({r['team']}) - {goals_word(r['goals'])}")
-    lines += ["", "مين هيكسب لقب الهداف في الآخر؟ قولنا في الكومنتات 👇", ""]
+        lines.append(f"{r['rank']}. {r['name']} ({r['team']}) - {word(r['goals'])}")
+    lines += ["", wd["ask"], ""]
     slug = COMP_SLUG.get(comp)
-    lines.append(f"ترتيب الهدافين كامل: https://elgoon.com/scorers/{slug}.html" if slug else "https://elgoon.com")
+    lines.append(f"{wd['link']}: https://elgoon.com/scorers/{slug}.html" if slug else "https://elgoon.com")
     tag = label.replace(" ", "_")
-    lines.append(f"#الجون #هدافي_{tag} #{tag} #سباق_الهدافين")
+    lines.append(wd["tags"](tag))
     return "\n".join(lines) + "\n"
 
 
@@ -498,9 +555,14 @@ def auto(dry=False, out_dir=None):
         if not scorers:
             print(f"scorers reel {comp} R{rnd}: no scorers in the data")
             continue
-        cap = caption(scorers, comp, label, rnd)
+        # an even round is the assist makers' turn, when their chart is worth a race
+        asst = assists_for(comp)
+        what = what_for(rnd, asst)
+        if what == "assists":
+            scorers = asst
+        cap = caption(scorers, comp, label, rnd, what)
         if dry or not token:
-            print(f"scorers reel {comp} R{rnd}: would be posted ({'dry run' if dry else 'FB_PAGE_TOKEN not set'})")
+            print(f"scorers reel {comp} R{rnd} ({what}): would be posted ({'dry run' if dry else 'FB_PAGE_TOKEN not set'})")
             print(cap)
             continue
         if not store.claim(R.KIND, ref, title=f"scorers {label} R{rnd}"):
@@ -508,7 +570,7 @@ def auto(dry=False, out_dir=None):
             continue
         path = os.path.join(out_dir, f"scorers-{re.sub(r'[^a-z0-9]+', '-', comp.lower())}-R{rnd}.mp4")
         try:
-            scenes = build(scorers, comp, label, rnd)
+            scenes = build(scorers, comp, label, rnd, what=what)
             secs = sum(x[1] for x in scenes)
             if not M.encode({"id": ref}, None, path, secs, frame_iter=D.frames(scenes)):
                 store.release(R.KIND, ref)
@@ -536,18 +598,22 @@ def main():
     ap.add_argument("--png", help="write stills (intro, race mid/end, outro) into this folder, no MP4")
     ap.add_argument("--auto", action="store_true", help="post the reel of every league whose round just ended (fb-post.yml, nightly)")
     ap.add_argument("--dry", action="store_true", help="with --auto: say what would be posted")
+    ap.add_argument("--assists", action="store_true", help="the assist makers' race instead of the scorers'")
     args = ap.parse_args()
     if args.auto:
         return auto(dry=args.dry)
-    scorers = scorers_for(args.comp)
+    what = "assists" if args.assists else "goals"
+    scorers = assists_for(args.comp) if args.assists else scorers_for(args.comp)
+    if not scorers:
+        print(f"no assists chart for {args.comp}"); return 1
     label = comp_label(args.comp)
     rnd = round_for(args.comp)
-    scenes = build(scorers, args.comp, label, rnd)
+    scenes = build(scorers, args.comp, label, rnd, what=what)
     secs = sum(s[1] for s in scenes)
     intro, race, outro = (s[0] for s in scenes)
     stills = [("1-intro", intro(INTRO - 0.05)), ("2-race-mid", race(GROW_T0 + GROW * 0.45)),
               ("3-race-end", race(RACE - 0.05)), ("4-outro", outro(OUTRO - 0.05))]
-    cap = caption(scorers, args.comp, label, rnd)
+    cap = caption(scorers, args.comp, label, rnd, what)
     if args.png:
         os.makedirs(args.png, exist_ok=True)
         for name, im in stills:

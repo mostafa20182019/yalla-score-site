@@ -1255,7 +1255,7 @@ FORM_KINDS = ("club-form", "club-streak")      # story_events.KIND_FORM / KIND_S
 # the social review's kinds (story_social.py, 2026-11-19): «رقم الليلة», «سيناريو
 # الجولة», «ركن السودان», «سؤال الجون». Their own switch, FB_SOCIAL, for the
 # same reason FB_FORM exists: he reads a new kind's wording before it is live.
-SOCIAL_KINDS = ("night-number", "round-scenario", "sudan-corner", "goon-question", "round-movers", "abroad-week")
+SOCIAL_KINDS = ("night-number", "round-scenario", "sudan-corner", "goon-question", "abroad-week")
 
 
 SOCIAL_CARD_KINDS = ("night-number", "goon-question")       # social_card.CARD_KINDS
@@ -1294,6 +1294,13 @@ def post_event(token, ev):
             buf = io.BytesIO()
             GClock.render(ev["match"], ev["goals"]).save(buf, "JPEG", quality=90, optimize=True)
             return post_photo(token, buf.getvalue(), event_text(ev))
+        except Exception as e:  # noqa: BLE001
+            print(f"{ev['kind']} {ev['ref']}: card failed ({e}) - posting the text")
+    # «ساعة أهداف الشهر»: the club's month on the dial (club_clock.py)
+    if ev.get("kind") == "club-month-clock":
+        try:
+            import club_clock as CClock
+            return post_photo(token, CClock.render_bytes(ev["info"]), event_text(ev))
         except Exception as e:  # noqa: BLE001
             print(f"{ev['kind']} {ev['ref']}: card failed ({e}) - posting the text")
     # «رقم الليلة» and «سؤال الجون» as a CARD (social_card.py) with the text as

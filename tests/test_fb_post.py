@@ -406,7 +406,7 @@ print("23 OK: a coach leaving the NT -> his record from the archive, with the wi
 # be written from, and the post text is render()ed from that data - so a
 # detector added later gets the store, the switch, --dry and --pending for free
 assert [k for k, _ in SE.DETECTORS] == [SE.KIND_CUP, SE.KIND_HALF, SE.KIND_COACH, SE.KIND_OTD, SE.KIND_FORM, SE.KIND_STREAK,
-                                        SE.SS.KIND_CLOCK, *SE.SS.SOCIAL_KINDS] and tuple(SE.SS.SOCIAL_KINDS) == fp.SOCIAL_KINDS   # story_social.py, tests/test_story_social.py
+                                        SE.SS.KIND_CLOCK, SE.SS.KIND_MONTH, *SE.SS.SOCIAL_KINDS] and tuple(SE.SS.SOCIAL_KINDS) == fp.SOCIAL_KINDS   # story_social.py, tests/test_story_social.py
 SE.load_data = lambda: _D(fixtures=CUP, archive=[plain, big, derby] + nt, articles=[art], moments=[mo],
                           standings=[{"competition": "Egyptian Premier League", "season_label": "2026/27", "table": tbl}], scorers=SC)
 evs = [e for e in SE.detect(today=datetime.date(2026, 11, 8)) if e["kind"] not in fp.SOCIAL_KINDS]

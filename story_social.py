@@ -44,7 +44,9 @@ KIND_SUDAN = "sudan-corner"
 KIND_QUESTION = "goon-question"
 KIND_MOVERS = "round-movers"
 KIND_ABROAD = "abroad-week"
-SOCIAL_KINDS = (KIND_NUMBER, KIND_SCENARIO, KIND_SUDAN, KIND_QUESTION, KIND_MOVERS, KIND_ABROAD)
+# «الصاعد والهابط» is a REEL since 2026-11-20 (movers_reel.py posts it nightly
+# with this event's text as its caption) - no longer a text post of its own
+SOCIAL_KINDS = (KIND_NUMBER, KIND_SCENARIO, KIND_SUDAN, KIND_QUESTION, KIND_ABROAD)
 
 # ---- «رقم الليلة»
 XG_GAP = 1.0                 # the loser's xG minus the winner's, at least
@@ -407,6 +409,11 @@ def round_movers(matches, fixtures, standings, today=None, comps=MOVERS_COMPS):
             others = [m for r2, ms2 in rounds if r2 != rn for m in ms2]
             if any(SE._started(m) and str(m.get("kickoff") or "")[:10] >= days[0] for m in others):
                 continue                    # the table has moved on: it is not this round's table
+            # the table must already hold this round (the feed's table can
+            # lag its results by a refresh): else «before» would be rebuilt
+            # from a table that is itself the one before
+            if max(int(r.get("played") or 0) for r in st["table"]) < int(rn or 0):
+                continue
             moves = [(t, b, a, b - a) for t, b, a in round_moves(st["table"], ms)]
             up = sorted((x for x in moves if x[3] >= MOVERS_MIN), key=lambda x: (-x[3], x[2]))[:MOVERS_EACH]
             down = sorted((x for x in moves if x[3] <= -MOVERS_MIN), key=lambda x: (x[3], x[2]))[:MOVERS_EACH]
@@ -421,7 +428,9 @@ def round_movers(matches, fixtures, standings, today=None, comps=MOVERS_COMPS):
                 SE.comp_url(comp, "standings"), "الجدول كاملًا",
                 [SE.comp_tag(comp)] + [SE._club_tag(x[0]) for x in (up + down)[:2]],
                 competition=comp, round=rn, season=season,
-                moves=[{"team": t, "before": b, "after": a} for t, b, a, _ in up + down])))
+                moves=[{"team": t, "before": b, "after": a,
+                        "crest": next((r.get("crest") for r in st["table"] if SE.ar_team(r.get("team") or "") == t), None)}
+                       for t, b, a, _ in up + down])))
     found.sort(key=lambda x: -x[0])
     return [ev for _, ev in found[:MOVERS_MAX]]
 
@@ -549,3 +558,42 @@ def goal_clock_night(matches, archive, details, today=None):
                      match={k: m.get(k) for k in ("match_id", "home", "away", "home_score", "away_score", "home_badge",
                                                   "away_badge", "competition", "kickoff")},
                      goals=goals)]
+
+
+# ---------------------------------------------------------------- «ساعة أهداف الشهر»
+# A club's whole month on one goal dial (club_clock.py; user 2026-11-20:
+# «اعمل 11»). One club a day in the first days of a month, for the month
+# before - the Egyptian three and الهلال السوداني, in this order.
+KIND_MONTH = "club-month-clock"
+MONTH_CLUBS = ("al-ahly", "zamalek", "pyramids", "al-hilal-sudan")
+MONTH_FROM_H = 18
+
+
+def club_month(matches, archive, details, today=None, clubs=MONTH_CLUBS):
+    """The club whose day it is (day 1 = the first of `clubs`, day 2 the
+    second ...), when its month before is whole in our data
+    (club_clock.month_info) - else nothing that day."""
+    import club_clock as CC
+    from site_lib.matchdata import match_details_index
+    SE = _se()
+    now = SE._now(today)
+    day = _cairo_day(now)
+    if day.day > len(clubs) or not _after(now, today, MONTH_FROM_H) or not details:
+        return []
+    slug = clubs[day.day - 1]
+    prev = (day.replace(day=1) - datetime.timedelta(days=1)).strftime("%Y-%m")
+    pool = {str(m.get("match_id")): dict(m, status=(m.get("status") or "FINISHED"))
+            for m in SE.results_pool(matches, archive) if m.get("match_id")}
+    info = CC.month_info(slug, prev, pool, match_details_index(details))
+    if not info:
+        return []
+    club, nf, na = info["club"], len(info["goals_for"]), len(info["goals_against"])
+    lines = [f"🎯 ساعة أهداف {club} في {CC.month_ar(prev)}.",
+             f"سجل {nf} واستقبل {na} في {CC._matches(info['matches'])}."]
+    top = max(info["bands_for"])
+    if top and info["bands_for"].count(top) == 1:
+        lo, hi = CC.BANDS[info["bands_for"].index(top)]
+        lines.append(f"أكثر ربع ساعة سجل فيه: من الدقيقة {lo} إلى {hi} (" + ("هدف واحد" if top == 1 else "هدفان" if top == 2 else f"{top} أهداف" if top <= 10 else f"{top} هدفًا") + ").")
+    return [SE.event(KIND_MONTH, f"{slug}:{prev}", f"ساعة أهداف {club} في {CC.month_ar(prev)}", lines,
+                     f"{SE.SITE}/team/{slug}", f"صفحة {club}", [SE._club_tag(club), "#ساعة_الأهداف"],
+                     info=info)]
