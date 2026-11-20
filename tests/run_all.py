@@ -80,6 +80,15 @@ def main(argv):
         if not ok:
             tail = "\n".join(out.strip().splitlines()[-15:])
             print("      " + tail.replace("\n", "\n      "), flush=True)
+            # On GitHub the failing test is also an ANNOTATION (2026-11-20): two
+            # Tests runs went red on tests that pass everywhere else, and a run's
+            # log needs a sign-in while its annotations are public - so the name
+            # and the failing line can be read without one.
+            if os.environ.get("GITHUB_ACTIONS"):
+                why = next((ln.strip() for ln in out.splitlines() if "FAIL" in ln or "Error" in ln), "")
+                last = (out.strip().splitlines() or [""])[-1].strip()
+                msg = (why or last)[:300].replace("%", "%25").replace("\r", " ").replace("\n", " ")
+                print(f"::error title=FAIL {name}::{msg}", flush=True)
     failed = [r for r in results if not r[1]]
     print(f"\n{len(results) - len(failed)} passed, {len(failed)} failed in {time.time() - t_all:.0f}s")
 
