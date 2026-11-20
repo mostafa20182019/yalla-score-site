@@ -40,7 +40,13 @@ M = [
 rows = TS.pick_today(M, today=T)
 ids = [m["match_id"] for m in rows]
 ck("1 only today's matches, postponed left out, tomorrow left out", set(ids) == {"1", "2", "3", "4", "7"}, str(ids))
-ck("2 live first", ids[0] == "2")
+ck("2 a curated club's live match first", ids[0] == "2")
+# 2026-11-20: OUR clubs before somebody else's live match - the strip under a
+# Real Madrid story was eight live under-17 and Iraqi matches
+_other_live = dict(M[2], match_id="9", status="LIVE")
+_ids2 = [m["match_id"] for m in TS.pick_today(M + [_other_live], today=T)]
+ck("2b a curated club's match still to be played stands before another side's live match",
+   _ids2.index("1") < _ids2.index("9") and _ids2.index("4") < _ids2.index("9"), str(_ids2))
 ck("3 then the curated clubs (Real Madrid, Arsenal) before the others", ids[1:3] == ["1", "4"] or ids[1:3] == ["4", "1"], str(ids))
 from site_lib.competitions import COMP_ORDER             # noqa: E402
 _o = lambda c: COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER)
@@ -85,7 +91,7 @@ import site_lib.cards as CARDS
 pills = CARDS.follow_pills()
 withp = TS.today_cards(M, today=T, pills=pills)
 ck("19b the follow pills ride on the heading row, the all-matches link sits UNDER the cards (user 2026-10-23)",
-   'class="nf-fb"' in pills and 'class="nf-tg"' in pills and withp.find('class="nf-fb"') < withp.find("</div>")
+   'class="nf-fb"' in pills and withp.find('class="nf-fb"') < withp.find("</div>")
    and withp.find('class="tc-row"') < withp.find('class="blk-more"') < withp.find("كل المباريات ←")
    and 'class="nf-fb"' not in cards)
 ck("19c the title row below goes without them when asked", "nf-fb" not in CARDS.news_filter_bar("x", pills=False) and "nf-fb" in CARDS.news_filter_bar("x"))

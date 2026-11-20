@@ -384,9 +384,9 @@ def leagues_page(_comps_with_table, fx_by_comp, urls):
     groups = [(t, rows) for t, rows in (("الدوريات الأوروبية", domestic), ("الدوريات العربية", arab),
                                         ("البطولات القارية والدولية", rest)) if rows]
     page_head = Markup(head(f"البطولات: الترتيب والهدافون ومواعيد المباريات | {SITE_NAME}",
-                            "كل البطولات على الجون: الدوري المصري والإنجليزي والإسباني والإيطالي "
-                            "والألماني والفرنسي والتركي والسعودي ودوري أبطال أوروبا - الترتيب "
-                            "والهدافون ومواعيد المباريات لكل بطولة.",
+                            # the Arab leagues and the African cups by name (SEO review 2026-11-20)
+                            "الدوري المصري والسعودي والمغربي والجزائري والتونسي والعراقي، الدوريات "
+                            "الأوروبية، وأبطال أفريقيا وأوروبا: الترتيب والهدافون ومواعيد المباريات.",
                             SITE_BASE + "/leagues.html", active="leagues"))
     write("leagues.html", render("leagues.html", page_head=page_head, groups=groups,
                                  page_foot=Markup(foot())))

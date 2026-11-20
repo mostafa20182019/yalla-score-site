@@ -281,6 +281,15 @@ def follow_pills():
           'd="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.8l-4.6-3.4-2.2 2.1c-.3.3-.5.5-.9.5l.3-4.6L18.2 7'
           'c.4-.3-.1-.5-.6-.2L7.4 13.2 3 11.8c-1-.3-1-1 .2-1.4l17.3-6.7c.8-.3 1.6.2 1.4 1.6z"/>'
           '</svg></a>')
+    # the channel is paused (tg_post.CHANNEL_PAUSED, user 2026-11-13): an icon
+    # that opens a channel with nothing new is a dead end; it comes back the
+    # day the flag is lifted (site review 2026-11-20)
+    try:
+        import tg_post as _tgp
+        if getattr(_tgp, "CHANNEL_PAUSED", False):
+            return fb
+    except Exception:                                     # noqa: BLE001
+        pass
     return fb + tg
 
 

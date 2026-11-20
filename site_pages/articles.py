@@ -42,6 +42,8 @@ def article_pages(articles, articles_all, matches, urls):
     _MOVED_LINKS.update({str(x["article_id"]): f"/m/{x['match_id']}"
                          for x in articles_all if is_match_piece(x)})
     n_thin = 0
+    from site_lib.articles import drop_dead_links
+    _live_ids = {str(x.get("article_id")) for x in articles}
     # «مباريات اليوم» under every article body (2026-10-18): one strip, built once
     from site_lib.today_strip import today_strip
     # the Telegram line under an article only while the channel posts
@@ -181,7 +183,7 @@ def article_pages(articles, articles_all, matches, urls):
         if a.get("updated_ts"):
             _upd = (f' · <span class="a-upd">آخر تحديث <time datetime="{esc(a["updated_ts"])}">'
                     f'{esc(str(a["updated_ts"])[:10])}</time></span>')
-        body = Markup(fix_moved_links(a.get("body")) or "")
+        body = Markup(drop_dead_links(fix_moved_links(a.get("body")), _live_ids) or "")
         _src = [s for s in (a.get("sources") or []) if isinstance(s, dict) and s.get("name")]
         if not _src and a.get("kind") in ("preview", "report"):
             _src = match_data_sources(a, _mcomp.get(str(a.get("match_id")), ""))
@@ -205,7 +207,9 @@ def article_pages(articles, articles_all, matches, urls):
                                          if _bi else '<span class="al-th noimg">⚽</span>'),
                             "when": Markup(_bt) if _bt else ""})
         from urllib.parse import quote as _q
-        _share = "https://wa.me/?text=" + _q(f'{a["title"]} {url}')
+        # the clean address, as the share sheet gets it (site review 2026-11-20:
+        # WhatsApp was handed /a/1211.html)
+        _share = "https://wa.me/?text=" + _q(f'{a["title"]} {url[:-5] if url.endswith(".html") else url}')
         _ahtml = render(
             "article.html",
             page_head=page_head, article_ld=article_ld, crumbs_ld=crumbs_ld, crumbs=crumbs,

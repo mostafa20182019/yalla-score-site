@@ -101,6 +101,17 @@ ck("13 phones: the bottom bar, and the home is the matches column only",
 ck("13b the Facebook + Telegram icons sit in the header beside the bell, on every page (user 2026-10-26)",
    '</nav><span class="head-social"><a class="nf-fb"' in shell.head("t", "d", "https://x/", active="news")
    and ".head-social{margin-inline-start:auto" in glob)
+# the Telegram icon and the footer link show only while the channel posts
+# (2026-11-20; tg_post.CHANNEL_PAUSED since 2026-11-13) - and come back with it
+import site_lib.cards as _cards       # noqa: E402
+import tg_post as _tgp                # noqa: E402
+_was = _tgp.CHANNEL_PAUSED
+_tgp.CHANNEL_PAUSED = True
+_off = ('class="nf-tg"' not in _cards.follow_pills() and "تيليجرام" not in shell.foot())
+_tgp.CHANNEL_PAUSED = False
+_on = ('class="nf-tg"' in _cards.follow_pills() and "تيليجرام" in shell.foot())
+_tgp.CHANNEL_PAUSED = _was
+ck("13c a paused Telegram channel has no icon and no footer link; a live one has both", _off and _on)
 
 # ---- the desktop home (2026-10-26, «زى fotmob على الكمبيوتر»)
 from site_lib.today_strip import match_centre         # noqa: E402

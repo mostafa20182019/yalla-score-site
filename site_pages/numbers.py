@@ -29,7 +29,13 @@ def numbers_pages(bycomp, md_idx, season, fx_by_comp, st_by_comp, urls):
         r_txt = _cnt(nb["red"], "بطاقة حمراء واحدة", "بطاقتان حمراوان", "بطاقات حمراء", "بطاقة حمراء")
         g_txt = _cnt(nb["goals"], "هدف واحد", "هدفان", "أهداف", "هدفًا")
         top = nb["booked"][0] if nb["booked"] else None
-        title = f"إحصائيات {label} {_season}: الإنذارات والطرد وأهداف آخر ربع ساعة | {SITE_NAME}"
+        # whole in the results (SEO review 2026-11-20: 70-79 characters, cut
+        # mid-phrase) - the longest form that fits 62, the league always first
+        _t = next((t for t in (f"إحصائيات {label} {_season}: الإنذارات والطرد وأهداف آخر ربع ساعة",
+                               f"إحصائيات {label} {_season}: الإنذارات والطرد والأهداف",
+                               f"إحصائيات {label} {_season}: الإنذارات والطرد",
+                               f"إحصائيات {label} {_season}") if len(t) <= 62), f"إحصائيات {label}")
+        title = f"{_t} | {SITE_NAME}"
         desc = (f"إحصائيات {label} {_season} من {m_txt(nb['n'])}: {y_txt} و{r_txt}."
                 + (f" الأكثر إنذارات: {top[0]} ({top[1]}) بـ{top[2]}." if top else "")
                 + f" وأهداف آخر ربع ساعة: {nb['late']} من {nb['goals']}.")

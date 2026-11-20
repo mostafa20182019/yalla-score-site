@@ -26,7 +26,11 @@ from PIL import Image, ImageDraw, ImageFilter          # noqa: E402
 
 W, H = 1080, 1350
 TOP, BOT = (16, 62, 108), (5, 20, 40)
-WHITE, SOFT, DIM = (255, 255, 255), (205, 222, 238), (150, 172, 196)
+# SOFT and DIM were tuned for the old navy cards; on the light blue the small
+# lines drawn in them (the footer, a legend, a league under a score) were
+# faint (designer review 2026-11-20). Near-white now - still a step under
+# WHITE, so a heading keeps its rank.
+WHITE, SOFT, DIM = (255, 255, 255), (236, 244, 251), (206, 221, 236)
 GOLD = (246, 192, 60)
 CARD_FILL = (255, 255, 255, 22)
 MAX_ROWS = 9           # one card; a bigger day gets the first nine by kick-off

@@ -296,10 +296,16 @@ def foot():
     pred_foot_b = ' · <a href="/predictions.html">سجل التوقعات</a>' if PREDICTIONS_ON else ""
     vids_link = ' · <a href="/videos.html">فيديوهات</a>' if SHOW_VIDEOS else ""
     reels_link = ' · <a href="/reels.html">ريلز</a>' if SHOW_REELS else ""
+    try:                                   # the footer's Telegram link, as the header's icon
+        import tg_post as _tgp
+        tg_foot = "" if getattr(_tgp, "CHANNEL_PAUSED", False) else (
+            f' · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a>')
+    except Exception:                                     # noqa: BLE001
+        tg_foot = ""
     return f"""</main>
 <footer class="site-foot"><div class="wrap">
   <p>{esc(SITE_NAME)} — {esc(SITE_TAGLINE)}</p>
-  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/">المباريات</a> · <a href="/goals.html">أهداف المباريات</a>{pred_foot_a}{pred_foot_b} · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a> · <a href="{TG_CHANNEL_URL}" target="_blank" rel="noopener">تيليجرام</a></p>
+  <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/">المباريات</a> · <a href="/goals.html">أهداف المباريات</a>{pred_foot_a}{pred_foot_b} · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a>{tg_foot}</p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>

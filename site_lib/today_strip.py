@@ -24,7 +24,11 @@ def _rank(m):
     order = COMP_ORDER.index(comp) if comp in COMP_ORDER else len(COMP_ORDER)
     live = 0 if (m.get("status") or "") == "LIVE" else 1
     curated = 0 if _is_ticker_team(m) else 1
-    return (live, curated, order, m.get("koff_time") or "99:99", ar_team(m.get("home") or ""))
+    # OUR clubs first, then what is live (site review 2026-11-20: under a
+    # Real Madrid story the strip was eight live under-17, Tunisian and Iraqi
+    # matches and not one curated club - the strip exists to earn a second
+    # page from THIS reader)
+    return (curated, live, order, m.get("koff_time") or "99:99", ar_team(m.get("home") or ""))
 
 
 def pick_today(matches, today=None, limit=LIMIT):

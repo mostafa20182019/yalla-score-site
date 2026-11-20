@@ -316,6 +316,24 @@ def fix_moved_links(body):
         body)
 
 
+# A link to an article that no longer exists (SEO review 2026-11-20: 51 dead
+# /a/<id> targets, linked from 80-odd older articles - the pieces were removed
+# since, the links inside other bodies stayed). The WORDS stay, the link goes:
+# done when the page is built, so the stored article is never edited and a
+# piece removed tomorrow is handled the same way.
+_A_TAG = re.compile(r'<a\b[^>]*\bhref="/a/(\d+)(?:\.html)?"[^>]*>(.*?)</a>', re.S)
+
+
+def drop_dead_links(body, live_ids):
+    """`body` with every link to an /a/<id> that is neither live nor moved
+    replaced by its own text."""
+    if not body or "/a/" not in body:
+        return body
+    live = {str(i) for i in live_ids}
+    return _A_TAG.sub(lambda m: m.group(0) if (m.group(1) in live or m.group(1) in _MOVED_LINKS) else m.group(2),
+                      body)
+
+
 def ensure_match_image(m, art, status, media_dir=None):
     """A match piece always shows OUR matchup card when its own image is
     missing or a placeholder (2026-10-18: the Brentford x Liverpool report

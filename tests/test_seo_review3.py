@@ -122,5 +122,21 @@ ck("16 one sameAs list for the home page and every article; a new profile is one
    src.count('"sameAs": SAME_AS') == 2 and CFG.SAME_AS[:2] == [CFG.FB_PAGE_URL, CFG.TG_CHANNEL_URL]
    and CFG.SAME_AS[2:] == CFG.EXTRA_PROFILES and all(u.startswith("https://") for u in CFG.SAME_AS))
 
+# --- 2026-11-20: a link to an article that no longer exists loses its link, keeps its words
+from site_lib.articles import drop_dead_links          # noqa: E402
+_b = '<p>كما في <a href="/a/62">تقرير سابق</a> و<a class="x" href="/a/70.html">خبر آخر</a> و<a href="/team/al-ahly">الأهلي</a>.</p>'
+_out = drop_dead_links(_b, {"70"})
+ck("17 a dead /a/<id> link becomes its own text; a live one and any other link are untouched",
+   _out == '<p>كما في تقرير سابق و<a class="x" href="/a/70.html">خبر آخر</a> و<a href="/team/al-ahly">الأهلي</a>.</p>', _out)
+if os.path.isdir(os.path.join("dist", "a")):
+    _ids = {f[:-5] for f in os.listdir(os.path.join("dist", "a")) if f.endswith(".html")}
+    _red = io.open(os.path.join("dist", "_redirects"), encoding="utf-8").read() if os.path.exists(os.path.join("dist", "_redirects")) else ""
+    _dead = set()
+    for _f in os.listdir(os.path.join("dist", "a")):
+        if _f.endswith(".html"):
+            for _i in re.findall(r'href="/a/(\d+)(?:\.html)?"', io.open(os.path.join("dist", "a", _f), encoding="utf-8").read()):
+                if _i not in _ids and f"/a/{_i}" not in _red:
+                    _dead.add(_i)
+    ck("18 the built articles link no article that is gone", not _dead, str(sorted(_dead)[:8]))
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

@@ -853,7 +853,7 @@ html.lt-lock{overflow:hidden}
    #8391a5 is 3.2:1 on white - secondary, still readable */
 .mg-as{display:block;font-weight:500;color:#8391a5}
 .mg-as svg{width:11px;height:11px;vertical-align:-1px;margin-inline-end:3px}
-@media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.7rem}}
+@media(max-width:560px){.mgoals{grid-template-columns:1fr 20px 1fr}.mg{font-size:.75rem}}
 /* match details: events timeline + starting lineups (/m/<id>.html).
    NOT «.tl» - that collided with the .tl text-start cells in every
    .ptable (standings, scorers, ratings, the prediction record) and
@@ -1449,7 +1449,7 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
      column, no heading */
   .home-mc .mp-leagues,.home-mc .mp-extra{display:none}
   .mlist>.mrow{grid-template-columns:34px minmax(0,1fr) auto minmax(0,1fr) 34px;gap:4px 8px;padding:12px 6px}
-  .mlist>.mrow .pill{padding:2px 6px;font-size:.68rem}
+  .mlist>.mrow .pill{padding:2px 6px;font-size:.72rem}
   .mlist>.mrow .team{gap:6px;font-size:.84rem}
   .mlist>.mrow .team>span{-webkit-line-clamp:4}
   /* the narrowest phones: a one-word name («الديمقراطية») was 4px wider than its column */
@@ -1705,6 +1705,8 @@ a.lt-tb{text-decoration:none}
 .mlist.mp-hero>.mrow .team span{font-size:.95rem;font-weight:800}
 .mlist.mp-hero>.mrow .score,.mlist.mp-hero>.mrow .ko{font-size:1.6rem}
 .mp-act{margin:10px 0 4px}
+/* the toast sat over the phone's bottom bar (site review 2026-11-20) */
+@media(max-width:760px){.push-toast{bottom:calc(72px + env(safe-area-inset-bottom,0px))}}
 /* the goals video on a match page: one wide facade, no card lift */
 .mp-video .vcard{box-shadow:none;border-radius:12px}
 .mp-video .vcard:hover{transform:none;box-shadow:none}
