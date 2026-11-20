@@ -173,6 +173,12 @@ jobs:
             # kick-off times and channels - the Worker dispatches it at 07:01
             # UTC; nothing else rides on this run
             python fb_post.py --daycard today | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
+            # the same fixtures as a REEL (user 2026-11-20: «ماشي آه نعمل ريل
+            # كده»): the day's match first, then six a shot - once a day
+            # (store kind reel / today:<date>)
+            command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
+            python day_reel.py --today --publish | tee -a /tmp/fb.txt; rc3=${PIPESTATUS[0]}
+            [ "$rc" = 0 ] && rc=$rc3
           elif [ -n "$DAYCARD" ]; then
             # the nightly hook: the results card, then whatever the data says
             # is news tonight (story_events.py) - each once, through the store

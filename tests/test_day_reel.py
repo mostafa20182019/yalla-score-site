@@ -109,5 +109,46 @@ check("hero=m is hero" in _src and "mark(h * 0.3) if hero" in _src and "max(26,"
 cap = D.caption(ms[:3], "2026-11-08", now)
 check(cap.count("8 - 1") == 3 and "https://elgoon.com/" + chr(10) in cap and "elgoon.com/matches" not in cap and "#الجون" in cap, "caption: every result, the link, the tag")
 
+# ---------------------------------------------------------------- the MORNING reel (2026-11-20)
+def _f(i, h, a, t, comp="Premier League"):
+    return {"match_id": i, "home": h, "away": a, "home_score": None, "away_score": None, "status": "UPCOMING",
+            "koff_time": t, "kickoff": "2026-11-22", "competition": comp, "home_badge": None, "away_badge": None}
+
+
+_day = [_f(1, "Everton FC", "Fulham FC", "14:00"), _f(2, "Brentford FC", "Burnley FC", "16:00"),
+        _f(3, "Liverpool FC", "Manchester United FC", "18:30"), _f(4, "Leeds United FC", "Sunderland AFC", "20:00")]
+_now2 = datetime.datetime(2026, 11, 22, 9, 1, tzinfo=ZoneInfo("Africa/Cairo"))
+check(D.today_label("2026-11-22", _now2) == "مباريات اليوم" and D.today_label("2026-11-23", _now2) == "مباريات الغد"
+      and D.today_label("2026-11-25", _now2).startswith("مباريات الأربعاء"), "the morning reel: «مباريات اليوم» from the Cairo clock")
+_sc = D.build(_day, "2026-11-22", _now2, fixtures=True)
+check(len(_sc) == 3 and abs(sum(s[1] for s in _sc) - (D.INTRO + D.PAGE + D.OUTRO)) < 1e-9 and sum(s[1] for s in _sc) <= 15,
+      "four fixtures: the day's match, one shot, the outro - inside 15 s")
+_fr = [draw(dur - 0.05) for draw, dur, _ in _sc]
+check(all(f.size == (R.W, R.H) for f in _fr), "every frame of the morning reel is 1080x1920")
+_twelve = [_f(i, f"Team {i} FC", f"Side {i} FC", f"{10 + i}:00") for i in range(12)]
+check(len(D.build(_twelve, "2026-11-22", _now2, fixtures=True)) == 4, "twelve fixtures: two shots of six")
+check(D.under_line(dict(_day[2], channel="beIN Sports 1"), True).endswith("· beIN Sports 1")
+      and "·" not in D.under_line(dict(_day[2], competition="No Such League"), True)
+      and "beIN" not in D.under_line(dict(_day[2], channel="beIN Sports 1"), False),
+      "the channel stands beside the league under a kick-off - only a channel we hold, never under a result")
+check(D.team_name({"home": "الأهلي", "competition": "Saudi Pro League"}, "home") == "الأهلي السعودي"
+      and D.team_name({"home": "الأهلي", "competition": "Egyptian Premier League"}, "home") == "الأهلي",
+      "the Saudi «الأهلي» is written «الأهلي السعودي» on a reel; the bare name is the Egyptian club")
+import fb_post as _P        # noqa: E402
+_pool = [dict(_f(i, f"Team {i} FC", f"Side {i} FC", f"{10 + i % 9}:00"), kickoff="2026-11-22") for i in range(9)]
+_orig = _P.todaycard_matches
+_P.todaycard_matches = lambda matches, date, limit=None: sorted(matches[:limit or 9], key=lambda m: m["koff_time"])
+try:
+    check(len(D.today_matches(_pool, "2026-11-22")) == 6 and len(D.today_matches(_pool[:4], "2026-11-22")) == 4
+          and len(D.today_matches(_pool + _pool[:3], "2026-11-22")) == 12,
+          "nine fixtures show their six most important (full shots only), four show four, twelve show twelve")
+finally:
+    _P.todaycard_matches = _orig
+_wf = open(".github/workflows/fb-post.yml", encoding="utf-8").read()
+check("python day_reel.py --today --publish" in _wf and _wf.index("--daycard today") < _wf.index("day_reel.py --today --publish"),
+      "the morning run posts the card, then the reel")
+check('f"today:{date}"' in _src or "today:{date}" in open("day_reel.py", encoding="utf-8").read(),
+      "the morning reel has its own store key (today:<date>): once a day, apart from the night's")
+
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

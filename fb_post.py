@@ -1120,9 +1120,11 @@ def todaycard_date(now=None):
     return now.astimezone(ZoneInfo("Africa/Cairo")).strftime("%Y-%m-%d")
 
 
-def todaycard_matches(matches, date):
+def todaycard_matches(matches, date, limit=None):
     """The day's matches still to be played - picked like the night card's
-    results, then put in kick-off order (a schedule is read by the clock)."""
+    results, then put in kick-off order (a schedule is read by the clock).
+    limit = how many of the picked ones are kept (the card's nine by
+    default; the morning reel asks for the six or twelve its shots hold)."""
     import day_card as DC
     from site_lib.competitions import COMP_ORDER, LEAGUE_BAR, is_arab_nation_match
     from site_lib.names import _is_ticker_team
@@ -1136,7 +1138,7 @@ def todaycard_matches(matches, date):
         _rank = lambda c: COMP_ORDER.index(c) if c in COMP_ORDER else len(COMP_ORDER)
         ms = sorted(todo, key=lambda m: (0 if _is_ticker_team(m) else 1 if is_arab_nation_match(m) else 2,
                                          _rank(m.get("competition")), m["koff_time"]))
-    return sorted(ms[:DC.MAX_ROWS], key=lambda m: (m["koff_time"], m.get("home") or ""))
+    return sorted(ms[:limit or DC.MAX_ROWS], key=lambda m: (m["koff_time"], m.get("home") or ""))
 
 
 def todaycard_caption(ms, date):

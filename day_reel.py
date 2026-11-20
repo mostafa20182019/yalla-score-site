@@ -36,6 +36,7 @@ from PIL import Image, ImageDraw     # noqa: E402
 import fb_cards as C                 # noqa: E402
 import fb_reel as R                  # noqa: E402
 import moment_reel as M              # noqa: E402
+import day_card as DC                # noqa: E402
 import store                         # noqa: E402
 
 W, H, FPS = M.W, M.H, M.FPS
@@ -60,6 +61,8 @@ RED = (225, 29, 72)                  # the red of the board in the logo
 HOME_X, AWAY_X = W - 150, 150        # the crests: clear of the Reels like/comment column on the right
 SCORE_DX = 52                        # each side's goals, this far from the dash
 NAME_GAP = 100                       # the names stop this far from the centre
+PILL_W = 176                         # a kick-off time's white pill (the morning reel) - inside the names' gap
+INK = (16, 62, 108)
 
 
 def row_geometry(n):
@@ -122,11 +125,29 @@ def hero_of(ms):
     return h
 
 
-def row(im, t, m, cy, t0, h, name_size=None, hero=False):
+def team_name(m, side):
+    """The side as the reel writes it: the Saudi «الأهلي» is «الأهلي السعودي» -
+    on this page the bare name is the Egyptian club (2026-11-20)."""
+    from site_lib.names import ar_team_in
+    return ar_team_in(m[side], m.get("competition"))
+
+
+def under_line(m, fixtures):
+    """What stands under the score / the time: the league, and for a match
+    still to be played its verified channel beside it."""
+    from site_lib.competitions import match_tv
+    from site_lib.names import comp_label
+    lb = comp_label(m["competition"])
+    tv = (m.get("channel") or match_tv(m)) if fixtures else None
+    return f"{lb} · {tv}" if tv else lb
+
+
+def row(im, t, m, cy, t0, h, name_size=None, hero=False, fixtures=False):
     """One result on ONE line, h tall: fades and slides in at t0. name_size =
     one size for every name of the shot (a long name used to shrink alone);
     hero = the night's result: a red frame and the logo's board between the
-    two scores instead of the dash."""
+    two scores instead of the dash. fixtures = a match still to be played:
+    its kick-off time on a white pill where the score would be."""
     from site_lib.names import ar_team, comp_label
     e = M.ease(t, t0, M.FADE + 0.1)
     if e <= 0:
@@ -139,24 +160,34 @@ def row(im, t, m, cy, t0, h, name_size=None, hero=False):
     for side, x, anchor, edge in (("home", HOME_X, "rm", HOME_X - cs / 2 - 16),
                                   ("away", AWAY_X, "lm", AWAY_X + cs / 2 + 16)):
         R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), cs, x, cy)
-        nm = C.ar(ar_team(m[side]))
+        nm = C.ar(team_name(m, side))
         room = abs(edge - W / 2) - NAME_GAP
         d.text((edge, cy), nm, font=(C.font("ExtraBold", name_size) if name_size
                                      else C.fit(d, nm, "ExtraBold", int(min(42, h * 0.3)), room, 22)),
                fill=C.WHITE, anchor=anchor)
     sy = cy - h * 0.09
-    f = C.font("ExtraBold", int(min(84, h * 0.5)))
-    d.text((W / 2 + SCORE_DX, sy), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
-    d.text((W / 2 - SCORE_DX, sy), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
-    mk = mark(h * 0.3) if hero else None
-    if mk is not None:
-        lay.paste(mk, (int(W / 2 - mk.width / 2), int(sy - mk.height / 2)), mk)
+    if fixtures:
+        ft = C.font("ExtraBold", int(min(52, h * 0.3)))
+        ph = int(min(70, h * 0.4))
+        d.rounded_rectangle((W / 2 - PILL_W / 2, sy - ph / 2, W / 2 + PILL_W / 2, sy + ph / 2), int(ph * 0.3),
+                            fill=(255, 255, 255, 240))
+        d.text((W / 2, sy), str(m.get("koff_time") or "--:--"), font=ft, fill=INK, anchor="mm")
     else:
-        d.text((W / 2, sy), "-", font=C.font("ExtraBold", int(min(60, h * 0.36))), fill=M.GOLD, anchor="mm")
+        f = C.font("ExtraBold", int(min(84, h * 0.5)))
+        d.text((W / 2 + SCORE_DX, sy), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
+        d.text((W / 2 - SCORE_DX, sy), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
+        mk = mark(h * 0.3) if hero else None
+        if mk is not None:
+            lay.paste(mk, (int(W / 2 - mk.width / 2), int(sy - mk.height / 2)), mk)
+        else:
+            d.text((W / 2, sy), "-", font=C.font("ExtraBold", int(min(60, h * 0.36))), fill=M.GOLD, anchor="mm")
     # the league under the score: white, and never under 26 px - the gold at
-    # 18 px could not be read on the light blue
-    lb = C.ar(comp_label(m["competition"]))
-    d.text((W / 2, cy + h * 0.31), lb, font=C.fit(d, lb, "Bold", int(max(26, min(30, h * 0.17))), 2 * NAME_GAP + 80, 20),
+    # 18 px could not be read on the light blue. Under a kick-off time the
+    # channel stands beside it, and the line may run wider than the gap
+    # between the names (it sits below them).
+    lb = C.ar(under_line(m, fixtures))
+    d.text((W / 2, cy + h * 0.31), lb, font=C.fit(d, lb, "Bold", int(max(26, min(30, h * 0.17))),
+                                                  (W - 2 * 190) if fixtures else 2 * NAME_GAP + 80, 20),
            fill=(255, 255, 255, 215), anchor="mm")
     M.put(im, lay, e, dy=M.SLIDE * (1 - e))
 
@@ -168,21 +199,34 @@ def shot_name_size(rows, h):
     cs = int(min(104, h * 0.62))
     room = abs((HOME_X - cs / 2 - 16) - W / 2) - NAME_GAP
     top = int(min(42, h * 0.3))
-    return min(C.fit(d, C.ar(ar_team(m[k])), "ExtraBold", top, room, 22).size for m in rows for k in ("home", "away"))
+    return min(C.fit(d, C.ar(team_name(m, k)), "ExtraBold", top, room, 22).size for m in rows for k in ("home", "away"))
 
 
-def build(ms, date, now=None):
+def today_label(date, now=None):
+    """«مباريات اليوم» / «مباريات الغد» from the Cairo clock; any other day by name."""
+    from zoneinfo import ZoneInfo
+    today = (now or datetime.datetime.now(ZoneInfo("Africa/Cairo"))).date()
+    delta = (datetime.date.fromisoformat(date) - today).days
+    return {0: "مباريات اليوم", 1: "مباريات الغد"}.get(delta) or f"مباريات {day_name(date)}"
+
+
+def build(ms, date, now=None, fixtures=False):
     """The scenes as (draw(t) -> frame, seconds, push_in) - push_in False for
-    the outro, which moment_reel.scene already pushes in."""
+    the outro, which moment_reel.scene already pushes in. fixtures = the
+    MORNING reel (user 2026-11-20: «ماشي آه نعمل ريل كده»): the same shots
+    for the matches still to be played - the day's match first, big, then
+    six a shot with the kick-off time and the channel."""
     pages = shots(ms)
     ms = [m for p in pages for m in p]
     bg = R.background()
     ctx = M.context({"home": {"name": ""}, "away": {"name": ""}})
-    title, when = rel_label(date, now), day_name(date)
+    title, when = (today_label if fixtures else rel_label)(date, now), day_name(date)
 
-    _h = hero_of(ms)
+    _h = DC.day_hero(ms) if fixtures else hero_of(ms)
     hero = next((m for m in ms if _h is not None and m.get("match_id") == _h.get("match_id")
                  and m.get("home") == _h.get("home")), None)
+    if fixtures and hero is None and ms:
+        hero = ms[0]                    # none of ours today: the first kick-off opens the reel
 
     def head(im):
         R.logo_at(im, W / 2, HEAD_LOGO_Y, HEAD_LOGO_H)
@@ -205,15 +249,24 @@ def build(ms, date, now=None):
             cy = 760
             for side, x in (("home", W * 0.8), ("away", W * 0.2)):
                 R.crest_at(lay, m.get(f"{side}_badge"), ar_team(m[side]), 210, x, cy)
-                nm = C.ar(ar_team(m[side]))
+                nm = C.ar(team_name(m, side))
                 d.text((x, cy + 170), nm, font=C.fit(d, nm, "ExtraBold", 54, W * 0.38, 30), fill=C.WHITE, anchor="mm")
-            f = C.font("ExtraBold", 210)
-            d.text((W / 2 + 105, cy - 20), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
-            d.text((W / 2 - 105, cy - 20), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
-            mk = mark(64)
-            if mk is not None:
-                lay.paste(mk, (int(W / 2 - 32), int(cy - 20 - 32)), mk)
-            lb = C.ar(comp_label(m["competition"]))
+            if fixtures:
+                # the kick-off, as big as the gap between the crests allows,
+                # under the logo's board
+                d.text((W / 2, cy + 20), str(m.get("koff_time") or "--:--"), font=C.font("ExtraBold", 132),
+                       fill=C.WHITE, anchor="mm")
+                mk = mark(96)
+                if mk is not None:
+                    lay.paste(mk, (int(W / 2 - 48), int(cy - 150)), mk)
+            else:
+                f = C.font("ExtraBold", 210)
+                d.text((W / 2 + 105, cy - 20), str(m["home_score"]), font=f, fill=C.WHITE, anchor="mm")   # HOME goals on the right
+                d.text((W / 2 - 105, cy - 20), str(m["away_score"]), font=f, fill=C.WHITE, anchor="mm")
+                mk = mark(64)
+                if mk is not None:
+                    lay.paste(mk, (int(W / 2 - 32), int(cy - 20 - 32)), mk)
+            lb = C.ar(under_line(m, fixtures))
             d.text((W / 2, cy + 300), lb, font=C.fit(d, lb, "Bold", 44, W * 0.8, 28), fill=(255, 255, 255, 225), anchor="mm")
             M.put(im, lay, e, dy=M.SLIDE * (1 - e))
         # «من الدوريات الكبرى» only when it is true: a break night's results
@@ -221,6 +274,8 @@ def build(ms, date, now=None):
         from site_lib.competitions import LEAGUE_BAR
         _big = all(x.get("competition") in LEAGUE_BAR for x in ms)
         _n = f"{len(ms)} مباريات من الدوريات الكبرى" if _big else f"أبرز {len(ms)} نتائج"
+        if fixtures:
+            _n = "مباراتان اليوم" if len(ms) == 2 else f"أبرز {len(ms)} مباريات · بتوقيت القاهرة"
         # the date is said once: in the title when it carries it, else here
         M.lines_block(im, t, [_n] if when in title else [f"{when} · {_n}"], (1200,),
                       weight="ExtraBold", size=48, t0=0.55)
@@ -236,12 +291,13 @@ def build(ms, date, now=None):
             C.draw_center(ImageDraw.Draw(im), W / 2, TITLE_Y, C.ar(title if when in title else f"{title} · {when}"),
                           C.font("ExtraBold", 40), C.WHITE)
             for i, m in enumerate(rows):
-                row(im, t, m, ys[i], 0.1 + i * 0.15, h, name_size=nsz, hero=m is hero)
+                row(im, t, m, ys[i], 0.1 + i * 0.15, h, name_size=nsz, hero=m is hero, fixtures=fixtures)
             return im
         return draw
 
     def outro(t):
-        sc = {"kind": "cta", "secs": OUTRO, "lines": ["كل النتائج والجداول", "لحظة بلحظة على الجون"]}
+        sc = {"kind": "cta", "secs": OUTRO, "lines": (["كل المواعيد والقنوات", "والنتائج لحظة بلحظة على الجون"] if fixtures
+                                                        else ["كل النتائج والجداول", "لحظة بلحظة على الجون"])}
         return M.scene(sc, t, ctx)
 
     secs = PAGE if len(pages) == 1 else PAGE_TWO
@@ -267,30 +323,45 @@ def caption(ms, date, now=None):
     from site_lib.names import ar_team
     lines = [f"⚽ {rel_label(date, now)} ({day_name(date)})", ""]
     for m in ms:
-        lines.append(f"{ar_team(m['home'])} {m['home_score']} - {m['away_score']} {ar_team(m['away'])}")
+        lines.append(f"{team_name(m, 'home')} {m['home_score']} - {m['away_score']} {team_name(m, 'away')}")
     lines += ["", "أنهي نتيجة فاجئتك؟ قولنا في الكومنتات 👇", "",
               "كل النتائج والمواعيد: https://elgoon.com/", "#الجون #نتائج_المباريات"]
     return "\n".join(lines) + "\n"
 
 
-def publish(path, ms, date):
-    """Claim-then-post, kind 'reel' / 'day:<date>': one results reel a day."""
+def today_matches(matches, date):
+    """The morning reel's matches: what its shots hold (six, or twelve), the
+    most important first when the day has more, then by the clock."""
+    import fb_post as P
+    n = len(P.todaycard_matches(matches, date, limit=MAX_MATCHES))
+    keep = n if n < PER_SHOT else PER_SHOT * min(MAX_SHOTS, n // PER_SHOT)
+    return P.todaycard_matches(matches, date, limit=keep) if keep else []
+
+
+def caption_today(ms, date):
+    import fb_post as P
+    return P.todaycard_caption(ms, date) + "\n"
+
+
+def publish(path, ms, date, fixtures=False):
+    """Claim-then-post, kind 'reel' / 'day:<date>': one results reel a day
+    (the morning reel: 'today:<date>')."""
     token = os.environ.get("FB_PAGE_TOKEN", "").strip()
     if not token:
         print("FB_PAGE_TOKEN not set: rendered, not published")
         return 0
-    ref = f"day:{date}"
-    if not store.claim(R.KIND, ref, title=f"results reel {date}"):
-        print(f"day reel {date}: already published or held by another run")
+    ref, what = (f"today:{date}", "fixtures reel") if fixtures else (f"day:{date}", "results reel")
+    if not store.claim(R.KIND, ref, title=f"{what} {date}"):
+        print(f"{what} {date}: already published or held by another run")
         return 0
     try:
-        vid = R.post_reel(token, path, caption(ms, date))
-        store.record_post(R.KIND, ref, vid, title=f"results reel {date}")
-        print(f"day reel {date}: published as {vid} ({len(ms)} matches)")
+        vid = R.post_reel(token, path, caption_today(ms, date) if fixtures else caption(ms, date))
+        store.record_post(R.KIND, ref, vid, title=f"{what} {date}")
+        print(f"{what} {date}: published as {vid} ({len(ms)} matches)")
         return 0
     except Exception as e:                                   # noqa: BLE001
         store.release(R.KIND, ref)
-        print(f"day reel {date} FAILED: {e}")
+        print(f"{what} {date} FAILED: {e}")
         return 1
 
 
@@ -302,31 +373,40 @@ def main():
     ap.add_argument("--out", help="the MP4 (default media/reels/day-<date>.mp4)")
     ap.add_argument("--sheet", help="also write a contact sheet PNG (one frame per scene)")
     ap.add_argument("--publish", action="store_true", help="upload to the page (needs FB_PAGE_TOKEN)")
+    ap.add_argument("--today", action="store_true", help="the MORNING reel: today's matches still to be played")
     args = ap.parse_args()
-    date = args.date or P.daycard_date()
+    fx = args.today
+    date = args.date or (P.todaycard_date() if fx else P.daycard_date())
+    name = "today" if fx else "day"
     if args.publish:
-        rec = store.get_post(R.KIND, f"day:{date}")
+        rec = store.get_post(R.KIND, f"{name}:{date}")
         if rec and rec.get("post_id"):
-            print(f"day reel {date}: already posted ({rec['post_id']})")
+            print(f"{name} reel {date}: already posted ({rec['post_id']})")
             return 0
-    ms = P.daycard_matches(MB.load_all()["matches"], date, limit=MAX_MATCHES)
-    if len(ms) < P.DAYCARD_MIN:
-        print(f"day reel {date}: only {len(ms)} finished match(es) - no reel")
-        return 0
-    scenes = build(ms, date)
+    if fx:
+        ms = today_matches(MB.load_all()["matches"], date)
+        if len(ms) < P.TODAY_MIN:
+            print(f"today reel {date}: only {len(ms)} match(es) to play - no reel")
+            return 0
+    else:
+        ms = P.daycard_matches(MB.load_all()["matches"], date, limit=MAX_MATCHES)
+        if len(ms) < P.DAYCARD_MIN:
+            print(f"day reel {date}: only {len(ms)} finished match(es) - no reel")
+            return 0
+    scenes = build(ms, date, fixtures=fx)
     secs = sum(s[1] for s in scenes)
-    out = args.out or os.path.join(HERE, "media", "reels", f"day-{date}.mp4")
+    out = args.out or os.path.join(HERE, "media", "reels", f"{name}-{date}.mp4")
     os.makedirs(os.path.dirname(os.path.abspath(out)), exist_ok=True)
-    ok = M.encode({"id": f"day-{date}"}, None, out, secs, frame_iter=frames(scenes))
+    ok = M.encode({"id": f"{name}-{date}"}, None, out, secs, frame_iter=frames(scenes))
     if args.sheet:
         M.contact_sheet([draw(dur - 0.05) for draw, dur, _ in scenes], args.sheet, cols=len(scenes))
     print(f"{out}: {secs:.1f}s, {'UPLOADABLE' if ok else 'NOT uploadable'}")
-    print(caption(ms, date))
+    print(caption_today(ms, date) if fx else caption(ms, date))
     if args.publish:
         if not ok:
             print("not publishing a file ffmpeg did not write")
             return 1
-        return publish(out, ms, date)
+        return publish(out, ms, date, fixtures=fx)
     return 0 if ok else 1
 
 
