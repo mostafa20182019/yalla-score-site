@@ -1225,6 +1225,7 @@ html.lt-lock{overflow:hidden}
 .push-cta{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;margin:18px 0 6px;padding:12px 14px;border:1px solid #cfe6f5;background:#f1f8fd;border-radius:12px;font-size:.92rem;font-weight:700}
 .push-cta-btn{border:0;border-radius:999px;background:var(--green-b);color:#fff;font:inherit;font-weight:800;padding:7px 16px;cursor:pointer}
 .push-cta-btn.is-on{background:#fff;color:var(--green-d);border:1px solid var(--green)}
+a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-height:44px}
 .a-tg{margin:10px 0 4px;padding:10px 14px;border-radius:12px;background:#f1f8fd;border:1px solid #cfe6f5;font-size:.92rem;font-weight:700}
 .a-tg a{color:var(--green-d);text-decoration:underline}
 .push-toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);max-width:min(92vw,460px);background:#0f172a;color:#fff;padding:11px 16px;border-radius:12px;font-size:.9rem;line-height:1.6;box-shadow:0 6px 24px rgba(0,0,0,.28);z-index:50;text-align:center}
@@ -1704,6 +1705,12 @@ a.lt-tb{text-decoration:none}
 .mlist.mp-hero>.mrow .team span{font-size:.95rem;font-weight:800}
 .mlist.mp-hero>.mrow .score,.mlist.mp-hero>.mrow .ko{font-size:1.6rem}
 .mp-act{margin:10px 0 4px}
+/* the goals video on a match page: one wide facade, no card lift */
+.mp-video .vcard{box-shadow:none;border-radius:12px}
+.mp-video .vcard:hover{transform:none;box-shadow:none}
+.mp-video .vb{display:none}
+.mp-video .vplay{width:68px;height:68px;font-size:1.6rem}
+.mp-video .hintline{margin:8px 0 0}
 /* the rest of a club's season, closed until asked for (2026-11-20) */
 .more-d{margin-top:10px}
 .more-d>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:center;min-height:44px;padding:0 14px;border-radius:999px;background:#eaf5fc;color:var(--green-d);font-weight:800;font-size:.9rem;text-align:center}

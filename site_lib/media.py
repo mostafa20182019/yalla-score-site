@@ -29,6 +29,7 @@ EMBED_LABEL = {"x": "X (تويتر)", "instagram": "إنستغرام", "facebook
 # دى ليها اهداف عندنا»). data/highlights.json is written by highlights.py
 # (beIN SPORTS / ON Sport YouTube uploads, each tied to one of our matches).
 _HL_IDX = None
+_HL_ROW = {}
 
 
 def highlight_links():
@@ -52,5 +53,15 @@ def highlight_links():
             r = 1 if "ملخص" in (v.get("title") or "") else 0
             if mid not in _HL_IDX or r > rank[mid]:
                 _HL_IDX[mid] = (f"https://www.youtube.com/watch?v={vid}", v.get("channel") or "")
+                _HL_ROW[mid] = v
                 rank[mid] = r
     return _HL_IDX
+
+
+def highlight_video(match_id):
+    """The match's highlight row when it may be PLAYED on our page - the
+    rights holder allows embedding, as YouTube told highlights.py (`embed`
+    is True) - else None, and the page keeps its link to YouTube."""
+    highlight_links()
+    v = _HL_ROW.get(str(match_id))
+    return v if v and v.get("embed") is True else None

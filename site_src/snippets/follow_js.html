@@ -28,6 +28,14 @@
      forever; the dismissal now lives in sessionStorage (this tab, this
      visit) and an old 'none' is cleared on sight. */
   try{ if(LS.getItem(KEY)==='none') LS.removeItem(KEY); }catch(e){}
+  /* a reader sent here from an app's own browser (push_js.html: «افتح في
+     المتصفح») brings the club they followed there in the address. Taken only
+     when this browser has no club yet; a slug with no page is dropped by
+     load() below, as any other. */
+  try{
+    var qt=(location.search.match(/[?&]team=([a-z0-9-]{2,40})(?:&|$)/)||[])[1];
+    if(qt && !LS.getItem(KEY)) LS.setItem(KEY,qt);
+  }catch(e){}
   function hidden(){ try{ return window.sessionStorage.getItem(OFF)==='1'; }catch(e){ return false; } }
   function hide(){ try{ window.sessionStorage.setItem(OFF,'1'); }catch(e){} }
   function get(){ try{ return LS.getItem(KEY)||''; }catch(e){ return ''; } }

@@ -16,7 +16,37 @@
   /* show the buttons only where a tap can lead somewhere: a browser that can
      subscribe, or Safari on an iPhone (the tap explains the home-screen step).
      The Facebook/Instagram in-app browsers can do neither. */
-  if(inapp||!(can||(ios&&!standalone)))return;
+  /* INSIDE AN APP'S OWN BROWSER (site review 2026-11-20): most readers come
+     from Facebook, whose in-app browser cannot subscribe - and they were
+     shown nothing at all, neither the bell nor the line. Under an article
+     the line now says so and how to get out: on Android a link that opens
+     the same page in the phone's browser (an intent: URL), on an iPhone the
+     words for the app's own menu. The followed club rides in the address
+     (?team=), because this browser's storage does not travel with the
+     reader - follow_js.html picks it up on the other side. */
+  if(inapp){
+    var c0=document.querySelector('.push-cta');
+    if(c0){
+      var t0='';try{t0=localStorage.getItem('elgoonTeam')||'';}catch(e){}
+      var q0=/^[a-z0-9-]{2,40}$/.test(t0)?(location.search?'&':'?')+'team='+t0:'';
+      var s0=document.createElement('span');
+      c0.textContent='';
+      if(/Android/.test(ua)){
+        s0.textContent='🔔 الإشعارات لا تعمل داخل التطبيق. افتح الجون في متصفحك لتفعيلها.';
+        var a0=document.createElement('a');
+        a0.className='push-cta-btn';
+        a0.href='intent://'+location.host+location.pathname+location.search+q0+'#Intent;scheme=https;end';
+        a0.textContent='افتح في المتصفح';
+        c0.appendChild(s0);c0.appendChild(a0);
+      }else{
+        s0.textContent='🔔 الإشعارات لا تعمل داخل التطبيق. اضغط ⋯ ثم «فتح في المتصفح» لتفعيلها.';
+        c0.appendChild(s0);
+      }
+      c0.hidden=false;
+    }
+    return;
+  }
+  if(!(can||(ios&&!standalone)))return;
   btns.forEach(function(b){b.hidden=false;});
   /* growth plan week 1 (2026-10-08): the article-end line appears from the
      reader's SECOND page in this session - a first-time visitor sees the

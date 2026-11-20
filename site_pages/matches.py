@@ -16,13 +16,13 @@ from site_lib.dates import fmt_day
 from site_lib.daylist import comp_hrefs, day_sections, inline_days, write_day_fragments
 from site_lib.league_desc import matches_desc
 from site_lib.matchdata import absence_block, match_details_for, match_goals, prematch_for
-from site_lib.media import highlight_links
+from site_lib.media import highlight_links, highlight_video
 from site_lib.names import _team_match, ar_team, ar_team_in, comp_label
 from site_lib.predictions import pred_block, pred_pop
 from site_lib.reads import post_match_read, pre_match_read
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, adsense_slot, foot, head, noindex, thumb_url, write
-from site_lib.snippets import FILTERS_HTML, LT_GAMES_JS, MATCHES_JS, ROUNDS_JS, ST_TABS_JS
+from site_lib.snippets import FILTERS_HTML, LT_GAMES_JS, MATCHES_JS, ROUNDS_JS, ST_TABS_JS, VIDEO_JS
 from site_lib.stats import _finished_by_comp
 from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, motm_html, scorers_list, standings_table
 from site_lib.text import esc, jsonld
@@ -291,6 +291,27 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         # «22:00» with no day - the date sat two cards lower
         hero_row = match_row(m, show_time=True, show_comp=True, goals=_goals,
                              highlight=_hl, show_assist=True, show_date=True)
+        # THE VIDEO PLAYS HERE (SEO review 2026-11-20: 122 «أهداف وملخص» pages
+        # sent the reader to YouTube - the intent is "watch"). A thumbnail
+        # until it is tapped (no player weight before that), and only for a
+        # video its rights holder lets other sites play (media.highlight_video);
+        # the rest keep the «الأهداف» link in the row above. VideoObject data
+        # only with the video's REAL upload date - never the day we found it.
+        _video = ""
+        _hv = highlight_video(m.get("match_id")) if (st == "FINISHED" and hs is not None) else None
+        if _hv:
+            from site_lib.widgets import video_facade
+            _vt = f"أهداف وملخص مباراة {h_ar} و{a_ar} {hs}-{as_}"
+            _video = (f'<section class="minfo mp-video" id="mp-video"><h2>{esc(_vt)} بالفيديو</h2>'
+                      + video_facade({"video_id": _hv["vid"], "title": _vt})
+                      + f'<p class="hintline">الفيديو من قناة {esc(_hv.get("channel") or "")} الرسمية على يوتيوب.</p></section>')
+            if _hv.get("published"):
+                _video += jsonld({"@context": "https://schema.org", "@type": "VideoObject", "name": _vt,
+                                  "description": f"{_vt} في {comp} - من قناة {_hv.get('channel') or ''} الرسمية.",
+                                  "thumbnailUrl": [f"https://i.ytimg.com/vi/{_hv['vid']}/hqdefault.jpg"],
+                                  "uploadDate": _hv["published"],
+                                  "embedUrl": f"https://www.youtube.com/embed/{_hv['vid']}",
+                                  "contentUrl": f"https://www.youtube.com/watch?v={_hv['vid']}"})
         kickoff_info = st not in ("FINISHED", "POSTPONED")
         _tw = _rd = ""
         if kickoff_info:
@@ -501,6 +522,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             table=Markup(table), faq=Markup(_faq_html or ""), news=news, news_title=news_title,
             # follow + share + today's matches (site review 2026-11-20: the page
             # behind every match post was a dead end)
+            video=Markup(_video), video_js=Markup(VIDEO_JS if _video else ""),
             lead=({"slug": Markup(_clubs[0]["slug"]), "name": _clubs[0]["name"]} if _clubs else None),
             share_href=Markup("https://wa.me/?text=" + _quote(f"{title.split(' — ')[0]} {SITE_BASE}/m/{mid}")),
             share_url=Markup(f"{SITE_BASE}/m/{mid}"), today_strip=Markup(_today_strip),

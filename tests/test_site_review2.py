@@ -197,5 +197,14 @@ if _mp:
     ck(f"R20-3 built match pages: one share button with the page's own clean URL, news as picture rows", not _bad, str(_bad[:5]))
     ck("R20-4 the match hero is bigger than a list row and keeps the row's classes for the live layer",
        ".mlist.mp-hero>.mrow .team img{width:48px;height:48px}" in _css)
+_pj = open("site_src/snippets/push_js.html", encoding="utf-8").read()
+ck("R20-5 inside an app's own browser the reader is told how to get out, not shown nothing",
+   "if(inapp){" in _pj and "intent://" in _pj and "#Intent;scheme=https;end" in _pj
+   and "فتح في المتصفح" in _pj and _pj.index("if(inapp){") < _pj.index("if(!(can||(ios&&!standalone)))return;"))
+ck("R20-6 ...the bell and the subscribe code still never run there",
+   _pj.split("if(inapp){")[1].split("if(!(can||(ios&&!standalone)))return;")[0].rstrip().endswith("return;\n  }".rstrip())
+   or "    return;\n  }\n  if(!(can" in _pj.replace("\r\n", "\n"))
+ck("R20-7 the followed club travels in the address and is taken only by a browser with no club yet",
+   "'team='+t0" in _pj and "[?&]team=([a-z0-9-]{2,40})" in _fj and "if(qt && !LS.getItem(KEY)) LS.setItem(KEY,qt);" in _fj)
 print("\nALL OK" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

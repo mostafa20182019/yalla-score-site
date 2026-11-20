@@ -34,6 +34,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 import xml.etree.ElementTree as ET
@@ -360,6 +361,45 @@ def match_for(title, published, scope, pool, now=None):
     return best
 
 
+# MAY THE VIDEO PLAY ON OUR PAGE? (2026-11-20) A rights holder can switch
+# embedding off per video: beIN SPORTS does for every upload, ON Sport, AD
+# Sports, MBC Action and ثمانية do not (checked on 16 videos that day). The
+# match page plays a video in place only when YouTube itself says it may -
+# its oEmbed endpoint answers 200 for an embeddable video and 401 for one
+# that is not. Any other answer (a timeout, a 5xx) is "unknown": nothing is
+# stored and the next run asks again. Never guessed from the channel's name.
+EMBED_CHECKS = 40          # per run: the backfill of the videos already held
+
+
+def embeddable(vid, timeout=12):
+    """True / False from YouTube's oEmbed, None when it could not be learnt."""
+    url = "https://www.youtube.com/oembed?format=json&url=" + urllib.parse.quote(
+        f"https://www.youtube.com/watch?v={vid}", safe="")
+    try:
+        with urllib.request.urlopen(urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"}),
+                                    timeout=timeout) as r:
+            return True if r.status == 200 else None
+    except urllib.error.HTTPError as e:
+        return False if e.code in (401, 403) else None
+    except Exception:                                      # noqa: BLE001
+        return None
+
+
+def check_embeds(store, limit=EMBED_CHECKS, ask=None):
+    """Learn `embed` for the videos that do not carry it yet, newest first,
+    `limit` a run. Returns how many were learnt."""
+    ask = ask or embeddable
+    todo = sorted((e for e in store.values() if "embed" not in e),
+                  key=lambda e: e.get("kickoff") or "", reverse=True)[:limit]
+    n = 0
+    for e in todo:
+        ok = ask(e["vid"])
+        if ok is not None:
+            e["embed"] = ok
+            n += 1
+    return n
+
+
 def entry(ch, vid, title, published, m):
     return {"vid": vid, "ch": ch["key"], "channel": ch["name"],
             "region": REGION_BY_COMP.get(m.get("competition"), ch.get("region", "")),
@@ -473,6 +513,12 @@ def run(now=None):
     if due:
         meta["searched_at"] = now.isoformat(timespec="seconds")
     meta["updated"] = now.isoformat(timespec="seconds")
+    try:                                   # which videos may play on our own page
+        n_e = check_embeds(store)
+        if n_e:
+            notes.append(f"embed checked {n_e}")
+    except Exception as e:                 # noqa: BLE001 - never lose the run's videos over it
+        notes.append(f"embed FAIL {str(e)[:50]}")
     save(store, meta)
     note = f"{len(store)} stored, +{added} new ({'; '.join(notes)})"
     print(f"highlights: {note}")
