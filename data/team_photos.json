@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-20T08:10:53+00:00",
+ "generated_at": "2026-11-20T14:10:39+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2533,6 +2533,18 @@
    "source": "team-photos/real-madrid/iker-casillas-champions-league-2007.jpg",
    "added": "2026-11-09",
    "width": 1600
+  },
+  {
+   "file": "real-madrid-thibaut-courtois-real-madrid-2019.jpg",
+   "credit": "صورة: الحارس البلجيكي تيبو كورتوا بقميص ريال مدريد خلال مباراة ودية أمام زالتسبورج في 7 أغسطس 2019 — تصوير Werner100359، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "تيبو كورتوا حارس ريال مدريد",
+   "club": "ريال مدريد",
+   "slug": "real-madrid",
+   "year": 2019,
+   "is_person": true,
+   "source": "team-photos/real-madrid/thibaut-courtois-real-madrid-2019.jpg",
+   "added": "2026-11-20",
+   "width": 916
   },
   {
    "file": "real-madrid-vinicius-junior-brazil-closeup-2026.jpg",
