@@ -65,7 +65,7 @@ ck("17 news, a plain preview and a REPORT (even one judging our prediction) are 
    not fp.is_prediction_post(news) and not fp.is_prediction_post(plain_prev) and not fp.is_prediction_post(rep))
 _pd, _oh = fp.article_pub_dt, fp.open_hours
 fp.article_pub_dt = lambda a: _dt.datetime.now(_dt.timezone.utc)
-fp.open_hours = lambda p: 1.0
+fp.open_hours = lambda p, now=None: 1.0
 try:
     got = [a["article_id"] for a in fp.pending([news, prev, ana, rep, plain_prev])]
     ck("18 --auto/--pending leave ONLY the prediction posts out while the switch is off (the report stays)", got == ["901", "904", "905"], str(got))

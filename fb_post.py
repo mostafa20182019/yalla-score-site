@@ -537,7 +537,7 @@ def pending(items, now=None):
         if not aid or aid in posted:
             continue
         pub = article_pub_dt(art)
-        age = open_hours(pub) if pub else None
+        age = open_hours(pub, now) if pub else None
         if age is None or age > AUTO_MAX_AGE_H:
             continue          # undated / old (in OPEN hours): never auto-posted
         if store.failed_count("article", aid) >= MAX_POST_ATTEMPTS:
