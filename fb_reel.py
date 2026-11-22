@@ -606,10 +606,29 @@ def _posted():
     store IS unreachable sometimes: on 2026-09-20 D1's free-tier daily row-read
     limit refused every query from 15:00 Cairo onward."""
     try:
-        return store.posted_ids(KIND)
+        posted = store.posted_ids(KIND)
     except Exception as e:                                   # noqa: BLE001
         print(f"reel: the store cannot be read ({str(e)[:120]}) - deferring")
         return None
+    return set(posted) | file_reel_matches(posted)
+
+
+def file_reel_matches(posted):
+    """Match ids that a posted HAND-MADE reel already covers: its caption
+    (drafts/reels/<name>.txt) links the match page /m/<id>. That reel IS the
+    match's reel - 2026-11-22, the Liverpool 4-0 United sample went up by
+    hand the same night the automatic reel switched to the same style, and
+    the page must not get the match twice."""
+    out = set()
+    for ref in posted or ():
+        if not str(ref).startswith("file:"):
+            continue
+        try:
+            txt = open(os.path.join(REEL_DRAFTS, f"{ref[5:]}.txt"), encoding="utf-8").read()
+        except OSError:
+            continue
+        out |= set(re.findall(r"elgoon\.com/m/(\d+)", txt))
+    return out
 
 
 def plan():

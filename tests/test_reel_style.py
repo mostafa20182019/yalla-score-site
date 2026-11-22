@@ -126,6 +126,15 @@ print("7. the wiring")
 src = open("fb_reel.py", encoding="utf-8").read()
 ck("fb_reel --auto makes the new style first, the still card only as its fallback",
    "def make_reel" in src and "RS.render(cfg, path, exe)" in src and "made, caption = make_reel(m, ctx, path)" in src)
+import fb_reel as R                                         # noqa: E402
+ck("a posted hand-made reel covers its match: no automatic second reel (Liverpool 4-0 United, 2026-11-22)",
+   "560645" in R.file_reel_matches({"file:liverpool-united-2026-11-22", "560642"})
+   and R.file_reel_matches({"560642", "file:no-such-draft"}) == set())
+import store as _store                                      # noqa: E402
+_orig = _store.posted_ids
+_store.posted_ids = lambda kind: {"file:liverpool-united-2026-11-22"}
+ck("...and _posted() hands that id to --plan / --auto", "560645" in R._posted())
+_store.posted_ids = _orig
 ck("numpy is in requirements.txt (the music needs it on the runner)",
    "numpy" in open("requirements.txt", encoding="utf-8").read())
 
