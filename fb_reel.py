@@ -9,7 +9,12 @@ Why a reel: on a page this size, Reels is the one Facebook surface with organic
 reach left, and the site's bottleneck is distribution, not content
 (7 pages indexed, 732 «Discovered – not indexed» — see the indexing note).
 
-What is in it (since 2026-11-01, the user's ask): ONE still card - the two
+SINCE 2026-11-22 the automatic reel is reel_style.py's (make_reel): the
+hook on frame 0, the goals on the beat, the numbers, the table, a question -
+the user replaced the still card with it («اعتمده بدل القديم»). The still
+card below stays as the fallback and for --match previews.
+
+What was in it (since 2026-11-01, the user's ask): ONE still card - the two
 crests and names, home on the right, and the final score - held ten seconds
 under music (our own generated loop, or a royalty-free file from music/).
 Before that it was a 17-second animation with scorers, ratings and the table.
@@ -553,12 +558,12 @@ def auto(dry=False, out_dir=None):
             continue
         path = os.path.join(out_dir, f"{mid}.mp4")
         try:
-            base, lay = staged(ctx)
-            if not encode(base, path, seed=mid, layers=lay):
+            made, caption = make_reel(m, ctx, path)
+            if not made:
                 print(f"reel {mid}: no usable encoder, deferring")
                 store.release(KIND, mid)
                 continue
-            vid = post_reel(token, path, C.post_text(m))
+            vid = post_reel(token, path, caption)
             store.record_post(KIND, mid, vid, title=f'{ctx["home"]} - {ctx["away"]}',
                               score=f'{ctx["hs"]}-{ctx["as"]}')
             print(f"reel {mid}: published as {vid} — {ctx['home']} {ctx['hs']}-{ctx['as']} {ctx['away']}")
@@ -569,6 +574,28 @@ def auto(dry=False, out_dir=None):
             store.release(KIND, mid)
             print(f"reel {mid} FAILED: {e}")
     return 0
+
+
+def make_reel(m, ctx, path):
+    """(made, caption). The NEW style first (reel_style.py - user, 2026-11-22:
+    «انا عايزك تعتمده بدل القديم»): the hook on frame 0, the goals on the
+    beat, the numbers, the table when a side is top or in the drop places,
+    a question for the comments - and the caption opens with that question.
+    Anything it cannot do (no numpy, a font, a feed shape) falls back to the
+    old still card rather than losing the reel."""
+    exe = ffmpeg()
+    if not exe:
+        return False, ""
+    try:
+        import reel_style as RS                      # noqa: PLC0415
+        cfg = RS.cfg_for(m)
+        RS.render(cfg, path, exe)
+        q = " ".join(cfg["question"])
+        return True, f"{q} {' ولا '.join(cfg['options'])}؟ اكتب رأيك في الكومنتات 👇\n\n{C.post_text(m)}"
+    except Exception as e:                           # noqa: BLE001
+        print(f"  the new-style reel failed ({str(e)[:160]}) - the still card instead")
+    base, lay = staged(ctx)
+    return encode(base, path, seed=str(m.get("match_id")), layers=lay), C.post_text(m)
 
 
 def _posted():

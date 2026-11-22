@@ -8,3 +8,5 @@ Jinja2>=3.1
 pywebpush>=2,<3
 # tests/test_workflow_yaml.py: strict workflow parsing (duplicate keys) in the deploy gate
 PyYAML>=6
+# reel_style.py: each result reel's own music, synthesised per match (2026-11-22)
+numpy
