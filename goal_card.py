@@ -176,95 +176,142 @@ def render(ev, out=None):
 WHISTLE_TITLE = {"ht": "نهاية الشوط الأول", "ft": "انتهت المباراة", "ko": "انطلقت المباراة"}
 
 
+WW, WH = 1080, 1350                              # the whistle card = the match poster's canvas
+
+
+def colors_for(game):
+    """{'home': (color, awayColor), 'away': (...)} from a 365scores game/
+    detail - the clubs' OWN colours, for a club our KITS table lacks
+    (matchup_card.kit_from_feed). {} when the detail has none."""
+    out = {}
+    for side, k in (("home", "homeCompetitor"), ("away", "awayCompetitor")):
+        c = (game or {}).get(k) or {}
+        if c.get("color"):
+            out[side] = (c.get("color"), c.get("awayColor"))
+    return out
+
+
 def render_whistle(ev, out=None):
-    """The half-time / full-time card (user, 2026-10-17: «نفس الصورة لبوست
-    نهاية الشوط الأول والمباراة»): the goal card's style with the whistle as
-    the headline, both crests in glass circles with the score between, the
-    rule, and each side's scorers beneath. ev = {kind 'ht'|'ft',
-    home, away, hs, as, comp, home_badge, away_badge, goals: [{s, p, m, t}]}."""
+    """The kick-off / half-time / full-time card in the MATCH POSTER's design
+    (user, 2026-11-22, of match_poster.py's card: «عجبنى ال design and style
+    الكارت ده - عايزك تعمل الكروت بالشكل ده», for the result, half-time and
+    kick-off cards). Two halves, each ONLY in its own club's colours
+    (match_poster.fills: our KITS table, then the feed's colours in
+    ev['feed'], then a neutral slate - never an invented colour), the crests
+    on white discs, the whistle on the red tag, the score in the dark pill on
+    the seam, each side's scorers under its own club, the facts in the dark
+    foot band. ev = {kind 'ko'|'ht'|'ft', home, away, hs, as, comp,
+    home_badge, away_badge, goals: [{s, p, m, t}], optional comp_label,
+    date (YYYY-MM-DD, default today in Cairo), feed}."""
+    import datetime
+    from zoneinfo import ZoneInfo
     import fb_cards as FC
-    img = Image.new("RGB", (W, H))
+    import match_poster as MP
+    from site_lib.dates import day_month
+    W_, H_ = WW, WH
+    kind = ev.get("kind") or "ft"
+    home, away = ev.get("home") or "", ev.get("away") or ""
+    comp_txt = ev.get("comp_label") or COMP_AR.get(int(ev.get("comp") or 0), "")
+    hf, af = MP.fills(home, away, comp_txt or None, ev.get("feed"))
+    img = Image.new("RGB", (W_, H_))
+    MP._half(img, W_ // 2, W_, hf)             # home on the right, as on every card
+    MP._half(img, 0, W_ // 2, af)
+    seam = Image.new("RGBA", (W_, H_), (0, 0, 0, 0))
+    ImageDraw.Draw(seam).rectangle([W_ // 2 - 26, 0, W_ // 2 + 26, H_], fill=(0, 0, 0, 70))
+    seam = seam.filter(ImageFilter.GaussianBlur(22))
+    img.paste(seam, (0, 0), seam)
     d = ImageDraw.Draw(img)
-    for y in range(H):
-        t = y / (H - 1)
-        d.line([(0, y), (W, y)], fill=tuple(round(p + (q - p) * t) for p, q in zip(TOP, BOT)))
-    glow = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-    ImageDraw.Draw(glow).ellipse([W // 2 - 420, 260, W // 2 + 420, 700], fill=(31, 148, 211, 80))
-    glow = glow.filter(ImageFilter.GaussianBlur(110))
-    img.paste(glow, (0, 0), glow)
+    INK_ = MP.INK
+
+    def ink(c):
+        # by BRIGHTNESS, not MP._light's channel sum: Leeds' yellow sums to
+        # 535 (not "light") yet white text on it did not read (preview of
+        # Chelsea 1-4 Leeds, 2026-11-22)
+        return INK_ if 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2] > 165 else WHITE
 
     def text_c(cx, y, s_, f, fill=WHITE):
         s_ = FC.ar(s_); d.text((cx - d.textlength(s_, font=f) / 2, y), s_, font=f, fill=fill)
-    def text_r(xr, y, s_, f, fill=WHITE):
-        s_ = FC.ar(s_); d.text((xr - d.textlength(s_, font=f), y), s_, font=f, fill=fill)
-    def text_l(xl, y, s_, f, fill=WHITE):
-        d.text((xl, y), FC.ar(s_), font=f, fill=fill)
-    def fit(s_, weight, size, max_w, min_size=18):
+
+    def fit(s_, weight, size, max_w, min_size=22):
         f = FC.font(weight, size)
         while d.textlength(FC.ar(s_), font=f) > max_w and size > min_size:
             size -= 2; f = FC.font(weight, size)
         return f
-    FC.wordmark_at(img, W / 2, 62, 76)
 
-    kind = ev.get("kind") or "ft"
+    # the head: the wordmark on a white pill, the whistle on the red tag
+    d.rounded_rectangle([W_ // 2 - 150, 44, W_ // 2 + 150, 136], 46, fill=WHITE, outline=(214, 222, 232), width=3)
+    FC.wordmark_at(img, W_ // 2, 90, 62, anchor="mm")
     title = WHISTLE_TITLE.get(kind, WHISTLE_TITLE["ft"])
-    ft_ = fit(title, "ExtraBold", 132, W - 120, 60)
-    tv = FC.ar(title)
-    tx = W / 2 - d.textlength(tv, font=ft_) / 2
-    d.text((tx + 5, 128 + 8), tv, font=ft_, fill=(4, 16, 36))
-    d.text((tx, 128), tv, font=ft_, fill=WHITE)
+    tf = FC.font("ExtraBold", 38)
+    tw = d.textlength(FC.ar(title), font=tf)
+    d.rounded_rectangle([W_ // 2 - tw / 2 - 30, 156, W_ // 2 + tw / 2 + 30, 222], 33, fill=MP.RED)
+    text_c(W_ // 2, 164, title, tf)
 
-    # the two crests in glass circles, the score between, name tags under
-    cy, R = 470, 128
-    for lbl, bdg, cx in ((ev.get("home"), ev.get("home_badge"), W - 110 - R), (ev.get("away"), ev.get("away_badge"), 110 + R)):
-        glass = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        gd = ImageDraw.Draw(glass)
-        gd.ellipse([cx - R, cy - R, cx + R, cy + R], fill=(255, 255, 255, 46), outline=(255, 255, 255, 170), width=4)
-        gd.ellipse([cx - R + 18, cy - R + 12, cx - R + 104, cy - R + 48], fill=(255, 255, 255, 40))
-        img.paste(glass, (0, 0), glass)
-        cr = _crest(bdg, 176)
+    # the two crests on white discs, the names under them
+    cy, r = 470, 170
+    for name, badge, cx, fill in ((home, ev.get("home_badge"), W_ * 3 // 4, hf),
+                                  (away, ev.get("away_badge"), W_ // 4, af)):
+        sh = Image.new("RGBA", (W_, H_), (0, 0, 0, 0))
+        ImageDraw.Draw(sh).ellipse([cx - r + 6, cy - r + 16, cx + r + 6, cy + r + 16], fill=(0, 0, 0, 110))
+        sh = sh.filter(ImageFilter.GaussianBlur(16))
+        img.paste(sh, (0, 0), sh)
+        d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=WHITE, outline=(214, 222, 232), width=4)
+        cr = _crest(badge, int(2 * r * 0.72))
         if cr is not None:
             img.paste(cr, (cx - cr.width // 2, cy - cr.height // 2), cr)
-        f = fit(lbl or "", "Bold", 30, 260, 18)
-        tw = d.textlength(FC.ar(lbl or ""), font=f)
-        d.rounded_rectangle([cx - tw / 2 - 14, cy + R + 16, cx + tw / 2 + 14, cy + R + 62], 10, fill=(31, 148, 211))
-        text_c(cx, cy + R + 20, lbl or "", f)
-    # home sits on the right; the kick-off card has no score yet - a «×»
-    score = "×" if kind == "ko" else f"{ev.get('as')} - {ev.get('hs')}"
-    fs = FC.font("ExtraBold", 136)
-    d.text((W / 2 - d.textlength(score, font=fs) / 2, cy - 88), score, font=fs, fill=WHITE)
+        else:
+            f1 = FC.font("ExtraBold", int(r * 0.9))
+            s1 = FC.ar(name.strip()[:1] or "?")
+            d.text((cx - d.textlength(s1, font=f1) / 2, cy - r * 0.6), s1, font=f1, fill=INK_)
+        text_c(cx, cy + r + 30, name, fit(name, "ExtraBold", 66, W_ // 2 - 70, 30), ink(fill))
 
-    # the rule (one line)
-    ry = 712
-    d.line([(90, ry), (W - 90, ry)], fill=WHITE, width=2)
+    # the score on the seam: a DARK pill with a white edge (it sits over two
+    # colours, either of which may be white). Home on the right.
+    hs, as_ = ev.get("hs"), ev.get("as")
+    score = f"{as_ if as_ is not None else 0} - {hs if hs is not None else 0}"
+    sf = FC.font("ExtraBold", 104)
+    sw = d.textlength(score, font=sf)
+    py0, py1 = 790, 930
+    d.rounded_rectangle([W_ // 2 - sw / 2 - 44, py0, W_ // 2 + sw / 2 + 44, py1], 70, fill=INK_, outline=WHITE, width=5)
+    bx = d.textbbox((0, 0), score, font=sf)
+    d.text((W_ // 2 - (bx[0] + bx[2]) / 2, (py0 + py1) / 2 - (bx[1] + bx[3]) / 2), score, font=sf, fill=WHITE)
 
-    # the scorers, one column per side (home right)
+    # each side's scorers under its own club, in that half's ink
     goals = ev.get("goals") or []
+
     def line_of(g):
         t = {"ج": " (ج)", "عكسية": " (عكسي)"}.get(g.get("t") or "", "")
-        m = minute_text(g.get("m"))
-        return f"{g.get('p') or ''} {m}'{t}" if m else f"{g.get('p') or ''}{t}"
-    fl = FC.font("Bold", 30)
-    for side_, xr, right in (("h", W - 100, True), ("a", 100, False)):
+        mn = minute_text(g.get("m"))
+        return f"{g.get('p') or ''} {mn}'{t}" if mn else f"{g.get('p') or ''}{t}"
+    for side_, cx, fill in (("h", W_ * 3 // 4, hf), ("a", W_ // 4, af)):
         rows = [line_of(g) for g in goals if g.get("s") == side_ and g.get("p")]
-        if len(rows) > 5:
-            rows = rows[:4] + [f"+{len(rows) - 4}"]
-        yy = 752
-        for r in rows:
-            if right:
-                d.ellipse([xr - 10, yy + 12, xr, yy + 22], fill=(246, 192, 60))
-                text_r(xr - 20, yy, r, fl)
-            else:
-                d.ellipse([xr, yy + 12, xr + 10, yy + 22], fill=(246, 192, 60))
-                text_l(xr + 20, yy, r, fl)
-            yy += 44
-    if kind == "ko":
-        text_c(W // 2, 760, "صافرة البداية · تابع النتيجة لحظة بلحظة على الموقع", FC.font("Bold", 30), SOFT)
-    elif not any(g.get("p") for g in goals):
-        text_c(W // 2, 760, "بلا أهداف" if (ev.get("hs") or 0) + (ev.get("as") or 0) == 0 else "", FC.font("Bold", 30), SOFT)
+        if len(rows) > 4:
+            rows = rows[:3] + [f"+{len(rows) - 3}"]
+        yy = 958
+        for row in rows:
+            f = fit(row, "Bold", 34, W_ // 2 - 110, 22)
+            rw = d.textlength(FC.ar(row), font=f)
+            x_r = cx + rw / 2
+            d.ellipse([x_r + 12, yy + 16, x_r + 26, yy + 30], fill=ink(fill))
+            text_c(cx, yy, row, f, ink(fill))
+            yy += 54
 
-    text_l(40, H - 44, "elgoon.com", FC.font("Bold", 22), SOFT)
-    text_r(W - 40, H - 44, COMP_AR.get(int(ev.get("comp") or 0), ""), FC.font("Bold", 22), SOFT)
+    # the foot: a dark band, so the facts read whatever the two colours are
+    band = Image.new("RGBA", (W_, H_), (0, 0, 0, 0))
+    ImageDraw.Draw(band).rectangle([0, 1196, W_, H_], fill=(8, 18, 40, 215))
+    img.paste(band, (0, 0), band)
+    date = ev.get("date") or datetime.datetime.now(ZoneInfo("Africa/Cairo")).date().isoformat()
+    try:
+        day = day_month(date, weekday=True)
+    except Exception:                                       # noqa: BLE001 - an odd date string
+        day = ""
+    line1 = " · ".join(x for x in (comp_txt, day) if x)
+    if line1:
+        text_c(W_ // 2, 1216, line1, fit(line1, "ExtraBold", 40, W_ - 100), WHITE)
+    # one script a line (an Arabic sentence with a Latin address came out in
+    # the wrong order on the poster)
+    line2 = "تابع المباراة لحظة بلحظة على الموقع" if kind == "ko" else "elgoon.com"
+    text_c(W_ // 2, 1280, line2, fit(line2, "Bold", 32, W_ - 100), (214, 226, 240))
     if out:
         img.save(out, quality=90, optimize=True)
     return img

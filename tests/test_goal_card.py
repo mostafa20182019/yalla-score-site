@@ -52,19 +52,39 @@ ck("2f render_bytes gives a JPEG", b[:3] == b"\xff\xd8\xff" and len(b) > 40_000,
 im2 = GC.render({**ev, "minute": "", "tag": "", "player": "هدف عكسي؟"})
 ck("3 no minute -> no chip, still renders", im2.size == (1080, 1080))
 
-# the half-time / full-time card (same style)
+# the kick-off / half-time / full-time card - the MATCH POSTER's design since
+# 2026-11-22 (user: «عايزك تعمل الكروت بالشكل ده»): 1080x1350, two halves in
+# the clubs' own colours, the score in the dark pill on the seam
 wev = {"kind": "ft", "home": "مانشستر سيتي", "away": "إبسويتش تاون", "hs": 3, "as": 2, "comp": 7, "home_badge": hb, "away_badge": ab,
+       "date": "2026-11-21",
        "goals": [{"s": "h", "p": "هالاند", "m": "12"}, {"s": "a", "p": "ديلاب", "m": "40", "t": "ج"}, {"s": "h", "p": "فودين", "m": "77"}, {"s": "h", "p": "هالاند", "m": "90+2"}, {"s": "a", "p": "هيرست", "m": "88"}]}
 wim = GC.render_whistle(wev)
-ck("4a the whistle card is square too", wim.size == (1080, 1080))
-band2 = wim.crop((100, 140, 980, 280)); white2 = sum(1 for p in band2.getdata() if min(p) > 230)
-ck("4b the headline «انتهت المباراة» is drawn large", white2 > 6000, str(white2))
-ck("4c the rule sits under the crests, unbroken through the middle", min(wim.getpixel((540, 712))) > 200 and min(wim.getpixel((200, 712))) > 200)
+ck("4a the whistle card is the match poster's size", wim.size == (GC.WW, GC.WH) == (1080, 1350))
+_red = wim.crop((440, 160, 640, 218)); _rp = sum(1 for p in _red.getdata() if p[0] > 190 and p[1] < 90 and p[2] < 110)
+ck("4b the whistle sits on the poster's RED tag under the wordmark", _rp > 4000, str(_rp))
+import match_poster as MP
+_hf, _af = MP.fills("مانشستر سيتي", "إبسويتش تاون", "الدوري الإنجليزي", {})
+_near = lambda p, c: sum(abs(x - y) for x, y in zip(p, c)) < 90
+ck("4c the right half is the HOME club's own colour, the left the away's",
+   _near(wim.getpixel((1060, 250)), _hf) and _near(wim.getpixel((20, 250)), _af),
+   f"{wim.getpixel((1060, 250))} {_hf} | {wim.getpixel((20, 250))} {_af}")
+_pill = wim.getpixel((540, 800 + 8))
+ck("4c2 the score pill on the seam is the poster's dark ink", max(_pill) < 90 or min(_pill) > 230, str(_pill))
+ck("4c3 the foot band is dark", max(wim.getpixel((540, 1340))) < 70, str(wim.getpixel((540, 1340))))
 wb = GC.render_whistle_bytes({**wev, "kind": "ht", "goals": []})
 ck("4d render_whistle_bytes gives a JPEG for a goalless half", wb[:3] == b"\xff\xd8\xff")
-# 5 the kick-off card (2026-10-18): the whistle layout with «انطلقت المباراة», a «×» instead of a score
+# the feed's own colours for a club our KITS table lacks (Leeds: white + yellow)
+_fe = {"home": ("#1532C1", "#0A0A0A"), "away": ("#FDF9F9", "#F4F330")}
+_li = GC.render_whistle({**wev, "home": "تشيلسي", "away": "ليدز يونايتد", "feed": _fe})
+_lp = _li.getpixel((20, 250))
+ck("4e a club outside our KITS table takes the feed's OWN colour (Leeds' yellow, not the grey slate)",
+   _lp[0] > 200 and _lp[1] > 200 and _lp[2] < 120, str(_lp))
+ck("4f colors_for reads the game detail's color / awayColor per side",
+   GC.colors_for({"homeCompetitor": {"color": "#1532C1", "awayColor": "#0A0A0A"}, "awayCompetitor": {}})
+   == {"home": ("#1532C1", "#0A0A0A")} and GC.colors_for({}) == {})
+# 5 the kick-off card: «انطلقت المباراة» on the tag, 0 - 0 in the pill
 kim = GC.render_whistle({**wev, "kind": "ko", "hs": 0, "as": 0, "goals": []})
-ck("5a the kick-off card renders at the whistle card's size", kim.size == (GC.W, GC.H))
+ck("5a the kick-off card renders at the whistle card's size", kim.size == (GC.WW, GC.WH))
 ck("5b WHISTLE_TITLE knows the kick-off", GC.WHISTLE_TITLE.get("ko") == "انطلقت المباراة")
 kb = GC.render_whistle_bytes({**wev, "kind": "ko", "hs": 0, "as": 0, "goals": []})
 ck("5c render_whistle_bytes gives a JPEG for the kick-off", kb[:3] == b"\xff\xd8\xff")
@@ -89,7 +109,7 @@ ck("6e a real minute still prints", "الدقيقة 63" in FP.goal_caption(
     {"id": 1, "c": 624, "h": "x", "a": "y", "hs": 1, "as": 0}, {"s": "h", "p": "زيزو", "m": "63"}))
 _wl = GC.render_whistle({"kind": "ht", "home": "x", "away": "y", "hs": 1, "as": 0, "comp": 624,
                          "goals": [{"s": "h", "p": "زيزو", "m": "استراحة"}]}, os.path.join(tempfile.mkdtemp(), "w.jpg"))
-ck("6f the whistle card renders a break-label goal (name only, no «استراحة'»)", _wl.size == (GC.W, GC.H))
+ck("6f the whistle card renders a break-label goal (name only, no «استراحة'»)", _wl.size == (GC.WW, GC.WH))
 
 # 2026-10-24 (same match): the list showed Pyramids 2-1 for ONE refresh, the
 # Worker dispatched the phantom away goal, the match ended 4-0. The runner

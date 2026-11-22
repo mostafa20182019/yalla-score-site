@@ -1126,7 +1126,8 @@ def whistle_post(token, payload, dry=False):
             game = GC._s365_game(g["id"])
             hb, ab = GC.badges_for(game)
             img = GC.render_whistle_bytes({"kind": kind, "home": g["h"], "away": g["a"], "hs": g["hs"], "as": g["as"],
-                                           "comp": g.get("c") or 0, "home_badge": hb, "away_badge": ab, "goals": goals})
+                                           "comp": g.get("c") or 0, "home_badge": hb, "away_badge": ab, "goals": goals,
+                                           "feed": GC.colors_for(game)})
             pid = post_photo(token, img, caption)
             print(f"posted the {kind} card for {ref}: {pid}")
         except Exception as e:  # noqa: BLE001

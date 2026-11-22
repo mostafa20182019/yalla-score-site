@@ -312,7 +312,21 @@ def whistle_event(m, ge_idx):
     cid = next((k for k, v in GC.COMP_AR.items() if v == label), 0)
     return {"kind": "ft", "home": b.ar_team(m.get("home")), "away": b.ar_team(m.get("away")),
             "hs": m.get("home_score"), "as": m.get("away_score"), "comp": cid,
+            "comp_label": label, "date": m.get("kickoff"), "feed": _feed_colors(m),
             "home_badge": m.get("home_badge"), "away_badge": m.get("away_badge"), "goals": goals}
+
+
+def _feed_colors(m):
+    """The two clubs' own colours from the 365scores game detail (for a club
+    our KITS table lacks); {} offline or when the match cannot be resolved -
+    the card then falls back to our table and the neutral slate."""
+    try:
+        import goal_card as GC
+        import match_brief as MB
+        gid = MB.resolve_s365_game(m)
+        return GC.colors_for(GC._s365_game(gid)) if gid else {}
+    except Exception:                                   # noqa: BLE001 - offline / feed shape
+        return {}
 
 
 def whistle_png(m, ge_idx):
