@@ -45,6 +45,25 @@ ck("a club with no colours on record gets the neutral slate - never an invented 
 ck("a white club takes a colour of its own that is not light (white text on white is not a poster)",
    not MP._light(MP.fills("ريال مدريد", "الأهلي")[0]) or MP.fills("ريال مدريد", "الأهلي")[0] == MP.NEUTRAL_FILL)
 
+FEED = {"home": ("#FFFF00", "#CAC9CE"), "away": ("#282E60", "#0A0A0A")}
+hf, af = MP.fills("نادي غير معروف", "نادٍ آخر", None, FEED)
+ck("a club our table lacks takes its REAL colours from the feed (user, 2026-11-22), not the grey slate",
+   hf == (255, 255, 0) and af == (40, 46, 96), f"{hf} {af}")
+ck("our KITS table still wins over the feed for a club it has",
+   MP.fills("الأهلي", "نادٍ آخر", None, FEED)[0] == MP.fills("الأهلي", "نادٍ آخر")[0])
+src = open("match_poster.py", encoding="utf-8").read()
+ck("the run (main) fetches the feed colours and hands them to render and publish",
+   "FC._feed_colors(m)" in src and "render(m, args.out, feed)" in src and "publish(m, date, feed)" in src
+   and "render(m, feed=feed)" in src)
+_ys = MP.render({"match_id": 7, "home": "نادي غير معروف", "away": "نادٍ آخر", "competition": "X",
+                 "kickoff": "2026-11-23", "koff_time": "15:00"}, feed=FEED)
+from io import BytesIO                                  # noqa: E402
+from PIL import Image                                   # noqa: E402
+_im = Image.open(BytesIO(_ys)).convert("RGB")
+_dark = sum(1 for x in range(MP.W // 2 + 60, MP.W - 60, 3) for y in range(780, 880, 3)
+            if sum(_im.getpixel((x, y))) < 200)
+ck("a name on a yellow half is written dark (white on yellow does not read)", _dark > 60, str(_dark))
+
 print("2. which match, and the text")
 M = lambda i, h, a, comp, st="UPCOMING", t="20:00": {"match_id": i, "home": h, "away": a, "competition": comp,   # noqa: E731
                                                      "kickoff": "2026-11-23", "koff_time": t, "status": st}

@@ -119,7 +119,9 @@ def render(m, out=None, feed=None):
     img.paste(seam, (0, 0), seam)
 
     def ink(c):
-        return INK if _light(c) else WHITE
+        # by brightness, not the channel sum: a club yellow (Villarreal,
+        # Leeds) sums under _light yet white on it does not read
+        return INK if 0.299 * c[0] + 0.587 * c[1] + 0.114 * c[2] > 165 else WHITE
 
     def text_c(cx, y, s, f, fill):
         s = FC.ar(s)
@@ -240,7 +242,7 @@ def armed():
     return (os.environ.get("FB_POSTER", "") or "").strip().lower() == "on"
 
 
-def publish(m, date):
+def publish(m, date, feed=None):
     """Claim-then-post, kind 'poster' / the date: one poster a day. 0 = done
     or nothing to do, 1 = the post failed."""
     import fb_post as P
@@ -258,7 +260,7 @@ def publish(m, date):
         print(f"poster {date}: claimed by another run")
         return 0
     try:
-        pid = P.post_photo(token, render(m), caption(m))
+        pid = P.post_photo(token, render(m, feed=feed), caption(m))
         store.record_post(KIND, date, pid, title=f"{m.get('home')} x {m.get('away')}")
         print(f"posted poster {date}: {pid}")
         return 0
@@ -283,12 +285,17 @@ def main():
     if not m:
         print(f"poster {date}: none of our clubs has a match to play - nothing")
         return 0
+    # each club's real colours from the 365scores feed (a club our KITS table
+    # lacks was a grey half - user, 2026-11-22: «اعمل البوستر كمان بألوان
+    # الفرق الحقيقية»); {} offline, then the table / neutral slate as before
+    import fb_cards as FC
+    feed = FC._feed_colors(m)
     if args.out:
-        render(m, args.out)
+        render(m, args.out, feed)
         print(f"wrote {args.out}")
         print(caption(m))
     if args.publish:
-        return publish(m, date)
+        return publish(m, date, feed)
     return 0
 
 
