@@ -173,7 +173,8 @@ def render(ev, out=None):
     return img
 
 
-WHISTLE_TITLE = {"ht": "نهاية الشوط الأول", "ft": "انتهت المباراة", "ko": "انطلقت المباراة"}
+WHISTLE_TITLE = {"ht": "نهاية الشوط الأول", "ft": "انتهت المباراة", "ko": "انطلقت المباراة",
+                 "sh": "انطلق الشوط الثاني"}
 
 
 WW, WH = 1080, 1350                              # the whistle card = the match poster's canvas
@@ -310,7 +311,7 @@ def render_whistle(ev, out=None):
         text_c(W_ // 2, 1216, line1, fit(line1, "ExtraBold", 40, W_ - 100), WHITE)
     # one script a line (an Arabic sentence with a Latin address came out in
     # the wrong order on the poster)
-    line2 = "تابع المباراة لحظة بلحظة على الموقع" if kind == "ko" else "elgoon.com"
+    line2 = "تابع المباراة لحظة بلحظة على الموقع" if kind in ("ko", "sh") else "elgoon.com"
     text_c(W_ // 2, 1280, line2, fit(line2, "Bold", 32, W_ - 100), (214, 226, 240))
     if out:
         img.save(out, quality=90, optimize=True)

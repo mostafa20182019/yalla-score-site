@@ -30,6 +30,8 @@
  * is the ONE list; worker.js imports it for the report queue too.
  *
  *   - «⏸️ نهاية الشوط الأول»  once, the refresh that first sees the break
+ *   - «▶️ انطلق الشوط الثاني»  once, the refresh that first sees period 2 in
+ *                             play after the break (2026-11-22)
  *   - «🏁 انتهت المباراة»      once, the refresh that sees live -> ended,
  *                             with the scorers the store logged
  *
@@ -144,6 +146,12 @@ export function scorerLines(g, goals) {
 
 export function htMessage(g, goals) {
   return [`⏸️ نهاية الشوط الأول: ${scoreLine(g)}`, ...scorerLines(g, goals),
+          `${COMP_AR[g.c] || ""} · المباراة لحظة بلحظة: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
+          `#الجون ${tag(g.h)} ${tag(g.a)}`].join("\n");
+}
+
+export function shMessage(g, goals) {
+  return [`▶️ انطلق الشوط الثاني: ${scoreLine(g)}`, ...scorerLines(g, goals),
           `${COMP_AR[g.c] || ""} · المباراة لحظة بلحظة: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
           `#الجون ${tag(g.h)} ${tag(g.a)}`].join("\n");
 }
@@ -274,7 +282,7 @@ export async function goalFallbacks(env, now) {
   const out = { posted: 0 };
   const since = Math.floor((now - 6 * 3600 * 1000) / 1000);      // never dig up old claims
   const until = Math.floor((now - GOAL_FALLBACK_MS) / 1000);
-  for (const kind of ["goal", "ht", "ft", "ko"]) {
+  for (const kind of ["goal", "ht", "ft", "ko", "sh"]) {
     let rows = [];
     try { rows = (await env.DB.prepare(FB_STALE).bind(kind, until, since).all()).results || []; }
     catch (e) { continue; }
@@ -308,7 +316,8 @@ export async function livePosts(env, r, dispatch = null) {
   const hts = (r && r.hts || []).filter(x => postScope(x.g));
   const ends = (r && r.ends || []).filter(x => postScope(x.g));
   const kos = (r && r.kos || []).filter(x => postScope(x.g));
-  if (!posts.length && !cancels.length && !hts.length && !ends.length && !kos.length) return out;
+  const shs = (r && r.shs || []).filter(x => postScope(x.g));
+  if (!posts.length && !cancels.length && !hts.length && !ends.length && !kos.length && !shs.length) return out;
   if (!env.FB_PAGE_TOKEN) { console.log("live posts: no FB_PAGE_TOKEN -", posts.length + hts.length + ends.length, "post(s) not posted"); return out; }
   for (const { g, seq, ev } of posts) {
     // no scorer, no goal post (user, 2026-10-24): the Worker holds nameless
@@ -345,7 +354,7 @@ export async function livePosts(env, r, dispatch = null) {
   // half-time and full-time, after the goals so a 90' goal is announced before
   // the whistle; one post per game per kind (the lock), the card as the photo
   // (the kick-off first: it carries no goals and comes before anything else)
-  for (const [kind, list, text] of [["ko", kos, koMessage], ["ht", hts, htMessage], ["ft", ends, ftMessage]]) {
+  for (const [kind, list, text] of [["ko", kos, koMessage], ["ht", hts, htMessage], ["sh", shs, shMessage], ["ft", ends, ftMessage]]) {
     for (const { g } of list) {
       const ref = String(g.id);
       const goals = kind === "ko" ? [] : await goalsLogged(env, g.id);

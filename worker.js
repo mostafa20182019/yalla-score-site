@@ -528,6 +528,7 @@ const REPORT_INS = "/*rq_ins*/ INSERT OR IGNORE INTO report_queue (game_id, c, h
   "ended_at, due_at, tries) VALUES (?,?,?,?,?,?,?,?,0)";
 
 const KICKOFF_MAX_MIN = 5;   // a game first seen in play past this minute gets no «انطلقت» post
+const SECOND_HALF_MAX_MIN = 50;   // ...and a second half first seen past 50' gets no «انطلق الشوط الثاني»
 const LS_PREV_CHUNK = 80;    // game ids per ls_prev query: D1 allows 100 bound parameters (2026-10-18)
 const GOAL_INS = "/*lg_ins*/ INSERT OR IGNORE INTO live_goals (game_id, seq, side, player, minute, tag, " +
   "score_h, score_a, c, h, a, seen_at, held) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)";
@@ -633,7 +634,7 @@ async function storeApply(env, fresh, now) {
   const stmts = [];
   let upserts = 0, events = 0, ended = 0;
   const posts = [], cancels = [];   // goals discovered LIVE + VAR reversals -> liveposts.js
-  const hts = [], ends = [], kos = [];   // half-time / final whistle / kick-off -> liveposts.js
+  const hts = [], ends = [], kos = [], shs = [];   // half-time / final whistle / kick-off / second half -> liveposts.js
   const goalRow = (g, seq, ev, p = null, held = 0) => (p
     ? env.DB.prepare(GOAL_INS_IF).bind(g.id, seq, ev.s, ev.p || null, ev.m || null, ev.t || null, g.hs, g.as, g.c, g.h, g.a, now, held,
                                        g.id, p.changed_at == null ? null : Number(p.changed_at))
@@ -772,6 +773,12 @@ async function storeApply(env, fresh, now) {
     // minutes. The minute cap keeps a store that missed the start (a quiet
     // ten minutes, a cold isolate) from shouting «انطلقت» at 0-1 in the 20th.
     if (!p && g.live && (g.gt || 0) <= KICKOFF_MAX_MIN && (g.min || "") !== "استراحة" && curatedLive(g)) kos.push({ g });
+    // THE SECOND HALF (2026-11-22, user: «عايز ينزل بوست بداية الشوط الثانى
+    // للمباريات»): a game we saw at the break (or in the first half - a
+    // refresh can miss the break) now in play in period 2, in its opening
+    // minutes. Extra time is period 3/4, so its restart never says this.
+    if (p && p.live && g.live && !breakNow && Number(g.hf) === 2 && (breakBefore || Number(p.hf) === 1)
+        && (g.gt || 0) <= SECOND_HALF_MAX_MIN && curatedLive(g)) shs.push({ g });
     // The state row is written only when something MATERIAL changed. The
     // minute is deliberately not in that test (2026-09-17): it ticks for every
     // live game every minute, so including it cost one row write per live game
@@ -792,7 +799,8 @@ async function storeApply(env, fresh, now) {
       ? (keptList !== null ? (keptList.length ? JSON.stringify(keptList) : null) : (p && p.goals ? p.goals : null))
       : (newGoals.length ? JSON.stringify(newGoals) : null);
     const changed = !p || p.hs !== g.hs || p.as_ !== g.as || !!p.live !== !!g.live
-      || (p.goals || null) !== goalsJson || breakNow !== breakBefore;
+      || (p.goals || null) !== goalsJson || breakNow !== breakBefore
+      || (Number(p.hf) === 1 && Number(g.hf) === 2);   // the second half: a missed break must not re-trigger it
     if (changed) {
       // ... and only while the row is still the "before" this refresh read
       // (same race as GOAL_INS_IF: a slower overlapping refresh must not
@@ -856,7 +864,7 @@ async function storeApply(env, fresh, now) {
   // insert above reports 0 changes when an overlapping refresh got there
   // first (that refresh posted it), or when the seq already existed
   const applied = (i) => { const r = res[i]; return !(r && r.meta && r.meta.changes === 0); };
-  return { upserts, events, ended, posts: posts.filter(x => x.at == null || applied(x.at)), cancels, hts, ends, kos };
+  return { upserts, events, ended, posts: posts.filter(x => x.at == null || applied(x.at)), cancels, hts, ends, kos, shs };
 }
 
 // One refresh: upstream -> store. A failed upstream read changes nothing (the

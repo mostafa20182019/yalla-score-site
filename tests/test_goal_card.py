@@ -88,6 +88,20 @@ ck("5a the kick-off card renders at the whistle card's size", kim.size == (GC.WW
 ck("5b WHISTLE_TITLE knows the kick-off", GC.WHISTLE_TITLE.get("ko") == "انطلقت المباراة")
 kb = GC.render_whistle_bytes({**wev, "kind": "ko", "hs": 0, "as": 0, "goals": []})
 ck("5c render_whistle_bytes gives a JPEG for the kick-off", kb[:3] == b"\xff\xd8\xff")
+# 5d the second half (2026-11-22): «انطلق الشوط الثاني» on the tag, the half-time
+# score in the pill and the first-half scorers, one post per match
+sim = GC.render_whistle({**wev, "kind": "sh"})
+ck("5d the second-half card renders at the whistle card's size with its own title",
+   sim.size == (GC.WW, GC.WH) and GC.WHISTLE_TITLE.get("sh") == "انطلق الشوط الثاني")
+import fb_post as _FPsh
+_shc = _FPsh.whistle_caption("sh", {"id": 5, "c": 7, "h": "ليفربول", "a": "برينتفورد", "hs": 1, "as": 0},
+                             [{"s": "h", "p": "صلاح", "m": "30"}])
+ck("5e the second-half caption = liveposts.js's shMessage (score, scorer, live link)",
+   _shc.startswith("▶️ انطلق الشوط الثاني: ليفربول 1 - 0 برينتفورد") and "ليفربول: صلاح 30'" in _shc
+   and "المباراة لحظة بلحظة: https://elgoon.com/m/5" in _shc, _shc)
+_wjs = open("liveposts.js", encoding="utf-8").read()
+ck("5f the Worker posts it as kind 'sh' and resends the text if the card never comes",
+   '["sh", shs, shMessage]' in _wjs and '"ko", "sh"]' in _wjs)
 
 # 2026-10-24: Pyramids 3-0 El Merrikh Bentiu - a score-only goal first seen
 # during the break carried the Worker's break label as its minute. The post

@@ -431,6 +431,42 @@ detailFor[985] = withStatus(DETAIL(0, 0, [], undefined), { statusText: "الشو
 await tick();
 ck("20e the next minute posts no second kick-off", posts().length === nKo + 1);
 
+/* --------------------------- 10d the second-half post (2026-11-22) */
+// user: «عايز ينزل بوست بداية الشوط الثانى للمباريات». Once, the refresh that
+// first sees period 2 in play after the break (or after the first half, when
+// a refresh missed the break), in its opening minutes only.
+const H1 = (m) => ({ statusText: "الشوط الأول", shortStatusText: "1", gameTime: m, gameTimeDisplay: `${m}'` });
+const H2 = (m) => ({ statusText: "الشوط الثاني", shortStatusText: "2", gameTime: m, gameTimeDisplay: `${m}'` });
+const nSh = posts().length;
+detailFor[3001] = withStatus(DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]), H1(40));
+LIST = { games: [live(3001, 7, "ليفربول", "برينتفورد", 1, 0, H1(40)), live(3002, 7, "إيفرتون", "فولهام", 0, 0, H1(40)),
+                 live(3003, 7, "أرسنال", "توتنهام", 0, 0, H1(40)), live(3005, 7, "ليفربول", "بيرنلي", 0, 0, H1(40)), ...filler] };
+await tick();
+detailFor[3001] = withStatus(DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]), HT_STATUS);
+LIST.games[0] = live(3001, 7, "ليفربول", "برينتفورد", 1, 0, HT_STATUS);
+LIST.games[1] = live(3002, 7, "إيفرتون", "فولهام", 0, 0, HT_STATUS);
+await tick();
+const nSh1 = posts().length;
+ck("20f the break before it: the half-time post only", nSh1 === nSh + 1 && db.fb.has("ht|3001") && !db.fb.has("sh|3001"));
+detailFor[3001] = withStatus(DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]), H2(46));
+LIST.games[0] = live(3001, 7, "ليفربول", "برينتفورد", 1, 0, H2(46));
+LIST.games[1] = live(3002, 7, "إيفرتون", "فولهام", 0, 0, H2(46));     // not curated: no post
+LIST.games[2] = live(3003, 7, "أرسنال", "توتنهام", 0, 0, H2(47));       // the break was missed: still a second half
+LIST.games[3] = live(3005, 7, "ليفربول", "بيرنلي", 0, 0, H2(62));       // first seen in play at 62': too late to say «انطلق»
+LIST.games.push(live(3004, 7, "تشيلسي", "برينتفورد", 0, 0, H2(47)));    // never seen before: no «before», no post
+await tick();
+const shPosts = posts().slice(nSh1);
+ck("20g «▶️ انطلق الشوط الثاني» once per curated game back from the break, with the score and the first-half scorer",
+   shPosts.length === 2 && shPosts.some(x => x.caption.startsWith("▶️ انطلق الشوط الثاني: ليفربول 1 - 0 برينتفورد")
+     && x.caption.includes("ليفربول: زيزو 30'") && x.caption.includes("https://elgoon.com/m/3001"))
+   && db.fb.has("sh|3001") && db.fb.has("sh|3003"), JSON.stringify(shPosts));
+ck("20h nothing for a club we do not follow, a game first seen in the second half, or a restart seen past 50'",
+   !db.fb.has("sh|3002") && !db.fb.has("sh|3004") && !db.fb.has("sh|3005"));
+for (const [i, m] of [[0, 47], [2, 48]]) LIST.games[i] = { ...LIST.games[i], ...H2(m) };
+detailFor[3001] = withStatus(DETAIL(1, 0, [{ s: "h", pid: 11, m: 30 }]), H2(47));
+await tick();
+ck("20i the next minute posts no second «انطلق الشوط الثاني»", posts().length === nSh1 + 2);
+
 /* ------------------------------- 11 the line-up CARD path (2026-10-17) */
 const envGh = { ...env, GH_TOKEN: "gh" };
 const tickGh = () => worker.scheduled({ cron: "* * * * *" }, envGh, {});

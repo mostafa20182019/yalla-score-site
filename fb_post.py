@@ -1078,7 +1078,7 @@ def whistle_caption(kind, g, goals):
         lines = [f"{head}: {g['h']} × {g['a']}"]
         goals = []
     else:
-        head = "⏸️ نهاية الشوط الأول" if kind == "ht" else "🏁 انتهت المباراة"
+        head = {"ht": "⏸️ نهاية الشوط الأول", "sh": "▶️ انطلق الشوط الثاني"}.get(kind, "🏁 انتهت المباراة")
         lines = [f"{head}: {g['h']} {g['hs']} - {g['as']} {g['a']}"]
     by = {"h": [], "a": []}
     for ev in goals or []:
@@ -1089,7 +1089,7 @@ def whistle_caption(kind, g, goals):
     if by["h"]: lines.append(f"{g['h']}: " + "، ".join(by["h"]))
     if by["a"]: lines.append(f"{g['a']}: " + "، ".join(by["a"]))
     comp = GOAL_COMP_AR.get(int(g.get("c") or 0), "")
-    link = "المباراة لحظة بلحظة" if kind in ("ht", "ko") else "تفاصيل المباراة والهدافون"
+    link = "المباراة لحظة بلحظة" if kind in ("ht", "ko", "sh") else "تفاصيل المباراة والهدافون"
     lines.append((f"{comp} · " if comp else "") + f"{link}: https://elgoon.com/m/{g['id']}")
     lines.append(f"#الجون {tag(g['h'])} {tag(g['a'])}")
     return "\n".join(lines)
@@ -1104,7 +1104,7 @@ def whistle_post(token, payload, dry=False):
     try:
         d = json.loads(payload)
         kind, g, goals = d["kind"], d["g"], d.get("goals") or []
-        assert kind in ("ht", "ft", "ko")
+        assert kind in ("ht", "ft", "ko", "sh")      # sh = the second half (2026-11-22)
     except Exception as e:  # noqa: BLE001
         print(f"--whistle: bad payload ({e})"); return 1
     ref = str(g["id"])
