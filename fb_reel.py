@@ -613,6 +613,23 @@ def _posted():
     return set(posted) | file_reel_matches(posted)
 
 
+def drafts_linking(match_id):
+    """The hand-made reel drafts (drafts/reels/<name>.txt) whose caption links
+    this match's page /m/<id> - [] for none or no id."""
+    if not match_id or not os.path.isdir(REEL_DRAFTS):
+        return []
+    pat = re.compile(rf"elgoon\.com/m/{re.escape(str(match_id))}\b")
+    out = []
+    for f in sorted(os.listdir(REEL_DRAFTS)):
+        if f.endswith(".txt"):
+            try:
+                if pat.search(open(os.path.join(REEL_DRAFTS, f), encoding="utf-8").read()):
+                    out.append(f[:-4])
+            except OSError:
+                pass
+    return out
+
+
 def file_reel_matches(posted):
     """Match ids that a posted HAND-MADE reel already covers: its caption
     (drafts/reels/<name>.txt) links the match page /m/<id>. That reel IS the

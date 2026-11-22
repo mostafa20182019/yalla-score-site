@@ -529,13 +529,21 @@ class Reel:
 
 
 # ================================================================ the music
-def music(cfg, path, secs):
+def music(cfg, path, secs, beats=None):
     """128 BPM in a minor key (its own key per match): kick, claps, hats, a
     driving bass, stab chords, a riser into the score and into the question,
-    and an IMPACT on every scene cut and every goal tick."""
+    and an IMPACT on every scene cut and every goal tick.
+
+    beats = {"total", "q", "cuts": [...], "hits": [...]} for a reel that is
+    not a result reel (a pre-match reel draws its own scenes); default = the
+    result reel's timeline."""
     import numpy as np                                   # noqa: PLC0415
     import wave                                          # noqa: PLC0415
-    t_ = timeline(cfg)
+    if beats is None:
+        t_ = timeline(cfg)
+        beats = {"total": t_["total"], "q": t_["q"],
+                 "cuts": [c for c in (0, 4, t_["stats"], t_["table"], t_["q"]) if c is not None],
+                 "hits": [6 + k * t_["step"] for k in range(len(cfg["goals"]))]}
     n = int(secs * SR) + SR // 2
     L, R = np.zeros(n), np.zeros(n)
     rng = np.random.default_rng(cfg.get("seed", 22))
@@ -569,7 +577,7 @@ def music(cfg, path, secs):
     boom = (np.sin(2 * np.pi * np.cumsum(38 + 90 * np.exp(-x * 6)) / SR) * np.exp(-x * 2.6)
             + rng.standard_normal(len(x)) * np.exp(-x * 9) * 0.5)
     prog = [(45, (57, 60, 64)), (41, (53, 57, 60)), (48, (55, 60, 64)), (43, (55, 59, 62))]
-    total = t_["total"]
+    total = int(math.ceil(beats["total"]))
     for bt in range(total):
         s = bt * BEAT
         intro = bt < 4
@@ -585,16 +593,15 @@ def music(cfg, path, secs):
         if bt % 4 in (0, 3):
             for k, mm in enumerate(chord):
                 at(saw(hz(mm), BEAT * 0.9, 5) * 0.07, s, pan=(k - 1) * 0.5)
-    for a, z in ((2, 4), (t_["q"] - 2, t_["q"])):
+    for a, z in ((2, 4), (beats["q"] - 2, beats["q"])):
         d = (z - a) * BEAT
         x = tt(d)
         r = rng.standard_normal(len(x)) * (x / d) ** 2 * 0.35
         at(r + np.sin(2 * np.pi * np.cumsum(200 + 900 * (x / d) ** 2) / SR) * (x / d) * 0.15, a * BEAT)
-    cuts = [0, 4, t_["stats"], t_["table"], t_["q"]]
-    for bt in [c for c in cuts if c is not None]:
+    for bt in beats["cuts"]:
         at(boom, bt * BEAT, 0.9)
-    for k in range(len(cfg["goals"])):
-        at(boom, (6 + k * t_["step"]) * BEAT, 0.55)
+    for bt in beats["hits"]:
+        at(boom, bt * BEAT, 0.55)
     mix = np.tanh(np.stack([L, R], 1) * 0.9)[:int(secs * SR)]
     fade = int(0.4 * SR)
     mix[-fade:] *= np.linspace(1, 0, fade)[:, None]

@@ -135,6 +135,11 @@ _orig = _store.posted_ids
 _store.posted_ids = lambda kind: {"file:liverpool-united-2026-11-22"}
 ck("...and _posted() hands that id to --plan / --auto", "560645" in R._posted())
 _store.posted_ids = _orig
+ck("a hand-made draft for today's match is found by its /m/<id> link (the h2h reel then stands aside)",
+   R.drafts_linking(4804736) == ["ahly-pyramids-2026-11-23"] and R.drafts_linking(None) == []
+   and R.drafts_linking(48047) == [])
+ck("h2h_reel --auto skips a meeting a hand-made reel covers",
+   "R.drafts_linking(nx.get(\"match_id\"))" in open("h2h_reel.py", encoding="utf-8").read())
 ck("numpy is in requirements.txt (the music needs it on the runner)",
    "numpy" in open("requirements.txt", encoding="utf-8").read())
 

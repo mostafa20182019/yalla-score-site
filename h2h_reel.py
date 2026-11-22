@@ -258,6 +258,13 @@ def main():
         todo = meeting_today(pool, today)
         if not todo:
             print(f"h2h reel {today}: no pair meets today"); return 0
+        # a HAND-MADE reel prepared for today's match (drafts/reels/<name>.txt
+        # links its /m/<id> page) already tells the head-to-head - the page
+        # gets that one, not two reels of the same match (2026-11-22: the
+        # الأهلي × بيراميدز pre-match reel of the 23rd)
+        todo = [(p, nx) for p, nx in todo if not R.drafts_linking(nx.get("match_id"))]
+        if not todo:
+            print(f"h2h reel {today}: a hand-made reel covers today's meeting - no h2h reel"); return 0
         pair = todo[0][0]
     else:
         pair = next((p for p in H.PAIRS if p["slug"] == args.pair), None)
