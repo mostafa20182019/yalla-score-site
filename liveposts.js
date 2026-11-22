@@ -81,16 +81,16 @@ export const CURATED_LIVE = [
   { t: "الزمالك", comps: EGY_LIVE_COMPS, exact: true, goals: true },
   { t: "بيراميدز", comps: EGY_LIVE_COMPS, exact: true, goals: true },
   { t: "مصر", comps: [588], exact: true, goals: true },
-  { t: "طرابزون سبور", comps: [78, 573] },
+  { t: "طرابزون سبور", comps: [78, 573], goals: true },
   // Al Hilal Omdurman (user 2026-11-13): the feed's own full name, exact, in the CAF Champions League
   { t: "الهلال السوداني", comps: [624], exact: true, goals: true },
-  { t: "ريال مدريد", comps: null },
-  { t: "برشلونة", comps: null },
-  { t: "مانشستر يونايتد", comps: null },
-  { t: "مانشستر سيتي", comps: null },
-  { t: "أرسنال", comps: null },
-  { t: "ليفربول", comps: null },
-  { t: "تشيلسي", comps: null },
+  { t: "ريال مدريد", comps: null, goals: true },
+  { t: "برشلونة", comps: null, goals: true },
+  { t: "مانشستر يونايتد", comps: null, goals: true },
+  { t: "مانشستر سيتي", comps: null, goals: true },
+  { t: "أرسنال", comps: null, goals: true },
+  { t: "ليفربول", comps: null, goals: true },
+  { t: "تشيلسي", comps: null, goals: true },
 ];
 // same normalisation match_brief._norm uses, so آرسنال matches أرسنال
 export const arNorm = (x) => (x || "").replace(/[أإآ]/g, "ا").replace(/ة/g, "ه").replace(/ى/g, "ي").trim();
@@ -102,10 +102,12 @@ export function curatedLive(g, list = CURATED_LIVE) {
     : (arNorm(g.h) + "|" + arNorm(g.a)).includes(arNorm(s.t))));
 }
 export const postScope = (g) => curatedLive(g);
-// A GOAL card: the Egyptian and Sudanese sides only (social review 2026-11-20:
-// a European night put 10-15 goal cards on the page - 18 of the 58 posts of
-// 8 November - on top of the kick-off, half-time and full-time posts, which
-// stay for every curated club and already name the scorers).
+// A GOAL card: the clubs flagged goals: true. From 2026-11-20 to 11-22 that
+// was the Egyptian and Sudanese sides only (social review: a European night
+// put 10-15 goal cards on the page - 18 of the 58 posts of 8 November); the
+// user brought them back for every curated club on 2026-11-22 («ليه مبقاش
+// ينزل بوستات مع الأهداف؟» -> «Bring them back»). Narrowing again = drop
+// the flag on that club's line.
 export const goalScope = (g) => curatedLive(g, CURATED_LIVE.filter(s => s.goals));
 
 const tag = (name) => "#" + (name || "").trim().replace(/\s+/g, "_");

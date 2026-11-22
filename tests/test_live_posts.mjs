@@ -337,25 +337,27 @@ ck("22 the break goes on: no second half-time post", posts().length === n1 + 1 &
 detailFor[970] = DETAIL(2, 0, [{ s: "h", pid: 11, m: 30 }, { s: "h", pid: 12, m: 78 }]);
 LIST.games[0] = live(970, 7, "ليفربول", "برينتفورد", 2, 0);
 await tick();
-// 2026-11-20: a goal card is for the Egyptian and Sudanese sides only - a
-// European curated club keeps kick-off, half-time and full-time, no «هدف!»
-ck("23 a European curated club's second-half goal posts NO goal card", posts().length === n1 + 1);
-ck("23b goal scope: الأهلي، بيراميدز، مصر and الهلال السوداني IN; ليفربول، أرسنال and طرابزون سبور OUT (still in the whistle scope)",
+// 2026-11-20 -> 11-22 goal cards were for the Egyptian and Sudanese sides
+// only; the user brought them back for every curated club on 11-22
+ck("23 a European curated club's second-half goal posts its «هدف!» again (2026-11-22)",
+   posts().length === n1 + 2 && posts()[n1 + 1].caption.startsWith("⚽ هدف! ليفربول 2 - 0 برينتفورد"), JSON.stringify(posts().slice(-1)));
+ck("23b goal scope: every curated club IN (الأهلي، بيراميدز، مصر، الهلال السوداني، ليفربول، أرسنال، طرابزون سبور); the Saudi الأهلي and المصري OUT",
    goalScope({ c: 552, h: "الأهلي", a: "سموحة" }) && goalScope({ c: 624, h: "بيراميدز", a: "الهلال السوداني" })
    && goalScope({ c: 588, h: "مصر", a: "أنغولا" }) && goalScope({ c: 624, h: "الهلال السوداني", a: "حوريا" })
-   && !goalScope({ c: 7, h: "ليفربول", a: "برينتفورد" }) && !goalScope({ c: 7, h: "أرسنال", a: "توتنهام" })
-   && !goalScope({ c: 573, h: "طرابزون سبور", a: "ليل" }) && postScope({ c: 7, h: "ليفربول", a: "برينتفورد" })
+   && goalScope({ c: 7, h: "ليفربول", a: "برينتفورد" }) && goalScope({ c: 7, h: "أرسنال", a: "توتنهام" })
+   && goalScope({ c: 573, h: "طرابزون سبور", a: "ليل" }) && CURATED_LIVE.every(s => s.goals)
+   && !goalScope({ c: 7, h: "إيفرتون", a: "فولهام" })
    && !goalScope({ c: 649, h: "الأهلي", a: "النصر" }) && !goalScope({ c: 552, h: "المصري", a: "إنبي" }));
 detailFor[970] = withStatus(DETAIL(2, 0, [{ s: "h", pid: 11, m: 30 }, { s: "h", pid: 12, m: 78 }]), { statusGroup: 4, statusText: "انتهت", shortStatusText: "انتهت" });
 LIST.games[0] = over(970, 7, "ليفربول", "برينتفورد", 2, 0);
 LIST.games[1] = over(971, 7, "إيفرتون", "فولهام", 1, 1);
 await tick();
 ck("24 the final whistle posts ONCE for the curated game, with both scorers",
-   posts().length === n1 + 2 && posts()[n1 + 1].caption.startsWith("🏁 انتهت المباراة: ليفربول 2 - 0 برينتفورد")
-   && posts()[n1 + 1].caption.includes("زيزو 30'") && posts()[n1 + 1].caption.includes("عمر جابر 78'")
-   && posts()[n1 + 1].caption.includes("https://elgoon.com/m/970"), JSON.stringify(posts().slice(-1)));
+   posts().length === n1 + 3 && posts()[n1 + 2].caption.startsWith("🏁 انتهت المباراة: ليفربول 2 - 0 برينتفورد")
+   && posts()[n1 + 2].caption.includes("زيزو 30'") && posts()[n1 + 2].caption.includes("عمر جابر 78'")
+   && posts()[n1 + 2].caption.includes("https://elgoon.com/m/970"), JSON.stringify(posts().slice(-1)));
 await tick();
-ck("25 an ended game stays ended: no second full-time post", posts().length === n1 + 2 && db.fb.has("ft|970") && !db.fb.has("ft|971"));
+ck("25 an ended game stays ended: no second full-time post", posts().length === n1 + 3 && db.fb.has("ft|970") && !db.fb.has("ft|971"));
 // the store bug the full-time post exposed: a fresh read with no goal list
 // (no detail) must not cancel the logged goals
 detailFor[980] = DETAIL(1, 0, [{ s: "h", pid: 11, m: 40 }]);
