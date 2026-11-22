@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-21T14:59:21+00:00",
+ "generated_at": "2026-11-22T14:09:33+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1728,6 +1728,18 @@
    "is_person": true,
    "source": "team-photos/man-united/arne-slot-liverpool-press-2024.jpg",
    "added": "2026-10-22",
+   "width": 1600
+  },
+  {
+   "file": "man-united-bruno-fernandes-manutd-psg-aug2026.jpg",
+   "credit": "صورة: برونو فيرنانديز قائد مانشستر يونايتد خلال مباراة ودية أمام باريس سان جيرمان في أغسطس 2026 — تصوير Jahrenvisuals، رخصة CC BY 4.0 (ويكيميديا كومنز)",
+   "subject": "برونو فيرنانديز قائد مانشستر يونايتد",
+   "club": "مانشستر يونايتد",
+   "slug": "man-united",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/man-united/bruno-fernandes-manutd-psg-aug2026.jpg",
+   "added": "2026-11-22",
    "width": 1600
   },
   {
