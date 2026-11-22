@@ -298,6 +298,10 @@ jobs:
         id: push
         if: steps.deploy.outcome == 'success'
         continue-on-error: true
+        # 2026-11-22 run 14489: this step hung 134 s and took the whole job
+        # past its 15 minutes (the deploy had already gone out); a hang here
+        # now costs two minutes, not the steps after it
+        timeout-minutes: 2
         env:
           VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
           CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
@@ -436,6 +440,10 @@ jobs:
         id: reelpub
         if: steps.reel.outputs.make == 'yes'
         continue-on-error: true
+        # the new-style reel (reel_style.py) renders in under a minute; a
+        # stuck upload must not run the job into its 15-minute cap - a killed
+        # claim is reclaimed after store.CLAIM_TTL_SEC
+        timeout-minutes: 5
         env:
           FB_REELS: ${{ vars.FB_REELS }}
           FB_PAGE_TOKEN: ${{ secrets.FB_PAGE_TOKEN }}

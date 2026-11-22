@@ -627,7 +627,7 @@ def render(cfg, out, exe, sheet=None):
     try:
         music(cfg, wav, secs)
         cmd = [exe, "-y", "-loglevel", "error", "-f", "rawvideo", "-pix_fmt", "rgb24", "-s", f"{W}x{H}",
-               "-r", str(FPS), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "medium", "-crf", "21",
+               "-r", str(FPS), "-i", "-", "-i", wav, "-c:v", "libx264", "-preset", "veryfast", "-crf", "21",
                "-maxrate", "2500k", "-bufsize", "5000k", "-pix_fmt", "yuv420p", "-profile:v", "high",
                "-c:a", "aac", "-b:a", "160k", "-ar", str(SR), "-ac", "2", "-shortest",
                "-movflags", "+faststart", out]
