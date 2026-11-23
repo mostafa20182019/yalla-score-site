@@ -140,6 +140,16 @@ ck("a hand-made draft for today's match is found by its /m/<id> link (the h2h re
    and R.drafts_linking(48047) == [])
 ck("h2h_reel --auto skips a meeting a hand-made reel covers",
    "R.drafts_linking(nx.get(\"match_id\"))" in open("h2h_reel.py", encoding="utf-8").read())
+FULL = ("⚔️ الأهلي × بيراميدز: آخر 14 مواجهة بينهما\n\nالأهلي فاز 7 · تعادل 3\n\nبتشجع مين؟ 👇\n\n"
+        "https://elgoon.com/h2h/al-ahly-pyramids\n#الجون #الأهلي #بيراميدز\n")
+ck("a reel's caption is its TITLE + the hashtags (user, 2026-11-23: «خلىه عنوان بس»)",
+   R.reel_caption(FULL) == "⚔️ الأهلي × بيراميدز: آخر 14 مواجهة بينهما\n\n#الجون #الأهلي #بيراميدز\n")
+ck("...but a licence credit line always stays (CC BY needs it)",
+   "رخصة CC BY 4.0" in R.reel_caption("هدف صلاح\nتفاصيل\n📷 الصورة: X — رخصة CC BY 4.0 عبر ويكيميديا كومنز\n"))
+ck("post_reel trims every reel at the one place they all go up",
+   "description = reel_caption(description)" in open("fb_reel.py", encoding="utf-8").read())
+ck("the result reel's title is its hook",
+   "' '.join(cfg['hook'])" in open("fb_reel.py", encoding="utf-8").read())
 ck("numpy is in requirements.txt (the music needs it on the runner)",
    "numpy" in open("requirements.txt", encoding="utf-8").read())
 

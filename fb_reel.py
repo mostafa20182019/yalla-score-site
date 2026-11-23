@@ -452,12 +452,30 @@ def page_id(token):
     return str(_get(f"{GRAPH}/me?fields=id&access_token={token}").get("id") or "")
 
 
+CREDIT_MARKS = ("رخصة", "📷", "🎥")      # a licence / photo / footage credit line stays, always
+
+
+def reel_caption(text):
+    """A reel's caption is its TITLE (user, 2026-11-23: «خلىه عنوان بس - بلاش
+    نحط محتويات الريل كله فى الكابشن»): the first line, any credit line a
+    licence requires (CC BY: «📷 الصورة: … رخصة …»), and the hashtags. Every
+    reel goes up through post_reel, so this is the one place; the caption
+    functions keep writing the full text (their tests read it)."""
+    lines = [ln.strip() for ln in (text or "").splitlines() if ln.strip()]
+    if not lines:
+        return text
+    keep = [lines[0]] + [ln for ln in lines[1:] if any(k in ln for k in CREDIT_MARKS)]
+    tags = next((ln for ln in reversed(lines[1:]) if ln.startswith("#")), None)
+    return "\n".join(keep + (["", tags] if tags else [])) + "\n"
+
+
 def post_reel(token, path, description):
     """start → upload the bytes → finish. Returns the video id.
 
     Not the feed endpoint fb_post.py uses: a reel is a resumable upload to a
     URL the API hands back, authenticated with an OAuth header rather than a
     query parameter."""
+    description = reel_caption(description)
     pid = page_id(token)
     if not pid:
         raise RuntimeError("could not read the page id from the token")
@@ -590,8 +608,7 @@ def make_reel(m, ctx, path):
         import reel_style as RS                      # noqa: PLC0415
         cfg = RS.cfg_for(m)
         RS.render(cfg, path, exe)
-        q = " ".join(cfg["question"])
-        return True, f"{q} {' ولا '.join(cfg['options'])}؟ اكتب رأيك في الكومنتات 👇\n\n{C.post_text(m)}"
+        return True, f"{' '.join(cfg['hook'])} 🔥\n\n{C.post_text(m)}"
     except Exception as e:                           # noqa: BLE001
         print(f"  the new-style reel failed ({str(e)[:160]}) - the still card instead")
     base, lay = staged(ctx)

@@ -335,7 +335,7 @@ def caption(ms, date, now=None):
     title, when = rel_label(date, now), day_name(date)
     head = title if when in title else f"{title} ({when})"      # the day is said once
     if hero is not None and len(ms) > 1:
-        lines = [f"⚽ {res(hero)}", f"وباقي {head}:", ""]
+        lines = [f"⚽ {head}: {res(hero)} وباقي النتائج", ""]
         lines += [res(m) for m in ms if m is not hero]
     else:
         lines = [f"⚽ {head}", ""] + [res(m) for m in ms]
