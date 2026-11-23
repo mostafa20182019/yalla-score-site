@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-22T14:09:33+00:00",
+ "generated_at": "2026-11-23T17:13:14+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -672,6 +672,18 @@
    "is_person": false,
    "source": "team-photos/barcelona/jersey-macro-wide.jpg",
    "added": "2026-10-18",
+   "width": 1600
+  },
+  {
+   "file": "barcelona-lamine-yamal-spain-nt-2025.jpg",
+   "credit": "صورة: لامين يامال بقميص منتخب إسبانيا خلال تصفيات كأس العالم 2026 (سبتمبر 2025) — تصوير Biso، رخصة CC BY 4.0 (ويكيميديا كومنز)",
+   "subject": "لامين يامال",
+   "club": "برشلونة",
+   "slug": "barcelona",
+   "year": 2025,
+   "is_person": true,
+   "source": "team-photos/barcelona/lamine-yamal-spain-nt-2025.jpg",
+   "added": "2026-11-23",
    "width": 1600
   },
   {
