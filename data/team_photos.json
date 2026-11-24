@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-24T08:10:51+00:00",
+ "generated_at": "2026-11-24T11:12:50+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -2880,6 +2880,18 @@
    "is_person": false,
    "source": "team-photos/trabzonspor/trabzonspor-medical-park-arena.jpg",
    "added": "2026-10-13",
+   "width": 1600
+  },
+  {
+   "file": "trabzonspor-mohamed-salah-egypt-nt-profile-nov2026.jpg",
+   "credit": "صورة: محمد صلاح مع منتخب مصر خلال مباراة الأرجنتين بكأس العالم 2026 — تصوير Bryan Berlin، رخصة CC BY-SA 4.0 (ويكيميديا كومنز)",
+   "subject": "محمد صلاح مع منتخب مصر خلال كأس العالم 2026",
+   "club": "طرابزون سبور",
+   "slug": "trabzonspor",
+   "year": 2026,
+   "is_person": true,
+   "source": "team-photos/trabzonspor/mohamed-salah-egypt-nt-profile-nov2026.jpg",
+   "added": "2026-11-24",
    "width": 1600
   },
   {
