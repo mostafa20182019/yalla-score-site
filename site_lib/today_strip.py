@@ -136,7 +136,7 @@ def match_centre(standings, matches, articles, ge_idx, fixtures=None):
     Phones show only that column (style.css)."""
     from site_lib.daylist import comp_hrefs, day_sections, inline_days
     from site_lib.render import Markup, render
-    from site_lib.snippets import FILTERS_HTML, MATCHES_JS
+    from site_lib.snippets import FILTERS_HTML, MATCHES_JS, SHOT_JS
     from site_lib.competitions import COMP_SLUG, LEAGUE_BAR
     from site_lib.crests import comp_icon
     from site_lib.shell import thumb_url
@@ -185,4 +185,4 @@ def match_centre(standings, matches, articles, ge_idx, fixtures=None):
             f'<div class="mp-main"><section class="ph-today" aria-label="المباريات">{days_html}</section></div>'
             '<aside class="mp-side mp-extra"><h2 class="mp-h">آخر الأخبار</h2>'
             f'{side}<a class="see-all" href="/news.html">كل الأخبار ←</a></aside></div>'
-            + MATCHES_JS)
+            + MATCHES_JS + SHOT_JS)

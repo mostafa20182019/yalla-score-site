@@ -1362,6 +1362,24 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
 /* the league heading opens its page (2026-10-31) */
 .comp-a{color:inherit;text-decoration:none}
 .comp-a:hover{color:var(--green-d);text-decoration:underline}
+/* «صورة مباريات البطولة» (2026-11-24): the camera on a league heading of the
+   day list + the preview it opens (snippets/shot_js.html). The button exists
+   only where the script runs (.shot-on). */
+.comp-shot{display:none}
+.shot-on .comp-h{display:flex;align-items:center;gap:8px}
+.shot-on .comp-h>.comp-a{flex:0 1 auto;min-width:0}
+.shot-on .comp-shot{display:inline-flex;align-items:center;justify-content:center;margin-inline-start:auto;flex:none;
+  width:34px;height:34px;border:1px solid #dbe3ec;border-radius:10px;background:#fff;color:var(--green-d);cursor:pointer;padding:0}
+.shot-on .comp-shot:hover{background:#e8f4fb;border-color:var(--green)}
+.shot-on .comp-shot:disabled{opacity:.5;cursor:progress}
+.shot-box{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:14px}
+.shot-box[hidden]{display:none}
+.shot-in{display:flex;flex-direction:column;gap:12px;max-height:100%;max-width:min(440px,100%)}
+.shot-img{display:block;max-width:100%;max-height:calc(100vh - 110px);object-fit:contain;border-radius:12px;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.35)}
+.shot-acts{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.shot-b{font:inherit;font-weight:800;font-size:.9rem;border:0;border-radius:10px;padding:9px 16px;cursor:pointer;text-decoration:none;background:var(--green-d);color:#fff}
+.shot-b[hidden]{display:none}
+.shot-x{background:#fff;color:var(--ink)}
 .comp .mlist{border:0;border-radius:0;box-shadow:none;margin:0}
 .mlist>.mrow{grid-template-columns:56px minmax(0,1fr) auto minmax(0,1fr) 56px;grid-template-areas:"pill home mid away hl";
   gap:4px 10px;padding:12px 10px;background:transparent;border:0;border-top:1px solid #eef2f6;
