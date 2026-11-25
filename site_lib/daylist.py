@@ -71,7 +71,7 @@ def day_sections(matches, ge_idx, hrefs=None):
                 block["pick"] = _door is not None
                 block["pick_slug"] = Markup(_door) if _door else ""
                 # a league with a predictions page: the button is a link to it
-                block["pick_href"] = Markup(pick_page(comp)) if _door else ""
+                block["pick_href"] = Markup(pick_page(comp, ms)) if _door is not None else ""
             for m in ms:
                 row = match_row(m, show_time=True, show_comp=False,
                                 goals=match_goals(ge_idx, m),

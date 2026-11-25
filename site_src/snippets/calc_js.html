@@ -101,6 +101,9 @@
     }); });
     var x=/^#m=([A-Za-z0-9-]{1,24})(?:\.([ha]))?$/.exec(location.hash||''), f=x&&byKey[x[1]];
     if(f){ FS=x[2]||''; ri=f.ri; DOOR=true; } else f=lead||first;
+    /* «توقّع وشارك» names the round the reader was looking at: #r=<n> */
+    var rn=/^#r=(\d{1,3})$/.exec(location.hash||'');
+    if(rn) D.rounds.forEach(function(r,i){ if(r.r===+rn[1]) ri=i; });
     FM=f?f.m:null;
   })();
   var ORD=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];

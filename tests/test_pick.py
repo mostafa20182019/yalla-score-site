@@ -70,8 +70,13 @@ ck("8 a later day of the same league: that day's own rows, never a round the rea
 ck("9 a cup, the national teams: that day's own rows", P.pick_door("CUP", [m(20, "أ", "ب")]) == "")
 ck("9b a league whose round has a predictions page sends the button there; any other opens the sheet",
    P.pick_page("L") == "" and P.pick_page("CUP") == ""
-   and (P._ROUNDS["L"].update(page=True) or P.pick_page("L")) == "/calc/l.html#r")
+   and (P._PAGES.update(L={"slug": "l", "rounds": [(8, {"90"}, {("س", "ص")}), (13, {"4"}, {("هـ", "و")})]}) or True)
+   and P.pick_page("L", [m(4, "ب", "د")]) == "/calc/l.html#r=13"        # by id: the round that day belongs to,
+   and P.pick_page("L", [m(77, "هـ", "و")]) == "/calc/l.html#r=13"      # by the pair,
+   and P.pick_page("L", [m(78, "ك", "ل")]) == "/calc/l.html"            # else the page as it opens
+   and P.pick_page("L", [m(4, "ب", "د", status="FINISHED", home_score=1)]) == "/calc/l.html")
 P._ROUNDS.clear()
+P._PAGES.clear()
 
 js = io.open("site_src/snippets/shot_js.html", encoding="utf-8").read()
 tpl = io.open("site_src/templates/_day.html", encoding="utf-8").read()
