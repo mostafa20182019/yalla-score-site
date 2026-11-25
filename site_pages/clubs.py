@@ -43,9 +43,18 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         # m_all (SEO review 2026-11-13: Trabzonspor's page showed 1 of its 11
         # scheduled matches). A match without a page yet is a row with no link.
         _seen = {m.get("match_id") for m in cm}
+        # a postponed match (2026-11-25, the Egypt Cup round of 16): the day
+        # window keeps its OLD date - unplayed, in the past - while the season
+        # file has the new one. The season's copy is the one that is still to
+        # come, so it is not dropped as «already seen».
+        _old = {m.get("match_id") for m in cm
+                if (m.get("status") or "").upper() not in ("FINISHED", "LIVE", "IN_PLAY", "PAUSED")
+                and m.get("home_score") is None and (m.get("kickoff") or "") < REF_TODAY}
         _later = [m for fx in (fx_by_comp or {}).values() for r in (fx or {}).get("rounds") or []
                   for m in r.get("matches") or []
-                  if m.get("match_id") not in _seen and _team_match(tp, m)
+                  if (m.get("match_id") not in _seen
+                      or (m.get("match_id") in _old and (m.get("kickoff") or "") >= REF_TODAY))
+                  and _team_match(tp, m)
                   and m.get("home") and m.get("kickoff")]
         # THE WHOLE SEASON is on the page (SEO review 2026-11-20: الأهلي's page
         # listed 5 of the 18 matches the data holds, and «جدول مباريات الأهلي
