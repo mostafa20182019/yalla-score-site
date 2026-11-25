@@ -424,7 +424,7 @@
       if(!rows.length) return;
       var urls=[]; rows.forEach(function(d){ urls.push(d.hc,d.ac); });
       run(go,{info:{label:cur.label, day:'توقعاتي · '+cur.what, rows:rows, live:false},
-              icon:cur.icon, urls:urls, draw:drawPicks, name:'elgoon-picks.png'},shut);
+              icon:cur.icon, urls:urls, draw:drawPicks, name:'elgoon-picks.png'});   /* the sheet stays: he may change a pick */
     });
     return sheet;
   }
@@ -475,6 +475,18 @@
     }).catch(day);
   }
 
+  /* for a page that holds its own data (/calc/<slug>): the same two images */
+  window.elgoonShot={
+    picks:function(btn,o){
+      var u=[]; o.rows.forEach(function(d){ u.push(d.hc,d.ac); });
+      run(btn,{info:{label:o.label, day:'توقعاتي · '+o.what, rows:o.rows, live:false}, icon:o.icon, urls:u, draw:drawPicks, name:'elgoon-picks.png'});
+    },
+    table:function(btn,o){
+      run(btn,{info:{label:o.label, day:o.what+' · '+today(), rows:o.rows, live:false}, icon:o.icon,
+               urls:o.rows.map(function(d){ return d.crest; }), draw:drawTable, name:'elgoon-table.png'});
+    }
+  };
+
   /* a chart's button sits on the heading above the chart, at its far end
      (user, 2026-11-25: «عايزه يظهر على الشمال جنب كلمة ترتيب الهدافين»).
      The chart has no heading of its own, so the button is moved up to the
@@ -489,7 +501,7 @@
     var b=e.target.closest&&e.target.closest('.comp-shot');
     if(b){ e.preventDefault(); e.stopPropagation(); shoot(b); return; }
     b=e.target.closest&&e.target.closest('.comp-pick');
-    if(b){ e.preventDefault(); e.stopPropagation(); pickOpen(b); }
+    if(b&&b.tagName!=='A'){ e.preventDefault(); e.stopPropagation(); pickOpen(b); }   /* a link = the league's own page */
   });
 })();
 </script>

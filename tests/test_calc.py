@@ -201,7 +201,11 @@ ck("26 the door for a club: its nearest open match and its side; a team with no 
    and K.calc_focus(d, 99) is None and K.calc_focus(None, 0) is None)
 ck("27 the page opens on a question, not on the word «حاسبة»; the round list keeps working without the hero",
    'id="calcHero" class="minfo calc-hero" hidden' in tpl and tpl.index('id="calcHero"') < tpl.index('id="calc"')
-   and "ماذا لو فاز فريقك؟" in tpl and "if(!hero||!elQ||!elHB||!elAns||!FM) return;" in body)
+   and "if(hero&&FM&&DOOR){ drawHero(); hero.hidden=false; }" in body and "if(!hero||!elQ||!elHB||!elAns||!FM) return;" in body)
+ck("28 the page opens on the round itself; the picks image and the table image each have a button, drawn by the «صورة» script",
+   tpl.index('id="calcMatches"') < tpl.index("الفوز يُحسب 1-0") and 'id="calcShotP" class="calc-shot" hidden' in tpl
+   and 'id="calcShotT" class="calc-shot"' in tpl and "S.picks(shotP," in body and "S.table(shotT," in body
+   and "window.elgoonShot={" in io.open("site_src/snippets/shot_js.html", encoding="utf-8").read())
 
 dist = os.path.join(os.getcwd(), "dist")
 if os.path.isdir(os.path.join(dist, "calc")):

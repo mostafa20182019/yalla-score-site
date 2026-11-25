@@ -225,7 +225,7 @@ def build():
     # «توقّع وشارك» (2026-11-25): each league's round, registered before the
     # FIRST page with a day list (the home page) - same map as prepare_league_data
     from site_lib.pick import set_pick_rounds
-    print(f"  + pick rounds: {set_pick_rounds({f.get('competition'): f for f in fixtures or [] if f.get('rounds')})}")
+    print(f"  + pick rounds: {set_pick_rounds({f.get('competition'): f for f in fixtures or [] if f.get('rounds')}, st_by_comp={s.get('competition'): s for s in standings or [] if s.get('table')})}")
     home_page(articles, fixtures, ge_idx, matches, standings)
     _match_arts, _moved = article_pages(articles, articles_all, matches, urls)
 

@@ -5,7 +5,7 @@
    separator by site_lib.render: break between tags, never inside a sentence. #}
 {{ page_head }}
 <nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/leagues.html">البطولات</a> › حاسبة ترتيب {{ label }}</nav>
-<h1 class="page-h">ماذا لو فاز فريقك؟ احسب ترتيب {{ label }} {{ season }}</h1>
+<h1 class="page-h">توقّع نتائج {{ label }} {{ season }} وشاهد الترتيب</h1>
 {# «ماذا لو؟» (user, 2026-11-25: «بحس ان لازم حد يشرحها للمستخدم»): ONE match,
    three big buttons that carry the teams' names, and the answer in words in
    the same place. The first tap explains the page. The script fills it. #}
@@ -16,12 +16,9 @@
   <div id="calcAns" class="calc-ans" role="status"></div>
   <p id="calcHeroGo" class="calc-hgo" hidden><button type="button" id="calcGoT">الجدول كاملًا ↓</button><button type="button" id="calcGoM">بقية المباريات ↓</button></p>
 </section>
-<section class="minfo">
-  <p>اختر نتيجة كل مباراة قادمة في {{ label }}، وشاهد جدول الترتيب يتغيّر أمامك فورًا. المتاح الآن: <b>{{ rounds_txt }}</b> و<b>{{ matches_txt }}</b> لم تُلعب بعد.</p>
-  <p class="hintline">الفوز يُحسب 1-0 والتعادل 1-1. عند تساوي النقاط يكون الترتيب بفارق الأهداف ثم الأهداف المسجلة، وقد تختلف لائحة البطولة الرسمية. اختياراتك تبقى في متصفحك فقط.</p>
-</section>
-<div id="calc" class="calc" data-slug="{{ slug }}">
+<div id="calc" class="calc" data-slug="{{ slug }}" data-label="{{ label }}" data-icon="{{ icon }}">
   <section class="minfo">
+    <p class="hintline calc-how">اختر الفائز أو التعادل في كل مباراة، ثم خذ صورة لتوقعاتك أو للجدول بعدها.</p>
     <div class="calc-nav">
       <button type="button" class="calc-prev" aria-label="الجولة السابقة" hidden>›</button>
       <h2 id="calcRound">الجولة {{ first_round }}</h2>
@@ -33,12 +30,14 @@
       {% endfor %}
     </div>
     <p class="calc-bar"><span id="calcCount"></span>{# the reader's own table as a link (#p=...): what brings the page back to Facebook and WhatsApp #}<a id="calcShare" class="share-btn" href="#" target="_blank" rel="noopener" hidden>شارك توقعك ↗</a><button type="button" id="calcReset" hidden>مسح التوقعات</button></p>
+    {# the two images (user, 2026-11-25): his picks for the round on screen, and the table after them #}
+    <p class="calc-shots"><button type="button" id="calcShotP" class="calc-shot" hidden><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5A4.5 4.5 0 1 1 12 17.5 4.5 4.5 0 0 1 12 8.5zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>صورة توقعاتي</span></button></p>
     {# what the last pick did to the two teams, kept in sight: on a phone the
        table is more than a screen below the buttons (site review 2026-11-19) #}
     <div id="calcFx" class="calc-fx" role="status" hidden><span id="calcFxText" class="calc-fx-t"></span><button type="button" id="calcFxGo" class="calc-fx-go">الجدول ↓</button></div>
   </section>
   <section class="minfo">
-    <h2>ترتيب {{ label }} بعد توقعاتك</h2>
+    <h2 class="calc-th"><span>ترتيب {{ label }} بعد توقعاتك</span><button type="button" id="calcShotT" class="calc-shot"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5A4.5 4.5 0 1 1 12 17.5 4.5 4.5 0 0 1 12 8.5zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>صورة الجدول</span></button></h2>
     <table class="calc-t">
       <thead><tr><th>#</th><th><span class="sr-only">التغيّر</span></th><th class="calc-tm">الفريق</th><th>لعب</th><th>+/-</th><th>نقاط</th></tr></thead>
       <tbody id="calcBody">
@@ -49,6 +48,10 @@
     </table>
   </section>
 </div>
+<section class="minfo">
+  <p>اختر نتيجة كل مباراة قادمة في {{ label }}، وشاهد جدول الترتيب يتغيّر أمامك فورًا. المتاح الآن: <b>{{ rounds_txt }}</b> و<b>{{ matches_txt }}</b> لم تُلعب بعد.</p>
+  <p class="hintline">الفوز يُحسب 1-0 والتعادل 1-1. عند تساوي النقاط يكون الترتيب بفارق الأهداف ثم الأهداف المسجلة، وقد تختلف لائحة البطولة الرسمية. اختياراتك تبقى في متصفحك فقط.</p>
+</section>
 {{ faq }}
 <p class="more-link">{% for link in links %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
 {{ crumbs_ld }}

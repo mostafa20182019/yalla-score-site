@@ -68,6 +68,9 @@ ck("7 the same match under another id is still the round's (the two feeds do not
 ck("8 a later day of the same league: that day's own rows, never a round the reader is not looking at",
    P.pick_door("L", [m(8, "أ", "د")]) == "")
 ck("9 a cup, the national teams: that day's own rows", P.pick_door("CUP", [m(20, "أ", "ب")]) == "")
+ck("9b a league whose round has a predictions page sends the button there; any other opens the sheet",
+   P.pick_page("L") == "" and P.pick_page("CUP") == ""
+   and (P._ROUNDS["L"].update(page=True) or P.pick_page("L")) == "/calc/l.html#r")
 P._ROUNDS.clear()
 
 js = io.open("site_src/snippets/shot_js.html", encoding="utf-8").read()
@@ -75,7 +78,8 @@ tpl = io.open("site_src/templates/_day.html", encoding="utf-8").read()
 css = io.open("site_src/style.css", encoding="utf-8").read()
 bs = io.open("build_site.py", encoding="utf-8").read()
 ck("10 the button sits after «صورة» on both kinds of heading, only where the day has something to call",
-   tpl.count('class="comp-pick"') == 2 and tpl.count("{% if c.pick %}") == 2
+   tpl.count('<button type="button" class="comp-pick"') == 2 and tpl.count('<a class="comp-pick" href="{{ c.pick_href }}"') == 2
+   and tpl.count("{% if c.pick %}") == 2
    and tpl.index('class="comp-shot"') < tpl.index('class="comp-pick"'))
 ck("11 no script, no canvas: no button", ".comp-pick{display:none}" in css and ".shot-on .comp-pick{display:inline-flex" in css)
 ck("12 the buttons are finger-sized and two fit a phone heading",
@@ -86,6 +90,8 @@ ck("13 no name is written as HTML, and the picks leave the browser only inside t
    and js.count("fetch(") == 1 and "fetch('/pick/'+slug+'.json')" in js)
 ck("14 the slug is checked before it is put in a path, and a failed fetch falls back to the day's rows",
    "/^[a-z0-9-]{1,40}$/.test(slug)" in js and "}).catch(day);" in js)
+ck("14b a link is left to the browser; the sheet stays open after the image so a pick can be changed",
+   "b&&b.tagName!=='A'" in js and "name:'elgoon-picks.png'},shut)" not in js)
 ck("15 a row that has started is not offered", "!r.classList.contains('mrow-live')&&!r.classList.contains('mrow-fin')" in js)
 ck("16 the rounds are registered before the first page with a day list",
    bs.index("set_pick_rounds(") < bs.index("    home_page(articles, fixtures"))

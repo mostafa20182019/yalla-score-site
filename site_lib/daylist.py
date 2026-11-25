@@ -66,10 +66,12 @@ def day_sections(matches, ge_idx, hrefs=None):
                 block["icon"] = Markup(comp_icon(comp))
                 # «توقّع وشارك» (2026-11-25): None = no button, "" = that
                 # day's rows, a slug = the league's round (site_lib/pick.py)
-                from site_lib.pick import pick_door
+                from site_lib.pick import pick_door, pick_page
                 _door = pick_door(comp, ms)
                 block["pick"] = _door is not None
                 block["pick_slug"] = Markup(_door) if _door else ""
+                # a league with a predictions page: the button is a link to it
+                block["pick_href"] = Markup(pick_page(comp)) if _door else ""
             for m in ms:
                 row = match_row(m, show_time=True, show_comp=False,
                                 goals=match_goals(ge_idx, m),

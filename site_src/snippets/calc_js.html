@@ -93,14 +93,14 @@
      reader's team), else the leader's nearest match, else the first match. */
   var hero=document.getElementById('calcHero'), elQ=document.getElementById('calcQ'), elHB=document.getElementById('calcHeroBtns'),
       elAns=document.getElementById('calcAns'), elHW=document.getElementById('calcHeroWhen'), elHGo=document.getElementById('calcHeroGo');
-  var FM=null, FS='';
+  var FM=null, FS='', DOOR=false;      /* the hero is for a reader a club's door sent (#m=) */
   (function(){
     var byKey={}, first=null, lead=null;
     D.rounds.forEach(function(r,i){ r.m.forEach(function(m){
       var f={m:m,ri:i}; byKey[m[0]]=f; if(!first) first=f; if(!lead&&(m[1]===0||m[2]===0)) lead=f;
     }); });
     var x=/^#m=([A-Za-z0-9-]{1,24})(?:\.([ha]))?$/.exec(location.hash||''), f=x&&byKey[x[1]];
-    if(f){ FS=x[2]||''; ri=f.ri; } else f=lead||first;
+    if(f){ FS=x[2]||''; ri=f.ri; DOOR=true; } else f=lead||first;
     FM=f?f.m:null;
   })();
   var ORD=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];
@@ -144,6 +144,22 @@
       elAns.appendChild(line);
     });
   }
+  /* the two images (2026-11-25): the picks of the round on screen, and the
+     table after every pick - drawn by the «صورة» script (window.elgoonShot) */
+  var shotP=document.getElementById('calcShotP'), shotT=document.getElementById('calcShotT'),
+      LABEL=root.getAttribute('data-label')||'', ICON=root.getAttribute('data-icon')||'';
+  if(shotP) shotP.addEventListener('click',function(){
+    var S=window.elgoonShot, r=D.rounds[ri]; if(!S) return;
+    var rows=r.m.filter(function(m){ return picks[m[0]]; }).map(function(m){
+      var h=D.teams[m[1]], a=D.teams[m[2]]; return {h:h.n, a:a.n, hc:h.c, ac:a.c, v:picks[m[0]]}; });
+    if(rows.length) S.picks(shotP,{label:LABEL, icon:ICON, what:'الجولة '+r.r, rows:rows});
+  });
+  if(shotT) shotT.addEventListener('click',function(){
+    var S=window.elgoonShot; if(!S) return;
+    S.table(shotT,{label:LABEL, icon:ICON, what:Object.keys(picks).length?'الترتيب بعد توقعاتي':'جدول الترتيب',
+      rows:table().map(function(r,p){ var gd=r.gf-r.ga;
+        return {pos:String(p+1), name:r.n, crest:r.c, n:[r.p,r.w,r.d,r.l,(gd>0?'+':'')+gd,r.pts].map(String)}; })});
+  });
   function drawRound(){
     var r=D.rounds[ri], lastW=null; elRound.textContent='الجولة '+r.r; elMs.textContent='';
     r.m.forEach(function(m){
@@ -167,6 +183,7 @@
       var as=el('span','calc-a'+(v==='a'?' calc-win':'')); as.appendChild(el('bdi','',a.n)); as.appendChild(crest(a)); row.appendChild(as);
       elMs.appendChild(row);
     });
+    if(shotP) shotP.hidden=!r.m.some(function(m){ return picks[m[0]]; });
     if(prev){ prev.hidden=false; prev.disabled=ri===0; }
     if(next){ next.hidden=false; next.disabled=ri===D.rounds.length-1; }
   }
@@ -193,6 +210,6 @@
   });
   root.classList.add('calc-on');
   drawRound(); drawTable(); count();
-  if(hero&&FM){ drawHero(); hero.hidden=false; }
+  if(hero&&FM&&DOOR){ drawHero(); hero.hidden=false; }
 })();
 </script>

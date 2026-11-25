@@ -4,9 +4,11 @@ gets a page, and what the script receives, lives in site_lib/calc.py; this
 only writes the pages."""
 import json
 import os
+import re
 
 from site_lib.calc import calc_counts, calc_data
 from site_lib.competitions import COMP_SLUG, comp_season
+from site_lib.crests import comp_icon
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME
 from site_lib.names import comp_label
 from site_lib.render import Markup, render
@@ -66,6 +68,8 @@ def calc_pages(fx_by_comp, season, st_by_comp, urls):
             links.append(f'<a href="/scorers/{slug}.html">هدافو {esc(label)} ←</a>')
         write(f"calc/{slug}.html", render(
             "calc.html", page_head=Markup(page_head), label=label, season=_season, slug=Markup(slug),
+            # the league's emblem, for the heading of the two images
+            icon=Markup((re.search(r'src="([^"]+)"', comp_icon(comp)) or [None, ""])[1]),
             rounds_txt=_cnt(n_rounds, "جولة واحدة", "جولتان", "جولات", "جولة"),
             matches_txt=_cnt(n_matches, "مباراة واحدة", "مباراتان", "مباريات", "مباراة"),
             first_round=first["r"],

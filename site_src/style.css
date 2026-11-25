@@ -1386,6 +1386,17 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
 .shot-on .comp-pick{display:inline-flex;align-items:center;justify-content:center;flex:none;height:30px;border:1px solid var(--green-d);
   border-radius:999px;background:var(--green-d);color:#fff;cursor:pointer;padding:0 12px;font:inherit;font-size:.8rem;font-weight:800;line-height:1;white-space:nowrap}
 .shot-on .comp-pick:disabled{opacity:.5;cursor:progress}
+.comp-pick,.comp-pick:hover{text-decoration:none}
+/* the two image buttons of /calc/<slug> (2026-11-25) */
+.calc-shot{display:none}
+.shot-on .calc-shot{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border:0;border-radius:999px;
+  background:var(--green-d);color:#fff;cursor:pointer;font:inherit;font-size:.86rem;font-weight:800;white-space:nowrap}
+.shot-on .calc-shot[hidden]{display:none}
+.calc-shot:disabled{opacity:.5;cursor:progress}
+.calc-shots{margin:10px 0 0}
+.calc-shots .calc-shot{width:100%}
+.calc-th{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.calc-how{margin:0 0 10px}
 /* two buttons on a phone: the camera keeps its icon and drops its word */
 @media(max-width:480px){.shot-on .comp-h:has(.comp-pick) .comp-shot span{display:none}.shot-on .comp-h:has(.comp-pick) .comp-shot{padding:0 9px}}
 .pick-box{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.72);display:flex;align-items:flex-end;justify-content:center}
@@ -1411,7 +1422,7 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
 .pick-n{flex:1;font-size:.8rem;font-weight:700;color:var(--muted)}
 .pick-go{font:inherit;font-size:.92rem;font-weight:800;min-height:46px;padding:0 18px;border:0;border-radius:12px;background:var(--green-d);color:#fff;cursor:pointer}
 .pick-go:disabled{opacity:.45;cursor:default}
-.shot-box{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:14px}
+.shot-box{position:fixed;inset:0;z-index:61;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:14px}
 .shot-box[hidden]{display:none}
 .shot-in{display:flex;flex-direction:column;gap:12px;max-height:100%;max-width:min(440px,100%)}
 .shot-img{display:block;max-width:100%;max-height:calc(100vh - 110px);object-fit:contain;border-radius:12px;background:#fff;box-shadow:0 8px 30px rgba(0,0,0,.35)}

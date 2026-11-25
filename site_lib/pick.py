@@ -52,9 +52,16 @@ def pick_round(fx):
     return None
 
 
-def set_pick_rounds(fx_by_comp, write=True):
+def set_pick_rounds(fx_by_comp, write=True, st_by_comp=None):
     """Register every league's round and write /pick/<slug>.json. Returns the
-    number of leagues."""
+    number of leagues.
+
+    st_by_comp (user, 2026-11-25: «يفتحله صفحة التوقعات... ويشوف الجدول وهوه
+    متغير بعد توقعاته»): a league whose round is the one its /calc/<slug> page
+    opens on sends the button THERE - the picks, the table after them and an
+    image of each, on a page he can come back to and edit. calc_data() is the
+    same test calc_pages() writes the page by, so the link never dangles."""
+    from site_lib.calc import calc_data
     _ROUNDS.clear()
     if write:
         os.makedirs(os.path.join(DIST, "pick"), exist_ok=True)
@@ -64,7 +71,9 @@ def set_pick_rounds(fx_by_comp, write=True):
             continue
         _ROUNDS[comp] = {"slug": slug, "r": rd["r"], "ids": {m["id"] for m in rd["m"]},
                          # the day list and the fixtures file do not always share an id
-                         "pairs": {(m["h"], m["a"]) for m in rd["m"]}}
+                         "pairs": {(m["h"], m["a"]) for m in rd["m"]}, "page": False}
+        cd = calc_data((st_by_comp or {}).get(comp), (fx_by_comp or {}).get(comp))
+        _ROUNDS[comp]["page"] = bool(cd and cd["rounds"][0]["r"] == rd["r"])
         if write:
             from site_lib.shell import write_text
             write_text(f"pick/{slug}.json", json.dumps(rd, ensure_ascii=False, separators=(",", ":")))
@@ -85,3 +94,10 @@ def pick_door(comp, day_matches):
                   or (ar_team(m.get("home") or ""), ar_team(m.get("away") or "")) in rd["pairs"] for m in opened):
         return rd["slug"]
     return ""
+
+
+def pick_page(comp):
+    """The league's predictions page for its round ("/calc/<slug>.html#r"), or
+    "" when it has none - the sheet opens instead."""
+    rd = _ROUNDS.get(comp)
+    return f'/calc/{rd["slug"]}.html#r' if rd and rd.get("page") else ""
