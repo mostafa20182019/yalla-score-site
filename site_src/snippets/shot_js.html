@@ -313,7 +313,7 @@
             draw:drawTable, name:'elgoon-table.png'};
   }
   function jobChart(btn){
-    var l=btn.closest('.sc-list'); if(!l) return null;
+    var l=btn._list||btn.closest('.sc-list'); if(!l) return null;
     var rows=[].slice.call(l.querySelectorAll('.sc-row')).filter(function(r){ return r.offsetParent!==null; })
       .slice(0,15).map(function(r){
         var im=r.querySelector('.sc-p img');
@@ -348,6 +348,15 @@
       },'image/png');
     }).catch(function(){ btn.disabled=false; });
   }
+  /* a chart's button sits on the heading above the chart, at its far end
+     (user, 2026-11-25: «عايزه يظهر على الشمال جنب كلمة ترتيب الهدافين»).
+     The chart has no heading of its own, so the button is moved up to the
+     one before it; a chart with no heading keeps it in its own first row. */
+  [].forEach.call(document.querySelectorAll('.sc-hd .comp-shot'),function(b){
+    var l=b.closest('.sc-list'), h=l&&l.previousElementSibling;
+    if(!h||!/^H[1-4]$/.test(h.tagName)) return;
+    b._list=l; h.classList.add('shot-h'); h.appendChild(b);
+  });
   /* delegated: day fragments fetched later carry the same button */
   document.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('.comp-shot');

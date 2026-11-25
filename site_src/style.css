@@ -1373,7 +1373,10 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
   padding:0 11px;font:inherit;font-size:.8rem;font-weight:800;line-height:1;white-space:nowrap}
 /* the same button on a standings heading and a scorers / assists chart (2026-11-25) */
 .shot-on .comp-shot.shot-sm{height:26px;padding:0 9px;font-size:.74rem}
-.shot-on .sc-hd .comp-shot{margin-inline-start:8px;vertical-align:middle}
+.shot-on .sc-hd span:has(>.comp-shot){display:flex;align-items:center;justify-content:space-between;gap:8px}
+/* the chart's button, moved by the script to the heading above the chart:
+   the title on the right, the button at the far left (2026-11-25) */
+.shot-on .shot-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .shot-on .lt-head .comp-shot{order:9}      /* first in the markup, last on screen */
 .shot-on .comp-shot:hover{background:#e8f4fb;border-color:var(--green)}
 .shot-on .comp-shot:disabled{opacity:.5;cursor:progress}
