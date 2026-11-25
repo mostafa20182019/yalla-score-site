@@ -168,6 +168,18 @@ ck("21 the standings page links here only when the same test passes",
 bs = io.open("build_site.py", encoding="utf-8").read()
 ck("22 the build writes the pages before the sitemap", bs.index("calc_pages(fx_by_comp") < bs.index("robots_sitemap_ads(articles, urls)"))
 
+# a postponed match re-listed under a new id is ONE match (the Saudi round 13, 2026-11-25)
+import copy
+fx3 = copy.deepcopy(FX)
+_m0 = next(x for x in fx3["rounds"][0]["matches"] if x.get("home_score") is None)
+_dup = dict(_m0, match_id=987654, status="POSTPONED", kickoff="2026-01-01")
+fx3["rounds"][0]["matches"].append(_dup)
+d3 = K.calc_data(ST, fx3)
+ck("23b a postponed row whose pair is listed again on a new date is dropped; a postponed match listed once stays",
+   d3 and K.calc_counts(d3) == K.calc_counts(d) and "987654" not in [x[0] for r in d3["rounds"] for x in r["m"]]
+   and K.calc_counts(K.calc_data(ST, {"rounds": [dict(r, matches=[dict(x, status="POSTPONED") if x is r["matches"][0] else x
+                                                          for x in r["matches"]]) for r in FX["rounds"]]})) == K.calc_counts(d))
+
 # ------------------------------------------------- «ماذا لو؟» (2026-11-25)
 # ONE match with three named buttons in front of the page, the answer in words
 hero_h = harness.replace(

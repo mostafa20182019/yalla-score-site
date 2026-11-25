@@ -121,4 +121,9 @@ def pick_page(comp, day_matches=()):
         for n, ids, pairs in pg["rounds"]:
             if str(m.get("match_id")) in ids or pair in pairs:
                 return f'/calc/{pg["slug"]}.html#r={n}'
+    # nothing open that day (today's matches have started): the round the
+    # league plays next, when the page has it
+    nxt = (_ROUNDS.get(comp) or {}).get("r")
+    if nxt in [n for n, _i, _p in pg["rounds"]]:
+        return f'/calc/{pg["slug"]}.html#r={nxt}'
     return f'/calc/{pg["slug"]}.html'

@@ -67,11 +67,18 @@ def day_sections(matches, ge_idx, hrefs=None):
                 # «توقّع وشارك» (2026-11-25): None = no button, "" = that
                 # day's rows, a slug = the league's round (site_lib/pick.py)
                 from site_lib.pick import pick_door, pick_page
+                from site_lib.config import REF_TODAY
                 _door = pick_door(comp, ms)
                 block["pick"] = _door is not None
                 block["pick_slug"] = Markup(_door) if _door else ""
                 # a league with a predictions page: the button is a link to it
                 block["pick_href"] = Markup(pick_page(comp, ms)) if _door is not None else ""
+                # a league with a page keeps its button on today's heading
+                # after today's matches kicked off (user, 2026-11-25: «الدورى
+                # المصرى فى ماتشات النهاردة الايقونة مش موجودة»): the page
+                # opens on the round that comes next
+                if _door is None and d >= REF_TODAY and pick_page(comp):
+                    block["pick"], block["pick_href"] = True, Markup(pick_page(comp))
             for m in ms:
                 row = match_row(m, show_time=True, show_comp=False,
                                 goals=match_goals(ge_idx, m),

@@ -43,6 +43,13 @@ def calc_data(st, fx):
               "d": int(r.get("draw") or 0), "l": int(r.get("lost") or 0),
               "gf": int(r.get("gf") or 0), "ga": int(r.get("ga") or 0),
               "pts": int(r.get("pts") or 0)} for r in table]
+    # a postponed match the feed has since re-listed under a NEW id (the Saudi
+    # round 13, 2026-11-25: nine «مؤجلة» rows beside the same nine fixtures on
+    # their new dates - the round showed 18 matches and every pick could be
+    # counted twice): the old row is dropped when the same home-away pair has
+    # another, non-postponed row in the season
+    listed = {(m.get("home"), m.get("away")) for rd in fx["rounds"] for m in rd.get("matches") or []
+              if (m.get("status") or "").upper() != "POSTPONED"}
     rounds = []
     for rd in fx["rounds"]:
         if rd.get("label") or not isinstance(rd.get("round"), int):
@@ -50,6 +57,8 @@ def calc_data(st, fx):
         ms = []
         for m in rd.get("matches") or []:
             if (m.get("status") or "").upper() in _CLOSED or m.get("home_score") is not None:
+                continue
+            if (m.get("status") or "").upper() == "POSTPONED" and (m.get("home"), m.get("away")) in listed:
                 continue
             h, a = idx.get(m.get("home")), idx.get(m.get("away"))
             if h is None or a is None or h == a:

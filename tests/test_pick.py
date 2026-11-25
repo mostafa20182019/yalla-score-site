@@ -74,7 +74,10 @@ ck("9b a league whose round has a predictions page sends the button there; any o
    and P.pick_page("L", [m(4, "ب", "د")]) == "/calc/l.html#r=13"        # by id: the round that day belongs to,
    and P.pick_page("L", [m(77, "هـ", "و")]) == "/calc/l.html#r=13"      # by the pair,
    and P.pick_page("L", [m(78, "ك", "ل")]) == "/calc/l.html"            # else the page as it opens
-   and P.pick_page("L", [m(4, "ب", "د", status="FINISHED", home_score=1)]) == "/calc/l.html")
+   and P.pick_page("L", [m(4, "ب", "د", status="FINISHED", home_score=1)]) == "/calc/l.html"
+   # nothing open that day: the round the league plays next
+   and (P._ROUNDS.update(L={"slug": "l", "r": 13, "ids": set(), "pairs": set()}) or True)
+   and P.pick_page("L") == "/calc/l.html#r=13" and P.pick_page("L", [m(4, "ب", "د", status="IN_PLAY")]) == "/calc/l.html#r=13")
 P._ROUNDS.clear()
 P._PAGES.clear()
 
