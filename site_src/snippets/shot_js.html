@@ -239,6 +239,36 @@
     });
   }
 
+  /* ---- «توقعاتي»: the reader's picks for a round (2026-11-25) ----
+     home on the right, away on the left like the site; the side he picked is
+     dark with «✓ يفوز» under it and the other side is faded; a draw sits in
+     the middle. Only the matches he picked are drawn. */
+  function drawPicks(info,pics){
+    var rows=info.rows, RH=128, body=rows.length*RH, CX=W/2;
+    frame(info,pics,body,rows.length>6?1350:1080,function(c,top){
+      rows.forEach(function(d,i){
+        var y=top+i*RH, cy=y+RH/2, CREST=70, MIDW=64;
+        if(i){ c.fillStyle='#e6ebf1'; c.fillRect(PAD+24,y,W-2*PAD-48,2); }
+        var hx=CX+MIDW+14, ax=CX-MIDW-14-CREST, nameW=W-PAD-22-(hx+CREST+16);
+        [[d.hc,hx,d.v==='h',d.h,'left',hx+CREST+16],[d.ac,ax,d.v==='a',d.a,'right',ax-16]].forEach(function(s){
+          var win=s[2], lost=d.v!=='d'&&!win, im=pics.crest[s[0]];
+          c.globalAlpha=lost?.4:1;
+          if(im) contain(c,im,s[1],cy-CREST/2,CREST);
+          else{ c.fillStyle='#e2e8f0'; c.beginPath(); c.arc(s[1]+CREST/2,cy,CREST/2-4,0,6.2832); c.fill(); }
+          c.direction='rtl'; c.textAlign=s[4]; c.fillStyle=INK;
+          c.fillText(fit(c,s[3],win?'900':'800',36,22,nameW),s[5],win?cy-18:cy);
+          c.globalAlpha=1;
+          if(win){ c.font='800 24px '+FONT; c.fillStyle='#15803d'; c.fillText('✓ يفوز',s[5],cy+24); }
+        });
+        c.direction='rtl'; c.textAlign='center';
+        if(d.v==='d'){
+          c.fillStyle='#15658f'; rr(c,CX-MIDW+6,cy-27,2*MIDW-12,54,27); c.fill();
+          c.font='900 28px '+FONT; c.fillStyle='#fff'; c.fillText('تعادل',CX,cy+1);
+        }else{ c.font='800 30px '+FONT; c.fillStyle='#cbd5e1'; c.fillText('×',CX,cy); }
+      });
+    });
+  }
+
   /* ---- the preview: the image + share / download ---- */
   var box, blobNow, nameNow;
   function ui(){
@@ -331,7 +361,9 @@
 
   function shoot(btn){
     var k=btn.getAttribute('data-shot');
-    var job=k==='t'?jobTable(btn):(k==='s'?jobChart(btn):jobMatches(btn));
+    run(btn,k==='t'?jobTable(btn):(k==='s'?jobChart(btn):jobMatches(btn)));
+  }
+  function run(btn,job,then){
     if(!job) return;
     var seen={}, keys=job.urls.filter(function(u){ if(!u||seen[u]) return false; seen[u]=1; return true; });
     btn.disabled=true;
@@ -344,10 +376,105 @@
       job.draw(job.info,{icon:r[1],logo:r[2],crest:crest});
       cv.toBlob(function(blob){
         btn.disabled=false;
-        if(blob) open(blob,job.name);
+        if(blob){ if(then) then(); open(blob,job.name); }
       },'image/png');
     }).catch(function(){ btn.disabled=false; });
   }
+  /* ---- «توقّع وشارك»: the sheet (site_lib/pick.py says what it lists) ----
+     data-pick="<slug>" = the league's round from /pick/<slug>.json; without
+     it (a cup, the national teams) = that day's open rows on screen. Every
+     name is written with textContent. The picks stay in this browser. */
+  var PKEY='elgoonPick', picks={}, sheet, cur;
+  try{ picks=JSON.parse(localStorage.getItem(PKEY)||'{}')||{}; }catch(e){ picks={}; }
+  function keep(){
+    try{
+      var ks=Object.keys(picks); if(ks.length>400) ks.slice(0,ks.length-300).forEach(function(k){ delete picks[k]; });
+      localStorage.setItem(PKEY,JSON.stringify(picks));
+    }catch(e){}
+  }
+  function mk(tag,cls,t){ var e=document.createElement(tag); if(cls) e.className=cls; if(t!=null) e.textContent=t; return e; }
+  function fromRows(comp,day){
+    return [].slice.call(comp.querySelectorAll('.mrow')).filter(function(r){
+      return r.style.display!=='none'&&!r.classList.contains('mrow-live')&&!r.classList.contains('mrow-fin');
+    }).map(function(r){
+      var d=rowData(r);
+      return {id:'d:'+day+':'+d.h+':'+d.a, h:d.h, a:d.a, hc:d.hc, ac:d.ac, w:d.ko, done:d.hs!==null||d.stale};
+    }).filter(function(m){ return m.h&&m.a&&!m.done; });
+  }
+  function sheetUI(){
+    if(sheet) return sheet;
+    sheet=mk('div','pick-box'); sheet.hidden=true;
+    sheet.setAttribute('role','dialog'); sheet.setAttribute('aria-modal','true'); sheet.setAttribute('aria-label','توقّع وشارك');
+    var inn=mk('div','pick-in'), hd=mk('div','pick-hd'), tt=mk('div'), x=mk('button','pick-x','×');
+    x.type='button'; x.setAttribute('aria-label','إغلاق');
+    tt.appendChild(mk('h2','pick-t')); tt.appendChild(mk('p','pick-s'));
+    hd.appendChild(tt); hd.appendChild(x);
+    var ft=mk('div','pick-ft'), go=mk('button','pick-go','أنشئ صورة توقعاتي'); go.type='button';
+    ft.appendChild(mk('span','pick-n')); ft.appendChild(go);
+    inn.appendChild(hd); inn.appendChild(mk('div','pick-ls')); inn.appendChild(ft); sheet.appendChild(inn);
+    document.body.appendChild(sheet);
+    function shut(){ sheet.hidden=true; }
+    x.addEventListener('click',shut);
+    sheet.addEventListener('click',function(e){ if(e.target===sheet) shut(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!sheet.hidden) shut(); });
+    go.addEventListener('click',function(){
+      if(!cur) return;
+      var rows=cur.ms.filter(function(m){ return picks[m.id]; }).map(function(m){
+        return {h:m.h, a:m.a, hc:m.hc, ac:m.ac, v:picks[m.id]}; });
+      if(!rows.length) return;
+      var urls=[]; rows.forEach(function(d){ urls.push(d.hc,d.ac); });
+      run(go,{info:{label:cur.label, day:'توقعاتي · '+cur.what, rows:rows, live:false},
+              icon:cur.icon, urls:urls, draw:drawPicks, name:'elgoon-picks.png'},shut);
+    });
+    return sheet;
+  }
+  function sheetDraw(){
+    var s=sheetUI(), ls=s.querySelector('.pick-ls'), n=0;
+    s.querySelector('.pick-t').textContent='توقّع '+cur.what;
+    s.querySelector('.pick-s').textContent=cur.label+' · اضغط على الفريق الذي تتوقع فوزه، أو «تعادل».';
+    ls.textContent='';
+    cur.ms.forEach(function(m){
+      var v=picks[m.id], row=mk('div','pick-m'), bs=mk('div','pick-bs');
+      if(v) n++;
+      if(m.w) row.appendChild(mk('p','pick-w',m.w));
+      bs.setAttribute('role','group'); bs.setAttribute('aria-label',m.h+' و'+m.a);
+      [['h',m.h,m.hc,'فوز '+m.h],['d','تعادل','','تعادل'],['a',m.a,m.ac,'فوز '+m.a]].forEach(function(o){
+        var b=mk('button','pick-b'+(v===o[0]?' on':'')); b.type='button';
+        b.setAttribute('aria-label',o[3]); b.setAttribute('aria-pressed',v===o[0]?'true':'false');
+        if(o[2]&&sameOrigin(o[2])){ var i=document.createElement('img'); i.src=o[2]; i.alt=''; i.width=22; i.height=22; b.appendChild(i); }
+        b.appendChild(mk('span','',o[1]));
+        b.addEventListener('click',function(){
+          if(picks[m.id]===o[0]) delete picks[m.id]; else picks[m.id]=o[0];
+          keep(); var top=ls.scrollTop; sheetDraw(); ls.scrollTop=top;
+        });
+        bs.appendChild(b);
+      });
+      row.appendChild(bs); ls.appendChild(row);
+    });
+    s.querySelector('.pick-n').textContent=n?('اخترت '+n+' من '+cur.ms.length):'لم تختر أي نتيجة بعد';
+    s.querySelector('.pick-go').disabled=!n;
+  }
+  function pickOpen(btn){
+    var comp=btn.closest('.comp'), sec=btn.closest('.day'); if(!comp) return;
+    var ic=comp.querySelector('.comp-h img'), slug=btn.getAttribute('data-pick')||'';
+    var base={label:comp.getAttribute('data-label')||'', icon:ic?ic.getAttribute('src'):''};
+    function show(what,ms){
+      btn.disabled=false;
+      if(!ms.length) return;
+      cur={label:base.label, icon:base.icon, what:what, ms:ms};
+      sheetDraw(); sheetUI().hidden=false;
+    }
+    function day(){ show('مباريات '+(txt(sec&&sec.querySelector('.day-h'))||'اليوم'), fromRows(comp,sec?sec.getAttribute('data-day'):'')); }
+    if(!/^[a-z0-9-]{1,40}$/.test(slug)||!window.fetch) return day();
+    btn.disabled=true;
+    fetch('/pick/'+slug+'.json').then(function(r){ if(!r.ok) throw 0; return r.json(); }).then(function(d){
+      var ms=(d&&d.m||[]).filter(function(m){ return m&&m.id&&m.h&&m.a; }).map(function(m){
+        return {id:'r:'+m.id, h:String(m.h), a:String(m.a), hc:String(m.hc||''), ac:String(m.ac||''), w:String(m.w||'')}; });
+      if(!ms.length) throw 0;
+      show('الجولة '+parseInt(d.r,10), ms);
+    }).catch(day);
+  }
+
   /* a chart's button sits on the heading above the chart, at its far end
      (user, 2026-11-25: «عايزه يظهر على الشمال جنب كلمة ترتيب الهدافين»).
      The chart has no heading of its own, so the button is moved up to the
@@ -360,7 +487,9 @@
   /* delegated: day fragments fetched later carry the same button */
   document.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('.comp-shot');
-    if(b){ e.preventDefault(); e.stopPropagation(); shoot(b); }
+    if(b){ e.preventDefault(); e.stopPropagation(); shoot(b); return; }
+    b=e.target.closest&&e.target.closest('.comp-pick');
+    if(b){ e.preventDefault(); e.stopPropagation(); pickOpen(b); }
   });
 })();
 </script>
