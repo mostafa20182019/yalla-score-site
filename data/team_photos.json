@@ -1,6 +1,6 @@
 {
  "_why": "Photos the editor put by hand into team-photos/<club>/ and team_photos.py copied into media/ with the credit he wrote in that folder's credits.txt. A media/ file is usable only when a credit for it lives here, in data/media_credits.json or in data/articles.json. Generated; do not hand-edit.",
- "generated_at": "2026-11-24T11:12:50+00:00",
+ "generated_at": "2026-11-25T08:08:36+00:00",
  "photos": [
   {
    "file": "30-june-stadium-pyramids.jpg",
@@ -1644,6 +1644,18 @@
    "is_person": true,
    "source": "team-photos/barcelona/lautaro-martinez-argentina-2026.jpg",
    "added": "2026-10-13",
+   "width": 1600
+  },
+  {
+   "file": "liverpool-alisson-becker-liverpool-parade-2025.jpg",
+   "credit": "صورة: أليسون بيكر حارس مرمى ليفربول خلال احتفال النادي بلقب الدوري الإنجليزي الموسم الماضي (مايو 2025) — تصوير comedy_nose، رخصة CC0 (ويكيميديا كومنز)",
+   "subject": "أليسون بيكر",
+   "club": "ليفربول",
+   "slug": "liverpool",
+   "year": 2025,
+   "is_person": true,
+   "source": "team-photos/liverpool/alisson-becker-liverpool-parade-2025.jpg",
+   "added": "2026-11-25",
    "width": 1600
   },
   {
