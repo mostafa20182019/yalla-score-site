@@ -6,7 +6,7 @@ import json
 import os
 import re
 
-from site_lib.calc import calc_counts, calc_data
+from site_lib.calc import calc_counts, calc_data, calc_done
 from site_lib.competitions import COMP_SLUG, comp_season
 from site_lib.crests import comp_icon
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME
@@ -31,6 +31,8 @@ def calc_pages(fx_by_comp, season, st_by_comp, urls):
         label = comp_label(comp)
         _season = comp_season(comp, season, (fx or {}).get("rounds"))
         n_rounds, n_matches = calc_counts(data)
+        # the matches that just ended: the reader's own picks are marked on them
+        data["done"] = calc_done(fx, REF_TODAY)
         url = f"/calc/{slug}.html"
         first = data["rounds"][0]
         title = f"حاسبة ترتيب {label} {_season}: توقّع النتائج وشاهد الجدول | {SITE_NAME}"

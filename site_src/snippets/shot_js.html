@@ -269,6 +269,39 @@
     });
   }
 
+  /* ---- «نتيجة توقعاتي»: his picks beside the final scores (2026-11-25) ----
+     the real score in the middle (home on the right), a green row for a pick
+     that came true and a red one for a miss, «توقعي» under the side he
+     picked - or under the score when he picked the draw. */
+  function drawResult(info,pics){
+    var rows=info.rows, RH=128, body=rows.length*RH, CX=W/2;
+    frame(info,pics,body,rows.length>6?1350:1080,function(c,top){
+      c.save(); rr(c,PAD,top,W-2*PAD,body,26); c.clip();
+      rows.forEach(function(d,i){
+        var y=top+i*RH, cy=y+RH/2, CREST=70, MIDW=78;
+        c.fillStyle=d.ok?'#ecfdf3':'#fef2f2'; c.fillRect(PAD,y,W-2*PAD,RH);
+        if(i){ c.fillStyle='#fff'; c.fillRect(PAD,y,W-2*PAD,3); }
+        var hx=CX+MIDW+14, ax=CX-MIDW-14-CREST, nameW=W-PAD-22-(hx+CREST+16);
+        var tag=(d.ok?'✓':'✗')+' توقعي', col=d.ok?'#15803d':'#b91c1c';
+        [[d.hc,hx,d.v==='h',d.h,'left',hx+CREST+16],[d.ac,ax,d.v==='a',d.a,'right',ax-16]].forEach(function(s){
+          var im=pics.crest[s[0]];
+          if(im) contain(c,im,s[1],cy-CREST/2,CREST);
+          else{ c.fillStyle='#e2e8f0'; c.beginPath(); c.arc(s[1]+CREST/2,cy,CREST/2-4,0,6.2832); c.fill(); }
+          c.direction='rtl'; c.textAlign=s[4]; c.fillStyle=INK;
+          c.fillText(fit(c,s[3],'800',36,22,nameW),s[5],s[2]?cy-18:cy);
+          if(s[2]){ c.font='800 24px '+FONT; c.fillStyle=col; c.fillText(tag,s[5],cy+24); }
+        });
+        var sy=d.v==='d'?cy-16:cy;
+        c.direction='ltr'; c.font='900 50px '+FONT; c.fillStyle=INK; c.textAlign='center';
+        c.fillText('-',CX,sy-3);
+        c.textAlign='left';  c.fillText(d.hs,CX+22,sy);        /* home = right */
+        c.textAlign='right'; c.fillText(d.as,CX-22,sy);
+        if(d.v==='d'){ c.direction='rtl'; c.textAlign='center'; c.font='800 22px '+FONT; c.fillStyle=col; c.fillText(tag+': تعادل',CX,cy+32); }
+      });
+      c.restore();
+    });
+  }
+
   /* ---- the preview: the image + share / download ---- */
   var box, blobNow, nameNow;
   function ui(){
@@ -359,9 +392,20 @@
             draw:drawChart, name:asst?'elgoon-assists.png':'elgoon-scorers.png'};
   }
 
+  /* «كام واحد ضغط؟» (2026-11-25): one count per use of a button - the
+     button's name and nothing about the reader, his picks or the page
+     (worker.js countEvent adds one to a number for the day) */
+  function hit(n){
+    try{
+      if(navigator.sendBeacon) navigator.sendBeacon('/e/'+n);
+      else if(window.fetch) fetch('/e/'+n,{method:'POST',keepalive:true}).catch(function(){});
+    }catch(e){}
+  }
   function shoot(btn){
     var k=btn.getAttribute('data-shot');
-    run(btn,k==='t'?jobTable(btn):(k==='s'?jobChart(btn):jobMatches(btn)));
+    var job=k==='t'?jobTable(btn):(k==='s'?jobChart(btn):jobMatches(btn));
+    if(job) job.ev='shot_img';
+    run(btn,job);
   }
   function run(btn,job,then){
     if(!job) return;
@@ -376,7 +420,7 @@
       job.draw(job.info,{icon:r[1],logo:r[2],crest:crest});
       cv.toBlob(function(blob){
         btn.disabled=false;
-        if(blob){ if(then) then(); open(blob,job.name); }
+        if(blob){ if(then) then(); open(blob,job.name); if(job.ev) hit(job.ev); }
       },'image/png');
     }).catch(function(){ btn.disabled=false; });
   }
@@ -424,7 +468,7 @@
       if(!rows.length) return;
       var urls=[]; rows.forEach(function(d){ urls.push(d.hc,d.ac); });
       run(go,{info:{label:cur.label, day:'توقعاتي · '+cur.what, rows:rows, live:false},
-              icon:cur.icon, urls:urls, draw:drawPicks, name:'elgoon-picks.png'});   /* the sheet stays: he may change a pick */
+              icon:cur.icon, urls:urls, draw:drawPicks, name:'elgoon-picks.png', ev:'pick_img'});   /* the sheet stays: he may change a pick */
     });
     return sheet;
   }
@@ -479,11 +523,16 @@
   window.elgoonShot={
     picks:function(btn,o){
       var u=[]; o.rows.forEach(function(d){ u.push(d.hc,d.ac); });
-      run(btn,{info:{label:o.label, day:'توقعاتي · '+o.what, rows:o.rows, live:false}, icon:o.icon, urls:u, draw:drawPicks, name:'elgoon-picks.png'});
+      run(btn,{info:{label:o.label, day:'توقعاتي · '+o.what, rows:o.rows, live:false}, icon:o.icon, urls:u, draw:drawPicks, name:'elgoon-picks.png', ev:'pick_img'});
     },
     table:function(btn,o){
       run(btn,{info:{label:o.label, day:o.what+' · '+today(), rows:o.rows, live:false}, icon:o.icon,
-               urls:o.rows.map(function(d){ return d.crest; }), draw:drawTable, name:'elgoon-table.png'});
+               urls:o.rows.map(function(d){ return d.crest; }), draw:drawTable, name:'elgoon-table.png', ev:'table_img'});
+    },
+    result:function(btn,o){
+      var u=[]; o.rows.forEach(function(d){ u.push(d.hc,d.ac); });
+      run(btn,{info:{label:o.label, day:'نتيجة توقعاتي · '+o.what, rows:o.rows, live:false}, icon:o.icon, urls:u,
+               draw:drawResult, name:'elgoon-result.png', ev:'result_img'});
     }
   };
 
@@ -501,6 +550,7 @@
     var b=e.target.closest&&e.target.closest('.comp-shot');
     if(b){ e.preventDefault(); e.stopPropagation(); shoot(b); return; }
     b=e.target.closest&&e.target.closest('.comp-pick');
+    if(b) hit('pick_open');
     if(b&&b.tagName!=='A'){ e.preventDefault(); e.stopPropagation(); pickOpen(b); }   /* a link = the league's own page */
   });
 })();

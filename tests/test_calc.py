@@ -180,6 +180,22 @@ ck("23b a postponed row whose pair is listed again on a new date is dropped; a p
    and K.calc_counts(K.calc_data(ST, {"rounds": [dict(r, matches=[dict(x, status="POSTPONED") if x is r["matches"][0] else x
                                                           for x in r["matches"]]) for r in FX["rounds"]]})) == K.calc_counts(d))
 
+# «نتيجة توقعاتك» (2026-11-25): the matches that just ended, for the reader's own picks
+_fin = {"rounds": [{"round": 5, "matches": [
+    {"match_id": 71, "home": "أ", "away": "ب", "status": "FINISHED", "home_score": 2, "away_score": 1, "kickoff": "2026-11-20"},
+    {"match_id": 72, "home": "ج", "away": "د", "status": "FINISHED", "home_score": 0, "away_score": 0, "kickoff": "2026-11-01"},
+    {"match_id": 73, "home": "أ", "away": "ج", "status": "UPCOMING", "kickoff": "2026-11-24"},
+    {"match_id": 74, "home": "ب", "away": "د", "status": "FINISHED", "home_score": 1, "away_score": None, "kickoff": "2026-11-21"}]},
+    {"round": 1, "label": "دور الـ16", "matches": [
+        {"match_id": 75, "home": "أ", "away": "د", "status": "FINISHED", "home_score": 1, "away_score": 0, "kickoff": "2026-11-22"}]}]}
+_dn = K.calc_done(_fin, "2026-11-25")
+ck("23c only league matches that ended in the last ten days, each with the key of its open days and its final score",
+   [x[0] for x in _dn] == ["71"] and _dn[0][1:4] == [5, "أ", "ب"] and _dn[0][6:] == [2, 1]
+   and K.calc_done(None, "2026-11-25") == [] and K.calc_done(_fin, "not a date") == [], str(_dn))
+ck("23d a pick for a match that kicked off is kept for its final score, never dropped; the page marks it against the real result",
+   "past[k]=[picks[k],NOW]; delete picks[k];" in body and "v===real" in body and "localStorage.setItem(KEY+':past'" in body
+   and 'data["done"] = calc_done(fx, REF_TODAY)' in io.open("site_pages/calc.py", encoding="utf-8").read())
+
 # ------------------------------------------------- «ماذا لو؟» (2026-11-25)
 # ONE match with three named buttons in front of the page, the answer in words
 hero_h = harness.replace(

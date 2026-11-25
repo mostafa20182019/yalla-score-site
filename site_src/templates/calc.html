@@ -17,6 +17,13 @@
   <p id="calcHeroGo" class="calc-hgo" hidden><button type="button" id="calcGoT">الجدول كاملًا ↓</button><button type="button" id="calcGoM">بقية المباريات ↓</button></p>
 </section>
 <div id="calc" class="calc" data-slug="{{ slug }}" data-label="{{ label }}" data-icon="{{ icon }}">
+  {# «نتيجة توقعاتك» (2026-11-25): the reader's picks on the matches that have
+     since ended - shown only to a reader who made some. The script fills it. #}
+  <section id="calcRes" class="minfo calc-res" hidden>
+    <h2 class="calc-th"><span id="calcResT">نتيجة توقعاتك</span><button type="button" id="calcShotR" class="calc-shot"><svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5A4.5 4.5 0 1 1 12 17.5 4.5 4.5 0 0 1 12 8.5zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>صورة نتيجتي</span></button></h2>
+    <p id="calcResN" class="calc-res-n"></p>
+    <div id="calcResL" class="calc-res-l"></div>
+  </section>
   <section class="minfo">
     <p class="hintline calc-how">اختر الفائز أو التعادل في كل مباراة، ثم خذ صورة لتوقعاتك أو للجدول بعدها.</p>
     <div class="calc-nav">

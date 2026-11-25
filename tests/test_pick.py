@@ -94,8 +94,10 @@ ck("12 the buttons are finger-sized and two fit a phone heading",
    "min-height:48px" in css.split(".pick-b{")[1].split("}")[0] and ".comp-h:has(.comp-pick) .comp-shot span{display:none}" in css)
 sheet = js.split("«توقّع وشارك»: the sheet")[1].split("/* a chart's button")[0]
 ck("13 no name is written as HTML, and the picks leave the browser only inside the image",
-   "innerHTML" not in sheet and "insertAdjacentHTML" not in sheet and "sendBeacon" not in js and "XMLHttpRequest" not in js
-   and js.count("fetch(") == 1 and "fetch('/pick/'+slug+'.json')" in js)
+   "innerHTML" not in sheet and "insertAdjacentHTML" not in sheet and "XMLHttpRequest" not in js
+   and js.count("fetch(") == 2 and "fetch('/pick/'+slug+'.json')" in js
+   # the one thing sent: a button's NAME, to count its uses (2026-11-25)
+   and js.count("sendBeacon(") == 1 and "navigator.sendBeacon('/e/'+n)" in js and "fetch('/e/'+n,{method:'POST',keepalive:true})" in js)
 ck("14 the slug is checked before it is put in a path, and a failed fetch falls back to the day's rows",
    "/^[a-z0-9-]{1,40}$/.test(slug)" in js and "}).catch(day);" in js)
 ck("14b a link is left to the browser; the sheet stays open after the image so a pick can be changed",

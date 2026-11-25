@@ -12,10 +12,24 @@
   if(!D||!D.teams||!D.rounds||!D.rounds.length) return;
   var KEY='elgoonCalc:'+(root.getAttribute('data-slug')||''), picks={}, ri=0;
   try{ picks=JSON.parse(localStorage.getItem(KEY)||'{}')||{}; }catch(e){ picks={}; }
-  /* a pick for a match that has since been played (it left the list) is dropped */
+  /* a pick for a match that left the list (it kicked off) is no longer a
+     pick to change: it moves to `past` - {match: [pick, when it moved]} - and
+     waits for the final score (D.done, «نتيجة توقعاتك»). It is forgotten
+     once the page no longer carries the match and two weeks have gone. */
   var live={}; D.rounds.forEach(function(r){ r.m.forEach(function(m){ live[m[0]]=1; }); });
-  Object.keys(picks).forEach(function(k){ if(!live[k]||'hda'.indexOf(picks[k])<0) delete picks[k]; });
-  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(picks)); }catch(e){} }
+  var past={}, done={}, NOW=Date.now();
+  (D.done||[]).forEach(function(x){ done[x[0]]=x; });
+  try{ past=JSON.parse(localStorage.getItem(KEY+':past')||'{}')||{}; }catch(e){ past={}; }
+  Object.keys(picks).forEach(function(k){
+    if('hda'.indexOf(picks[k])<0||picks[k].length!==1){ delete picks[k]; return; }
+    if(!live[k]){ past[k]=[picks[k],NOW]; delete picks[k]; }
+  });
+  Object.keys(past).forEach(function(k){
+    var p=past[k];
+    if(!p||'hda'.indexOf(p[0])<0||(!done[k]&&!(NOW-p[1]<14*864e5))) delete past[k];
+  });
+  function save(){ try{ localStorage.setItem(KEY,JSON.stringify(picks)); localStorage.setItem(KEY+':past',JSON.stringify(past)); }catch(e){} }
+  save();
   /* «شارك توقعك» (site review 2026-11-19): the picks ride in the link's
      fragment - #p=<match>.<h|d|a>,... - so a friend opens the same table.
      A fragment never reaches a server; only known matches and h/d/a are read. */
@@ -162,6 +176,46 @@
     S.table(shotT,{label:LABEL, icon:ICON, what:Object.keys(picks).length?'الترتيب بعد توقعاتي':'جدول الترتيب',
       rows:table().map(function(r,p){ var gd=r.gf-r.ga;
         return {pos:String(p+1), name:r.n, crest:r.c, n:[r.p,r.w,r.d,r.l,(gd>0?'+':'')+gd,r.pts].map(String)}; })});
+  });
+  /* «نتيجة توقعاتك»: his picks on the latest round that has final scores */
+  var resBox=document.getElementById('calcRes'), resRows=[], resWhat='';
+  (function(){
+    var mine=Object.keys(past).filter(function(k){ return done[k]; }).map(function(k){
+      var x=done[k], v=past[k][0], real=x[6]>x[7]?'h':x[6]<x[7]?'a':'d';
+      return {r:x[1], h:x[2], a:x[3], hc:x[4], ac:x[5], hs:String(x[6]), as:String(x[7]), v:v, ok:v===real};
+    });
+    if(!resBox||!mine.length) return;
+    var rmax=Math.max.apply(null,mine.map(function(d){ return d.r; }));
+    resRows=mine.filter(function(d){ return d.r===rmax; });
+    var hit=resRows.filter(function(d){ return d.ok; }).length, n=resRows.length;
+    resWhat='الجولة '+rmax+' · '+hit+' من '+n;
+    var t=document.getElementById('calcResT'), nEl=document.getElementById('calcResN'), l=document.getElementById('calcResL');
+    if(t) t.textContent='نتيجة توقعاتك في الجولة '+rmax;
+    if(nEl) nEl.textContent=n===1?(hit?'توقعك صحيح.':'توقعك لم يصب.'):('أصبت في '+hit+' من '+n+'.');
+    if(l){
+      l.textContent='';
+      resRows.forEach(function(d){
+        var row=el('div','calc-rr '+(d.ok?'ok':'no')), sc=el('span','calc-rs');
+        row.appendChild(el('span','calc-rk',d.ok?'✓':'✗'));
+        var mt=el('span','calc-rm');
+        mt.appendChild(el('bdi','',d.h));
+        /* three boxes, never one text: the home goals stay on the home side */
+        sc.appendChild(el('b','',d.hs)); sc.appendChild(el('i','','-')); sc.appendChild(el('b','',d.as));
+        mt.appendChild(sc); mt.appendChild(el('bdi','',d.a));
+        row.appendChild(mt);
+        var say=el('span','calc-rp'); say.appendChild(document.createTextNode('توقعت: '));
+        if(d.v==='d') say.appendChild(document.createTextNode('تعادل'));
+        else{ say.appendChild(document.createTextNode('فوز ')); say.appendChild(el('bdi','',d.v==='h'?d.h:d.a)); }
+        row.appendChild(say);
+        l.appendChild(row);
+      });
+    }
+    resBox.hidden=false;
+  })();
+  var shotR=document.getElementById('calcShotR');
+  if(shotR) shotR.addEventListener('click',function(){
+    var S=window.elgoonShot; if(!S||!resRows.length) return;
+    S.result(shotR,{label:LABEL, icon:ICON, what:resWhat, rows:resRows});
   });
   function drawRound(){
     var r=D.rounds[ri], lastW=null; elRound.textContent='الجولة '+r.r; elMs.textContent='';

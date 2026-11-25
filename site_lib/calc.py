@@ -91,5 +91,35 @@ def calc_focus(data, ti):
     return None
 
 
+DONE_DAYS = 10
+
+
+def calc_done(fx, today, days=DONE_DAYS):
+    """«نتيجة توقعاتك» (2026-11-25): the league matches that ENDED in the last
+    `days` days - [key, round, home, away, home crest, away crest, home goals,
+    away goals] with the key calc_data() gave the match while it was open - so
+    the page can mark the reader's own picks right or wrong when he comes
+    back. Nothing here is a prediction of ours: a final score and his pick."""
+    from datetime import date, timedelta
+    try:
+        since = (date.fromisoformat(str(today)[:10]) - timedelta(days=days)).isoformat()
+    except ValueError:
+        return []
+    out = []
+    for rd in (fx or {}).get("rounds") or []:
+        if rd.get("label") or not isinstance(rd.get("round"), int):
+            continue
+        for m in rd.get("matches") or []:
+            if ((m.get("status") or "").upper() != "FINISHED" or m.get("home_score") is None
+                    or m.get("away_score") is None or not m.get("match_id")
+                    or not since <= (m.get("kickoff") or "") <= str(today)[:10]):
+                continue
+            out.append([str(m["match_id"]), rd["round"], ar_team(m.get("home") or ""), ar_team(m.get("away") or ""),
+                        local_crest(m["home_badge"]) if m.get("home_badge") else "",
+                        local_crest(m["away_badge"]) if m.get("away_badge") else "",
+                        int(m["home_score"]), int(m["away_score"])])
+    return out
+
+
 def calc_counts(data):
     return len(data["rounds"]), sum(len(r["m"]) for r in data["rounds"])

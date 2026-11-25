@@ -1397,6 +1397,19 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
 .calc-shots .calc-shot{width:100%}
 .calc-th{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
 .calc-how{margin:0 0 10px}
+/* «نتيجة توقعاتك» (2026-11-25) */
+.calc-res[hidden]{display:none}
+.calc-res-n{margin:0 0 8px;font-size:1.05rem;font-weight:900;color:var(--green-d)}
+.calc-rr{display:grid;grid-template-columns:28px minmax(0,1fr);gap:2px 8px;align-items:center;padding:9px 10px;border-radius:10px;margin-top:6px}
+.calc-rr.ok{background:#ecfdf3}
+.calc-rr.no{background:#fef2f2}
+.calc-rk{grid-row:1/3;font-weight:900;font-size:1.1rem;text-align:center}
+.calc-rr.ok .calc-rk,.calc-rr.ok .calc-rp{color:#15803d}
+.calc-rr.no .calc-rk,.calc-rr.no .calc-rp{color:#b91c1c}
+.calc-rm{display:flex;align-items:center;gap:8px;font-weight:800;font-size:.92rem;min-width:0}
+.calc-rs{display:inline-flex;gap:5px;flex:none;font-weight:900}
+.calc-rs i{font-style:normal;color:var(--muted)}
+.calc-rp{font-size:.78rem;font-weight:700}
 /* two buttons on a phone: the camera keeps its icon and drops its word */
 @media(max-width:480px){.shot-on .comp-h:has(.comp-pick) .comp-shot span{display:none}.shot-on .comp-h:has(.comp-pick) .comp-shot{padding:0 9px}}
 .pick-box{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.72);display:flex;align-items:flex-end;justify-content:center}

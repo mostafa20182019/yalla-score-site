@@ -1330,6 +1330,38 @@ function assetResponse(res, url) {
   return out;
 }
 
+// «كام واحد ضغط؟» (2026-11-25): POST /e/<name> adds one to that button's
+// number for the day (UTC) - a name from the list below, nothing about the
+// reader. GET /e/stats.json reads the last 30 days. A day's number stops at
+// EVENT_CAP, so a flood of requests cannot spend the store's write budget
+// (the conflict clause's WHERE leaves the row untouched past the cap).
+const EVENTS = ["pick_open", "pick_img", "table_img", "result_img", "shot_img"];
+const EVENT_CAP = 2000;
+let eventsReady = false;
+async function countEvent(request, env, url) {
+  const none = () => new Response(null, { status: 204, headers: { "cache-control": "no-store" } });
+  if (!env.DB) return none();
+  try {
+    if (!eventsReady) {
+      await env.DB.prepare("CREATE TABLE IF NOT EXISTS ui_events (day TEXT NOT NULL, name TEXT NOT NULL, " +
+        "n INTEGER NOT NULL DEFAULT 0, PRIMARY KEY (day, name))").run();
+      eventsReady = true;
+    }
+    if (url.pathname === "/e/stats.json" && request.method === "GET") {
+      const r = await env.DB.prepare("/*ev_read*/ SELECT day, name, n FROM ui_events WHERE day >= ? ORDER BY day DESC, name")
+        .bind(new Date(Date.now() - 30 * 864e5).toISOString().slice(0, 10)).all();
+      return new Response(JSON.stringify({ events: r.results || [] }),
+        { headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", "x-robots-tag": "noindex" } });
+    }
+    const name = url.pathname.slice(3);
+    if (request.method !== "POST" || !EVENTS.includes(name)) return none();
+    await env.DB.prepare("/*ev_add*/ INSERT INTO ui_events (day, name, n) VALUES (?, ?, 1) " +
+      "ON CONFLICT (day, name) DO UPDATE SET n = n + 1 WHERE n < ?")
+      .bind(new Date().toISOString().slice(0, 10), name, EVENT_CAP).run();
+  } catch (e) { /* a count is never worth an error page */ }
+  return none();
+}
+
 export default {
   async fetch(request, env, ctx) {
     // Permanent redirect from any non-canonical host — the legacy
@@ -1364,6 +1396,9 @@ export default {
     }
     if (url.pathname === "/health") {
       return healthResponse(env, ctx);
+    }
+    if (url.pathname.startsWith("/e/")) {
+      return countEvent(request, env, url);
     }
     if (url.pathname === "/data/bundle") {
       return dataBundle(env, ctx);
