@@ -32,7 +32,6 @@ FILTERS_HTML = (
 MATCHES_JS = _src("snippets/matches_js.html")
 # the camera button on a league heading of the day list: one image of that
 # league's matches, drawn in the browser from the rows on screen (2026-11-24)
-SHOT_JS = _src("snippets/shot_js.html")
 # /standings/<slug>: table · scorers · assists as tabs (2026-10-31)
 ST_TABS_JS = _src("snippets/st_tabs_js.html")
 # /standings/<slug>: «لعب / ف / ت / خ» open the team's matches (2026-11-01)

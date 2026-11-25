@@ -1,12 +1,15 @@
 <script>
-/* «صورة مباريات البطولة» (user, 2026-11-24): the camera button on a league
-   heading of the day list draws ONE image of that league's matches on that
-   day - for readers who post football content, with our name on it.
+/* «صورة» (user, 2026-11-24): the button on a league heading of the day list
+   draws ONE image of that league's matches on that day - for readers who post
+   football content, with our name on it. Since 2026-11-25 the same button
+   sits on every standings table (.ltable) and every scorers / assists chart
+   (.sc-list): data-shot = "t" (table) or "s" (chart), none = the day list.
    Drawn in the reader's browser from the rows AS THEY ARE ON SCREEN, so a
-   live score is the one LIVE_JS painted a moment ago (no build, no server,
-   no stale number). Crests are same-origin (/assets/crests) - a canvas with
-   a foreign image cannot be exported, so any other source is skipped.
-   Buttons are shown by the .shot-on class: no JS / no canvas = no button. */
+   live score is the one the live layer painted a moment ago (no build, no
+   server, no stale number). Crests and faces are same-origin (/assets/crests)
+   - a canvas with a foreign image cannot be exported, so any other source is
+   skipped. Buttons are shown by the .shot-on class: no JS / no canvas = no
+   button. Ships in /assets/app.js (every page). */
 (function(){
   var cv=document.createElement('canvas');
   if(!cv.getContext||!cv.toBlob) return;
@@ -14,6 +17,8 @@
   var W=1080, PAD=44, FONT="'Almarai','Segoe UI',Tahoma,Arial,sans-serif";
   var INK='#0f172a', MUTED='#5b6b82', LIVE='#e11d48', FIN='#64748b', UP='#1676ad';
   var MAXG=4;                       /* scorers drawn per side */
+  var HEAD=236, FOOT=150, GAP=34;
+  var MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
 
   function txt(n){ return n?(n.textContent||'').replace(/\s+/g,' ').trim():''; }
   function sameOrigin(u){
@@ -28,6 +33,7 @@
       i.src=u;
     });
   }
+  function today(){ var n=new Date(); return n.getDate()+' '+MONTHS[n.getMonth()]+' '+n.getFullYear(); }
   function goalsOf(side){
     if(!side) return [];
     return [].slice.call(side.querySelectorAll('.mg')).map(function(g){
@@ -80,13 +86,13 @@
     return (h<10?'0':'')+h+':'+(m<10?'0':'')+m;
   }
 
-  function draw(info,pics){
-    var rows=info.rows, HEAD=236, FOOT=150, GAP=34;
-    var hs=rows.map(rowH), body=hs.reduce(function(a,b){return a+b;},0);
-    var H=Math.max(1350, HEAD+GAP+body+GAP+FOOT);
+  /* the shared frame: the blue heading (league + one line under it), the
+     white card `body` px tall centred in what is left, our name at the foot.
+     paint(c, top) draws inside the card. */
+  function frame(info,pics,body,minH,paint){
+    var H=Math.max(minH, HEAD+GAP+body+GAP+FOOT);
     var c=cv.getContext('2d'); cv.width=W; cv.height=H;
     c.fillStyle='#eef2f6'; c.fillRect(0,0,W,H);
-    /* ---- heading: the league and the day ---- */
     var g=c.createLinearGradient(0,0,W,0); g.addColorStop(0,'#15658f'); g.addColorStop(1,'#1676ad');
     c.fillStyle=g; c.fillRect(0,0,W,HEAD);
     c.direction='rtl'; c.textBaseline='middle';
@@ -98,58 +104,15 @@
     }
     c.textAlign='right'; c.fillStyle='#fff';
     c.fillText(fit(c,info.label,'900',62,36,tx-PAD),tx,HEAD/2-26);
-    c.font='700 32px '+FONT; c.fillStyle='rgba(255,255,255,.88)';
-    c.fillText(info.day,tx,HEAD/2+44);
-    /* ---- the matches: one white card, a line between rows ---- */
-    var top=HEAD+GAP+Math.max(0,(H-HEAD-FOOT-2*GAP-body)/2), y=top, CX=W/2;
+    c.fillStyle='rgba(255,255,255,.88)';
+    c.fillText(fit(c,info.day,'700',32,24,tx-PAD),tx,HEAD/2+44);
+    var top=HEAD+GAP+Math.max(0,(H-HEAD-FOOT-2*GAP-body)/2);
     c.fillStyle='#fff'; rr(c,PAD,top,W-2*PAD,body,26); c.fill();
-    rows.forEach(function(d,i){
-      var h=hs[i], cy=y+75, CREST=76, MIDW=96;
-      if(i){ c.fillStyle='#e6ebf1'; c.fillRect(PAD+24,y,W-2*PAD-48,2); }
-      /* home on the right (as on the site), away on the left */
-      var hx=CX+MIDW+14, ax=CX-MIDW-14-CREST;
-      [[pics.crest[d.hc],hx],[pics.crest[d.ac],ax]].forEach(function(p){
-        if(p[0]) contain(c,p[0],p[1],cy-CREST/2,CREST);
-        else{ c.fillStyle='#e2e8f0'; c.beginPath(); c.arc(p[1]+CREST/2,cy,CREST/2-4,0,6.2832); c.fill(); }
-      });
-      var nameW=W-PAD-22-(hx+CREST+16);
-      c.fillStyle=INK; c.direction='rtl';
-      c.textAlign='left';  c.fillText(fit(c,d.h,'800',38,26,nameW),hx+CREST+16,cy);
-      c.textAlign='right'; c.fillText(fit(c,d.a,'800',38,26,nameW),ax-16,cy);
-      /* the middle: score + state, or the kick-off time */
-      c.textAlign='center';
-      if(d.hs!==null){
-        c.direction='ltr'; c.font='900 58px '+FONT; c.fillStyle=d.live?LIVE:INK;
-        var sy=cy-16;
-        c.fillText('-',CX,sy-3);
-        c.textAlign='left';  c.fillText(d.hs,CX+24,sy);     /* home = right */
-        c.textAlign='right'; c.fillText(d.as,CX-24,sy);
-        c.textAlign='center'; c.direction='rtl'; c.font='800 24px '+FONT;
-        var st=d.live?('مباشر'+(d.min?' · '+d.min.replace(/[′']/g,'')+'′':'')):(d.stale?'توقف التحديث':'انتهت');
-        if(d.ph!==null&&!d.live) st='ترجيح '+d.ph+' - '+d.pa;   /* rtl text: the first number lands right = home */
-        c.fillStyle=d.live?LIVE:FIN; c.fillText(st,CX,cy+34);
-      }else if(d.live||d.stale){
-        c.direction='rtl'; c.font='900 34px '+FONT; c.fillStyle=d.live?LIVE:FIN;
-        c.fillText(d.live?'مباشر':'—',CX,cy);
-      }else{
-        c.direction='rtl'; c.fillStyle=UP;
-        c.fillText(fit(c,d.ko||'—','900',44,26,2*MIDW-8),CX,cy);
-      }
-      /* scorers under their own side */
-      c.font='700 25px '+FONT; c.fillStyle=MUTED; c.direction='rtl'; c.textAlign='center';
-      var half=(W-2*PAD)/2, gw=half-60;
-      [[gLines(d.gh),CX+half/2],[gLines(d.ga),CX-half/2]].forEach(function(s){
-        s[0].forEach(function(line,k){
-          var t=line; while(t.length>4&&c.measureText(t).width>gw) t=t.slice(0,-1);
-          c.fillText(t===line?t:t+'…',s[1],y+138+k*36);
-        });
-      });
-      y+=h;
-    });
-    /* ---- foot: our name ---- */
+    paint(c,top);
     c.fillStyle='#fff'; c.fillRect(0,H-FOOT,W,FOOT);
     c.fillStyle='#1676ad'; c.fillRect(0,H-FOOT,W,5);
     var fy=H-FOOT/2+2;
+    c.textBaseline='middle';
     if(pics.logo){ var lh=92, lw=pics.logo.naturalWidth*lh/pics.logo.naturalHeight; c.drawImage(pics.logo,W-PAD-lw,fy-lh/2,lw,lh); }
     c.direction='ltr'; c.textAlign='left'; c.font='900 40px '+FONT; c.fillStyle='#15658f';
     c.fillText('elgoon.com',PAD,fy-(info.live?16:0));
@@ -159,13 +122,130 @@
     }
   }
 
+  /* ---- the day's matches of one league ---- */
+  function drawMatches(info,pics){
+    var rows=info.rows, hs=rows.map(rowH), body=hs.reduce(function(a,b){return a+b;},0), CX=W/2;
+    frame(info,pics,body,1350,function(c,top){
+      var y=top;
+      rows.forEach(function(d,i){
+        var h=hs[i], cy=y+75, CREST=76, MIDW=96;
+        if(i){ c.fillStyle='#e6ebf1'; c.fillRect(PAD+24,y,W-2*PAD-48,2); }
+        /* home on the right (as on the site), away on the left */
+        var hx=CX+MIDW+14, ax=CX-MIDW-14-CREST;
+        [[pics.crest[d.hc],hx],[pics.crest[d.ac],ax]].forEach(function(p){
+          if(p[0]) contain(c,p[0],p[1],cy-CREST/2,CREST);
+          else{ c.fillStyle='#e2e8f0'; c.beginPath(); c.arc(p[1]+CREST/2,cy,CREST/2-4,0,6.2832); c.fill(); }
+        });
+        var nameW=W-PAD-22-(hx+CREST+16);
+        c.fillStyle=INK; c.direction='rtl';
+        c.textAlign='left';  c.fillText(fit(c,d.h,'800',38,26,nameW),hx+CREST+16,cy);
+        c.textAlign='right'; c.fillText(fit(c,d.a,'800',38,26,nameW),ax-16,cy);
+        /* the middle: score + state, or the kick-off time */
+        c.textAlign='center';
+        if(d.hs!==null){
+          c.direction='ltr'; c.font='900 58px '+FONT; c.fillStyle=d.live?LIVE:INK;
+          var sy=cy-16;
+          c.fillText('-',CX,sy-3);
+          c.textAlign='left';  c.fillText(d.hs,CX+24,sy);     /* home = right */
+          c.textAlign='right'; c.fillText(d.as,CX-24,sy);
+          c.textAlign='center'; c.direction='rtl'; c.font='800 24px '+FONT;
+          var st=d.live?('مباشر'+(d.min?' · '+d.min.replace(/[′']/g,'')+'′':'')):(d.stale?'توقف التحديث':'انتهت');
+          if(d.ph!==null&&!d.live) st='ترجيح '+d.ph+' - '+d.pa;   /* rtl text: the first number lands right = home */
+          c.fillStyle=d.live?LIVE:FIN; c.fillText(st,CX,cy+34);
+        }else if(d.live||d.stale){
+          c.direction='rtl'; c.font='900 34px '+FONT; c.fillStyle=d.live?LIVE:FIN;
+          c.fillText(d.live?'مباشر':'—',CX,cy);
+        }else{
+          c.direction='rtl'; c.fillStyle=UP;
+          c.fillText(fit(c,d.ko||'—','900',44,26,2*MIDW-8),CX,cy);
+        }
+        /* scorers under their own side */
+        c.font='700 25px '+FONT; c.fillStyle=MUTED; c.direction='rtl'; c.textAlign='center';
+        var half=(W-2*PAD)/2, gw=half-60;
+        [[gLines(d.gh),CX+half/2],[gLines(d.ga),CX-half/2]].forEach(function(s){
+          s[0].forEach(function(line,k){
+            var t=line; while(t.length>4&&c.measureText(t).width>gw) t=t.slice(0,-1);
+            c.fillText(t===line?t:t+'…',s[1],y+138+k*36);
+          });
+        });
+        y+=h;
+      });
+    });
+  }
+
+  /* ---- a standings table: # · club · لعب ف ت خ +/- نقاط ---- */
+  var TCOLS=['لعب','ف','ت','خ','+/-','نقاط'], TCW=84;
+  function tcx(i){ return PAD+18+TCW/2+(TCOLS.length-1-i)*TCW; }   /* لعب on the right, نقاط on the left */
+  function drawTable(info,pics){
+    var rows=info.rows, RH=rows.length>12?60:70, TH=58, body=TH+rows.length*RH;
+    frame(info,pics,body,1080,function(c,top){
+      c.save(); rr(c,PAD,top,W-2*PAD,body,26); c.clip();
+      c.fillStyle='#f1f5f9'; c.fillRect(PAD,top,W-2*PAD,TH);
+      c.direction='rtl'; c.textAlign='center'; c.font='800 24px '+FONT; c.fillStyle=MUTED;
+      TCOLS.forEach(function(t,i){ c.fillText(t,tcx(i),top+TH/2); });
+      c.textAlign='right'; c.fillText('الفريق',W-PAD-88,top+TH/2);
+      var nameR=W-PAD-88-RH*.72-14, nameW=nameR-(tcx(0)+TCW/2+8);
+      rows.forEach(function(d,i){
+        var y=top+TH+i*RH, cy=y+RH/2, CR=RH*.72;
+        if(i%2){ c.fillStyle='#f8fafc'; c.fillRect(PAD,y,W-2*PAD,RH); }
+        c.direction='ltr'; c.textAlign='center'; c.font='800 26px '+FONT; c.fillStyle=MUTED;
+        c.fillText(d.pos,W-PAD-48,cy);
+        var im=pics.crest[d.crest];
+        if(im) contain(c,im,W-PAD-88-CR,cy-CR/2,CR);
+        c.direction='rtl'; c.textAlign='right'; c.fillStyle=INK;
+        c.fillText(fit(c,d.name,'800',30,20,nameW),nameR,cy);
+        c.direction='ltr'; c.textAlign='center';
+        d.n.forEach(function(v,k){
+          var last=k===TCOLS.length-1;
+          c.font=(last?'900 32px ':'700 27px ')+FONT; c.fillStyle=last?'#15658f':INK;
+          c.fillText(v,tcx(k),cy);
+        });
+      });
+      c.restore();
+    });
+  }
+
+  /* ---- a scorers / assists chart: rank · face · name + club · number ---- */
+  function drawChart(info,pics){
+    var rows=info.rows, RH=96, TH=58, body=TH+rows.length*RH;
+    frame(info,pics,body,1080,function(c,top){
+      c.save(); rr(c,PAD,top,W-2*PAD,body,26); c.clip();
+      c.fillStyle='#f1f5f9'; c.fillRect(PAD,top,W-2*PAD,TH);
+      c.direction='rtl'; c.font='800 24px '+FONT; c.fillStyle=MUTED;
+      c.textAlign='right';  c.fillText('اللاعب',W-PAD-96,top+TH/2);
+      c.textAlign='center'; c.fillText(info.unit,PAD+90,top+TH/2);
+      rows.forEach(function(d,i){
+        var y=top+TH+i*RH, cy=y+RH/2, F=66, fx=W-PAD-96-F;
+        if(i===0){ c.fillStyle='#f3f9fd'; c.fillRect(PAD,y,W-2*PAD,RH); }
+        else{ c.fillStyle='#e6ebf1'; c.fillRect(PAD+24,y,W-2*PAD-48,2); }
+        c.direction='ltr'; c.textAlign='center'; c.font='800 28px '+FONT; c.fillStyle=MUTED;
+        c.fillText(d.pos,W-PAD-50,cy);
+        var im=pics.crest[d.face];
+        if(im&&d.round){                       /* a player photo: a circle, cropped to fill */
+          c.save(); c.beginPath(); c.arc(fx+F/2,cy,F/2,0,6.2832); c.clip();
+          c.fillStyle='#eef2f6'; c.fillRect(fx,cy-F/2,F,F);
+          var k=Math.max(F/im.naturalWidth,F/im.naturalHeight), w=im.naturalWidth*k, h=im.naturalHeight*k;
+          c.drawImage(im,fx+(F-w)/2,cy-F/2,w,h); c.restore();
+        }else if(im) contain(c,im,fx+4,cy-F/2+4,F-8);
+        else{ c.fillStyle='#e2e8f0'; c.beginPath(); c.arc(fx+F/2,cy,F/2-4,0,6.2832); c.fill(); }
+        var nameR=fx-18, nameW=nameR-(PAD+170);
+        c.direction='rtl'; c.textAlign='right'; c.fillStyle=INK;
+        c.fillText(fit(c,d.name,'800',34,24,nameW),nameR,d.team?cy-17:cy);
+        if(d.team){ c.fillStyle=MUTED; c.fillText(fit(c,d.team,'700',24,18,nameW),nameR,cy+22); }
+        c.direction='ltr'; c.textAlign='center'; c.fillStyle='#15658f';
+        c.fillText(fit(c,d.val,'900',46,26,150),PAD+90,cy);
+      });
+      c.restore();
+    });
+  }
+
   /* ---- the preview: the image + share / download ---- */
   var box, blobNow, nameNow;
   function ui(){
     if(box) return box;
     box=document.createElement('div'); box.className='shot-box'; box.hidden=true;
-    box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label','صورة المباريات');
-    box.innerHTML='<div class="shot-in"><img class="shot-img" alt="صورة المباريات">'
+    box.setAttribute('role','dialog'); box.setAttribute('aria-modal','true'); box.setAttribute('aria-label','صورة للمشاركة');
+    box.innerHTML='<div class="shot-in"><img class="shot-img" alt="صورة للمشاركة">'
       +'<div class="shot-acts"><button type="button" class="shot-b shot-share">مشاركة</button>'
       +'<a class="shot-b shot-dl" download>تنزيل الصورة</a>'
       +'<button type="button" class="shot-b shot-x">إغلاق</button></div></div>';
@@ -194,34 +274,84 @@
     b.hidden=false;
   }
 
-  function shoot(btn){
-    var comp=btn.closest('.comp'), sec=btn.closest('.day'); if(!comp) return;
+  /* what the button stands on -> {info, icon, urls, draw, name} */
+  function jobMatches(btn){
+    var comp=btn.closest('.comp'), sec=btn.closest('.day'); if(!comp) return null;
     var rows=[].slice.call(comp.querySelectorAll('.mrow'))
       .filter(function(r){ return r.style.display!=='none'; }).map(rowData);
-    if(!rows.length) return;
-    var ic=comp.querySelector('.comp-h img');
-    var info={label:comp.getAttribute('data-label')||'', day:txt(sec&&sec.querySelector('.day-h')),
-              rows:rows, live:rows.some(function(d){return d.live;})};
-    var urls={}; rows.forEach(function(d){ urls[d.hc]=1; urls[d.ac]=1; });
-    var keys=Object.keys(urls).filter(Boolean);
+    if(!rows.length) return null;
+    var ic=comp.querySelector('.comp-h img'), urls=[];
+    rows.forEach(function(d){ urls.push(d.hc,d.ac); });
+    return {info:{label:comp.getAttribute('data-label')||'', day:txt(sec&&sec.querySelector('.day-h')),
+                  rows:rows, live:rows.some(function(d){return d.live;})},
+            icon:ic?ic.getAttribute('src'):'', urls:urls, draw:drawMatches,
+            name:'elgoon-'+(sec?sec.getAttribute('data-day'):'matches')+'.png'};
+  }
+  function iconOf(label){                     /* the league's emblem, from a table of it on the page */
+    var t=[].slice.call(document.querySelectorAll('.ltable')).filter(function(x){ return x.getAttribute('data-cl')===label; })[0];
+    var i=t&&t.querySelector('.lt-head img'); return i?i.getAttribute('src'):'';
+  }
+  function jobTable(btn){
+    var t=btn.closest('.ltable'); if(!t) return null;
+    var rows=[].slice.call(t.querySelectorAll('tbody tr')).map(function(tr){
+      var n=[].slice.call(tr.children).filter(function(td){
+        return !/\blt-(pos|team|form)\b/.test(td.className); }).map(txt);
+      var im=tr.querySelector('.lt-team img');
+      /* the cells: لعب ف ت خ له عليه +/- نقاط -> the image leaves out له / عليه */
+      return {pos:txt(tr.querySelector('.lt-pos')), name:txt(tr.querySelector('.lt-team bdi')),
+              crest:im?im.getAttribute('src'):'', n:n.length===8?[n[0],n[1],n[2],n[3],n[6],n[7]]:[]};
+    }).filter(function(d){ return d.name&&d.n.length; });
+    if(!rows.length) return null;
+    var hd=t.querySelector('.lt-head').cloneNode(true);
+    [].forEach.call(hd.querySelectorAll('button,.lt-past'),function(x){ x.remove(); });
+    var label=t.getAttribute('data-cl')||'', title=txt(hd);
+    var past=txt(t.querySelector('.lt-past'));
+    var what=(!title||title.indexOf(label)>=0)?'جدول الترتيب':title;      /* «المجموعة أ» keeps its own name */
+    var ic=t.querySelector('.lt-head img');
+    return {info:{label:label, day:what+' · '+(past||today()), rows:rows, live:false},
+            icon:ic?ic.getAttribute('src'):'', urls:rows.map(function(d){return d.crest;}),
+            draw:drawTable, name:'elgoon-table.png'};
+  }
+  function jobChart(btn){
+    var l=btn.closest('.sc-list'); if(!l) return null;
+    var rows=[].slice.call(l.querySelectorAll('.sc-row')).filter(function(r){ return r.offsetParent!==null; })
+      .slice(0,15).map(function(r){
+        var im=r.querySelector('.sc-p img');
+        return {pos:txt(r.querySelector('.sc-n')), name:txt(r.querySelector('.sc-nm>bdi')),
+                team:txt(r.querySelector('.sc-club')), val:txt(r.querySelector('.sc-g')),
+                face:im?im.getAttribute('src'):'', round:!!(im&&im.classList.contains('sc-face'))};
+      }).filter(function(d){ return d.name; });
+    if(!rows.length) return null;
+    var asst=btn.getAttribute('data-u')==='a', label=btn.getAttribute('data-cl')||'';
+    return {info:{label:label, day:(asst?'صناعة الأهداف':'الهدافون')+' · '+today(), rows:rows, live:false,
+                  unit:asst?'صناعة':'أهداف'},
+            icon:iconOf(label), urls:rows.map(function(d){return d.face;}),
+            draw:drawChart, name:asst?'elgoon-assists.png':'elgoon-scorers.png'};
+  }
+
+  function shoot(btn){
+    var k=btn.getAttribute('data-shot');
+    var job=k==='t'?jobTable(btn):(k==='s'?jobChart(btn):jobMatches(btn));
+    if(!job) return;
+    var seen={}, keys=job.urls.filter(function(u){ if(!u||seen[u]) return false; seen[u]=1; return true; });
     btn.disabled=true;
     var fonts=(document.fonts&&document.fonts.load)
       ?Promise.all(['700','800','900'].map(function(w){ return document.fonts.load(w+' 40px Almarai','الجون 0'); })).catch(function(){})
       :Promise.resolve();
-    Promise.all([fonts, img(ic?ic.getAttribute('src'):''), img('/assets/logo.png'),
+    Promise.all([fonts, img(job.icon), img('/assets/logo.png'),
                  Promise.all(keys.map(img))]).then(function(r){
-      var crest={}; keys.forEach(function(k,i){ crest[k]=r[3][i]; });
-      draw(info,{icon:r[1],logo:r[2],crest:crest});
+      var crest={}; keys.forEach(function(u,i){ crest[u]=r[3][i]; });
+      job.draw(job.info,{icon:r[1],logo:r[2],crest:crest});
       cv.toBlob(function(blob){
         btn.disabled=false;
-        if(blob) open(blob,'elgoon-'+(sec?sec.getAttribute('data-day'):'matches')+'.png');
+        if(blob) open(blob,job.name);
       },'image/png');
     }).catch(function(){ btn.disabled=false; });
   }
   /* delegated: day fragments fetched later carry the same button */
   document.addEventListener('click',function(e){
     var b=e.target.closest&&e.target.closest('.comp-shot');
-    if(b){ e.preventDefault(); shoot(b); }
+    if(b){ e.preventDefault(); e.stopPropagation(); shoot(b); }
   });
 })();
 </script>

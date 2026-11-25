@@ -98,6 +98,17 @@ def team_card_data(comp, team, mine=None, today=None):
     return out
 
 
+_SHOT_CAM = ('<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5A4.5 4.5 0 1 1 12 17.5 4.5 4.5 0 0 1 12 8.5zm0 2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg>')
+
+
+def shot_btn(kind, what, extra=""):
+    """The «صورة» button of a table ("t") or a scorers / assists chart ("s"):
+    snippets/shot_js.html draws the block it stands in as one image. Hidden by
+    CSS until that script runs (.shot-on)."""
+    return (f'<button type="button" class="comp-shot shot-sm" data-shot="{kind}"{extra} '
+            f'title="صورة {esc(what)}" aria-label="صورة {esc(what)}">{_SHOT_CAM}<span>صورة</span></button>')
+
+
 def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_map=None,
                     embedded=False, games=None, pages=None, store_src=None, title=None):
     """League standings table (FotMob-style). Hidden until its league is picked.
@@ -200,7 +211,8 @@ def standings_table(comp, rows, past=False, season_label="", zeroed=False, form_
             # a pre-season or last-season table never goes live
             + (' data-z' if (zeroed or past) else "")
             + f'{"" if embedded else " hidden"}>'
-            f'<div class="lt-head">{comp_icon(comp)} {esc(title) if title else "جدول ترتيب " + esc(comp_label(comp))}{badge}</div>'
+            f'<div class="lt-head">{shot_btn("t", (title + " - " if title else "ترتيب ") + comp_label(comp))}'
+            f'{comp_icon(comp)} {esc(title) if title else "جدول ترتيب " + esc(comp_label(comp))}{badge}</div>'
             f'<div class="lt-scroll"><table class="lt"><thead><tr>'
             f'<th class="lt-pos">#</th><th class="lt-team">الفريق</th>'
             + (f'<th class="lt-form" title="آخر 5 مباريات">آخر 5</th>' if form_map is not None else "") +
@@ -466,8 +478,15 @@ def scorers_list(sc, unit="أهداف", comp=None):
     _k = {"أهداف": "g", "صناعة": "a"}.get(unit)
     _live = (f' data-cid="{LIVE_COMP_ID[comp]}" data-k="{_k}" data-at="{BUILD_MS}"'
              if comp in LIVE_COMP_ID and _k else "")
+    # the «صورة» button (2026-11-25): only where the league is known - the
+    # image is headed by its name
+    _shot = ""
+    if comp and _k:
+        from site_lib.names import comp_label as _cl
+        _shot = shot_btn("s", ("هدافي " if _k == "g" else "صناع أهداف ") + _cl(comp),
+                         f' data-u="{_k}" data-cl="{esc(_cl(comp))}"')
     rows = [f'<div class="sc-list{"" if has_m else " sc-nom"}"{_live}>'
-            f'<div class="sc-hd"><span></span><span>اللاعب</span>'
+            f'<div class="sc-hd"><span></span><span>اللاعب{_shot}</span>'
             f'{m_hd}<span>{esc(unit)}</span></div>']
     for i, x in enumerate(sc, 1):
         club = (f'<span class="sc-club"><bdi>{esc(x.get("team"))}</bdi></span>'

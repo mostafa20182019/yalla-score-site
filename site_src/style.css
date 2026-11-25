@@ -1371,6 +1371,10 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
 .shot-on .comp-shot{display:inline-flex;align-items:center;justify-content:center;margin-inline-start:auto;flex:none;
   gap:5px;height:30px;border:1px solid var(--green);border-radius:999px;background:#fff;color:var(--green-d);cursor:pointer;
   padding:0 11px;font:inherit;font-size:.8rem;font-weight:800;line-height:1;white-space:nowrap}
+/* the same button on a standings heading and a scorers / assists chart (2026-11-25) */
+.shot-on .comp-shot.shot-sm{height:26px;padding:0 9px;font-size:.74rem}
+.shot-on .sc-hd .comp-shot{margin-inline-start:8px;vertical-align:middle}
+.shot-on .lt-head .comp-shot{order:9}      /* first in the markup, last on screen */
 .shot-on .comp-shot:hover{background:#e8f4fb;border-color:var(--green)}
 .shot-on .comp-shot:disabled{opacity:.5;cursor:progress}
 .shot-box{position:fixed;inset:0;z-index:60;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:14px}

@@ -22,7 +22,7 @@ from site_lib.predictions import pred_block, pred_pop
 from site_lib.reads import post_match_read, pre_match_read
 from site_lib.render import Markup, render
 from site_lib.shell import _LASTMOD, adsense_slot, foot, head, noindex, thumb_url, write
-from site_lib.snippets import FILTERS_HTML, LT_GAMES_JS, MATCHES_JS, ROUNDS_JS, SHOT_JS, ST_TABS_JS, VIDEO_JS
+from site_lib.snippets import FILTERS_HTML, LT_GAMES_JS, MATCHES_JS, ROUNDS_JS, ST_TABS_JS, VIDEO_JS
 from site_lib.stats import _finished_by_comp
 from site_lib.tables import fixture_mini, league_rounds_panel, match_details_html, match_row, match_stats_html, motm_html, scorers_list, standings_table
 from site_lib.text import esc, jsonld
@@ -157,7 +157,7 @@ def matches_page(_plog, _preds, articles, fixtures, forms, fx_by_comp, ge_idx, l
         "matches.html", page_head=Markup(page_head), leagues=leagues, ad=Markup(ad),
         views=views, filters=Markup(FILTERS_HTML), today=REF_TODAY, days=near_days,
         all_days=all_days, rail=rail,
-        feat=feat, news=news, matches_js=Markup(MATCHES_JS + SHOT_JS), rounds_js=Markup(ROUNDS_JS),
+        feat=feat, news=news, matches_js=Markup(MATCHES_JS), rounds_js=Markup(ROUNDS_JS),
         popup=Markup(popup), page_foot=Markup(foot())))
     return comp_order
 
