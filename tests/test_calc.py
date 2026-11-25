@@ -168,6 +168,41 @@ ck("21 the standings page links here only when the same test passes",
 bs = io.open("build_site.py", encoding="utf-8").read()
 ck("22 the build writes the pages before the sitemap", bs.index("calc_pages(fx_by_comp") < bs.index("robots_sitemap_ads(articles, urls)"))
 
+# ------------------------------------------------- «ماذا لو؟» (2026-11-25)
+# ONE match with three named buttons in front of the page, the answer in words
+hero_h = harness.replace(
+    "calcReset: node('button') };",
+    "calcReset: node('button'), calcHero: node('section'), calcQ: node('h2'), calcHeroBtns: node('div'),"
+    " calcAns: node('div'), calcHeroWhen: node('p'), calcHeroGo: node('p') };").replace(
+    "createElement: node };", "createElement: node, createTextNode: (t) => ({ text: t }) };").split("const table = ")[0] + r"""
+const words = (n) => n.children.filter(c => c.tag === 'bdi').map(c => c.textContent).join('|');
+const out = { q: words(els.calcQ), btns: els.calcHeroBtns.children.map(b => b.textContent), empty: els.calcAns.className,
+              shown: els.calcHero.hidden === false, round: els.calcRound.textContent };
+els.calcHeroBtns.children[2].click();
+out.stored = store['elgoonCalc:t']; out.lines = els.calcAns.children.length; out.cls = els.calcAns.children.map(c => c.className);
+out.first = els.calcAns.children[0].children[0].textContent; out.go = els.calcHeroGo.hidden;
+console.log(JSON.stringify(out));
+"""
+m1 = d["rounds"][0]["m"][0]
+tmp3 = os.path.join(tempfile.mkdtemp(), "calc_hero.js")
+io.open(tmp3, "w", encoding="utf-8").write(
+    hero_h.replace("DATA", json.dumps(d, ensure_ascii=False)).replace("HASH", "'#m=%s.a'" % m1[0]).replace("BODY", body))
+r3 = subprocess.run(["node", tmp3], capture_output=True, text=True, encoding="utf-8")
+o3 = json.loads(r3.stdout) if r3.returncode == 0 and r3.stdout.strip() else {}
+_hn, _an = d["teams"][m1[1]]["n"], d["teams"][m1[2]]["n"]
+ck("24 a door's match opens as a question about the reader's side, with the teams' names on the buttons",
+   o3.get("shown") and o3.get("q") == f"{_an}|{_hn}" and o3.get("btns") == [f"فوز {_hn}", "تعادل", f"فوز {_an}"]
+   and "is-empty" in (o3.get("empty") or ""), r3.stderr[:300] + str(o3))
+ck("25 one tap: the pick is stored like any other, both teams get a line (the reader's first), the ways down appear",
+   o3.get("stored") == json.dumps({m1[0]: "a"}, separators=(",", ":")) and o3.get("lines") == 2
+   and o3.get("first") == _an and o3.get("go") is False, str(o3))
+ck("26 the door for a club: its nearest open match and its side; a team with no match gets none",
+   K.calc_focus(d, m1[2]) == (m1[0], "a", _hn) and K.calc_focus(d, m1[1]) == (m1[0], "h", _an)
+   and K.calc_focus(d, 99) is None and K.calc_focus(None, 0) is None)
+ck("27 the page opens on a question, not on the word «حاسبة»; the round list keeps working without the hero",
+   'id="calcHero" class="minfo calc-hero" hidden' in tpl and tpl.index('id="calcHero"') < tpl.index('id="calc"')
+   and "ماذا لو فاز فريقك؟" in tpl and "if(!hero||!elQ||!elHB||!elAns||!FM) return;" in body)
+
 dist = os.path.join(os.getcwd(), "dist")
 if os.path.isdir(os.path.join(dist, "calc")):
     import re

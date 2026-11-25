@@ -5,7 +5,17 @@
    separator by site_lib.render: break between tags, never inside a sentence. #}
 {{ page_head }}
 <nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/leagues.html">البطولات</a> › حاسبة ترتيب {{ label }}</nav>
-<h1 class="page-h">حاسبة ترتيب {{ label }} {{ season }}</h1>
+<h1 class="page-h">ماذا لو فاز فريقك؟ احسب ترتيب {{ label }} {{ season }}</h1>
+{# «ماذا لو؟» (user, 2026-11-25: «بحس ان لازم حد يشرحها للمستخدم»): ONE match,
+   three big buttons that carry the teams' names, and the answer in words in
+   the same place. The first tap explains the page. The script fills it. #}
+<section id="calcHero" class="minfo calc-hero" hidden>
+  <h2 id="calcQ" class="calc-q"></h2>
+  <p id="calcHeroWhen" class="calc-hw"></p>
+  <div id="calcHeroBtns" class="calc-hbs" role="group" aria-label="نتيجة المباراة"></div>
+  <div id="calcAns" class="calc-ans" role="status"></div>
+  <p id="calcHeroGo" class="calc-hgo" hidden><button type="button" id="calcGoT">الجدول كاملًا ↓</button><button type="button" id="calcGoM">بقية المباريات ↓</button></p>
+</section>
 <section class="minfo">
   <p>اختر نتيجة كل مباراة قادمة في {{ label }}، وشاهد جدول الترتيب يتغيّر أمامك فورًا. المتاح الآن: <b>{{ rounds_txt }}</b> و<b>{{ matches_txt }}</b> لم تُلعب بعد.</p>
   <p class="hintline">الفوز يُحسب 1-0 والتعادل 1-1. عند تساوي النقاط يكون الترتيب بفارق الأهداف ثم الأهداف المسجلة، وقد تختلف لائحة البطولة الرسمية. اختياراتك تبقى في متصفحك فقط.</p>

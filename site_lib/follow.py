@@ -61,7 +61,7 @@ def my_block_html(name, slug, crest, chip, row, news, calc=None):
             '</div>'
             + (f'<div class="mlist">{row}</div>' if row else "")
             + (f'<a class="my-n" href="{esc(first["href"])}">{esc(first["title"])}</a>' if first else "")
-            + (f'<a class="my-calc" href="{esc(calc["href"])}">🧮 {esc(calc["label"])} ←</a>' if calc else "")
+            + (f'<a class="my-calc" href="{esc(calc["href"])}">{esc(calc["label"])} ←</a>' if calc else "")
             + '</section>')
 
 

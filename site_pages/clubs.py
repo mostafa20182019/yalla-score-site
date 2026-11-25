@@ -251,9 +251,17 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         if _ls and tp["league"] in _NB_READY:
             hub_links.append({"href": Markup(f"/numbers/{_ls}.html"), "label": f"إحصائيات {league_ar}"})
         # the table calculator (site review 2026-11-19: one text link led to it)
-        from site_lib.calc import calc_data as _calc_data
-        if _ls and _calc_data(st, (fx_by_comp or {}).get(tp["league"])):
+        from site_lib.calc import calc_data as _calc_data, calc_focus as _calc_focus
+        _cd = _calc_data(st, (fx_by_comp or {}).get(tp["league"])) if _ls else None
+        # «ماذا لو فاز فريقك؟» (2026-11-25): the door opens on THIS club's
+        # nearest league match, as a question about it
+        whatif = None
+        if _cd:
             hub_links.append({"href": Markup(f"/calc/{_ls}.html"), "label": f"حاسبة ترتيب {league_ar}"})
+            _fo = _calc_focus(_cd, st["table"].index(srow)) if srow else None
+            if _fo:
+                whatif = {"href": f"/calc/{_ls}.html#m={_fo[0]}.{_fo[1]}",
+                          "label": f"ماذا لو فاز {name} على {_fo[2]}؟"}
         faq_html = ""
         if faq:
             faq_html = ('<section class="minfo faq"><h2>أسئلة شائعة عن ' + esc(name) + '</h2>'
@@ -292,6 +300,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             others=[{"slug": Markup(o["slug"]), "name": o["name"]} for o in others],
             club_ld=Markup(club_ld), faq=Markup(faq_html), popup=Markup(popup),
             h2h=h2h_link, hub_links=hub_links,
+            whatif=({"href": Markup(whatif["href"]), "label": whatif["label"]} if whatif else None),
             page_foot=Markup(foot())))
         urls.append(t_url)
         # «تابع فريقك» (2026-11-19): the home page's block for a visitor who
@@ -305,6 +314,6 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         write_text(f"my/{slug}.json", my_json(_clean_urls(my_block_html(
             name, slug, crest, _chip, up_rows[0] if up_rows else (last_rows[0] if last_rows else ""),
             [{"href": str(n["href"]), "title": n["title"]} for n in news_items],
-            calc=next(({"href": str(h["href"]), "label": h["label"]} for h in hub_links
-                       if str(h["href"]).startswith("/calc/")), None)))))
+            calc=whatif or next(({"href": str(h["href"]), "label": h["label"]} for h in hub_links
+                                 if str(h["href"]).startswith("/calc/")), None)))))
     print(f"  + club pages: {len(TEAM_PAGES)}")

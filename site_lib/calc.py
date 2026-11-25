@@ -67,5 +67,20 @@ def calc_data(st, fx):
     return {"teams": teams, "rounds": rounds}
 
 
+def calc_focus(data, ti):
+    """«ماذا لو فاز فريقك؟» (2026-11-25): the nearest open match of the team
+    at row ti of the table - (match key, "h" | "a", the opponent's name) - or
+    None. The door on a club's next match opens the page on this one match
+    (#m=<key>.<side>), so the reader meets a question, not a tool."""
+    if not data or ti is None:
+        return None
+    for rd in data["rounds"]:
+        for m in rd["m"]:
+            if ti in (m[1], m[2]) and m[3] != "مؤجلة":
+                side = "h" if m[1] == ti else "a"
+                return m[0], side, data["teams"][m[2] if side == "h" else m[1]]["n"]
+    return None
+
+
 def calc_counts(data):
     return len(data["rounds"]), sum(len(r["m"]) for r in data["rounds"])

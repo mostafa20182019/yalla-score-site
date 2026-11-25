@@ -30,6 +30,7 @@
     {{ row }}
     {% endfor %}
   </div>
+  {% if whatif %}<a class="whatif" href="{{ whatif.href }}">{{ whatif.label }} ←</a>{% endif %}
   {% if up_more %}
   <details class="more-d">
     <summary>جدول مباريات {{ name }} {{ season }}: {{ up_more_txt }}</summary>

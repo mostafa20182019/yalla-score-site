@@ -88,6 +88,62 @@
     });
     elFx.hidden=false;
   }
+  /* «ماذا لو؟» (2026-11-25): one match in front of everything else. Which
+     one: the match a door named (#m=<key> or #m=<key>.<h|a> - the side is the
+     reader's team), else the leader's nearest match, else the first match. */
+  var hero=document.getElementById('calcHero'), elQ=document.getElementById('calcQ'), elHB=document.getElementById('calcHeroBtns'),
+      elAns=document.getElementById('calcAns'), elHW=document.getElementById('calcHeroWhen'), elHGo=document.getElementById('calcHeroGo');
+  var FM=null, FS='';
+  (function(){
+    var byKey={}, first=null, lead=null;
+    D.rounds.forEach(function(r,i){ r.m.forEach(function(m){
+      var f={m:m,ri:i}; byKey[m[0]]=f; if(!first) first=f; if(!lead&&(m[1]===0||m[2]===0)) lead=f;
+    }); });
+    var x=/^#m=([A-Za-z0-9-]{1,24})(?:\.([ha]))?$/.exec(location.hash||''), f=x&&byKey[x[1]];
+    if(f){ FS=x[2]||''; ri=f.ri; } else f=lead||first;
+    FM=f?f.m:null;
+  })();
+  var ORD=['الأول','الثاني','الثالث','الرابع','الخامس','السادس','السابع','الثامن','التاسع','العاشر'];
+  function place(n){ return 'المركز '+(ORD[n-1]||n); }
+  function points(n){ return n===1?'نقطة واحدة':n===2?'نقطتان':n<=10?n+' نقاط':n+' نقطة'; }
+  function drawHero(rows){
+    if(!hero||!elQ||!elHB||!elAns||!FM) return;
+    rows=rows||table();
+    var h=D.teams[FM[1]], a=D.teams[FM[2]], v=picks[FM[0]];
+    elQ.textContent='';
+    if(FS){
+      var me=FS==='h'?h:a, op=FS==='h'?a:h;
+      elQ.appendChild(document.createTextNode('ماذا لو فاز ')); elQ.appendChild(el('bdi','',me.n));
+      elQ.appendChild(document.createTextNode(' على ')); elQ.appendChild(el('bdi','',op.n));
+      elQ.appendChild(document.createTextNode('؟'));
+    } else {
+      elQ.appendChild(el('bdi','',h.n)); elQ.appendChild(document.createTextNode(' × ')); elQ.appendChild(el('bdi','',a.n));
+      elQ.appendChild(document.createTextNode(': ماذا لو؟'));
+    }
+    if(elHW) elHW.textContent=FM[3]||'';
+    elHB.textContent='';
+    [['h','فوز '+h.n],['d','تعادل'],['a','فوز '+a.n]].forEach(function(o){
+      var b=el('button','calc-hb'+(v===o[0]?' on':''),(v===o[0]?'✓ ':'')+o[1]); b.type='button';
+      b.setAttribute('aria-pressed',v===o[0]?'true':'false');
+      b.addEventListener('click',function(){
+        if(picks[FM[0]]===o[0]) delete picks[FM[0]]; else picks[FM[0]]=o[0];
+        save(); drawRound(); drawHero(drawTable()); effect(null); count();
+      });
+      elHB.appendChild(b);
+    });
+    elAns.textContent='';
+    if(elHGo) elHGo.hidden=!v;
+    if(!v){ elAns.className='calc-ans is-empty'; elAns.textContent='اختر نتيجة، وشاهد أين يصبح الفريقان في الترتيب.'; return; }
+    elAns.className='calc-ans';
+    (FS==='a'?[FM[2],FM[1]]:[FM[1],FM[2]]).forEach(function(ti){
+      var pos=-1, pts=0; rows.forEach(function(r,p){ if(r.i===ti){ pos=p; pts=r.pts; } });
+      if(pos<0) return;
+      var mv=ti-pos, line=el('div','calc-al'+(mv>0?' up':mv<0?' dn':''));
+      line.appendChild(el('bdi','',D.teams[ti].n));
+      line.appendChild(document.createTextNode((mv>0?' يصعد إلى ':mv<0?' يتراجع إلى ':' يبقى في ')+place(pos+1)+' · '+points(pts)));
+      elAns.appendChild(line);
+    });
+  }
   function drawRound(){
     var r=D.rounds[ri], lastW=null; elRound.textContent='الجولة '+r.r; elMs.textContent='';
     r.m.forEach(function(m){
@@ -103,7 +159,7 @@
         b.setAttribute('aria-label',o[2]); b.setAttribute('aria-pressed',v===o[0]?'true':'false');
         b.addEventListener('click',function(){
           if(picks[m[0]]===o[0]) delete picks[m[0]]; else picks[m[0]]=o[0];
-          save(); drawRound(); effect(m,drawTable()); count();
+          save(); drawRound(); effect(m,drawTable()); count(); drawHero();
         });
         bs.appendChild(b);
       });
@@ -127,11 +183,16 @@
   }
   if(prev) prev.addEventListener('click',function(){ if(ri>0){ ri--; drawRound(); } });
   if(next) next.addEventListener('click',function(){ if(ri<D.rounds.length-1){ ri++; drawRound(); } });
-  if(elReset) elReset.addEventListener('click',function(){ picks={}; save(); drawRound(); drawTable(); effect(null); count(); });
+  if(elReset) elReset.addEventListener('click',function(){ picks={}; save(); drawRound(); drawTable(); effect(null); count(); drawHero(); });
   if(elFxGo) elFxGo.addEventListener('click',function(){
     var t=root.querySelector('.calc-t'); if(t&&t.scrollIntoView) t.scrollIntoView({block:'start'});
   });
+  [['calcGoT','.calc-t'],['calcGoM','.calc-nav']].forEach(function(g){
+    var b=document.getElementById(g[0]);
+    if(b) b.addEventListener('click',function(){ var t=root.querySelector(g[1]); if(t&&t.scrollIntoView) t.scrollIntoView({block:'start'}); });
+  });
   root.classList.add('calc-on');
   drawRound(); drawTable(); count();
+  if(hero&&FM){ drawHero(); hero.hidden=false; }
 })();
 </script>
