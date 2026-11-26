@@ -1007,6 +1007,54 @@ def match_facts_before(matches, fixtures, standings, archive, today=None, hours=
     return [ev for _w, ev in out[:FACTS_MAX]]
 
 
+# «أرقام بعد المباراة» (user, 2026-11-26: «ابدأ بـ 2»): what a big match's
+# result changed - a run that grew or ended, a side beaten after years of
+# meetings, where the two stand now. ref after:<match_id>. Only once the
+# official table has counted the match (prefacts' `ready`), so the post is
+# never a half of itself; none when the club-streak card already carries the
+# run (its ref names the same match). Same switch as the facts before: FB_FACTS.
+KIND_AFTER = "match-after"
+AFTER_MAX_AGE_D, AFTER_MIN_TOP, AFTER_MIN_LINES = 1, 9, 2
+
+
+def match_facts_after(matches, fixtures, standings, archive, today=None, feed=None, streak_ids=()):
+    from site_lib import prefacts as PF
+    now = _now(today)
+    cut = (now.date() - datetime.timedelta(days=AFTER_MAX_AGE_D)).isoformat()
+    bycomp = {}
+    for r in archive or []:
+        if _finished(r) and r.get("competition"):
+            bycomp.setdefault(r["competition"], []).append(dict(r, status="FINISHED"))
+    PF.setup(fixtures, bycomp, standings, feed=feed, matches=matches)
+    tables = {s.get("competition"): s.get("table") for s in standings or [] if s.get("table")}
+    out = []
+    for m in matches or []:
+        d = str(m.get("kickoff") or "")[:10]
+        if not _finished(m) or not m.get("match_id") or not (cut <= d <= now.date().isoformat()):
+            continue
+        if m.get("competition") in PF.NEWS_SKIP or not _facts_big(m, tables) or str(m["match_id"]) in streak_ids:
+            continue
+        f = PF.for_after(m)
+        if not f or not f.get("ready") or f.get("topw", 0) < AFTER_MIN_TOP or len(f.get("lines") or []) < AFTER_MIN_LINES:
+            continue
+        h, a = _side_names(m)
+        head = f"📊 أرقام بعد {h} {m.get('home_score')} - {m.get('away_score')} {a} ({comp_label(m.get('competition'))})"
+        out.append((f["topw"], event(
+            KIND_AFTER, f"after:{m['match_id']}", f"أرقام بعد {h} × {a}",
+            [head, ""] + [f"• {x}" for x in f["lines"][:FACTS_MAX_LINES]] + [""],
+            f"{SITE}/m/{m['match_id']}", "تفاصيل المباراة", [_club_tag(h), _club_tag(a)],
+            competition=m.get("competition"), match_id=m.get("match_id"), weight=f["weight"])))
+    out.sort(key=lambda x: -x[0])
+    return [ev for _w, ev in out[:FACTS_MAX]]
+
+
+def _after(d, today):
+    streaks = {str(ev["ref"]).rsplit(":", 1)[-1]
+               for ev in club_streak(d.get("matches"), d.get("fixtures"), d.get("archive"), today)}
+    return match_facts_after(d.get("matches"), d.get("fixtures"), d.get("standings"), d.get("archive"), today,
+                             streak_ids=streaks)
+
+
 # ---------------------------------------------------------------- all of it
 import story_social as SS                                   # noqa: E402
 
@@ -1024,6 +1072,7 @@ DETECTORS = [
     # «أرقام قبل المباراة» (site_lib/prefacts.py, 2026-11-26) - behind FB_FACTS in fb_post.py
     (KIND_FACTS, lambda d, today: match_facts_before(d.get("matches"), d.get("fixtures"), d.get("standings"),
                                                      d.get("archive"), today)),
+    (KIND_AFTER, _after),
     # «ساعة الأهداف» (goal_clock.py, 2026-11-20): the night's match on the goal dial, a CARD
     (SS.KIND_CLOCK, lambda d, today: SS.goal_clock_night(d.get("matches"), d.get("archive"), d.get("details"), today)),
     # «ساعة أهداف الشهر» (club_clock.py, 2026-11-20): one club a day in a month's first days, a CARD

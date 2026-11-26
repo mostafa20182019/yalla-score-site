@@ -1867,6 +1867,8 @@ a.lt-tb{text-decoration:none}
 .pf-m{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.74rem;font-weight:700;color:var(--muted);margin-top:3px}
 .pf-c{display:inline-flex;gap:2px}
 .pf-c img{width:18px;height:18px;object-fit:contain}
+.pf-sc{display:inline-flex;align-items:center;gap:3px;font-weight:900;color:var(--ink);font-variant-numeric:tabular-nums}
+.pf-sc i{font-style:normal;opacity:.6}
 .pf-page{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;margin:0 0 16px}
 /* the fact under a match's row, phones only (the side column carries the
    facts where it is shown): one line, cut with an ellipsis, never two */

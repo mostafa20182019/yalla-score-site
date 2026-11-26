@@ -202,12 +202,72 @@ ck("35d the line is hidden where the side column shows, one line on a phone, and
    ".mfact{display:none}" in css and "text-overflow:ellipsis" in css.split(".mrow>.mfact{")[1].split("}")[0]
    and "mfact" not in shot)
 
-# ---- 5. the Facebook kind: registered, behind its own switch, the same sentences
+# ---- 4b. «أرقام بعد المباراة»: what the result changed, only while it is the news
 import fb_post as fp                       # noqa: E402
 import story_events as SE                  # noqa: E402
 
+S2 = [fm("x0", "P", 1, 0, "2026-07-25"), fm("P", "x1", 1, 0, "2026-08-01"), fm("x2", "P", 0, 1, "2026-08-08"),
+      fm("P", "x3", 2, 1, "2026-08-15"),
+      fm("Q", "y1", 2, 1, "2026-07-20"), fm("y2", "Q", 1, 1, "2026-07-27"), fm("Q", "y3", 3, 1, "2026-08-03"),
+      fm("y4", "Q", 2, 2, "2026-08-10"), fm("Q", "y5", 2, 1, "2026-08-17")]
+FT = dict(fm("P", "Q", 2, 0, "2026-11-25", mid=900), koff_time="21:00", home_badge="", away_badge="")
+T2 = [{"competition": "Premier League", "table": [
+    {"team": "P", "pos": 2, "played": 5, "pts": 12}, {"team": "Q", "pos": 3, "played": 6, "pts": 11},
+    {"team": "x1", "pos": 1, "played": 5, "pts": 13}]}]
+F2 = {"P|Q": {"a": "P", "b": "Q", "games": [
+    {"id": i, "date": f"202{5 - i // 2}-0{2 + i}-01", "comp": "الدوري", "hg": 1, "ag": 1 + i % 2, "home": "a", "status": "انتهت"}
+    for i in range(4)]}}
+PF.setup([], {"Premier League": S2 + [FT]}, T2, feed=F2, matches=[FT])
+af = PF.for_after(FT)
+ck("42 a run that grew is said as reached; a run that ended is said as ended",
+   "وصل P إلى 4 انتصارات متتالية في الدوري الإنجليزي." in af["lines"]
+   and "خسر Q بعد 5 مباريات دون خسارة في الدوري الإنجليزي." in af["lines"] and af["ready"] is True)
+ck("43 a side beaten after meetings without a win", "فاز P على Q بعد 4 مواجهات دون فوز." in af["lines"])
+ck("44 where the two stand now, from the official table", any(x.startswith("P في المركز الثاني برصيد 12 نقطة") for x in af["lines"]))
+sec = PF.after_section_html(FT)
+ck("45 the finished page's section", sec.startswith('<section class="minfo pf"><h2>أرقام بعد مباراة P وQ</h2>')
+   and sec.count("<li>") == len(af["lines"]))
+# the table has not counted the match yet -> the runs wait, and it is not news / not a post
+T_LAG = [{"competition": "Premier League", "table": [dict(r, played=r["played"] - 1) if r["team"] == "P" else r
+                                                     for r in T2[0]["table"]]}]
+PF.setup([], {"Premier League": S2 + [FT]}, T_LAG, feed={}, matches=[FT])
+lag = PF.for_after(FT)
+ck("46 a table that has not caught up: no run of that side, not ready, not news",
+   lag["ready"] is False and not any("وصل P" in x for x in lag["lines"]) and PF.after_news([FT], "2026-11-25") == [])
+# the side has played again since -> the old match says nothing about its runs
+LATE = fm("P", "x9", 0, 0, "2026-11-29")
+PF.setup([], {"Premier League": S2 + [FT, LATE]}, [{"competition": "Premier League", "table": [
+    dict(r, played=6) if r["team"] == "P" else r for r in T2[0]["table"]]}], feed={}, matches=[FT])
+ck("47 a later match of the side: the old page claims no run", not any("P إلى" in x or "وصل P" in x for x in PF.for_after(FT)["lines"]))
+DRAW = dict(fm("H", "V", 1, 1, "2026-11-25"))
+prev = [{"date": f"2026-0{i + 1}-10", "comp": "", "home": "H", "away": "V", "hg": 0, "ag": 0, "status": "", "counted": True}
+        for i in range(2)]
+ck("48 a third draw in a row is said - and not once the two have met again",
+   PF.meeting_after(DRAW, prev) == [(6, "انتهت آخر 3 مواجهات بين الفريقين بالتعادل.")] and PF.meeting_after(DRAW, prev, later=True) == [])
+PF.setup([], {"Premier League": S2 + [FT]}, T2, feed=F2, matches=[FT])
+an = PF.after_news([FT], "2026-11-26")
+ck("49 yesterday's result is news, with its strongest fact; the phone row carries it; an older one is not",
+   [x["m"]["match_id"] for x in an] == [900] and an[0]["t"] == af["top"]
+   and PF.row_facts([FT], "2026-11-26").get("900") == af["top"] and PF.after_news([FT], "2026-11-28") == [])
+blk = PF.news_html([FT], "2026-11-26")
+ck("50 the block: «أرقام بعد المباريات» with the score as a pill between the names",
+   "أرقام بعد المباريات" in blk and '<b class="pf-sc"><span>2</span><i>-</i><span>0</span></b>' in blk)
+ev2 = SE.match_facts_after([FT], [], T2, [dict(m) for m in S2] + [dict(FT)], datetime.date(2026, 11, 26), feed=F2)
+ck("51 the Facebook post after a big match: once, the same sentences, the score in its first line",
+   len(ev2) == 1 and ev2[0]["ref"] == "after:900" and ev2[0]["kind"] == SE.KIND_AFTER
+   and ev2[0]["lines"][0] == "📊 أرقام بعد P 2 - 0 Q (الدوري الإنجليزي)"
+   and all(l[2:] in af["lines"] for l in ev2[0]["lines"] if l.startswith("• ")))
+ck("52 none when the streak card carries the same match, none three days later",
+   SE.match_facts_after([FT], [], T2, S2 + [FT], datetime.date(2026, 11, 26), feed=F2, streak_ids={"900"}) == []
+   and SE.match_facts_after([FT], [], T2, S2 + [FT], datetime.date(2026, 11, 28), feed=F2) == [])
+ck("53 nothing after a match claims a first time or a record",
+   not any(w in x for x in af["lines"] for w in ("لأول مرة", "تاريخ", "قياسي")))
+PF.setup([], {"Premier League": SEASON}, STAND, feed={}, matches=[NEXT, LATER])
+
+# ---- 5. the Facebook kind: registered, behind its own switch, the same sentences
+
 ck("36 the kind is registered once and has its own switch",
-   [k for k, _ in SE.DETECTORS].count(SE.KIND_FACTS) == 1 and fp.FACTS_KINDS == (SE.KIND_FACTS,)
+   [k for k, _ in SE.DETECTORS].count(SE.KIND_FACTS) == 1 and fp.FACTS_KINDS == (SE.KIND_FACTS, SE.KIND_AFTER)
    and SE.KIND_FACTS not in fp.SOCIAL_KINDS and SE.KIND_FACTS not in fp.FORM_KINDS)
 os.environ.pop("FB_FACTS", None)
 off = fp.facts_on()

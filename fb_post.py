@@ -1402,7 +1402,7 @@ SOCIAL_CARD_KINDS = ("night-number", "goon-question")       # social_card.CARD_K
 
 # «أرقام قبل المباراة» (story_events.KIND_FACTS, 2026-11-26): its own switch
 # too - FB_FACTS - until he has read the wording of a few real ones
-FACTS_KINDS = ("match-facts",)
+FACTS_KINDS = ("match-facts", "match-after")      # before a match / after it - three of each a day
 FACTS_DAILY_MAX = 3
 
 
@@ -1519,8 +1519,8 @@ def events_post(token, dry=False, today=None):
             print(f"{kind} {ref}: FB_PAGE_TOKEN not set - skipping"); continue
         if kind in FORM_KINDS and sum(len(store.posted_since(k, _day_start())) for k in FORM_KINDS) >= FORM_DAILY_MAX:
             print(f"{kind} {ref}: {FORM_DAILY_MAX} form cards are out today - not posted"); continue
-        if kind in FACTS_KINDS and sum(len(store.posted_since(k, _day_start())) for k in FACTS_KINDS) >= FACTS_DAILY_MAX:
-            print(f"{kind} {ref}: {FACTS_DAILY_MAX} pre-match posts are out today - not posted"); continue
+        if kind in FACTS_KINDS and len(store.posted_since(kind, _day_start())) >= FACTS_DAILY_MAX:
+            print(f"{kind} {ref}: {FACTS_DAILY_MAX} posts of this kind are out today - not posted"); continue
         if not store.claim(kind, ref, title=title):
             print(f"{kind} {ref}: claimed by another run - nothing posted"); continue
         try:

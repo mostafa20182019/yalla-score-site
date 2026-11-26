@@ -360,7 +360,9 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         # «أرقام قبل المباراة» (2026-11-26): the runs of the two sides and
         # their last meetings - the «new pre-match information» the reading
         # above made room for. Computed (site_lib/prefacts.py).
-        _pf = _PF.section_html(m) if st == "UPCOMING" else ""
+        # «أرقام بعد المباراة» the same day: what the result changed.
+        _pf = (_PF.section_html(m) if st == "UPCOMING"
+               else _PF.after_section_html(m) if st == "FINISHED" else "")
         if _pf:
             _pre_weight += len(_PF.for_match(m).get("lines") or [])
         _det = match_details_for(md_idx, m)

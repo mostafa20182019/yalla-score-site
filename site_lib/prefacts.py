@@ -275,6 +275,122 @@ def match_facts(m, comp_matches, table, feed, fin_all=None, run_sides=("home", "
             "games": games[:MEET_N], "tally": tally(games, home, away)}
 
 
+# ------------------------------------------------------------------ after the whistle
+# «بعد المباراة بالأرقام» (user, 2026-11-26: «ابدأ بـ 2»): what the result
+# changed - a run that grew, a run that ended, a side beaten after years of
+# meetings, where the two stand now. Said only while it is still the news:
+# the match must be the side's LAST finished one in the competition and the
+# official table must have counted it (`played` = the matches we hold).
+def _n_in_a_row(n, few, many, tail_few, tail_many):
+    return f"{n} {few} {tail_few}" if 3 <= n <= 10 else f"{n} {many} {tail_many}"
+
+
+def _is_same(x, m):
+    return (x.get("kickoff"), x.get("home"), x.get("away")) == (m.get("kickoff"), m.get("home"), m.get("away"))
+
+
+def side_after(raw, club, m, comp_matches, played, comp_txt):
+    """([(weight, sentence)], ready) for one side of a finished match."""
+    ms = [x for x in (comp_matches or []) if raw in (x.get("home"), x.get("away"))
+          and x.get("home_score") is not None and x.get("away_score") is not None]
+    if not ms or not _is_same(ms[-1], m) or int(played or 0) != len(ms):
+        return [], False
+    now, before = season_runs(raw, ms), season_runs(raw, ms[:-1])
+    mark, _gf, ga = _mark(ms[-1], raw)
+    gf = _gf
+    inn = f"في {comp_txt}"
+    out = []
+    if before:
+        if mark != "W" and before["wins"] >= MIN_WINS:
+            out.append((before["wins"] * 3, f"توقفت سلسلة انتصارات {club} عند {_games(before['wins'])} {inn}."))
+        elif mark == "L" and before["unbeaten"] >= MIN_UNBEATEN:
+            out.append((before["unbeaten"] * 2, f"خسر {club} بعد {_games(before['unbeaten'])} دون خسارة {inn}."))
+        if mark == "W" and before["winless"] >= MIN_WINLESS:
+            out.append((before["winless"] * 3, f"فاز {club} بعد {_games(before['winless'])} دون فوز {inn}."))
+        elif mark == "D" and before["losses"] >= MIN_LOSSES:
+            out.append((before["losses"] * 2, f"أوقف {club} سلسلة خسائره عند {_games(before['losses'])} {inn}."))
+        if ga > 0 and before["clean"] >= MIN_CLEAN:
+            out.append((before["clean"] * 2, f"استقبل {club} هدفًا بعد {_games(before['clean'])} بشباك نظيفة {inn}."))
+        if gf > 0 and before["blank"] >= MIN_BLANK:
+            out.append((before["blank"] * 2, f"سجل {club} بعد {_games(before['blank'])} دون أهداف {inn}."))
+    # the run the side is on NOW, in the same words as before a match - but a
+    # run of wins / losses that this match made longer is said as reached
+    for w, sline in run_facts(club, now, comp_txt):
+        if mark == "W" and now["wins"] >= MIN_WINS and now["wins"] < now["p"] and sline.startswith(f"فاز {club} في آخر"):
+            sline = f"وصل {club} إلى " + _n_in_a_row(now["wins"], "انتصارات", "انتصارًا", "متتالية", "متتاليًا") + f" {inn}."
+        elif mark == "L" and now["losses"] >= MIN_LOSSES and now["losses"] < now["p"] and sline.startswith(f"خسر {club} آخر"):
+            sline = f"وصل {club} إلى " + _n_in_a_row(now["losses"], "خسائر", "خسارة", "متتالية", "متتالية") + f" {inn}."
+        out.append((w, sline))
+    return out, True
+
+
+def meeting_after(m, games_before, later=False):
+    """[(weight, sentence)]: this result against the meetings before it.
+    `later`: the two have met again since - then nothing says «آخر»."""
+    hs, as_ = m.get("home_score"), m.get("away_score")
+    if hs is None or as_ is None:
+        return []
+    home, away = m.get("home"), m.get("away")
+    gs = [g for g in games_before if g["counted"]][:MEET_N]
+    win = home if hs > as_ else away if as_ > hs else None
+    out = []
+    if win is None:
+        k = 0
+        for g in gs:
+            if _won(g):
+                break
+            k += 1
+        if k + 1 >= MIN_DRAWS and not later:
+            out.append(((k + 1) * 2, f"انتهت آخر {_meet(k + 1)} بين الفريقين بالتعادل."))
+        return out
+    lose = away if win == home else home
+    dry = 0                              # meetings before this one the winner had not won
+    for g in gs:
+        if _won(g) == win:
+            break
+        dry += 1
+    if dry >= MIN_NO_WIN - 1:
+        out.append((dry * 3, f"فاز {ar_team(win)} على {ar_team(lose)} بعد {_meet(dry)} دون فوز."))
+    run = 0                              # ... the loser had not won
+    for g in gs:
+        if _won(g) == lose:
+            break
+        run += 1
+    if run + 1 >= MIN_NO_WIN + 1 and not later and not dry:
+        out.append(((run + 1) * 2, f"لم يفز {ar_team(lose)} على {ar_team(win)} في آخر {_meet(run + 1)} بينهما."))
+    return out
+
+
+def after_facts(m, comp_matches, table, feed, fin_all=None):
+    """{"lines", "weight", "top", "topw", "ready"} for a FINISHED match.
+    `ready`: the table has counted the match for both sides (or the
+    competition has no table) - before that the runs are not said yet."""
+    from site_lib.reads import table_after
+    home, away = m.get("home"), m.get("away")
+    h_ar, a_ar = ar_team(home), ar_team(away)
+    comp_txt = comp_label(m.get("competition") or "")
+    rows = {r.get("team"): r for r in (table or [])}
+    facts, ready = [], True
+    for raw, club in ((home, h_ar), (away, a_ar)):
+        row = rows.get(raw)
+        if not row:
+            continue
+        got, ok = side_after(raw, club, m, comp_matches, row.get("played"), comp_txt)
+        facts += got
+        ready = ready and ok
+    day = str(m.get("kickoff") or "")[:10]
+    every = meetings(home, away, feed, fin_all)
+    later = any(g["date"] > day for g in every)
+    meet = meeting_after(m, [g for g in every if g["date"] < day], later)
+    # where the two stand now, from the official table - the same sentence
+    # and the same guards the match reading has always used
+    tab = [(3, x) for x in (table_after(m, {"table": table}, {}, comp_matches, h_ar, a_ar) if table else [])]
+    both = sorted(facts, key=lambda x: -x[0]) + meet
+    return {"lines": [x for _w, x in both] + [x for _w, x in tab], "weight": sum(w for w, _x in both),
+            "top": max(both, key=lambda x: x[0])[1] if both else "",
+            "topw": max((w for w, _x in both), default=0), "ready": ready}
+
+
 # ------------------------------------------------------------------ the build's own
 # registered once by build_site.build() before the first page (setup), read by
 # the match pages, the home page's side column and /news
@@ -341,6 +457,30 @@ def for_match(m):
     return _MEMO[key]
 
 
+def for_after(m):
+    """after_facts() of a finished match on the registered data ({} before setup)."""
+    if not _CTX or not m.get("home") or not m.get("away") or m.get("home_score") is None:
+        return {}
+    key = ("after", m.get("match_id") or (m.get("home"), m.get("away"), m.get("kickoff")))
+    if key not in _MEMO:
+        comp = m.get("competition")
+        _MEMO[key] = after_facts(m, _CTX["fin"].get(comp), _CTX["tables"].get(comp), _CTX["feed"], _CTX["fin_all"])
+    return _MEMO[key]
+
+
+def after_section_html(m):
+    """The finished match page's «أرقام بعد المباراة». '' when the result
+    changed nothing worth a line (the table sentences alone are not a section)."""
+    from site_lib.text import esc
+    f = for_after(m)
+    if not f or not f.get("top"):
+        return ""
+    h_ar, a_ar = ar_team(m.get("home")), ar_team(m.get("away"))
+    return (f'<section class="minfo pf"><h2>أرقام بعد مباراة {esc(h_ar)} و{esc(a_ar)}</h2><ul class="pf-l">'
+            + "".join(f"<li>{esc(x)}</li>" for x in f["lines"])
+            + '</ul><p class="pd-note">الأرقام محسوبة من نتائج الموسم وجدول البطولة الرسمي والمواجهات السابقة.</p></section>')
+
+
 def section_html(m):
     """The match page's «أرقام قبل المباراة»: the sentences, then the
     meetings one by one. '' when there is nothing to say."""
@@ -372,11 +512,25 @@ def section_html(m):
     return "".join(out)
 
 
-def day_news(matches, today, days=1, n=NEWS_N):
-    """The coming matches of today .. today+days worth a line of news: each
-    {"m", "t" (its strongest fact), "weight"}, today's first, then by weight."""
+def _rank(m, f, d, today):
+    """WHICH matches first: the ones the readers came for - a curated club,
+    a side of the table's top NEWS_TOP, a league of the home page's bar -
+    then the strength of the fact itself. The sum of a match's facts is not
+    interest: two sides on losing runs in a small league must not push
+    Chelsea off a short list."""
     from site_lib.competitions import LEAGUE_BAR
     from site_lib.names import _is_ticker_team
+    pos = {r.get("team"): int(r.get("pos") or 99) for r in _CTX["tables"].get(m.get("competition")) or []}
+    return (f["topw"]
+            + (NEWS_CURATED if _is_ticker_team(m) else 0)
+            + (NEWS_BONUS if m.get("competition") in LEAGUE_BAR else 0)
+            + (NEWS_BONUS if min(pos.get(m.get("home"), 99), pos.get(m.get("away"), 99)) <= NEWS_TOP else 0)
+            + (NEWS_TODAY if d == today else 0))
+
+
+def day_news(matches, today, days=1, n=NEWS_N):
+    """The coming matches of today .. today+days worth a line of news: each
+    {"m", "t" (its strongest fact), "weight"}, the readers' matches first."""
     try:
         lim = (datetime.date.fromisoformat(today) + datetime.timedelta(days=days)).isoformat()
     except ValueError:
@@ -389,18 +543,30 @@ def day_news(matches, today, days=1, n=NEWS_N):
         f = for_match(m)
         if not f or f.get("weight", 0) < NEWS_MIN_WEIGHT or not f.get("top"):
             continue
-        # WHICH matches first: the ones the readers came for - a curated
-        # club, a side of the table's top NEWS_TOP, a league of the home
-        # page's bar - then the strength of the fact itself. The sum of a
-        # match's facts is not interest: two sides on losing runs in a small
-        # league must not push Chelsea off a list of six.
-        pos = {r.get("team"): int(r.get("pos") or 99) for r in _CTX["tables"].get(m.get("competition")) or []}
-        rank = (f["topw"]
-                + (NEWS_CURATED if _is_ticker_team(m) else 0)
-                + (NEWS_BONUS if m.get("competition") in LEAGUE_BAR else 0)
-                + (NEWS_BONUS if min(pos.get(m.get("home"), 99), pos.get(m.get("away"), 99)) <= NEWS_TOP else 0)
-                + (NEWS_TODAY if d == today else 0))
-        out.append({"m": m, "t": f["top"], "weight": f["weight"], "rank": rank, "day": d})
+        out.append({"m": m, "t": f["top"], "weight": f["weight"], "rank": _rank(m, f, d, today), "day": d})
+    out.sort(key=lambda x: -x["rank"])
+    return out[:n]
+
+
+AFTER_MIN = 6             # a finished match is news when its strongest fact weighs this much
+
+
+def after_news(matches, today, days=1, n=NEWS_N):
+    """The FINISHED matches of today-days .. today whose result changed
+    something: the same shape as day_news()."""
+    try:
+        first = (datetime.date.fromisoformat(today) - datetime.timedelta(days=days)).isoformat()
+    except ValueError:
+        return []
+    out = []
+    for m in matches or []:
+        d = str(m.get("kickoff") or "")[:10]
+        if m.get("status") != "FINISHED" or not (first <= d <= today) or m.get("competition") in NEWS_SKIP:
+            continue
+        f = for_after(m)
+        if not f or not f.get("ready") or f.get("topw", 0) < AFTER_MIN:
+            continue
+        out.append({"m": m, "t": f["top"], "weight": f["weight"], "rank": _rank(m, f, d, today), "day": d})
     out.sort(key=lambda x: -x["rank"])
     return out[:n]
 
@@ -421,26 +587,48 @@ def row_facts(matches, today, n=ROW_N):
         for it in day_news(matches, d, days=0, n=n):
             if it["m"].get("match_id"):
                 out[str(it["m"]["match_id"])] = it["t"]
+    # ... and of the finished ones, today's and yesterday's
+    yday = (datetime.date.fromisoformat(today) - datetime.timedelta(days=1)).isoformat()
+    for d in (today, yday):
+        for it in after_news(matches, d, days=0, n=n):
+            if it["m"].get("match_id"):
+                out[str(it["m"]["match_id"])] = it["t"]
     return out
 
 
-def news_html(matches, today, heading="أرقام قبل المباريات", cls="pf-news"):
-    """The block of day_news() for the home page's side column and /news."""
+BLOCK_N = 4               # rows of each list in the block
+
+
+def _news_items(items, today, done=False):
     from site_lib.crests import local_crest
+    from site_lib.matchdata import score_pill
     from site_lib.text import esc
     from site_lib.urls import match_url
-    items = []
-    for it in day_news(matches, today):
+    out = []
+    for it in items:
         m = it["m"]
         if not match_url(m):
             continue
         cr = "".join(f'<img src="{esc(local_crest(m[k]))}" alt="" width="20" height="20" loading="lazy" decoding="async">'
                      for k in ("home_badge", "away_badge") if m.get(k))
-        when = ("اليوم" if it["day"] == today else "غدًا") + (f' {m["koff_time"]}' if m.get("koff_time") else "")
-        items.append(
-            f'<a class="pf-i" href="{esc(match_url(m))}"><b class="pf-t">{esc(it["t"])}</b>'
-            f'<span class="pf-m"><span class="pf-c">{cr}</span>{esc(ar_team(m.get("home")))} × {esc(ar_team(m.get("away")))}'
-            f' · {esc(when)}</span></a>')
-    if not items:
-        return ""
-    return f'<section class="{cls}"><h2 class="mp-h">{esc(heading)}</h2>{"".join(items)}</section>'
+        if done:
+            mid = (f'{esc(ar_team(m.get("home")))} {score_pill(m.get("home_score"), m.get("away_score"), "pf-sc")} '
+                   f'{esc(ar_team(m.get("away")))}')
+        else:
+            when = ("اليوم" if it["day"] == today else "غدًا") + (f' {m["koff_time"]}' if m.get("koff_time") else "")
+            mid = f'{esc(ar_team(m.get("home")))} × {esc(ar_team(m.get("away")))} · {esc(when)}'
+        out.append(f'<a class="pf-i" href="{esc(match_url(m))}"><b class="pf-t">{esc(it["t"])}</b>'
+                   f'<span class="pf-m"><span class="pf-c">{cr}</span>{mid}</span></a>')
+    return out
+
+
+def news_html(matches, today, cls="pf-news"):
+    """The block for the home page's side column and /news: what the
+    finished matches changed, then what the coming ones stand on."""
+    from site_lib.text import esc
+    parts = []
+    for heading, items in (("أرقام بعد المباريات", _news_items(after_news(matches, today, n=BLOCK_N), today, True)),
+                           ("أرقام قبل المباريات", _news_items(day_news(matches, today, n=BLOCK_N), today))):
+        if items:
+            parts.append(f'<section class="{cls}"><h2 class="mp-h">{esc(heading)}</h2>{"".join(items)}</section>')
+    return "".join(parts)
