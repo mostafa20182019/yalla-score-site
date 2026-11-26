@@ -37,19 +37,55 @@ MY_BOOT = ("<script>try{var o=false;localStorage.getItem('elgoonTeam');"
            "document.documentElement.classList.add(o?'my-off':'my-ask');}catch(e){}</script>")
 
 
+# the five leagues of the row, in its order (user, 2026-11-26: «نحط هنا اكتر
+# خمس دوريات مميزة واليوزر يضغط على الدورى يفتحله popup فيها فرق الدورى ده»);
+# every other club page - the national teams, a club of another league - sits
+# under the last button
+PICK_LEAGUES = (("Egyptian Premier League", "egypt", "الدوري المصري"),
+                ("Saudi Pro League", "saudi", "الدوري السعودي"),
+                ("Premier League", "england", "الدوري الإنجليزي"),
+                ("Primera Division", "spain", "الدوري الإسباني"),
+                ("Turkish Super Lig", "turkey", "الدوري التركي"))
+PICK_OTHER = ("other", "منتخبات وأندية أخرى")
+
+
+def pick_groups():
+    """[(key, label, [club pages])] - every club page in exactly one group,
+    a group with no club left out. Only a club with a page can be followed
+    (its page, its matches and its notifications hang on the slug)."""
+    own = {lg for lg, _k, _l in PICK_LEAGUES}
+    out = [(k, label, [tp for tp in TEAM_PAGES if tp["league"] == lg]) for lg, k, label in PICK_LEAGUES]
+    out.append((PICK_OTHER[0], PICK_OTHER[1], [tp for tp in TEAM_PAGES if tp["league"] not in own]))
+    return [g for g in out if g[2]]
+
+
 def my_pick_html():
-    chips = "".join(f'<button type="button" class="mp-c" data-slug="{esc(tp["slug"])}">{esc(tp["name"])}</button>'
-                    for tp in TEAM_PAGES if not tp.get("league_page"))   # the picker stays short (2026-11-20)
+    groups = pick_groups()
+    row = "".join(f'<button type="button" class="mp-lg" data-lg="{k}" aria-haspopup="dialog">{esc(label)}</button>'
+                  for k, label, _c in groups)
+    lists = "".join(
+        f'<div class="mp-grp" data-lg="{k}" data-label="{esc(label)}" hidden>'
+        + "".join(f'<button type="button" class="mp-c" data-slug="{esc(tp["slug"])}">{esc(tp["name"])}</button>'
+                  for tp in clubs) + '</div>'
+        for k, label, clubs in groups)
     return ('<div id="myPick" class="my-pick" hidden>'
             '<b class="mp-t">⭐ اختر فرقك (حتى 4)</b>'
             '<button type="button" class="mp-x" data-my-no aria-label="إخفاء اختيار الفريق">×</button>'
-            f'<div class="mp-list">{chips}</div>'
+            f'<div class="mp-list">{row}</div>'
             # what following gives (2026-11-26): shown once a club is marked;
             # the bell beside it is push_js's own button, so the line and the
             # real state of the notifications never disagree
             '<p id="myNote" class="mp-note" hidden><span class="mp-note-t">ستصلك إشعارات مباريات هذه الفرق.</span>'
             '<button type="button" class="push-btn follow-push mp-push" hidden aria-pressed="false">'
             '<span class="push-lbl">فعّل الإشعارات</span></button></p>'
+            # a league's clubs: one dialog, the tapped league's list shown in it
+            '<div id="myDlg" class="pick-box" role="dialog" aria-modal="true" aria-labelledby="myDlgT" hidden>'
+            '<div class="pick-in"><div class="pick-hd"><div><h2 id="myDlgT" class="pick-t"></h2>'
+            '<p id="myDlgS" class="pick-s"></p></div>'
+            '<button type="button" class="pick-x" data-dlg-x aria-label="إغلاق">×</button></div>'
+            f'<div class="pick-ls mp-dlg">{lists}</div>'
+            '<div class="pick-ft"><span class="pick-n"></span>'
+            '<button type="button" class="pick-go" data-dlg-x>تم</button></div></div></div>'
             '</div>')
 
 

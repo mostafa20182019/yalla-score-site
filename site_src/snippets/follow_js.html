@@ -121,45 +121,64 @@
     });
   });
 
-  /* 2. the home page: the row of clubs IS the control (user, 2026-11-26: «عايز
-     سطر الفرق زى ما هوه ظاهر واختار على الاكثر اربع فرق فيظهروا انهم متعلم
-     عليهم... مش عايز الماتشات القادمة ليهم تظهر»). A tap follows a club or
-     drops it, the followed ones are marked and come first, and one line under
-     the row says what following gives: the notifications of their matches.
-     No block of coming matches - the club pages and the day list hold those. */
+  /* 2. the home page (user, 2026-11-26): the row holds FIVE LEAGUES and
+     «منتخبات وأندية أخرى»; a tap on one opens its clubs in a dialog, where a
+     tap follows a club or drops it - four at most, over all the leagues. The
+     clubs he follows sit at the start of the row, marked, so he always sees
+     who they are and can drop one from there. One line under the row says
+     what following gives: the notifications of their matches. No block of
+     coming matches - the club pages and the day list hold those. */
   var box=document.getElementById('myTeam'), pick=document.getElementById('myPick');
   if(box){ box.hidden=true; box.innerHTML=''; }
   if(!pick) return;
   var row=pick.querySelector('.mp-list'), note=document.getElementById('myNote'),
-      noteT=note&&note.querySelector('.mp-note-t'), bell=note&&note.querySelector('.push-btn');
-  function chipOf(slug){ return pick.querySelector('.mp-c[data-slug="'+slug+'"]'); }
-  /* a club followed from its own page may have no chip here (the row is a
-     short list): it gets one, named as its page named it */
-  function wire(c){
-    c.addEventListener('click',function(){
-      var s=c.getAttribute('data-slug'); if(!ok(s)) return;
-      if(list().indexOf(s)>=0) drop(s);
-      else if(!add(s, c.textContent.replace(/^✓\s*/,''))){
-        if(note&&noteT){ noteT.textContent='يمكنك متابعة '+MAX+' فرق على الأكثر: ألغِ متابعة فريق أولًا.'; if(bell) bell.style.display='none'; note.hidden=false; }
-        setTimeout(paint,3500); return;
-      }
-      paint();
-    });
+      noteT=note&&note.querySelector('.mp-note-t'), bell=note&&note.querySelector('.push-btn'),
+      dlg=document.getElementById('myDlg'), dlgT=document.getElementById('myDlgT'), dlgS=document.getElementById('myDlgS'),
+      dlgN=dlg&&dlg.querySelector('.pick-n');
+  var FULL='يمكنك متابعة '+MAX+' فرق على الأكثر: ألغِ متابعة فريق أولًا.', full=false, fullT;
+  function nameOf(s){
+    var c=dlg&&dlg.querySelector('.mp-c[data-slug="'+s+'"]');
+    return c ? c.textContent : (names()[s]||s);
   }
+  function tap(c){
+    var s=c.getAttribute('data-slug'); if(!ok(s)) return;
+    if(list().indexOf(s)>=0){ drop(s); full=false; }
+    else if(!add(s, nameOf(s))){           /* four already: said where he is looking, then it goes */
+      full=true; clearTimeout(fullT); fullT=setTimeout(function(){ full=false; paint(); },3500);
+    }
+    paint();
+  }
+  function wire(c){ c.addEventListener('click',function(){ tap(c); }); }
   function paint(){
-    var a=list(), nm=names();
-    a.forEach(function(s){
-      if(chipOf(s)||!row) return;
-      var c=document.createElement('button'); c.type='button'; c.className='mp-c';
-      c.setAttribute('data-slug',s); c.textContent=nm[s]||s; wire(c); row.appendChild(c);
-    });
-    [].slice.call(pick.querySelectorAll('.mp-c')).forEach(function(c){
-      var on=a.indexOf(c.getAttribute('data-slug'))>=0;
-      c.classList.toggle('on',on); c.setAttribute('aria-pressed',on?'true':'false');
-    });
+    var a=list();
+    /* the row: his clubs first - a chip each, named as the league's list (or
+       his own club page) named it - then the leagues */
+    if(row){
+      [].slice.call(row.querySelectorAll('.mp-c')).forEach(function(c){
+        if(a.indexOf(c.getAttribute('data-slug'))<0) row.removeChild(c);
+      });
+      var first=row.querySelector('.mp-lg');
+      a.forEach(function(s){
+        if(row.querySelector('.mp-c[data-slug="'+s+'"]')) return;
+        var c=document.createElement('button'); c.type='button'; c.className='mp-c on';
+        c.setAttribute('data-slug',s); c.setAttribute('aria-pressed','true');
+        c.setAttribute('aria-label','إلغاء متابعة '+nameOf(s));
+        c.textContent=nameOf(s); wire(c); row.insertBefore(c,first);
+      });
+    }
+    if(dlg){
+      [].slice.call(dlg.querySelectorAll('.mp-c')).forEach(function(c){
+        var on=a.indexOf(c.getAttribute('data-slug'))>=0;
+        c.classList.toggle('on',on); c.setAttribute('aria-pressed',on?'true':'false');
+      });
+      if(dlgS) dlgS.textContent=full ? FULL : 'اختر حتى '+MAX+' فرق من كل الدوريات.';
+      if(dlgS) dlgS.classList.toggle('is-full',full);
+      if(dlgN) dlgN.textContent=a.length ? 'تتابع '+a.length+' من '+MAX : 'لم تختر أي فريق بعد';
+    }
     if(!note||!noteT) return;
-    note.hidden=!a.length;
-    if(bell) bell.style.display='';
+    note.hidden=!a.length&&!full;
+    if(bell) bell.style.display=full?'none':'';
+    if(full){ noteT.textContent=FULL; return; }
     /* the line never promises what this browser will not do: the bell beside
        it says whether notifications are on (push_js.html keeps it) */
     var can=bell&&!bell.hidden, isOn=bell&&bell.getAttribute('aria-pressed')==='true';
@@ -173,9 +192,26 @@
     pick.hidden=off;
     mode(off ? 'my-off' : 'my-ask');
   }
-  [].slice.call(pick.querySelectorAll('.mp-c')).forEach(wire);
-  /* the followed clubs first, once, when the page opens - never while he taps */
-  if(row) list().slice().reverse().forEach(function(s){ var c=chipOf(s); if(c) row.insertBefore(c,row.firstChild); });
+  /* a league's dialog: its own list shown, the others hidden */
+  var opener=null;
+  function shut(){ if(dlg){ dlg.hidden=true; if(opener&&opener.focus) opener.focus(); } }
+  if(dlg){
+    [].slice.call(dlg.querySelectorAll('.mp-c')).forEach(wire);
+    [].slice.call(pick.querySelectorAll('.mp-lg')).forEach(function(b){
+      b.addEventListener('click',function(){
+        var k=b.getAttribute('data-lg');
+        [].slice.call(dlg.querySelectorAll('.mp-grp')).forEach(function(g){
+          var on=g.getAttribute('data-lg')===k; g.hidden=!on;
+          if(on&&dlgT) dlgT.textContent=g.getAttribute('data-label')||'';
+        });
+        opener=b; full=false; paint(); dlg.hidden=false;
+        var x=dlg.querySelector('[data-dlg-x]'); if(x&&x.focus) x.focus();
+      });
+    });
+    [].slice.call(dlg.querySelectorAll('[data-dlg-x]')).forEach(function(x){ x.addEventListener('click',shut); });
+    dlg.addEventListener('click',function(e){ if(e.target===dlg) shut(); });
+    document.addEventListener('keydown',function(e){ if(e.key==='Escape'&&!dlg.hidden) shut(); });
+  }
   if(bell&&window.MutationObserver) new MutationObserver(paint).observe(bell,{attributes:true,attributeFilter:['aria-pressed','hidden']});
   /* the row is swiped with a finger on a phone; with a mouse it is dragged
      the same way (it has no scrollbar to grab). A drag of more than a few

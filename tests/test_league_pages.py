@@ -77,7 +77,12 @@ ck("no league page's news token is a bare name another page answers to",
 
 print("3. kept out of the short lists")
 from site_lib.follow import my_pick_html       # noqa: E402
-ck("the «اختر فريقك» picker does not list them", not any(f'data-slug="{tp["slug"]}"' in my_pick_html() for tp in LP))
+# 2026-11-26 (user: five leagues on the row, a league's clubs in its dialog): the ROW
+# stays short - it lists no club at all - and a league page's club is followed from its league's list
+_pk = my_pick_html()
+ck("the «اختر فرقك» row lists no club; a league page's club is in its league's dialog list",
+   'class="mp-c"' not in _pk.split('class="mp-list">')[1].split("</div>")[0]
+   and all(_pk.count(f'data-slug="{tp["slug"]}"') == 1 for tp in LP))
 
 print("4. the built site")
 st = {s.get("competition"): s for s in load("standings.json") or []}

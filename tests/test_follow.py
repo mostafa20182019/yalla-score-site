@@ -33,13 +33,11 @@ def ck(msg, cond, extra=""):
 
 
 pick = F.my_pick_html()
-# the league pages (2026-11-20: every club of the Egyptian and Saudi leagues)
-# have a page and a follow button on it, but are not in the picker - it
-# would be fifty chips
-ck("1 the picker is hidden in the HTML and lists every club page once - the league pages apart",
+# 2026-11-26: the row lists leagues, and EVERY club page - a league page's
+# club too - is in its league's dialog list, once
+ck("1 the picker is hidden in the HTML and lists every club page once, inside its league's list",
    'id="myPick"' in pick and " hidden>" in pick.split(">")[0] + ">"
-   and all(pick.count(f'data-slug="{tp["slug"]}"') == (0 if tp.get("league_page") else 1) for tp in TEAM_PAGES)
-   and pick.count("data-slug=") <= 20, pick[:120])
+   and all(pick.count(f'data-slug="{tp["slug"]}"') == 1 for tp in TEAM_PAGES), pick[:120])
 ck("2 ...with a way to dismiss it", "data-my-no" in pick)
 
 blk = F.my_block_html("الأهلي", "al-ahly", "/assets/crests/x.png", "المركز 2 · 20 نقطة",
@@ -67,7 +65,8 @@ ck("9 the choice stays in the browser: localStorage only, and the script asks th
    and "XMLHttpRequest" not in js and "sendBeacon" not in js and "cookie" not in js)
 ck("10 a slug is checked before it is kept or drawn", "/^[a-z0-9-]{2,40}$/" in js and "if(!ok(s)) return;" in js
    and "if(ok(s)&&out.indexOf(s)<0&&out.length<MAX) out.push(s);" in js)
-ck("11 a name is written with textContent, never as HTML", "c.textContent=nm[s]||s;" in js and "noteT.innerHTML" not in js)
+ck("11 a name is written with textContent, never as HTML", "c.textContent=nameOf(s);" in js and "noteT.innerHTML" not in js
+   and "dlgT.textContent=g.getAttribute('data-label')||'';" in js)
 ck("12 a browser without storage shows nothing - and loses the «فريقي» tab too (2026-11-20)",
    js.index("t0.hidden=true; return; }") < js.index("querySelectorAll('.follow-btn')"))
 
@@ -123,26 +122,46 @@ css_now = io.open("site_src/style.css", encoding="utf-8").read()
 ck("23 the same key holds up to four slugs joined by commas: valid ones only, no club twice, a browser with one club unchanged",
    "var MAX=4;" in js and "if(ok(s)&&out.indexOf(s)<0&&out.length<MAX) out.push(s);" in js
    and "LS.setItem(KEY,a.join(','))" in js)
-ck("24 a fifth club is refused and said so - on the club page and on the row; nothing he follows is dropped for it",
+ck("24 a fifth club is refused and said so - on the club page, in the dialog and under the row; nothing he follows is dropped for it",
    "if(a.length>=MAX) return false;" in js and "else if(!add(slug,nm)){" in js and "setTimeout(paint,3000)" in js
-   and "فرق على الأكثر: ألغِ متابعة فريق أولًا." in js and "setTimeout(paint,3500); return;" in js)
-ck("25 the row is the control: a tap follows or drops, the followed clubs are marked and come first",
-   "if(list().indexOf(s)>=0) drop(s);" in js and "c.classList.toggle('on',on); c.setAttribute('aria-pressed',on?'true':'false');" in js
-   and "row.insertBefore(c,row.firstChild)" in js and ".mp-c.on,.mp-c.on:hover{background:var(--green-d)" in css_now
+   and "فرق على الأكثر: ألغِ متابعة فريق أولًا." in js and "if(dlgS) dlgS.textContent=full ? FULL" in js
+   and "if(full){ noteT.textContent=FULL; return; }" in js)
+ck("25 a tap follows a club or drops it; the followed clubs are marked in the dialog and sit first on the row",
+   "if(list().indexOf(s)>=0){ drop(s); full=false; }" in js
+   and "c.classList.toggle('on',on); c.setAttribute('aria-pressed',on?'true':'false');" in js
+   and "row.insertBefore(c,first);" in js and ".mp-c.on,.mp-c.on:hover{background:var(--green-d)" in css_now
    and "اختر فرقك (حتى 4)" in pk)
 ck("26 no block of coming matches on the home page: the old box stays empty and hidden",
    "if(box){ box.hidden=true; box.innerHTML=''; }" in js and "/my/" not in js and "my-add" not in js)
 ck("27 one line under the row says what following gives - and never promises what this browser will not do",
    'id="myNote" class="mp-note" hidden' in pk and 'class="push-btn follow-push mp-push" hidden' in pk
-   and "note.hidden=!a.length;" in js and "ستصلك إشعارات مباريات هذه الفرق." in js
+   and "note.hidden=!a.length&&!full;" in js and "ستصلك إشعارات مباريات هذه الفرق." in js
    and "فعّل الإشعارات لتصلك مباريات هذه الفرق:" in js and "bell.getAttribute('aria-pressed')==='true'" in js
    and "new MutationObserver(paint).observe(bell" in js and ".mp-note[hidden]{display:none}" in css_now)
 ck("27b every club can be reached with a mouse: the row is dragged like a finger swipes it, and a drag is not a tap",
    "row.scrollLeft=sl-dx;" in js and "if(!moved&&Math.abs(dx)<6) return;" in js
    and "row.addEventListener('click',function(e){ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; } },true);" in js
    and ".mp-list{cursor:grab}" in css_now and "flex-wrap:wrap;overflow:visible" not in css_now)
-ck("28 a club followed from its own page gets a chip on the row, named as its page named it",
-   "LS.setItem(KEY+'Names',JSON.stringify(m))" in js and "c.textContent=nm[s]||s; wire(c); row.appendChild(c);" in js)
+ck("28 a followed club is named on the row as its league's list named it, or as its own page did",
+   "LS.setItem(KEY+'Names',JSON.stringify(m))" in js and "return c ? c.textContent : (names()[s]||s);" in js
+   and "c.textContent=nameOf(s); wire(c); row.insertBefore(c,first);" in js)
+
+# five leagues on the row, each league's clubs in a dialog (user, 2026-11-26)
+G = F.pick_groups()
+ck("29 the row holds the five leagues and «منتخبات وأندية أخرى», in that order, and no club of its own",
+   [g[0] for g in G] == ["egypt", "saudi", "england", "spain", "turkey", "other"]
+   and pk.split('class="mp-list">')[1].split("</div>")[0].count('class="mp-lg"') == 6
+   and 'class="mp-c"' not in pk.split('class="mp-list">')[1].split("</div>")[0])
+ck("30 every club page can be followed, each in exactly one league's list",
+   sorted(tp["slug"] for g in G for tp in g[2]) == sorted(tp["slug"] for tp in TEAM_PAGES)
+   and all(pk.count(f'data-slug="{tp["slug"]}"') == 1 for tp in TEAM_PAGES))
+ck("31 the national teams and a club of another league sit under the last button",
+   {"egypt", "sudan"} <= {tp["slug"] for tp in G[-1][2]} and all(tp["league"] != "Egyptian Premier League" for tp in G[-1][2]))
+ck("32 one dialog, the tapped league's list shown in it; it closes by ×, «تم», the backdrop and Escape",
+   'id="myDlg" class="pick-box" role="dialog" aria-modal="true" aria-labelledby="myDlgT" hidden' in pk
+   and pk.count('class="mp-grp"') == len(G) and "var on=g.getAttribute('data-lg')===k; g.hidden=!on;" in js
+   and "if(e.target===dlg) shut();" in js and "if(e.key==='Escape'&&!dlg.hidden) shut();" in js
+   and pk.count("data-dlg-x") == 2 and ".mp-grp[hidden]{display:none}" in css_now)
 
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

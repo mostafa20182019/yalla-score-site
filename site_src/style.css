@@ -1716,6 +1716,13 @@ a.fx:hover{background:#f4f8fb}
 @media(hover:hover){.mp-list{cursor:grab}.mp-list.is-drag{cursor:grabbing;user-select:none}.mp-list.is-drag button{pointer-events:none}}
 .mp-c{font:inherit;font-weight:700;font-size:.85rem;white-space:nowrap;cursor:pointer;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;border-radius:999px;padding:0 14px;min-height:44px}
 .mp-c:hover{border-color:var(--green-d);color:var(--green-d)}
+/* the row's league buttons and a league's clubs in its dialog (2026-11-26) */
+.mp-lg{font:inherit;font-weight:800;font-size:.85rem;white-space:nowrap;cursor:pointer;border:1px solid #cfe6f5;background:#eaf5fc;color:var(--green-d);border-radius:999px;padding:0 14px;min-height:44px}
+.mp-lg::after{content:" ‹";font-weight:900}
+.mp-lg:hover{border-color:var(--green-d)}
+.mp-grp{display:flex;flex-wrap:wrap;gap:8px;padding:12px 0}
+.mp-grp[hidden]{display:none}
+.pick-s.is-full{color:#b91c1c}
 /* a followed club on the row, and the line under the row (2026-11-26) */
 .mp-c.on,.mp-c.on:hover{background:var(--green-d);border-color:var(--green-d);color:#fff}
 .mp-c.on::before{content:"✓ "}
