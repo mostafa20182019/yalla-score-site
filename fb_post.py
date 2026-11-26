@@ -743,20 +743,24 @@ H2H_WINDOW_H = (20.0, 96.0)       # kick-off 20h..4 days away: close enough to m
 
 
 def h2h_text(m, r, when=""):
-    from site_lib.names import ar_team, comp_label
-    h, a = ar_team(m.get("home")), ar_team(m.get("away"))
-    lines = [f"📊 آخر {r['n']} مواجهات بين {h} و{a}" + (f" قبل لقاء {when}" if when else ""),
-             f"🏆 {h} فاز {r['wins'][h]} · تعادل {r['draws']} · {a} فاز {r['wins'][a]}",
-             f"⚽ الأهداف: {h} {r['goals'][h]} · {a} {r['goals'][a]}"
+    from site_lib.names import ar_team, ar_team_in, comp_label
+    h, a = ar_team(m.get("home")), ar_team(m.get("away"))       # the record's keys
+    # what is WRITTEN: «الأهلي السعودي», never «الأهلي» with #الأهلي on a
+    # Saudi league match (posted so on 2026-11-16)
+    shown = {h: ar_team_in(m.get("home"), m.get("competition")), a: ar_team_in(m.get("away"), m.get("competition"))}
+    lines = [f"📊 آخر {r['n']} مواجهات بين {shown[h]} و{shown[a]}" + (f" قبل لقاء {when}" if when else ""),
+             f"🏆 {shown[h]} فاز {r['wins'][h]} · تعادل {r['draws']} · {shown[a]} فاز {r['wins'][a]}",
+             f"⚽ الأهداف: {shown[h]} {r['goals'][h]} · {shown[a]} {r['goals'][a]}"
              + (f" (في {r['played']} مباريات لُعبت داخل الملعب)" if r.get("played") and r["played"] < r["n"] else "")]
     if r.get("finals"):
         lines.append(f"🏟️ {r['finals']}")
     for name in (h, a):
         if r["last"].get(name):
             import h2h_card as HC
-            lines.append(f"🗓️ آخر فوز لـ{name}: {HC.ar_date(r['last'][name])}")
-    lines += [f"{comp_label(m.get('competition'))} · التوقع والتحليل: {SITE}/m/{m.get('match_id')}",
-              " ".join(("#الجون", _tag(h), _tag(a)))]
+            lines.append(f"🗓️ آخر فوز لـ{shown[name]}: {HC.ar_date(r['last'][name])}")
+    # predictions are off since 2026-10-25: the link promises what the page holds
+    lines += [f"{comp_label(m.get('competition'))} · آخر المواجهات وتفاصيل المباراة: {SITE}/m/{m.get('match_id')}",
+              " ".join(("#الجون", _tag(shown[h]), _tag(shown[a])))]
     return "\n".join(lines)
 
 
