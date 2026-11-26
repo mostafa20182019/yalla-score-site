@@ -45,6 +45,7 @@ import datetime
 from zoneinfo import ZoneInfo
 import json
 import os
+import re
 import sys
 import time
 import urllib.error
@@ -235,6 +236,20 @@ def article_link(art):
     return f"{SITE}/a/{str(art.get('article_id', '')).strip()}"
 
 
+# the writer composes fb_post BEFORE the article has its number and leaves a
+# stand-in in the link: /a/NEWID.html, /a/ID.html, /a/PLACEHOLDER.html ...
+# 59 posts went out with such a link, a 404 (review 2026-11-26). Any /a/<word>
+# that is not a number is the article's own link.
+_STANDIN_LINK = re.compile(re.escape(SITE) + r"/a/(?![0-9])[A-Za-z_]+(?:\.html)?")
+
+
+def own_link_text(message, art):
+    """The post text with a stand-in link replaced by the article's real one,
+    and the old «.html» form by the canonical one."""
+    link = article_link(art)
+    return _STANDIN_LINK.sub(link, message or "").replace(link + ".html", link)
+
+
 def page_is_live(link):
     """True when OUR site serves the real article at `link` (200 + not the 404 title)."""
     try:
@@ -363,7 +378,7 @@ def post_article(token, art):
     message = (art.get("fb_post") or "").strip() or f"⚽ {title}\n\n{summary}\n\n\U0001f449 {link}"
     # the stored post text may carry the old «/a/<id>.html» form, which only
     # redirects to the canonical link - share the canonical one (2026-11-13)
-    message = message.replace(link + ".html", link)
+    message = own_link_text(message, art)
     if not _PRED_ON:
         # a report written while the model was on can still carry its line
         # («🤖 …», «هل أصاب توقع الجون») - those lines never go out now

@@ -559,3 +559,14 @@ assert run([], argv=("--events", "2026-11-22")) == 0 and photos() == [] and len(
 FCard.render_bytes = _ok
 assert run([], argv=("--events", "2026-11-22", "--dry")) == 0 and photos() == [] and feeds() == []
 print("27 OK: the form reel only behind FB_REELS, once per ref under kind reel; a card that fails falls back to the text; --dry posts nothing")
+
+# 28) a stand-in link in fb_post (/a/NEWID.html, /a/ID.html ...) goes out as the article's real link
+_a = {"article_id": 1274, "fb_post": "x\nhttps://elgoon.com/a/NEWID.html\n#الجون"}
+assert fp.own_link_text(_a["fb_post"], _a) == "x\nhttps://elgoon.com/a/1274\n#الجون"
+for _ph in ("ID", "PLACEHOLDER", "REPLACE_ID", "NEW_ID", "ARTICLE_ID", "PENDING"):
+    assert fp.own_link_text(f"https://elgoon.com/a/{_ph}.html", _a) == "https://elgoon.com/a/1274", _ph
+assert fp.own_link_text("https://elgoon.com/a/1274.html و https://elgoon.com/a/900", _a) == "https://elgoon.com/a/1274 و https://elgoon.com/a/900"
+_r = {"article_id": 1281, "kind": "report", "match_id": "575408"}
+assert fp.own_link_text("https://elgoon.com/a/ID.html", _r) == "https://elgoon.com/m/575408"
+assert "own_link_text" in open("fb_update_posts.py", encoding="utf-8").read()
+print("28 OK: a stand-in article link is never posted; the update path fixes the old posts too")

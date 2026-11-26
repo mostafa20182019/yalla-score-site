@@ -43,6 +43,7 @@ Applies to the body, the summary, the FAQ and `fb_post` alike — `fb_post` most
 - Say «المباراة رقم 18» rather than «الكلاسيكو الـ18»; digits for every number; «5 انتصارات و6 تعادلات و6 هزائم في 17 مباراة» rather than a tally with no total.
 - No nested clauses («الذي… بعدما… وذلك بعدما…»): split them into sentences. No journalistic flourishes in place of the club's name («الفريق الملكي», «القلعة البيضاء», «البلوجرانا») — the club's name, a nickname at most once per article.
 - Before publishing, reread the `fb_post` line by line: if a line needs a second reading to get its numbers, rewrite it.
+- **Tense follows the event (user rule 2026-11-13; broken in ~10 of 27 headlines by 2026-11-26).** What ALREADY happened is written in the PAST, in the headline, the summary and fb_post too: «الحسين عموتة رحل عن تدريب الأهلي», «لاعبو الزمالك أصدروا بيانًا», «أحمد رضا أُحيل للتحقيق» - never «يرحل / يصدرون / يُحال / يخسر / يعلن / يجري» for a finished event (the present reads as if it is happening now). The present stays for what is still running or still to come («يقترب», «يستعد», «يواجه»). The gate does not check this line - it is yours to hold.
 
 ## TWO SIZES OF STORY (writer review 2026-11-20; user: «اعمل 3»)
 The last 45 articles all had the same five sections and 430-560 words, whether the story was a title race or a goalkeeper signing a new contract. Size the piece to the story:

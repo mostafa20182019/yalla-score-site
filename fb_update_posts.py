@@ -47,7 +47,8 @@ def main():
         a = arts.get(aid); rec = posted.get(aid)
         if not a or not rec or not rec.get("post_id") or str(rec["post_id"]).startswith("seeded"):
             print(f"{aid}: no article/post record - skipped"); continue
-        msg = (a.get("fb_post") or "").strip()
+        import fb_post as FP
+        msg = FP.own_link_text((a.get("fb_post") or "").strip(), a)   # a stand-in link -> the real one
         from site_lib.config import PREDICTIONS_ON
         if not PREDICTIONS_ON:                   # an edited post loses the model's lines too
             from site_lib.pred_off import strip_lines
