@@ -47,6 +47,13 @@ def day_sections(matches, ge_idx, hrefs=None):
     matches page hands it to pred_pop). hrefs = comp_hrefs(...)."""
     hrefs = hrefs or {}
     hls = highlight_links()     # the «الأهداف» button (2026-11-02)
+    # «أرقام قبل المباراة» on a phone (user, 2026-11-26): the strongest fact
+    # of a day's three richest matches, one line INSIDE the match's own row -
+    # so the time sort and the filters carry it with the row. Not in the
+    # «صورة» image (his choice): shot_js draws a row from its own fields.
+    from site_lib import prefacts as _PF
+    from site_lib.config import REF_TODAY
+    _facts = _PF.row_facts(matches, REF_TODAY)
     daymap = OrderedDict()
     for m in matches:
         daymap.setdefault(m.get("kickoff") or "", []).append(m)
@@ -89,6 +96,10 @@ def day_sections(matches, ge_idx, hrefs=None):
                 tv = "1" if (m.get("channel") or COMP_TV.get(comp)) else "0"
                 row = row.replace('<div class="mrow ',
                                   f'<div data-tv="{tv}" data-ko="{esc(m.get("koff_time") or "")}" class="mrow ', 1)
+                _f = _facts.get(str(m.get("match_id")))
+                if _f and row.rstrip().endswith("</div>"):
+                    _i = row.rstrip().rfind("</div>")
+                    row = row[:_i] + f'<span class="mfact">📊 {esc(_f)}</span>' + row[_i:]
                 block["rows"].append(Markup(row))
                 pieces.append(row)
             day["comps"].append(block)

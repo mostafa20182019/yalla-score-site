@@ -405,6 +405,25 @@ def day_news(matches, today, days=1, n=NEWS_N):
     return out[:n]
 
 
+ROW_N = 3                 # a day's matches that carry their fact on the phone's day list
+
+
+def row_facts(matches, today, n=ROW_N):
+    """{str(match_id): sentence} - the strongest fact of the `n` richest
+    coming matches of today, and of tomorrow: the line under the match's own
+    row on a phone (user, 2026-11-26: the side column is not shown there)."""
+    out = {}
+    try:
+        days = [today, (datetime.date.fromisoformat(today) + datetime.timedelta(days=1)).isoformat()]
+    except ValueError:
+        return out
+    for d in days:
+        for it in day_news(matches, d, days=0, n=n):
+            if it["m"].get("match_id"):
+                out[str(it["m"]["match_id"])] = it["t"]
+    return out
+
+
 def news_html(matches, today, heading="أرقام قبل المباريات", cls="pf-news"):
     """The block of day_news() for the home page's side column and /news."""
     from site_lib.crests import local_crest

@@ -1868,6 +1868,10 @@ a.lt-tb{text-decoration:none}
 .pf-c{display:inline-flex;gap:2px}
 .pf-c img{width:18px;height:18px;object-fit:contain}
 .pf-page{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;margin:0 0 16px}
+/* the fact under a match's row, phones only (the side column carries the
+   facts where it is shown): one line, cut with an ellipsis, never two */
+.mfact{display:none}
+@media(max-width:1080px){.mlist>.mrow>.mfact{display:block;grid-column:1/-1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:.74rem;font-weight:700;color:var(--muted);text-align:center;padding-top:2px}}
 /* the «الجون» cover placeholder (media/ph-*.svg, 16:9) is shown WHOLE on its
    own blue: a wide box with object-fit:cover sliced the logo on desktop
    (user, 2026-11-11: the Inzaghi story's hero at 1780x500). Last in the file:

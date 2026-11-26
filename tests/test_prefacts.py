@@ -191,6 +191,17 @@ ck("34 the block links the match page and says «غدًا 21:00»", 'href="/m/50
 ck("35 a competition outside the followed ones is never news",
    PF.day_news([dict(NEXT, competition="Iraq Stars League")], "2026-11-26") == [])
 
+rf = PF.row_facts([NEXT, LATER, dict(NEXT, match_id=503, kickoff="2026-11-26")], "2026-11-26")
+ck("35b the phone's row line: today's and tomorrow's matches by id, a later day never",
+   set(rf) == {"501", "503"} and rf["501"] == f1["lines"][0])
+many = [dict(NEXT, match_id=600 + i, kickoff="2026-11-26") for i in range(5)]
+ck("35c three rows a day at most", len(PF.row_facts(many, "2026-11-26")) == PF.ROW_N == 3)
+css = open(os.path.join(os.path.dirname(HERE), "site_src", "style.css"), encoding="utf-8").read()
+shot = open(os.path.join(os.path.dirname(HERE), "site_src", "snippets", "shot_js.html"), encoding="utf-8").read()
+ck("35d the line is hidden where the side column shows, one line on a phone, and not drawn in the image",
+   ".mfact{display:none}" in css and "text-overflow:ellipsis" in css.split(".mrow>.mfact{")[1].split("}")[0]
+   and "mfact" not in shot)
+
 # ---- 5. the Facebook kind: registered, behind its own switch, the same sentences
 import fb_post as fp                       # noqa: E402
 import story_events as SE                  # noqa: E402
