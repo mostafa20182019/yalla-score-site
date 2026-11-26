@@ -1710,6 +1710,10 @@ a.fx:hover{background:#f4f8fb}
 .mp-t{flex:1;white-space:nowrap;font-size:.9rem;color:var(--green-d)}
 .mp-list{flex-basis:100%;display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;min-width:0;padding:2px 0}
 .mp-list::-webkit-scrollbar{display:none}
+/* a mouse cannot swipe a row with no scrollbar (user, 2026-11-26: «الفرق اللى
+   على الشمال دى انا مبقدرش اروحلها... عايز نعمل سحب زى الموبايل»): the row
+   is dragged with the mouse, as a finger drags it on a phone (follow_js) */
+@media(hover:hover){.mp-list{cursor:grab}.mp-list.is-drag{cursor:grabbing;user-select:none}.mp-list.is-drag button{pointer-events:none}}
 .mp-c{font:inherit;font-weight:700;font-size:.85rem;white-space:nowrap;cursor:pointer;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;border-radius:999px;padding:0 14px;min-height:44px}
 .mp-c:hover{border-color:var(--green-d);color:var(--green-d)}
 /* a followed club on the row, and the line under the row (2026-11-26) */

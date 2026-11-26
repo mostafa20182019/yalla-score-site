@@ -177,6 +177,24 @@
   /* the followed clubs first, once, when the page opens - never while he taps */
   if(row) list().slice().reverse().forEach(function(s){ var c=chipOf(s); if(c) row.insertBefore(c,row.firstChild); });
   if(bell&&window.MutationObserver) new MutationObserver(paint).observe(bell,{attributes:true,attributeFilter:['aria-pressed','hidden']});
+  /* the row is swiped with a finger on a phone; with a mouse it is dragged
+     the same way (it has no scrollbar to grab). A drag of more than a few
+     pixels is a drag, not a tap: the chip under the pointer is not followed. */
+  if(row){
+    var dn=false, sx=0, sl=0, moved=false;
+    row.addEventListener('mousedown',function(e){ if(e.button) return; dn=true; moved=false; sx=e.pageX; sl=row.scrollLeft; });
+    document.addEventListener('mousemove',function(e){
+      if(!dn) return;
+      var dx=e.pageX-sx;
+      if(!moved&&Math.abs(dx)<6) return;
+      moved=true; row.classList.add('is-drag'); row.scrollLeft=sl-dx; e.preventDefault();
+    });
+    document.addEventListener('mouseup',function(){
+      if(!dn) return; dn=false;
+      if(moved) setTimeout(function(){ row.classList.remove('is-drag'); },0);
+    });
+    row.addEventListener('click',function(e){ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; } },true);
+  }
   var no=pick.querySelector('[data-my-no]');
   if(no) no.addEventListener('click',function(){ hide(); pick.hidden=true; mode('my-off'); });
   var cur=get();

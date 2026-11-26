@@ -137,6 +137,10 @@ ck("27 one line under the row says what following gives - and never promises wha
    and "note.hidden=!a.length;" in js and "ستصلك إشعارات مباريات هذه الفرق." in js
    and "فعّل الإشعارات لتصلك مباريات هذه الفرق:" in js and "bell.getAttribute('aria-pressed')==='true'" in js
    and "new MutationObserver(paint).observe(bell" in js and ".mp-note[hidden]{display:none}" in css_now)
+ck("27b every club can be reached with a mouse: the row is dragged like a finger swipes it, and a drag is not a tap",
+   "row.scrollLeft=sl-dx;" in js and "if(!moved&&Math.abs(dx)<6) return;" in js
+   and "row.addEventListener('click',function(e){ if(moved){ e.preventDefault(); e.stopPropagation(); moved=false; } },true);" in js
+   and ".mp-list{cursor:grab}" in css_now and "flex-wrap:wrap;overflow:visible" not in css_now)
 ck("28 a club followed from its own page gets a chip on the row, named as its page named it",
    "LS.setItem(KEY+'Names',JSON.stringify(m))" in js and "c.textContent=nm[s]||s; wire(c); row.appendChild(c);" in js)
 
