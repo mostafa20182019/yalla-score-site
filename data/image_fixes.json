@@ -285,6 +285,20 @@
    "image_credit": "صورة: فينسنت كومباني، المدير الفني لبايرن ميونخ، خلال مباراة ودية في يناير 2025 — تصوير Werner100359، رخصة CC BY-SA 4.0 (ويكيميديا كومنز) — تركيب: الجون",
    "why": "2026-11-12 image review: the source (ManuluxWiki, Nov 2024, 496 px) sliced the top of Kompany's head. Picked Commons «FC Red Bull Salzburg gegen Bayern München (2025-01-06 Testspiel) 73» (Werner100359, CC BY-SA 4.0): Kompany smiling in a Bayern beanie and coat, sharp (3037 px), head whole (rendered with --focus 0.30,0.38 so the whole beanie sits in frame) - a smile for a happy story (back at training after meningitis, --mood happy). It beat the serious close-up (-74) on mood and the 2026 touchline shot on size. Saved as media/vincent-kompany-bayern-smile-jan2025.jpg (non-curated club). | كومباني مبتسمًا بملابس بايرن لخبر عودته للتدريبات.",
    "added": "2026-11-12"
+  },
+  {
+   "article_id": "1241",
+   "image_url": "https://elgoon.com/media/zamalek-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-26 image review: the image was a small crop of «Hossam Abdel Maguid.jpg» (MFonzatti, Paris 2024) blown up and soft, with another player's head in the foreground and a RED Egypt shirt on a Zamalek story (red reads as Al Ahly). Every source was walked again on 2026-11-27 - the editor's team-photos/zamalek/ folder (no photo of him), find_photo.py --club Zamalek --since 2021 (0 photos tagged with the club), Commons text search in English and Arabic, his category (empty). Nine free photos of him exist and none passes: the Egypt v Morocco Olympic line-up (MFonzatti, 2024-08-08) and its five crops (375-879 px, team-mates touching the frame) plus «Hossam Abdel Maguid.jpg» are all the red Egypt shirt; «Hossam Abdelmaguid Argentina v Egypt 7 July 2026-006» (Bryan Berlin, CC BY-SA 4.0) is sharp and solo, but he is laughing on a story about a complaint over unpaid wages and wears the orange-and-black Egypt warm-up top. No free photo of him in a Zamalek shirt exists. Rule: a player story with no valid free photo takes the club's identity image - white canvas, the two red bands, the crest; the standing image, so no new file. | لا توجد صورة حرة لحسام عبد المجيد بقميص الزمالك، وكل صوره المتاحة بقميص منتخب مصر الأحمر أو بوجه ضاحك لا يناسب خبر الشكوى.",
+   "added": "2026-11-27"
+  },
+  {
+   "article_id": "1259",
+   "image_url": "https://elgoon.com/media/real-madrid-identity-card.jpg",
+   "image_credit": "الصورة: تصميم الجون",
+   "why": "2026-11-26 image review: the image was the Brazil line-up crop (Bryan Berlin, Brazil v Morocco 13 June 2026) - a group shot where the smiling number 21 beside Endrick is larger than him, on an injury story, with the label «ريال مدريد» set over Brazil shirts. Every source was walked again on 2026-11-27 - team-photos/real-madrid/ (two Endrick entries, both crops of the same line-up moment), find_photo.py --club \"Real Madrid\" --since 2024 (0 photos tagged with the club), Commons text search, and the whole «Endrick (footballer, born 2006) by year» tree 2016-2026. No free photo of him in a Real Madrid shirt exists. What was rejected: the Palmeiras photos of 2022-2024 (a former club's shirt); «Jude Bellingham and Endrick in 2024» (two people, an AI-upscaled YouTube still awaiting licence review); «Endrick.jpg» (2026) is a NAMESAKE - Endrick dos Santos Parafita, the Brazil-born Malaysia player; «Danilo Santos Brazil V Morocco 13 June 2026-69» is sharp, but Danilo's face covers part of Endrick's and is the larger of the two; the three World Cup line-up photos (YantsImages x2, Bryan Berlin -72, checked at full size) show him about 600 px wide - under the 800 px floor, a tiny crop of a group photo - and the YantsImages crop is already the image of the January-exit article. Rule: an identity image is better than a flawed player photo - Real Madrid's identity image, the standing image, so no new file. | لا توجد صورة حرة لإندريك بقميص ريال مدريد، وصوره المتاحة قصّات صغيرة من صور جماعية بقميص البرازيل.",
+   "added": "2026-11-27"
   }
  ]
 }

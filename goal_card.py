@@ -277,6 +277,20 @@ def render_whistle(ev, out=None):
     bx = d.textbbox((0, 0), score, font=sf)
     d.text((W_ // 2 - (bx[0] + bx[2]) / 2, (py0 + py1) / 2 - (bx[1] + bx[3]) / 2), score, font=sf, fill=WHITE)
 
+    # a tie settled on penalties (design review 2026-11-26: a cup match that
+    # ended 1-1 went out as «انتهت المباراة» with no winner on it). ev["hp"] /
+    # ev["ap"] = the shoot-out's score, home / away - only on a full-time
+    # card, and only when the feed gave both. One white pill on the seam,
+    # under the score: who won, in words, the winner's kicks first.
+    hp, ap = ev.get("hp"), ev.get("ap")
+    pens = kind == "ft" and isinstance(hp, int) and isinstance(ap, int) and hp != ap
+    if pens:
+        note = f"فاز {home if hp > ap else away} بركلات الترجيح {max(hp, ap)}-{min(hp, ap)}"
+        nf = fit(note, "ExtraBold", 36, W_ - 220, 24)
+        nw = d.textlength(FC.ar(note), font=nf)
+        d.rounded_rectangle([W_ // 2 - nw / 2 - 30, 946, W_ // 2 + nw / 2 + 30, 1006], 30, fill=WHITE, outline=INK_, width=3)
+        text_c(W_ // 2, 952, note, nf, INK_)
+
     # each side's scorers under its own club, in that half's ink
     goals = ev.get("goals") or []
 
@@ -286,9 +300,10 @@ def render_whistle(ev, out=None):
         return f"{g.get('p') or ''} {mn}'{t}" if mn else f"{g.get('p') or ''}{t}"
     for side_, cx, fill in (("h", W_ * 3 // 4, hf), ("a", W_ // 4, af)):
         rows = [line_of(g) for g in goals if g.get("s") == side_ and g.get("p")]
-        if len(rows) > 4:
-            rows = rows[:3] + [f"+{len(rows) - 3}"]
-        yy = 958
+        cap = 3 if pens else 4          # the shoot-out's pill takes one row of the space
+        if len(rows) > cap:
+            rows = rows[:cap - 1] + [f"+{len(rows) - (cap - 1)}"]
+        yy = 1022 if pens else 958
         for row in rows:
             f = fit(row, "Bold", 34, W_ // 2 - 110, 22)
             rw = d.textlength(FC.ar(row), font=f)

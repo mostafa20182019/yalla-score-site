@@ -160,6 +160,26 @@ ck("7f --goal refuses a goal with no scorer named (user, 2026-10-24): nothing po
    _rc == 0 and _calls == [], str(_calls))
 GC._s365_game, _ST.get_post, _ST.claim, _ST.release, _ST.record_post, FP.post_photo, FP.post_text = _saved
 
+# a tie settled on penalties says who won (design review 2026-11-26)
+_cup = {"kind": "ft", "home": "الزمالك", "away": "سيراميكا كليوباترا", "hs": 1, "as": 1, "comp": 552, "date": "2026-11-27",
+        "goals": [{"s": "h", "p": "زيزو", "m": "12"}, {"s": "a", "p": "أكرم", "m": "40"}]}
+_plain = GC.render_whistle(_cup)
+_pen = GC.render_whistle({**_cup, "hp": 4, "ap": 3})
+_white = lambda im: sum(1 for px in im.crop((300, 946, 780, 1006)).getdata() if min(px) > 235)     # noqa: E731
+ck("5a a shoot-out draws its white pill on the seam, under the score", _white(_pen) > _white(_plain) + 8000,
+   f"{_white(_plain)} -> {_white(_pen)}")
+ck("5b no shoot-out score, or only one side of it: the card is the same as before",
+   GC.render_whistle({**_cup, "hp": None, "ap": None}).tobytes() == _plain.tobytes()
+   and GC.render_whistle({**_cup, "hp": 4}).tobytes() == _plain.tobytes())
+ck("5c a half-time or kick-off card never carries it",
+   GC.render_whistle({**_cup, "kind": "ht", "hp": 4, "ap": 3}).tobytes() == GC.render_whistle({**_cup, "kind": "ht"}).tobytes())
+_many = [{"s": "h", "p": f"لاعب {i}", "m": str(10 + i)} for i in range(6)]
+ck("5d with the pill the scorers still end above the foot band (three rows, the rest counted)",
+   max(GC.render_whistle({**_cup, "hs": 6, "goals": _many, "hp": 2, "ap": 4}).getpixel((540, 1340))) < 70)
+_fc = open("fb_cards.py", encoding="utf-8").read()
+ck("5e the publish path hands the shoot-out's score from the match row",
+   '"hp": m.get("home_pens"), "ap": m.get("away_pens")' in _fc)
+
 print()
 print("ALL OK" if not fails else f"{len(fails)} FAILED: " + ", ".join(fails))
 sys.exit(1 if fails else 0)

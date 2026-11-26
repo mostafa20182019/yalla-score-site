@@ -313,7 +313,9 @@ def whistle_event(m, ge_idx):
     return {"kind": "ft", "home": b.ar_team(m.get("home")), "away": b.ar_team(m.get("away")),
             "hs": m.get("home_score"), "as": m.get("away_score"), "comp": cid,
             "comp_label": label, "date": m.get("kickoff"), "feed": _feed_colors(m),
-            "home_badge": m.get("home_badge"), "away_badge": m.get("away_badge"), "goals": goals}
+            "home_badge": m.get("home_badge"), "away_badge": m.get("away_badge"), "goals": goals,
+            # a tie settled on penalties: the shoot-out's score (fetch_data), else None
+            "hp": m.get("home_pens"), "ap": m.get("away_pens")}
 
 
 def _feed_colors(m):
