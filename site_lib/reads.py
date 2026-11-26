@@ -32,8 +32,8 @@ def _streak_ar(res):
         if r != last:
             break
         n += 1
-    if n > 10:            # past the ordinals: plain and plural
-        return f"{n} " + {"W": "انتصارات", "D": "تعادلات", "L": "خسائر"}[last] + " متتالية"
+    if n > 10:            # past the ordinals: the count, singular after 11+
+        return f"{n} " + {"W": "انتصارًا متتاليًا", "D": "تعادلًا متتاليًا", "L": "خسارة متتالية"}[last]
     if n >= 2:
         word = {"W": "الفوز", "D": "التعادل", "L": "الخسارة"}[last]
         return f"{word} {_ord_ar(n, fem=last == 'L')} على التوالي"
@@ -42,7 +42,7 @@ def _streak_ar(res):
         if r == "L":
             break
         unb += 1
-    return f"{unb} مباريات دون خسارة" if unb >= 4 else ""
+    return f"{_games(unb)} دون خسارة" if unb >= 4 else ""
 
 
 def table_after(m, st, form_map, fin_comp, h_ar, a_ar):
@@ -77,7 +77,7 @@ def table_after(m, st, form_map, fin_comp, h_ar, a_ar):
     out = []
     for row, ar, form in pairs:
         pos = int(row["pos"])
-        line = f"{ar} في المركز {_ord_ar(pos)} برصيد {_pts(row.get('pts'))}"
+        line = f"{ar} في المركز {_ord_ar(pos)} {_pts_phrase(row.get('pts'))}"
         nb = next((r for r in rows if int(r.get("pos") or 0) == (pos - 1 if pos > 1 else 2)), None)
         if nb and nb.get("pts") is not None and row.get("pts") is not None:
             gap = abs(int(nb["pts"]) - int(row["pts"]))
@@ -187,7 +187,7 @@ def pre_match_read(m, h_ar, a_ar, comp_label_txt, st=None, form_map=None,
         if not ms:
             continue
         gap = _days_between(m.get("kickoff"), ms[-1].get("kickoff"))
-        if gap is not None and 0 <= gap <= 3:
+        if gap is not None and 1 <= gap <= 3:
             opp = ar_team(ms[-1]["away"] if ms[-1].get("home") == raw else ms[-1]["home"])
             rest.append(f"{club} يلعب بعد {_cnt(gap, 'يوم واحد', 'يومين', 'أيام', 'يومًا')} "
                         f"فقط من مباراته أمام {opp}")
@@ -297,7 +297,7 @@ def post_match_read(m, e, flipped, h_ar, a_ar, hs, as_, comp_label_txt,
     _pen = (f" ثم حسمها {h_ar if _hp > _ap else a_ar} بركلات الترجيح {max(_hp, _ap)}-{min(_hp, _ap)}"
             if _hp is not None and _ap is not None else "")
     faq = [(f"كم انتهت مباراة {h_ar} و{a_ar}؟",
-            f"انتهت {h_ar} {hs}-{as_} {a_ar} في {comp_label_txt}{_pen}.")]
+            f"انتهت المباراة: {h_ar} {hs}-{as_} {a_ar} في {comp_label_txt}{_pen}.")]
     if scorers:
         names = [f'{g["player"]} ({g["minute"]}\u2032)' if g.get("minute") else g["player"]
                  for g in scorers]

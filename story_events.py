@@ -360,14 +360,24 @@ def league_half_lines(comp, rows, scorer):
     lines = [f"📊 انتهى الدور الأول من {comp_label(comp)}.",
              f"الخماسي الأول بعد {len(rows) - 1} جولة:"]
     for r in rows[:TOP_N]:
-        lines.append(f"{r.get('pos')}. {ar_team(r.get('team'))} — {r.get('pts')} نقطة")
+        lines.append(f"{r.get('pos')}. {ar_team(r.get('team'))} — {_list_n(r.get('pts'), 'نقطة', 'نقطتان', 'نقاط')}")
     lines.append("المراكز الأخيرة:")
     for r in rows[-BOTTOM_N:]:
-        lines.append(f"{r.get('pos')}. {ar_team(r.get('team'))} — {r.get('pts')} نقطة")
+        lines.append(f"{r.get('pos')}. {ar_team(r.get('team'))} — {_list_n(r.get('pts'), 'نقطة', 'نقطتان', 'نقاط')}")
     if scorer:
-        g = scorer["goals"]
-        lines.append(f"⚽ الهداف: {scorer['name']} ({scorer['team']}) — {g} " + ("أهداف" if g > 2 else "هدف"))
+        lines.append(f"⚽ الهداف: {scorer['name']} ({scorer['team']}) — {_list_n(scorer['goals'], 'هدف', 'هدفان', 'أهداف', 'هدفًا')}")
     return lines
+
+
+def _list_n(n, one, two, few, many=None):
+    """A count standing alone after a dash in a list: «نقطة واحدة» /
+    «نقطتان» / «8 نقاط» / «12 نقطة» / «12 هدفًا»; zero keeps its digit."""
+    n = int(n or 0)
+    if n == 1:
+        return f"{one} واحد" + ("ة" if one.endswith("ة") else "")
+    if n == 2:
+        return two
+    return f"{n} {few}" if 3 <= n <= 10 else f"{n} {many or one}"
 
 
 # ---------------------------------------------------------------- (c) on this day
@@ -470,7 +480,9 @@ def otd_moment_lines(mo, years):
 # so the post says which window the numbers cover instead of pretending to
 # be a career record.
 COACH_LEFT_RE = (
-    re.compile(r"^(?P<name>[^.،:]{3,40}?)\s+(?:يرحل|يغادر|يستقيل)\s+(?:عن|من)\s+تدريب\s+(?P<team>منتخب مصر)"),
+    re.compile(r"^(?P<name>[^.،:]{3,40}?)\s+(?:يرحل|يغادر|يستقيل|رحل|غادر|استقال)\s+(?:عن|من)\s+تدريب\s+(?P<team>منتخب مصر)"),
+    # the house rule since 2026-11-13: a finished event in the past, verb first
+    re.compile(r"^(?:رحل|غادر|استقال)\s+(?P<name>[^.،:]{3,40}?)\s+(?:عن|من)\s+تدريب\s+(?P<team>منتخب مصر)"),
     re.compile(r"(?:رحيل|إقالة|استقالة)\s+(?P<name>[^.،:]{3,40}?)\s+(?:عن|من)\s+تدريب\s+(?P<team>منتخب مصر)"),
     re.compile(r"(?:إنهاء|ينهي)\s+(?:مهمة|عقد)\s+(?P<name>[^.،:]{3,40}?)\s+(?:مع|من)\s+(?P<team>منتخب مصر)"),
 )
@@ -534,7 +546,7 @@ def _n(n, one, two, many):
 
 
 def coach_record_lines(name, team, ms, r):
-    lines = [f"📊 {name} يرحل عن تدريب {team}.",
+    lines = [f"📊 رحل {name} عن تدريب {team}.",
              f"أرقامه في المباريات التي تغطيها بيانات الجون (منذ {ar_date(ms[0]['kickoff'])}):",
              f"{_n(r['p'], 'مباراة واحدة', 'مباراتان', 'مباريات')}: فوز {r['w']}، تعادل {r['d']}، خسارة {r['l']}.",
              f"الأهداف: {r['gf']} له، {r['ga']} عليه."]
@@ -893,9 +905,9 @@ def streak_lines(tp, kind, n, last, s):
     club, opp = tp["name"], last["opponent"]
     res = f"{club} {last['gf']} - {last['ga']} {opp}"
     if kind == "wins":
-        head = f"📊 {club} يحقق {_wins(n)} {_in_a_row(n)}."
+        head = f"📊 حقق {club} {_wins(n)} {_in_a_row(n)}."
     elif kind == "first-loss":
-        head = f"📊 {club} يخسر لأول مرة بعد {_wins(n)} {_in_a_row(n)}."
+        head = f"📊 خسر {club} بعد {_wins(n)} {_in_a_row(n)}."
     else:
         head = f"📊 {club} بلا فوز في آخر {_matches(n)}."
     return [head,

@@ -265,7 +265,7 @@ def meeting_facts(home, away, games):
     who = _won(last)
     res = (f"بفوز {ar_team(who)} {max(last['hg'], last['ag'])}-{min(last['hg'], last['ag'])}" if who
            else f"بالتعادل {last['hg']}-{last['ag']}")
-    note = " بعد ركلات الترجيح" if "ركلات" in last["status"] and not who else ""
+    note = " وحُسمت بركلات الترجيح" if "ركلات" in last["status"] and not who else ""
     where = f" في {last['comp']}" if last["comp"] else ""
     out.append((4, f"انتهت آخر مواجهة بين الفريقين {res}{note}{where} ({ar_date(last['date'])})."))
     n, wh, wa, dr = tally(gs, home, away)
@@ -287,7 +287,9 @@ def meeting_facts(home, away, games):
         for over, loser_raw in ((h_ar, away), (a_ar, home)):
             k = 0
             for g in last_n:
-                if _won(g) == loser_raw:
+                # a shoot-out has a winner the feed does not name: the run
+                # stops there instead of calling that night «لم يفز»
+                if _won(g) == loser_raw or (not _won(g) and "ركلات" in (g.get("status") or "")):
                     break
                 k += 1
             runs.append((k, ar_team(loser_raw), over))

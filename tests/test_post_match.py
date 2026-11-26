@@ -162,7 +162,7 @@ ck("23b places past the tenth are still ordinals, not «المركز رقم 15»
    B._ord_ar(15) == "الخامس عشر" and B._ord_ar(20) == "العشرين"
    and B._ord_ar(24) == "24" and "رقم" not in B._ord_ar(24), B._ord_ar(15))
 ck("23c a long run drops the ordinal instead of inventing one",
-   B._streak_ar(["W"] * 12) == "12 انتصارات متتالية", B._streak_ar(["W"] * 12))
+   B._streak_ar(["W"] * 12) == "12 انتصارًا متتاليًا", B._streak_ar(["W"] * 12))
 
 late = FIN + [fx("2026-09-16", "الأهلي", "q")]
 ck("24 NOTHING is said when a later match has been played since",

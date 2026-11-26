@@ -348,7 +348,7 @@ SE.load_data = lambda: _D(standings=[{"competition": "Egyptian Premier League", 
 assert run([], argv=("--events",)) == 0
 msgs = feeds(); assert len(msgs) == 1, msgs
 assert msgs[0].startswith("📊 انتهى الدور الأول من الدوري المصري.\nالخماسي الأول بعد 19 جولة:\n1. Club 1 — 57 نقطة"), msgs[0]
-assert "المراكز الأخيرة:\n18. Club 18 — 6 نقطة\n19. Club 19 — 3 نقطة\n20. Club 20 — 0 نقطة" in msgs[0], msgs[0]
+assert "المراكز الأخيرة:\n18. Club 18 — 6 نقاط\n19. Club 19 — 3 نقاط\n20. Club 20 — 0 نقطة" in msgs[0], msgs[0]
 assert "⚽ الهداف: محمود ممدوح (مودرن سبورت) — 8 أهداف" in msgs[0] and "standings/egypt.html" in msgs[0] and "#الدوري_المصري" in msgs[0]
 assert store.get_post(SE.KIND_HALF, "Egyptian Premier League:2026-27")["post_id"]
 assert run([], argv=("--events",)) == 0 and feeds() == []
@@ -394,7 +394,7 @@ nt = [{"match_id": "a", "competition": "Africa Cup of Nations Qualification", "k
 SE.load_data = lambda: _D(articles=[art], archive=nt)
 assert run([], argv=("--events", "2026-11-08")) == 0
 msgs = feeds(); assert len(msgs) == 1, msgs
-assert msgs[0] == ("📊 حسام حسن يرحل عن تدريب منتخب مصر.\nأرقامه في المباريات التي تغطيها بيانات الجون (منذ 25 سبتمبر 2026):\n"
+assert msgs[0] == ("📊 رحل حسام حسن عن تدريب منتخب مصر.\nأرقامه في المباريات التي تغطيها بيانات الجون (منذ 25 سبتمبر 2026):\n"
                    "مباراتان: فوز 1، تعادل 1، خسارة 0.\nالأهداف: 5 له، 0 عليه.\nأكبر فوز: جنوب السودان 0 - 5 مصر (29 سبتمبر 2026).\n"
                    "الخبر كاملًا: https://elgoon.com/a/1095\n#الجون #منتخب_مصر"), msgs[0]
 assert store.get_post(SE.KIND_COACH, "1095")["post_id"]
@@ -513,7 +513,7 @@ SE.load_data = lambda: _D(matches=[], archive=FORM8[:3] + WINS5)        # W W W 
 reset_state()
 assert run([], argv=("--events", "2026-11-06")) == 0
 caps = photos(); assert len(caps) == 1 and feeds() == [], (caps, feeds())
-assert caps[0].startswith("📊 برشلونة يحقق 8 انتصارات متتالية.\nآخر مباراة: برشلونة 2 - 0 Club 5 في الدوري الإسباني (5 نوفمبر 2026).\n"
+assert caps[0].startswith("📊 حقق برشلونة 8 انتصارات متتالية.\nآخر مباراة: برشلونة 2 - 0 Club 5 في الدوري الإسباني (5 نوفمبر 2026).\n"
                           "آخر 8 مباريات: فوز 8، تعادل 0، خسارة 0.\nالأهداف: 21 له، 2 عليه.\n"), caps[0]
 assert caps[0].endswith("تفاصيل المباراة: https://elgoon.com/m/105\n#الجون #برشلونة #Club_5"), caps[0]
 assert store.get_post(SE.KIND_STREAK, "streak:barcelona:105")["post_id"]
@@ -525,7 +525,7 @@ assert SE.club_streak([dict(NEXT, kickoff="2026-11-06", koff_time="20:00")], [],
 # the first defeat after five wins; five without a win
 loss = _R(109, "2026-11-07", "Club 9", BAR, 1, 0)
 ev = SE.club_streak([], [], FORM8[:3] + WINS5 + [loss], datetime.date(2026, 11, 8))
-assert len(ev) == 1 and ev[0]["milestone"] == {"kind": "first-loss", "n": 8} and ev[0]["title"] == "برشلونة يخسر لأول مرة بعد 8 انتصارات متتالية", ev
+assert len(ev) == 1 and ev[0]["milestone"] == {"kind": "first-loss", "n": 8} and ev[0]["title"] == "خسر برشلونة بعد 8 انتصارات متتالية", ev
 dry5 = [_R(200 + i, f"2026-11-0{i}", BAR, f"Club {i}", 1, 1 if i % 2 else 2) for i in range(1, 6)]
 ev = SE.club_streak([], [], FORM8[:3] + dry5, datetime.date(2026, 11, 6))
 assert len(ev) == 1 and ev[0]["milestone"] == {"kind": "winless", "n": 5} and ev[0]["title"] == "برشلونة بلا فوز في آخر 5 مباريات", ev
