@@ -5,6 +5,7 @@ and news, sent ONLY to the browsers that follow that club.
     python push_team.py --goal '<json>'      # fb-post.yml, right after the goal card
     python push_team.py --whistle '<json>'   # ... after the kick-off / full-time card
     python push_team.py --news               # publish.yml, after push_send.py
+    python push_team.py --prematch           # publish.yml: a followed club's match 30-150 minutes away
     add --dry to any of them: what would be sent, to how many, and why / why not
 
 WHY (2026-11-19, the user's «ابدأ فى اشعارات الفريق» after AdSense asked for
@@ -297,11 +298,73 @@ def news(dry=False, now=None, sender=None, live=None):
     return 0
 
 
+# ---------------------------------------------------------------- before the match
+# «الأهلي × بيراميدز 20:00 - لم يخسر الأهلي في آخر 6 مباريات» (user, 2026-11-26:
+# «نعمل 4»): one notification to a club's followers when its match is
+# PRE_MIN_M..PRE_MAX_M minutes away - the publish run passes every half hour,
+# the store keeps it to once a match. The second line is the match's
+# strongest fact from site_lib/prefacts.py (the same sentence the match page
+# shows); without one, the competition. A reader who follows both sides gets
+# it once.
+PRE_MIN_M, PRE_MAX_M = 30, 150
+
+
+def prematch_payload(m, fact):
+    import story_events as SE
+    h, a = SE._side_names(m)
+    title = f"⏰ {h} × {a}" + (f" الساعة {m['koff_time']}" if m.get("koff_time") else "")
+    body = fact or f"{SE.comp_label(m.get('competition'))} · بتوقيت القاهرة"
+    return _base(title, body, f"{C.SITE_BASE}/m/{m['match_id']}", f"g-{m['match_id']}"), title
+
+
+def prematch_due(matches, now, clubs=None):
+    """[(club page, match)] - a followed club's match that kicks off within
+    the window; a postponed or started match is never due."""
+    import story_events as SE
+    from site_lib.names import _team_match
+    out = []
+    for m in matches or []:
+        if (m.get("status") or "").upper() != "UPCOMING" or not m.get("match_id"):
+            continue
+        kd = SE._kick_dt(m)
+        if not kd or not m.get("koff_time"):
+            continue
+        mins = (kd - now).total_seconds() / 60
+        if not (PRE_MIN_M <= mins <= PRE_MAX_M):
+            continue
+        for tp in (clubs if clubs is not None else TEAM_PAGES):
+            if _team_match(tp, m):
+                out.append((tp, m))
+    return out
+
+
+def prematch(dry=False, now=None, sender=None, data=None):
+    key = ready(dry)
+    if not key:
+        return 0
+    import story_events as SE
+    now = now or SE._now()
+    d = data or SE.load_data()
+    due = prematch_due(d.get("matches"), now)
+    if not due:
+        print("push-team prematch: no followed club kicks off in the window"); return 0
+    PF = SE.facts_setup(d.get("matches"), d.get("fixtures"), d.get("standings"), d.get("archive"))
+    send = sender or _sender(PRE_MAX_M * 60, "team-pre", "normal")
+    seen_by_match = {}
+    for tp, m in due:
+        fact = (PF.for_match(m) or {}).get("top") or ""
+        data_, title = prematch_payload(m, fact)
+        deliver(f"pre:{m['match_id']}", tp["slug"], data_, key, send, title, dry,
+                seen_by_match.setdefault(str(m["match_id"]), set()))
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--goal")
     ap.add_argument("--whistle")
     ap.add_argument("--news", action="store_true")
+    ap.add_argument("--prematch", action="store_true")
     ap.add_argument("--dry", action="store_true")
     a = ap.parse_args()
     try:
@@ -311,6 +374,8 @@ def main():
             return whistle(a.whistle, dry=a.dry)
         if a.news:
             return news(dry=a.dry)
+        if a.prematch:
+            return prematch(dry=a.dry)
     except Exception as e:                                    # noqa: BLE001 - never fail the job it rides in
         print(f"::warning::push-team failed: {e}")
         return 0

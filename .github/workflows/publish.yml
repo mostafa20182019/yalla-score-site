@@ -115,6 +115,15 @@ jobs:
         continue-on-error: true
         run: python h2h_feed.py
 
+      # The channel of each coming match by its number («beIN Sports 1»,
+      # «ثمانية 1»), from the same game feed, written into matches.json's
+      # `channel` - the field every page and post reads first (2026-11-26).
+      # Never fails the run: without it a match keeps its competition's
+      # verified broadcaster, as before.
+      - name: Name the channel of the coming matches
+        continue-on-error: true
+        run: python tv_feed.py
+
       # A photo the article pipeline downloads from Wikimedia arrives at full
       # size - the library had reached 75 MB, averaging 323 KB with a 4544px,
       # 3.2 MB hero (2026-09-20). shrink_media.py caps width at 1600 and
@@ -320,6 +329,8 @@ jobs:
           # «تابع فريقك» (2026-11-19): a new story about a club that the bell
           # did not send to everyone goes to that club's followers
           python push_team.py --news || true
+          # a followed club's match 30-150 minutes away, with its strongest fact (2026-11-26)
+          python push_team.py --prematch || true
           exit $rc
 
       # New-article Facebook post. Lives HERE (after Deploy) and not in

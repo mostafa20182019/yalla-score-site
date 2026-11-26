@@ -133,6 +133,55 @@ def run_facts(club, r, comp_txt, at_home=None):
     return sorted(out, key=lambda x: -x[0])
 
 
+# ------------------------------------------------------------------ a player's run
+# «سجل فلان في آخر 4 مباريات لفريقه» (user, 2026-11-26: «نعمل 3»). Counted over
+# the SIDE's matches, as the sentence says - a match he missed ends the run,
+# and the sentence stays true. Only over matches whose scorers we hold in
+# full (as many names as goals): a match with a goal we cannot name stops the
+# count there, it never guesses.
+MIN_SCORED = 3
+
+
+GOALS = {}                # {str(match_id): [goal]} - the archive's scorers (setup); a row's own `goals` wins
+
+
+def _goals_of(m):
+    g = m.get("goals")
+    return g if g is not None else GOALS.get(str(m.get("match_id")))
+
+
+def player_runs(raw, comp_matches):
+    """[(n, player)] - the players who scored in each of the side's last n
+    finished matches of the competition, n >= MIN_SCORED, the longest first."""
+    ms = [m for m in (comp_matches or []) if raw in (m.get("home"), m.get("away"))
+          and m.get("home_score") is not None and m.get("away_score") is not None]
+    cnt, alive = {}, None
+    for m in reversed(ms):
+        goals = _goals_of(m)
+        if goals is None or len(goals) != int(m["home_score"]) + int(m["away_score"]):
+            break
+        side = "h" if m.get("home") == raw else "a"
+        names = {(g.get("player") or "").strip() for g in goals if g.get("side") == side} - {""}
+        alive = names if alive is None else alive & names
+        if not alive:
+            break
+        for nm in alive:
+            cnt[nm] = cnt.get(nm, 0) + 1
+    return sorted(((n, nm) for nm, n in cnt.items() if n >= MIN_SCORED), key=lambda x: (-x[0], x[1])), len(ms)
+
+
+def player_facts(raw, club, comp_matches, comp_txt):
+    """[(weight, sentence)] for the side's scorers on a run."""
+    runs, played = player_runs(raw, comp_matches)
+    out = []
+    for n, nm in runs[:2]:
+        if n == played and played >= MIN_SEASON:
+            out.append((n * 3, f"سجل {nm} في كل مباريات {club} ({n}) في {comp_txt} هذا الموسم."))
+        else:
+            out.append((n * 3, f"سجل {nm} في {_last(n)} {_lam(club)} في {comp_txt}."))
+    return out
+
+
 # ------------------------------------------------------------------ meetings
 def load_feed():
     try:
@@ -262,7 +311,10 @@ def match_facts(m, comp_matches, table, feed, fin_all=None, run_sides=("home", "
         row = rows.get(raw)
         if not row or k not in run_sides:
             continue
-        facts += run_facts(club, season_runs(raw, comp_matches, row.get("played")), comp_txt, at_home)
+        runs_now = season_runs(raw, comp_matches, row.get("played"))
+        facts += run_facts(club, runs_now, comp_txt, at_home)
+        if runs_now:                      # the same guard: the list is the side's whole season
+            facts += player_facts(raw, club, comp_matches, comp_txt)
     games = meetings(home, away, feed, fin_all, before=m.get("kickoff"))
     meet = meeting_facts(home, away, games)
     runs = sorted(facts, key=lambda x: -x[0])
@@ -321,6 +373,7 @@ def side_after(raw, club, m, comp_matches, played, comp_txt):
         elif mark == "L" and now["losses"] >= MIN_LOSSES and now["losses"] < now["p"] and sline.startswith(f"خسر {club} آخر"):
             sline = f"وصل {club} إلى " + _n_in_a_row(now["losses"], "خسائر", "خسارة", "متتالية", "متتالية") + f" {inn}."
         out.append((w, sline))
+    out += player_facts(raw, club, comp_matches, comp_txt)
     return out, True
 
 
@@ -425,13 +478,15 @@ def next_kickoffs(fixtures, matches=None):
     return out
 
 
-def setup(fixtures, bycomp, standings, feed=None, matches=None):
+def setup(fixtures, bycomp, standings, feed=None, matches=None, goals=None):
     """Register the season's finished matches, the official tables and the
     meetings feed. Returns how many pairs the feed holds."""
     from site_lib.stats import _finished_by_comp
     fin = _finished_by_comp(fixtures or [], bycomp)
     _CTX.clear()
     _MEMO.clear()
+    GOALS.clear()
+    GOALS.update(goals or {})
     _CTX.update(
         fin=fin,
         fin_all=sorted((x for ms in fin.values() for x in ms), key=lambda x: x.get("kickoff") or ""),

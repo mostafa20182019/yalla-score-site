@@ -229,7 +229,7 @@ def build():
     # «أرقام قبل المباراة» (2026-11-26): the season's results, the tables and
     # the meetings feed, registered before the first page that reads them
     from site_lib import prefacts as _PF
-    print(f"  + pre-match facts: {_PF.setup(fixtures, _bycomp, standings, matches=matches)} pairs in the meetings feed")
+    print(f"  + pre-match facts: {_PF.setup(fixtures, _bycomp, standings, matches=matches, goals={str(k): v.get('goals') for k, v in (_res_arch or {}).items() if isinstance(v, dict) and v.get('goals') is not None})} pairs in the meetings feed")
     home_page(articles, fixtures, ge_idx, matches, standings)
     _match_arts, _moved = article_pages(articles, articles_all, matches, urls)
 

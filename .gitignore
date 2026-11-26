@@ -36,6 +36,7 @@ data/match_stats.json
 data/highlights.json
 data/details_archive.json
 data/h2h_feed.json
+data/tv_feed.json
 data/.store_state.json
 data/odds/
 

@@ -953,6 +953,18 @@ FACTS_WINDOW_H = 24
 FACTS_MIN_LINES, FACTS_MAX_LINES, FACTS_MAX, FACTS_TOP = 3, 5, 3, 4
 
 
+def facts_setup(matches, fixtures, standings, archive, feed=None):
+    """Register the data site_lib/prefacts.py stands on, outside the build:
+    the archive's finished rows (they carry their scorers) per competition."""
+    from site_lib import prefacts as PF
+    bycomp = {}
+    for r in archive or []:
+        if _finished(r) and r.get("competition"):
+            bycomp.setdefault(r["competition"], []).append(dict(r, status="FINISHED"))
+    PF.setup(fixtures, bycomp, standings, feed=feed, matches=matches)
+    return PF
+
+
 def _facts_big(m, tables):
     from site_lib.competitions import LEAGUE_BAR
     from site_lib.names import _is_ticker_team
@@ -978,13 +990,8 @@ def match_facts_before(matches, fixtures, standings, archive, today=None, hours=
     """One event per big match kicking off within `hours` that has
     FACTS_MIN_LINES facts in site_lib/prefacts.py; the richest FACTS_MAX."""
     from site_lib import h2h as H
-    from site_lib import prefacts as PF
     now = _now(today)
-    bycomp = {}
-    for r in archive or []:
-        if _finished(r) and r.get("competition"):
-            bycomp.setdefault(r["competition"], []).append(dict(r, status="FINISHED"))
-    PF.setup(fixtures, bycomp, standings, feed=feed, matches=matches)
+    PF = facts_setup(matches, fixtures, standings, archive, feed)
     tables = {s.get("competition"): s.get("table") for s in standings or [] if s.get("table")}
     out = []
     for m in upcoming_pool(matches, fixtures):
@@ -1033,14 +1040,9 @@ AFTER_MAX_AGE_D, AFTER_MIN_TOP, AFTER_MIN_LINES = 1, 9, 2
 
 
 def match_facts_after(matches, fixtures, standings, archive, today=None, feed=None, streak_ids=()):
-    from site_lib import prefacts as PF
     now = _now(today)
     cut = (now.date() - datetime.timedelta(days=AFTER_MAX_AGE_D)).isoformat()
-    bycomp = {}
-    for r in archive or []:
-        if _finished(r) and r.get("competition"):
-            bycomp.setdefault(r["competition"], []).append(dict(r, status="FINISHED"))
-    PF.setup(fixtures, bycomp, standings, feed=feed, matches=matches)
+    PF = facts_setup(matches, fixtures, standings, archive, feed)
     tables = {s.get("competition"): s.get("table") for s in standings or [] if s.get("table")}
     out = []
     for m in matches or []:
