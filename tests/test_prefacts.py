@@ -168,7 +168,7 @@ ck("27 the next match carries the runs of both sides", any("فاز A" in s for s
 ck("28 a later match carries NO run (the side plays again first)", f2["runs"] == [] and f2["lines"] == [])
 html = PF.section_html(NEXT)
 ck("29 the page section: heading, the sentences, no meetings list without meetings",
-   html.startswith('<section class="minfo pf" data-t="أرقام قبل المباراة"') and "أرقام قبل مباراة A وB<button" in html and html.count("<li>") == len(f1["lines"])
+   html.startswith('<section class="minfo pf" data-t="أرقام قبل المباراة"') and "<h2>أرقام قبل مباراة A وB</h2><button" in html and html.count("<li>") == len(f1["lines"])
    and "h2h-list" not in html and "365Scores" not in html)
 ck("30 no section when there is nothing to say", PF.section_html(LATER) == "")
 PF.setup([], {"Premier League": SEASON}, [{"competition": "Premier League", "zeroed": True, "table": STAND[0]["table"]}],
@@ -225,7 +225,7 @@ ck("42 a run that grew is said as reached; a run that ended is said as ended",
 ck("43 a side beaten after meetings without a win", "فاز P على Q بعد 4 مواجهات دون فوز." in af["lines"])
 ck("44 where the two stand now, from the official table", any(x.startswith("P في المركز الثاني برصيد 12 نقطة") for x in af["lines"]))
 sec = PF.after_section_html(FT)
-ck("45 the finished page's section", sec.startswith('<section class="minfo pf" data-t="أرقام بعد المباراة"') and "أرقام بعد مباراة P وQ<button" in sec
+ck("45 the finished page's section", sec.startswith('<section class="minfo pf" data-t="أرقام بعد المباراة"') and "<h2>أرقام بعد مباراة P وQ</h2><button" in sec
    and 'data-mid="0 - 2"' in sec and 'data-shot="f"' in sec
    and sec.count("<li>") == len(af["lines"]))
 # the table has not counted the match yet -> the runs wait, and it is not news / not a post

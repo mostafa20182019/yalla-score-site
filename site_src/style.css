@@ -1818,6 +1818,16 @@ a.lt-tb{text-decoration:none}
 .mlist.mp-hero>.mrow .team img{width:48px;height:48px}
 .mlist.mp-hero>.mrow .team span{font-size:.95rem;font-weight:800}
 .mlist.mp-hero>.mrow .score,.mlist.mp-hero>.mrow .ko{font-size:1.6rem}
+/* design review 2026-11-26: on a phone the hero kept the list's row, the
+   48px crest beside the name left it 36px («مانشـ / يونايتد», «الشبا») -
+   the crest goes above the name, which then has its whole column */
+@media(max-width:560px){
+  .mlist.mp-hero>.mrow .team,.mlist.mp-hero>.mrow .team.th{flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:6px}
+  .mlist.mp-hero>.mrow .team span{font-size:.9rem}
+}
+/* the narrowest phones: the side columns give 12px to the two names
+   («فيرينتسفاروشي» was 95px in a 60px column, cut mid-word) */
+@media(max-width:400px){.mlist>.mrow{grid-template-columns:28px minmax(0,1fr) auto minmax(0,1fr) 28px}}
 .mp-act{margin:10px 0 4px}
 /* a row whose live data stopped arriving (live_js.html, unlive) */
 .pill-stale{background:#94a3b8}
@@ -1881,14 +1891,3 @@ a.lt-tb{text-decoration:none}
    (user, 2026-11-11: the Inzaghi story's hero at 1780x500). Last in the file:
    it must beat .a-img / .hcard .himg img / .al-th img */
 img[src*="/media/ph-"]{object-fit:contain;object-position:50% 50%;background:#1f94d3}
-
-/* design review 2026-11-26: on a phone the hero kept the list's row, the
-   48px crest beside the name left it 36px («مانشـ / يونايتد», «الشبا») -
-   the crest goes above the name, which then has its whole column */
-@media(max-width:560px){
-  .mlist.mp-hero>.mrow .team,.mlist.mp-hero>.mrow .team.th{flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:6px}
-  .mlist.mp-hero>.mrow .team span{font-size:.9rem}
-}
-/* the narrowest phones: the side columns give 12px to the two names
-   («فيرينتسفاروشي» was 95px in a 60px column, cut mid-word) */
-@media(max-width:400px){.mlist>.mrow{grid-template-columns:28px minmax(0,1fr) auto minmax(0,1fr) 28px}}
