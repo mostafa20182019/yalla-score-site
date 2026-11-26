@@ -71,18 +71,29 @@ def own_colours(kit):
 
 
 def fills(home, away, comp=None, feed=None):
-    """(home fill, away fill): each from its own club's colours. The first
-    colour that is not light; a club with only light colours gets a neutral
-    slate (white text on white is not a poster). If the two are close, the
-    away side takes its own light colour when it has one."""
+    """(home fill, away fill): each from its own club's colours, its MAIN
+    colour first - a white club stands on white (the names turn navy, see
+    ink()), not on its trim: Zamalek's half in its red band read as Al Ahly's
+    (review 2026-11-26), Real Madrid's as gold. Two light halves side by side
+    are not a poster: then the away side takes a colour of its own that is
+    not light, and only when it has none the neutral slate. If the two are
+    close, the away side takes another colour of its own."""
     feed = feed or {}
     hk, ak = MC.kit_for(home, comp, feed.get("home")), MC.kit_for(away, comp, feed.get("away"))
     hc, ac = own_colours(hk), own_colours(ak)
-    hf = next((c for c in hc if not _light(c)), NEUTRAL_FILL)
-    af = next((c for c in ac if not _light(c)), NEUTRAL_FILL)
+    # only for a club in OUR table, where the first colour is the club's
+    # identity by hand; a feed kit keeps its first colour that is not light
+    # (Leeds in its yellow, as approved 2026-11-22)
+    def main(name, cols):
+        if cols and (MC.KITS.get(name) or MC._kit_by_comp(comp, name)):
+            return cols[0]
+        return next((c for c in cols if not _light(c)), NEUTRAL_FILL)
+    hf, af = main(home, hc), main(away, ac)
+    if _light(hf) and _light(af):
+        af = next((c for c in ac if not _light(c)), NEUTRAL_FILL)
     if _dist(hf, af) < 110:
         other = next((c for c in ac if not _light(c) and _dist(c, hf) >= 110), None)
-        light = next((c for c in ac if _light(c)), None)
+        light = next((c for c in ac if _light(c) and _dist(c, hf) >= 110), None)
         af = other or light or af
     return hf, af
 

@@ -42,8 +42,15 @@ ck("two reds are never left side by side when the away side has another colour o
 hf, af = MP.fills("نادي غير معروف", "نادٍ آخر")
 ck("a club with no colours on record gets the neutral slate - never an invented colour",
    hf == MP.NEUTRAL_FILL or hf in MP.own_colours(MC.NEUTRAL))
-ck("a white club takes a colour of its own that is not light (white text on white is not a poster)",
-   not MP._light(MP.fills("ريال مدريد", "الأهلي")[0]) or MP.fills("ريال مدريد", "الأهلي")[0] == MP.NEUTRAL_FILL)
+ck("a white club stands on its own white, not on its trim (Zamalek in red read as Al Ahly)",
+   MP._light(MP.fills("الزمالك", "الجونة")[0]) and MP._light(MP.fills("ريال مدريد", "الأهلي")[0]),
+   f'{MP.fills("الزمالك", "الجونة")} {MP.fills("ريال مدريد", "الأهلي")}')
+_zh, _za = MP.fills("الزمالك", "ريال مدريد")
+ck("two white clubs: never two light halves side by side", not (MP._light(_zh) and MP._light(_za)), f"{_zh} {_za}")
+ck("Al Ahli of Jeddah is green by the competition's raw name AND by its Arabic label",
+   MP.fills("الأهلي", "النصر", "Saudi Pro League")[0] == (11, 138, 62)
+   and MP.fills("الأهلي", "النصر", "الدوري السعودي")[0] == (11, 138, 62)
+   and MP.fills("الأهلي", "الزمالك", "الدوري المصري")[0] != (11, 138, 62))
 
 FEED = {"home": ("#FFFF00", "#CAC9CE"), "away": ("#282E60", "#0A0A0A")}
 hf, af = MP.fills("نادي غير معروف", "نادٍ آخر", None, FEED)

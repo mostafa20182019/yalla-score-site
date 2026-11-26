@@ -128,8 +128,21 @@ def kit_from_feed(pair):
 def kit_for(name, comp=None, feed=None):
     """Our KITS table first; then the feed's colours (`feed` = (main, alt)
     hex pair); then the neutral disc."""
-    return (KITS_BY_COMP.get((comp, name)) or KITS.get(name)
+    return (_kit_by_comp(comp, name) or KITS.get(name)
             or kit_from_feed(feed) or NEUTRAL)
+
+
+def _kit_by_comp(comp, name):
+    """KITS_BY_COMP by the competition's raw name OR its Arabic label: the
+    whistle card hands the label («الدوري السعودي»), and Al Ahli of Jeddah
+    came out in Al Ahly of Cairo's red (review 2026-11-26)."""
+    if not comp:
+        return None
+    hit = KITS_BY_COMP.get((comp, name))
+    if hit:
+        return hit
+    from site_lib.competitions import COMP_LABEL
+    return next((k for (c, n), k in KITS_BY_COMP.items() if n == name and COMP_LABEL.get(c) == comp), None)
 
 
 def _accent(kit):
