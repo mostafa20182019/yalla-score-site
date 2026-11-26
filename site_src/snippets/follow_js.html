@@ -7,10 +7,10 @@
    has switched notifications on - the club's slug is then stored with the
    push subscription (push_js.html, window.__pushTeam), so that club's goals,
    results and news go to its followers. The club page carries
-   the button; the home page opens with that club's block, fetched from
-   /my/<slug>.json - a build-made fragment, never drawn from guesses. A browser
-   with no storage (private mode, in-app webviews that block it) simply shows
-   neither the button nor the block. */
+   the button; the home page carries the row of clubs, where a tap follows or
+   drops one and the followed ones are marked (2026-11-26 - no block of their
+   coming matches any more). A browser with no storage (private mode, in-app
+   webviews that block it) simply shows neither the button nor the row. */
 (function(){
   /* «مشاركة» (site review 2026-11-19: no page had a way to pass a story on).
      The button is a plain WhatsApp link that works with no script; where the
@@ -78,12 +78,15 @@
     tab();
   }
   /* false = the list is full: the caller says so, nothing is dropped for him */
-  function add(s){
+  function add(s,nm){
     var a=list(); if(a.indexOf(s)>=0) return true;
     if(a.length>=MAX) return false;
+    if(nm){ try{ var m=names(); m[s]=String(nm).slice(0,40); LS.setItem(KEY+'Names',JSON.stringify(m)); }catch(e){} }
     a.push(s); put(a); return true;
   }
   function drop(s){ put(list().filter(function(x){ return x!==s; })); }
+  /* slug -> the club's name as its page spelled it: only for drawing a chip */
+  function names(){ try{ return JSON.parse(LS.getItem(KEY+'Names')||'{}')||{}; }catch(e){ return {}; } }
   tab();
   /* the class the page's inline script put on <html> before the first paint
      (home.html): it reserves the block's room so nothing jumps. Kept in step
@@ -110,7 +113,7 @@
     b.hidden=false; paint();
     b.addEventListener('click',function(){
       if(list().indexOf(slug)>=0) drop(slug);
-      else if(!add(slug)){                  /* four already: say so, then the button comes back */
+      else if(!add(slug,nm)){               /* four already: say so, then the button comes back */
         b.textContent='تتابع '+MAX+' فرق: ألغِ متابعة فريق أولًا';
         setTimeout(paint,3000); return;
       }
@@ -118,80 +121,66 @@
     });
   });
 
-  /* 2. the home page: the followed club's block, or the picker */
-  var box=document.getElementById('myTeam'); if(!box) return;
-  var pick=document.getElementById('myPick');
-  /* the picker never offers a club he already follows */
-  function chips(){
-    var a=list();
-    if(pick) [].slice.call(pick.querySelectorAll('[data-slug]')).forEach(function(c){
-      c.hidden=a.indexOf(c.getAttribute('data-slug'))>=0;
+  /* 2. the home page: the row of clubs IS the control (user, 2026-11-26: «عايز
+     سطر الفرق زى ما هوه ظاهر واختار على الاكثر اربع فرق فيظهروا انهم متعلم
+     عليهم... مش عايز الماتشات القادمة ليهم تظهر»). A tap follows a club or
+     drops it, the followed ones are marked and come first, and one line under
+     the row says what following gives: the notifications of their matches.
+     No block of coming matches - the club pages and the day list hold those. */
+  var box=document.getElementById('myTeam'), pick=document.getElementById('myPick');
+  if(box){ box.hidden=true; box.innerHTML=''; }
+  if(!pick) return;
+  var row=pick.querySelector('.mp-list'), note=document.getElementById('myNote'),
+      noteT=note&&note.querySelector('.mp-note-t'), bell=note&&note.querySelector('.push-btn');
+  function chipOf(slug){ return pick.querySelector('.mp-c[data-slug="'+slug+'"]'); }
+  /* a club followed from its own page may have no chip here (the row is a
+     short list): it gets one, named as its page named it */
+  function wire(c){
+    c.addEventListener('click',function(){
+      var s=c.getAttribute('data-slug'); if(!ok(s)) return;
+      if(list().indexOf(s)>=0) drop(s);
+      else if(!add(s, c.textContent.replace(/^✓\s*/,''))){
+        if(note&&noteT){ noteT.textContent='يمكنك متابعة '+MAX+' فرق على الأكثر: ألغِ متابعة فريق أولًا.'; if(bell) bell.style.display='none'; note.hidden=false; }
+        setTimeout(paint,3500); return;
+      }
+      paint();
     });
+  }
+  function paint(){
+    var a=list(), nm=names();
+    a.forEach(function(s){
+      if(chipOf(s)||!row) return;
+      var c=document.createElement('button'); c.type='button'; c.className='mp-c';
+      c.setAttribute('data-slug',s); c.textContent=nm[s]||s; wire(c); row.appendChild(c);
+    });
+    [].slice.call(pick.querySelectorAll('.mp-c')).forEach(function(c){
+      var on=a.indexOf(c.getAttribute('data-slug'))>=0;
+      c.classList.toggle('on',on); c.setAttribute('aria-pressed',on?'true':'false');
+    });
+    if(!note||!noteT) return;
+    note.hidden=!a.length;
+    if(bell) bell.style.display='';
+    /* the line never promises what this browser will not do: the bell beside
+       it says whether notifications are on (push_js.html keeps it) */
+    var can=bell&&!bell.hidden, isOn=bell&&bell.getAttribute('aria-pressed')==='true';
+    noteT.textContent=isOn ? '🔔 ستصلك إشعارات مباريات هذه الفرق.'
+      : can ? 'فعّل الإشعارات لتصلك مباريات هذه الفرق:'
+      : '🔔 إشعارات مباريات هذه الفرق تصلك من متصفح يدعم الإشعارات.';
   }
   function showPick(){
-    box.hidden=true; box.innerHTML='';
     var off=hidden();
-    chips();
-    if(pick) pick.hidden=off;
+    paint();
+    pick.hidden=off;
     mode(off ? 'my-off' : 'my-ask');
   }
-  /* one block per followed club, the club that plays soonest first (each
-     fragment says when: `ko`). The first block is whole; the others keep the
-     club and its match and drop the news line and the «ماذا لو» door, so four
-     clubs do not push the day's matches off the screen. */
-  function load(){
-    var a=list();
-    if(!a.length){ showPick(); return; }
-    Promise.all(a.map(function(slug){
-      return fetch('/my/'+slug+'.json',{cache:'no-cache'})
-        /* ONLY a 404 means the club page is gone. Any other failure (a 5xx, a
-           deploy in flight) is a passing thing: the first version cleared the
-           reader's club - and took it off their push subscription - on any
-           answer that was not 200 (site review 2026-11-19). */
-        .then(function(r){ if(r.status===404) return 'gone'; return r.ok ? r.json() : null; })
-        .catch(function(){ return null; })                 /* offline: this club shows nothing this time */
-        .then(function(d){ return {slug:slug, d:d}; });
-    })).then(function(rs){
-      rs.forEach(function(x){ if(x.d==='gone') drop(x.slug); });
-      if(!list().length){ showPick(); return; }
-      var good=rs.filter(function(x){ return x.d&&x.d!=='gone'&&x.d.html; });
-      if(pick) pick.hidden=true;
-      if(!good.length){ mode(''); return; }                /* keep the choice, show nothing this time */
-      good.sort(function(x,y){ return String(x.d.ko||'9').localeCompare(String(y.d.ko||'9')); });
-      box.innerHTML=good.map(function(x){ return x.d.html; }).join('');
-      [].slice.call(box.querySelectorAll('.my-box')).forEach(function(sec,i){
-        var slug=good[i]&&good[i].slug;
-        if(i) sec.classList.add('my-min');
-        var x=sec.querySelector('[data-my-x]');
-        if(x&&slug) x.addEventListener('click',function(){ drop(slug); load(); });
-      });
-      if(list().length<MAX&&pick){
-        var more=document.createElement('button'); more.type='button'; more.className='my-add';
-        more.textContent='+ أضف فريقًا آخر';
-        more.addEventListener('click',function(){
-          try{ window.sessionStorage.removeItem(OFF); }catch(e){}
-          chips(); pick.hidden=false;
-          if(pick.scrollIntoView) pick.scrollIntoView({block:'center'});
-        });
-        box.appendChild(more);
-      }
-      box.hidden=false; mode('my-has');
-      if(window.__lvAdd) window.__lvAdd(box);              /* the rows join the live layer */
-    });
-  }
-  if(pick){
-    [].slice.call(pick.querySelectorAll('[data-slug]')).forEach(function(c){
-      c.addEventListener('click',function(){ var s=c.getAttribute('data-slug'); if(ok(s)&&add(s)) load(); });
-    });
-    var no=pick.querySelector('[data-my-no]');
-    if(no) no.addEventListener('click',function(){
-      pick.hidden=true;
-      if(list().length) return;                            /* he was adding a club: the blocks stay */
-      hide(); mode('my-off');
-    });
-  }
+  [].slice.call(pick.querySelectorAll('.mp-c')).forEach(wire);
+  /* the followed clubs first, once, when the page opens - never while he taps */
+  if(row) list().slice().reverse().forEach(function(s){ var c=chipOf(s); if(c) row.insertBefore(c,row.firstChild); });
+  if(bell&&window.MutationObserver) new MutationObserver(paint).observe(bell,{attributes:true,attributeFilter:['aria-pressed','hidden']});
+  var no=pick.querySelector('[data-my-no]');
+  if(no) no.addEventListener('click',function(){ hide(); pick.hidden=true; mode('my-off'); });
   var cur=get();
-  if(ok(cur)) load(); else showPick();
+  showPick();
   /* the tab with no club yet: bring the picker out - even when its × hid it
      for this visit, the reader has just asked for it - and into view */
   function askPick(){

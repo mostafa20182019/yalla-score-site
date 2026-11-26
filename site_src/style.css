@@ -1712,6 +1712,12 @@ a.fx:hover{background:#f4f8fb}
 .mp-list::-webkit-scrollbar{display:none}
 .mp-c{font:inherit;font-weight:700;font-size:.85rem;white-space:nowrap;cursor:pointer;border:1px solid #cbd5e1;background:#f8fafc;color:#0f172a;border-radius:999px;padding:0 14px;min-height:44px}
 .mp-c:hover{border-color:var(--green-d);color:var(--green-d)}
+/* a followed club on the row, and the line under the row (2026-11-26) */
+.mp-c.on,.mp-c.on:hover{background:var(--green-d);border-color:var(--green-d);color:#fff}
+.mp-c.on::before{content:"✓ "}
+.mp-note{flex-basis:100%;display:flex;align-items:center;flex-wrap:wrap;gap:6px 10px;margin:6px 0 0;font-size:.84rem;font-weight:700;color:var(--green-d);line-height:1.6}
+.mp-note[hidden]{display:none}
+.mp-note .follow-push{margin:0;min-height:40px}
 .mp-x{font:inherit;font-size:1.4rem;line-height:1;cursor:pointer;border:0;background:none;color:var(--muted);min-width:44px;min-height:44px}
 /* the room is reserved BEFORE the script runs (MY_BOOT puts the class on
    <html>), so the matches under it do not jump when the block arrives */

@@ -62,11 +62,12 @@ ck("7 the fragment is JSON: the block, and when the club plays next", json.loads
 
 js = SH.FOLLOW_JS
 ck("8 the script ships in app.js", "elgoonTeam" in SH.app_js())
-ck("9 the choice stays in the browser: localStorage only, no request but the club's own fragment",
-   "localStorage" in js and js.count("fetch(") == 1 and "fetch('/my/'+slug+'.json'" in js
+ck("9 the choice stays in the browser: localStorage only, and the script asks the server for nothing",
+   "localStorage" in js and "fetch(" not in js
    and "XMLHttpRequest" not in js and "sendBeacon" not in js and "cookie" not in js)
-ck("10 a slug is checked before it is used in a URL", "/^[a-z0-9-]{2,40}$/" in js and "if(ok(cur)" in js and "if(ok(s))" in js)
-ck("11 the block's rows join the live layer", "window.__lvAdd(box)" in js)
+ck("10 a slug is checked before it is kept or drawn", "/^[a-z0-9-]{2,40}$/" in js and "if(!ok(s)) return;" in js
+   and "if(ok(s)&&out.indexOf(s)<0&&out.length<MAX) out.push(s);" in js)
+ck("11 a name is written with textContent, never as HTML", "c.textContent=nm[s]||s;" in js and "noteT.innerHTML" not in js)
 ck("12 a browser without storage shows nothing - and loses the «فريقي» tab too (2026-11-20)",
    js.index("t0.hidden=true; return; }") < js.index("querySelectorAll('.follow-btn')"))
 
@@ -79,12 +80,11 @@ ck("13 the club page's button and note are hidden in the HTML",
 # site review 2026-11-19
 ck("13b the push button sits OUTSIDE the sentence (inline it cut the link beside it in two)",
    club.index('id="followNote"') < club.index("</p>", club.index('id="followNote"')) < club.index('class="push-btn follow-push"'))
-ck("13c ONLY a 404 clears the reader's club; any other failed answer keeps it",
-   "if(r.status===404) return 'gone';" in js and "rs.forEach(function(x){ if(x.d==='gone') drop(x.slug); });" in js
-   and js.count("drop(") == 4)            # its definition, the follow button, the 404 branch, a block's own «إلغاء»
-ck("13d the block's room is reserved before the first paint, and released when nothing is shown",
-   "localStorage.getItem('elgoonTeam')" in F.MY_BOOT and "my-has" in F.MY_BOOT and "{{ my_boot }}" in home
-   and home.index("{{ my_boot }}") < home.index('id="myTeam"') and "mode('')" in js)
+ck("13c no answer from the server can drop a followed club any more: only the reader's own tap does",
+   "'gone'" not in js and js.count("drop(") == 3)       # its definition, the follow button, a chip on the row
+ck("13d the row's room is decided before the first paint: shown, or hidden for this visit",
+   "localStorage.getItem('elgoonTeam')" in F.MY_BOOT and "o?'my-off':'my-ask'" in F.MY_BOOT and "my-has" not in F.MY_BOOT
+   and "{{ my_boot }}" in home and home.index("{{ my_boot }}") < home.index('id="myTeam"'))
 ck("14 the home block is hidden in the HTML and sits UNDER the ad strip (firm rule: the ad slot never moves)",
    '<div id="myTeam" class="my-team" hidden></div>' in home and home.index("home-topad") < home.index('id="myTeam"')
    < home.index("{{ match_centre }}"))
@@ -111,26 +111,34 @@ if os.path.exists(os.path.join(dist, "my")):
 # user 2026-11-20: the picker's x hid it for ever («مش راضى يظهرلى تانى»)
 import site_lib.follow as _F        # noqa: E402
 ck("20 the picker's x is remembered for the VISIT (sessionStorage), never written into localStorage",
-   "sessionStorage.setItem(OFF,'1')" in js and "set('none')" not in js and "hide(); mode('my-off');" in js)
+   "sessionStorage.setItem(OFF,'1')" in js and "set('none')" not in js and "hide(); pick.hidden=true; mode('my-off');" in js)
 ck("21 an old 'none' left by the first version is cleared on sight, and is no choice",
-   "if(LS.getItem(KEY)==='none') LS.removeItem(KEY)" in js and "if(ok(cur)) load(); else showPick();" in js)
+   "if(LS.getItem(KEY)==='none') LS.removeItem(KEY)" in js and "v.split(',').forEach(function(s){ if(ok(s)" in js)
 ck("22 the pre-paint class agrees: hidden only while this visit's flag is set",
    "sessionStorage.getItem('elgoonPickOff')==='1'" in _F.MY_BOOT and "t==='none'?'my-off'" not in _F.MY_BOOT)
 
-# up to four clubs (user, 2026-11-26)
+# up to four clubs, chosen on the row itself (user, 2026-11-26)
+pk = F.my_pick_html()
+css_now = io.open("site_src/style.css", encoding="utf-8").read()
 ck("23 the same key holds up to four slugs joined by commas: valid ones only, no club twice, a browser with one club unchanged",
    "var MAX=4;" in js and "if(ok(s)&&out.indexOf(s)<0&&out.length<MAX) out.push(s);" in js
-   and "LS.setItem(KEY,a.join(','))" in js and "(,[a-z0-9-]{2,40}){0,3}$/" in _F.MY_BOOT)
-ck("24 a fifth club is refused and said so; nothing he follows is dropped for it",
-   "if(a.length>=MAX) return false;" in js and "else if(!add(slug)){" in js and "setTimeout(paint,3000)" in js)
-ck("25 one block per club, the one that plays soonest first; only the first is whole; each has its own «إلغاء»",
-   "String(x.d.ko||'9').localeCompare(String(y.d.ko||'9'))" in js and "if(i) sec.classList.add('my-min');" in js
-   and "x.addEventListener('click',function(){ drop(slug); load(); });" in js
-   and ".my-min .my-calc,.my-min .my-n{display:none}" in io.open("site_src/style.css", encoding="utf-8").read()
-   and ".my-min .my-h>:not(.my-x){display:none}" in io.open("site_src/style.css", encoding="utf-8").read()
-   and json.loads(_F.my_json("<p>", "2026-11-28 18:00")) == {"html": "<p>", "ko": "2026-11-28 18:00"})
-ck("26 the picker never offers a club he follows, and «أضف فريقًا آخر» goes when he has four",
-   "c.hidden=a.indexOf(c.getAttribute('data-slug'))>=0;" in js and "if(list().length<MAX&&pick){" in js)
+   and "LS.setItem(KEY,a.join(','))" in js)
+ck("24 a fifth club is refused and said so - on the club page and on the row; nothing he follows is dropped for it",
+   "if(a.length>=MAX) return false;" in js and "else if(!add(slug,nm)){" in js and "setTimeout(paint,3000)" in js
+   and "فرق على الأكثر: ألغِ متابعة فريق أولًا." in js and "setTimeout(paint,3500); return;" in js)
+ck("25 the row is the control: a tap follows or drops, the followed clubs are marked and come first",
+   "if(list().indexOf(s)>=0) drop(s);" in js and "c.classList.toggle('on',on); c.setAttribute('aria-pressed',on?'true':'false');" in js
+   and "row.insertBefore(c,row.firstChild)" in js and ".mp-c.on,.mp-c.on:hover{background:var(--green-d)" in css_now
+   and "اختر فرقك (حتى 4)" in pk)
+ck("26 no block of coming matches on the home page: the old box stays empty and hidden",
+   "if(box){ box.hidden=true; box.innerHTML=''; }" in js and "/my/" not in js and "my-add" not in js)
+ck("27 one line under the row says what following gives - and never promises what this browser will not do",
+   'id="myNote" class="mp-note" hidden' in pk and 'class="push-btn follow-push mp-push" hidden' in pk
+   and "note.hidden=!a.length;" in js and "ستصلك إشعارات مباريات هذه الفرق." in js
+   and "فعّل الإشعارات لتصلك مباريات هذه الفرق:" in js and "bell.getAttribute('aria-pressed')==='true'" in js
+   and "new MutationObserver(paint).observe(bell" in js and ".mp-note[hidden]{display:none}" in css_now)
+ck("28 a club followed from its own page gets a chip on the row, named as its page named it",
+   "LS.setItem(KEY+'Names',JSON.stringify(m))" in js and "c.textContent=nm[s]||s; wire(c); row.appendChild(c);" in js)
 
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

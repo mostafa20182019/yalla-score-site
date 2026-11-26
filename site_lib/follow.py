@@ -30,19 +30,26 @@ from site_lib.text import esc
 # in step afterwards. No storage -> no class -> nothing reserved, nothing shown.
 # The picker's × is remembered for the VISIT (sessionStorage), not for ever
 # (user 2026-11-20); an old 'none' in localStorage counts as no choice.
-MY_BOOT = ("<script>try{var t=localStorage.getItem('elgoonTeam'),o=false;"
+# 2026-11-26: the row of clubs is the control itself (the followed ones are
+# marked on it), so there are two states left - shown, or hidden for the visit.
+MY_BOOT = ("<script>try{var o=false;localStorage.getItem('elgoonTeam');"
            "try{o=sessionStorage.getItem('elgoonPickOff')==='1'}catch(e){}"
-           "document.documentElement.classList.add(/^[a-z0-9-]{2,40}(,[a-z0-9-]{2,40}){0,3}$/.test(t||'')&&t!=='none'?'my-has':"
-           "o?'my-off':'my-ask');}catch(e){}</script>")
+           "document.documentElement.classList.add(o?'my-off':'my-ask');}catch(e){}</script>")
 
 
 def my_pick_html():
     chips = "".join(f'<button type="button" class="mp-c" data-slug="{esc(tp["slug"])}">{esc(tp["name"])}</button>'
                     for tp in TEAM_PAGES if not tp.get("league_page"))   # the picker stays short (2026-11-20)
     return ('<div id="myPick" class="my-pick" hidden>'
-            '<b class="mp-t">⭐ اختر فريقك</b>'
+            '<b class="mp-t">⭐ اختر فرقك (حتى 4)</b>'
             '<button type="button" class="mp-x" data-my-no aria-label="إخفاء اختيار الفريق">×</button>'
             f'<div class="mp-list">{chips}</div>'
+            # what following gives (2026-11-26): shown once a club is marked;
+            # the bell beside it is push_js's own button, so the line and the
+            # real state of the notifications never disagree
+            '<p id="myNote" class="mp-note" hidden><span class="mp-note-t">ستصلك إشعارات مباريات هذه الفرق.</span>'
+            '<button type="button" class="push-btn follow-push mp-push" hidden aria-pressed="false">'
+            '<span class="push-lbl">فعّل الإشعارات</span></button></p>'
             '</div>')
 
 
