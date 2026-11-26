@@ -182,6 +182,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         # the two share a Champions League group). Its table, linking the
         # page that holds every group.
         group_tables = []
+        _my_groups = []                  # (competition, group, the club's row) - the FAQ below says it in words
         from site_lib.competitions import GROUP_PAGES
         from site_lib.names import ar_team as _ar
         for _gc in COMP_SLUG:
@@ -195,6 +196,7 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                 _gt = standings_table(_gc, _g["table"], embedded=True, title=_g["name"])
                 _b = f'<bdi>{esc(_ar(_in[0].get("team")))}</bdi>'
                 _gt = _gt.replace(_b, f'<bdi class="lt-me">{esc(_ar(_in[0].get("team")))}</bdi>', 1)
+                _my_groups.append((_gc, _g, _in[0]))
                 group_tables.append({
                     "heading": Markup(f'<a href="/standings/{COMP_SLUG[_gc]}.html">ترتيب {esc(_g["name"])} في '
                                       f'{esc(comp_label(_gc))} ←</a>'),
@@ -237,6 +239,17 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                         + _cn(_top["goals"], "هدف واحد", "هدفين", "أهداف", "هدفًا")
                         + f" في {league_ar}."))
         # «أرقام لاعبي الفريق» (SEO review 2026-11-19) - site_lib/squad_stats.py
+        # the group, said in words (SEO review 2026-11-26: the Sudan pages
+        # answered two questions where Al Ahly's answers six; «مجموعة الهلال
+        # السوداني في دوري أبطال أفريقيا» is asked as a question). From the
+        # same table the page shows - who is in it, nothing judged.
+        for _gc, _g, _row in _my_groups:
+            _others = [_ar(r.get("team")) for r in _g.get("table") or [] if r is not _row and r.get("team")]
+            if not _others:
+                continue
+            _with = "، ".join(_others[:-1]) + (" و" + _others[-1] if len(_others) > 1 else _others[0])
+            faq.append((f"في أي مجموعة {name} في {comp_label(_gc)}؟",
+                        f"{name} في {_g['name']} من {comp_label(_gc)}، مع {_with}."))
         from site_lib.squad_stats import squad_stats
         _sq = squad_stats(tp, cm, md_idx)
         squad = None

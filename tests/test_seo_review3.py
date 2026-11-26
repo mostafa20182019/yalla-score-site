@@ -138,5 +138,9 @@ if os.path.isdir(os.path.join("dist", "a")):
                 if _i not in _ids and f"/a/{_i}" not in _red:
                     _dead.add(_i)
     ck("18 the built articles link no article that is gone", not _dead, str(sorted(_dead)[:8]))
+_cl = open("site_pages/clubs.py", encoding="utf-8").read()
+ck("19 a club in a group competition says its group in words, from the table the page shows (2026-11-26)",
+   'f"في أي مجموعة {name} في {comp_label(_gc)}؟"' in _cl and "_my_groups.append((_gc, _g, _in[0]))" in _cl
+   and _cl.index("_my_groups.append") < _cl.index("في أي مجموعة") < _cl.index("faq_html = "))
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

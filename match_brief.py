@@ -68,6 +68,21 @@ REPORT_MAX_H = 4.0
 PREVIEW_DAILY_CAP = 6
 REPORT_DAILY_CAP = 6
 EGY_FIRST = ("الأهلي", "الزمالك", "بيراميدز")
+# The sides that go first, by their PAGE (the site's own matcher, so the Saudi
+# «الأهلي» and «البنك الأهلي» are not the Cairo club): the Egyptian three, the
+# national team, and since 2026-11-26 الهلال السوداني and منتخب السودان - the
+# audience that grows (the same six as fb_post.HOME_SLUGS).
+HOME_SLUGS = ("al-ahly", "zamalek", "pyramids", "egypt", "al-hilal-sudan", "sudan")
+
+
+def side_tier(m):
+    """0 = a home side plays, 1 = another CURATED club (a club with a page:
+    Trabzonspor, Liverpool ...), 2 = a club that is only featured in its
+    league's hub. Until 2026-11-26 tiers 1 and 2 were one: on a Europa League
+    night the two previews went to Besiktas and Marseille (19:45) and
+    Trabzonspor (22:00, curated) got none - two weeks without a piece."""
+    slugs = [tp["slug"] for tp in curated_clubs(m)]
+    return 0 if any(s in HOME_SLUGS for s in slugs) else 1 if slugs else 2
 
 S365_HEADERS = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
@@ -366,9 +381,7 @@ def candidates(d, now=None):
         st = m.get("status")
         if st == "UPCOMING":
             h = (ko - now).total_seconds() / 3600
-            _egy = (any(t in (m.get("home", "") + m.get("away", "")) for t in EGY_FIRST)
-                    or "مصر" in (m.get("home"), m.get("away")))
-            _max_h = PREVIEW_MAX_H_EGY if _egy else PREVIEW_MAX_H
+            _max_h = PREVIEW_MAX_H_EGY if side_tier(m) == 0 else PREVIEW_MAX_H
             if PREVIEW_MIN_H <= h <= _max_h and (mid, "preview") not in done:
                 out.append({"match_id": mid, "kind": "preview", "hours": round(h, 1), "m": m})
         elif st == "FINISHED" and m.get("home_score") is not None:
@@ -378,11 +391,10 @@ def candidates(d, now=None):
                 if rich:
                     out.append({"match_id": mid, "kind": "report", "hours": round(h, 1), "m": m})
     def prio(c):
-        # reports first, then Egyptian clubs, then the big games (BOTH clubs
-        # featured: الزمالك × الأهلي، ليفربول × مانشستر سيتي), then the soonest
-        egy = (any(t in (c["m"].get("home", "") + c["m"].get("away", "")) for t in EGY_FIRST)
-               or "مصر" in (c["m"].get("home"), c["m"].get("away")))
-        return (0 if c["kind"] == "report" else 1, 0 if egy else 1,
+        # reports first, then our home sides, then a curated club before one
+        # that is only featured, then the big games (BOTH clubs featured:
+        # الزمالك × الأهلي، ليفربول × مانشستر سيتي), then the soonest
+        return (0 if c["kind"] == "report" else 1, side_tier(c["m"]),
                 0 if featured_sides(c["m"]) == 2 else 1, c["hours"])
     out.sort(key=prio)
     return out

@@ -118,3 +118,21 @@ assert ("report", "1") not in kinds(d), "a written report must not be written tw
 print("6 OK: dedup stays per match AND kind")
 
 print("ALL MATCH PICK TESTS PASSED")
+
+# 7) who goes first (2026-11-26): our home sides, then a CURATED club, then a club that is only featured
+EL = "UEFA Europa League"
+d7 = dict(BASE, articles=[], goal_events=[], matches=[
+    match("71", "بشكتاش", "هبوعيل بئر سبع", "UPCOMING", "2026-09-14", "10:00", comp=EL),
+    match("72", "طرابزون سبور", "سيسكا صوفيا", "UPCOMING", "2026-09-14", "20:00", comp="UEFA Conference League"),
+    match("73", "الزمالك", "النادي الأفريقي", "UPCOMING", "2026-09-15", "18:00", comp="CAF Champions League"),
+    match("74", "الأهلي", "النصر", "UPCOMING", "2026-09-14", "12:00", comp="Saudi Pro League"),
+])
+assert MB.side_tier(d7["matches"][2]) == 0 and MB.side_tier(d7["matches"][1]) == 1, "tiers"
+assert MB.side_tier(d7["matches"][3]) != 0, "the Saudi «الأهلي» is not the Cairo club"
+order = [mid for _, mid in kinds(d7)]
+assert order[0] == "73", f"a home side first, even 46 h away: {order}"
+assert "72" in order and ("71" not in order or order.index("72") < order.index("71")), \
+    f"Trabzonspor (curated, 20:00) before a club that is only featured (10:00): {order}"
+print("7 OK: home sides, then curated clubs, then the featured - the soonest only inside a tier")
+
+print("ALL MATCH PICK TESTS PASSED (7)")
