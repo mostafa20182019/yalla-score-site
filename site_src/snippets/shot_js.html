@@ -392,6 +392,58 @@
             draw:drawChart, name:asst?'elgoon-assists.png':'elgoon-scorers.png'};
   }
 
+  /* ---- «أرقام قبل / بعد المباراة» of one match (2026-11-26) ----
+     the section itself says what to draw (its data- attributes and its
+     sentences): the two sides with the home one on the right, the kick-off
+     or the score between them, then one sentence a row. */
+  function wrapLines(c,s,font,maxW){
+    c.font=font;
+    var out=[], cur='';
+    s.split(/\s+/).forEach(function(w){
+      var n=cur?cur+' '+w:w;
+      if(cur&&c.measureText(n).width>maxW){ out.push(cur); cur=w; } else cur=n;
+    });
+    if(cur) out.push(cur);
+    return out;
+  }
+  function drawFacts(info,pics){
+    var TOPH=250, LH=50, FP=26, FF='700 34px '+FONT, TW=W-2*PAD-2*36-22;
+    var c0=cv.getContext('2d'); c0.direction='rtl';
+    var blocks=info.facts.map(function(s){ return wrapLines(c0,s,FF,TW); });
+    var body=TOPH+blocks.reduce(function(a,b){ return a+b.length*LH+2*FP; },0)+10;
+    frame(info,pics,body,1080,function(c,top){
+      var cy=top+112, hx=W-PAD-120, ax=PAD+120, S=120;
+      [[hx,info.hc,info.h],[ax,info.ac,info.a]].forEach(function(t){
+        var im=pics.crest[t[1]];
+        if(im) contain(c,im,t[0]-S/2,cy-S/2-18,S);
+        else{ c.fillStyle='#e2e8f0'; c.beginPath(); c.arc(t[0],cy-18,S/2-6,0,6.2832); c.fill(); }
+        c.direction='rtl'; c.textAlign='center'; c.fillStyle=INK;
+        c.fillText(fit(c,t[2],'800',30,20,300),t[0],cy+72);
+      });
+      c.direction='ltr'; c.textAlign='center'; c.fillStyle='#15658f'; c.font='900 78px '+FONT;
+      c.fillText(info.mid,W/2,cy-18);                 /* a score comes with the home goals on the right */
+      if(info.sub){ c.direction='rtl'; c.fillStyle=MUTED; c.font='700 24px '+FONT; c.fillText(info.sub,W/2,cy+44); }
+      var y=top+TOPH;
+      blocks.forEach(function(b){
+        var h=b.length*LH+2*FP;
+        c.fillStyle='#e6ebf1'; c.fillRect(PAD+24,y,W-2*PAD-48,2);
+        c.fillStyle='#1676ad'; rr(c,W-PAD-36-8,y+FP,8,h-2*FP,4); c.fill();
+        c.direction='rtl'; c.textAlign='right'; c.fillStyle=INK; c.font=FF;
+        b.forEach(function(l,i){ c.fillText(l,W-PAD-36-22,y+FP+LH/2+i*LH); });
+        y+=h;
+      });
+    });
+  }
+  function jobFacts(btn){
+    var s=btn.closest('.pf'); if(!s) return null;
+    var facts=[].slice.call(s.querySelectorAll('.pf-l li')).map(txt).filter(Boolean).slice(0,6);
+    if(!facts.length) return null;
+    var g=function(k){ return s.getAttribute('data-'+k)||''; };
+    return {info:{label:g('t'), day:g('comp'), h:g('h'), a:g('a'), hc:g('hc'), ac:g('ac'),
+                  mid:g('mid'), sub:g('sub'), facts:facts, live:false},
+            icon:iconOf(g('comp')), urls:[g('hc'),g('ac')], draw:drawFacts, name:'elgoon-facts.png'};
+  }
+
   /* «كام واحد ضغط؟» (2026-11-25): one count per use of a button - the
      button's name and nothing about the reader, his picks or the page
      (worker.js countEvent adds one to a number for the day) */
@@ -403,7 +455,7 @@
   }
   function shoot(btn){
     var k=btn.getAttribute('data-shot');
-    var job=k==='t'?jobTable(btn):(k==='s'?jobChart(btn):jobMatches(btn));
+    var job=k==='t'?jobTable(btn):(k==='s'?jobChart(btn):(k==='f'?jobFacts(btn):jobMatches(btn)));
     if(job) job.ev='shot_img';
     run(btn,job);
   }

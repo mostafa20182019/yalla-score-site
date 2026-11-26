@@ -168,7 +168,7 @@ ck("27 the next match carries the runs of both sides", any("فاز A" in s for s
 ck("28 a later match carries NO run (the side plays again first)", f2["runs"] == [] and f2["lines"] == [])
 html = PF.section_html(NEXT)
 ck("29 the page section: heading, the sentences, no meetings list without meetings",
-   html.startswith('<section class="minfo pf"><h2>أرقام قبل مباراة A وB</h2>') and html.count("<li>") == len(f1["lines"])
+   html.startswith('<section class="minfo pf" data-t="أرقام قبل المباراة"') and "أرقام قبل مباراة A وB<button" in html and html.count("<li>") == len(f1["lines"])
    and "h2h-list" not in html and "365Scores" not in html)
 ck("30 no section when there is nothing to say", PF.section_html(LATER) == "")
 PF.setup([], {"Premier League": SEASON}, [{"competition": "Premier League", "zeroed": True, "table": STAND[0]["table"]}],
@@ -225,7 +225,8 @@ ck("42 a run that grew is said as reached; a run that ended is said as ended",
 ck("43 a side beaten after meetings without a win", "فاز P على Q بعد 4 مواجهات دون فوز." in af["lines"])
 ck("44 where the two stand now, from the official table", any(x.startswith("P في المركز الثاني برصيد 12 نقطة") for x in af["lines"]))
 sec = PF.after_section_html(FT)
-ck("45 the finished page's section", sec.startswith('<section class="minfo pf"><h2>أرقام بعد مباراة P وQ</h2>')
+ck("45 the finished page's section", sec.startswith('<section class="minfo pf" data-t="أرقام بعد المباراة"') and "أرقام بعد مباراة P وQ<button" in sec
+   and 'data-mid="0 - 2"' in sec and 'data-shot="f"' in sec
    and sec.count("<li>") == len(af["lines"]))
 # the table has not counted the match yet -> the runs wait, and it is not news / not a post
 T_LAG = [{"competition": "Premier League", "table": [dict(r, played=r["played"] - 1) if r["team"] == "P" else r
@@ -262,6 +263,25 @@ ck("52 none when the streak card carries the same match, none three days later",
    and SE.match_facts_after([FT], [], T2, S2 + [FT], datetime.date(2026, 11, 28), feed=F2) == [])
 ck("53 nothing after a match claims a first time or a record",
    not any(w in x for x in af["lines"] for w in ("لأول مرة", "تاريخ", "قياسي")))
+# ---- 4c. the CARD (facts_card.py) and the page's «صورة» button
+import facts_card as XC                    # noqa: E402
+
+card = ev2[0]["card"]
+ck("54 the event carries what the card draws: names, score, sentences",
+   card["mode"] == "after" and (card["home"], card["away"]) == ("P", "Q") and (card["home_score"], card["away_score"]) == (2, 0)
+   and card["facts"] == af["lines"])
+im = XC.render(ev2[0])
+ck("55 the card is drawn 1080x1350 and as JPEG bytes", im.size == (1080, 1350) and XC.render_bytes(ev2[0])[:2] == b"\xff\xd8")
+ck("56 the count of the meetings is the strip of numbers - its sentence is not repeated in the list",
+   XC.shown_facts({"facts": ["آخر 10 مواجهات بين الفريقين: 9 انتصارات لريال مدريد.", "x"], "tally": [10, 9, 1, 0]}) == ["x"]
+   and XC.shown_facts({"facts": ["آخر 10 مواجهات بين الفريقين: 9.", "x"], "tally": None}) == ["آخر 10 مواجهات بين الفريقين: 9.", "x"]
+   and len(XC.shown_facts({"facts": [str(i) for i in range(9)], "tally": None})) == XC.MAX_FACTS)
+fsrc = open(os.path.join(os.path.dirname(HERE), "fb_post.py"), encoding="utf-8").read()
+ck("57 the post is the card with the text as its caption, the text alone when the card fails",
+   "XCard.render_bytes(ev), ev[\"text\"]" in fsrc and "card failed" in fsrc.split("import facts_card as XCard")[1][:400])
+shot = open(os.path.join(os.path.dirname(HERE), "site_src", "snippets", "shot_js.html"), encoding="utf-8").read()
+ck("58 the page's button draws the facts image from the section's own attributes",
+   "k==='f'?jobFacts(btn)" in shot and "function drawFacts(" in shot and "data-'+k" in shot)
 PF.setup([], {"Premier League": SEASON}, STAND, feed={}, matches=[NEXT, LATER])
 
 # ---- 5. the Facebook kind: registered, behind its own switch, the same sentences

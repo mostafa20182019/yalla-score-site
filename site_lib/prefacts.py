@@ -457,6 +457,29 @@ def for_match(m):
     return _MEMO[key]
 
 
+SHOT_BTN = ('<button type="button" class="comp-shot" data-shot="f" title="صورة الأرقام" aria-label="صورة أرقام المباراة">'
+            '<svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M9 3 7.2 5H4a2 2 0 0 0-2 '
+            '2v11a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-3.2L15 3H9zm3 5.5A4.5 4.5 0 1 1 12 17.5 4.5 4.5 0 0 1 12 8.5zm0 '
+            '2a2.5 2.5 0 1 0 0 5 2.5 2.5 0 0 0 0-5z"/></svg><span>صورة</span></button>')
+
+
+def _shot_attrs(m, title, done):
+    """The data- attributes shot_js draws the facts image from (jobFacts):
+    the title, the competition, the two names and their own-origin crests,
+    and what stands between them - the kick-off, or the score with the home
+    goals on the RIGHT of the dash (the canvas draws it left to right)."""
+    from site_lib.crests import local_crest
+    from site_lib.text import esc
+    if done:
+        mid, sub = f"{m.get('away_score')} - {m.get('home_score')}", "انتهت"
+    else:
+        mid, sub = (m.get("koff_time") or "×"), ar_date(str(m.get("kickoff") or "")[:10])
+    vals = {"t": title, "comp": comp_label(m.get("competition") or ""), "h": ar_team(m.get("home")),
+            "a": ar_team(m.get("away")), "hc": local_crest(m.get("home_badge") or "") or "",
+            "ac": local_crest(m.get("away_badge") or "") or "", "mid": mid, "sub": sub}
+    return "".join(f' data-{k}="{esc(v)}"' for k, v in vals.items())
+
+
 def for_after(m):
     """after_facts() of a finished match on the registered data ({} before setup)."""
     if not _CTX or not m.get("home") or not m.get("away") or m.get("home_score") is None:
@@ -476,7 +499,8 @@ def after_section_html(m):
     if not f or not f.get("top"):
         return ""
     h_ar, a_ar = ar_team(m.get("home")), ar_team(m.get("away"))
-    return (f'<section class="minfo pf"><h2>أرقام بعد مباراة {esc(h_ar)} و{esc(a_ar)}</h2><ul class="pf-l">'
+    return (f'<section class="minfo pf"{_shot_attrs(m, "أرقام بعد المباراة", True)}>'
+            f'<h2 class="shot-h">أرقام بعد مباراة {esc(h_ar)} و{esc(a_ar)}{SHOT_BTN}</h2><ul class="pf-l">'
             + "".join(f"<li>{esc(x)}</li>" for x in f["lines"])
             + '</ul><p class="pd-note">الأرقام محسوبة من نتائج الموسم وجدول البطولة الرسمي والمواجهات السابقة.</p></section>')
 
@@ -490,7 +514,8 @@ def section_html(m):
     if not f or not f.get("lines"):
         return ""
     h_ar, a_ar = ar_team(m.get("home")), ar_team(m.get("away"))
-    out = [f'<section class="minfo pf"><h2>أرقام قبل مباراة {esc(h_ar)} و{esc(a_ar)}</h2>',
+    out = [f'<section class="minfo pf"{_shot_attrs(m, "أرقام قبل المباراة", False)}>'
+           f'<h2 class="shot-h">أرقام قبل مباراة {esc(h_ar)} و{esc(a_ar)}{SHOT_BTN}</h2>',
            '<ul class="pf-l">', "".join(f"<li>{esc(s)}</li>" for s in f["lines"]), "</ul>"]
     games = f.get("games") or []
     if len(games) >= 2:

@@ -1435,6 +1435,13 @@ def post_event(token, ev):
             import traceback
             where = traceback.extract_tb(e.__traceback__)[-1]
             print(f"{ev['kind']} {ev['ref']}: card failed ({e} at {os.path.basename(where.filename)}:{where.lineno}) - posting the text")
+    # «أرقام قبل / بعد المباراة» as a CARD (facts_card.py, 2026-11-26)
+    if ev.get("kind") in FACTS_KINDS and ev.get("card"):
+        try:
+            import facts_card as XCard
+            return post_photo(token, XCard.render_bytes(ev), ev["text"])
+        except Exception as e:  # noqa: BLE001
+            print(f"{ev['kind']} {ev['ref']}: card failed ({e}) - posting the text")
     # «ساعة الأهداف»: the dial (goal_clock.py) with the scorers as its caption
     if ev.get("kind") == "goal-clock":
         try:

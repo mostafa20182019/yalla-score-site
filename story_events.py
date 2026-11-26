@@ -1002,9 +1002,24 @@ def match_facts_before(matches, fixtures, standings, archive, today=None, hours=
         out.append((f["weight"], event(
             KIND_FACTS, f"facts:{m['match_id']}", f"أرقام قبل {h} × {a}", facts_lines(m, f, now),
             f"{SITE}/m/{m['match_id']}", "آخر المواجهات وتفاصيل المباراة", [_club_tag(h), _club_tag(a)],
-            competition=m.get("competition"), match_id=m.get("match_id"), weight=f["weight"])))
+            competition=m.get("competition"), match_id=m.get("match_id"), weight=f["weight"],
+            card=_facts_card("before", m, f, now))))
     out.sort(key=lambda x: -x[0])
     return [ev for _w, ev in out[:FACTS_MAX]]
+
+
+def _facts_card(mode, m, f, now):
+    """What facts_card.py draws: names, crests, the kick-off or the score,
+    the sentences, the count of the last meetings."""
+    h, a = _side_names(m)
+    kd = _kick_dt(m)
+    day = ""
+    if mode == "before" and kd:
+        day = ("اليوم" if kd.date() == now.date() else "غدًا") + " · بتوقيت القاهرة"
+    return {"mode": mode, "home": h, "away": a, "home_badge": m.get("home_badge"), "away_badge": m.get("away_badge"),
+            "comp": comp_label(m.get("competition")), "time": m.get("koff_time") or "", "day": day,
+            "home_score": m.get("home_score"), "away_score": m.get("away_score"),
+            "facts": list(f.get("lines") or []), "tally": list(f["tally"]) if f.get("tally") else None}
 
 
 # «أرقام بعد المباراة» (user, 2026-11-26: «ابدأ بـ 2»): what a big match's
@@ -1043,7 +1058,8 @@ def match_facts_after(matches, fixtures, standings, archive, today=None, feed=No
             KIND_AFTER, f"after:{m['match_id']}", f"أرقام بعد {h} × {a}",
             [head, ""] + [f"• {x}" for x in f["lines"][:FACTS_MAX_LINES]] + [""],
             f"{SITE}/m/{m['match_id']}", "تفاصيل المباراة", [_club_tag(h), _club_tag(a)],
-            competition=m.get("competition"), match_id=m.get("match_id"), weight=f["weight"])))
+            competition=m.get("competition"), match_id=m.get("match_id"), weight=f["weight"],
+            card=_facts_card("after", m, f, now))))
     out.sort(key=lambda x: -x[0])
     return [ev for _w, ev in out[:FACTS_MAX]]
 
