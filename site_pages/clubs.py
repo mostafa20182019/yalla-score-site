@@ -324,5 +324,6 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
             name, slug, crest, _chip, up_rows[0] if up_rows else (last_rows[0] if last_rows else ""),
             [{"href": str(n["href"]), "title": n["title"]} for n in news_items],
             calc=whatif or next(({"href": str(h["href"]), "label": h["label"]} for h in hub_links
-                                 if str(h["href"]).startswith("/calc/")), None)))))
+                                 if str(h["href"]).startswith("/calc/")), None))),
+            ko=(f'{up_next[0].get("kickoff") or ""} {up_next[0].get("koff_time") or ""}'.strip() if up_next else "")))
     print(f"  + club pages: {len(TEAM_PAGES)}")

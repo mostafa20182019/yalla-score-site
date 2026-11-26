@@ -32,7 +32,7 @@ from site_lib.text import esc
 # (user 2026-11-20); an old 'none' in localStorage counts as no choice.
 MY_BOOT = ("<script>try{var t=localStorage.getItem('elgoonTeam'),o=false;"
            "try{o=sessionStorage.getItem('elgoonPickOff')==='1'}catch(e){}"
-           "document.documentElement.classList.add(/^[a-z0-9-]{2,40}$/.test(t||'')&&t!=='none'?'my-has':"
+           "document.documentElement.classList.add(/^[a-z0-9-]{2,40}(,[a-z0-9-]{2,40}){0,3}$/.test(t||'')&&t!=='none'?'my-has':"
            "o?'my-off':'my-ask');}catch(e){}</script>")
 
 
@@ -57,7 +57,7 @@ def my_block_html(name, slug, crest, chip, row, news, calc=None):
             '<div class="my-h">'
             f'<a class="my-name" href="/team/{esc(slug)}.html">{img}<span class="my-lbl">فريقك</span><b>{esc(name)}</b></a>'
             + (f'<span class="my-chip">{esc(chip)}</span>' if chip else "")
-            + '<button type="button" class="my-x" data-my-x aria-label="تغيير الفريق">تغيير</button>'
+            + '<button type="button" class="my-x" data-my-x aria-label="إلغاء متابعة ' + esc(name) + '">إلغاء</button>'
             '</div>'
             + (f'<div class="mlist">{row}</div>' if row else "")
             + (f'<a class="my-n" href="{esc(first["href"])}">{esc(first["title"])}</a>' if first else "")
@@ -65,5 +65,8 @@ def my_block_html(name, slug, crest, chip, row, news, calc=None):
             + '</section>')
 
 
-def my_json(html):
-    return json.dumps({"html": html}, ensure_ascii=False)
+def my_json(html, ko=""):
+    """ko = when the club plays next ("2026-11-28 18:00", "" = nothing
+    scheduled): a reader who follows several clubs sees the one that plays
+    soonest first (2026-11-26)."""
+    return json.dumps({"html": html, "ko": ko}, ensure_ascii=False)

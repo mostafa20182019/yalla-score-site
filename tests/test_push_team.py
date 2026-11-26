@@ -221,7 +221,13 @@ ck("27 publish.yml sends club news after the bell's own run, and keeps the bell'
 js = io.open("push.js", encoding="utf-8").read()
 ck("28 the Worker keeps the club on the row; a body without the key leaves it alone",
    "ADD COLUMN team TEXT" in js and "team = CASE WHEN ? = 1 THEN excluded.team ELSE push_subs.team END" in js
-   and "/^[a-z0-9-]{2,40}$/" in js)
+   and "/^[a-z0-9-]{2,40}(,[a-z0-9-]{2,40}){0,3}$/" in js)      # up to four clubs on the row (2026-11-26)
+_pt = io.open("push_team.py", encoding="utf-8").read()
+ck("28b a row that holds several clubs is found by each of them, never by a club whose slug merely starts the same",
+   "FROM push_subs WHERE team = ? " in _pt and "OR (',' || team || ',') LIKE ?\", [slug, f\"%,{slug},%\"]" in _pt)
+ck("28c a reader who follows both clubs of a match gets ONE notification for a goal, a whistle or a story",
+   _pt.count("seen = set()") == 2 and "seen_by_art.setdefault(aid, set())" in _pt
+   and "subs = [s for s in subs if s[\"endpoint\"] not in seen]" in _pt)
 pj = io.open("site_src/snippets/push_js.html", encoding="utf-8").read()
 fj = io.open("site_src/snippets/follow_js.html", encoding="utf-8").read()
 ck("29 the browser sends the followed club with the subscription and tells us when it changes",

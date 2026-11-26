@@ -211,6 +211,6 @@ ck("R20-6 ...the bell and the subscribe code still never run there",
    _pj.split("if(inapp){")[1].split("if(!(can||(ios&&!standalone)))return;")[0].rstrip().endswith("return;\n  }".rstrip())
    or "    return;\n  }\n  if(!(can" in _pj.replace("\r\n", "\n"))
 ck("R20-7 the followed club travels in the address and is taken only by a browser with no club yet",
-   "'team='+t0" in _pj and "[?&]team=([a-z0-9-]{2,40})" in _fj and "if(qt && !LS.getItem(KEY)) LS.setItem(KEY,qt);" in _fj)
+   "'team='+t0" in _pj and "[?&]team=([a-z0-9-]{2,40}(?:,[a-z0-9-]{2,40}){0,3})" in _fj and "if(qt && !LS.getItem(KEY)) LS.setItem(KEY,qt);" in _fj)
 print("\nALL OK" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

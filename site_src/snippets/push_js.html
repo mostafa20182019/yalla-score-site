@@ -28,7 +28,7 @@
     var c0=document.querySelector('.push-cta');
     if(c0){
       var t0='';try{t0=localStorage.getItem('elgoonTeam')||'';}catch(e){}
-      var q0=/^[a-z0-9-]{2,40}$/.test(t0)?(location.search?'&':'?')+'team='+t0:'';
+      var q0=/^[a-z0-9-]{2,40}(,[a-z0-9-]{2,40}){0,3}$/.test(t0)?(location.search?'&':'?')+'team='+t0:'';
       var s0=document.createElement('span');
       c0.textContent='';
       if(/Android/.test(ua)){
@@ -81,7 +81,7 @@
      so its goals, results and news can be sent to its followers only */
   function team(){
     var t='';try{t=localStorage.getItem('elgoonTeam')||'';}catch(e){}
-    return /^[a-z0-9-]{2,40}$/.test(t)&&t!=='none'?t:'';
+    return /^[a-z0-9-]{2,40}(,[a-z0-9-]{2,40}){0,3}$/.test(t)&&t!=='none'?t:'';     /* up to four clubs, joined by commas (2026-11-26) */
   }
   function withTeam(j){j.team=team();return j;}
   function current(){

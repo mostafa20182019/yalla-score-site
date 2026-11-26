@@ -1822,6 +1822,18 @@ a.lt-tb{text-decoration:none}
 .mp-jump a{flex:0 0 auto;display:inline-flex;align-items:center;min-height:44px;padding:0 16px;border-radius:999px;background:#eaf5fc;color:var(--green-d);font-weight:800;font-size:.86rem;text-decoration:none}
 .mp-jump a:hover{background:#d9edf9}
 #mp-report,#mp-stats,#mp-events,#mp-xi,#qual{scroll-margin-top:72px}
+/* several followed clubs (2026-11-26): the first block is whole, the others
+   keep the club and its match */
+.my-min .my-calc,.my-min .my-n{display:none}
+/* ...as ONE match row each: the row already names the club, so the block's
+   own heading goes and its «إلغاء» sits on the row's corner */
+.my-box.my-min{position:relative;margin:6px 0 0;padding:0;border:0;background:none;box-shadow:none}
+.my-min .my-h{position:absolute;top:0;inset-inline-end:4px;z-index:1;min-height:0}
+.my-min .my-h>:not(.my-x){display:none}
+.my-min .my-x{min-height:32px;min-width:44px;font-size:.72rem}
+.my-min .mlist{margin:0}
+.my-add{display:block;width:100%;margin-top:8px;min-height:44px;font:inherit;font-size:.86rem;font-weight:800;cursor:pointer;
+  border:1px dashed #b6d7ec;border-radius:12px;background:#f3f9fd;color:var(--green-d)}
 .my-calc{display:flex;align-items:center;min-height:44px;margin-top:2px;border-top:1px solid #eef2f6;font-weight:800;font-size:.86rem;color:var(--green-d);text-decoration:none}
 .qual-n{color:#5b6b82;font-size:.86rem;line-height:1.8}
 .qual-g{margin:14px 0 6px;font-size:.95rem}

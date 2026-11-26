@@ -46,7 +46,9 @@ const SCHEMA = "CREATE TABLE IF NOT EXISTS push_subs (endpoint TEXT PRIMARY KEY,
   "p256dh TEXT NOT NULL, auth TEXT NOT NULL, created_at INTEGER NOT NULL)";
 // the followed club, added 2026-11-19 to a table that already existed
 const ADD_TEAM = "/*push_team_col*/ ALTER TABLE push_subs ADD COLUMN team TEXT";
-const TEAM = /^[a-z0-9-]{2,40}$/;
+// up to four followed clubs since 2026-11-26, joined by commas in the SAME
+// column: a row that holds one club is a list of one
+const TEAM = /^[a-z0-9-]{2,40}(,[a-z0-9-]{2,40}){0,3}$/;
 let ready = false;
 async function ensure(env) {
   if (ready) return;

@@ -121,7 +121,10 @@ def whistle_payload(kind, g, goals):
 # ---------------------------------------------------------------- sending
 def followers(slug):
     try:
-        return store.sql("SELECT endpoint, p256dh, auth FROM push_subs WHERE team = ?", [slug])
+        # the column holds up to four slugs joined by commas (2026-11-26):
+        # the commas around both sides keep «al-ahly» out of «al-ahly-tripoli»
+        return store.sql("SELECT endpoint, p256dh, auth FROM push_subs WHERE team = ? "
+                         "OR (',' || team || ',') LIKE ?", [slug, f"%,{slug},%"])
     except Exception as e:                                    # noqa: BLE001
         if "no such table" in str(e) or "no such column" in str(e):
             return []                     # nobody followed a club with the bell on yet
@@ -161,9 +164,16 @@ def ready(dry):
     return key
 
 
-def deliver(ref, slug, data, key, sender, title, dry=False):
-    """One event to one club's followers. Returns how many got it."""
+def deliver(ref, slug, data, key, sender, title, dry=False, seen=None):
+    """One event to one club's followers. Returns how many got it.
+
+    seen = the endpoints this SAME event already went to (a reader who follows
+    both clubs of a match gets one notification, not two); the caller owns the
+    set and shares it between the clubs of one event."""
     subs = followers(slug)
+    if seen is not None:
+        subs = [s for s in subs if s["endpoint"] not in seen]
+        seen.update(s["endpoint"] for s in subs)
     print(f"push-team {ref} -> {slug}: {len(subs)} follower(s)")
     if dry:
         print("  " + data); return 0
@@ -201,8 +211,9 @@ def goal(payload, dry=False, sender=None):
         print(f"push-team goal {g['id']}:{seq}: the goal card was not posted - not pushed"); return 0
     data = goal_payload(g, ev)
     send = sender or _sender(GOAL_TTL, f"g{g['id']}", "high")
+    seen = set()
     for slug in slugs:
-        deliver(f"goal:{g['id']}:{seq}", slug, data, key, send, data[:80], dry)
+        deliver(f"goal:{g['id']}:{seq}", slug, data, key, send, data[:80], dry, seen)
     return 0
 
 
@@ -225,8 +236,9 @@ def whistle(payload, dry=False, sender=None):
         print(f"push-team {kind} {g['id']}: the card was not posted - not pushed"); return 0
     data = whistle_payload(kind, g, goals)
     send = sender or _sender(WHISTLE_TTL, f"g{g['id']}", "high" if kind == "ko" else "normal")
+    seen = set()
     for slug in slugs:
-        deliver(f"{kind}:{g['id']}", slug, data, key, send, data[:80], dry)
+        deliver(f"{kind}:{g['id']}", slug, data, key, send, data[:80], dry, seen)
     return 0
 
 
@@ -271,6 +283,7 @@ def news(dry=False, now=None, sender=None, live=None):
     day0 = int(PS.cairo_midnight(now).timestamp())
     recent = store.posted_since(KIND, min(day0, int(now.timestamp()) - NEWS_GAP_MIN * 60))
     send = sender or _sender(PS.TTL_SEC, "team-news", "normal")
+    seen_by_art = {}                      # one story about two followed clubs: one notification
     for tp in TEAM_PAGES:
         art, why = news_pick(tp, items, now, sent_general, recent)
         if art is None:
@@ -279,7 +292,8 @@ def news(dry=False, now=None, sender=None, live=None):
         link = FB.article_link(art)
         if not dry and not (live or FB.wait_live)(link):
             print(f"push-team news {aid}: page not live yet - next run"); continue
-        deliver(f"news:{aid}", tp["slug"], PS.payload(art), key, send, art.get("title"), dry)
+        deliver(f"news:{aid}", tp["slug"], PS.payload(art), key, send, art.get("title"), dry,
+                seen_by_art.setdefault(aid, set()))
     return 0
 
 

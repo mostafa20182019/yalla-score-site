@@ -124,6 +124,13 @@ tb = await teamBinds(SUB);
 ck("19 a body WITHOUT the key leaves the stored club alone (sw.js re-subscribes without it)", tb[1] === null && tb[2] === 0, String(tb));
 tb = await teamBinds({ ...SUB, team: "" });
 ck("20 an empty club clears it", tb[1] === null && tb[2] === 1, String(tb));
+// up to four clubs on the row, joined by commas (2026-11-26)
+tb = await teamBinds({ ...SUB, team: "zamalek,pyramids,real-madrid,manchester-united" });
+ck("20b four followed clubs are stored as they came", tb[0] === 200 && tb[1] === "zamalek,pyramids,real-madrid,manchester-united" && tb[2] === 1, String(tb));
+for (const bad of ["a,b,c,d,e".replace(/(\w)/g, "$1$1"), "zamalek,", ",zamalek", "zamalek,,pyramids", "zamalek, pyramids"]) {
+  tb = await teamBinds({ ...SUB, team: bad });
+  ck(`20c five clubs or a broken list is never stored (${bad.slice(0, 14)})`, tb[0] === 200 && tb[1] === null, String(tb));
+}
 for (const bad of ["../x", "AL-AHLY", "a", "x".repeat(41), 7, { a: 1 }, "al ahly"]) {
   tb = await teamBinds({ ...SUB, team: bad });
   ck(`21 a club that is not a slug is never stored (${JSON.stringify(bad).slice(0, 14)})`, tb[0] === 200 && tb[1] === null, String(tb));
