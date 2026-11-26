@@ -158,6 +158,7 @@ assert.notEqual(okRes.status, 301, "the canonical origin itself is never redirec
   const eu = seen.filter(x => x[0] === "round-article.yml");
   assert.deepEqual(day, [["fb-post.yml", { daycard: "results" }]], "the results card only at 22:16 UTC: " + JSON.stringify(seen));
   assert.deepEqual(eu, [["round-article.yml", { competition: "auto-europe" }]], "the European round-up only on Monday 06:00: " + JSON.stringify(seen));
-  assert.equal(seen.filter(x => x[0] === "daily-article.yml").length, 2, "the daily article still goes out both mornings");
+  // 2026-11-26: the rewritten news is switched off - the Monday round-up above still goes out of the same slot
+  assert.equal(seen.filter(x => x[0] === "daily-article.yml").length, 0, "no rewritten-news run on either morning");
 }
 console.log("ALL ASSERTIONS PASSED — detail calls:", gids.join(","), "dt =", j.dt);

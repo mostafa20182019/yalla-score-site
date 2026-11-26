@@ -4,7 +4,12 @@ name: Daily Article (AI)
 # article (prompt: .github/prompts/daily-article.md) and push it to main.
 # Replaces the local scheduled task so articles publish even when the PC is off.
 on:
-  schedule:
+  # 2026-11-26 (user: «نوقف الاخبار المنقولة كلها»): NO schedule any more - the
+  # rewritten news is switched off (worker.js REWRITTEN_NEWS_ON), and this
+  # fallback would have kept writing it. The notes below are the history of
+  # the schedule that was here; a run by hand still works.
+  #
+  # schedule (removed):
     # 6 runs/day: Cairo 9, 11, 14, 17, 20, 22 (UTC+3). Cut from 10 on
     # 2026-09-17 after measuring a full afternoon: eight consecutive runs
     # published NOTHING (three articles had already gone out that morning),
@@ -19,8 +24,8 @@ on:
     # added after GitHub silently SKIPPED the 17:00 UTC slot on 2026-08-26.
     # This schedule is only the 30-min-late FALLBACK: when the CF run already
     # published, this run finds no fresh story and skips (dedup guards it).
-    - cron: "30 6,8,11,14,17,19 * * *"
-  workflow_dispatch:              # manual test runs from the Actions tab
+    #   - cron: "30 6,8,11,14,17,19 * * *"
+  workflow_dispatch:              # manual runs from the Actions tab
 
 permissions:
   contents: write                # Claude commits the article + image

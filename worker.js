@@ -1273,6 +1273,7 @@ async function adminApi(request, env, url) {
 // The match-article slots, on the Cairo clock. Exported for the test.
 // 10:00 and 15:00 added 2026-10-07 (previews now cover the featured clubs).
 const MATCH_SLOTS = ["10:00", "13:00", "15:00", "17:00", "20:00", "23:30"];
+const REWRITTEN_NEWS_ON = false;
 const MATCH_CRONS = new Set(["0 7,8,9,10,12,13,14,16,17 * * *", "30 19,20 * * *"]);
 /* /data/bundle (2026-09-24, step 3): the site's working data - the gzip bundle
  * data_store.py pushes into Workers KV after every publish run - for the
@@ -1547,6 +1548,15 @@ export default {
       await dispatchWorkflow(env, "round-article.yml", { competition: "auto-europe" });
     }
     if (event.cron === "0 6,8,11,14,17,19 * * *") {
+      // 2026-11-26 (user: «نوقف الاخبار المنقولة كلها»): the news rewritten
+      // from other outlets came late and repeated what every site had. The
+      // site's own line is what its data says - results, fixtures, tables,
+      // head-to-heads, runs - so these six slots dispatch nothing. One word
+      // brings them back; the workflow itself still runs by hand.
+      if (!REWRITTEN_NEWS_ON) {
+        console.log("daily-article slot: rewritten news is switched off");
+        return;
+      }
       workflow = "daily-article.yml";
     } else if (MATCH_CRONS.has(event.cron)) {
       const slot = matchSlotCairo(new Date(event.scheduledTime || Date.now()));

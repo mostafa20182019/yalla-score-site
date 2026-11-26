@@ -42,8 +42,15 @@ const run = (cron, iso) => worker.scheduled({ cron, scheduledTime: Date.parse(is
 
 await run("1,16,31,46 * * * *", "2026-09-12T10:01:00Z");
 await run("0 6,8,11,14,17,19 * * *", "2026-09-12T10:00:00Z");   // cut from 10 slots to 6 on 2026-09-17 - must match wrangler.toml AND worker.js exactly
-assert.deepEqual(dispatched, ["publish.yml", "daily-article.yml"]);
-console.log("2 OK: the 15-minute cron -> publish, the article cron -> daily-article");
+// 2026-11-26 (user: «نوقف الاخبار المنقولة كلها»): the six news slots dispatch
+// NOTHING - not the article run, and not a publish by falling through
+assert.deepEqual(dispatched, ["publish.yml"]);
+const _src = (await import("node:fs")).readFileSync(new URL("../worker.js", import.meta.url), "utf8");
+assert.ok(_src.includes("const REWRITTEN_NEWS_ON = false;"), "the switch is off, in one named place");
+const _wf = (await import("node:fs")).readFileSync(new URL("../.github/workflows/daily-article.yml", import.meta.url), "utf8");
+assert.ok(!/^\s*-\s*cron:/m.test(_wf) && !/^\s*schedule:/m.test(_wf), "the GitHub fallback schedule is gone too");
+assert.ok(/^\s*workflow_dispatch:/m.test(_wf), "a run by hand still works");
+console.log("2 OK: the 15-minute cron -> publish; the news slots -> nothing (rewritten news is off)");
 
 dispatched.length = 0;
 await run("0 7,8,9,10,12,13,14,16,17 * * *", "2026-09-12T10:00:00Z");   // 13:00 Cairo: slot
