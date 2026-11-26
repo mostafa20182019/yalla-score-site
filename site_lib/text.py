@@ -69,3 +69,16 @@ def _lam(name):
     «نيوم» -> «لنيوم». Writing «لـالأهلي» is what a template does, not a writer."""
     name = name or ""
     return ("ل" + name[1:]) if name.startswith("ال") else ("ل" + name)
+
+
+def css_min(css):
+    """The stylesheet as it is SERVED: without its comments and its layout
+    whitespace (design review 2026-11-26: 140 KB went out, 22 KB of it the
+    comments that explain each rule - 33.5 KB gzipped against 21.8 KB, on the
+    one file that blocks the first paint). The source keeps every comment.
+    Conservative on purpose: whitespace is collapsed to one space and dropped
+    only around { } ; - never inside a value, so calc(a + b) keeps its spaces."""
+    import re
+    css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
+    css = re.sub(r"\s+", " ", css)
+    return re.sub(r" ?([{};]) ?", r"\1", css).strip()

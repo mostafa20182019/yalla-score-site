@@ -232,6 +232,47 @@ def seo_problems(rec, brief=None):
                 out.append(f"FAQ «{f['q'][:50]}» - nobody searches when a match was played after the whistle; "
                            "ask the result, the scorers or the table instead")
                 break
+    out += wording_problems(rec)
+    return out
+
+
+# ---------------------------------------------------------------- wording
+# What the 2026-11-26 review found in PUBLISHED pieces, each a rule the
+# prompts already state: a form string in Latin letters (10 articles), a
+# date as 2026-11-28 inside a sentence, «فوزات», and a
+# headline in the present for something that already happened (~10 of 27).
+# Checked here because a rule that is only written gets broken. (The stand-in
+# link /a/ID.html in fb_post is NOT refused: the writer has no number before
+# the piece is saved - fb_post.own_link_text puts the real link at post time.)
+_WDL = re.compile(r"(?<![A-Za-z])[WDL]{3,}(?![A-Za-z])")
+_ISO_DATE = re.compile(r"(?<![\d/=])20\d\d-\d\d-\d\d(?!\d)")
+BAD_WORDS = (("فوزات", "انتصارات"), ("في عقر داره", "على ملعبه"), ("توليًا", "تواليًا"))
+# a NEWS headline whose second word is one of these reads as happening now;
+# the verb list is short on purpose - only acts that are over once reported
+PRESENT_DONE = {"يرحل": "رحل", "يُحال": "أُحيل", "يحال": "أُحيل", "يصدر": "أصدر", "يصدرون": "أصدروا",
+                "يستبعد": "استبعد / استُبعد", "يُستبعد": "استُبعد", "يقيل": "أقال", "يُقيل": "أقال"}
+
+
+def wording_problems(rec):
+    out = []
+    title = (rec.get("title") or "").strip()
+    text = " ".join([title, rec.get("summary") or "", _strip(rec.get("body") or ""), rec.get("fb_post") or ""]
+                    + [f"{f.get('q') or ''} {f.get('a') or ''}" for f in rec.get("faq") or [] if isinstance(f, dict)])
+    m = _WDL.search(text)
+    if m:
+        out.append(f"«{m.group(0)}» - a form string in Latin letters; say it in words: «فاز في 3 من آخر 5 مباريات وتعادل في واحدة»")
+    m = _ISO_DATE.search(text)
+    if m:
+        out.append(f"the date «{m.group(0)}» is written as a number - write «السبت 28 نوفمبر»")
+    for bad, good in BAD_WORDS:
+        if bad in text:
+            out.append(f"«{bad}» - write «{good}»")
+    if rec.get("kind") not in ("preview", "report"):
+        words = title.split()
+        if len(words) > 2 and words[1] in PRESENT_DONE or (len(words) > 3 and words[2] in PRESENT_DONE):
+            w = words[1] if words[1] in PRESENT_DONE else words[2]
+            out.append(f"the headline says «{w}» for something that already happened - the past: «{PRESENT_DONE[w]}» "
+                       "(«جون إدوارد رحل عن الزمالك»); if it has NOT happened yet, say so: «يقترب من», «سيرحل»")
     return out
 
 

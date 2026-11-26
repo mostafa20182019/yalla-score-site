@@ -114,6 +114,35 @@ bad, _ = AP.validate(d, updating=False)
 ck("20 a colon-prefixed title is refused by validate()", any("colon prefix" in x for x in bad))
 
 print()
+print()
+print("== wording (2026-11-26: what the review found in published pieces) ==")
+W = G.wording_problems
+ck("w1 the compliant drafts have no wording problem", not W(NEWS) and not W(REPORT), "; ".join(W(NEWS) + W(REPORT)))
+d = copy.deepcopy(REPORT); d["body"] += "<p>جاءت سلسلة الأهلي WWDWL في آخر 5 مباريات.</p>"
+ck("w2 a form string in Latin letters is refused", has(W(d), "Latin letters"))
+d = copy.deepcopy(REPORT); d["body"] += "<p>يلعب الفريق يوم السبت 2026-11-28 الساعة 18:00.</p>"
+ck("w3 a date written as 2026-11-28 in a sentence is refused", has(W(d), "written as a number"))
+d = copy.deepcopy(REPORT); d["body"] += '<p><a href="/m/4886735">المباراة</a> على ملعبه.</p><time datetime="2026-11-28">السبت</time>'
+ck("w3b an id in a link or a date inside a tag is not a sentence", not W(d), "; ".join(W(d)))
+for bad in ("فوزات", "في عقر داره", "توليًا"):
+    d = copy.deepcopy(REPORT); d["summary"] += " " + bad
+    ck(f"w4 «{bad}» is refused, with the word to write", has(W(d), f"«{bad}»"))
+for t, verb in (("الحسين عموتة يرحل عن تدريب الأهلي بعد خسارة بيراميدز", "يرحل"),
+                ("أحمد رضا يُحال للتحقيق في الأهلي بعد واقعة مباراة بيراميدز", "يُحال"),
+                ("لاعبو الزمالك يصدرون بيانا رسميا بسبب تأخر مستحقاتهم", "يصدرون")):
+    d = copy.deepcopy(NEWS); d["title"] = t
+    ck(f"w5 a news headline with «{verb}» for a finished event is refused", has(W(d), "already happened"))
+for t in ("الحسين عموتة رحل عن تدريب الأهلي بعد خسارة بيراميدز", "الأهلي يواجه بريميرو دي أوجوستو الأحد في الكونفدرالية",
+          "صلاح يقترب من تجديد عقده مع ليفربول حتى 2028"):
+    d = copy.deepcopy(NEWS); d["title"] = t
+    ck(f"w6 the past, and a present that is still to come, pass: «{t[:28]}»", not has(W(d), "already happened"))
+d = copy.deepcopy(REPORT); d["title"] = "نتيجة مباراة برشلونة وأستون فيلا 3-0: رافينيا يصدر الفارق مبكرًا"
+ck("w7 a match title is not judged by this rule", not has(W(d), "already happened"))
+d = copy.deepcopy(NEWS); d["fb_post"] = "x\nhttps://elgoon.com/a/NEWID.html"
+ck("w8 a stand-in link in fb_post is NOT refused (the writer has no number yet; the poster puts the real link)", not W(d), "; ".join(W(d)))
+d = copy.deepcopy(NEWS); d["body"] += "<p>فوزات</p>"
+ck("w9 the wording problems reach the gate article_put asks", has(G.seo_problems(d), "«فوزات»"))
+
 if fails:
     print(f"{len(fails)} FAILED: " + "; ".join(fails))
     sys.exit(1)

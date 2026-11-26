@@ -74,7 +74,7 @@ ck("11 the unbeaten run stops at the other club's win", H.unbeaten_run(g, PAIR) 
 ck("12 the next meeting is the scheduled one", H.next_meeting(PAIR, M_ALL, "2026-11-13")["match_id"] == 7)
 ck("13 no next meeting when none is scheduled", H.next_meeting(PAIR, {5: M_ALL[5]}, "2026-11-13") is None)
 ck("14 the score in a sentence keeps its spaces (RTL)", H.score_line(g[1]) == "الزمالك 0 - 2 الأهلي")
-ck("15 a club page finds its pair", H.pair_for_club("zamalek") is PAIR and H.pair_for_club("barcelona") is None)
+ck("15 a club page finds its pair", H.pair_for_club("zamalek") is PAIR and H.pair_for_club("egypt") is None)
 
 # the saved history only grows
 merged, n = HH.merge(HIST[2:], HIST[:3] + [{"id": 99, "date": "2026-12-01", "comp": "x", "home": A, "away": B, "hg": 1, "ag": 0}])

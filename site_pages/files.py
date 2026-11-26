@@ -196,7 +196,8 @@ def copy_media_and_build_info(_preds, articles, matches):
 
 def write_assets():
     # ---- assets: css + logo ----
-    _css = CSS + "\n" + LEGENDS_CSS
+    from site_lib.text import css_min
+    _css = css_min(CSS + "\n" + LEGENDS_CSS)
     _shell.CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
         f.write(_css)

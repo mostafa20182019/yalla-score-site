@@ -72,6 +72,20 @@ PAIRS = [
      "a_slug": None, "b_slug": None, "league": "Tunisian Ligue 1", "game": 4798225},
     {"slug": "mc-alger-usm-alger", "a": "مولودية الجزائر", "b": "اتحاد العاصمة",
      "a_slug": None, "b_slug": None, "league": "Algerian Ligue 1", "game": 4803179},
+    # 2026-11-26 (SEO review): /h2h/zamalek-pyramids sits at 7.4 and takes
+    # clicks, and the curated European clubs had no pair at all. The Clasico
+    # and the four pairs of the curated English clubs the feed's season holds
+    # a game for (ids from the feed's own fixtures and results).
+    {"slug": "real-madrid-barcelona", "a": "ريال مدريد", "b": "برشلونة",
+     "a_slug": "real-madrid", "b_slug": "barcelona", "league": "Primera Division", "game": 4750514},
+    {"slug": "liverpool-man-united", "a": "ليفربول", "b": "مانشستر يونايتد",
+     "a_slug": "liverpool", "b_slug": "man-united", "league": "Premier League", "game": 4741995},
+    {"slug": "arsenal-man-city", "a": "أرسنال", "b": "مانشستر سيتي",
+     "a_slug": "arsenal", "b_slug": "man-city", "league": "Premier League", "game": 4741992},
+    {"slug": "arsenal-liverpool", "a": "أرسنال", "b": "ليفربول",
+     "a_slug": "arsenal", "b_slug": "liverpool", "league": "Premier League", "game": 4742014},
+    {"slug": "liverpool-chelsea", "a": "ليفربول", "b": "تشيلسي",
+     "a_slug": "liverpool", "b_slug": "chelsea", "league": "Premier League", "game": 4741968},
 ]
 
 # how the feed says a game ended (h2h_history.py keeps its words)

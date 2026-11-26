@@ -104,8 +104,8 @@ ck("18 «في أي مجموعة X؟» is asked only for a club in exactly one ro
    'f"في أي مجموعة {_tp[\'name\']} في {label}؟"' in lg and "if len(_mine) == 1 and len(_names) >= 3:" in lg)
 from site_lib import h2h as H                            # noqa: E402
 slugs = [p["slug"] for p in H.PAIRS]
-ck("19 fourteen pairs, unique slugs, the four original ones first and unchanged",
-   len(slugs) == 14 == len(set(slugs)) and slugs[:4] == ["al-ahly-zamalek", "al-ahly-pyramids", "zamalek-pyramids", "trabzonspor-fenerbahce"])
+ck("19 nineteen pairs (five more 2026-11-26: the Clasico and four English pairs), unique slugs, the four original ones first and unchanged",
+   len(slugs) == 19 == len(set(slugs)) and slugs[:4] == ["al-ahly-zamalek", "al-ahly-pyramids", "zamalek-pyramids", "trabzonspor-fenerbahce"])
 ck("20 no pair is named with the bare «الأهلي» outside Egypt (the name is the page's title)",
    not any("الأهلي" in (p["a"], p["b"]) and p["league"] != "Egyptian Premier League" for p in H.PAIRS))
 hist = json.load(io.open("data/h2h_history.json", encoding="utf-8")).get("pairs") or {}
