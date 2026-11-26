@@ -403,7 +403,7 @@ assert SE.coach_left([art], nt, datetime.date(2026, 11, 12)) == [], "an article 
 assert SE.coach_left([dict(art, title="حسام حسن يعلن قائمة مصر")], nt) == []
 assert SE.coach_left([art], [nt[3]], datetime.date(2026, 11, 8)) == [], "no NT match in the archive -> no numbers -> no post"
 ev = SE.coach_left([dict(art, title="رسميًا.. إقالة علي ماهر من تدريب منتخب مصر")], nt, datetime.date(2026, 11, 8))
-assert len(ev) == 1 and ev[0]["text"].startswith("📊 علي ماهر يرحل"), ev
+assert len(ev) == 1 and ev[0]["text"].startswith("📊 رحل علي ماهر"), ev
 print("23 OK: a coach leaving the NT -> his record from the archive, with the window it covers, posted once")
 
 # 24) the event SHAPE (a permanent editorial line, 2026-11-08): every kind is
