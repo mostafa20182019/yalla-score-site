@@ -557,7 +557,7 @@ def after_section_html(m):
         return ""
     h_ar, a_ar = ar_team(m.get("home")), ar_team(m.get("away"))
     return (f'<section class="minfo pf"{_shot_attrs(m, "أرقام بعد المباراة", True)}>'
-            f'<h2 class="shot-h">أرقام بعد مباراة {esc(h_ar)} و{esc(a_ar)}{SHOT_BTN}</h2><ul class="pf-l">'
+            f'<div class="shot-h"><h2>أرقام بعد مباراة {esc(h_ar)} و{esc(a_ar)}</h2>{SHOT_BTN}</div><ul class="pf-l">'
             + "".join(f"<li>{esc(x)}</li>" for x in f["lines"])
             + '</ul><p class="pd-note">الأرقام محسوبة من نتائج الموسم وجدول البطولة الرسمي والمواجهات السابقة.</p></section>')
 
@@ -572,7 +572,7 @@ def section_html(m):
         return ""
     h_ar, a_ar = ar_team(m.get("home")), ar_team(m.get("away"))
     out = [f'<section class="minfo pf"{_shot_attrs(m, "أرقام قبل المباراة", False)}>'
-           f'<h2 class="shot-h">أرقام قبل مباراة {esc(h_ar)} و{esc(a_ar)}{SHOT_BTN}</h2>',
+           f'<div class="shot-h"><h2>أرقام قبل مباراة {esc(h_ar)} و{esc(a_ar)}</h2>{SHOT_BTN}</div>',
            '<ul class="pf-l">', "".join(f"<li>{esc(s)}</li>" for s in f["lines"]), "</ul>"]
     games = f.get("games") or []
     if len(games) >= 2:

@@ -1377,6 +1377,8 @@ a.push-cta-btn{text-decoration:none;display:inline-flex;align-items:center;min-h
 /* the chart's button, moved by the script to the heading above the chart:
    the title on the right, the button at the far left (2026-11-25) */
 .shot-on .shot-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+/* the button beside the heading, not inside it: the h2 read «أرقام قبل مباراة … صورة» */
+div.shot-h{margin:0 0 10px}div.shot-h>h2{margin:0}
 .shot-on .lt-head .comp-shot{order:9}      /* first in the markup, last on screen */
 .shot-on .comp-shot:hover{background:#e8f4fb;border-color:var(--green)}
 .shot-on .comp-shot:disabled{opacity:.5;cursor:progress}
@@ -1879,3 +1881,14 @@ a.lt-tb{text-decoration:none}
    (user, 2026-11-11: the Inzaghi story's hero at 1780x500). Last in the file:
    it must beat .a-img / .hcard .himg img / .al-th img */
 img[src*="/media/ph-"]{object-fit:contain;object-position:50% 50%;background:#1f94d3}
+
+/* design review 2026-11-26: on a phone the hero kept the list's row, the
+   48px crest beside the name left it 36px («مانشـ / يونايتد», «الشبا») -
+   the crest goes above the name, which then has its whole column */
+@media(max-width:560px){
+  .mlist.mp-hero>.mrow .team,.mlist.mp-hero>.mrow .team.th{flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:6px}
+  .mlist.mp-hero>.mrow .team span{font-size:.9rem}
+}
+/* the narrowest phones: the side columns give 12px to the two names
+   («فيرينتسفاروشي» was 95px in a 60px column, cut mid-word) */
+@media(max-width:400px){.mlist>.mrow{grid-template-columns:28px minmax(0,1fr) auto minmax(0,1fr) 28px}}
