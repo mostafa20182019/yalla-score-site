@@ -34,20 +34,26 @@ def at(h, m=0):
 
 ALL = lambda name, day: True                 # noqa: E731 - every slot has work
 print("1. the hours")
-ck("scorers 13:00, race 16:00, movers 19:00 - three hours apart, as the gap asks",
-   RS.SLOTS == (("scorers", 13), ("race", 16), ("movers", 19)) and RS.GAP_H == 3)
-ck("nothing before 13:00, whatever is waiting", RS.due(at(0, 16), ALL, False) is None and RS.due(at(12, 59), ALL, False) is None)
-ck("13:00 is the scorers reel's", RS.due(at(13, 0), ALL, False) == "scorers")
+ck("today's fixtures 11:00, scorers 14:00, race 17:00, movers 20:00 - three hours apart, as the gap asks",
+   RS.SLOTS == (("today", 11), ("scorers", 14), ("race", 17), ("movers", 20)) and RS.GAP_H == 3)
+ck("nothing before 11:00, whatever is waiting", RS.due(at(0, 16), ALL, False) is None and RS.due(at(10, 59), ALL, False) is None)
+ck("11:00 is the morning reel's - two hours after the morning card, not one minute", RS.due(at(11, 0), ALL, False) == "today")
 ONLY = lambda *names: (lambda name, day: name in names)      # noqa: E731
-ck("16:00 the race, 19:00 the movers - each once its earlier slots are done",
-   RS.due(at(16, 5), ONLY("race", "movers"), False) == "race" and RS.due(at(19, 5), ONLY("movers"), False) == "movers")
-ck("a slot whose hour has not come waits, even alone", RS.due(at(15, 0), ONLY("race", "movers"), False) is None)
+ck("14:00 is the scorers reel's", RS.due(at(13, 59), ONLY("scorers", "race", "movers"), False) is None
+   and RS.due(at(14, 0), ONLY("scorers", "race", "movers"), False) == "scorers")
+ck("17:00 the race, 20:00 the movers - each once its earlier slots are done",
+   RS.due(at(17, 5), ONLY("race", "movers"), False) == "race" and RS.due(at(20, 5), ONLY("movers"), False) == "movers")
+ck("a slot whose hour has not come waits, even alone", RS.due(at(16, 0), ONLY("race", "movers"), False) is None)
+_wf = open(".github/workflows/fb-post.yml", encoding="utf-8").read()
+ck("the morning run no longer posts the reel itself; the slot's run does, and only that reel",
+   "day_reel.py --today --publish" not in _wf and '"day_reel.py"), "--today", "--publish"' in open("reel_slots.py", encoding="utf-8").read())
 ck("a slot with nothing to post is skipped", RS.due(at(20, 0), ONLY("movers"), False) == "movers"
    and RS.due(at(20, 0), ONLY(), False) is None)
 
 print("2. one at a time")
 ck("never within three hours of another reel of the family", RS.due(at(19, 5), ALL, True) is None)
-ck("a missed day catches up one slot a run, the earliest first", RS.due(at(21, 0), ALL, False) == "scorers")
+ck("a missed day catches up one slot a run, the earliest first", RS.due(at(21, 0), ALL, False) == "today"
+   and RS.due(at(21, 0), ONLY("scorers", "race", "movers"), False) == "scorers")
 ck("the family a slot keeps its distance from: the morning reel, the results reel, h2h and the slots",
    set(RS.FAMILY) == {"scorers:", "race:", "movers:", "today:", "day:", "h2h:"})
 src = open("reel_slots.py", encoding="utf-8").read()

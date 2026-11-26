@@ -119,5 +119,31 @@ fresh = art(50, "الأهلي يعلن قائمته", 20, 30)
 ck("an article still young enough for its own post is not in the digest",
    fp.digest_due([fresh], now=at(21, 5)) == [] and [a["article_id"] for a in fp.pending([fresh], now=at(21, 5))] == ["50"])
 
+print("6. a night of European reports does not spend the day (2026-11-26)")
+D3 = lambda h, m=0: at(h, m) + datetime.timedelta(days=3)      # noqa: E731 - a clean day
+
+
+def piece(aid, title, hour, kind=None):
+    a = {"article_id": str(aid), "title": title, "summary": title, "pub_ts": D3(hour).isoformat()}
+    if kind:
+        a["kind"] = kind
+    return a
+
+
+R1, R2 = piece(61, "نتيجة مباراة نابولي وتورينو 2-0", 0, "report"), piece(62, "نتيجة مباراة ليل وليون 1-1", 0, "report")
+R3 = piece(63, "نتيجة مباراة موناكو وأوكسير 3-0", 1, "report")
+RH = piece(64, "نتيجة مباراة الأهلي وبيراميدز 0-2", 1, "report")
+NEWS = piece(65, "بوروسيا دورتموند يعلن إصابة لاعبه", 1)
+ck("the number shipped: two foreign reports a day", fp.FOREIGN_REPORT_CAP == 2)
+ck("a report of a side of ours is not foreign; another club's is; news never is",
+   [fp.foreign_report(a) for a in (R1, RH, NEWS)] == [True, False, False])
+mark_posted(61, D3(0, 30))
+ck("the second foreign report still goes", [a["article_id"] for a in fp.pending([R1, R2, R3], now=D3(1, 40))] == ["62"])
+mark_posted(62, D3(1, 40))
+ck("the third waits for the digest, with three posts of the day unspent", fp.pending([R1, R2, R3], now=D3(3)) == [])
+ck("...and the day's news takes the slot", [a["article_id"] for a in fp.pending([R1, R2, R3, NEWS], now=D3(3))] == ["65"])
+ck("...and so does a report of a side of ours", [a["article_id"] for a in fp.pending([R1, R2, R3, RH], now=D3(3))] == ["64"])
+ck("the held report is a line of the 21:00 digest", "63" in [a["article_id"] for a in fp.digest_items([R1, R2, R3], now=D3(21, 5))])
+
 print("\nALL OK" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

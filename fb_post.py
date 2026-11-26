@@ -124,6 +124,13 @@ AUTO_MAX_PER_RUN = 1     # --auto posts at most this many per run (3 until 2026-
 # goes in ONE evening post, the digest (digest_due / post_digest below).
 ARTICLE_DAILY_CAP = 5
 ARTICLE_GAP_MIN = 60
+# Of the day's ARTICLE_DAILY_CAP posts, at most this many go to match REPORTS
+# of sides that are not ours (HOME_SLUGS). The reports of a European night are
+# written 00:00-01:00, so on 23, 25 and 26 November all five posts were gone
+# by 05:30 and the day's news - the Zamalek players' statement, Egypt out of
+# the CAF shortlist - reached the page only as a line of the 21:00 digest.
+# Such a match already has its full-time card, its reel and the results card.
+FOREIGN_REPORT_CAP = 2
 DIGEST_HOUR = 21         # Cairo: the digest goes out on the first run from this hour
 DIGEST_MAX = 8           # titles in the digest; the rest are behind its /news link
 HOME_SLUGS = ("al-ahly", "zamalek", "pyramids", "al-hilal-sudan", "egypt", "sudan")
@@ -445,6 +452,11 @@ def article_rank(art):
     return 0 if any(s in HOME_SLUGS for s in hit) else 1 if hit else 2
 
 
+def foreign_report(art):
+    """A match report about no side of ours (see FOREIGN_REPORT_CAP)."""
+    return art.get("kind") == "report" and article_rank(art) > 0
+
+
 def _day_start(now=None):
     """Epoch seconds of 00:00 today on the Cairo clock."""
     n = (now or _now()).astimezone(CAIRO)
@@ -546,11 +558,15 @@ def pending(items, now=None):
     if today and 0 <= now.timestamp() - today[0]["posted_at"] < ARTICLE_GAP_MIN * 60:
         return []                # the last article post is under an hour old
     posted = _no_post_yet()
+    by_id = {str(a.get("article_id", "")).strip(): a for a in items}
+    foreign_out = sum(1 for r in today if foreign_report(by_id.get(str(r.get("ref_id")).strip()) or {}))
     todo = []
     for art in items:
         aid = str(art.get("article_id", "")).strip()
         if not aid or aid in posted:
             continue
+        if foreign_out >= FOREIGN_REPORT_CAP and foreign_report(art):
+            continue          # its line is in the 21:00 digest; the slot stays for the day's news
         pub = article_pub_dt(art)
         age = open_hours(pub, now) if pub else None
         if age is None or age > AUTO_MAX_AGE_H:

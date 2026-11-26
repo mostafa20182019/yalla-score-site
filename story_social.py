@@ -506,6 +506,25 @@ CLOCK_MIN_GOALS = 3          # a dial with one mark on it is not a picture
 CLOCK_FROM_H = 23            # Cairo, with the night's results
 
 
+NIGHT_OPEN_H = 3.0           # a match is given this long after its kick-off to end and be recorded
+
+
+def night_open(matches, day, clock, ours=lambda m: True):
+    """True while a match of `day` that counts (`ours`) is not finished: in
+    play, or kicked off less than NIGHT_OPEN_H hours ago (or still to kick
+    off). A fixture the feed never closes stops holding the night after that."""
+    SE = _se()
+    for m in matches or []:
+        if str(m.get("kickoff") or "")[:10] != day or not ours(m) or SE._finished(m):
+            continue
+        if (m.get("status") or "").upper() == "LIVE":
+            return True
+        k = SE._kick_dt(m)
+        if k and (clock - k).total_seconds() < NIGHT_OPEN_H * 3600:
+            return True
+    return False
+
+
 def goal_clock_night(matches, archive, details, today=None):
     """At most one event a night: the night's match (the same pick as the
     results card and reel - day_card.day_hero) when it had CLOCK_MIN_GOALS
@@ -518,7 +537,7 @@ def goal_clock_night(matches, archive, details, today=None):
     from site_lib.matchdata import match_details_index
     from site_lib.names import _is_ticker_team
     SE = _se()
-    now = SE._now(today)
+    now = clock = SE._now(today)
     if not _after(now, today, CLOCK_FROM_H):
         if not (_is_clock(today) and now.hour < 3):
             return []
@@ -526,12 +545,19 @@ def goal_clock_night(matches, archive, details, today=None):
     day = _cairo_day(now).isoformat()
     if not details:
         return []
+    ours = lambda m: m.get("competition") in LEAGUE_BAR or _is_ticker_team(m) or is_arab_nation_match(m)   # noqa: E731
+    # the night is not over while one of its matches is in play: on
+    # 2026-11-24 the dial went out at 23:00 with an under-17 match while
+    # Real Madrid 5-1 PSV (22:00) was still being played, and the day's one
+    # post was spent. The next run asks again, until 03:00.
+    if _is_clock(today) and night_open(matches, day, clock, ours):
+        return []
     idx = match_details_index(details)
     rows = []
     for m in SE.results_pool(matches, archive):
         if str(m.get("kickoff") or "")[:10] != day:
             continue
-        if not (m.get("competition") in LEAGUE_BAR or _is_ticker_team(m) or is_arab_nation_match(m)):
+        if not ours(m):
             continue
         m = dict(m, status="FINISHED")
         goals = GC.goals_of(m, idx)

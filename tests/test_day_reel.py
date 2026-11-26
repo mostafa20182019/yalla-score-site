@@ -157,8 +157,10 @@ try:
 finally:
     _P.todaycard_matches = _orig
 _wf = open(".github/workflows/fb-post.yml", encoding="utf-8").read()
-check("python day_reel.py --today --publish" in _wf and _wf.index("--daycard today") < _wf.index("day_reel.py --today --publish"),
-      "the morning run posts the card, then the reel")
+_rs = open("reel_slots.py", encoding="utf-8").read()
+check("--daycard today" in _wf and "day_reel.py --today --publish" not in _wf
+      and '("today", 11)' in _rs and '"day_reel.py"), "--today", "--publish"' in _rs,
+      "the morning run posts the card; the reel has the 11:00 slot of reel_slots.py (2026-11-26), not the same minute")
 check('f"today:{date}"' in _src or "today:{date}" in open("day_reel.py", encoding="utf-8").read(),
       "the morning reel has its own store key (today:<date>): once a day, apart from the night's")
 

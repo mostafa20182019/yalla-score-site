@@ -174,9 +174,10 @@ jobs:
             # a club-form event also makes a reel (form_reel.py, behind FB_REELS)
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
             python fb_post.py --events | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
-            # the round reels' slots (reel_slots.py, 2026-11-20): the scorers
-            # reel from 13:00, the title race from 16:00, the table's movers
-            # from 19:00 Cairo - one a run, three hours apart; never fails the job
+            # the reels' slots (reel_slots.py): today's fixtures from 11:00,
+            # the scorers reel from 14:00, the title race from 17:00, the
+            # table's movers from 20:00 Cairo - one a run, three hours apart;
+            # never fails the job
             python reel_slots.py --run | tee -a /tmp/fb.txt || true
           elif [ "$DAYCARD" = "today" ]; then
             # the MORNING card (2026-11-19): today's fixtures with their
@@ -184,11 +185,10 @@ jobs:
             # UTC; nothing else rides on this run
             python fb_post.py --daycard today | tee /tmp/fb.txt; rc=${PIPESTATUS[0]}
             # the same fixtures as a REEL (user 2026-11-20: «ماشي آه نعمل ريل
-            # كده»): the day's match first, then six a shot - once a day
-            # (store kind reel / today:<date>)
+            # كده») no longer rides on this run: it has the 11:00 slot of
+            # reel_slots.py (2026-11-26 - the card, the reel and the poster
+            # all landed at 09:02-09:03 with the same first line)
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
-            python day_reel.py --today --publish | tee -a /tmp/fb.txt; rc3=${PIPESTATUS[0]}
-            [ "$rc" = 0 ] && rc=$rc3
             # a pair of site_lib/h2h.PAIRS meets today: its head-to-head reel
             # (h2h_reel.py, rewritten 2026-11-20) - nothing on any other day
             python h2h_reel.py --auto --publish | tee -a /tmp/fb.txt; rc5=${PIPESTATUS[0]}

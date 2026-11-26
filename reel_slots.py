@@ -11,9 +11,14 @@ within minutes at 00:16 Cairo - 29 posts landed in hour 0 since 1 November -
 and a reel posted on top of another buries the first. The results card and
 reel stay at night. The rest wait for the next day:
 
-    13:00  the scorers / assists reel       (scorers_reel.py)
-    16:00  the title race, when it is on    (race_reel.py, FB_RACE)
-    19:00  the table's movers               (movers_reel.py - a reel, or a card
+    11:00  today's fixtures as a reel       (day_reel.py --today; since
+                                             2026-11-26 - until then it went
+                                             out at 09:03, one minute after the
+                                             morning card with the same first
+                                             line, and the poster in that minute)
+    14:00  the scorers / assists reel       (scorers_reel.py)
+    17:00  the title race, when it is on    (race_reel.py, FB_RACE)
+    20:00  the table's movers               (movers_reel.py - a reel, or a card
                                              when fewer than four clubs moved)
 
 Hours are Cairo. A slot is DUE from its hour until midnight, while its own
@@ -34,7 +39,7 @@ import time
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8")
 
-SLOTS = (("scorers", 13), ("race", 16), ("movers", 19))
+SLOTS = (("today", 11), ("scorers", 14), ("race", 17), ("movers", 20))
 GAP_H = 3
 FAMILY = ("scorers:", "race:", "movers:", "today:", "day:", "h2h:")   # the reels a slot keeps its distance from
 
@@ -48,6 +53,8 @@ def has_work(name, day):
     """Does this slot's module hold something unposted? Never raises: a slot
     that cannot be read is simply not due this time."""
     try:
+        if name == "today":
+            return today_reel_waits()
         if name == "scorers":
             import scorers_reel as SR
             return bool(SR.due(posted=SR._posted))
@@ -60,6 +67,21 @@ def has_work(name, day):
     except Exception as e:                                   # noqa: BLE001
         print(f"reel slots: {name} cannot be read ({str(e)[:100]})", file=sys.stderr)
     return False
+
+
+def today_reel_waits():
+    """The morning reel of today's fixtures is still to post: no record of it
+    in the store (a claim counts - another run holds it) and the day has
+    enough matches for one (day_reel's own rule)."""
+    import day_reel as DR
+    import fb_post as P
+    import fb_reel as R
+    import match_brief as MB
+    import store
+    date = P.todaycard_date()
+    if store.get_post(R.KIND, f"today:{date}"):
+        return False
+    return len(DR.today_matches(MB.load_all()["matches"], date)) >= P.TODAY_MIN
 
 
 def recent_reel(now, recent=None):
@@ -94,6 +116,11 @@ def run(now=None):
         print("reel slots: nothing is due now")
         return 0
     print(f"reel slots: {name} ({now:%H:%M} Cairo)")
+    if name == "today":
+        import os
+        import subprocess
+        here = os.path.dirname(os.path.abspath(__file__))
+        return subprocess.call([sys.executable, os.path.join(here, "day_reel.py"), "--today", "--publish"], cwd=here)
     if name == "scorers":
         import scorers_reel as SR
         return SR.auto()

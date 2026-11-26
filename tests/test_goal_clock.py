@@ -116,6 +116,12 @@ at = lambda d, h: datetime.datetime(2026, 11, d, h, 5, tzinfo=ZoneInfo("Africa/C
 ck("16 the clock: with the night's results (from 23:00 Cairo, still that night until 03:00)",
    SS.goal_clock_night(MS, [], DT, at(8, 21)) == [] and len(SS.goal_clock_night(MS, [], DT, at(8, 23))) == 1
    and (SS.goal_clock_night(MS, [], DT, at(9, 1)) or [{}])[0].get("ref") == DAY and SS.goal_clock_night(MS, [], DT, at(9, 10)) == [])
+_late = dict(fin(9, 'Real Madrid CF', 'PSV', 0, 0), status='LIVE', koff_time='22:00', home_score=3, away_score=1)
+ck("the dial waits while a match of the night is still in play (Real Madrid 5-1 PSV, 2026-11-24)",
+   SS.goal_clock_night(MS + [_late], [], DT, at(8, 23)) == [] and len(SS.goal_clock_night(MS + [dict(_late, status='FINISHED')], [], DT, at(8, 23))) == 1)
+_stuck = dict(fin(10, 'Aston Villa FC', 'Leeds United FC', None, None), status='UPCOMING', koff_time='16:00')
+ck("a fixture the feed never closed does not hold the night for ever",
+   len(SS.goal_clock_night(MS + [_stuck], [], DT, at(8, 23))) == 1 and SS.night_open([dict(_stuck, koff_time='21:30')], DAY, at(8, 23)))
 import fb_post as fp               # noqa: E402
 src = io.open("fb_post.py", encoding="utf-8").read()
 ck("17 registered once, posted as the CARD with the caption, the text alone when the card fails - and not behind FB_SOCIAL (he asked for it)",

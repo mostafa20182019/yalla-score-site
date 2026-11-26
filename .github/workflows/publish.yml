@@ -395,8 +395,8 @@ jobs:
         run: |
           N=$(python fb_post.py --events --pending)
           echo "story events pending a Facebook post: $N"
-          # a round reel whose slot has come (reel_slots.py: scorers 13:00,
-          # race 16:00, movers 19:00 Cairo) rides the same run
+          # a round reel whose slot has come (reel_slots.py: today 11:00, scorers 14:00,
+          # race 17:00, movers 20:00 Cairo) rides the same run
           S=$(python reel_slots.py --pending 2>/dev/null | tail -1)
           echo "round reel slot due: ${S:-0}"
           if [ "$N" = "0" ] && [ "${S:-0}" != "1" ]; then exit 0; fi
