@@ -1856,6 +1856,18 @@ a.lt-tb{text-decoration:none}
 .qual-g{margin:14px 0 6px;font-size:.95rem}
 .qual-l{margin:0;padding:0 18px 0 0;line-height:2}
 
+/* «أرقام قبل المباراة» (2026-11-26): the match page's list, and the block of
+   the day's strongest facts in the home side column and on /news */
+.pf-l{margin:0;padding-inline-start:18px;line-height:2;font-weight:700}
+.pf-h{margin:16px 0 2px;font-size:1rem;font-weight:900;color:var(--ink)}
+.pf-news{margin-bottom:16px}
+.pf-i{display:block;text-decoration:none;padding:9px 0;border-top:1px solid #e2e8f0}
+.pf-i:first-of-type{border-top:0;padding-top:0}
+.pf-t{display:block;font-size:.84rem;font-weight:800;color:var(--ink);line-height:1.5}
+.pf-m{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:.74rem;font-weight:700;color:var(--muted);margin-top:3px}
+.pf-c{display:inline-flex;gap:2px}
+.pf-c img{width:18px;height:18px;object-fit:contain}
+.pf-page{background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;margin:0 0 16px}
 /* the «الجون» cover placeholder (media/ph-*.svg, 16:9) is shown WHOLE on its
    own blue: a wide box with object-fit:cover sliced the logo on desktop
    (user, 2026-11-11: the Inzaghi story's hero at 1780x500). Last in the file:

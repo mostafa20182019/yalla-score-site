@@ -10,6 +10,7 @@ from site_lib.tables import jump_chips
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_ORDER, COMP_SLUG, match_tv
 from site_lib import h2h as _H2H
+from site_lib import prefacts as _PF
 from site_lib.config import DIST, REF_TODAY, SITE_BASE, SITE_NAME, load
 from site_lib.crests import comp_icon, local_crest
 from site_lib.dates import fmt_day
@@ -356,6 +357,12 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
                 _preds.get(str(mid)))
             if _pre:
                 pre_read = _pre
+        # «أرقام قبل المباراة» (2026-11-26): the runs of the two sides and
+        # their last meetings - the «new pre-match information» the reading
+        # above made room for. Computed (site_lib/prefacts.py).
+        _pf = _PF.section_html(m) if st == "UPCOMING" else ""
+        if _pf:
+            _pre_weight += len(_PF.for_match(m).get("lines") or [])
         _det = match_details_for(md_idx, m)
         # «قراءة المباراة» - the summary goes ABOVE the evidence
         _faq_html = _pre_faq if st == "UPCOMING" and _pre_weight else ""
@@ -526,7 +533,7 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             lead=({"slug": Markup(_clubs[0]["slug"]), "name": _clubs[0]["name"]} if _clubs else None),
             share_href=Markup("https://wa.me/?text=" + _quote(f"{title.split(' — ')[0]} {SITE_BASE}/m/{mid}")),
             share_url=Markup(f"{SITE_BASE}/m/{mid}"), today_strip=Markup(_today_strip),
-            form_card=Markup(form_card),
+            form_card=Markup(form_card), prefacts=Markup(_pf),
             label=comp, has_sc=bool(_sc_h), scorers=Markup(_sc_h),
             has_asst=bool(_as_h), assists=Markup(_as_h), tabs_js=Markup(ST_TABS_JS),
             games_js=Markup(LT_GAMES_JS if 'class="lt-n"' in table else ""),

@@ -6,6 +6,7 @@
 <nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/news.html">كل الأخبار</a> › {{ h1 }}</nav>
 {% endif %}
 <nav class="news-sec" aria-label="أقسام الأخبار">{% for s in sections %}<a href="{{ s.href }}"{% if s.cur %} class="cur" aria-current="page"{% endif %}>{{ s.label }}</a>{% endfor %}</nav>
+{{ facts }}
 {% if rows %}
 <div class="alist">
   {% for r in rows %}

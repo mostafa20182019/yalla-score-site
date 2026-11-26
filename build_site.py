@@ -226,6 +226,10 @@ def build():
     # FIRST page with a day list (the home page) - same map as prepare_league_data
     from site_lib.pick import set_pick_rounds
     print(f"  + pick rounds: {set_pick_rounds({f.get('competition'): f for f in fixtures or [] if f.get('rounds')}, st_by_comp={s.get('competition'): s for s in standings or [] if s.get('table')})}")
+    # «أرقام قبل المباراة» (2026-11-26): the season's results, the tables and
+    # the meetings feed, registered before the first page that reads them
+    from site_lib import prefacts as _PF
+    print(f"  + pre-match facts: {_PF.setup(fixtures, _bycomp, standings, matches=matches)} pairs in the meetings feed")
     home_page(articles, fixtures, ge_idx, matches, standings)
     _match_arts, _moved = article_pages(articles, articles_all, matches, urls)
 
@@ -281,7 +285,7 @@ def build():
     contact_page(urls)
     terms_page(urls)
     editorial_page(urls)           # السياسة التحريرية - E-E-A-T signal
-    news_archive_pages(articles, urls)
+    news_archive_pages(articles, urls, matches)
     print(f"  + insights (التحليلات): {insights_page(articles, urls, m_all, fixtures)} pieces")
     fb_helper_page(articles)       # INTERNAL: not in the sitemap, linked from nowhere
     headlines_page(headlines, urls)        # gated by SHOW_HEADLINES

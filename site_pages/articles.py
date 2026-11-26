@@ -11,6 +11,7 @@ from site_lib.config import ARTICLE_MIN_WORDS, BYLINE_RELTIME, DIST, FB_PAGE_URL
 from site_lib.clubs import TEAM_PAGES
 from site_lib.competitions import COMP_SLUG
 from site_lib.config import REF_TODAY, SAME_AS
+from site_lib import prefacts as _PF
 from site_lib.dates import art_date, art_reltime, fmt_day, rel_ar
 from site_lib.names import _egy_article, _eur_article, _team_match, ar_team, comp_label
 from site_lib.render import Markup, render
@@ -244,7 +245,7 @@ def article_pages(articles, articles_all, matches, urls):
 NEWS_PAGE = 40      # rows per archive page (SEO pass, 2026-11-04)
 
 
-def news_archive_pages(articles, urls):
+def news_archive_pages(articles, urls, matches=None):
     """/news = everything; /news/egypt + /news/europe = the section archives each
     home block's «المزيد» opens (user 2026-09-01: the blocks stay at 4 rows - the
     rest lives behind المزيد). Same calm list rows everywhere - the old card grid
@@ -317,6 +318,10 @@ def news_archive_pages(articles, urls):
         write(fname, render("news_archive.html", page_head=page_head, h1=h1,
                             crumbs=(fname != "news.html" and not fname.startswith("news/p")),
                             rows=rows, pager=pager,
+                            # «أرقام قبل المباريات» (2026-11-26): the day's
+                            # facts from the data, on the first page of /news
+                            facts=Markup(_PF.news_html(matches, REF_TODAY, cls="pf-news pf-page")
+                                         if fname == "news.html" else ""),
                             # the three archives link each other (the section
                             # pages had no link from any page body)
                             sections=[{"href": Markup(h), "label": l, "cur": s == stem} for h, l, s in (

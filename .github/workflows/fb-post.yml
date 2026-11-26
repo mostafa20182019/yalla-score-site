@@ -143,6 +143,8 @@ jobs:
           FB_FORM: ${{ vars.FB_FORM }}
           # the social review's kinds (story_social.py, 2026-11-19) print until this one is "on"
           FB_SOCIAL: ${{ vars.FB_SOCIAL }}
+          # «أرقام قبل المباراة» (story_events.KIND_FACTS, 2026-11-26) prints until this one is "on"
+          FB_FACTS: ${{ vars.FB_FACTS }}
           # the match-day poster (match_poster.py) and the title-race reel
           # (race_reel.py), 2026-11-20: each prints until its own variable is "on"
           FB_POSTER: ${{ vars.FB_POSTER }}

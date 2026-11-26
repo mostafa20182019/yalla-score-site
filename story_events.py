@@ -937,6 +937,76 @@ def club_streak(matches, fixtures, archive, today=None, n=FORM_N, clubs=None):
     return events
 
 
+# ---------------------------------------------------------------- «أرقام قبل المباراة»
+# The user, 2026-11-26, when the rewritten news was switched off: the page
+# posts what our own data says before a match - the runs of the two sides
+# («بورنموث فاز في آخر 5 مباريات»), the last meeting, the count of the last
+# ten. The sentences are site_lib/prefacts.py's, the same the match page
+# shows; nothing is worded here. ref facts:<match_id>.
+#   - a match kicking off within FACTS_WINDOW_H, in a competition the site
+#     follows closely, with a curated club in it or a side of the table's top
+#     FACTS_TOP; at least FACTS_MIN_LINES facts; FACTS_MAX a run, the richest
+#   - none for a pair with a head-to-head page (its reel owns that morning)
+#   - behind its own switch, FB_FACTS (fb_post.py): he reads a new kind first
+KIND_FACTS = "match-facts"
+FACTS_WINDOW_H = 24
+FACTS_MIN_LINES, FACTS_MAX_LINES, FACTS_MAX, FACTS_TOP = 3, 5, 3, 4
+
+
+def _facts_big(m, tables):
+    from site_lib.competitions import LEAGUE_BAR
+    from site_lib.names import _is_ticker_team
+    if _is_ticker_team(m):
+        return True
+    if m.get("competition") not in LEAGUE_BAR:
+        return False
+    pos = {r.get("team"): int(r.get("pos") or 99) for r in tables.get(m.get("competition")) or []}
+    return min(pos.get(m.get("home"), 99), pos.get(m.get("away"), 99)) <= FACTS_TOP
+
+
+def facts_lines(m, f, now):
+    h, a = _side_names(m)
+    kd = _kick_dt(m)
+    day = "اليوم" if kd and kd.date() == now.date() else "غدًا"
+    when = f"⏰ {day}" + (f" {m['koff_time']} بتوقيت القاهرة" if m.get("koff_time") else "")
+    # the competition on the first line: «الأهلي» is two clubs on this site
+    return ([f"📊 أرقام قبل {h} × {a} ({comp_label(m.get('competition'))})", ""]
+            + [f"• {s}" for s in f["lines"][:FACTS_MAX_LINES]] + ["", when])
+
+
+def match_facts_before(matches, fixtures, standings, archive, today=None, hours=FACTS_WINDOW_H, feed=None):
+    """One event per big match kicking off within `hours` that has
+    FACTS_MIN_LINES facts in site_lib/prefacts.py; the richest FACTS_MAX."""
+    from site_lib import h2h as H
+    from site_lib import prefacts as PF
+    now = _now(today)
+    bycomp = {}
+    for r in archive or []:
+        if _finished(r) and r.get("competition"):
+            bycomp.setdefault(r["competition"], []).append(dict(r, status="FINISHED"))
+    PF.setup(fixtures, bycomp, standings, feed=feed, matches=matches)
+    tables = {s.get("competition"): s.get("table") for s in standings or [] if s.get("table")}
+    out = []
+    for m in upcoming_pool(matches, fixtures):
+        kd = _kick_dt(m)
+        if not kd or not (0 <= (kd - now).total_seconds() <= hours * 3600):
+            continue
+        if not m.get("match_id") or m.get("competition") in PF.NEWS_SKIP or not _facts_big(m, tables):
+            continue
+        h, a = _side_names(m)
+        if H.pair_of_match(h, a):
+            continue
+        f = PF.for_match(m)
+        if not f or len(f.get("lines") or []) < FACTS_MIN_LINES:
+            continue
+        out.append((f["weight"], event(
+            KIND_FACTS, f"facts:{m['match_id']}", f"أرقام قبل {h} × {a}", facts_lines(m, f, now),
+            f"{SITE}/m/{m['match_id']}", "آخر المواجهات وتفاصيل المباراة", [_club_tag(h), _club_tag(a)],
+            competition=m.get("competition"), match_id=m.get("match_id"), weight=f["weight"])))
+    out.sort(key=lambda x: -x[0])
+    return [ev for _w, ev in out[:FACTS_MAX]]
+
+
 # ---------------------------------------------------------------- all of it
 import story_social as SS                                   # noqa: E402
 
@@ -951,6 +1021,9 @@ DETECTORS = [
     (KIND_OTD, lambda d, today: on_this_day(d.get("archive"), d.get("moments"), today)),
     (KIND_FORM, lambda d, today: club_form_before_match(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
     (KIND_STREAK, lambda d, today: club_streak(d.get("matches"), d.get("fixtures"), d.get("archive"), today)),
+    # «أرقام قبل المباراة» (site_lib/prefacts.py, 2026-11-26) - behind FB_FACTS in fb_post.py
+    (KIND_FACTS, lambda d, today: match_facts_before(d.get("matches"), d.get("fixtures"), d.get("standings"),
+                                                     d.get("archive"), today)),
     # «ساعة الأهداف» (goal_clock.py, 2026-11-20): the night's match on the goal dial, a CARD
     (SS.KIND_CLOCK, lambda d, today: SS.goal_clock_night(d.get("matches"), d.get("archive"), d.get("details"), today)),
     # «ساعة أهداف الشهر» (club_clock.py, 2026-11-20): one club a day in a month's first days, a CARD

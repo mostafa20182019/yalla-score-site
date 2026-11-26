@@ -1400,6 +1400,16 @@ SOCIAL_KINDS = ("night-number", "round-scenario", "sudan-corner", "goon-question
 SOCIAL_CARD_KINDS = ("night-number", "goon-question")       # social_card.CARD_KINDS
 
 
+# «أرقام قبل المباراة» (story_events.KIND_FACTS, 2026-11-26): its own switch
+# too - FB_FACTS - until he has read the wording of a few real ones
+FACTS_KINDS = ("match-facts",)
+FACTS_DAILY_MAX = 3
+
+
+def facts_on():
+    return (os.environ.get("FB_FACTS", "") or "").strip().lower() == "on"
+
+
 def social_on():
     return (os.environ.get("FB_SOCIAL", "") or "").strip().lower() == "on"
 
@@ -1492,19 +1502,25 @@ def events_post(token, dry=False, today=None):
     armed_social = social_on()
     if not dry and armed and not armed_social and any(ev["kind"] in SOCIAL_KINDS for ev in evs):
         print("events: FB_SOCIAL is not on - the social kinds are printed, not posted")
+    armed_facts = facts_on()
+    if not dry and armed and not armed_facts and any(ev["kind"] in FACTS_KINDS for ev in evs):
+        print("events: FB_FACTS is not on - the pre-match facts are printed, not posted")
     rc = 0
     for ev in evs:
         kind, ref, title = ev["kind"], ev["ref"], (ev.get("title") or "")[:80]
         rec = store.get_post(kind, ref)
         if rec and rec.get("post_id"):
             print(f"{kind} {ref}: already posted ({rec['post_id']})"); continue
-        if dry or not armed or (kind in FORM_KINDS and not armed_form) or (kind in SOCIAL_KINDS and not armed_social):
+        if (dry or not armed or (kind in FORM_KINDS and not armed_form) or (kind in SOCIAL_KINDS and not armed_social)
+                or (kind in FACTS_KINDS and not armed_facts)):
             how = " (the form card as a photo; the reel behind FB_REELS)" if kind in FORM_KINDS else ""
             print(f"--- {kind} / {ref}{how}\n{event_text(ev)}\n"); continue
         if not token:
             print(f"{kind} {ref}: FB_PAGE_TOKEN not set - skipping"); continue
         if kind in FORM_KINDS and sum(len(store.posted_since(k, _day_start())) for k in FORM_KINDS) >= FORM_DAILY_MAX:
             print(f"{kind} {ref}: {FORM_DAILY_MAX} form cards are out today - not posted"); continue
+        if kind in FACTS_KINDS and sum(len(store.posted_since(k, _day_start())) for k in FACTS_KINDS) >= FACTS_DAILY_MAX:
+            print(f"{kind} {ref}: {FACTS_DAILY_MAX} pre-match posts are out today - not posted"); continue
         if not store.claim(kind, ref, title=title):
             print(f"{kind} {ref}: claimed by another run - nothing posted"); continue
         try:
@@ -1556,7 +1572,8 @@ def main() -> int:
         # a social kind that is still switched off is not "pending": it would
         # dispatch the posting workflow on every refresh only to print itself
         n = sum(1 for ev in evs if not (store.get_post(ev["kind"], ev["ref"]) or {}).get("post_id")
-                and (ev["kind"] not in SOCIAL_KINDS or social_on()))
+                and (ev["kind"] not in SOCIAL_KINDS or social_on())
+                and (ev["kind"] not in FACTS_KINDS or facts_on()))
         print(n); return 0
     if "--pending" in sys.argv[1:]:
         # how many articles WOULD be posted - lets publish.yml dispatch the

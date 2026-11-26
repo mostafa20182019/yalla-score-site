@@ -107,6 +107,14 @@ jobs:
         continue-on-error: true
         run: python results_archive.py
 
+      # «أرقام قبل المباراة» (2026-11-26): the last meetings of the two sides
+      # of the coming matches, from the head-to-head feed - a pair is asked
+      # once, 40 a run at most. The script never fails the run: without it
+      # the match pages say less, never something wrong.
+      - name: Keep the last meetings of the coming matches
+        continue-on-error: true
+        run: python h2h_feed.py
+
       # A photo the article pipeline downloads from Wikimedia arrives at full
       # size - the library had reached 75 MB, averaging 323 KB with a 4544px,
       # 3.2 MB hero (2026-09-20). shrink_media.py caps width at 1600 and
@@ -371,6 +379,7 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
           FB_SOCIAL: ${{ vars.FB_SOCIAL }}
+          FB_FACTS: ${{ vars.FB_FACTS }}
           FB_RACE: ${{ vars.FB_RACE }}
         run: |
           N=$(python fb_post.py --events --pending)

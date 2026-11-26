@@ -173,6 +173,8 @@ def match_centre(standings, matches, articles, ge_idx, fixtures=None):
     near, all_days = inline_days(days, REF_TODAY)
     days_html = render("_days.html", filters=Markup(FILTERS_HTML), today=REF_TODAY,
                        days=near, all_days=all_days)
+    from site_lib import prefacts as _PF
+    _facts = _PF.news_html(matches, REF_TODAY)
     return ('<div class="mpage home-mc">'
             # the IMPORTANT leagues here; every competition is on /leagues, the
             # «البطولات» tab (user, 2026-10-27: «اعمل تاب للبطولات على جهاز
@@ -183,6 +185,8 @@ def match_centre(standings, matches, articles, ge_idx, fixtures=None):
             # no heading over the list (user, 2026-10-26: «شيل كلمة المباريات»);
             # the follow icons moved next to the header bell
             f'<div class="mp-main"><section class="ph-today" aria-label="المباريات">{days_html}</section></div>'
-            '<aside class="mp-side mp-extra"><h2 class="mp-h">آخر الأخبار</h2>'
+            # «أرقام قبل المباريات» (2026-11-26): the site's own news, from the
+            # data - above the articles since the rewritten news stopped
+            f'<aside class="mp-side mp-extra">{_facts}<h2 class="mp-h">آخر الأخبار</h2>'
             f'{side}<a class="see-all" href="/news.html">كل الأخبار ←</a></aside></div>'
             + MATCHES_JS)

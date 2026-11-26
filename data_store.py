@@ -69,6 +69,7 @@ STORE_FILES = [
     "match_stats.json",     # xG + shots per finished match (match_stats.py, 2026-10-07)
     "highlights.json",      # YouTube highlight links for /goals (highlights.py, 2026-11-02)
     "details_archive.json", # the season's lineups/cards/subs from D1 (archive_db.py --export, 2026-11-04)
+    "h2h_feed.json",        # the last meetings of the coming matches' two sides (h2h_feed.py, 2026-11-26)
 ]
 
 # accumulating files: key function per item, for the merge and the shrink guard
