@@ -72,8 +72,8 @@ if not PREDICTIONS_ON:
     ck("9d ...and build-info still reports the running model (health would warn on 0)",
        "copy_media_and_build_info(_preds_all" in b_src)
     f_src = io.open("site_pages/files.py", encoding="utf-8").read()
-    ck("10 the model's URLs answer 302 (temporary) to /matches",
-       '"/analysis/*"' in f_src and '/matches 302' in f_src)
+    ck("10 the model's URLs answer 302 (temporary) to the home page (/matches itself 301s there)",
+       '"/analysis/*"' in f_src and '{p} / 302' in f_src and '/matches 302' not in f_src)
     h_src = io.open("site_pages/home.py", encoding="utf-8").read()
     ck("11 the home has no record strip (the home is the match centre only since 2026-10-26)", "home_record_strip" not in h_src)
     # ------------------------------------------------------------ the posts

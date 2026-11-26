@@ -566,7 +566,28 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
         # carried 386 match pages) a score or a lineup sheet alone no longer
         # counts: a finished match is content only with its reading (story,
         # ratings or the table after), i.e. what no scoreboard site repeats.
-        _rich = bool(_art) or (st == "FINISHED" and bool(post_read)) or _pre_weight >= 4
+        # ONE answer from the day before to the day after (SEO review
+        # 2026-11-26): the weight was counted for an UPCOMING match only, so
+        # a page Google had indexed turned noindex at kick-off and stayed so
+        # until its reading arrived - the hours «نتيجة مباراة X وY» is
+        # searched. A match in play, or one that ended in the last day and
+        # still waits for its reading, is weighed the way it was before
+        # kick-off (weighed only: nothing of that reading is shown).
+        _day_ago = (datetime.date.today() - datetime.timedelta(days=1)).isoformat()
+        if (st == "LIVE" or (st == "FINISHED" and not post_read)) and str(m.get("kickoff") or "")[:10] >= _day_ago:
+            try:
+                _pre_weight = pre_match_read(
+                    m, h_ar, a_ar, comp, st_by_comp.get(m.get("competition")),
+                    forms.get(m.get("competition")) or {},
+                    _fin_by_comp.get(m.get("competition")) or [], _fin_all,
+                    _preds.get(str(mid)))[2]
+            except Exception:       # a reading that cannot be built is no reason to lose the page
+                _pre_weight = 0
+        # a fixture whose day has passed and the feed still calls «لم تبدأ»
+        # (11 such pages sat in the sitemap, one from August): a page that
+        # says a played match has not started is not content
+        _stale = st == "UPCOMING" and str(m.get("kickoff") or "")[:10] < _day_ago
+        _rich = (bool(_art) or (st == "FINISHED" and bool(post_read)) or _pre_weight >= 4) and not (_stale and not _art)
         if not _rich:
             _html = noindex(_html)
         write(f"m/{mid}.html", _html)

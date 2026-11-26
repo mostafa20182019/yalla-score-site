@@ -133,7 +133,7 @@ def write_redirects(_moved):
         from site_lib.config import PREDICTIONS_ON
         if not PREDICTIONS_ON:
             for p in ("/analysis", "/analysis.html", "/analysis/*", "/predictions", "/predictions.html"):
-                lines.append(f"{p} /matches 302")
+                lines.append(f"{p} / 302")     # /matches itself 301s to / - no chain
         write_text("_redirects", NEWLINE.join(lines) + NEWLINE)
         print(f"  + _redirects: {len(_moved or [])} match piece(s) 301 to their match page "
               f"+ {len(STATIC_REDIRECTS)} retired paths")
