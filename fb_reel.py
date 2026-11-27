@@ -56,6 +56,14 @@ KIND = "reel"                 # its own dedup namespace next to article/card/tg
 GRAPH = "https://graph.facebook.com/v23.0"
 MAX_AGE_H = 20                # a reel of a two-day-old match is not a reel
 MAX_PER_RUN = 1               # one reel a run; the page is not a video channel
+# One a run was not a limit on the NIGHT: on 25 November four reels went out in
+# 37 minutes (00:16-00:53), each burying the one before. The user left the
+# number to us (2026-11-27): in NIGHT_H hours, at most NIGHT_CAP match reels
+# of sides that are not ours - a match of ours (match_brief.HOME_SLUGS: the
+# Egyptian three, Egypt, الهلال السوداني, Sudan) always gets its reel, and
+# goes first. The other matches of the night are in the results reel.
+NIGHT_H = 12
+NIGHT_CAP = 2
 OUT_FPS = 30                  # Reels wants a normal frame rate
 
 W, H = 1080, 1920
@@ -535,6 +543,35 @@ def candidates(hours=MAX_AGE_H, limit=4):
     return out
 
 
+def is_home(m):
+    try:
+        import match_brief as MB
+        return MB.side_tier(m) == 0
+    except Exception:                                        # noqa: BLE001 - a ranking never stops a reel
+        return False
+
+
+def night_count(now=None):
+    """Match reels posted in the last NIGHT_H hours (their ref is the match's
+    number; the slot reels and the file reels carry a word). None when the
+    store cannot say - then nothing that is capped goes out."""
+    try:
+        rows = store.posted_since(KIND, (now or time.time()) - NIGHT_H * 3600)
+    except Exception as e:                                   # noqa: BLE001
+        print(f"reel: the store cannot be read ({str(e)[:120]}) - the night's cap holds")
+        return None
+    return sum(1 for r in rows if str(r.get("ref_id") or "").isdigit())
+
+
+def due(todo, out_tonight):
+    """The matches that may get a reel now, ours first: every match of ours,
+    and the others only while fewer than NIGHT_CAP match reels are out."""
+    ours = [t for t in todo if is_home(t[0])]
+    rest = [t for t in todo if not is_home(t[0])]
+    room = out_tonight is not None and out_tonight < NIGHT_CAP
+    return ours + (rest if room else [])
+
+
 def enabled():
     """Publishing to the page is the user's switch, not mine."""
     return (os.environ.get("FB_REELS", "").strip().lower() in ("1", "true", "yes", "on"))
@@ -548,9 +585,9 @@ def auto(dry=False, out_dir=None):
     posted = _posted()
     if posted is None:
         return 0                     # no dedup, no post - the next run tries again
-    todo = [(m, c) for m, c in candidates() if str(m["match_id"]) not in posted]
+    todo = due([(m, c) for m, c in candidates() if str(m["match_id"]) not in posted], night_count())
     if not todo:
-        print("reel: nothing new")
+        print("reel: nothing new (or the night's match reels are out)")
         return 0
     if dry or not enabled() or not token:
         why = ("dry run" if dry else
@@ -669,8 +706,8 @@ def plan():
     """One line for the workflow: is there a reel to make this run? Printing an
     answer costs nothing; installing ffmpeg on every publish run would."""
     posted = _posted()
-    todo = [] if posted is None else [m for m, _ in candidates()
-                                      if str(m["match_id"]) not in posted]
+    todo = [] if posted is None else due([(m, c) for m, c in candidates()
+                                          if str(m["match_id"]) not in posted], night_count())
     print("yes" if (todo and enabled()) else "no")
     return 0
 

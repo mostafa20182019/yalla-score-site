@@ -69,9 +69,13 @@ def insights_page(articles, urls, m_all=None, fixtures=None):
                      "تحليلات مباريات كرة القدم على الجون: قراءات ما قبل المباراة، "
                      "تقارير ما بعد المباراة، «الجولة بالأرقام»، وتحليلات المحرر.",
                      SITE_BASE + "/insights.html", active="insights")
-    write("insights.html", render("insights.html", page_head=Markup(page_head), rows=rows,
-                                  chips=chips, leagues=leagues,
-                                  rounds_json=Markup(__import__("json").dumps(rounds, ensure_ascii=False)),
-                                  total=len(rows), page_foot=Markup(foot())))
-    urls.append("/insights.html")
+    # the page stays reachable (user 2026-10-26: no tab, the page stays), but
+    # nothing links it since that day and its 12,000 words are the /news list
+    # again (SEO review 2026-11-26: zero internal links, in the sitemap with
+    # today's date every day). Out of the sitemap and out of the index.
+    from site_lib.shell import noindex
+    write("insights.html", noindex(render("insights.html", page_head=Markup(page_head), rows=rows,
+                                          chips=chips, leagues=leagues,
+                                          rounds_json=Markup(__import__("json").dumps(rounds, ensure_ascii=False)),
+                                          total=len(rows), page_foot=Markup(foot()))))
     return len(rows)

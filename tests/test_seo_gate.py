@@ -140,6 +140,18 @@ d = copy.deepcopy(REPORT); d["title"] = "نتيجة مباراة برشلونة 
 ck("w7 a match title is not judged by this rule", not has(W(d), "already happened"))
 d = copy.deepcopy(NEWS); d["fb_post"] = "x\nhttps://elgoon.com/a/NEWID.html"
 ck("w8 a stand-in link in fb_post is NOT refused (the writer has no number yet; the poster puts the real link)", not W(d), "; ".join(W(d)))
+for other, ours in (("غلطة سراي", "جلطة سراي"), ("بي إس في", "آيندهوفن"), ("دوري الكونفدرالية", "كأس الكونفدرالية")):
+    d = copy.deepcopy(NEWS); d["body"] += f"<p>فاز {other} أمس.</p>"
+    ck(f"w10 «{other}» is refused: the site's own name is «{ours}»", has(W(d), f"«{ours}»"))
+    d = copy.deepcopy(NEWS); d["body"] += f"<p>فاز {ours} أمس.</p>"
+    ck(f"w10b «{ours}» passes", not W(d), "; ".join(W(d)))
+from site_lib.names import AR_TEAM
+from site_lib.competitions import COMP_LABEL
+_site = set(AR_TEAM.values()) | set(COMP_LABEL.values())
+ck("w11 every enforced name IS what the site shows (a club's name or the start of a competition's label)",
+   all(any(v == ours or v.startswith(ours) for v in _site) for _, ours in G.SITE_NAMES), str(G.SITE_NAMES))
+d = copy.deepcopy(NEWS); d["body"] += "<p>تعادل البنك الأهلي مع أبو قير للأسمدة.</p>"
+ck("w12 a hamza the feed's name lacks is not a variant: «البنك الأهلي» passes", not W(d), "; ".join(W(d)))
 d = copy.deepcopy(NEWS); d["body"] += "<p>فوزات</p>"
 ck("w9 the wording problems reach the gate article_put asks", has(G.seo_problems(d), "«فوزات»"))
 

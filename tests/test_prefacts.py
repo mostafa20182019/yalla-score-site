@@ -199,7 +199,7 @@ ck("35c three rows a day at most", len(PF.row_facts(many, "2026-11-26")) == PF.R
 css = open(os.path.join(os.path.dirname(HERE), "site_src", "style.css"), encoding="utf-8").read()
 shot = open(os.path.join(os.path.dirname(HERE), "site_src", "snippets", "shot_js.html"), encoding="utf-8").read()
 ck("35d the line is hidden where the side column shows, one line on a phone, and not drawn in the image",
-   ".mfact{display:none}" in css and "text-overflow:ellipsis" in css.split(".mrow>.mfact{")[1].split("}")[0]
+   ".mfact{display:none}" in css and "-webkit-line-clamp:2" in css.split(".mrow>.mfact{")[1].split("}")[0] and "nowrap" not in css.split(".mrow>.mfact{")[1].split("}")[0]
    and "mfact" not in shot)
 
 # ---- 4b. «أرقام بعد المباراة»: what the result changed, only while it is the news

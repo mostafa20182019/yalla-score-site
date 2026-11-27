@@ -247,6 +247,18 @@ def seo_problems(rec, brief=None):
 _WDL = re.compile(r"(?<![A-Za-z])[WDL]{3,}(?![A-Za-z])")
 _ISO_DATE = re.compile(r"(?<![\d/=])20\d\d-\d\d-\d\d(?!\d)")
 BAD_WORDS = (("فوزات", "انتصارات"), ("في عقر داره", "على ملعبه"), ("توليًا", "تواليًا"))
+# ONE name for a club or a competition (2026-11-27; the user left the choice
+# to us). The name is the one the SITE shows on its match pages, tables and
+# head-to-head pages (site_lib/names.AR_TEAM, competitions.COMP_LABEL) - the
+# articles wrote «غلطة سراي» in three pieces and «جلطة سراي» in six, «بي إس في»
+# in six and «آيندهوفن» in two. Changing the site's own name is another job:
+# the stored data (h2h history, live goals, the clubs' matchers) is keyed by
+# it. Only true alternates are here; a feed name that merely lacks a hamza
+# («البنك الاهلي») is NOT enforced - the article's «البنك الأهلي» is the
+# better Arabic.
+SITE_NAMES = (("غلطة سراي", "جلطة سراي"), ("جالطة سراي", "جلطة سراي"), ("جالاتا سراي", "جلطة سراي"),
+              ("غلطة سراى", "جلطة سراي"), ("بي إس في", "آيندهوفن"), ("أيندهوفن", "آيندهوفن"),
+              ("دوري الكونفدرالية", "كأس الكونفدرالية"))
 # a NEWS headline whose second word is one of these reads as happening now;
 # the verb list is short on purpose - only acts that are over once reported
 PRESENT_DONE = {"يرحل": "رحل", "يُحال": "أُحيل", "يحال": "أُحيل", "يصدر": "أصدر", "يصدرون": "أصدروا",
@@ -267,6 +279,9 @@ def wording_problems(rec):
     for bad, good in BAD_WORDS:
         if bad in text:
             out.append(f"«{bad}» - write «{good}»")
+    for other, ours in SITE_NAMES:
+        if other in text:
+            out.append(f"«{other}» - the site's pages write «{ours}»; one name everywhere, the site's")
     if rec.get("kind") not in ("preview", "report"):
         words = title.split()
         if len(words) > 2 and words[1] in PRESENT_DONE or (len(words) > 3 and words[2] in PRESENT_DONE):

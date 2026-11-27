@@ -99,7 +99,7 @@ def day_sections(matches, ge_idx, hrefs=None):
                 _f = _facts.get(str(m.get("match_id")))
                 if _f and row.rstrip().endswith("</div>"):
                     _i = row.rstrip().rfind("</div>")
-                    row = row[:_i] + f'<span class="mfact">📊 {esc(_f)}</span>' + row[_i:]
+                    row = row[:_i] + f'<span class="mfact">{esc(_f)}</span>' + row[_i:]
                 block["rows"].append(Markup(row))
                 pieces.append(row)
             day["comps"].append(block)
