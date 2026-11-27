@@ -1,0 +1,28 @@
+{# /fixtures/<slug>/round-N - one league round (2026-11-27): the sentence
+   that says when it is played or how it went, its matches as the site's own
+   rows, the table when the round is the latest one, the round before and
+   after. Everything computed (site_lib/rounds.py). Lines are joined with NO
+   separator by site_lib.render: break between tags, never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › <a href="/leagues.html">البطولات</a> › <a href="/fixtures/{{ slug }}.html">جدول {{ label }}</a> › الجولة {{ n }}</nav>
+<h1 class="page-h">{{ title }}</h1>
+<section class="minfo">
+  <p>{{ intro }}</p>
+  {% if tv %}
+  <p class="hintline rd-tv">القناة الناقلة: <bdi>{{ tv }}</bdi>. المواعيد بتوقيت القاهرة.</p>
+  {% endif %}
+</section>
+<h2 class="fx-all-h">{{ rows_h }}</h2>
+<div class="mlist rd-list">
+  {% for r in rows %}
+  {{ r }}
+  {% endfor %}
+</div>
+{% if table %}
+<h2 class="fx-all-h">{{ table_h }}</h2>
+{{ table }}
+{% endif %}
+{{ faq }}
+<p class="more-link">{% for link in links %}{% if not loop.first %} · {% endif %}{{ link }}{% endfor %}</p>
+{{ page_foot }}

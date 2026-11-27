@@ -522,6 +522,11 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
         groups_panel += _outlook_html(comp, label, (groups_by_comp or {}).get(comp),
                                       (bycomp or {}).get(comp) if bycomp is not None else None)
         _links = [f'<a href="/">مباريات اليوم ←</a>']
+        # a round as its own page (site_lib/rounds.py, 2026-11-27): the round
+        # on show, the one before and the one after
+        from site_lib import rounds as _RD
+        if comp in _RD.ROUND_COMPS:
+            _links += [f'<a href="{_RD.round_url(comp, _n)}">الجولة {_n} من {esc(label)} ←</a>' for _n in _RD.window(fx)]
         if comp in st_by_comp and (st_by_comp[comp] or {}).get("table"):
             _links.append(f'<a href="/standings/{slug}.html">ترتيب {esc(label)} ←</a>')
         elif os.path.exists(os.path.join(DIST, "standings", f"{slug}.html")):

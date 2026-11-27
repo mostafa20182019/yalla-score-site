@@ -1828,6 +1828,9 @@ a.lt-tb{text-decoration:none}
 /* the narrowest phones: the side columns give 12px to the two names
    («فيرينتسفاروشي» was 95px in a 60px column, cut mid-word) */
 @media(max-width:400px){.mlist>.mrow{grid-template-columns:28px minmax(0,1fr) auto minmax(0,1fr) 28px}}
+/* /fixtures/<slug>/round-N (2026-11-27): the round's rows are the site's
+   own list; the broadcaster line sits close under the sentence */
+.rd-tv{margin:6px 0 0}
 /* /tv - «القنوات الناقلة لمباريات اليوم» (2026-11-27): the numbers table,
    with the kick-off as a two-line cell (Cairo, Mecca under it) */
 .tv-comp{font-size:.92rem;margin:16px 0 4px;color:var(--green-d)}

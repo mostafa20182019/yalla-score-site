@@ -114,6 +114,7 @@ from site_pages.calc import calc_pages  # noqa: E402
 from site_pages.numbers import numbers_pages  # noqa: E402
 from site_pages.h2h import h2h_pages  # noqa: E402
 from site_pages.tv import tv_page  # noqa: E402
+from site_pages.rounds import round_pages  # noqa: E402
 from site_pages.predictions import (  # noqa: E402,F401
     prediction_history_page, analysis_pages, analysis_section)
 from site_pages.files import (  # noqa: E402
@@ -267,6 +268,7 @@ def build():
     group_standings_pages(groups_by_comp, fx_by_comp, season, urls, m_all=m_all, bycomp=_bycomp)
     fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp,
                    m_all=m_all, bycomp=_bycomp)
+    round_pages(fx_by_comp, st_by_comp, forms, m_all, urls)   # a league round as its own page (2026-11-27)
     calc_pages(fx_by_comp, season, st_by_comp, urls)    # «حاسبة الترتيب» (2026-11-19)
     numbers_pages(_bycomp, md_idx, season, fx_by_comp, st_by_comp, urls)   # «أرقام الدوري» (2026-11-19)
     leagues_page(_comps_with_table, fx_by_comp, urls)   # «البطولات» tab (2026-10-26)
