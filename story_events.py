@@ -1040,6 +1040,7 @@ def _facts_card(mode, m, f, now):
     return {"mode": mode, "home": h, "away": a, "home_badge": m.get("home_badge"), "away_badge": m.get("away_badge"),
             "comp": comp_label(m.get("competition")), "time": m.get("koff_time") or "", "day": day,
             "home_score": m.get("home_score"), "away_score": m.get("away_score"),
+            "home_pens": m.get("home_pens"), "away_pens": m.get("away_pens"),
             "facts": list(f.get("lines") or []), "tally": list(f["tally"]) if f.get("tally") else None}
 
 

@@ -331,6 +331,15 @@ class Reel:
         self.hook = [fit_text(hk[0], "ExtraBold", 230, WHITE, 980, stroke=10),
                      fit_text(hk[1], "ExtraBold", 150, ACC, 1000, stroke=10),
                      fit_text(hk[2], "ExtraBold", 190, WHITE, 980, stroke=10)]
+        # a white club's half (Zamalek, Real Madrid, a side in its white kit)
+        # left the white hook lines held by their outline alone (design review
+        # 2026-11-26): a dark veil behind the three lines, only when a half is
+        # light - two dark halves keep their full colour
+        self.hook_veil = None
+        if INK in (ink(self.hc), ink(self.ac)):
+            veil = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+            ImageDraw.Draw(veil).rounded_rectangle([24, 400, W - 24, 1270], 70, fill=INK + (150,))
+            self.hook_veil = veil
         self.hd, self.ad = self._disc(cfg["home_badge"], cfg["home"]), self._disc(cfg["away_badge"], cfg["away"])
         self.small = [self._crest(cfg["home_badge"], 130), self._crest(cfg["away_badge"], 130)]
         self.name_h = fit_text(cfg["home"], "ExtraBold", 84, ink(self.hc), 470)
@@ -387,6 +396,8 @@ class Reel:
     def _hook(self, b):
         img = self.bg.copy()
         throb = 1.0 + 0.06 * math.exp(-((b % 1) * 6))
+        if self.hook_veil is not None:
+            img.alpha_composite(self.hook_veil)
         for im, y in zip(self.hook, (560, 860, 1120)):
             paste_c(img, im, W / 2, y, throb)              # all three lines from frame 0
         img.alpha_composite(self.logo, (0, 40))

@@ -124,6 +124,17 @@ def day_groups(rows, hero=None):
     return out
 
 
+def pens_note(m, home, away):
+    """«الزمالك بالترجيح 4-3» for a finished match settled on penalties (the
+    shoot-out's score from the match row), else ''. A cup tie that ended 1-1
+    read on the results card as a draw with no winner (design review
+    2026-11-26)."""
+    hp, ap = m.get("home_pens"), m.get("away_pens")
+    if (m.get("status") or "").upper() != "FINISHED" or not isinstance(hp, int) or not isinstance(ap, int) or hp == ap:
+        return ""
+    return f"{home if hp > ap else away} بالترجيح {max(hp, ap)}-{min(hp, ap)}"
+
+
 def render(ms, date, comp, out, part=None, parts=1, title=None, theme="light"):
     """part/parts (2026-10-15, the Europa League's 18-match Thursdays): page
     `part` of `parts`, nine matches each, the subtitle says which."""
@@ -251,6 +262,7 @@ def render(ms, date, comp, out, part=None, parts=1, title=None, theme="light"):
                 under = "" if grouped else comp_label(m.get("competition"))
                 if not (fin or live_now) and grouped:
                     under = str(m.get("channel") or match_tv(m) or "")
+                under = pens_note(m, h, a) or under      # who went through, under the score
                 py = cy - (10 if under or live_now else 0)
                 # HOME sits on the right of the card, so its goals are the right-hand number
                 t = f"{m.get('away_score')} - {m.get('home_score')}" if (fin or live_now) else (m.get("koff_time") or "--:--")
@@ -357,8 +369,11 @@ def render(ms, date, comp, out, part=None, parts=1, title=None, theme="light"):
         # sitting low (user, 2026-10-17: «ليه النتيجة مش في منتصف الجزء الأبيض»)
         bx = d.textbbox((0, 0), t, font=fp)
         d.text((W // 2 - (bx[0] + bx[2]) / 2, cy - (bx[1] + bx[3]) / 2), t, font=fp, fill=ink)
+        _pn = pens_note(m, h, a)
         if live_now:
             text_c(W // 2, cy + 24, "مباشر", FC.font("Bold", 18), (255, 120, 140))
+        elif _pn:                        # who went through on penalties, under the score
+            text_c(W // 2, cy + 24, _pn, FC.font("Bold", 17), SOFT)
         elif every:                      # the competition under the score, the day spans several
             text_c(W // 2, cy + 24, comp_label(m.get("competition")), FC.font("Bold", 17), SOFT)
         side_w = W // 2 - 62 - (40 + 16 + 2 * R + 14) - 10

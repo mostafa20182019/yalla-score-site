@@ -92,6 +92,37 @@ def line_colour(team, comp=None):
     return next((c for c in cols if 120 < sum(c) < 700), cols[0])
 
 
+APART = 110          # two lines closer than this in colour read as one (match_poster's own distance)
+
+
+def line_colours(teams, comp=None):
+    """One colour a line, each the club's OWN, no two close: Arsenal and
+    Liverpool were both red, City and Brighton both light on the light chart
+    (design review 2026-11-26). A club whose first colour is taken gets the
+    next of its own colours that stands apart; with none left it keeps its
+    first - a club never wears a colour that is not its own."""
+    import match_poster as MP
+    import matchup_card as MC
+    from site_lib.names import ar_team
+    used, out = [], []
+    for t in teams:
+        first = line_colour(t, comp)
+        own = [first] + [c for c in MP.own_colours(MC.kit_for(ar_team(t), comp)) if 120 < sum(c) < 700 and c != first]
+        pick = next((c for c in own if all(MP._dist(c, u) >= APART for u in used)), first)
+        used.append(pick)
+        out.append(pick)
+    return out
+
+
+def twins(cols):
+    """[bool] - True for a line whose colour stands close to an EARLIER
+    line's (the club has no other colour of its own to take: Liverpool after
+    Arsenal). Such a line is drawn with a white core, so two reds are told
+    apart by more than the crest at their end."""
+    import match_poster as MP
+    return [any(MP._dist(c, u) < APART for u in cols[:k]) for k, c in enumerate(cols)]
+
+
 def build(comp, rows, round_no=None):
     """The scenes as (draw(t) -> frame, seconds, push_in)."""
     from site_lib.names import ar_team, comp_label
@@ -101,7 +132,8 @@ def build(comp, rows, round_no=None):
     games = max(len(r["points"]) for r in rows)
     top = max(r["pts"] for r in rows)
     ymax = max(3, ((top + 2) // 3) * 3)
-    cols = [line_colour(r["team"], comp) for r in rows]
+    cols = line_colours([r["team"] for r in rows], comp)
+    twin = twins(cols)
 
     def px(i):                       # the i-th match (1-based, fractional while growing)
         return X0 + (X1 - X0) * (i - 1) / max(1, games - 1)
@@ -133,6 +165,8 @@ def build(comp, rows, round_no=None):
             ld.rounded_rectangle((cx - cw / 2 + 8, LEG_TOP, cx + cw / 2 - 8, LEG_TOP + 250), 26, fill=(255, 255, 255, 30))
             ld.rounded_rectangle((cx - cw / 2 + 8, LEG_TOP, cx + cw / 2 - 8, LEG_TOP + 16), 8, fill=cols[k] + (255,),
                                  outline=(12, 30, 66, 255), width=3)
+            if twin[k]:                  # the same white core as its line
+                ld.line((cx - cw / 2 + 18, LEG_TOP + 8, cx + cw / 2 - 18, LEG_TOP + 8), fill=(255, 255, 255, 255), width=3)
             R.crest_at(lay, r.get("crest"), ar_team(r["team"]), LEG_H, cx, LEG_TOP + 74)
             nm = C.ar(ar_team(r["team"]))
             ld.text((cx, LEG_TOP + 150), nm, font=C.fit(ld, nm, "ExtraBold", 34, cw - 30, 20), fill=C.WHITE, anchor="mm")
@@ -170,6 +204,8 @@ def build(comp, rows, round_no=None):
                 # read as a hollow white line on this background
                 d2.line(pts, fill=(12, 30, 66, 255), width=18, joint="curve")
                 d2.line(pts, fill=cols[k] + (255,), width=11, joint="curve")
+                if twin[k]:              # the second line of a colour: a white core
+                    d2.line(pts, fill=(255, 255, 255, 255), width=3, joint="curve")
             heads.append((pts[-1], r))
         # crests ride the ends; the leader is drawn last, on top
         for (x, y), r in reversed(heads):

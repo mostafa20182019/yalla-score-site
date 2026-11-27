@@ -36,6 +36,14 @@ CARD_FILL = (255, 255, 255, 22)
 TITLES = {"before": "أرقام قبل المباراة", "after": "أرقام بعد المباراة"}
 MAX_FACTS = 5
 FACTS_BOTTOM = H - 90
+# design review 2026-11-26: five long sentences pushed the font down to 22px
+# (a phone shows the card ~390px wide - 8px letters), and one sentence sat
+# small in the middle of an empty half. The font never goes under MIN_SIZE:
+# when the sentences do not fit at it, the LAST one is left out (they come
+# strongest first) and the rest are set again. One or two sentences are set
+# large; the list always sits in the middle of its room.
+MIN_SIZE = 30
+FEW, FEW_SIZE, MANY_SIZE = 2, 54, 40
 
 
 def wrap(d, text, font, max_w, ar):
@@ -112,20 +120,32 @@ def render(ev, out=None):
     hx, ax = W - 190, 190
     crest(hx, cy, CR, c["home"], c.get("home_badge"))
     crest(ax, cy, CR, c["away"], c.get("away_badge"))
-    text_c(hx, cy + CR + 14, c["home"], fit(c["home"], "ExtraBold", 38, 330, 20))
-    text_c(ax, cy + CR + 14, c["away"], fit(c["away"], "ExtraBold", 38, 330, 20))
+    # 300, not 330: a long name reached 25px from the card's edge
+    text_c(hx, cy + CR + 14, c["home"], fit(c["home"], "ExtraBold", 38, 300, 20))
+    text_c(ax, cy + CR + 14, c["away"], fit(c["away"], "ExtraBold", 38, 300, 20))
     if c["mode"] == "after":
         sc = f"{c['away_score']} - {c['home_score']}"          # home goals RIGHT of the dash
         f = FC.font("ExtraBold", 96)
         bx = d.textbbox((0, 0), sc, font=f)
         d.text((W / 2 - (bx[0] + bx[2]) / 2, cy - (bx[1] + bx[3]) / 2), sc, font=f, fill=WHITE)
-        text_c(W // 2, cy + 70, "انتهت", FC.font("Bold", 26), SOFT)
-    else:
+        # a tie settled on penalties says who went through (the shoot-out's
+        # score from the match row, home / away) - else the plain «انتهت»
+        hp, ap = c.get("home_pens"), c.get("away_pens")
+        if isinstance(hp, int) and isinstance(ap, int) and hp != ap:
+            note = f"فاز {c['home'] if hp > ap else c['away']} بالترجيح {max(hp, ap)}-{min(hp, ap)}"
+            text_c(W // 2, cy + 70, note, fit(note, "Bold", 26, 330, 16), GOLD)
+        else:
+            text_c(W // 2, cy + 70, "انتهت", FC.font("Bold", 26), SOFT)
+    elif c.get("time"):
         f = FC.font("ExtraBold", 76)
-        t = c.get("time") or "×"
+        t = c["time"]
         bx = d.textbbox((0, 0), t, font=f)
         d.text((W / 2 - (bx[0] + bx[2]) / 2, cy - (bx[1] + bx[3]) / 2 - 12), t, font=f, fill=WHITE)
         text_c(W // 2, cy + 50, c.get("day") or "", fit(c.get("day") or "", "Bold", 26, 300, 16), SOFT)
+    else:
+        # no kick-off time yet: the day alone, never a «×» in its place
+        day = c.get("day") or ""
+        text_c(W // 2, cy - 30, day, fit(day, "ExtraBold", 44, 330, 22), WHITE)
 
     y = cy + CR + 90
     # the last meetings as three numbers: the home side's wins on the right
@@ -145,15 +165,20 @@ def render(ev, out=None):
     # the sentences, one panel each; the font steps down until they all fit
     facts = shown_facts(c)
     PAD, GAP, TW = 22, 12, W - 80 - 2 * 22 - 26
-    size = 40
+    size = FEW_SIZE if len(facts) <= FEW else MANY_SIZE
     while True:
         f = FC.font("Bold", size)
         blocks = [wrap(d, s, f, TW, FC.ar) for s in facts]
         lh = int(size * 1.55)
         total = sum(len(b) * lh + 2 * PAD for b in blocks) + GAP * max(0, len(blocks) - 1)
-        if total <= FACTS_BOTTOM - y or size <= 22:
+        if total <= FACTS_BOTTOM - y:
             break
-        size -= 2
+        if size > MIN_SIZE:
+            size -= 2
+        elif len(facts) > 1:
+            facts = facts[:-1]                   # the weakest sentence, not a smaller font
+        else:
+            break
     y += max(0, (FACTS_BOTTOM - y - total) // 2)             # the list sits in the middle of its room
     for b in blocks:
         bh = len(b) * lh + 2 * PAD
