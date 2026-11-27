@@ -90,8 +90,20 @@ ck("12 ...else the soonest European both-featured one", pick and pick["match_id"
 store.record_post("h2h", "999", "P1", title="t")
 import contextlib
 buf = io.StringIO()
+# the hour is PINNED: the card only goes out 12:00-22:00 Cairo (fp.H2H_HOURS), and
+# with the real clock this check failed every night from 22:00 - it is in the
+# deploy gate, so no deploy went out (Publish #15079, 27 November 22:01 Cairo)
+_real_now = fp._now
+_day = datetime.datetime.now(fp.CAIRO)
+fp._now = lambda: _day.replace(hour=15, minute=0)
 with contextlib.redirect_stdout(buf):
     rc = fp.h2h_post("tok", "auto", dry=True)
+fp._now = lambda: _day.replace(hour=23, minute=0)
+buf_night = io.StringIO()
+with contextlib.redirect_stdout(buf_night):
+    rc_night = fp.h2h_post("tok", "auto", dry=True)
+fp._now = _real_now
+ck("13b outside its hours auto waits, whatever was posted", rc_night == 0 and "outside 12:00-22:00" in buf_night.getvalue(), buf_night.getvalue().strip()[-120:])
 ck("13 one card per H2H_EVERY_DAYS: auto says 'not yet'", rc == 0 and "not yet" in buf.getvalue(), buf.getvalue().strip()[-120:])
 
 print("\nALL H2H CARD TESTS PASSED" if not fails else f"\n{fails} FAILED")
