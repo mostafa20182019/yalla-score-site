@@ -15,10 +15,10 @@ from site_lib.competitions import COMP_SLUG, COMP_TV
 from site_lib.dates import fmt_day
 from site_lib.names import ar_team_in, comp_label
 from site_lib.stats import _cnt
-from site_lib.tables import round_on_show
+from site_lib.tables import relisted, round_on_show
 
 # the leagues that get a page a round. One line to add a league.
-ROUND_COMPS = ("Egyptian Premier League",)
+ROUND_COMPS = ("Egyptian Premier League", "Saudi Pro League")
 TITLE_MAX = 62           # seo_title's own limit
 
 
@@ -28,12 +28,16 @@ def round_url(comp, n):
 
 def numbered(fx):
     """[(n, matches)] of the rounds that carry a whole number (a cup's stage
-    has a label, not a number, and gets no page), in order."""
+    has a label, not a number, and gets no page), in order. A postponed row
+    the feed listed again on a new date (tables.relisted) is left out: the
+    match is the round's once, on the date it will be played."""
     out = []
+    ghost = relisted(fx)
     for r in (fx or {}).get("rounds") or []:
         n = r.get("round")
-        if isinstance(n, int) and not r.get("label") and r.get("matches"):
-            out.append((n, r["matches"]))
+        ms = [m for m in r.get("matches") or [] if m.get("match_id") not in ghost]
+        if isinstance(n, int) and not r.get("label") and ms:
+            out.append((n, ms))
     return sorted(out, key=lambda x: x[0])
 
 

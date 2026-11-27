@@ -337,12 +337,15 @@ def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=N
         # /matches ships ONE round, not the season: the hidden rest was 2,206
         # fixture rows and 4,955 crest tags on the site's second-busiest page
         rounds = [r for r in rounds if r.get("round") == current] or rounds[:1]
+    _ghost = relisted(fx)
     for r in rounds:
         _hid = "" if only_current else " hidden"
         parts.append(f'<div class="round" data-round="{r["round"]}" '
                      f'data-label="{esc(r.get("label") or "الجولة " + str(r["round"]))}"{_hid}>')
         days = OrderedDict()
         for m in r.get("matches", []):
+            if m.get("match_id") in _ghost:
+                continue                  # listed again on its new date: shown once
             days.setdefault(m.get("kickoff") or "", []).append(m)
         for d in sorted(days.keys()):
             parts.append(f'<div class="fx-day">{esc(fmt_day(d))}</div>')
@@ -388,6 +391,19 @@ def other_matches_panel(comp, fx, pages):
         parts.append(fixture_mini(m, link=f'/m/{m["match_id"]}.html'))
     parts.append('</section>')
     return "".join(parts)
+
+
+def relisted(fx):
+    """The ids of the postponed rows the feed has since listed again under a
+    NEW id (the Saudi round 13, November 2026: nine «مؤجلة» rows beside the
+    same nine fixtures on their new dates - the round showed 18 matches). A
+    home-away pair meets once a season, so a postponed row is such a ghost
+    when the same pair has another row that is not postponed. The calculator
+    (site_lib/calc.py) has dropped them by the same rule since 2026-11-25."""
+    rows = [m for r in (fx or {}).get("rounds") or [] for m in r.get("matches") or []]
+    again = {(m.get("home"), m.get("away")) for m in rows if (m.get("status") or "").upper() != "POSTPONED"}
+    return {m.get("match_id") for m in rows
+            if (m.get("status") or "").upper() == "POSTPONED" and (m.get("home"), m.get("away")) in again}
 
 
 def round_on_show(fx):

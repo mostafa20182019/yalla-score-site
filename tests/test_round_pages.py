@@ -28,7 +28,8 @@ FX = {"current": 9, "rounds": [{"round": 8, "matches": R8}, {"round": 9, "matche
                                {"round": 11, "matches": R11}, {"round": 12, "matches": R12},
                                {"round": 99, "label": "نصف النهائي", "matches": [m(991, 99, "2027-05-01")]}]}
 
-ck("1 one line names the leagues that get round pages; Egypt is on it", RD.ROUND_COMPS == (EGY,))
+ck("1 one line names the leagues that get round pages: Egypt, then Saudi Arabia (2026-11-27)",
+   RD.ROUND_COMPS == (EGY, "Saudi Pro League") and RD.round_url("Saudi Pro League", 12) == "/fixtures/saudi/round-12.html")
 ck("2 the URL: /fixtures/<slug>/round-N", RD.round_url(EGY, 9) == "/fixtures/egypt/round-9.html")
 ck("3 numbered rounds only - a cup's stage (a label) gets no page", [n for n, _ in RD.numbered(FX)] == [8, 9, 10, 11, 12])
 ck("4 the three states", (RD.state(R8), RD.state(R9), RD.state(R10)) == ("done", "on", "coming"))
@@ -84,5 +85,22 @@ ck("24 a league's fixtures page lists the match pages its rounds do not (32 Unde
 ck("25 nothing extra when the rounds hold every page, or with no pages; capped", OMP("C", {"rounds": [{"round": 1, "matches": [{"match_id": 1}, {"match_id": 2}]}]}, _pg) == ""
    and OMP("C", _fx, None) == "" and OTHER_MAX == 120
    and "other_matches_panel(comp, fx, m_all)" in io.open("site_pages/leagues.py", encoding="utf-8").read())
+# ---- a postponed match the feed listed again under a new id (the Saudi round 13)
+from site_lib.tables import relisted
+SA = "Saudi Pro League"
+def sm(i, h, a, day, status="UPCOMING"):
+    return {"match_id": i, "home": h, "away": a, "kickoff": day, "koff_time": "19:00", "status": status,
+            "home_score": None, "away_score": None, "competition": SA}
+G = {"current": 13, "rounds": [
+    {"round": 13, "matches": [sm(1, "Al Fateh", "Al Riyadh", "2026-11-06", "POSTPONED"), sm(2, "Al Fateh", "Al Riyadh", "2026-11-26"),
+                              sm(3, "Al Hazem", "Al Nassr", "2026-11-06", "POSTPONED")]},
+    {"round": 14, "matches": [sm(4, "Al Riyadh", "Al Fateh", "2026-12-04")]}]}
+ck("26 the old row of a match listed again is a ghost; a postponed match with no new date is not, nor the return leg",
+   relisted(G) == {1}, str(relisted(G)))
+ck("27 the round's page holds the match once, on its new date",
+   [m["match_id"] for m in dict(RD.numbered(G))[13]] == [2, 3] and RD.intro(SA, 13, dict(RD.numbered(G))[13]).count("مؤجلة") == 1,
+   RD.intro(SA, 13, dict(RD.numbered(G))[13]))
+tsrc = io.open("site_lib/tables.py", encoding="utf-8").read()
+ck("28 the league's fixtures page drops the ghost too", "if m.get(\"match_id\") in _ghost:" in tsrc)
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)
