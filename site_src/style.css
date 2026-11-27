@@ -1828,6 +1828,20 @@ a.lt-tb{text-decoration:none}
 /* the narrowest phones: the side columns give 12px to the two names
    («فيرينتسفاروشي» was 95px in a 60px column, cut mid-word) */
 @media(max-width:400px){.mlist>.mrow{grid-template-columns:28px minmax(0,1fr) auto minmax(0,1fr) 28px}}
+/* /tv - «القنوات الناقلة لمباريات اليوم» (2026-11-27): the numbers table,
+   with the kick-off as a two-line cell (Cairo, Mecca under it) */
+.tv-comp{font-size:.92rem;margin:16px 0 4px;color:var(--green-d)}
+.tv-comp:first-of-type{margin-top:4px}
+.tv-t td.tv-k{white-space:nowrap;width:1%;padding-inline:8px}
+.tv-t td.tv-k b{display:block;font-size:1rem}
+.tv-t td.tv-k small{display:block;color:var(--muted);font-size:.7rem;font-weight:700}
+.tv-t td a{color:inherit;text-decoration:none;font-weight:800}
+.tv-t td a:hover{text-decoration:underline}
+.tv-t .tv-ch{font-weight:800;color:var(--green-d)}
+.tv-t .tv-na{color:var(--muted);font-weight:700}
+.tv-t .tv-st{display:inline-block;font-size:.68rem;font-weight:800;color:var(--muted);background:#eef2f6;border-radius:999px;padding:1px 8px;margin-inline-start:4px}
+.tv-note{margin:0}
+@media(max-width:560px){.tv-t{font-size:.84rem}.tv-t td.tv-k{padding-inline:4px}}
 .mp-act{margin:10px 0 4px}
 /* a row whose live data stopped arriving (live_js.html, unlive) */
 .pill-stale{background:#94a3b8}

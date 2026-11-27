@@ -113,6 +113,7 @@ from site_pages.clubs import club_pages  # noqa: E402
 from site_pages.calc import calc_pages  # noqa: E402
 from site_pages.numbers import numbers_pages  # noqa: E402
 from site_pages.h2h import h2h_pages  # noqa: E402
+from site_pages.tv import tv_page  # noqa: E402
 from site_pages.predictions import (  # noqa: E402,F401
     prediction_history_page, analysis_pages, analysis_section)
 from site_pages.files import (  # noqa: E402
@@ -293,6 +294,7 @@ def build():
     videos_page(videos, urls)
     # «أهداف المباريات» (2026-11-02): data/highlights.json from highlights.py
     goals_page(list(HL.load()[0].values()), m_all, urls)
+    tv_page(m_all, urls)           # «القنوات الناقلة لمباريات اليوم» (2026-11-27)
 
     # files that are not pages - robots/sitemap last among the writers of
     # `urls`, so the sitemap lists every page above

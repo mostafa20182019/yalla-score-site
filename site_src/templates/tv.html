@@ -1,0 +1,41 @@
+{# /tv - «القنوات الناقلة لمباريات اليوم» (2026-11-27). Today's matches and
+   tomorrow's: the kick-off (Cairo, Mecca under it), the two sides, the
+   channel. The channel cell is the match's own (the feed) or the
+   competition's verified broadcaster; with neither it says «لم تُعلن بعد».
+   Lines are joined with NO separator by site_lib.render: break between tags,
+   never inside a sentence. #}
+{{ page_head }}
+{{ crumbs_ld }}
+<nav class="crumbs" aria-label="مسار الصفحة"><a href="/">الرئيسية</a> › القنوات الناقلة</nav>
+<h1 class="page-h">القنوات الناقلة لمباريات اليوم {{ date_txt }}</h1>
+<section class="minfo">
+  <p>{{ intro }}</p>
+  <p class="hintline tv-note">الموعد بتوقيت القاهرة، وتحته توقيت مكة المكرمة. القناة هي ما تعلنه بيانات المباراة أو الناقل الموثّق للبطولة في المنطقة العربية، ومباراة بلا قناة مؤكدة تُكتب «{{ not_yet }}».</p>
+</section>
+{% for day in days %}
+{% if day.rows %}
+<section class="minfo">
+  <h2>{% if loop.first %}مباريات اليوم {{ day.date_txt }} والقنوات الناقلة{% else %}القنوات الناقلة لمباريات الغد {{ day.date_txt }}{% endif %}</h2>
+  {% for g in day.groups %}
+  <h3 class="tv-comp">{{ g.label }}</h3>
+  <table class="nb-t tv-t">
+    <thead><tr><th>الموعد</th><th class="nb-n">المباراة</th><th class="nb-n">القناة</th></tr></thead>
+    <tbody>
+      {% for r in g.rows %}
+      <tr>
+        <td class="tv-k">{% if r.cairo %}<b>{{ r.cairo }}</b><small>{{ r.mecca }} مكة</small>{% else %}—{% endif %}</td>
+        <td class="nb-n"><a href="/m/{{ r.id }}.html"><bdi>{{ r.home }}</bdi> — <bdi>{{ r.away }}</bdi></a>{% if r.state %} <span class="tv-st">{{ r.state }}</span>{% endif %}</td>
+        <td class="nb-n tv-ch">{% if r.channel %}<bdi>{{ r.channel }}</bdi>{% else %}<span class="tv-na">{{ not_yet }}</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endfor %}
+</section>
+{% endif %}
+{% endfor %}
+{{ faq }}
+<section class="minfo">
+  <p class="more-link"><a href="/">كل مباريات اليوم والنتائج المباشرة ←</a></p>
+</section>
+{{ page_foot }}
