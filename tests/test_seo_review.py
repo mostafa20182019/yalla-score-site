@@ -127,7 +127,10 @@ if os.path.isdir(os.path.join(dist, "team")):
     def rd(*p):
         return io.open(os.path.join(dist, *p), encoding="utf-8").read()
     long_t = []
-    for f in os.listdir(os.path.join(dist, "fixtures")):
+    # the league pages only: since 2026-11-27 the folder also holds one FOLDER a
+    # league for its round pages (fixtures/egypt/round-N.html), whose titles
+    # are tests/test_round_pages.py's
+    for f in (x for x in os.listdir(os.path.join(dist, "fixtures")) if x.endswith(".html")):
         t = re.search(r"<title>(.*?)</title>", rd("fixtures", f)).group(1)
         if len(t) > 62 or "مواعيد" not in t:
             long_t.append((f, len(t)))
