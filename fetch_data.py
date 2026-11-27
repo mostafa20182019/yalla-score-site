@@ -40,6 +40,37 @@ def http_get(url, headers=None, timeout=40, retries=2):
                 time.sleep(5 * (attempt + 1))
     raise last
 
+# football-data's free tier allows 10 requests a minute. The standings fetch
+# guarded that with fixed waits - 60 s before its first call and 7 s before
+# every other - whether or not the minute was already clear: 146 s of a
+# 366 s fetch on 27 November, although the 365scores leagues (110 s) had run
+# between the match calls and the standings calls. fd_wait() waits only when
+# FD_PER_MIN calls really sit inside the last minute, and only as long as the
+# oldest of them needs to leave it. One call of margin under the limit.
+FD_PER_MIN = 9
+_FD_CALLS = []
+
+
+def fd_wait(now=None, sleep=time.sleep):
+    """Call before EVERY football-data request. Returns the seconds waited."""
+    t = time.time() if now is None else now
+    recent = [c for c in _FD_CALLS if t - c < 60.0]
+    waited = 0.0
+    if len(recent) >= FD_PER_MIN:
+        waited = max(0.0, 60.5 - (t - recent[-FD_PER_MIN]))
+        sleep(waited)
+        t += waited
+    _FD_CALLS[:] = [c for c in recent if t - c < 60.0] + [t]
+    return waited
+
+
+# The «did a match of the main stage finish this season?» call answers a
+# question whose answer never goes back to no. Once a competition's season is
+# known to have started it is not asked again: {competition code: the
+# season's start date}, kept in fetch_debug.json between runs.
+_FD_STARTED = {}
+
+
 def write_items(name, items):
     with open(os.path.join(DATA, name), "w", encoding="utf-8") as f:
         json.dump({"results": [{"items": items}]}, f, ensure_ascii=False)
@@ -506,6 +537,7 @@ def fetch_matches():
     raw = {}
     def pull(url):
         try:
+            fd_wait()
             j = json.loads(http_get(url, hdr))
             for mm in j.get("matches", []):
                 raw[mm["id"]] = mm
@@ -616,14 +648,11 @@ def fetch_standings():
     out = []
     got_any = False
     today = datetime.now(CAIRO).strftime("%Y-%m-%d")
-    # fetch_matches just burned ~8 of the 10-req/min budget; let the window clear
-    # before the standings batch, then space each call out.
-    print("  … waiting 60s for the rate-limit window before standings")
-    time.sleep(60)
+    # the calls are spaced by fd_wait(): it knows what fetch_matches spent
+    # and when, and waits only if the minute is really full
     for i, comp in enumerate(FD_TABLE_COMPS):
-        if i:
-            time.sleep(7)
         try:
+            fd_wait()
             j = json.loads(http_get(
                 f"https://api.football-data.org/v4/competitions/{comp}/standings", hdr))
         except Exception as e:
@@ -649,20 +678,24 @@ def fetch_standings():
         #  - fresh_empty: API already serves the new season, nothing played yet
         old_table = (not started) and maxplayed > 0
         fresh_empty = maxplayed == 0
-        if maxplayed > 0 and started:
+        if maxplayed > 0 and started and _FD_STARTED.get(comp) == start[:10]:
+            pass                                   # asked in an earlier run: this season's main stage has begun
+        elif maxplayed > 0 and started:
             # the served table may STILL be last edition's (e.g. UCL before the
             # league-phase draw: qualifiers make the season "started" while the
             # 36-team table is last season's). Ground truth: did any match of
             # the MAIN stage finish this season?
             stage = "LEAGUE_STAGE" if comp == "CL" else "REGULAR_SEASON"
             try:
-                time.sleep(7)
+                fd_wait()
                 fj = json.loads(http_get(
                     f"https://api.football-data.org/v4/competitions/{comp}/matches"
                     f"?status=FINISHED&stage={stage}", hdr))
                 n_fin = (fj.get("resultSet") or {}).get("count")
                 if n_fin is None:
                     n_fin = len(fj.get("matches") or [])
+                if int(n_fin) > 0:
+                    _FD_STARTED[comp] = start[:10]       # never asked again this season
                 if int(n_fin) == 0:
                     old_table = True
                     print(f"  · standings {comp}: table has results but no {stage} "
@@ -702,7 +735,7 @@ def fetch_standings():
         if old_table:
             teams = None
             try:
-                time.sleep(7)                    # stay inside 10 req/min
+                fd_wait()                        # stay inside 10 req/min
                 tj = json.loads(http_get(
                     f"https://api.football-data.org/v4/competitions/{comp}/teams", hdr))
                 teams = tj.get("teams") or None
@@ -1980,6 +2013,8 @@ if __name__ == "__main__":
         write_items("reels_auto.json", reels_auto)
         print(f"reels (auto): {len(reels_auto)}")
     _phase("reconcile_archive_merge")
+    _FD_STARTED.update({k: v for k, v in (_PREV_DBG.get("fd_main_stage_started") or {}).items()
+                        if isinstance(k, str) and isinstance(v, str)})
     _slow, _why = slow_fetch_due(matches, _PREV_DBG)
     _DBG["slow_fetch"] = ("full - " if _slow else "skipped - ") + _why
     _DBG["slow_fetched_at"] = (datetime.now(timezone.utc).isoformat(timespec="seconds") if _slow
@@ -2003,6 +2038,7 @@ if __name__ == "__main__":
     # transfers feature removed 2026-09-01 (user decision — the home widget
     # is gone, FotMob-style news blocks took its place). fetch_transfers()
     # stays defined below for an easy return; nothing writes transfers.json.
+    _DBG["fd_main_stage_started"] = dict(_FD_STARTED)
     _phase("standings")
     if _slow:
         try:
