@@ -180,7 +180,7 @@ on = fp.social_on()
 os.environ.pop("FB_SOCIAL", None)
 ck("26 FB_SOCIAL: off until the repo variable says on; printed not posted, and not counted as pending while off",
    not off and on and "(kind in SOCIAL_KINDS and not armed_social)" in src
-   and '(ev["kind"] not in SOCIAL_KINDS or social_on())' in src)
+   and "(kind in SOCIAL_KINDS and not social_on())" in src and "sum(1 for ev in evs if would_post(ev))" in src)
 wf = open(".github/workflows/fb-post.yml", encoding="utf-8").read() + open(".github/workflows/publish.yml", encoding="utf-8").read()
 ck("27 both workflows hand the variable to the step", wf.count("FB_SOCIAL: ${{ vars.FB_SOCIAL }}") == 2)
 for e in SE.detect(SE.load_data(), datetime.date(2026, 11, 20)):

@@ -307,7 +307,8 @@ ck("39 39 h away -> nothing; a mid-table pair -> nothing",
    and SE.match_facts_before([dict(BIG, home="X", away="Y")], [], STAND, ARCH, datetime.date(2026, 11, 26), feed={}) == [])
 src = open(os.path.join(os.path.dirname(HERE), "fb_post.py"), encoding="utf-8").read()
 ck("40 a switched-off kind is neither posted nor counted as pending",
-   "kind in FACTS_KINDS and not armed_facts" in src and 'ev["kind"] not in FACTS_KINDS or facts_on()' in src)
+   "kind in FACTS_KINDS and not armed_facts" in src and "(kind in FACTS_KINDS and not facts_on())" in src
+   and "sum(1 for ev in evs if would_post(ev))" in src)
 yml = open(os.path.join(os.path.dirname(HERE), ".github", "workflows", "publish.yml"), encoding="utf-8").read()
 ck("41 the publish run keeps the meetings and the store carries the file",
    "python h2h_feed.py" in yml and "h2h_feed.json" in __import__("data_store").STORE_FILES)

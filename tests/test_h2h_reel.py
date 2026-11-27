@@ -61,9 +61,10 @@ ck("9 --auto: the pair that meets TODAY, no other day and no other pair",
    and HR.meeting_today({}, "2026-11-20") == [])
 src = io.open("h2h_reel.py", encoding="utf-8").read()
 wf = io.open(".github/workflows/fb-post.yml", encoding="utf-8").read()
-ck("10 on the current reel code (moment_reel / day_reel), posted once per pair and day, from the morning run",
+ck("10 on the current reel code (moment_reel / day_reel), posted once per pair and day, in the hours before its match",
    "R.FPS" not in src and "R.lerp" not in src and 'f"h2h:{ctx[\'pair\'][\'slug\']}:{date}"' in src
-   and "python h2h_reel.py --auto --publish" in wf)
+   and "python h2h_reel.py --auto --publish" not in wf
+   and '_script("h2h_reel.py", "--auto", "--publish")' in io.open("reel_slots.py", encoding="utf-8").read())
 
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

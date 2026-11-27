@@ -136,7 +136,9 @@ print("4. the workflow")
 wf = open(os.path.join(".github", "workflows", "fb-post.yml"), encoding="utf-8").read()
 ck("both variables reach the job, and neither script can fail it",
    "FB_POSTER: ${{ vars.FB_POSTER }}" in wf and "FB_RACE: ${{ vars.FB_RACE }}" in wf
-   and "python match_poster.py --auto --publish | tee -a /tmp/fb.txt || true" in wf
+   # the poster rides the slots' run too since 2026-11-27 (in the hours before its match, not with the morning card)
+   and "python match_poster.py --auto --publish" not in wf
+   and '_script("match_poster.py", "--auto", "--publish")' in open("reel_slots.py", encoding="utf-8").read()
    and "python reel_slots.py --run | tee -a /tmp/fb.txt || true" in wf)      # the race rides the slots since the same day
 
 print("\nALL OK" if not fails else f"\n{fails} FAILED")

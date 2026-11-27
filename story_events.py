@@ -807,14 +807,35 @@ def upcoming_pool(matches, fixtures):
             and (m.get("status") or "UPCOMING").upper() not in ("POSTPONED", "CANCELLED", "SUSPENDED")]
 
 
-def next_fixture(tp, pool, now, hours=FORM_WINDOW_H):
-    """The club's first match kicking off within `hours` of now, or None."""
+# WHEN a pre-match post goes out (2026-11-27). The window was «kicks off
+# within 24 hours», so a post went out the moment its match entered it - a
+# day before to the minute, and on a full Saturday the afternoon matches took
+# the day's posts and the evening match waited for the counter to turn at
+# midnight. On the real clock a pre-match post is due AHEAD_H hours before
+# the kick-off and not before MORNING_H Cairo. A DATE (the tests, --date)
+# still means the whole day, as before.
+AHEAD_H = (3.0, 8.0)
+MORNING_H = 9
+
+
+def ahead_ok(kick, now, today, hours):
+    """Is a match kicking off at `kick` due for its pre-match post at `now`?"""
+    left = (kick - now).total_seconds() / 3600
+    if today is None or isinstance(today, datetime.datetime):
+        return AHEAD_H[0] <= left <= AHEAD_H[1] and now.hour >= MORNING_H
+    return 0 <= left <= hours
+
+
+def next_fixture(tp, pool, now, hours=FORM_WINDOW_H, today=datetime.date.min):
+    """The club's first match kicking off within `hours` of now, or None.
+    `today` as detect() got it: None / a datetime = the real clock, where the
+    window is ahead_ok's (the default keeps the plain `hours` window)."""
     best = None
     for m in pool:
         if not club_side(tp, m):
             continue
         k = _kick_dt(m)
-        if not k or k < now or k > now + datetime.timedelta(hours=hours):
+        if not k or not ahead_ok(k, now, today, hours):
             continue
         if best is None or k < _kick_dt(best):
             best = m
@@ -845,7 +866,7 @@ def club_form_before_match(matches, fixtures, archive, today=None, n=FORM_N, hou
     pool, up = results_pool(matches, archive), upcoming_pool(matches, fixtures)
     events = []
     for tp in (clubs if clubs is not None else form_clubs()):
-        nxt = next_fixture(tp, up, now, hours)
+        nxt = next_fixture(tp, up, now, hours, today)
         if not nxt:
             continue
         res = club_results(tp, pool)
@@ -1010,7 +1031,7 @@ def match_facts_before(matches, fixtures, standings, archive, today=None, hours=
     out = []
     for m in upcoming_pool(matches, fixtures):
         kd = _kick_dt(m)
-        if not kd or not (0 <= (kd - now).total_seconds() <= hours * 3600):
+        if not kd or not ahead_ok(kd, now, today, hours):
             continue
         if not m.get("match_id") or m.get("competition") in PF.NEWS_SKIP or not _facts_big(m, tables):
             continue

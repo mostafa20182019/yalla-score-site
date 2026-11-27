@@ -771,6 +771,9 @@ def prediction_post(token, mid, dry=False):
 # match and keeps to one card per H2H_EVERY_DAYS; a match id posts that match
 # (once - the fb_posted lock, kind "h2h").
 H2H_EVERY_DAYS = 6
+# the card rides on the ARTICLE run, so it went out whenever an article did:
+# 03:05 on 13 October, 01:05 on 7 November. Cairo hours [from, to).
+H2H_HOURS = (12, 22)
 H2H_WINDOW_H = (20.0, 96.0)       # kick-off 20h..4 days away: close enough to matter, early enough to be read
 
 
@@ -826,6 +829,9 @@ def h2h_post(token, which, dry=False):
     import h2h_card as HC
     d = MB.load_all()
     if which == "auto":
+        if not (H2H_HOURS[0] <= _now().astimezone(CAIRO).hour < H2H_HOURS[1]):
+            print(f"h2h: outside {H2H_HOURS[0]}:00-{H2H_HOURS[1]}:00 Cairo - the next article run asks again")
+            return 0
         recent = store.posted_since("h2h", time.time() - H2H_EVERY_DAYS * 86400)
         if recent:
             print(f"h2h: a card went out {((time.time() - recent[0]['posted_at']) / 86400):.1f} days ago - not yet")
@@ -1448,6 +1454,29 @@ def facts_on():
     return (os.environ.get("FB_FACTS", "") or "").strip().lower() == "on"
 
 
+def form_on():
+    return (os.environ.get("FB_FORM", "") or "").strip().lower() == "on"
+
+
+def would_post(ev):
+    """Would the events run POST this event now - not print it, not skip it?
+    `--events --pending` counts only these: a kind whose switch is off, or
+    whose posts for the day are all out, dispatched the posting workflow on
+    every refresh only to print itself (social review 2026-11-26: on a day a
+    club of ours played, a run every quarter of an hour for nothing)."""
+    kind = ev["kind"]
+    if (store.get_post(kind, ev["ref"]) or {}).get("post_id"):
+        return False
+    if (kind in SOCIAL_KINDS and not social_on()) or (kind in FACTS_KINDS and not facts_on()) \
+            or (kind in FORM_KINDS and not form_on()):
+        return False
+    if kind in FORM_KINDS and sum(len(store.posted_since(k, _day_start())) for k in FORM_KINDS) >= FORM_DAILY_MAX:
+        return False
+    if kind in FACTS_KINDS and len(store.posted_since(kind, _day_start())) >= FACTS_DAILY_MAX:
+        return False
+    return True
+
+
 def social_on():
     return (os.environ.get("FB_SOCIAL", "") or "").strip().lower() == "on"
 
@@ -1616,9 +1645,7 @@ def main() -> int:
             print(f"events: detector failed ({e})", file=sys.stderr); print(0); return 0
         # a social kind that is still switched off is not "pending": it would
         # dispatch the posting workflow on every refresh only to print itself
-        n = sum(1 for ev in evs if not (store.get_post(ev["kind"], ev["ref"]) or {}).get("post_id")
-                and (ev["kind"] not in SOCIAL_KINDS or social_on())
-                and (ev["kind"] not in FACTS_KINDS or facts_on()))
+        n = sum(1 for ev in evs if would_post(ev))
         print(n); return 0
     if "--pending" in sys.argv[1:]:
         # how many articles WOULD be posted - lets publish.yml dispatch the

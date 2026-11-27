@@ -87,5 +87,19 @@ ck("the events run posts the slot that is due, and cannot fail on it",
 ck("publish.yml dispatches that run when a slot is due, not only for a data event",
    "python reel_slots.py --pending" in pub and 'if [ "$N" = "0" ] && [ "${S:-0}" != "1" ]; then exit 0; fi' in pub)
 
+print("5. before a kick-off (2026-11-27)")
+K = datetime.datetime(2026, 11, 22, 18, 0)
+ck("the poster and the head-to-head reel are due in the six hours before their match, not after it",
+   RS.KICK_AHEAD_H == 6.0 and RS.before_kick(K, at(12, 0)) and RS.before_kick(K, at(17, 59))
+   and not RS.before_kick(K, at(11, 59)) and not RS.before_kick(K, at(18, 0)) and not RS.before_kick(None, at(12, 0)))
+_rs = open("reel_slots.py", encoding="utf-8").read()
+ck("the run posts a match's own post first; --pending counts it too",
+   _rs.index("kick = kickoff_due(now)") < _rs.index("name = due(now)", _rs.index("def run(")) and "(due(now) or kickoff_due(now))" in _rs)
+ck("the poster does not wait for the reels' gap; the reel does", "h2h_waits(now) and not recent_reel(now, recent)" in _rs
+   and "if poster_waits(now):" in _rs)
+ck("a check that cannot be made is not due - it never raises", RS.kickoff_due(at(12, 0), recent=False) in (None, "poster", "h2h"))
+_pub = open(".github/workflows/publish.yml", encoding="utf-8").read()
+ck("the question is asked with the switches the posting run reads", "FB_POSTER: ${{ vars.FB_POSTER }}" in _pub and "FB_FORM: ${{ vars.FB_FORM }}" in _pub)
+
 print("\nALL OK" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

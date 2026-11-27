@@ -421,6 +421,10 @@ jobs:
           FB_SOCIAL: ${{ vars.FB_SOCIAL }}
           FB_FACTS: ${{ vars.FB_FACTS }}
           FB_RACE: ${{ vars.FB_RACE }}
+          # the same switches the posting run reads: a kind that is off is not
+          # pending (FB_FORM), and the poster is due only when it is on
+          FB_FORM: ${{ vars.FB_FORM }}
+          FB_POSTER: ${{ vars.FB_POSTER }}
         run: |
           N=$(python fb_post.py --events --pending)
           echo "story events pending a Facebook post: $N"

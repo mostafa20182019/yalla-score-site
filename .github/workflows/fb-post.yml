@@ -189,13 +189,11 @@ jobs:
             # reel_slots.py (2026-11-26 - the card, the reel and the poster
             # all landed at 09:02-09:03 with the same first line)
             command -v ffmpeg >/dev/null || { sudo apt-get update -qq && sudo apt-get install -y -qq ffmpeg; }
-            # a pair of site_lib/h2h.PAIRS meets today: its head-to-head reel
-            # (h2h_reel.py, rewritten 2026-11-20) - nothing on any other day
-            python h2h_reel.py --auto --publish | tee -a /tmp/fb.txt; rc5=${PIPESTATUS[0]}
-            [ "$rc" = 0 ] && rc=$rc5
-            # the day's match in the two clubs' own colours, when one of ours
-            # plays (behind FB_POSTER); it never fails the job
-            python match_poster.py --auto --publish | tee -a /tmp/fb.txt || true
+            # the head-to-head reel (h2h_reel.py) and the match-day poster
+            # (match_poster.py, behind FB_POSTER) no longer ride on this run:
+            # each is about ONE match and goes out in the six hours before its
+            # kick-off, asked by reel_slots.py in the events run (2026-11-27 -
+            # card, reel and poster all landed at 09:02-09:03)
           elif [ -n "$DAYCARD" ]; then
             # the nightly hook: the results card, then whatever the data says
             # is news tonight (story_events.py) - each once, through the store

@@ -84,6 +84,84 @@ def today_reel_waits():
     return len(DR.today_matches(MB.load_all()["matches"], date)) >= P.TODAY_MIN
 
 
+# ---------------------------------------------------------------- before a kick-off
+# The match-day poster and the head-to-head reel are about ONE match, and
+# they went out with the morning card: card 09:02, reel 09:03, poster 09:03 -
+# three posts in a minute, nine hours before a 18:00 kick-off (social review
+# 2026-11-26). They are due in the hours before THEIR match instead, asked
+# by the same run as the slots. The poster is a card: it does not wait for
+# the reels' gap. The reel does.
+KICK_AHEAD_H = 6.0           # from this long before the kick-off, until it
+
+
+def before_kick(kick, now, ahead=KICK_AHEAD_H):
+    """True in the `ahead` hours before `kick` (both Cairo datetimes)."""
+    return kick is not None and 0 < (kick - now).total_seconds() <= ahead * 3600
+
+
+def _kick(m):
+    try:
+        import story_events as SE
+        return SE._kick_dt(m) if m.get("koff_time") else None
+    except Exception:                                        # noqa: BLE001
+        return None
+
+
+def poster_waits(now):
+    """The day's poster is still to post and its match kicks off within
+    KICK_AHEAD_H: FB_POSTER on, one of ours plays, no record for the day."""
+    import match_brief as MB
+    import match_poster as MP
+    import store
+    if not MP.armed():
+        return False
+    date = now.date().isoformat()
+    m = MP.pick(MB.load_all()["matches"], date)
+    if not m or store.get_post(MP.KIND, date):
+        return False
+    return before_kick(_kick(m), now)
+
+
+def h2h_waits(now):
+    """A pair of site_lib/h2h.PAIRS meets today, its reel has no record and
+    the match kicks off within KICK_AHEAD_H (no hand-made reel covers it)."""
+    import fb_reel as R
+    import h2h_reel as HR
+    import store
+    today = now.date().isoformat()
+    todo = [(p, nx) for p, nx in HR.meeting_today(HR.load_pool(), today) if not R.drafts_linking(nx.get("match_id"))]
+    if not todo:
+        return False
+    pair, nx = todo[0]
+    if store.get_post(R.KIND, f"h2h:{pair['slug']}:{today}"):
+        return False
+    return before_kick(_kick(nx), now)
+
+
+def kickoff_due(now=None, recent=None):
+    """'poster' / 'h2h' / None - what is due before a kick-off now. Never
+    raises: a check that cannot be made is simply not due."""
+    now = now or cairo_now()
+    try:
+        if poster_waits(now):
+            return "poster"
+    except Exception as e:                                   # noqa: BLE001
+        print(f"reel slots: the poster cannot be read ({str(e)[:100]})", file=sys.stderr)
+    try:
+        if h2h_waits(now) and not recent_reel(now, recent):
+            return "h2h"
+    except Exception as e:                                   # noqa: BLE001
+        print(f"reel slots: the head-to-head reel cannot be read ({str(e)[:100]})", file=sys.stderr)
+    return None
+
+
+def _script(name, *args):
+    import os
+    import subprocess
+    here = os.path.dirname(os.path.abspath(__file__))
+    return subprocess.call([sys.executable, os.path.join(here, name), *args], cwd=here)
+
+
 def recent_reel(now, recent=None):
     """True when a reel of the family went out less than GAP_H hours ago."""
     if recent is not None:
@@ -111,6 +189,13 @@ def due(now=None, work=None, recent=None):
 
 def run(now=None):
     now = now or cairo_now()
+    kick = kickoff_due(now)                 # a match's own post first: it has a deadline
+    if kick == "poster":
+        print(f"reel slots: the match-day poster ({now:%H:%M} Cairo)")
+        return _script("match_poster.py", "--auto", "--publish")
+    if kick == "h2h":
+        print(f"reel slots: the head-to-head reel ({now:%H:%M} Cairo)")
+        return _script("h2h_reel.py", "--auto", "--publish")
     name = due(now)
     if not name:
         print("reel slots: nothing is due now")
@@ -144,9 +229,9 @@ def main():
         for name, hour in SLOTS:
             print(f"{hour:02d}:00  {name}: {'has work' if has_work(name, now.date()) else 'nothing'}"
                   f"{'' if now.hour >= hour else ' (not its hour yet)'}")
-        print("due now:", due(now))
+        print("due now:", due(now), "| before a kick-off:", kickoff_due(now))
         return 0
-    print(1 if due(now) else 0)
+    print(1 if (due(now) or kickoff_due(now)) else 0)
     return 0
 
 
