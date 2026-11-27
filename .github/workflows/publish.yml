@@ -69,6 +69,25 @@ jobs:
       - name: Install deps
         run: pip install -r requirements.txt
 
+      # THE CRESTS, KEPT BETWEEN RUNS (2026-11-27). A build mirrors ~7,200 club
+      # crests into the site and only ~2,650 of them are in git: every run
+      # fetched the other ~4,500 one by one from the feed's image host, on a
+      # fresh checkout, every time. That was the build step's two minutes on a
+      # quiet day and 7.5 on 27 November, when run #15052 was cancelled at the
+      # job's 15-minute limit with its tests still running. The folder is the
+      # build's own download cache (site_lib/crests.local_crest writes there
+      # and skips a file it already has), so restoring it changes nothing but
+      # the time. An optimisation only: a cache that cannot be restored or
+      # saved must never fail the run - the build then downloads as before.
+      - name: Restore the crests the last runs downloaded
+        uses: actions/cache/restore@v4
+        continue-on-error: true
+        with:
+          path: assets-src/crests
+          key: crests-${{ github.run_id }}
+          restore-keys: |
+            crests-
+
       # THE WORKING DATA (step 3, 2026-09-24). data/'s fetch outputs and
       # archives live in Workers KV now, not in git (data_store.py has the why
       # and the three rules). NOT continue-on-error, on purpose: without its
@@ -149,6 +168,16 @@ jobs:
           CF_ACCOUNT_ID: ${{ secrets.CF_ACCOUNT_ID }}
           CF_D1_ID: ${{ secrets.CF_D1_ID }}
         run: python build_site.py
+
+      # a new cache only when the folder gained a file (the key is the folder's
+      # content); an unchanged folder finds its key taken and saves nothing
+      - name: Keep the crests for the next run
+        if: always() && steps.build.outcome == 'success'
+        uses: actions/cache/save@v4
+        continue-on-error: true
+        with:
+          path: assets-src/crests
+          key: crests-${{ hashFiles('assets-src/crests/**') }}
 
       # Save what this run fetched, BEFORE the deploy: a deploy that is skipped
       # (main moved) or fails must not lose the data. Only after a green build -
