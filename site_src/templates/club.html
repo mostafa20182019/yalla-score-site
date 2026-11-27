@@ -111,6 +111,7 @@
 <section class="minfo">
   <h2>{{ g.heading }}</h2>
   {{ g.table }}
+  {% if g.qual %}<p class="club-qual">{{ g.qual }} <a href="{{ g.qual_href }}">حسابات المجموعة كلها ←</a></p>{% endif %}
 </section>
 {% endfor %}
 {{ faq }}

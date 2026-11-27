@@ -277,7 +277,7 @@ def build():
                          _upcoming, forms, matches, urls, _xg)
     club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                fx_by_comp=fx_by_comp, sc_by_comp=sc_by_comp, sc_ok=sc_ok, md_idx=md_idx,
-               groups_by_comp=groups_by_comp)
+               groups_by_comp=groups_by_comp, bycomp=_bycomp)
     h2h_pages(articles, m_all, urls, fx_by_comp)   # «مواجهات الأهلي والزمالك» (2026-11-13)
     stats_page(comp_order, fixtures, forms, league["league_stats_sec"], matches, sc_by_comp,
                sc_ok, st_by_comp, urls)

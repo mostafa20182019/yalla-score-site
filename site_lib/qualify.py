@@ -176,6 +176,21 @@ def line(o, to, prefix=""):
             f"رصيده {_pts(o['pts']) if o['pts'] else 'صفر'}، وأمامه {_left(o['left'])}.")
 
 
+def side_line(comp, group, games, team):
+    """The one sentence about `team` (its Arabic name) in its group, or "" -
+    a competition outside QUALIFY, a group we cannot reason about, or a side
+    whose fate is still open both ways. The club and national-team pages say
+    it under the group's table (2026-11-27); the same sentence as the
+    competition's page, computed by the same rule."""
+    rule = QUALIFY.get(comp)
+    if not rule or not group:
+        return ""
+    for o in group_outlook(group.get("table"), games, rule["slots"], rule.get("hosts") or (), rule.get("host_slots", 1)):
+        if o["team"] == team:
+            return line(o, rule["to"], rule.get("prefix", ""))
+    return ""
+
+
 def outlook_groups(comp, groups, games):
     """[(group name, [sentence, ...])] for the competition's groups that
     have something to say; [] for a competition outside QUALIFY."""

@@ -212,5 +212,20 @@ ck("R20-6 ...the bell and the subscribe code still never run there",
    or "    return;\n  }\n  if(!(can" in _pj.replace("\r\n", "\n"))
 ck("R20-7 the followed club travels in the address and is taken only by a browser with no club yet",
    "'team='+t0" in _pj and "[?&]team=([a-z0-9-]{2,40}(?:,[a-z0-9-]{2,40}){0,3})" in _fj and "if(qt && !LS.getItem(KEY)) LS.setItem(KEY,qt);" in _fj)
+# ---- the club's own sentence under its group table (2026-11-27)
+_C = "CAF Champions League"
+_grp = {"name": "المجموعة الأولى", "table": tb}
+_all = {o["team"]: Q.line(o, Q.QUALIFY[_C]["to"]) for o in Q.group_outlook(tb, GAMES + LEFT, 2)}
+ck("S1 a side's sentence is the competition page's sentence, word for word",
+   _all and all(Q.side_line(_C, _grp, GAMES + LEFT, t) == s for t, s in _all.items()))
+ck("S2 no sentence for a side still open, a group we cannot rebuild, or a competition without a rule",
+   all(Q.side_line(_C, _grp, GAMES + LEFT, t) == "" for t in T if t not in _all)
+   and Q.side_line(_C, {"name": "x", "table": bad}, GAMES + LEFT, "أ") == ""
+   and Q.side_line("Egyptian Premier League", _grp, GAMES + LEFT, "أ") == "" and Q.side_line(_C, None, GAMES, "أ") == "")
+_cl = io.open("site_pages/clubs.py", encoding="utf-8").read()
+ck("S3 the club page says it under the group's table and as a question; «يضمن» is never read as «ضمن»",
+   '_side_line(_gc, _g, (bycomp or {}).get(_gc), _ar(_in[0].get("team")))' in _cl and 'if "يضمن" not in _ql' in _cl
+   and '{% if g.qual %}<p class="club-qual">' in io.open("site_src/templates/club.html", encoding="utf-8").read()
+   and "groups_by_comp=groups_by_comp, bycomp=_bycomp)" in io.open("build_site.py", encoding="utf-8").read())
 print("\nALL OK" if not fails else f"\n{fails} FAILED")
 sys.exit(1 if fails else 0)

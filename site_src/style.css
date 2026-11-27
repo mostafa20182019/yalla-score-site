@@ -1882,6 +1882,8 @@ a.lt-tb{text-decoration:none}
   border:1px dashed #b6d7ec;border-radius:12px;background:#f3f9fd;color:var(--green-d)}
 .my-calc{display:flex;align-items:center;min-height:44px;margin-top:2px;border-top:1px solid #eef2f6;font-weight:800;font-size:.86rem;color:var(--green-d);text-decoration:none}
 .qual-n{color:#5b6b82;font-size:.86rem;line-height:1.8}
+.club-qual{margin:10px 2px 0;font-size:.92rem;line-height:1.9;font-weight:700}
+.club-qual a{font-weight:400;white-space:nowrap}
 .qual-g{margin:14px 0 6px;font-size:.95rem}
 .qual-l{margin:0;padding:0 18px 0 0;line-height:2}
 

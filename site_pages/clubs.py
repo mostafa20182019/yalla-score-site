@@ -22,7 +22,7 @@ from site_lib.urls import article_href, breadcrumb_ld, match_url
 
 
 def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
-               fx_by_comp=None, sc_by_comp=None, sc_ok=None, md_idx=None, groups_by_comp=None):
+               fx_by_comp=None, sc_by_comp=None, sc_ok=None, md_idx=None, groups_by_comp=None, bycomp=None):
     """/team/<slug> - evergreen SEO hubs for the highest-volume Arabic query
     family: «أخبار الأهلي اليوم»، «مباريات الزمالك القادمة»، «نتيجة ريال مدريد».
     One page per curated club: latest news + next matches + recent results +
@@ -196,11 +196,17 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
                 _gt = standings_table(_gc, _g["table"], embedded=True, title=_g["name"])
                 _b = f'<bdi>{esc(_ar(_in[0].get("team")))}</bdi>'
                 _gt = _gt.replace(_b, f'<bdi class="lt-me">{esc(_ar(_in[0].get("team")))}</bdi>', 1)
-                _my_groups.append((_gc, _g, _in[0]))
+                # «حسابات التأهل» for THIS side (2026-11-27): the sentence the
+                # competition's page says about it, under its own group's
+                # table. Sure or absent - site_lib/qualify.py.
+                from site_lib.qualify import side_line as _side_line
+                _ql = _side_line(_gc, _g, (bycomp or {}).get(_gc), _ar(_in[0].get("team")))
+                _my_groups.append((_gc, _g, _in[0], _ql))
                 group_tables.append({
                     "heading": Markup(f'<a href="/standings/{COMP_SLUG[_gc]}.html">ترتيب {esc(_g["name"])} في '
                                       f'{esc(comp_label(_gc))} ←</a>'),
-                    "table": Markup(_gt)})
+                    "table": Markup(_gt), "qual": _ql,
+                    "qual_href": Markup(f"/fixtures/{COMP_SLUG[_gc]}.html#qual")})
                 break
         # computed FAQ (2026-11-12): the club queries GSC shows are questions
         # the page already answers in rows - «نتيجة طرابزون سبور اليوم»،
@@ -243,13 +249,17 @@ def club_pages(_plog, _preds, articles, forms, m_all, season, st_by_comp, urls,
         # answered two questions where Al Ahly's answers six; «مجموعة الهلال
         # السوداني في دوري أبطال أفريقيا» is asked as a question). From the
         # same table the page shows - who is in it, nothing judged.
-        for _gc, _g, _row in _my_groups:
+        for _gc, _g, _row, _ql in _my_groups:
             _others = [_ar(r.get("team")) for r in _g.get("table") or [] if r is not _row and r.get("team")]
             if not _others:
                 continue
             _with = "، ".join(_others[:-1]) + (" و" + _others[-1] if len(_others) > 1 else _others[0])
             faq.append((f"في أي مجموعة {name} في {comp_label(_gc)}؟",
                         f"{name} في {_g['name']} من {comp_label(_gc)}، مع {_with}."))
+            if _ql:
+                from site_lib.qualify import QUALIFY as _QUALIFY
+                faq.append((f"هل تأهل {name} إلى {_QUALIFY[_gc]['to']}؟" if "يضمن" not in _ql
+                            else f"ماذا يحتاج {name} للتأهل إلى {_QUALIFY[_gc]['to']}؟", _ql))
         from site_lib.squad_stats import squad_stats
         _sq = squad_stats(tp, cm, md_idx)
         squad = None
