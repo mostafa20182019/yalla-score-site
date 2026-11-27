@@ -68,5 +68,21 @@ ck("14 a twin gets its white core on the line AND on its legend chip", rsrc.coun
 ssrc = io.open("reel_style.py", encoding="utf-8").read()
 ck("15 a veil behind the hook only when a half is light", "if INK in (ink(self.hc), ink(self.ac)):" in ssrc
    and "if self.hook_veil is not None:" in ssrc and ssrc.index("img.alpha_composite(self.hook_veil)") < ssrc.index("for im, y in zip(self.hook"))
+# ---------------------------------------------------------------- the Worker's full-time post
+import fb_post as fp
+G = {"id": 1, "c": 552, "h": "الزمالك", "a": "سيراميكا", "hs": 1, "as": 1, "ph": 4, "pa": 3}
+ck("16 the full-time caption names who won the shoot-out, the winner's kicks first",
+   fp.pens_line(G) == "🥅 فاز الزمالك بركلات الترجيح 4-3" and fp.whistle_caption("ft", G, []).splitlines()[1] == fp.pens_line(G)
+   and fp.pens_line(dict(G, ph=2, pa=4)) == "🥅 فاز سيراميكا بركلات الترجيح 4-2")
+ck("17 no line without both numbers, for a level shoot-out, or at half-time",
+   fp.pens_line(dict(G, ph=None)) == "" and fp.pens_line(dict(G, pa=4)) == "" and "الترجيح" not in fp.whistle_caption("ht", G, []))
+lj = io.open("liveposts.js", encoding="utf-8").read()
+fsrc = io.open("fb_post.py", encoding="utf-8").read()
+ck("18 the Worker sends the shoot-out's score with the full-time whistle, and the runner's card reads it",
+   'kind === "ft" && g.ph != null && g.pa != null ? { ph: g.ph, pa: g.pa } : {}' in lj
+   and '"hp": g.get("ph"), "ap": g.get("pa")' in fsrc)
+ck("19 the Worker's own text says the same sentence (pensLine = pens_line)",
+   "`🥅 فاز ${g.ph > g.pa ? g.h : g.a} بركلات الترجيح ${Math.max(g.ph, g.pa)}-${Math.min(g.ph, g.pa)}`" in lj
+   and "...(pensLine(g) ? [pensLine(g)] : [])" in lj)
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

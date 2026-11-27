@@ -1112,6 +1112,15 @@ def _tg_card(kind, ref, img, caption):
         print(f"telegram {kind} {ref}: not mirrored ({e})")
 
 
+def pens_line(g):
+    """«🥅 فاز X بركلات الترجيح 4-3» when the Worker sent the shoot-out's score
+    (g["ph"] / g["pa"], home / away), else '' - liveposts.js's pensLine."""
+    hp, ap = g.get("ph"), g.get("pa")
+    if not isinstance(hp, int) or not isinstance(ap, int) or hp == ap:
+        return ""
+    return f"🥅 فاز {g['h'] if hp > ap else g['a']} بركلات الترجيح {max(hp, ap)}-{min(hp, ap)}"
+
+
 def whistle_caption(kind, g, goals):
     """The «⏸️ نهاية الشوط الأول» / «🏁 انتهت المباراة» text - liveposts.js's lines."""
     tag = _tag
@@ -1122,6 +1131,8 @@ def whistle_caption(kind, g, goals):
     else:
         head = {"ht": "⏸️ نهاية الشوط الأول", "sh": "▶️ انطلق الشوط الثاني"}.get(kind, "🏁 انتهت المباراة")
         lines = [f"{head}: {g['h']} {g['hs']} - {g['as']} {g['a']}"]
+        if kind == "ft" and pens_line(g):
+            lines.append(pens_line(g))
     by = {"h": [], "a": []}
     for ev in goals or []:
         if not ev.get("p"):
@@ -1169,7 +1180,9 @@ def whistle_post(token, payload, dry=False):
             hb, ab = GC.badges_for(game)
             img = GC.render_whistle_bytes({"kind": kind, "home": g["h"], "away": g["a"], "hs": g["hs"], "as": g["as"],
                                            "comp": g.get("c") or 0, "home_badge": hb, "away_badge": ab, "goals": goals,
-                                           "feed": GC.colors_for(game)})
+                                           "feed": GC.colors_for(game),
+                                           # the shoot-out's score, when the Worker sent one (full time only)
+                                           "hp": g.get("ph"), "ap": g.get("pa")})
             pid = post_photo(token, img, caption)
             print(f"posted the {kind} card for {ref}: {pid}")
         except Exception as e:  # noqa: BLE001

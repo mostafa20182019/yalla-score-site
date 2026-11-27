@@ -166,8 +166,14 @@ export function koMessage(g) {
           `#الجون ${tag(g.h)} ${tag(g.a)}`].join("\n");
 }
 
+// «فاز X بركلات الترجيح 4-3» when the live feed gave the shoot-out's score
+// (g.ph / g.pa, home / away - worker.js); "" for a match settled in play.
+// The same sentence as fb_post.pens_line: the card and the text say one thing.
+export const pensLine = (g) => (Number.isInteger(g.ph) && Number.isInteger(g.pa) && g.ph !== g.pa
+  ? `🥅 فاز ${g.ph > g.pa ? g.h : g.a} بركلات الترجيح ${Math.max(g.ph, g.pa)}-${Math.min(g.ph, g.pa)}` : "");
+
 export function ftMessage(g, goals) {
-  return [`🏁 انتهت المباراة: ${scoreLine(g)}`, ...scorerLines(g, goals),
+  return [`🏁 انتهت المباراة: ${scoreLine(g)}`, ...(pensLine(g) ? [pensLine(g)] : []), ...scorerLines(g, goals),
           `${COMP_AR[g.c] || ""} · تفاصيل المباراة والهدافون: ${SITE}/m/${g.id}`.replace(/^ · /, ""),
           `#الجون ${tag(g.h)} ${tag(g.a)}`].join("\n");
 }
@@ -368,7 +374,10 @@ export async function livePosts(env, r, dispatch = null) {
       if (dispatch) {
         let ok = false;
         try {
-          ok = await dispatch({ whistle: JSON.stringify({ kind, g: { id: g.id, c: g.c, h: g.h, a: g.a, hs: g.hs, as: g.as }, goals: goals || [] }) });
+          ok = await dispatch({ whistle: JSON.stringify({ kind, g: { id: g.id, c: g.c, h: g.h, a: g.a, hs: g.hs, as: g.as,
+                                                                 // a tie settled on penalties: the runner's card and caption name the winner
+                                                                 ...(kind === "ft" && g.ph != null && g.pa != null ? { ph: g.ph, pa: g.pa } : {}) },
+                                                            goals: goals || [] }) });
         } catch (e) { ok = false; }
         if (ok) { out.dispatched += 1; continue; }    // the runner draws, posts and records
       }
