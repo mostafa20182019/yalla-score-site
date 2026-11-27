@@ -235,6 +235,7 @@ def head(title, desc, url, image=None, og_type="website", active="",
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script>{_DARK.HEAD_JS}</script>
 <script>try{{window.__livePromise=fetch('/live.json?b='+Math.floor(Date.now()/1e4),{{cache:'no-store'}})}}catch(e){{}}</script>
 <title>{esc(title)}</title>
 <meta name="description" content="{esc(desc)}">
@@ -308,6 +309,7 @@ def foot():
   <p class="foot-links"><a href="/">الرئيسية</a> · <a href="/news.html">كل الأخبار</a>{heads_link} · <a href="/">المباريات</a> · <a href="/tv.html">القنوات الناقلة</a> · <a href="/goals.html">أهداف المباريات</a>{pred_foot_a}{pred_foot_b} · <a href="/standings/egypt.html">ترتيب الدوري المصري</a> · <a href="/scorers/egypt.html">هدافو الدوري المصري</a> · <a href="/team/al-ahly.html">أخبار الأهلي</a> · <a href="/team/zamalek.html">أخبار الزمالك</a>{stats_link}{vids_link}{reels_link} · <a href="/about.html">من نحن</a> · <a href="/contact.html">اتصل بنا</a> · <a href="/editorial.html">السياسة التحريرية</a> · <a href="/terms.html">شروط الاستخدام</a> · <a href="/privacy.html">سياسة الخصوصية</a> · <a href="/editors.html">فريق التحرير</a> · <a href="{FB_PAGE_URL}" target="_blank" rel="noopener">فيسبوك</a>{tg_foot}</p>
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
+  {_DARK.BUTTON}
 </div></footer>
 {cf_beacon()}{KO_SCRIPT}{app_js_tag()}</body></html>"""
 
@@ -429,6 +431,9 @@ def _js_body(snippet):
     return s.strip()
 
 
+from site_lib import dark as _DARK      # noqa: E402  «الوضع الليلي» (2026-11-27)
+
+
 def app_js():
     """The file's content: each snippet in its own try, so one that throws
     cannot stop the next (they were separate <script> blocks before)."""
@@ -440,7 +445,8 @@ def app_js():
     return _push + "\n".join("try{" + _js_body(s) + "\n}catch(e){}"
                      for s in (REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS, LIVE_LEAGUE_JS, LIVE_FX_JS)) + "\n" \
         + "try{" + _js_body(SHOT_JS) + "\n}catch(e){}\n" \
-        + "try{" + _js_body(FOLLOW_JS) + "\n}catch(e){}\n"     # «تابع فريقك», after the live layer it hands its rows to
+        + "try{" + _js_body(FOLLOW_JS) + "\n}catch(e){}\n" \
+        + "try{" + _js_body(_DARK.BUTTON_JS) + "\n}catch(e){}\n"   # «الوضع الليلي»: the footer's switch (site_lib/dark.py)
     # (SHOT_JS = the «صورة» button, 2026-11-25: on its own line, the tuple above is pinned by tests)
 
 

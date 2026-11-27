@@ -1203,6 +1203,8 @@ html.lt-lock{overflow:hidden}
 @media(max-width:560px){.rarrows{display:none}}
 /* footer */
 .site-foot{background:#0b1220;color:#cbd5e1;margin-top:30px;padding:22px 0}
+.theme-btn{margin-top:10px;min-height:40px;padding:6px 16px;border-radius:999px;border:1.5px solid #475569;background:transparent;color:#e2e8f0;font:inherit;font-weight:700;cursor:pointer}
+.theme-btn:hover{border-color:#94a3b8;color:#fff}
 .site-foot p{margin:2px 0}.credit{font-size:.78rem;color:#94a3b8}
 @media(max-width:640px){
   

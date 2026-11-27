@@ -198,6 +198,10 @@ def write_assets():
     # ---- assets: css + logo ----
     from site_lib.text import css_min
     _css = css_min(CSS + "\n" + LEGENDS_CSS)
+    # «الوضع الليلي» (2026-11-27): the dark theme is generated from the light
+    # sheet, rule by rule (site_lib/dark.py), and rides in the same file
+    from site_lib.dark import dark_css
+    _css += dark_css(_css)
     _shell.CSS_VER = hashlib.md5(_css.encode("utf-8")).hexdigest()[:8]   # changes only when CSS changes
     with open(os.path.join(DIST, "assets", "style.css"), "w", encoding="utf-8") as f:
         f.write(_css)
