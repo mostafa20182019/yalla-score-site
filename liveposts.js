@@ -110,7 +110,9 @@ export const postScope = (g) => curatedLive(g);
 // the flag on that club's line.
 export const goalScope = (g) => curatedLive(g, CURATED_LIVE.filter(s => s.goals));
 
-const tag = (name) => "#" + (name || "").trim().replace(/\s+/g, "_");
+// letters and digits only, one underscore between the words - the same rule
+// as site_lib/text.hashtag: «سيسكا - صوفيا» is #سيسكا_صوفيا, not #سيسكا_-_صوفيا
+const tag = (name) => "#" + (name || "").trim().replace(/[^\p{L}\p{N}]+/gu, "_").replace(/^_+|_+$/g, "");
 // «الأهلي 1 - 0 الزمالك» with SPACES: a glued «1-0» is one LTR run and shows
 // the away score next to the home name in an RTL line (the .tl lesson)
 const scoreLine = (g) => `${g.h} ${g.hs} - ${g.as} ${g.a}`;

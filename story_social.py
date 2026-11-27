@@ -140,7 +140,7 @@ def night_number(matches, archive, stats, today=None):
     wg, lg = max(hs, as_), min(hs, as_)
     only = " فقط" if wsh <= 10 else ""
     lines = [f"🔢 رقم الليلة: {wsh}",
-             f"{win} سدد {_shots(wsh)}{only}. {lose} سدد {_shots(lsh)}.",
+             f"سدد {win} {_shots(wsh)}{only}. سدد {lose} {_shots(lsh)}.",
              f"النتيجة: {win} {wg}-{lg} {lose}.",
              "فعالية أم حظ؟ اكتب رأيك."]
     return [SE.event(KIND_NUMBER, day, f"رقم الليلة: {win} {wg}-{lg} {lose}", lines,
@@ -246,7 +246,7 @@ def sudan_corner(matches, fixtures, archive, today=None):
         gf, ga = sum(r["gf"] for r in rows), sum(r["ga"] for r in rows)
         n = len(rows)
         played = "مباراة واحدة" if n == 1 else "مباراتين" if n == 2 else f"{n} مباريات" if n <= 10 else f"{n} مباراة"
-        lines.append(f"🇸🇩 {hilal['name']} لعب {played} في {SE.comp_label(SUDAN_COMP)} هذا الموسم.")
+        lines.append(f"🇸🇩 لعب {hilal['name']} {played} في {SE.comp_label(SUDAN_COMP)} هذا الموسم.")
         lines.append(f"فوز {w}، تعادل {d}، خسارة {l}.")
         lines.append(f"سجل {gf} واستقبل {ga}." if ga else f"سجل {gf} ولم تستقبل شباكه أي هدف.")
     nxt, nline = _next_line(SE, hilal, up, now)
@@ -420,8 +420,8 @@ def round_movers(matches, fixtures, standings, today=None, comps=MOVERS_COMPS):
             if not up and not down:
                 continue
             lines = [f"📈 حركة الجدول بعد الجولة {rn} من {SE.comp_label(comp)}."]
-            lines += [f"{t} تقدم {_places(mv)}: من المركز {b} إلى {a}." for t, b, a, mv in up]
-            lines += [f"{t} تراجع {_places(-mv)}: من المركز {b} إلى {a}." for t, b, a, mv in down]
+            lines += [f"تقدم {t} {_places(mv)}: من المركز {b} إلى {a}." for t, b, a, mv in up]
+            lines += [f"تراجع {t} {_places(-mv)}: من المركز {b} إلى {a}." for t, b, a, mv in down]
             season = SE.season_of(days[0])
             found.append((max(abs(x[3]) for x in up + down), SE.event(
                 KIND_MOVERS, f"{comp}:R{rn}:{season}", f"حركة الجدول بعد الجولة {rn} من {SE.comp_label(comp)}", lines,

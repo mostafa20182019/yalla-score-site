@@ -48,6 +48,7 @@ if hasattr(sys.stdout, "reconfigure"):
 from site_lib.arabic import _AR_DAYS, _AR_MONTHS            # noqa: E402
 from site_lib.competitions import COMP_LABEL, COMP_SLUG     # noqa: E402
 from site_lib.names import ar_team                          # noqa: E402
+from site_lib.text import hashtag                           # noqa: E402
 
 SITE = "https://elgoon.com"
 DATA = os.path.join(HERE, "data")
@@ -152,7 +153,7 @@ def comp_label(comp):
 
 
 def comp_tag(comp):
-    return "#" + comp_label(comp).replace(" ", "_")
+    return hashtag(comp_label(comp))
 
 
 def comp_url(comp, page="fixtures"):
@@ -250,7 +251,8 @@ def event(kind, ref, title, lines, link, link_label, tags, competition=None, **d
 # 2026-11-20). A question about the reader's view - never «توقع», never a
 # prize: nothing here may read as betting.
 ASKS = {
-    "sudan-corner": "رأيك في مشوار الهلال السوداني لحد دلوقتي؟ قولنا في الكومنتات 👇",
+    # not in the Egyptian dialect: this one is read in Khartoum first (2026-11-27)
+    "sudan-corner": "ما رأيك في مشوار الهلال السوداني حتى الآن؟ 👇",
     "goal-clock": "أنهي هدف في الماتش ده كان الأحلى؟ 👇",
     "club-month-clock": "راضي عن أهداف فريقك الشهر ده؟ قولنا رأيك 👇",
 }
@@ -450,9 +452,9 @@ def otd_match_lines(m, why, years):
     if why[0] == "derby":
         lines.append(f"المباراة هي {why[1]}.")
     elif why[0] == "final":
-        lines.append(f"المباراة كانت {why[1]}.")
+        lines.append(f"كانت المباراة {why[1]}.")
     else:
-        lines.append(f"المباراة شهدت {why[1]} أهداف.")
+        lines.append(f"شهدت المباراة {why[1]} أهداف.")
     goals = [g for g in (m.get("goals") or []) if g.get("player")]
     if goals:
         by = {"h": [], "a": []}
@@ -820,7 +822,7 @@ def next_fixture(tp, pool, now, hours=FORM_WINDOW_H):
 
 
 def _club_tag(name):
-    return "#" + (name or "").strip().replace(" ", "_")
+    return hashtag(name)
 
 
 def form_lines(tp, s, nxt, rows):

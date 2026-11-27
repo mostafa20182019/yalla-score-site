@@ -645,7 +645,11 @@ def make_reel(m, ctx, path):
         import reel_style as RS                      # noqa: PLC0415
         cfg = RS.cfg_for(m)
         RS.render(cfg, path, exe)
-        return True, f"{' '.join(cfg['hook'])} 🔥\n\n{C.post_text(m)}"
+        # no fire after a defeat of the side we follow, or a draw («… اتضرب
+        # برباعية في بيته! 🔥» read as cheering it - social review 2026-11-26)
+        hook = cfg["hook"]
+        fire = "" if (hook[0].startswith("تعادل") or any(w in hook[1] for w in ("اتضرب", "خسر"))) else " 🔥"
+        return True, f"{' '.join(cfg['hook'])}{fire}\n\n{C.post_text(m)}"
     except Exception as e:                           # noqa: BLE001
         print(f"  the new-style reel failed ({str(e)[:160]}) - the still card instead")
     base, lay = staged(ctx)

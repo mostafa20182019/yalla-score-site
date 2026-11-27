@@ -262,7 +262,7 @@ def render_whistle(ev, out=None):
             img.paste(cr, (cx - cr.width // 2, cy - cr.height // 2), cr)
         else:
             f1 = FC.font("ExtraBold", int(r * 0.9))
-            s1 = FC.ar(name.strip()[:1] or "?")
+            s1 = FC.ar(FC.initial(name))
             d.text((cx - d.textlength(s1, font=f1) / 2, cy - r * 0.6), s1, font=f1, fill=INK_)
         text_c(cx, cy + r + 30, name, fit(name, "ExtraBold", 66, W_ // 2 - 70, 30), ink(fill))
 
@@ -302,7 +302,10 @@ def render_whistle(ev, out=None):
         rows = [line_of(g) for g in goals if g.get("s") == side_ and g.get("p")]
         cap = 3 if pens else 4          # the shoot-out's pill takes one row of the space
         if len(rows) > cap:
-            rows = rows[:cap - 1] + [f"+{len(rows) - (cap - 1)}"]
+            # «+2 أهداف», not a bare «+2» (it read as a number of nothing)
+            _more = len(rows) - (cap - 1)
+            rows = rows[:cap - 1] + [("+هدف آخر" if _more == 1 else "+هدفان" if _more == 2
+                                      else f"+{_more} أهداف" if _more <= 10 else f"+{_more} هدفًا")]
         yy = 1022 if pens else 958
         for row in rows:
             f = fit(row, "Bold", 34, W_ // 2 - 110, 22)

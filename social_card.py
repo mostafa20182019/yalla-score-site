@@ -95,7 +95,7 @@ class _Canvas:
             self.img.paste(im, (cx - im.width // 2, cy - im.height // 2), im)
         else:
             f = self.FC.font("ExtraBold", int(r * 0.9))
-            s = self.FC.ar((name or "?").strip()[:1])
+            s = self.FC.ar(self.FC.initial(name))
             self.d.text((cx - self.d.textlength(s, font=f) / 2, cy - r * 0.6), s, font=f, fill=INK)
 
     def foot(self, note):

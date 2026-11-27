@@ -170,7 +170,7 @@ def render(m, out=None, feed=None):
             img.paste(im, (cx - im.width // 2, cy - im.height // 2), im)
         else:
             f1 = FC.font("ExtraBold", int(r * 0.9))
-            s1 = FC.ar((name or "?").strip()[:1])
+            s1 = FC.ar(FC.initial(name))
             d.text((cx - d.textlength(s1, font=f1) / 2, cy - r * 0.6), s1, font=f1, fill=INK)
         text_c(cx, cy + r + 44, name, fit(name, "ExtraBold", 72, W // 2 - 70), ink(fill))
 

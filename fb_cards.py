@@ -131,12 +131,25 @@ def crest_image(url, size):
     canvas.paste(im, ((size - im.width) // 2, (size - im.height) // 2), im)
     return canvas
 
+def initial(name):
+    """The letter that stands for a club with no crest: the first letter of
+    its NAME, past «ال» and «نادي» - الزمالك, المصري, الأهلي and الهلال all
+    drew the same «ا» disc (design review 2026-11-26). «?» without a name."""
+    n = (name or "").strip()
+    for lead in ("نادي ", "النادي "):
+        if n.startswith(lead) and len(n) > len(lead):
+            n = n[len(lead):].strip()
+    if n.startswith("ال") and len(n) > 3:
+        n = n[2:]
+    return n[:1] or "?"
+
+
 def crest_placeholder(name, size):
     """White disc with the club's first letter — for clubs whose crest is SVG."""
     im = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     d = ImageDraw.Draw(im)
     d.ellipse((0, 0, size - 1, size - 1), fill=WHITE)
-    letter = ar((name or "?").strip()[:1])
+    letter = ar(initial(name))
     f = font("ExtraBold", int(size * 0.5))
     l, t, r, bt = d.textbbox((0, 0), letter, font=f)
     d.text(((size - (r - l)) / 2 - l, (size - (bt - t)) / 2 - t), letter, font=f, fill=BLUE)
@@ -357,7 +370,8 @@ def post_text(m, ge_idx=None):
         if by["h"]: lines.append(f"{home}: " + "، ".join(by["h"]))
         if by["a"]: lines.append(f"{away}: " + "، ".join(by["a"]))
     lines.append(f"{comp} · تفاصيل المباراة والهدافون: {b.SITE_BASE}{b.match_url(m)}")
-    tags = ["#الجون"] + ["#" + t.replace(" ", "_") for t in (home, away)] + ["#" + comp.replace(" ", "_")]
+    from site_lib.text import hashtag
+    tags = ["#الجون"] + [hashtag(t) for t in (home, away)] + [hashtag(comp)]
     lines.append(" ".join(tags))
     return "\n".join(lines) + "\n"
 

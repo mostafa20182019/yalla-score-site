@@ -679,7 +679,8 @@ def repost(token, aid):
 # Post workflow (`prediction` input) until the slots automate it.
 
 def _tag(name):
-    return "#" + "".join(ch if ch.isalnum() or ch == "_" else "_" for ch in (name or "").replace(" ", "_")).strip("_")
+    from site_lib.text import hashtag
+    return hashtag(name)
 
 
 def prediction_text(m, pr, tv=None):
@@ -911,7 +912,7 @@ def xi_caption(data, names=True):
     else:
         lines = [f"📋 التشكيل الرسمي لمباراة {data['home']['name']} × {data['away']['name']}", comp]
     lines.append(f"المباراة لحظة بلحظة: https://elgoon.com/m/{data['gid']}")
-    tag = lambda n: "#" + n.strip().replace(" ", "_")
+    tag = _tag
     lines.append(f"#الجون {tag(data['home']['name'])} {tag(data['away']['name'])}")
     return "\n".join(x for x in lines if x)
 
@@ -994,7 +995,7 @@ GOAL_COMP_AR = {552: "الدوري المصري", 624: "دوري أبطال أف
 def goal_caption(g, ev):
     """The «⚽ هدف!» text - the same lines liveposts.js writes (goalMessage)."""
     import goal_card
-    tag = lambda n: "#" + (n or "").strip().replace(" ", "_")
+    tag = _tag
     lines = [f"⚽ هدف! {g['h']} {g['hs']} - {g['as']} {g['a']}"]
     who = []
     if ev.get("p"): who.append(ev["p"])
@@ -1107,7 +1108,7 @@ def _tg_card(kind, ref, img, caption):
 
 def whistle_caption(kind, g, goals):
     """The «⏸️ نهاية الشوط الأول» / «🏁 انتهت المباراة» text - liveposts.js's lines."""
-    tag = lambda n: "#" + (n or "").strip().replace(" ", "_")
+    tag = _tag
     if kind == "ko":          # the kick-off (2026-10-18): no score yet, no scorers
         head = "🔔 انطلقت المباراة"
         lines = [f"{head}: {g['h']} × {g['a']}"]
@@ -1232,11 +1233,13 @@ def daycard_matches(matches, date, limit=None):
 
 
 def daycard_caption(ms, date):
-    from site_lib.names import ar_team, comp_label
+    from site_lib.names import ar_team, ar_team_in, comp_label
     from site_lib.dates import day_month as _dm
     lines = [f"📊 نتائج أبرز مباريات {_dm(date, weekday=True)}"]     # the day by name, not an ISO date (2026-11-20)
     for m in ms:
-        lines.append(f"{ar_team(m['home'])} {m['home_score']} - {m['away_score']} {ar_team(m['away'])} · {comp_label(m['competition'])}")
+        # ar_team_in: «الأهلي السعودي» here too, as the morning caption writes it
+        lines.append(f"{ar_team_in(m['home'], m['competition'])} {m['home_score']} - {m['away_score']} "
+                     f"{ar_team_in(m['away'], m['competition'])} · {comp_label(m['competition'])}")
     lines.append(f"كل النتائج والمواعيد: {SITE}/")   # the «المباريات» tab = home (2026-11-17)
     lines.append("#الجون #نتائج_المباريات")
     return "\n".join(lines)

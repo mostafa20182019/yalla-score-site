@@ -82,3 +82,13 @@ def css_min(css):
     css = re.sub(r"/\*.*?\*/", "", css, flags=re.S)
     css = re.sub(r"\s+", " ", css)
     return re.sub(r" ?([{};]) ?", r"\1", css).strip()
+
+
+def hashtag(name):
+    """«#سيسكا_صوفيا» - letters and digits only, one underscore between the
+    words. A hashtag ends at the first character that is not one of those:
+    «سيسكا - صوفيا» went out as «#سيسكا_-_صوفيا», which Facebook cuts after
+    the first word (social review 2026-11-26). '' for an empty name."""
+    import re
+    t = re.sub(r"_+", "_", "".join(ch if ch.isalnum() else "_" for ch in (name or "").strip())).strip("_")
+    return "#" + t if t else ""

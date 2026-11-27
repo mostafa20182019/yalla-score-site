@@ -59,11 +59,11 @@ ck("1 one post a day: the widest gap between the result and the numbers", len(ev
    and ev[0]["match"]["match_id"] == 2 and ev[0]["number"] == 6, str([e.get("match") for e in ev]))
 t = ev[0]["text"] if ev else ""
 ck("2 the wording: the number, both shot counts, the confirmed score, one question",
-   "رقم الليلة: 6" in t and "سدد 6 مرات فقط" in t and "سدد 20 مرة" in t and "1-0" in t and t.count("؟") == 1, t)
+   "رقم الليلة: 6" in t and "6 مرات فقط." in t and "20 مرة." in t and t.count("سدد ") == 2 and "1-0" in t and t.count("؟") == 1, t)
 ev1 = SS.night_number(ms[:1], [], st, datetime.date(2026, 10, 31))
 ck("3 the away side's goals and shots are its own (ميلان 3-1 إنتر: 7 against 19)",
    ev1 and "3-1" in ev1[0]["text"] and ev1[0]["shots"] == {"winner": 7, "loser": 19}
-   and ev1[0]["text"].index("سدد 7") < ev1[0]["text"].index("سدد 19"))
+   and ev1[0]["text"].index(" 7 مرات") < ev1[0]["text"].index(" 19 مرة"))
 ck("4 a win with the numbers, a draw, a league nobody follows: no post",
    SS.night_number(ms[2:], [], st, datetime.date(2026, 10, 31)) == [])
 ck("5 a gap under the bar is not a story", SS.night_number(ms[:1], [], [stat(1, 0.9, 7, 1.7, 19)], datetime.date(2026, 10, 31)) == []
@@ -122,7 +122,7 @@ FRI = datetime.date(2026, 11, 20)
 ev = SS.sudan_corner(up, [], hil, FRI)
 t = ev[0]["text"] if ev else ""
 ck("13 Friday: الهلال السوداني's record this season in the Champions League, counted from the rows",
-   len(ev) == 1 and ev[0]["ref"] == "2026-W47" and "لعب 3 مباريات" in t and "فوز 2، تعادل 1، خسارة 0" in t
+   len(ev) == 1 and ev[0]["ref"] == "2026-W47" and "لعب الهلال السوداني 3 مباريات" in t and "فوز 2، تعادل 1، خسارة 0" in t
    and "سجل 4 واستقبل 1" in t, t)
 ck("14 its next match with the day and the Cairo hour from the fixture", "حوريا × الهلال السوداني" in t and "29 نوفمبر" in t and "21:00" in t)
 ck("15 منتخب السودان's next match - «جنوب السودان» is another team", "منتخب السودان: السودان × النيجر" in t and "جنوب" not in t)
@@ -131,7 +131,7 @@ ck("16 once a week: Friday from 20:00 Cairo, never another day",
    and len(SS.sudan_corner(up, [], hil, at(2026, 11, 20, 20, 5))) == 1)
 ck("17 nothing played this season and nothing ahead: no post", SS.sudan_corner([], [], hil[3:], FRI) == [])
 z = SS.sudan_corner([], [], [hil[0], hil[1]], FRI)
-ck("18 a clean record says so in words, not «استقبل 0»", z and "ولم تستقبل شباكه أي هدف" in z[0]["text"] and "لعب مباراتين" in z[0]["text"])
+ck("18 a clean record says so in words, not «استقبل 0»", z and "ولم تستقبل شباكه أي هدف" in z[0]["text"] and "لعب الهلال السوداني مباراتين" in z[0]["text"])
 
 # ---------------------------------------------------------------- «سؤال الجون»
 PL = "Premier League"
@@ -224,7 +224,7 @@ JFX = [{"competition": PLG, "rounds": [{"round": 10, "matches": JR}, FXM[0]["rou
 ev = SS.round_movers([], JFX, [{"competition": PLG, "table": JT}], datetime.date(2026, 11, 9))
 t = ev[0]["text"] if ev else ""
 ck("32 the evening after the round: the side that climbed two places, with both places",
-   len(ev) == 1 and ev[0]["ref"] == f"{PLG}:R10:2026-27" and f"{SE.ar_team('Everton FC')} تقدم مركزين: من المركز 3 إلى 1." in t
+   len(ev) == 1 and ev[0]["ref"] == f"{PLG}:R10:2026-27" and f"تقدم {SE.ar_team('Everton FC')} مركزين: من المركز 3 إلى 1." in t
    and "standings/england" in t, t)
 ck("33 only on the day after the round's last match, from 21:00 Cairo",
    SS.round_movers([], JFX, [{"competition": PLG, "table": JT}], datetime.date(2026, 11, 10)) == []

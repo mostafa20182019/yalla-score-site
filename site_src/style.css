@@ -229,7 +229,7 @@ a{color:inherit}
 .st-tabs .ltabs{margin-bottom:12px}
 .st-tabs .minfo.lpane{margin-top:0}
 /* /standings: «لعب / ف / ت / خ» open the team's matches in a popup (2026-11-01) */
-.lt-n{appearance:none;background:none;border:0;padding:2px 6px;margin:-2px -6px;border-radius:6px;
+.lt-n{appearance:none;background:none;border:0;padding:10px 6px;margin:-10px -6px;border-radius:6px;
   font:inherit;color:var(--green-d);font-weight:800;cursor:pointer;text-decoration:none;
   text-underline-offset:3px}
 .lt-n:hover{background:#eef6fb;text-decoration:underline}
@@ -687,7 +687,7 @@ html.lt-lock{overflow:hidden}
 .mf-search input{border:0;outline:0;flex:1 1 auto;min-width:0;font:inherit;font-weight:700;background:transparent;color:var(--ink)}
 .mf-search input::-webkit-search-cancel-button{cursor:pointer}
 .bytime{max-width:820px;margin:0 auto 16px}
-@media(max-width:560px){.mf-chip{padding:6px 11px;font-size:.78rem}.mf-search{flex-basis:140px}}
+@media(max-width:560px){.mf-chip{padding:6px 11px;font-size:.78rem;min-height:40px}.mf-search{flex-basis:150px;min-width:150px}}
 .day{max-width:820px;margin:0 auto}
 .day-h{color:var(--green-d);font-weight:900;margin:16px 0 10px}
 .comp-h{font-weight:800;color:var(--ink);font-size:.9rem;margin:0;padding:11px 16px;background:#f6f8fa;border-bottom:1px solid #eef2f6}
@@ -924,8 +924,8 @@ html.lt-lock{overflow:hidden}
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 .pp-rt{position:absolute;top:-6px;right:-10px;font-size:.68rem;font-weight:900;color:#fff;
   border-radius:6px;padding:1px 4px;direction:ltr}
-.pp-rt.r8{background:#0ea5e9}.pp-rt.r7{background:#16a34a}
-.pp-rt.r65{background:#ca8a04}.pp-rt.r6{background:#ea580c}
+.pp-rt.r8{background:#0369a1}.pp-rt.r7{background:#15803d}
+.pp-rt.r65{background:#a16207}.pp-rt.r6{background:#c2410c}
 /* «قراءة المباراة» (post-match reading): the story paragraph, the rating
    chips and the table line. Same .minfo card as every other section - the
    reading is content, not a widget. */
@@ -941,8 +941,8 @@ html.lt-lock{overflow:hidden}
   padding-inline-end:.3rem}
 .rt-b{font-size:.78rem;font-weight:900;color:#fff;border-radius:6px;padding:.12rem .34rem;
   min-width:2.1rem;text-align:center;direction:ltr}
-.rt-b.r8{background:#0ea5e9}.rt-b.r7{background:#16a34a}
-.rt-b.r65{background:#ca8a04}.rt-b.r6{background:#ea580c}
+.rt-b.r8{background:#0369a1}.rt-b.r7{background:#15803d}
+.rt-b.r65{background:#a16207}.rt-b.r6{background:#c2410c}
 .mread .mr-avg small{color:var(--muted);font-weight:400}
 /* prediction record (/predictions.html): filter bar, the two call columns,
    and the small-sample flag. Tables reuse .ptable. */

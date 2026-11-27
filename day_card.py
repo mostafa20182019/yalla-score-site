@@ -168,7 +168,7 @@ def render(ms, date, comp, out, part=None, parts=1, title=None, theme="light"):
             img.paste(im, (cx - im.width // 2, cy - im.height // 2), im)
         else:
             f = FC.font("ExtraBold", int(r * 0.9))
-            s = FC.ar((name or "?").strip()[:1])
+            s = FC.ar(FC.initial(name))
             d.text((cx - d.textlength(s, font=f) / 2, cy - r * 0.6), s, font=f, fill=(16, 62, 108))
 
     # ------------------------------------------------------------------
