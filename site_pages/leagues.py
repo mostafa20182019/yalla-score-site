@@ -441,6 +441,9 @@ def fixtures_pages(fx_by_comp, season, st_by_comp, urls, groups_by_comp=None, m_
                                 SITE_BASE + f"/fixtures/{slug}.html", active="leagues"))
         rounds_panel = league_rounds_panel(comp, fx, embedded=True,
                                            pages=m_all if m_all is not None else None)
+        # the match pages this competition has that the rounds above do not list
+        from site_lib.tables import other_matches_panel
+        rounds_panel += other_matches_panel(comp, fx, m_all)
         # «مباريات X القادمة» in words (SEO review 2026-11-13: the page ranked
         # ~10 for that query with no heading, no sentence and no visible list
         # saying it - every round but one is `hidden`). The round on show as

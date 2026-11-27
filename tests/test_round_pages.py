@@ -67,5 +67,22 @@ b = io.open("build_site.py", encoding="utf-8").read()
 ck("21 built once, after the match pages and before the sitemap", b.count("round_pages(fx_by_comp, st_by_comp, forms, m_all, urls)") == 1
    and b.index("m_all = match_pages(") < b.index("round_pages(fx_by_comp"))
 ck("22 the league's fixtures page links the window's rounds", "_RD.round_url(comp, _n)" in io.open("site_pages/leagues.py", encoding="utf-8").read())
+msrc = io.open("site_pages/matches.py", encoding="utf-8").read()
+mtpl = io.open("site_src/templates/match.html", encoding="utf-8").read()
+ck("23 a match of a round that has a page links it from its breadcrumb (and from the breadcrumb data)",
+   "(m.get(\"competition\"), m.get(\"round\")) in _round_pages" in msrc and "_RD.round_url(m[\"competition\"], m[\"round\"])" in msrc
+   and '{% if round_href %} › <a href="{{ round_href }}">{{ round_label }}</a>{% endif %}' in mtpl
+   and "[(round_label, SITE_BASE + round_href)] if round_href else []" in msrc)
+from site_lib.tables import other_matches_panel as OMP, OTHER_MAX
+_fx = {"rounds": [{"round": 1, "matches": [{"match_id": 1}]}]}
+_pg = {1: {"match_id": 1, "competition": "C", "kickoff": "2026-11-25", "home": "A", "away": "B", "status": "FINISHED", "home_score": 1, "away_score": 0},
+       2: {"match_id": 2, "competition": "C", "kickoff": "2026-11-21", "koff_time": "18:00", "home": "X", "away": "Y", "status": "FINISHED", "home_score": 2, "away_score": 2},
+       3: {"match_id": 3, "competition": "D", "kickoff": "2026-11-21", "home": "P", "away": "Q", "status": "UPCOMING"}}
+_h = OMP("C", _fx, _pg)
+ck("24 a league's fixtures page lists the match pages its rounds do not (32 Under-17 World Cup pages had no link at all)",
+   'href="/m/2.html"' in _h and "/m/1.html" not in _h and "/m/3.html" not in _h and "مباريات أخرى في" in _h)
+ck("25 nothing extra when the rounds hold every page, or with no pages; capped", OMP("C", {"rounds": [{"round": 1, "matches": [{"match_id": 1}, {"match_id": 2}]}]}, _pg) == ""
+   and OMP("C", _fx, None) == "" and OTHER_MAX == 120
+   and "other_matches_panel(comp, fx, m_all)" in io.open("site_pages/leagues.py", encoding="utf-8").read())
 print("ALL OK" if not fails else f"{fails} FAILED")
 sys.exit(1 if fails else 0)

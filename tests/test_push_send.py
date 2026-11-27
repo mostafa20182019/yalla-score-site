@@ -342,15 +342,17 @@ ck("50 the manifest is RTL Arabic with 192 + 512 icons that exist",
 from site_lib import shell as S                    # noqa: E402
 S.VAPID_PUBLIC_KEY = ""
 dark = S.head("t", "d", "https://elgoon.com/") + S.foot() + S.push_cta()
-ck("51 with no key the pages carry NO push markup",
+ck("51 with no key the pages carry NO push markup - and the shared script no push code",
    "push-btn" not in dark and "manifest" not in dark and "__VAPID" not in dark
-   and "serviceWorker" not in dark)
+   and "serviceWorker" not in dark and "pushManager" not in S.app_js())
 S.VAPID_PUBLIC_KEY = PUB
 on = S.head("t", "d", "https://elgoon.com/") + S.foot()
-ck("52 with the key: manifest, theme colour, a HIDDEN bell, the script with the key",
+# the script itself rides in /assets/app.js since 2026-11-27 (it was inline in every page - 7 KB never cached)
+_app = S.app_js()
+ck("52 with the key: manifest, theme colour, a HIDDEN bell, the script with the key - in the shared file, first, not in the page",
    'rel="manifest"' in on and 'name="theme-color"' in on
-   and 'class="push-btn head-bell" hidden' in on and f"var KEY='{PUB}'" in on
-   and "__VAPID_PUBLIC_KEY__" not in on)
+   and 'class="push-btn head-bell" hidden' in on and f"var KEY='{PUB}'" in _app and f"var KEY='{PUB}'" not in on
+   and "__VAPID_PUBLIC_KEY__" not in on + _app and _app.index("var KEY=") < 1200 and "pushManager" not in on)
 cta = S.push_cta()
 ck("53 the article line is hidden until the script reveals it",
    cta.startswith('<div class="push-cta" hidden>') and "push-btn" in cta)

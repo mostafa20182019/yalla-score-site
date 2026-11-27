@@ -360,6 +360,36 @@ def league_rounds_panel(comp, fx, embedded=False, only_current=False, more_url=N
     return "".join(parts)
 
 
+OTHER_MAX = 120          # rows of «مباريات أخرى» on a league's fixtures page
+
+
+def other_matches_panel(comp, fx, pages):
+    """The competition's match PAGES that its rounds panel does not list, as
+    the same compact rows, newest first - '' when the rounds hold them all.
+
+    Why (2026-11-27): the feed's fixtures for a tournament keep a moving
+    window (the Under-17 World Cup page listed 32 matches), so a match that
+    left it - and left the home page's days - had a page in the sitemap that
+    nothing linked: 39 such pages, 32 of them that World Cup's group games.
+    `pages` = every built match page by id (m_all)."""
+    if not pages:
+        return ""
+    listed = {m.get("match_id") for r in (fx or {}).get("rounds") or [] for m in r.get("matches") or []}
+    rest = sorted((m for i, m in pages.items() if m.get("competition") == comp and i not in listed and m.get("kickoff")),
+                  key=lambda m: (m.get("kickoff") or "", m.get("koff_time") or ""), reverse=True)[:OTHER_MAX]
+    if not rest:
+        return ""
+    parts = [f'<section class="lg-fix fx-other"><h2 class="fx-all-h">مباريات أخرى في {esc(comp_label(comp))}</h2>']
+    day = None
+    for m in rest:
+        if m["kickoff"] != day:
+            day = m["kickoff"]
+            parts.append(f'<div class="fx-day">{esc(fmt_day(day))}</div>')
+        parts.append(fixture_mini(m, link=f'/m/{m["match_id"]}.html'))
+    parts.append('</section>')
+    return "".join(parts)
+
+
 def round_on_show(fx):
     """(round number, its matches) for the «الجولة» block of /standings: the
     round with a live match, else the round of the nearest upcoming one, else

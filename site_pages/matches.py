@@ -209,6 +209,11 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             m_all[m["match_id"]] = m      # day-window copy is always fresher
     # ±7 days, not ±30: see the sitemap note at the match-page append below
     sm_cut = (datetime.date.today() - datetime.timedelta(days=7)).isoformat()
+    # the rounds that have a page of their own (site_lib/rounds.py): a match
+    # of such a round links it from its breadcrumb
+    from site_lib import rounds as _RD
+    _round_pages = {(f.get("competition"), n) for f in fixtures or []
+                    if f.get("competition") in _RD.ROUND_COMPS for n, _ in _RD.numbered(f)}
     # ... and 7 days AHEAD too (SEO review 2026-11-18): every fixture of the
     # season was advertised, and two fixtures of one league months away share
     # 74-78% of their text (table, scorers, news) - Google answered with
@@ -506,11 +511,18 @@ def match_pages(_bycomp, _cal, _lparams, _match_arts, _plog, _preds, _squad, _ts
             comp_href = (f"/standings/{_cslug}.html"
                          if ((stc and stc.get("table")) or m.get("competition") in _GP)
                          else f"/fixtures/{_cslug}.html")
+        # the match's ROUND, when the round has its own page (2026-11-27: the
+        # round pages were linked from the league's fixtures page only)
+        round_href = round_label = ""
+        if (m.get("competition"), m.get("round")) in _round_pages:
+            round_href, round_label = _RD.round_url(m["competition"], m["round"]), f"الجولة {m['round']}"
         crumbs_ld = breadcrumb_ld([("الرئيسية", SITE_BASE + "/")]
                                   + ([(comp, SITE_BASE + comp_href)] if comp_href else [])
+                                  + ([(round_label, SITE_BASE + round_href)] if round_href else [])
                                   + [(title.split(" — ")[0], SITE_BASE + murl)])
         _html = render(
             "match.html", page_head=Markup(page_head), comp=comp, comp_href=Markup(comp_href),
+            round_href=Markup(round_href), round_label=round_label,
             h_ar=h_ar, a_ar=a_ar,
             h1=title.split(" — ")[0],
             hero_row=Markup(hero_row), kickoff_info=kickoff_info, round_txt=Markup(_rd),

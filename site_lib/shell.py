@@ -309,7 +309,7 @@ def foot():
   <p class="credit">صور عبر Wikimedia Commons / Unsplash — رخص حرة / المجال العام · صور لاعبي منتخب مصر 2026: Bryan Berlin، CC BY-SA 4.0</p>
   <p class="credit">© {year} {esc(SITE_NAME)}</p>
 </div></footer>
-{cf_beacon()}{push_js()}{KO_SCRIPT}{app_js_tag()}</body></html>"""
+{cf_beacon()}{KO_SCRIPT}{app_js_tag()}</body></html>"""
 
 
 # ---- web push (2026-09-27) ----
@@ -432,7 +432,12 @@ def _js_body(snippet):
 def app_js():
     """The file's content: each snippet in its own try, so one that throws
     cannot stop the next (they were separate <script> blocks before)."""
-    return "\n".join("try{" + _js_body(s) + "\n}catch(e){}"
+    # the push script first (2026-11-27): it was INLINE in every page - 7 KB
+    # times 3,000 pages, never cached - and ran before this file, so it keeps
+    # that place here. Same code, same moment (the file is deferred: the whole
+    # page is parsed, as it was at the end of <body>).
+    _push = ("try{" + _js_body(push_js()) + "\n}catch(e){}\n") if push_js() else ""
+    return _push + "\n".join("try{" + _js_body(s) + "\n}catch(e){}"
                      for s in (REL_JS, LIVE_JS, SWIPE_JS, TEAM_CARD_JS, LIVE_TABLE_JS, LIVE_SCORERS_JS, LIVE_LEAGUE_JS, LIVE_FX_JS)) + "\n" \
         + "try{" + _js_body(SHOT_JS) + "\n}catch(e){}\n" \
         + "try{" + _js_body(FOLLOW_JS) + "\n}catch(e){}\n"     # «تابع فريقك», after the live layer it hands its rows to

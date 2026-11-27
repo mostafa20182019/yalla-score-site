@@ -1872,6 +1872,18 @@ def slow_fetch_due(matches, prev_debug, now=None):
 
 
 if __name__ == "__main__":
+    # WHERE THE TIME GOES (2026-11-27): this step takes about five of a
+    # publish run's eight minutes and nothing recorded which part. Each phase
+    # below stamps its seconds into fetch_debug.json ("timing"), which the
+    # data bundle carries - readable without the job's log.
+    _T = [time.time()]
+    _TIMING = {}
+
+    def _phase(name):
+        now = time.time()
+        _TIMING[name] = round(now - _T[0], 1)
+        _T[0] = now
+
     os.makedirs(DATA, exist_ok=True)
     # the previous run's record: it carries when standings/charts were last
     # fetched, which decides the lighter fetch below
@@ -1910,6 +1922,7 @@ if __name__ == "__main__":
         print(f"  ! matches fetch failed ({e}) - keeping existing matches.json")
         _DBG["matches"] = f"FAIL: {e!r}"
         matches = None
+    _phase("matches_football_data")
     s365_standings = []
     if matches is not None and EGY_ENABLED:
         for _lid, _lname in S365_LEAGUES:
@@ -1923,6 +1936,7 @@ if __name__ == "__main__":
             except Exception as e:
                 print(f"  ! {_lname} fetch failed ({e})")
                 _DBG[_lname] = f"FAIL: {e!r}"
+        _phase("s365_leagues")
         try:
             reconcile_with_live(matches, _DBG)
         except Exception as e:
@@ -1965,6 +1979,7 @@ if __name__ == "__main__":
     if reels_auto is not None:
         write_items("reels_auto.json", reels_auto)
         print(f"reels (auto): {len(reels_auto)}")
+    _phase("reconcile_archive_merge")
     _slow, _why = slow_fetch_due(matches, _PREV_DBG)
     _DBG["slow_fetch"] = ("full - " if _slow else "skipped - ") + _why
     _DBG["slow_fetched_at"] = (datetime.now(timezone.utc).isoformat(timespec="seconds") if _slow
@@ -1988,6 +2003,7 @@ if __name__ == "__main__":
     # transfers feature removed 2026-09-01 (user decision — the home widget
     # is gone, FotMob-style news blocks took its place). fetch_transfers()
     # stays defined below for an easy return; nothing writes transfers.json.
+    _phase("standings")
     if _slow:
         try:
             charts, chart_names = fetch_player_charts()
@@ -2005,6 +2021,7 @@ if __name__ == "__main__":
             _DBG["goals"] = _DBG["assists"] = f"FAIL: {e!r}"
     else:
         _DBG["goals"] = _DBG["assists"] = "skipped (quiet window) - keeping existing files"
+    _phase("scorer_charts")
     try:
         goal_events, ge_dbg = fetch_goal_events()
         _DBG["goal_events"] = f"ok ({len(goal_events)} games)"
@@ -2032,6 +2049,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! goal events failed ({e}) - keeping existing goal_events.json")
         _DBG["goal_events"] = f"FAIL: {e!r}"
+    _phase("goal_events_lineups_details")
     try:
         # per-match team stats, xG first (match_stats.py, 2026-10-07): one
         # bounded batch per run, newest first, so the season backfill spreads
@@ -2043,6 +2061,7 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! match stats failed ({e}) - keeping existing file")
         _DBG["match_stats"] = f"FAIL: {e!r}"
+    _phase("match_stats")
     try:
         # «أهداف المباريات» (2026-11-02): highlight links from beIN SPORTS /
         # ON Sport's YouTube channels, tied to our finished matches
@@ -2051,6 +2070,10 @@ if __name__ == "__main__":
     except Exception as e:
         print(f"  ! highlights failed ({e}) - keeping existing file")
         _DBG["highlights"] = f"FAIL: {e!r}"
+    _phase("highlights")
+    _TIMING["total"] = round(sum(_TIMING.values()), 1)
+    _DBG["timing"] = _TIMING
+    print("fetch timing (s): " + ", ".join(f"{k} {v}" for k, v in _TIMING.items()))
     _DBG["utc"] = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     with open(os.path.join(DATA, "fetch_debug.json"), "w", encoding="utf-8") as f:
         json.dump(_DBG, f, ensure_ascii=False, indent=1)
